@@ -23,7 +23,18 @@
       "Bash(start index.html)",
       "Bash(az appservice plan:*)",
       "Bash(az webapp log tail:*)",
-      "Bash(az webapp config set:*)"
+      "Bash(az webapp config set:*)",
+      "Bash(git pull:*)",
+      "Bash(az sql db list:*)",
+      "Bash(az sql server list:*)",
+      "Bash(az resource list:*)",
+      "Bash(az postgres flexible-server show:*)",
+      "Bash(npm run build:*)",
+      "Bash(az webapp config appsettings set:*)",
+      "Bash(az webapp config show:*)",
+      "Bash(7z:*)",
+      "Bash(zip:*)",
+      "Bash(powershell.exe:*)"
     ],
     "deny": [],
     "ask": []

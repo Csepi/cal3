@@ -172,10 +172,17 @@ main {
     margin-bottom: 0.8rem;
     border-radius: 6px;
     transition: transform 0.2s ease;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .event-item:hover {
     transform: translateX(4px);
+}
+
+.event-content {
+    flex: 1;
 }
 
 .event-title {
@@ -187,6 +194,28 @@ main {
 .event-date {
     font-size: 0.9rem;
     color: #666;
+}
+
+.delete-event-btn {
+    background: #ff4757;
+    color: white;
+    border: none;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    margin-left: 1rem;
+}
+
+.delete-event-btn:hover {
+    background: #ff3742;
+    transform: scale(1.1);
 }
 
 .add-event-btn {

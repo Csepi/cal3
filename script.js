@@ -4,13 +4,15 @@ class Calendar {
         this.currentDate = new Date();
         this.selectedDate = null;
         this.events = [];
+        this.apiBaseUrl = window.location.origin;
         this.init();
     }
 
-    init() {
+    async init() {
         this.bindEvents();
         this.renderCalendar();
         this.updateMonthDisplay();
+        await this.loadEventsFromAPI();
     }
 
     bindEvents() {
@@ -115,38 +117,89 @@ class Calendar {
         if (title) {
             const dateStr = prompt('Enter event date (YYYY-MM-DD):');
             if (dateStr) {
-                this.addEvent(title, dateStr);
+                this.addEventToAPI(title, dateStr);
             }
         }
     }
 
-    addEvent(title, dateStr) {
+    // Load events from backend API
+    async loadEventsFromAPI() {
         try {
-            const eventDate = new Date(dateStr);
-            const event = {
-                id: Date.now(),
-                title: title,
-                date: eventDate
-            };
-
-            this.events.push(event);
-            this.renderEvents();
-
-            // Store in localStorage for persistence
-            localStorage.setItem('calendar-events', JSON.stringify(this.events));
+            const response = await fetch(`${this.apiBaseUrl}/events`);
+            if (response.ok) {
+                const events = await response.json();
+                this.events = events.map(event => ({
+                    ...event,
+                    date: new Date(event.date)
+                }));
+                this.renderEvents();
+                console.log('✅ Events loaded from API:', events.length);
+            } else {
+                console.error('Failed to load events:', response.statusText);
+                this.loadEventsFromLocalStorage(); // Fallback to localStorage
+            }
         } catch (error) {
-            alert('Invalid date format. Please use YYYY-MM-DD.');
+            console.error('Error loading events from API:', error);
+            this.loadEventsFromLocalStorage(); // Fallback to localStorage
         }
     }
 
-    loadEvents() {
+    // Add event via backend API
+    async addEventToAPI(title, dateStr) {
+        try {
+            // Validate date format
+            const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+            if (!dateRegex.test(dateStr)) {
+                alert('Invalid date format. Please use YYYY-MM-DD.');
+                return;
+            }
+
+            const response = await fetch(`${this.apiBaseUrl}/events`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    title: title,
+                    date: dateStr
+                })
+            });
+
+            if (response.ok) {
+                const newEvent = await response.json();
+                console.log('✅ Event created:', newEvent);
+                // Reload events from API to get updated list
+                await this.loadEventsFromAPI();
+            } else {
+                const errorData = await response.json();
+                alert(`Failed to create event: ${errorData.message || response.statusText}`);
+            }
+        } catch (error) {
+            console.error('Error creating event:', error);
+            alert('Failed to create event. Please try again.');
+        }
+    }
+
+    // Fallback to localStorage (for offline functionality)
+    loadEventsFromLocalStorage() {
         const stored = localStorage.getItem('calendar-events');
         if (stored) {
             this.events = JSON.parse(stored).map(event => ({
                 ...event,
                 date: new Date(event.date)
             }));
+            this.renderEvents();
         }
+    }
+
+    // Legacy method for backward compatibility
+    addEvent(title, dateStr) {
+        this.addEventToAPI(title, dateStr);
+    }
+
+    loadEvents() {
+        // This is now handled by loadEventsFromAPI in init()
+        return;
     }
 
     renderEvents() {
@@ -156,7 +209,7 @@ class Calendar {
             eventsContainer.innerHTML = `
                 <div class="event-placeholder">
                     <p>No events scheduled</p>
-                    <p class="placeholder-text">Events will appear here when you add them</p>
+                    <p class="placeholder-text">Click "Add Event" to create your first event</p>
                 </div>
             `;
             return;
@@ -167,32 +220,62 @@ class Calendar {
 
         eventsContainer.innerHTML = sortedEvents.map(event => `
             <div class="event-item" data-id="${event.id}">
-                <div class="event-title">${event.title}</div>
-                <div class="event-date">${event.date.toLocaleDateString()}</div>
+                <div class="event-content">
+                    <div class="event-title">${event.title}</div>
+                    <div class="event-date">${event.date.toLocaleDateString()}</div>
+                </div>
+                <button class="delete-event-btn" onclick="calendar.deleteEventFromAPI(${event.id})" title="Delete Event">×</button>
             </div>
         `).join('');
     }
 
+    // Delete event via API
+    async deleteEventFromAPI(eventId) {
+        try {
+            if (!confirm('Are you sure you want to delete this event?')) {
+                return;
+            }
+
+            const response = await fetch(`${this.apiBaseUrl}/events/${eventId}`, {
+                method: 'DELETE'
+            });
+
+            if (response.ok) {
+                console.log('✅ Event deleted:', eventId);
+                // Reload events from API to get updated list
+                await this.loadEventsFromAPI();
+            } else {
+                const errorData = await response.json();
+                alert(`Failed to delete event: ${errorData.message || response.statusText}`);
+            }
+        } catch (error) {
+            console.error('Error deleting event:', error);
+            alert('Failed to delete event. Please try again.');
+        }
+    }
+
+    // Legacy method for backward compatibility
     deleteEvent(eventId) {
-        this.events = this.events.filter(event => event.id !== eventId);
-        this.renderEvents();
-        localStorage.setItem('calendar-events', JSON.stringify(this.events));
+        this.deleteEventFromAPI(eventId);
     }
 }
 
-// Initialize calendar when DOM is loaded
-document.addEventListener('DOMContentLoaded', () => {
-    const calendar = new Calendar();
-    calendar.loadEvents();
-    calendar.renderEvents();
+// Global calendar instance
+let calendar;
 
-    console.log('Calendar MVP initialized successfully!');
+// Initialize calendar when DOM is loaded
+document.addEventListener('DOMContentLoaded', async () => {
+    calendar = new Calendar();
+
+    console.log('📅 Calendar MVP with Backend Integration initialized successfully!');
+    console.log('🌐 Connected to API at:', calendar.apiBaseUrl);
 });
 
 // Add some sample functionality for demonstration
-window.addSampleEvents = function() {
-    const calendar = new Calendar();
-    calendar.addEvent('Team Meeting', '2024-01-15');
-    calendar.addEvent('Project Deadline', '2024-01-20');
-    calendar.addEvent('Client Call', '2024-01-25');
+window.addSampleEvents = async function() {
+    if (calendar) {
+        await calendar.addEventToAPI('Team Meeting', '2025-09-15');
+        await calendar.addEventToAPI('Project Deadline', '2025-09-20');
+        await calendar.addEventToAPI('Client Call', '2025-09-25');
+    }
 };
