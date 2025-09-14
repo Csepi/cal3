@@ -10,7 +10,20 @@
       "Bash(az appservice plan create:*)",
       "Bash(az webapp create:*)",
       "Bash(az webapp deploy:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(az webapp show:*)",
+      "Bash(git remote:*)",
+      "Bash(git push:*)",
+      "Bash(curl:*)",
+      "Bash(az webapp restart:*)",
+      "Bash(az webapp start:*)",
+      "Bash(node server.js)",
+      "Bash(npm install:*)",
+      "Bash(start index.html)",
+      "Bash(az appservice plan:*)",
+      "Bash(az webapp log tail:*)",
+      "Bash(az webapp config set:*)"
     ],
     "deny": [],
     "ask": []
