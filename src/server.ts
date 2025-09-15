@@ -11,9 +11,6 @@ const port = process.env.PORT || 8080;
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Serve static files from the root directory (for frontend files)
-app.use(express.static(path.join(__dirname, '..')));
-
 // CORS middleware for development
 app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
@@ -146,6 +143,10 @@ app.delete('/events/:id', async (req, res) => {
         });
     }
 });
+
+// Serve static files from the root directory (for frontend files)
+// This must come AFTER API routes to avoid conflicts
+app.use(express.static(path.join(__dirname, '..')));
 
 // Serve the frontend for all other routes (SPA behavior)
 app.get('*', (req, res) => {
