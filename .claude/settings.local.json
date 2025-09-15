@@ -40,7 +40,12 @@
       "Bash(az webapp log config:*)",
       "Bash(az webapp config appsettings list:*)",
       "Bash(az postgres flexible-server update:*)",
-      "Bash(/dev/null)"
+      "Bash(/dev/null)",
+      "Bash(node:*)",
+      "Bash(DB_PASSWORD=\"Enter.Enter\" node -e \"console.log(''DB_PASSWORD:'', typeof process.env.DB_PASSWORD, process.env.DB_PASSWORD);\")",
+      "Bash(DB_PASSWORD=\"Enter.Enter\" node dist/server.js)",
+      "Bash(rm:*)",
+      "Bash(DB_PASSWORD=\"Enter.Enter\" PORT=3000 node dist/server.js)"
     ],
     "deny": [],
     "ask": []

@@ -33,8 +33,9 @@ app.get('/health', (req, res) => {
     });
 });
 // API Routes
-// GET /events - Get all events
-app.get('/events', async (req, res) => {
+app.use('/api', express_1.default.Router());
+// GET /api/events - Get all events
+app.get('/api/events', async (req, res) => {
     try {
         const events = await eventService_1.EventService.getAllEvents();
         res.json(events);
@@ -47,8 +48,8 @@ app.get('/events', async (req, res) => {
         });
     }
 });
-// POST /events - Create new event
-app.post('/events', async (req, res) => {
+// POST /api/events - Create new event
+app.post('/api/events', async (req, res) => {
     try {
         const { title, date } = req.body;
         // Validation
@@ -77,8 +78,8 @@ app.post('/events', async (req, res) => {
         });
     }
 });
-// GET /events/:id - Get event by ID
-app.get('/events/:id', async (req, res) => {
+// GET /api/events/:id - Get event by ID
+app.get('/api/events/:id', async (req, res) => {
     try {
         const id = parseInt(req.params.id);
         if (isNaN(id)) {
@@ -104,8 +105,8 @@ app.get('/events/:id', async (req, res) => {
         });
     }
 });
-// DELETE /events/:id - Delete event
-app.delete('/events/:id', async (req, res) => {
+// DELETE /api/events/:id - Delete event
+app.delete('/api/events/:id', async (req, res) => {
     try {
         const id = parseInt(req.params.id);
         if (isNaN(id)) {
@@ -154,7 +155,7 @@ const startServer = async () => {
         app.listen(port, () => {
             console.log(`✅ Calendar MVP Backend server running on port ${port}`);
             console.log(`🌐 Health check: http://localhost:${port}/health`);
-            console.log(`📅 Events API: http://localhost:${port}/events`);
+            console.log(`📅 Events API: http://localhost:${port}/api/events`);
             console.log(`🖥️ Frontend: http://localhost:${port}`);
         });
     }
