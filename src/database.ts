@@ -1,12 +1,15 @@
 import { Pool } from 'pg';
 
 // Database configuration
+const dbPassword = process.env.DB_PASSWORD || '';
+console.log('🔐 DB Password configured:', dbPassword ? 'Yes' : 'No', `(length: ${dbPassword.length})`);
+
 const pool = new Pool({
     host: 'cal2db.postgres.database.azure.com',
     port: 5432,
     database: 'postgres', // Default database name
     user: 'db_admin',
-    password: process.env.DB_PASSWORD || '', // Will be set via environment variable
+    password: String(dbPassword), // Ensure password is a string
     ssl: {
         rejectUnauthorized: false // Required for Azure PostgreSQL
     },
