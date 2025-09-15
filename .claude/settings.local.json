@@ -34,7 +34,13 @@
       "Bash(az webapp config show:*)",
       "Bash(7z:*)",
       "Bash(zip:*)",
-      "Bash(powershell.exe:*)"
+      "Bash(powershell.exe:*)",
+      "Bash(git reset:*)",
+      "Bash(az webapp log show:*)",
+      "Bash(az webapp log config:*)",
+      "Bash(az webapp config appsettings list:*)",
+      "Bash(az postgres flexible-server update:*)",
+      "Bash(/dev/null)"
     ],
     "deny": [],
     "ask": []
