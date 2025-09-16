@@ -10,9 +10,9 @@ class Calendar {
 
     async init() {
         this.bindEvents();
+        await this.loadEventsFromAPI();
         this.renderCalendar();
         this.updateMonthDisplay();
-        await this.loadEventsFromAPI();
     }
 
     bindEvents() {
@@ -84,9 +84,40 @@ class Calendar {
             dayNumber.textContent = date.getDate();
             dayElement.appendChild(dayNumber);
 
+            // Check for events on this date and add event indicators
+            const dateStr = this.formatDateString(date);
+            const dayEvents = this.events.filter(event =>
+                this.formatDateString(event.date) === dateStr
+            );
+
+            if (dayEvents.length > 0) {
+                dayElement.classList.add('has-events');
+
+                // Add event indicators
+                const eventIndicators = document.createElement('div');
+                eventIndicators.className = 'event-indicators';
+
+                dayEvents.slice(0, 3).forEach(event => { // Show max 3 event dots
+                    const indicator = document.createElement('div');
+                    indicator.className = 'event-dot';
+                    indicator.title = event.title;
+                    eventIndicators.appendChild(indicator);
+                });
+
+                if (dayEvents.length > 3) {
+                    const moreIndicator = document.createElement('div');
+                    moreIndicator.className = 'event-more';
+                    moreIndicator.textContent = `+${dayEvents.length - 3}`;
+                    moreIndicator.title = `${dayEvents.length - 3} more events`;
+                    eventIndicators.appendChild(moreIndicator);
+                }
+
+                dayElement.appendChild(eventIndicators);
+            }
+
             // Add click event for date selection
             dayElement.addEventListener('click', () => {
-                this.selectDate(date);
+                this.selectDate(date, dayEvents);
             });
 
             calendarGrid.appendChild(dayElement);
@@ -99,7 +130,11 @@ class Calendar {
                date1.getFullYear() === date2.getFullYear();
     }
 
-    selectDate(date) {
+    formatDateString(date) {
+        return date.toISOString().split('T')[0];
+    }
+
+    selectDate(date, dayEvents = []) {
         this.selectedDate = date;
         console.log('Selected date:', date.toDateString());
 
@@ -108,8 +143,22 @@ class Calendar {
             el.classList.remove('selected');
         });
 
-        // Add selection to current date (simplified for MVP)
+        // Add selection to current date
         event.target.closest('.calendar-day').classList.add('selected');
+
+        // Show events for selected date
+        this.showDayEvents(date, dayEvents);
+    }
+
+    showDayEvents(date, dayEvents) {
+        if (dayEvents.length > 0) {
+            console.log(`📅 Events for ${date.toDateString()}:`, dayEvents);
+            // Could add a modal or detailed view here
+            const eventTitles = dayEvents.map(e => e.title).join(', ');
+            alert(`Events on ${date.toDateString()}:\n${eventTitles}`);
+        } else {
+            console.log(`📅 No events on ${date.toDateString()}`);
+        }
     }
 
     showAddEventDialog() {
@@ -125,7 +174,7 @@ class Calendar {
     // Load events from backend API
     async loadEventsFromAPI() {
         try {
-            const response = await fetch(`${this.apiBaseUrl}/events`);
+            const response = await fetch(`${this.apiBaseUrl}/api/events`);
             if (response.ok) {
                 const events = await response.json();
                 this.events = events.map(event => ({
@@ -154,7 +203,7 @@ class Calendar {
                 return;
             }
 
-            const response = await fetch(`${this.apiBaseUrl}/events`, {
+            const response = await fetch(`${this.apiBaseUrl}/api/events`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -170,6 +219,7 @@ class Calendar {
                 console.log('✅ Event created:', newEvent);
                 // Reload events from API to get updated list
                 await this.loadEventsFromAPI();
+                this.renderCalendar(); // Re-render calendar to show new event indicators
             } else {
                 const errorData = await response.json();
                 alert(`Failed to create event: ${errorData.message || response.statusText}`);
@@ -236,7 +286,7 @@ class Calendar {
                 return;
             }
 
-            const response = await fetch(`${this.apiBaseUrl}/events/${eventId}`, {
+            const response = await fetch(`${this.apiBaseUrl}/api/events/${eventId}`, {
                 method: 'DELETE'
             });
 
@@ -244,6 +294,7 @@ class Calendar {
                 console.log('✅ Event deleted:', eventId);
                 // Reload events from API to get updated list
                 await this.loadEventsFromAPI();
+                this.renderCalendar(); // Re-render calendar to update event indicators
             } else {
                 const errorData = await response.json();
                 alert(`Failed to delete event: ${errorData.message || response.statusText}`);

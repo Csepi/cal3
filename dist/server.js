@@ -32,10 +32,20 @@ app.get('/health', (req, res) => {
         service: 'calendar-mvp-backend'
     });
 });
+// Comprehensive logging middleware
+app.use((req, res, next) => {
+    const timestamp = new Date().toISOString();
+    console.log(`🔄 ${timestamp} - ${req.method} ${req.path}`);
+    console.log(`📋 Headers:`, JSON.stringify(req.headers, null, 2));
+    console.log(`🎯 Environment: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`⚙️ Port: ${port}`);
+    next();
+});
 // API Routes
-app.use('/api', express_1.default.Router());
+console.log('🚀 Setting up API routes...');
 // GET /api/events - Get all events
 app.get('/api/events', async (req, res) => {
+    console.log('📥 GET /api/events called');
     try {
         const events = await eventService_1.EventService.getAllEvents();
         res.json(events);
@@ -50,6 +60,8 @@ app.get('/api/events', async (req, res) => {
 });
 // POST /api/events - Create new event
 app.post('/api/events', async (req, res) => {
+    console.log('📥 POST /api/events called');
+    console.log('📦 Request body:', JSON.stringify(req.body, null, 2));
     try {
         const { title, date } = req.body;
         // Validation
@@ -143,6 +155,12 @@ app.get('*', (req, res) => {
 const startServer = async () => {
     try {
         console.log('🚀 Starting Calendar MVP Backend...');
+        console.log('🌍 Environment Variables Check:');
+        console.log(`   NODE_ENV: ${process.env.NODE_ENV || 'not set'}`);
+        console.log(`   PORT: ${process.env.PORT || 'not set'}`);
+        console.log(`   DB_HOST: ${process.env.DB_HOST || 'not set'}`);
+        console.log(`   DB_USER: ${process.env.DB_USER || 'not set'}`);
+        console.log(`   DB_PASSWORD: ${process.env.DB_PASSWORD ? '[CONFIGURED]' : 'NOT SET'}`);
         // Test database connection
         const dbConnected = await (0, database_1.testConnection)();
         if (!dbConnected) {
@@ -157,6 +175,10 @@ const startServer = async () => {
             console.log(`🌐 Health check: http://localhost:${port}/health`);
             console.log(`📅 Events API: http://localhost:${port}/api/events`);
             console.log(`🖥️ Frontend: http://localhost:${port}`);
+            console.log('📊 Server Configuration Summary:');
+            console.log(`   Runtime: Node.js ${process.version}`);
+            console.log(`   Working Directory: ${process.cwd()}`);
+            console.log(`   Process ID: ${process.pid}`);
         });
     }
     catch (error) {

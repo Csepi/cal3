@@ -120,9 +120,60 @@ main {
     background-color: #f9f9f9;
 }
 
+.calendar-day.selected {
+    background-color: #764ba2 !important;
+    color: white;
+    box-shadow: 0 0 0 3px rgba(118, 75, 162, 0.3);
+}
+
+.calendar-day.has-events {
+    background-color: #e8f2ff;
+    border: 1px solid #b3d9ff;
+}
+
+.calendar-day.has-events.today {
+    background-color: #667eea;
+    color: white;
+    border: 1px solid #5a67d8;
+}
+
 .day-number {
     font-weight: 600;
     margin-bottom: 0.5rem;
+}
+
+.event-indicators {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2px;
+    margin-top: auto;
+    align-items: flex-end;
+}
+
+.event-dot {
+    width: 6px;
+    height: 6px;
+    background-color: #667eea;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.calendar-day.today .event-dot {
+    background-color: #ffffff;
+}
+
+.event-more {
+    font-size: 10px;
+    color: #667eea;
+    font-weight: 600;
+    background: rgba(102, 126, 234, 0.1);
+    padding: 1px 3px;
+    border-radius: 3px;
+}
+
+.calendar-day.today .event-more {
+    color: white;
+    background: rgba(255, 255, 255, 0.2);
 }
 
 .day-header {

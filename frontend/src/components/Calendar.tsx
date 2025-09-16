@@ -47,7 +47,7 @@ const Calendar: React.FC<CalendarProps> = () => {
 
   const getDayEvents = (date: Date): Event[] => {
     const dateStr = formatDateString(date);
-    return events.filter(event => event.date === dateStr);
+    return events.filter(event => event.startDate === dateStr);
   };
 
   const navigateMonth = (direction: 'prev' | 'next') => {
@@ -252,7 +252,8 @@ const Calendar: React.FC<CalendarProps> = () => {
                     <div>
                       <div className="font-semibold text-gray-800">{event.title}</div>
                       <div className="text-sm text-gray-600">
-                        {new Date(event.date + 'T00:00:00').toLocaleDateString()}
+                        {event.startTime ? `${event.startDate} ${event.startTime}` : event.startDate}
+                        {event.location && ` - ${event.location}`}
                       </div>
                     </div>
                     <button

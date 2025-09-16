@@ -9,10 +9,7 @@ class ApiService {
       throw new Error('Failed to fetch events');
     }
     const events = await response.json();
-    return events.map((event: any) => ({
-      ...event,
-      date: new Date(event.date).toISOString().split('T')[0]
-    }));
+    return events; // Return events as-is since they already have the correct format
   }
 
   async createEvent(eventData: CreateEventRequest): Promise<Event> {
