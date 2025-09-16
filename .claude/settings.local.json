@@ -72,7 +72,9 @@
       "Bash(set PORT=8081)",
       "Bash(PORT=8081 npm run start:dev)",
       "Bash(start http://localhost:8080)",
-      "Bash(npm run seed:*)"
+      "Bash(npm run seed:*)",
+      "Bash(where:*)",
+      "Bash(start \"\" \"C:\\Users\\ThinkPad\\cal3\\version documentation\\Calendar_Application_Documentation_v1.0.html\")"
     ],
     "deny": [],
     "ask": []

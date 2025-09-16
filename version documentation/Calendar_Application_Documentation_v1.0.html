@@ -1,0 +1,998 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendar Application - Technical Documentation v1.0</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #fff;
+        }
+        h1 {
+            color: #2563eb;
+            border-bottom: 3px solid #2563eb;
+            padding-bottom: 10px;
+            margin-bottom: 30px;
+        }
+        h2 {
+            color: #1e40af;
+            margin-top: 40px;
+            margin-bottom: 20px;
+            border-left: 4px solid #3b82f6;
+            padding-left: 15px;
+        }
+        h3 {
+            color: #1d4ed8;
+            margin-top: 30px;
+            margin-bottom: 15px;
+        }
+        h4 {
+            color: #2563eb;
+            margin-top: 25px;
+            margin-bottom: 10px;
+        }
+        code {
+            background: #f1f5f9;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+        pre {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 15px;
+            overflow-x: auto;
+            margin: 15px 0;
+        }
+        pre code {
+            background: none;
+            padding: 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: #fff;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        th, td {
+            border: 1px solid #e2e8f0;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background: #f8fafc;
+            font-weight: 600;
+            color: #1e40af;
+        }
+        tr:nth-child(even) {
+            background: #f9fafb;
+        }
+        .info-box {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .header-info {
+            background: #f0f9ff;
+            border: 2px solid #0ea5e9;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        .version-badge {
+            background: #2563eb;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+        .architecture-diagram {
+            background: #f8fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            font-family: monospace;
+            white-space: pre;
+            margin: 20px 0;
+        }
+        .feature-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .feature-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 15px;
+        }
+        .toc {
+            background: #f1f5f9;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .toc ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        .toc li {
+            margin: 8px 0;
+        }
+        .toc a {
+            color: #2563eb;
+            text-decoration: none;
+        }
+        .toc a:hover {
+            text-decoration: underline;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+        .status-complete {
+            background: #dcfce7;
+            color: #166534;
+        }
+        .status-planned {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        .permissions-table {
+            margin: 20px 0;
+        }
+        .permissions-table td {
+            text-align: center;
+        }
+        .permission-yes {
+            color: #16a34a;
+            font-weight: bold;
+        }
+        .permission-no {
+            color: #dc2626;
+            font-weight: bold;
+        }
+        @media print {
+            body {
+                font-size: 12px;
+                line-height: 1.4;
+            }
+            h1 {
+                font-size: 24px;
+            }
+            h2 {
+                font-size: 20px;
+                page-break-after: avoid;
+            }
+            h3 {
+                font-size: 16px;
+                page-break-after: avoid;
+            }
+            .architecture-diagram {
+                page-break-inside: avoid;
+            }
+            table {
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header-info">
+        <h1>Calendar Application - Technical Documentation</h1>
+        <p><span class="version-badge">v1.0</span></p>
+        <p><strong>Project:</strong> Calendar MVP | <strong>Date:</strong> September 16, 2025</p>
+        <p><strong>Repository:</strong> <a href="https://github.com/Csepi/cal3">https://github.com/Csepi/cal3</a></p>
+    </div>
+
+    <div class="toc">
+        <h2>Table of Contents</h2>
+        <ul>
+            <li><a href="#overview">1. Project Overview</a></li>
+            <li><a href="#architecture">2. Architecture</a></li>
+            <li><a href="#technology">3. Technology Stack</a></li>
+            <li><a href="#database">4. Database Schema</a></li>
+            <li><a href="#api">5. API Documentation</a></li>
+            <li><a href="#frontend">6. Frontend Components</a></li>
+            <li><a href="#backend">7. Backend Modules</a></li>
+            <li><a href="#permissions">8. User Roles & Permissions</a></li>
+            <li><a href="#installation">9. Installation & Setup</a></li>
+            <li><a href="#deployment">10. Deployment</a></li>
+            <li><a href="#version">11. Version History</a></li>
+        </ul>
+    </div>
+
+    <section id="overview">
+        <h2>1. Project Overview</h2>
+        <p>The Calendar MVP is a full-stack web application designed to provide comprehensive calendar management with modern UI/UX. The application features a React frontend with a NestJS backend, supporting multiple users, calendars, events, and an advanced admin system.</p>
+
+        <div class="feature-list">
+            <div class="feature-card">
+                <h4>🔐 Authentication</h4>
+                <p>JWT-based auth with role-based access control</p>
+            </div>
+            <div class="feature-card">
+                <h4>📅 Calendar Management</h4>
+                <p>Create, share, and manage multiple calendars</p>
+            </div>
+            <div class="feature-card">
+                <h4>🎯 Event Management</h4>
+                <p>Full CRUD with recurring events support</p>
+            </div>
+            <div class="feature-card">
+                <h4>👑 Admin System</h4>
+                <p>Comprehensive admin panel with statistics</p>
+            </div>
+            <div class="feature-card">
+                <h4>🎨 Modern UI</h4>
+                <p>Glassmorphism design with blue theme</p>
+            </div>
+            <div class="feature-card">
+                <h4>⚡ Real-time</h4>
+                <p>Live data updates via REST API</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="architecture">
+        <h2>2. Architecture</h2>
+        <div class="architecture-diagram">┌─────────────────┐    HTTP/REST    ┌─────────────────┐
+│                 │                 │                 │
+│  React Frontend │◄───────────────►│  NestJS Backend │
+│   (Port 8080)   │                 │   (Port 8081)   │
+│                 │                 │                 │
+└─────────────────┘                 └─────────────────┘
+                                             │
+                                             │ TypeORM
+                                             ▼
+                                    ┌─────────────────┐
+                                    │                 │
+                                    │  SQLite Database│
+                                    │                 │
+                                    └─────────────────┘</div>
+
+        <h3>Project Structure</h3>
+        <pre><code>cal3/
+├── frontend/                    # React Application
+│   ├── src/
+│   │   ├── components/         # React Components
+│   │   ├── services/           # API Services
+│   │   ├── types/             # TypeScript Interfaces
+│   │   └── styles/            # CSS & Animations
+│   └── package.json
+│
+├── backend-nestjs/             # NestJS Application
+│   ├── src/
+│   │   ├── entities/          # Database Models
+│   │   ├── modules/           # Feature Modules
+│   │   ├── dto/               # Data Transfer Objects
+│   │   └── database/          # Seeding & Migrations
+│   └── package.json
+│
+└── version documentation/      # Project Documentation</code></pre>
+    </section>
+
+    <section id="technology">
+        <h2>3. Technology Stack</h2>
+
+        <h3>Frontend Technologies</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Technology</th>
+                    <th>Version</th>
+                    <th>Purpose</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>React</strong></td>
+                    <td>19.1.1</td>
+                    <td>UI Framework</td>
+                </tr>
+                <tr>
+                    <td><strong>TypeScript</strong></td>
+                    <td>5.8.3</td>
+                    <td>Type Safety</td>
+                </tr>
+                <tr>
+                    <td><strong>Vite</strong></td>
+                    <td>7.1.2</td>
+                    <td>Build Tool</td>
+                </tr>
+                <tr>
+                    <td><strong>Tailwind CSS</strong></td>
+                    <td>3.4.14</td>
+                    <td>Styling Framework</td>
+                </tr>
+                <tr>
+                    <td><strong>Custom CSS</strong></td>
+                    <td>-</td>
+                    <td>Animations & Effects</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>Backend Technologies</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Technology</th>
+                    <th>Version</th>
+                    <th>Purpose</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>NestJS</strong></td>
+                    <td>11.0.1</td>
+                    <td>Backend Framework</td>
+                </tr>
+                <tr>
+                    <td><strong>TypeORM</strong></td>
+                    <td>0.3.26</td>
+                    <td>ORM</td>
+                </tr>
+                <tr>
+                    <td><strong>SQLite</strong></td>
+                    <td>5.1.7</td>
+                    <td>Database</td>
+                </tr>
+                <tr>
+                    <td><strong>JWT</strong></td>
+                    <td>11.0.0</td>
+                    <td>Authentication</td>
+                </tr>
+                <tr>
+                    <td><strong>Passport</strong></td>
+                    <td>0.7.0</td>
+                    <td>Auth Strategy</td>
+                </tr>
+                <tr>
+                    <td><strong>bcryptjs</strong></td>
+                    <td>3.0.2</td>
+                    <td>Password Hashing</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <section id="database">
+        <h2>4. Database Schema</h2>
+
+        <h3>Entity Relationship Diagram</h3>
+        <div class="architecture-diagram">┌─────────────┐       ┌─────────────┐       ┌─────────────┐
+│    Users    │──────►│  Calendars  │──────►│   Events    │
+│             │ 1:N   │             │ 1:N   │             │
+│ - id (PK)   │       │ - id (PK)   │       │ - id (PK)   │
+│ - username  │       │ - name      │       │ - title     │
+│ - email     │       │ - ownerId   │       │ - startDate │
+│ - role      │       │ - color     │       │ - calendarId│
+│ - isActive  │       │ - visibility│       │ - createdBy │
+└─────────────┘       └─────────────┘       └─────────────┘
+       │                      │
+       │                      │ M:N
+       │              ┌─────────────────┐
+       └─────────────►│ Calendar_Shares │
+                 M:N  │                 │
+                      │ - calendarId    │
+                      │ - userId        │
+                      │ - permission    │
+                      └─────────────────┘</div>
+
+        <h3>Core Tables</h3>
+
+        <h4>Users Table</h4>
+        <table>
+            <thead>
+                <tr>
+                    <th>Field</th>
+                    <th>Type</th>
+                    <th>Constraints</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>id</td>
+                    <td>INTEGER</td>
+                    <td>PK, AUTO_INCREMENT</td>
+                    <td>Primary key</td>
+                </tr>
+                <tr>
+                    <td>username</td>
+                    <td>VARCHAR(255)</td>
+                    <td>UNIQUE, NOT NULL</td>
+                    <td>Username</td>
+                </tr>
+                <tr>
+                    <td>email</td>
+                    <td>VARCHAR(255)</td>
+                    <td>UNIQUE, NOT NULL</td>
+                    <td>Email address</td>
+                </tr>
+                <tr>
+                    <td>password</td>
+                    <td>VARCHAR(255)</td>
+                    <td>NOT NULL</td>
+                    <td>Hashed password</td>
+                </tr>
+                <tr>
+                    <td>role</td>
+                    <td>VARCHAR(20)</td>
+                    <td>DEFAULT 'user'</td>
+                    <td>observer|user|admin</td>
+                </tr>
+                <tr>
+                    <td>isActive</td>
+                    <td>BOOLEAN</td>
+                    <td>DEFAULT true</td>
+                    <td>Account status</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h4>Events Table</h4>
+        <table>
+            <thead>
+                <tr>
+                    <th>Field</th>
+                    <th>Type</th>
+                    <th>Constraints</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>id</td>
+                    <td>INTEGER</td>
+                    <td>PK, AUTO_INCREMENT</td>
+                    <td>Primary key</td>
+                </tr>
+                <tr>
+                    <td>title</td>
+                    <td>VARCHAR(300)</td>
+                    <td>NOT NULL</td>
+                    <td>Event title</td>
+                </tr>
+                <tr>
+                    <td>startDate</td>
+                    <td>DATE</td>
+                    <td>NOT NULL</td>
+                    <td>Event start date</td>
+                </tr>
+                <tr>
+                    <td>startTime</td>
+                    <td>TIME</td>
+                    <td>NULLABLE</td>
+                    <td>Event start time</td>
+                </tr>
+                <tr>
+                    <td>recurrenceType</td>
+                    <td>VARCHAR(20)</td>
+                    <td>DEFAULT 'none'</td>
+                    <td>none|daily|weekly|monthly|yearly</td>
+                </tr>
+                <tr>
+                    <td>calendarId</td>
+                    <td>INTEGER</td>
+                    <td>FK → calendars</td>
+                    <td>Parent calendar</td>
+                </tr>
+                <tr>
+                    <td>createdById</td>
+                    <td>INTEGER</td>
+                    <td>FK → users</td>
+                    <td>Event creator</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <section id="api">
+        <h2>5. API Documentation</h2>
+
+        <h3>Authentication Endpoints</h3>
+
+        <div class="info-box">
+            <h4>POST /api/auth/login</h4>
+            <p><strong>Description:</strong> User authentication with JWT token generation</p>
+            <pre><code>// Request Body
+{
+  "username": "string",
+  "password": "string"
+}
+
+// Response
+{
+  "access_token": "jwt_token",
+  "user": {
+    "id": 1,
+    "username": "csepi",
+    "email": "csepi@example.com",
+    "role": "admin"
+  }
+}</code></pre>
+        </div>
+
+        <h3>Event Management</h3>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Method</th>
+                    <th>Endpoint</th>
+                    <th>Description</th>
+                    <th>Auth Required</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>GET</td>
+                    <td>/api/events</td>
+                    <td>List all user events</td>
+                    <td>✅</td>
+                </tr>
+                <tr>
+                    <td>POST</td>
+                    <td>/api/events</td>
+                    <td>Create new event</td>
+                    <td>✅</td>
+                </tr>
+                <tr>
+                    <td>PUT</td>
+                    <td>/api/events/:id</td>
+                    <td>Update event</td>
+                    <td>✅</td>
+                </tr>
+                <tr>
+                    <td>DELETE</td>
+                    <td>/api/events/:id</td>
+                    <td>Delete event</td>
+                    <td>✅</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>Admin Endpoints</h3>
+
+        <div class="info-box">
+            <h4>GET /api/admin/stats</h4>
+            <p><strong>Description:</strong> System statistics dashboard (Admin only)</p>
+            <pre><code>// Response
+{
+  "users": {
+    "total": 15,
+    "active": 12,
+    "admins": 2
+  },
+  "calendars": {
+    "total": 8
+  },
+  "events": {
+    "total": 24
+  },
+  "shares": {
+    "total": 5
+  },
+  "lastUpdated": "2025-09-16T10:30:00.000Z"
+}</code></pre>
+        </div>
+    </section>
+
+    <section id="frontend">
+        <h2>6. Frontend Components</h2>
+
+        <h3>Component Architecture</h3>
+
+        <div class="feature-list">
+            <div class="feature-card">
+                <h4>Dashboard.tsx</h4>
+                <p><strong>Purpose:</strong> Main application container</p>
+                <ul>
+                    <li>User authentication state</li>
+                    <li>Role-based navigation</li>
+                    <li>Profile management</li>
+                </ul>
+            </div>
+            <div class="feature-card">
+                <h4>Calendar.tsx</h4>
+                <p><strong>Purpose:</strong> Primary calendar interface</p>
+                <ul>
+                    <li>Monthly grid view</li>
+                    <li>Event CRUD operations</li>
+                    <li>Visual event indicators</li>
+                </ul>
+            </div>
+            <div class="feature-card">
+                <h4>AdminPanel.tsx</h4>
+                <p><strong>Purpose:</strong> Administrative dashboard</p>
+                <ul>
+                    <li>System statistics</li>
+                    <li>User management</li>
+                    <li>Database monitoring</li>
+                </ul>
+            </div>
+            <div class="feature-card">
+                <h4>Login.tsx</h4>
+                <p><strong>Purpose:</strong> Authentication interface</p>
+                <ul>
+                    <li>Login/registration</li>
+                    <li>Demo mode access</li>
+                    <li>Modern design</li>
+                </ul>
+            </div>
+        </div>
+
+        <h3>Styling System</h3>
+        <ul>
+            <li><strong>Tailwind CSS</strong> - Utility-first styling</li>
+            <li><strong>Custom Animations</strong> - Glassmorphism effects</li>
+            <li><strong>Responsive Design</strong> - Mobile support</li>
+            <li><strong>Blue Theme</strong> - Consistent color scheme</li>
+        </ul>
+    </section>
+
+    <section id="backend">
+        <h2>7. Backend Modules</h2>
+
+        <h3>Module Structure</h3>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Module</th>
+                    <th>Files</th>
+                    <th>Responsibilities</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Auth</strong></td>
+                    <td>controller, service, strategy, guard</td>
+                    <td>JWT authentication, password hashing</td>
+                </tr>
+                <tr>
+                    <td><strong>Users</strong></td>
+                    <td>controller, service</td>
+                    <td>User management, profile operations</td>
+                </tr>
+                <tr>
+                    <td><strong>Calendars</strong></td>
+                    <td>controller, service</td>
+                    <td>Calendar CRUD, sharing, permissions</td>
+                </tr>
+                <tr>
+                    <td><strong>Events</strong></td>
+                    <td>controller, service</td>
+                    <td>Event CRUD, recurring events</td>
+                </tr>
+                <tr>
+                    <td><strong>Admin</strong></td>
+                    <td>controller, service, guard</td>
+                    <td>System statistics, admin operations</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>Database Integration</h3>
+        <ul>
+            <li><strong>TypeORM</strong> - Object-relational mapping</li>
+            <li><strong>SQLite</strong> - Development database</li>
+            <li><strong>Migrations</strong> - Automatic schema updates</li>
+            <li><strong>Seeding</strong> - Sample data generation</li>
+        </ul>
+    </section>
+
+    <section id="permissions">
+        <h2>8. User Roles & Permissions</h2>
+
+        <h3>Permission Matrix</h3>
+        <table class="permissions-table">
+            <thead>
+                <tr>
+                    <th>Feature</th>
+                    <th>Observer</th>
+                    <th>User</th>
+                    <th>Admin</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>View own events</td>
+                    <td class="permission-yes">✅</td>
+                    <td class="permission-yes">✅</td>
+                    <td class="permission-yes">✅</td>
+                </tr>
+                <tr>
+                    <td>Create events</td>
+                    <td class="permission-no">❌</td>
+                    <td class="permission-yes">✅</td>
+                    <td class="permission-yes">✅</td>
+                </tr>
+                <tr>
+                    <td>Edit own events</td>
+                    <td class="permission-no">❌</td>
+                    <td class="permission-yes">✅</td>
+                    <td class="permission-yes">✅</td>
+                </tr>
+                <tr>
+                    <td>Create calendars</td>
+                    <td class="permission-no">❌</td>
+                    <td class="permission-yes">✅</td>
+                    <td class="permission-yes">✅</td>
+                </tr>
+                <tr>
+                    <td>Share calendars</td>
+                    <td class="permission-no">❌</td>
+                    <td class="permission-yes">✅</td>
+                    <td class="permission-yes">✅</td>
+                </tr>
+                <tr>
+                    <td>View admin panel</td>
+                    <td class="permission-no">❌</td>
+                    <td class="permission-no">❌</td>
+                    <td class="permission-yes">✅</td>
+                </tr>
+                <tr>
+                    <td>Manage all users</td>
+                    <td class="permission-no">❌</td>
+                    <td class="permission-no">❌</td>
+                    <td class="permission-yes">✅</td>
+                </tr>
+                <tr>
+                    <td>System statistics</td>
+                    <td class="permission-no">❌</td>
+                    <td class="permission-no">❌</td>
+                    <td class="permission-yes">✅</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="info-box">
+            <h3>Access Credentials</h3>
+            <p><strong>Admin Access:</strong> Username: <code>csepi</code>, Password: <code>enterenter</code></p>
+            <p><strong>Demo Access:</strong> Any username with password: <code>demo123</code></p>
+        </div>
+    </section>
+
+    <section id="installation">
+        <h2>9. Installation & Setup</h2>
+
+        <h3>Prerequisites</h3>
+        <ul>
+            <li>Node.js (v18+ recommended)</li>
+            <li>npm or yarn package manager</li>
+            <li>Git version control</li>
+        </ul>
+
+        <h3>Quick Start</h3>
+        <pre><code># Clone repository
+git clone https://github.com/Csepi/cal3.git
+cd cal3
+
+# Setup Frontend (Terminal 1)
+cd frontend
+npm install
+npm run dev
+# Runs on http://localhost:8080
+
+# Setup Backend (Terminal 2)
+cd backend-nestjs
+npm install
+npm run seed        # Seed database
+npm run start:dev
+# Runs on http://localhost:8081</code></pre>
+
+        <h3>Environment Configuration</h3>
+        <pre><code># backend-nestjs/.env
+DB_PASSWORD="Enter.Enter"
+JWT_SECRET="calendar-secret-key"
+PORT=8081</code></pre>
+    </section>
+
+    <section id="deployment">
+        <h2>10. Deployment</h2>
+
+        <h3>Production Build</h3>
+        <pre><code># Frontend
+npm run build       # Creates dist/ folder
+
+# Backend
+npm run build       # Creates dist/ folder
+npm run start:prod  # Production server</code></pre>
+
+        <h3>Docker Configuration</h3>
+        <pre><code># Frontend Dockerfile
+FROM node:18-alpine
+WORKDIR /app
+COPY package*.json ./
+RUN npm install
+COPY . .
+RUN npm run build
+EXPOSE 8080
+CMD ["npm", "run", "preview"]
+
+# Backend Dockerfile
+FROM node:18-alpine
+WORKDIR /app
+COPY package*.json ./
+RUN npm install
+COPY . .
+RUN npm run build
+EXPOSE 8081
+CMD ["npm", "run", "start:prod"]</code></pre>
+
+        <h3>Production Considerations</h3>
+        <ul>
+            <li><strong>Database:</strong> Migrate from SQLite to PostgreSQL</li>
+            <li><strong>Security:</strong> Configure HTTPS and CORS</li>
+            <li><strong>Monitoring:</strong> Set up logging and error tracking</li>
+            <li><strong>Performance:</strong> Enable compression and caching</li>
+        </ul>
+    </section>
+
+    <section id="version">
+        <h2>11. Version History</h2>
+
+        <h3>Version 1.0 - Initial Release (September 16, 2025)</h3>
+
+        <div class="feature-list">
+            <div class="feature-card">
+                <h4><span class="status-complete">✅ Authentication System</span></h4>
+                <ul>
+                    <li>JWT-based login/registration</li>
+                    <li>Role-based access control</li>
+                    <li>Password hashing and security</li>
+                </ul>
+            </div>
+            <div class="feature-card">
+                <h4><span class="status-complete">✅ Calendar Management</span></h4>
+                <ul>
+                    <li>Create, edit, delete calendars</li>
+                    <li>Color customization</li>
+                    <li>Calendar sharing with permissions</li>
+                </ul>
+            </div>
+            <div class="feature-card">
+                <h4><span class="status-complete">✅ Event Management</span></h4>
+                <ul>
+                    <li>Full CRUD operations</li>
+                    <li>Recurring events support</li>
+                    <li>Event status tracking</li>
+                </ul>
+            </div>
+            <div class="feature-card">
+                <h4><span class="status-complete">✅ Admin Panel</span></h4>
+                <ul>
+                    <li>System statistics dashboard</li>
+                    <li>User management interface</li>
+                    <li>Database monitoring</li>
+                </ul>
+            </div>
+            <div class="feature-card">
+                <h4><span class="status-complete">✅ Modern UI/UX</span></h4>
+                <ul>
+                    <li>Glassmorphism design</li>
+                    <li>Blue-based color scheme</li>
+                    <li>Responsive layout</li>
+                </ul>
+            </div>
+            <div class="feature-card">
+                <h4><span class="status-complete">✅ Technical Excellence</span></h4>
+                <ul>
+                    <li>TypeORM relationships</li>
+                    <li>Hot module replacement</li>
+                    <li>Git repository structure</li>
+                </ul>
+            </div>
+        </div>
+
+        <h3>Key Metrics v1.0</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Metric</th>
+                    <th>Count</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>API Endpoints</td>
+                    <td>25+</td>
+                    <td>Complete REST API coverage</td>
+                </tr>
+                <tr>
+                    <td>Frontend Components</td>
+                    <td>4</td>
+                    <td>Major React components</td>
+                </tr>
+                <tr>
+                    <td>Database Entities</td>
+                    <td>4</td>
+                    <td>With full relationships</td>
+                </tr>
+                <tr>
+                    <td>Backend Modules</td>
+                    <td>5</td>
+                    <td>Feature-based modules</td>
+                </tr>
+                <tr>
+                    <td>Lines of Code</td>
+                    <td>3500+</td>
+                    <td>Backend + Frontend combined</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>Planned Future Releases</h3>
+
+        <h4><span class="status-planned">📋 Version 1.1 (Upcoming)</span></h4>
+        <ul>
+            <li>Email notifications for events</li>
+            <li>Calendar import/export (ICS format)</li>
+            <li>Performance optimizations</li>
+        </ul>
+
+        <h4><span class="status-planned">📋 Version 2.0 (Long-term)</span></h4>
+        <ul>
+            <li>Mobile app (React Native)</li>
+            <li>Real-time collaboration</li>
+            <li>Third-party integrations</li>
+            <li>Multi-tenant support</li>
+        </ul>
+    </section>
+
+    <footer style="margin-top: 50px; padding: 20px; background: #f8fafc; border-top: 2px solid #e2e8f0; text-align: center;">
+        <p><strong>Document Generated:</strong> September 16, 2025</p>
+        <p><strong>Last Updated:</strong> Version 1.0 Release</p>
+        <p><strong>Repository:</strong> <a href="https://github.com/Csepi/cal3">https://github.com/Csepi/cal3</a></p>
+        <p><em>This documentation is maintained as part of the Calendar MVP project and should be updated with each major release.</em></p>
+    </footer>
+
+    <script>
+        // Add print functionality
+        if (window.matchMedia) {
+            const mediaQueryList = window.matchMedia('print');
+            mediaQueryList.addListener((mql) => {
+                if (mql.matches) {
+                    document.body.style.background = 'white';
+                }
+            });
+        }
+
+        // Smooth scrolling for anchors
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
