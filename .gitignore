@@ -1,0 +1,60 @@
+# Dependencies
+node_modules/
+*/node_modules/
+
+# Build outputs
+dist/
+*/dist/
+build/
+*/build/
+
+# Environment files
+.env.local
+.env.development
+.env.production
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage and test results
+coverage/
+.nyc_output/
+.jest/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Archive files
+*.zip
+*.tar.gz
+*.rar
+
+# Local development files
+mock-server.js
+test-api.js
+cal3-clean-deploy.zip
+
+# Claude settings
+.claude/settings.local.json
