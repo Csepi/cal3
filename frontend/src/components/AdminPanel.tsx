@@ -198,49 +198,49 @@ const AdminPanel: React.FC = () => {
 
   const renderUsers = () => (
     <div className="overflow-x-auto">
-      <table className="min-w-full bg-white border border-gray-300">
-        <thead className="bg-gray-50">
+      <table className="min-w-full bg-white border border-blue-200 rounded-2xl overflow-hidden shadow-sm">
+        <thead className="bg-gradient-to-r from-blue-100 to-indigo-100">
           <tr>
-            <th className="px-4 py-2 border-b text-left text-sm font-medium text-gray-900">ID</th>
-            <th className="px-4 py-2 border-b text-left text-sm font-medium text-gray-900">Username</th>
-            <th className="px-4 py-2 border-b text-left text-sm font-medium text-gray-900">Email</th>
-            <th className="px-4 py-2 border-b text-left text-sm font-medium text-gray-900">Name</th>
-            <th className="px-4 py-2 border-b text-left text-sm font-medium text-gray-900">Role</th>
-            <th className="px-4 py-2 border-b text-left text-sm font-medium text-gray-900">Active</th>
-            <th className="px-4 py-2 border-b text-left text-sm font-medium text-gray-900">Created</th>
-            <th className="px-4 py-2 border-b text-left text-sm font-medium text-gray-900">Actions</th>
+            <th className="px-6 py-4 text-left text-sm font-medium text-gray-800 border-b border-blue-200">ID</th>
+            <th className="px-6 py-4 text-left text-sm font-medium text-gray-800 border-b border-blue-200">Username</th>
+            <th className="px-6 py-4 text-left text-sm font-medium text-gray-800 border-b border-blue-200">Email</th>
+            <th className="px-6 py-4 text-left text-sm font-medium text-gray-800 border-b border-blue-200">Name</th>
+            <th className="px-6 py-4 text-left text-sm font-medium text-gray-800 border-b border-blue-200">Role</th>
+            <th className="px-6 py-4 text-left text-sm font-medium text-gray-800 border-b border-blue-200">Active</th>
+            <th className="px-6 py-4 text-left text-sm font-medium text-gray-800 border-b border-blue-200">Created</th>
+            <th className="px-6 py-4 text-left text-sm font-medium text-gray-800 border-b border-blue-200">Actions</th>
           </tr>
         </thead>
         <tbody>
           {users.map((user) => (
-            <tr key={user.id} className="hover:bg-gray-50">
-              <td className="px-4 py-2 border-b text-sm">{user.id}</td>
-              <td className="px-4 py-2 border-b text-sm">{user.username}</td>
-              <td className="px-4 py-2 border-b text-sm">{user.email}</td>
-              <td className="px-4 py-2 border-b text-sm">{user.firstName} {user.lastName}</td>
-              <td className="px-4 py-2 border-b text-sm">
-                <span className={`px-2 py-1 rounded-full text-xs ${
-                  user.role === 'admin' ? 'bg-red-100 text-red-800' :
-                  user.role === 'user' ? 'bg-green-100 text-green-800' :
-                  'bg-gray-100 text-gray-800'
+            <tr key={user.id} className="hover:bg-blue-50 transition-all duration-200">
+              <td className="px-6 py-4 border-b border-blue-100 text-sm text-gray-700">{user.id}</td>
+              <td className="px-6 py-4 border-b border-blue-100 text-sm text-gray-900 font-medium">{user.username}</td>
+              <td className="px-6 py-4 border-b border-blue-100 text-sm text-gray-700">{user.email}</td>
+              <td className="px-6 py-4 border-b border-blue-100 text-sm text-gray-700">{user.firstName} {user.lastName}</td>
+              <td className="px-6 py-4 border-b border-blue-100 text-sm">
+                <span className={`px-3 py-1 rounded-full text-xs font-medium border ${
+                  user.role === 'admin' ? 'bg-red-100 text-red-700 border-red-300' :
+                  user.role === 'user' ? 'bg-green-100 text-green-700 border-green-300' :
+                  'bg-blue-100 text-blue-700 border-blue-300'
                 }`}>
-                  {user.role}
+                  {user.role === 'admin' ? '🔥' : user.role === 'user' ? '👤' : '👁️'} {user.role}
                 </span>
               </td>
-              <td className="px-4 py-2 border-b text-sm">
-                <span className={`px-2 py-1 rounded-full text-xs ${
-                  user.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+              <td className="px-6 py-4 border-b border-blue-100 text-sm">
+                <span className={`px-3 py-1 rounded-full text-xs font-medium border ${
+                  user.isActive ? 'bg-green-100 text-green-700 border-green-300' : 'bg-red-100 text-red-700 border-red-300'
                 }`}>
-                  {user.isActive ? 'Active' : 'Inactive'}
+                  {user.isActive ? '✅' : '❌'} {user.isActive ? 'Active' : 'Inactive'}
                 </span>
               </td>
-              <td className="px-4 py-2 border-b text-sm">{formatDate(user.createdAt)}</td>
-              <td className="px-4 py-2 border-b text-sm">
+              <td className="px-6 py-4 border-b border-blue-100 text-sm text-gray-600 font-mono">{formatDate(user.createdAt)}</td>
+              <td className="px-6 py-4 border-b border-blue-100 text-sm">
                 <div className="flex space-x-2">
                   <select
                     value={user.role}
                     onChange={(e) => handleUpdateUserRole(user.id, e.target.value)}
-                    className="text-xs px-2 py-1 border border-gray-300 rounded"
+                    className="text-xs px-3 py-2 bg-white border border-blue-300 text-gray-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"
                   >
                     <option value="observer">Observer</option>
                     <option value="user">User</option>
@@ -248,9 +248,9 @@ const AdminPanel: React.FC = () => {
                   </select>
                   <button
                     onClick={() => handleDeleteUser(user.id)}
-                    className="text-xs px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+                    className="text-xs px-3 py-2 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-all duration-200 hover:scale-105 border border-red-400 shadow-sm"
                   >
-                    Delete
+                    🗑️ Delete
                   </button>
                 </div>
               </td>
@@ -263,17 +263,17 @@ const AdminPanel: React.FC = () => {
 
   const renderCalendars = () => (
     <div className="overflow-x-auto">
-      <table className="min-w-full bg-white border border-gray-300">
-        <thead className="bg-gray-50">
+      <table className="min-w-full bg-white border border-green-200 rounded-2xl overflow-hidden shadow-sm">
+        <thead className="bg-gradient-to-r from-green-100 to-emerald-100">
           <tr>
-            <th className="px-4 py-2 border-b text-left text-sm font-medium text-gray-900">ID</th>
-            <th className="px-4 py-2 border-b text-left text-sm font-medium text-gray-900">Name</th>
-            <th className="px-4 py-2 border-b text-left text-sm font-medium text-gray-900">Description</th>
-            <th className="px-4 py-2 border-b text-left text-sm font-medium text-gray-900">Color</th>
-            <th className="px-4 py-2 border-b text-left text-sm font-medium text-gray-900">Visibility</th>
-            <th className="px-4 py-2 border-b text-left text-sm font-medium text-gray-900">Owner</th>
-            <th className="px-4 py-2 border-b text-left text-sm font-medium text-gray-900">Created</th>
-            <th className="px-4 py-2 border-b text-left text-sm font-medium text-gray-900">Actions</th>
+            <th className="px-6 py-4 text-left text-sm font-medium text-gray-800 border-b border-green-200">ID</th>
+            <th className="px-6 py-4 text-left text-sm font-medium text-gray-800 border-b border-green-200">Name</th>
+            <th className="px-6 py-4 text-left text-sm font-medium text-gray-800 border-b border-green-200">Description</th>
+            <th className="px-6 py-4 text-left text-sm font-medium text-gray-800 border-b border-green-200">Color</th>
+            <th className="px-6 py-4 text-left text-sm font-medium text-gray-800 border-b border-green-200">Visibility</th>
+            <th className="px-6 py-4 text-left text-sm font-medium text-gray-800 border-b border-green-200">Owner</th>
+            <th className="px-6 py-4 text-left text-sm font-medium text-gray-800 border-b border-green-200">Created</th>
+            <th className="px-6 py-4 text-left text-sm font-medium text-gray-800 border-b border-green-200">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -396,39 +396,59 @@ const AdminPanel: React.FC = () => {
 
   const renderStats = () => (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-        <h3 className="text-lg font-semibold text-blue-800 mb-2">Users</h3>
+      <button
+        onClick={() => setActiveTab('users')}
+        className="bg-blue-50 border border-blue-200 rounded-lg p-6 text-left hover:bg-blue-100 hover:border-blue-300 transition-all duration-200 hover:scale-105 shadow-sm hover:shadow-md"
+      >
+        <h3 className="text-lg font-semibold text-blue-800 mb-2 flex items-center gap-2">
+          👥 Users
+        </h3>
         <div className="space-y-1">
           <p className="text-2xl font-bold text-blue-900">{stats?.users.total || 0}</p>
           <p className="text-sm text-blue-600">Total Users</p>
           <p className="text-sm text-blue-600">Active: {stats?.users.active || 0}</p>
           <p className="text-sm text-blue-600">Admins: {stats?.users.admins || 0}</p>
         </div>
-      </div>
+      </button>
 
-      <div className="bg-green-50 border border-green-200 rounded-lg p-6">
-        <h3 className="text-lg font-semibold text-green-800 mb-2">Calendars</h3>
+      <button
+        onClick={() => setActiveTab('calendars')}
+        className="bg-green-50 border border-green-200 rounded-lg p-6 text-left hover:bg-green-100 hover:border-green-300 transition-all duration-200 hover:scale-105 shadow-sm hover:shadow-md"
+      >
+        <h3 className="text-lg font-semibold text-green-800 mb-2 flex items-center gap-2">
+          📅 Calendars
+        </h3>
         <div className="space-y-1">
           <p className="text-2xl font-bold text-green-900">{stats?.calendars.total || 0}</p>
           <p className="text-sm text-green-600">Total Calendars</p>
         </div>
-      </div>
+      </button>
 
-      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
-        <h3 className="text-lg font-semibold text-yellow-800 mb-2">Events</h3>
+      <button
+        onClick={() => setActiveTab('events')}
+        className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 text-left hover:bg-yellow-100 hover:border-yellow-300 transition-all duration-200 hover:scale-105 shadow-sm hover:shadow-md"
+      >
+        <h3 className="text-lg font-semibold text-yellow-800 mb-2 flex items-center gap-2">
+          ✨ Events
+        </h3>
         <div className="space-y-1">
           <p className="text-2xl font-bold text-yellow-900">{stats?.events.total || 0}</p>
           <p className="text-sm text-yellow-600">Total Events</p>
         </div>
-      </div>
+      </button>
 
-      <div className="bg-purple-50 border border-purple-200 rounded-lg p-6">
-        <h3 className="text-lg font-semibold text-purple-800 mb-2">Shares</h3>
+      <button
+        onClick={() => setActiveTab('shares')}
+        className="bg-purple-50 border border-purple-200 rounded-lg p-6 text-left hover:bg-purple-100 hover:border-purple-300 transition-all duration-200 hover:scale-105 shadow-sm hover:shadow-md"
+      >
+        <h3 className="text-lg font-semibold text-purple-800 mb-2 flex items-center gap-2">
+          🤝 Shares
+        </h3>
         <div className="space-y-1">
           <p className="text-2xl font-bold text-purple-900">{stats?.shares.total || 0}</p>
           <p className="text-sm text-purple-600">Total Shares</p>
         </div>
-      </div>
+      </button>
 
       {stats && (
         <div className="md:col-span-2 lg:col-span-4 bg-gray-50 border border-gray-200 rounded-lg p-4">
@@ -441,60 +461,76 @@ const AdminPanel: React.FC = () => {
   );
 
   return (
-    <div className="p-6">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">Admin Panel</h1>
-        <p className="text-gray-600">Manage and monitor the calendar application</p>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-100 to-blue-200 relative">
+      {/* Animated Background */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-r from-blue-300 to-indigo-300 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-r from-indigo-300 to-purple-300 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse animation-delay-2000"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-60 h-60 bg-gradient-to-r from-purple-300 to-blue-300 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse animation-delay-4000"></div>
       </div>
 
-      {/* Tab Navigation */}
-      <div className="mb-6 border-b border-gray-200">
-        <nav className="flex space-x-8">
-          {[
-            { key: 'stats', label: 'Statistics' },
-            { key: 'users', label: 'Users' },
-            { key: 'calendars', label: 'Calendars' },
-            { key: 'events', label: 'Events' },
-            { key: 'shares', label: 'Shares' }
-          ].map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key as any)}
-              className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                activeTab === tab.key
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </nav>
-      </div>
+      <div className="relative z-10 p-8">
+        <div className="mb-10">
+          <h1 className="text-5xl font-thin mb-4 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent">⚙️ Admin Panel</h1>
+          <p className="text-gray-700 text-xl font-light">Manage and monitor your beautiful calendar application</p>
+        </div>
 
-      {/* Content */}
-      <div className="min-h-96">
-        {loading && (
-          <div className="flex justify-center items-center h-64">
-            <div className="text-lg text-gray-600">Loading...</div>
-          </div>
-        )}
+        {/* Tab Navigation */}
+        <div className="mb-8">
+          <nav className="flex flex-wrap gap-2 p-2 bg-white/70 border border-blue-200 rounded-3xl backdrop-blur-md">
+            {[
+              { key: 'stats', label: 'Statistics', icon: '📊' },
+              { key: 'users', label: 'Users', icon: '👥' },
+              { key: 'calendars', label: 'Calendars', icon: '📅' },
+              { key: 'events', label: 'Events', icon: '✨' },
+              { key: 'shares', label: 'Shares', icon: '🤝' }
+            ].map((tab) => (
+              <button
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key as any)}
+                className={`px-6 py-3 rounded-2xl font-medium text-sm transition-all duration-300 flex items-center gap-2 ${
+                  activeTab === tab.key
+                    ? 'bg-blue-500 text-white shadow-lg scale-105'
+                    : 'text-blue-700 hover:text-blue-800 hover:bg-blue-100 hover:scale-105'
+                }`}
+              >
+                <span className="text-lg">{tab.icon}</span>
+                {tab.label}
+              </button>
+            ))}
+          </nav>
+        </div>
 
-        {error && (
-          <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg mb-4">
-            {error}
-          </div>
-        )}
+        {/* Content */}
+        <div className="min-h-96 bg-white/70 border border-blue-200 rounded-3xl p-8 backdrop-blur-md">
+          {loading && (
+            <div className="flex justify-center items-center h-64">
+              <div className="text-xl text-gray-700 animate-pulse flex items-center gap-3">
+                <div className="animate-spin w-6 h-6 border-2 border-blue-300 border-t-blue-600 rounded-full"></div>
+                Loading...
+              </div>
+            </div>
+          )}
 
-        {!loading && !error && (
-          <>
-            {activeTab === 'stats' && renderStats()}
-            {activeTab === 'users' && renderUsers()}
-            {activeTab === 'calendars' && renderCalendars()}
-            {activeTab === 'events' && renderEvents()}
-            {activeTab === 'shares' && renderShares()}
-          </>
-        )}
+          {error && (
+            <div className="bg-red-50 border border-red-300 text-red-700 px-6 py-4 rounded-2xl mb-6">
+              <div className="flex items-center gap-2">
+                <span className="text-2xl">⚠️</span>
+                {error}
+              </div>
+            </div>
+          )}
+
+          {!loading && !error && (
+            <>
+              {activeTab === 'stats' && renderStats()}
+              {activeTab === 'users' && renderUsers()}
+              {activeTab === 'calendars' && renderCalendars()}
+              {activeTab === 'events' && renderEvents()}
+              {activeTab === 'shares' && renderShares()}
+            </>
+          )}
+        </div>
       </div>
     </div>
   );

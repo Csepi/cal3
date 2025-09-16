@@ -142,44 +142,53 @@ const Calendar: React.FC<CalendarProps> = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-100 to-blue-200">
+      {/* Animated Background */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-r from-blue-300 to-indigo-300 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-r from-indigo-300 to-purple-300 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse animation-delay-2000"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-60 h-60 bg-gradient-to-r from-purple-300 to-blue-300 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse animation-delay-4000"></div>
+      </div>
+
       {/* Header */}
-      <header className="bg-gradient-to-r from-blue-600 to-purple-600 text-white text-center py-8">
-        <h1 className="text-4xl font-light mb-2">Calendar MVP</h1>
-        <p className="text-lg opacity-90">Your modern calendar application</p>
+      <header className="relative z-10 backdrop-blur-sm bg-white/60 border-b border-blue-200 text-gray-800 text-center py-12">
+        <div className="container mx-auto px-4">
+          <h1 className="text-6xl font-thin mb-4 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent">Calendar</h1>
+          <p className="text-xl text-gray-700 font-light tracking-wide">Your Beautiful Modern Calendar Experience</p>
+        </div>
       </header>
 
-      <main className="max-w-7xl mx-auto p-4 grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
+      <main className="relative z-10 max-w-7xl mx-auto p-6 grid grid-cols-1 lg:grid-cols-3 gap-8 mt-12">
         {/* Calendar Section */}
-        <section className="lg:col-span-2 bg-white rounded-xl shadow-lg p-6">
+        <section className="lg:col-span-2 backdrop-blur-md bg-white/70 border border-blue-200 rounded-3xl shadow-xl p-8 hover:bg-white/80 transition-all duration-300">
           {/* Calendar Header */}
-          <div className="flex justify-between items-center mb-6 pb-4 border-b-2 border-gray-100">
-            <h2 className="text-2xl font-medium text-gray-800">
+          <div className="flex justify-between items-center mb-8 pb-6 border-b border-blue-200">
+            <h2 className="text-3xl font-light text-gray-800">
               {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
             </h2>
-            <div className="flex space-x-2">
+            <div className="flex space-x-3">
               <button
                 onClick={() => navigateMonth('prev')}
-                className="w-10 h-10 bg-blue-600 text-white rounded-full hover:bg-blue-700 flex items-center justify-center transition-all duration-200 hover:scale-105"
+                className="w-12 h-12 bg-blue-500 border border-blue-400 text-white rounded-2xl hover:bg-blue-600 flex items-center justify-center transition-all duration-300 hover:scale-110 hover:rotate-3 shadow-lg"
               >
-                &lt;
+                ←
               </button>
               <button
                 onClick={() => navigateMonth('next')}
-                className="w-10 h-10 bg-blue-600 text-white rounded-full hover:bg-blue-700 flex items-center justify-center transition-all duration-200 hover:scale-105"
+                className="w-12 h-12 bg-indigo-500 border border-indigo-400 text-white rounded-2xl hover:bg-indigo-600 flex items-center justify-center transition-all duration-300 hover:scale-110 hover:-rotate-3 shadow-lg"
               >
-                &gt;
+                →
               </button>
             </div>
           </div>
 
           {/* Calendar Grid */}
-          <div className="grid grid-cols-7 gap-px bg-gray-200 rounded-lg overflow-hidden">
+          <div className="grid grid-cols-7 gap-2 p-2 bg-blue-50 rounded-2xl border border-blue-200">
             {/* Day Headers */}
             {dayHeaders.map((day) => (
               <div
                 key={day}
-                className="bg-blue-600 text-white text-center py-3 font-semibold text-sm"
+                className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white text-center py-4 font-medium text-sm rounded-xl shadow-md"
               >
                 {day}
               </div>
@@ -191,14 +200,22 @@ const Calendar: React.FC<CalendarProps> = () => {
                 key={index}
                 onClick={() => handleDateClick(date, dayEvents)}
                 className={`
-                  bg-white p-3 min-h-[80px] cursor-pointer transition-colors duration-200 flex flex-col justify-start
-                  ${isCurrentMonth ? 'hover:bg-blue-50' : 'text-gray-400 bg-gray-50'}
-                  ${isToday ? 'bg-blue-600 text-white hover:bg-blue-700' : ''}
-                  ${isSelected ? 'bg-purple-600 text-white' : ''}
-                  ${dayEvents.length > 0 && !isToday && !isSelected ? 'bg-blue-100 border border-blue-200' : ''}
+                  p-4 min-h-[90px] cursor-pointer transition-all duration-300 flex flex-col justify-start rounded-xl border group hover:scale-105
+                  ${isCurrentMonth
+                    ? 'bg-white border-blue-200 text-gray-800 hover:bg-blue-50 hover:border-blue-300'
+                    : 'text-gray-400 bg-gray-50 border-gray-200'}
+                  ${isToday
+                    ? 'bg-gradient-to-br from-blue-400 to-indigo-500 text-white border-blue-500 shadow-lg shadow-blue-400/30'
+                    : ''}
+                  ${isSelected
+                    ? 'bg-gradient-to-br from-indigo-500 to-purple-500 text-white border-indigo-600 shadow-lg shadow-indigo-400/30'
+                    : ''}
+                  ${dayEvents.length > 0 && !isToday && !isSelected
+                    ? 'bg-gradient-to-br from-blue-100 to-indigo-100 border-blue-300'
+                    : ''}
                 `}
               >
-                <div className="font-semibold mb-2">{date.getDate()}</div>
+                <div className="font-medium mb-2 group-hover:font-semibold transition-all">{date.getDate()}</div>
 
                 {/* Event Indicators */}
                 {dayEvents.length > 0 && (
@@ -206,18 +223,20 @@ const Calendar: React.FC<CalendarProps> = () => {
                     {dayEvents.slice(0, 3).map((event, eventIndex) => (
                       <div
                         key={eventIndex}
-                        className={`w-2 h-2 rounded-full ${
-                          isToday || isSelected ? 'bg-white' : 'bg-blue-600'
-                        }`}
+                        className={`w-3 h-3 rounded-full border ${
+                          isToday || isSelected
+                            ? 'bg-white border-white/60'
+                            : 'bg-gradient-to-r from-blue-500 to-indigo-500 border-blue-400'
+                        } animate-pulse shadow-sm`}
                         title={event.title}
                       />
                     ))}
                     {dayEvents.length > 3 && (
                       <div
-                        className={`text-xs px-1 py-0.5 rounded ${
+                        className={`text-xs px-2 py-1 rounded-full border font-medium ${
                           isToday || isSelected
-                            ? 'bg-white bg-opacity-20 text-white'
-                            : 'bg-blue-600 bg-opacity-10 text-blue-600'
+                            ? 'bg-white/20 border-white/60 text-white'
+                            : 'bg-gradient-to-r from-blue-100 to-indigo-100 border-blue-300 text-blue-700'
                         }`}
                         title={`${dayEvents.length - 3} more events`}
                       >
@@ -232,33 +251,38 @@ const Calendar: React.FC<CalendarProps> = () => {
         </section>
 
         {/* Events Section */}
-        <section className="bg-white rounded-xl shadow-lg p-6">
-          <h2 className="text-xl font-medium text-gray-800 mb-4">Events</h2>
+        <section className="backdrop-blur-md bg-white/70 border border-blue-200 rounded-3xl shadow-xl p-8 hover:bg-white/80 transition-all duration-300">
+          <h2 className="text-2xl font-light text-gray-800 mb-6">Events</h2>
 
-          <div className="space-y-3 mb-6">
+          <div className="space-y-4 mb-8">
             {events.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
-                <p>No events scheduled</p>
-                <p className="text-sm mt-2">Click "Add Event" to create your first event</p>
+              <div className="text-center py-12 text-gray-500">
+                <div className="text-6xl mb-4 opacity-40">📅</div>
+                <p className="text-lg font-light">No events scheduled</p>
+                <p className="text-sm mt-2 opacity-80">Click "Add Event" to create your first event</p>
               </div>
             ) : (
               events
-                .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+                .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime())
                 .map((event) => (
                   <div
                     key={event.id}
-                    className="bg-blue-50 border-l-4 border-blue-600 p-4 rounded-r-lg transition-transform duration-200 hover:translate-x-1 flex justify-between items-center"
+                    className="group bg-white border border-blue-200 p-5 rounded-2xl transition-all duration-300 hover:scale-105 hover:bg-blue-50 hover:border-blue-300 flex justify-between items-center shadow-lg hover:shadow-xl"
                   >
-                    <div>
-                      <div className="font-semibold text-gray-800">{event.title}</div>
-                      <div className="text-sm text-gray-600">
+                    <div className="flex-1">
+                      <div className="font-medium text-gray-800 mb-1 group-hover:text-blue-600 transition-colors">{event.title}</div>
+                      <div className="text-sm text-gray-600 group-hover:text-gray-800 transition-colors">
                         {event.startTime ? `${event.startDate} ${event.startTime}` : event.startDate}
-                        {event.location && ` - ${event.location}`}
+                        {event.location && (
+                          <span className="ml-2 px-2 py-1 bg-blue-100 rounded-full text-xs border border-blue-200 text-blue-700">
+                            📍 {event.location}
+                          </span>
+                        )}
                       </div>
                     </div>
                     <button
                       onClick={() => handleDeleteEvent(event.id)}
-                      className="w-7 h-7 bg-red-500 text-white rounded-full hover:bg-red-600 flex items-center justify-center text-sm font-bold transition-all duration-200 hover:scale-110"
+                      className="w-9 h-9 bg-red-500 text-white rounded-2xl hover:bg-red-600 flex items-center justify-center text-sm font-bold transition-all duration-300 hover:scale-110 hover:rotate-6 border border-red-400 shadow-md"
                       title="Delete Event"
                     >
                       ×
@@ -270,22 +294,29 @@ const Calendar: React.FC<CalendarProps> = () => {
 
           <button
             onClick={handleAddEvent}
-            className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg"
+            className="w-full bg-blue-500 text-white py-4 px-6 rounded-2xl font-medium hover:bg-blue-600 transition-all duration-300 hover:scale-105 border border-blue-400 shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
           >
+            <span className="text-xl">+</span>
             Add Event
           </button>
         </section>
       </main>
 
       {error && (
-        <div className="fixed bottom-4 right-4 bg-red-500 text-white p-4 rounded-lg shadow-lg">
-          <p>Error: {error}</p>
-          <button
-            onClick={() => setError(null)}
-            className="ml-2 underline"
-          >
-            Dismiss
-          </button>
+        <div className="fixed bottom-6 right-6 bg-red-500 border border-red-400 text-white p-5 rounded-2xl shadow-2xl z-50 animate-pulse">
+          <div className="flex items-center gap-3">
+            <span className="text-2xl">⚠️</span>
+            <div>
+              <p className="font-medium">Error occurred</p>
+              <p className="text-sm text-red-100">{error}</p>
+            </div>
+            <button
+              onClick={() => setError(null)}
+              className="ml-4 w-8 h-8 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-all duration-200"
+            >
+              ×
+            </button>
+          </div>
         </div>
       )}
     </div>

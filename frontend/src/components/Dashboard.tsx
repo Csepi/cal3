@@ -25,53 +25,56 @@ const Dashboard: React.FC = () => {
   }
 
   return (
-    <div>
+    <div className="min-h-screen">
       {/* User Header */}
-      <div className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
-          <div className="flex items-center space-x-4">
-            <div className="text-sm text-gray-600">
-              Welcome, <span className="font-semibold text-gray-800">{user}</span>
+      <div className="bg-white/80 backdrop-blur-md border-b border-blue-200 sticky top-0 z-50 shadow-sm">
+        <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+          <div className="flex items-center space-x-6">
+            <div className="text-gray-800">
+              <span className="text-sm text-gray-600">Welcome,</span>
+              <span className="ml-2 text-lg font-medium text-blue-600">{user}</span>
               {userRole === 'admin' && (
-                <span className="ml-2 px-2 py-1 bg-red-100 text-red-800 text-xs rounded-full">Admin</span>
+                <span className="ml-3 px-3 py-1 bg-red-100 border border-red-300 text-red-700 text-xs rounded-full font-medium">🔥 Admin</span>
               )}
             </div>
             {userRole === 'admin' && (
-              <div className="flex space-x-2">
+              <div className="flex space-x-1 bg-blue-100 rounded-2xl p-1 border border-blue-200">
                 <button
                   onClick={() => setCurrentView('calendar')}
-                  className={`text-sm font-medium transition-colors ${
+                  className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 ${
                     currentView === 'calendar'
-                      ? 'text-blue-600'
-                      : 'text-gray-600 hover:text-gray-700'
+                      ? 'bg-blue-500 text-white shadow-lg'
+                      : 'text-blue-700 hover:text-blue-800 hover:bg-blue-200'
                   }`}
                 >
-                  Calendar
+                  📅 Calendar
                 </button>
                 <button
                   onClick={() => setCurrentView('admin')}
-                  className={`text-sm font-medium transition-colors ${
+                  className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 ${
                     currentView === 'admin'
-                      ? 'text-blue-600'
-                      : 'text-gray-600 hover:text-gray-700'
+                      ? 'bg-indigo-500 text-white shadow-lg'
+                      : 'text-indigo-700 hover:text-indigo-800 hover:bg-indigo-200'
                   }`}
                 >
-                  Admin Panel
+                  ⚙️ Admin Panel
                 </button>
               </div>
             )}
           </div>
           <button
             onClick={handleLogout}
-            className="text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors"
+            className="px-4 py-2 bg-red-500 border border-red-400 text-white rounded-2xl hover:bg-red-600 font-medium transition-all duration-300 hover:scale-105 shadow-md"
           >
-            Sign Out
+            🚀 Sign Out
           </button>
         </div>
       </div>
 
       {/* Content */}
-      {currentView === 'calendar' ? <Calendar /> : <AdminPanel />}
+      <div className="relative">
+        {currentView === 'calendar' ? <Calendar /> : <AdminPanel />}
+      </div>
     </div>
   );
 };
