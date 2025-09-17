@@ -8,6 +8,7 @@ import { UsersModule } from './users/users.module';
 import { CalendarsModule } from './calendars/calendars.module';
 import { EventsModule } from './events/events.module';
 import { AdminModule } from './admin/admin.module';
+import { UserProfileController } from './controllers/user-profile.controller';
 import { User } from './entities/user.entity';
 import { Calendar, CalendarShare } from './entities/calendar.entity';
 import { Event } from './entities/event.entity';
@@ -42,8 +43,9 @@ import { Event } from './entities/event.entity';
     CalendarsModule,
     EventsModule,
     AdminModule,
+    TypeOrmModule.forFeature([User]),
   ],
-  controllers: [AppController],
+  controllers: [AppController, UserProfileController],
   providers: [AppService],
 })
 export class AppModule {}

@@ -3,9 +3,11 @@ import type { Event, CreateEventRequest } from '../types/Event';
 import type { Calendar as CalendarType, CreateCalendarRequest } from '../types/Calendar';
 import { apiService } from '../services/api';
 
-interface CalendarProps {}
+interface CalendarProps {
+  themeColor: string;
+}
 
-const Calendar: React.FC<CalendarProps> = () => {
+const Calendar: React.FC<CalendarProps> = ({ themeColor }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [events, setEvents] = useState<Event[]>([]);

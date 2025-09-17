@@ -183,6 +183,73 @@ class ApiService {
   initiateMicrosoftLogin(): void {
     window.location.href = `${API_BASE_URL}/api/auth/microsoft`;
   }
+
+  // User Profile methods
+  async getUserProfile(): Promise<any> {
+    const response = await fetch(`${API_BASE_URL}/api/user/profile`, {
+      headers: this.getAuthHeaders(),
+    });
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        throw new Error('Authentication required. Please log in to view profile.');
+      }
+      throw new Error('Failed to fetch profile');
+    }
+
+    return await response.json();
+  }
+
+  async updateUserProfile(profileData: any): Promise<any> {
+    const response = await fetch(`${API_BASE_URL}/api/user/profile`, {
+      method: 'PATCH',
+      headers: this.getAuthHeaders(),
+      body: JSON.stringify(profileData),
+    });
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        throw new Error('Authentication required. Please log in to update profile.');
+      }
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to update profile');
+    }
+
+    return await response.json();
+  }
+
+  async updateUserTheme(themeColor: string): Promise<any> {
+    const response = await fetch(`${API_BASE_URL}/api/user/theme`, {
+      method: 'PATCH',
+      headers: this.getAuthHeaders(),
+      body: JSON.stringify({ themeColor }),
+    });
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        throw new Error('Authentication required. Please log in to update theme.');
+      }
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to update theme');
+    }
+
+    return await response.json();
+  }
+
+  async changePassword(currentPassword: string, newPassword: string): Promise<any> {
+    const response = await fetch(`${API_BASE_URL}/api/user/password`, {
+      method: 'PATCH',
+      headers: this.getAuthHeaders(),
+      body: JSON.stringify({ currentPassword, newPassword }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to change password');
+    }
+
+    return await response.json();
+  }
 }
 
 export const apiService = new ApiService();

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { apiService } from '../services/api';
 
 interface LoginProps {
-  onLogin: (username: string, token?: string, role?: string) => void;
+  onLogin: (username: string, token?: string, role?: string, userData?: any) => void;
 }
 
 const Login: React.FC<LoginProps> = ({ onLogin }) => {
@@ -46,7 +46,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
         if (result.user.role === 'admin') {
           localStorage.setItem('admin_token', result.token);
         }
-        onLogin(result.user.username, result.token, result.user.role);
+        onLogin(result.user.username, result.token, result.user.role, result.user);
       } catch (err: any) {
         setError(err.message || 'Registration failed');
       }
@@ -64,7 +64,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
         if (result.user.role === 'admin') {
           localStorage.setItem('admin_token', result.token);
         }
-        onLogin(result.user.username, result.token, result.user.role);
+        onLogin(result.user.username, result.token, result.user.role, result.user);
       } catch (err: any) {
         // Fallback to demo mode
         if (password === 'demo123') {

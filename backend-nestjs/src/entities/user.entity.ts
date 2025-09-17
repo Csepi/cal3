@@ -47,6 +47,9 @@ export class User {
   })
   role: UserRole;
 
+  @Column({ length: 7, default: '#3b82f6' })
+  themeColor: string;
+
   @CreateDateColumn()
   createdAt: Date;
 

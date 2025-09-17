@@ -57,6 +57,7 @@ export class AuthService {
         firstName: savedUser.firstName,
         lastName: savedUser.lastName,
         role: savedUser.role,
+        themeColor: savedUser.themeColor,
       },
     };
   }
@@ -99,6 +100,7 @@ export class AuthService {
         firstName: user.firstName,
         lastName: user.lastName,
         role: user.role,
+        themeColor: user.themeColor,
       },
     };
   }
@@ -118,7 +120,7 @@ export class AuthService {
   async getUserProfile(userId: number): Promise<Partial<User>> {
     const user = await this.userRepository.findOne({
       where: { id: userId },
-      select: ['id', 'username', 'email', 'firstName', 'lastName', 'createdAt', 'updatedAt'],
+      select: ['id', 'username', 'email', 'firstName', 'lastName', 'role', 'themeColor', 'createdAt', 'updatedAt'],
     });
 
     if (!user) {
@@ -167,6 +169,7 @@ export class AuthService {
         firstName: user.firstName,
         lastName: user.lastName,
         role: user.role,
+        themeColor: user.themeColor,
       },
     };
   }
@@ -214,6 +217,7 @@ export class AuthService {
         firstName: user.firstName,
         lastName: user.lastName,
         role: user.role,
+        themeColor: user.themeColor,
       },
     };
   }
