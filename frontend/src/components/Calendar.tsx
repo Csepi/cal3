@@ -716,9 +716,9 @@ const Calendar: React.FC<CalendarProps> = ({ themeColor }) => {
                 {dayEvents.length > 0 && (
                   <div className="flex flex-wrap gap-1 mt-auto">
                     {dayEvents.slice(0, 3).map((event, eventIndex) => {
-                      const eventColor = getEffectiveEventColor(event);
+                      const eventColor = event.color || '#3b82f6';
                       const calendarColor = event.calendar?.color || '#3b82f6';
-                      const hasMultipleColors = eventColor !== calendarColor && event.color;
+                      const showGradient = event.color && event.calendar?.color && eventColor !== calendarColor;
 
                       return (
                         <div
@@ -727,28 +727,19 @@ const Calendar: React.FC<CalendarProps> = ({ themeColor }) => {
                             isToday || isSelected ? 'ring-1 ring-white/60' : ''
                           }`}
                           style={{
-                            background: hasMultipleColors
-                              ? `linear-gradient(90deg, ${calendarColor} 0%, ${calendarColor}dd 30%, ${eventColor}dd 70%, ${eventColor} 100%)`
-                              : `linear-gradient(135deg, ${eventColor}, ${eventColor}dd)`,
-                            boxShadow: `0 2px 8px ${eventColor}33`
+                            background: showGradient
+                              ? `linear-gradient(90deg, ${calendarColor} 0%, ${calendarColor}cc 40%, ${eventColor}cc 60%, ${eventColor} 100%)`
+                              : `linear-gradient(135deg, ${eventColor || calendarColor}, ${eventColor || calendarColor}dd)`,
+                            boxShadow: `0 2px 8px ${eventColor || calendarColor}33`
                           }}
-                          title={`${event.title}${hasMultipleColors ? ` (${event.calendar?.name || 'Calendar'} + Event colors)` : ''}`}
+                          title={`${event.title}${showGradient ? ` (${event.calendar?.name || 'Calendar'}: ${calendarColor} → Event: ${eventColor})` : ''}`}
                         >
-                          {/* Calendar color stripe for multi-color events */}
-                          {hasMultipleColors && (
-                            <div
-                              className="absolute left-0 top-0 bottom-0 w-1/3 opacity-90"
-                              style={{
-                                background: `linear-gradient(135deg, ${calendarColor}, ${calendarColor}dd)`
-                              }}
-                            />
-                          )}
 
                           {/* Shine effect on hover */}
                           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
 
                           {/* Color separation indicator for mixed colors */}
-                          {hasMultipleColors && (
+                          {showGradient && (
                             <div className="absolute left-1/3 top-0 bottom-0 w-px bg-white/40 opacity-60" />
                           )}
                         </div>
