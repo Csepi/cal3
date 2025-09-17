@@ -3,7 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcryptjs';
-import { User } from '../entities/user.entity';
+import { User, UserRole } from '../entities/user.entity';
 import { RegisterDto, LoginDto, AuthResponseDto } from '../dto/auth.dto';
 
 @Injectable()
@@ -126,5 +126,95 @@ export class AuthService {
     }
 
     return user;
+  }
+
+  async validateGoogleUser(googleUser: any): Promise<AuthResponseDto> {
+    const { googleId, email, firstName, lastName } = googleUser;
+
+    // Check if user already exists by email
+    let user = await this.userRepository.findOne({
+      where: { email },
+    });
+
+    if (!user) {
+      // Create new user with Google profile
+      const username = email.split('@')[0] + '_google';
+      user = this.userRepository.create({
+        username,
+        email,
+        password: '', // OAuth users don't need passwords
+        firstName,
+        lastName,
+        role: UserRole.USER,
+        isActive: true,
+      });
+
+      user = await this.userRepository.save(user);
+    }
+
+    // Generate JWT token
+    const payload = { username: user.username, sub: user.id };
+    const access_token = this.jwtService.sign(payload);
+
+    return {
+      access_token,
+      token_type: 'Bearer',
+      expires_in: 3600,
+      user: {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        role: user.role,
+      },
+    };
+  }
+
+  async validateMicrosoftUser(microsoftUser: any): Promise<AuthResponseDto> {
+    const { microsoftId, email, firstName, lastName, displayName } = microsoftUser;
+
+    if (!email) {
+      throw new UnauthorizedException('Email is required for Microsoft authentication');
+    }
+
+    // Check if user already exists by email
+    let user = await this.userRepository.findOne({
+      where: { email },
+    });
+
+    if (!user) {
+      // Create new user with Microsoft profile
+      const username = email.split('@')[0] + '_microsoft';
+      user = this.userRepository.create({
+        username,
+        email,
+        password: '', // OAuth users don't need passwords
+        firstName: firstName || displayName?.split(' ')[0] || '',
+        lastName: lastName || displayName?.split(' ').slice(1).join(' ') || '',
+        role: UserRole.USER,
+        isActive: true,
+      });
+
+      user = await this.userRepository.save(user);
+    }
+
+    // Generate JWT token
+    const payload = { username: user.username, sub: user.id };
+    const access_token = this.jwtService.sign(payload);
+
+    return {
+      access_token,
+      token_type: 'Bearer',
+      expires_in: 3600,
+      user: {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        role: user.role,
+      },
+    };
   }
 }

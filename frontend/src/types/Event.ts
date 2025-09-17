@@ -51,4 +51,5 @@ export interface CreateEventRequest {
   isAllDay?: boolean;
   location?: string;
   color?: string;
+  calendarId?: number;
 }

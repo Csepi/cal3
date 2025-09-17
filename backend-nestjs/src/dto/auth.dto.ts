@@ -38,7 +38,7 @@ export class RegisterDto {
 }
 
 export class LoginDto {
-  @ApiProperty({ example: 'john_doe', description: 'Username or email' })
+  @ApiProperty({ example: 'john_doe or john@example.com', description: 'Username or email' })
   @IsString()
   username: string;
 

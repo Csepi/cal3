@@ -21,39 +21,52 @@ export class EventsController {
   constructor(private readonly eventsService: EventsService) {}
 
   @Post()
-  @ApiOperation({ summary: 'Create a new event (public for testing)' })
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Create a new event' })
   @ApiResponse({ status: 201, description: 'Event created successfully', type: EventResponseDto })
   @ApiResponse({ status: 400, description: 'Invalid input data' })
-  create(@Body() createEventDto: CreateEventDto) {
-    return this.eventsService.createPublic(createEventDto);
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  create(@Body() createEventDto: CreateEventDto, @Request() req) {
+    return this.eventsService.create(createEventDto, req.user.id);
   }
 
   @Get()
-  @ApiOperation({ summary: 'Get all events (public access for testing)' })
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get all accessible events' })
   @ApiQuery({ name: 'startDate', required: false, description: 'Filter events from this date (YYYY-MM-DD)' })
   @ApiQuery({ name: 'endDate', required: false, description: 'Filter events until this date (YYYY-MM-DD)' })
   @ApiResponse({ status: 200, description: 'Events retrieved successfully', type: [EventResponseDto] })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
   findAll(
+    @Request() req,
     @Query('startDate') startDate?: string,
-    @Query('endDate') endDate?: string,
+    @Query('endDate') endDate?: string
   ) {
-    return this.eventsService.findAllPublic(startDate, endDate);
+    return this.eventsService.findAll(req.user.id, startDate, endDate);
   }
 
   @Get(':id')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Get event by ID' })
   @ApiParam({ name: 'id', description: 'Event ID', type: 'number' })
   @ApiResponse({ status: 200, description: 'Event retrieved successfully', type: EventResponseDto })
   @ApiResponse({ status: 404, description: 'Event not found' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Access denied' })
   findOne(@Param('id') id: string, @Request() req) {
     return this.eventsService.findOne(+id, req.user.id);
   }
 
   @Patch(':id')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Update event' })
   @ApiParam({ name: 'id', description: 'Event ID', type: 'number' })
   @ApiResponse({ status: 200, description: 'Event updated successfully', type: EventResponseDto })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Insufficient permissions' })
   @ApiResponse({ status: 404, description: 'Event not found' })
   update(@Param('id') id: string, @Body() updateEventDto: UpdateEventDto, @Request() req) {
@@ -61,12 +74,16 @@ export class EventsController {
   }
 
   @Delete(':id')
-  @ApiOperation({ summary: 'Delete event (public for testing)' })
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Delete event' })
   @ApiParam({ name: 'id', description: 'Event ID', type: 'number' })
   @ApiResponse({ status: 200, description: 'Event deleted successfully' })
   @ApiResponse({ status: 404, description: 'Event not found' })
-  remove(@Param('id') id: string) {
-    return this.eventsService.removePublic(+id);
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Insufficient permissions' })
+  remove(@Param('id') id: string, @Request() req) {
+    return this.eventsService.remove(+id, req.user.id);
   }
 
   @Get('calendar/:calendarId')

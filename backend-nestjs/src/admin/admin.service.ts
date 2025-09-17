@@ -124,12 +124,12 @@ export class AdminService {
       password: hashedPassword,
     });
 
-    return this.userRepository.save(user);
+    return await this.userRepository.save(user) as unknown as User;
   }
 
   async createCalendar(createCalendarDto: any): Promise<Calendar> {
     const calendar = this.calendarRepository.create(createCalendarDto);
-    return this.calendarRepository.save(calendar);
+    return await this.calendarRepository.save(calendar) as unknown as Calendar;
   }
 
   async createEvent(createEventDto: any): Promise<Event> {
@@ -138,7 +138,7 @@ export class AdminService {
       startDate: new Date(createEventDto.startDate),
       endDate: createEventDto.endDate ? new Date(createEventDto.endDate) : null,
     });
-    return this.eventRepository.save(event);
+    return await this.eventRepository.save(event) as unknown as Event;
   }
 
   // UPDATE OPERATIONS
@@ -152,7 +152,7 @@ export class AdminService {
     const { password, ...updateData } = updateUserDto;
     Object.assign(user, updateData);
 
-    return this.userRepository.save(user);
+    return await this.userRepository.save(user);
   }
 
   async updateUserPassword(userId: number, newPassword: string): Promise<User> {
@@ -162,7 +162,7 @@ export class AdminService {
     }
 
     user.password = await bcrypt.hash(newPassword, 10);
-    return this.userRepository.save(user);
+    return await this.userRepository.save(user);
   }
 
   async updateCalendar(calendarId: number, updateCalendarDto: any): Promise<Calendar> {
@@ -175,7 +175,7 @@ export class AdminService {
     }
 
     Object.assign(calendar, updateCalendarDto);
-    return this.calendarRepository.save(calendar);
+    return await this.calendarRepository.save(calendar);
   }
 
   async updateEvent(eventId: number, updateEventDto: any): Promise<Event> {
@@ -196,7 +196,7 @@ export class AdminService {
     }
 
     Object.assign(event, updateEventDto);
-    return this.eventRepository.save(event);
+    return await this.eventRepository.save(event);
   }
 
   // GET SINGLE OPERATIONS

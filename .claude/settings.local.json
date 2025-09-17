@@ -74,7 +74,10 @@
       "Bash(start http://localhost:8080)",
       "Bash(npm run seed:*)",
       "Bash(where:*)",
-      "Bash(start \"\" \"C:\\Users\\ThinkPad\\cal3\\version documentation\\Calendar_Application_Documentation_v1.0.html\")"
+      "Bash(start \"\" \"C:\\Users\\ThinkPad\\cal3\\version documentation\\Calendar_Application_Documentation_v1.0.html\")",
+      "Bash(cmd /C:*)",
+      "Bash(PORT=8081 JWT_SECRET=\"calendar-secret-key\" npm run start:dev)",
+      "Bash(start \"http://localhost:8080/?refresh=1\")"
     ],
     "deny": [],
     "ask": []
