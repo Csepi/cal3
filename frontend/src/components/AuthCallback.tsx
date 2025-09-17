@@ -20,9 +20,14 @@ const AuthCallback: React.FC<AuthCallbackProps> = ({ onLogin }) => {
       // Decode token to get user info (simple base64 decode for demo)
       try {
         const payload = JSON.parse(atob(token.split('.')[1]));
-        onLogin(payload.username || `${provider}_user`, token, 'user');
+        // Store the token and user info in localStorage
+        localStorage.setItem('username', payload.username || `${provider}_user`);
+        localStorage.setItem('userRole', payload.role || 'user');
+        onLogin(payload.username || `${provider}_user`, token, payload.role || 'user');
       } catch (error) {
         console.error('Failed to decode token:', error);
+        localStorage.setItem('username', `${provider}_user`);
+        localStorage.setItem('userRole', 'user');
         onLogin(`${provider}_user`, token, 'user');
       }
     } else {

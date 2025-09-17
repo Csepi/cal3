@@ -50,7 +50,7 @@ export class AuthController {
   async googleAuthRedirect(@Req() req, @Res() res) {
     const result = req.user;
     // Redirect to frontend with token
-    const redirectUrl = `http://localhost:5173/auth/callback?token=${result.access_token}&provider=google`;
+    const redirectUrl = `http://localhost:8080/auth/callback?token=${result.access_token}&provider=google`;
     return res.redirect(redirectUrl);
   }
 
@@ -68,7 +68,7 @@ export class AuthController {
   async microsoftAuthRedirect(@Req() req, @Res() res) {
     const result = req.user;
     // Redirect to frontend with token
-    const redirectUrl = `http://localhost:5173/auth/callback?token=${result.access_token}&provider=microsoft`;
+    const redirectUrl = `http://localhost:8080/auth/callback?token=${result.access_token}&provider=microsoft`;
     return res.redirect(redirectUrl);
   }
 }

@@ -23,35 +23,84 @@ async function seed() {
     // Create sample users
     console.log('👥 Creating sample users...');
 
-    const aliceResult = await authService.register({
-      username: 'alice',
-      email: 'alice@example.com',
-      password: 'password123',
-      firstName: 'Alice',
-      lastName: 'Johnson'
-    });
-    const alice = aliceResult.user;
-    console.log(`✅ Created user: ${alice.username} (ID: ${alice.id})`);
+    // Create admin user first
+    let admin;
+    try {
+      const adminResult = await authService.register({
+        username: 'admin',
+        email: 'admin@example.com',
+        password: 'enterenter',
+        firstName: 'Admin',
+        lastName: 'User'
+      });
+      admin = adminResult.user;
+      console.log(`✅ Created admin user: ${admin.username} (ID: ${admin.id})`);
+    } catch (error) {
+      if (error.message?.includes('already exists')) {
+        console.log('ℹ️  Admin user already exists, fetching...');
+        admin = await userRepository.findOne({ where: { username: 'admin' } });
+      } else {
+        throw error;
+      }
+    }
 
-    const bobResult = await authService.register({
-      username: 'bob',
-      email: 'bob@example.com',
-      password: 'password123',
-      firstName: 'Bob',
-      lastName: 'Smith'
-    });
-    const bob = bobResult.user;
-    console.log(`✅ Created user: ${bob.username} (ID: ${bob.id})`);
+    let alice, bob, charlie;
+    try {
+      const aliceResult = await authService.register({
+        username: 'alice',
+        email: 'alice@example.com',
+        password: 'password123',
+        firstName: 'Alice',
+        lastName: 'Johnson'
+      });
+      alice = aliceResult.user;
+      console.log(`✅ Created user: ${alice.username} (ID: ${alice.id})`);
+    } catch (error) {
+      if (error.message?.includes('already exists')) {
+        console.log('ℹ️  Alice already exists, fetching...');
+        alice = await userRepository.findOne({ where: { username: 'alice' } });
+      } else {
+        throw error;
+      }
+    }
 
-    const charlieResult = await authService.register({
-      username: 'charlie',
-      email: 'charlie@example.com',
-      password: 'password123',
-      firstName: 'Charlie',
-      lastName: 'Brown'
-    });
-    const charlie = charlieResult.user;
-    console.log(`✅ Created user: ${charlie.username} (ID: ${charlie.id})`);
+    try {
+      const bobResult = await authService.register({
+        username: 'bob',
+        email: 'bob@example.com',
+        password: 'password123',
+        firstName: 'Bob',
+        lastName: 'Smith'
+      });
+      bob = bobResult.user;
+      console.log(`✅ Created user: ${bob.username} (ID: ${bob.id})`);
+    } catch (error) {
+      if (error.message?.includes('already exists')) {
+        console.log('ℹ️  Bob already exists, fetching...');
+        bob = await userRepository.findOne({ where: { username: 'bob' } });
+      } else {
+        throw error;
+      }
+    }
+
+    try {
+      const charlieResult = await authService.register({
+        username: 'charlie',
+        email: 'charlie@example.com',
+        password: 'password123',
+        firstName: 'Charlie',
+        lastName: 'Brown'
+      });
+      charlie = charlieResult.user;
+      console.log(`✅ Created user: ${charlie.username} (ID: ${charlie.id})`);
+    } catch (error) {
+      if (error.message?.includes('already exists')) {
+        console.log('ℹ️  Charlie already exists, fetching...');
+        charlie = await userRepository.findOne({ where: { username: 'charlie' } });
+      } else {
+        throw error;
+      }
+    }
 
     // Create sample calendars
     console.log('\n📅 Creating sample calendars...');
@@ -285,10 +334,11 @@ async function seed() {
 
     console.log('\n✅ Sample data creation completed!');
     console.log('\n📊 Summary:');
-    console.log('👥 Users: 3 (alice, bob, charlie)');
+    console.log('👥 Users: 4 (admin, alice, bob, charlie)');
     console.log('📅 Calendars: 5 (2 personal, 2 shared, 1 public)');
     console.log('📝 Events: 11 (various types and recurrence patterns)');
     console.log('🤝 Shares: 3 calendar sharing relationships');
+    console.log('\n🔑 Admin login: username=admin, password=enterenter');
 
     console.log('\n🔗 Test URLs:');
     console.log('• Frontend: http://localhost:8080');

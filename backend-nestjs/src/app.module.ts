@@ -28,7 +28,7 @@ import { Event } from './entities/event.entity';
         database: process.env.DB_NAME || 'cal3',
         entities: [User, Calendar, CalendarShare, Event],
         synchronize: process.env.NODE_ENV !== 'production',
-        ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+        ssl: { rejectUnauthorized: false },
         logging: process.env.NODE_ENV === 'development',
       } : {
         type: 'sqlite',
