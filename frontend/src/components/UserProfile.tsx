@@ -34,7 +34,9 @@ const UserProfile: React.FC<UserProfileProps> = ({ onThemeChange, currentTheme }
     { name: 'Orange', value: '#f59e0b', gradient: 'from-orange-500 to-orange-600' },
     { name: 'Pink', value: '#ec4899', gradient: 'from-pink-500 to-pink-600' },
     { name: 'Indigo', value: '#6366f1', gradient: 'from-indigo-500 to-indigo-600' },
-    { name: 'Teal', value: '#14b8a6', gradient: 'from-teal-500 to-teal-600' }
+    { name: 'Teal', value: '#14b8a6', gradient: 'from-teal-500 to-teal-600' },
+    { name: 'Yellow', value: '#eab308', gradient: 'from-yellow-500 to-yellow-600' },
+    { name: 'Slate', value: '#64748b', gradient: 'from-slate-500 to-slate-600' }
   ];
 
   useEffect(() => {
@@ -115,14 +117,16 @@ const UserProfile: React.FC<UserProfileProps> = ({ onThemeChange, currentTheme }
   // Helper function to get theme-based colors
   const getThemeColors = (color: string) => {
     const colorMap: Record<string, any> = {
-      '#3b82f6': { gradient: 'from-blue-50 via-blue-100 to-blue-200', primary: 'blue', ring: 'ring-blue-500' },
-      '#8b5cf6': { gradient: 'from-purple-50 via-purple-100 to-purple-200', primary: 'purple', ring: 'ring-purple-500' },
-      '#10b981': { gradient: 'from-green-50 via-green-100 to-green-200', primary: 'green', ring: 'ring-green-500' },
-      '#ef4444': { gradient: 'from-red-50 via-red-100 to-red-200', primary: 'red', ring: 'ring-red-500' },
-      '#f59e0b': { gradient: 'from-orange-50 via-orange-100 to-orange-200', primary: 'orange', ring: 'ring-orange-500' },
-      '#ec4899': { gradient: 'from-pink-50 via-pink-100 to-pink-200', primary: 'pink', ring: 'ring-pink-500' },
-      '#6366f1': { gradient: 'from-indigo-50 via-indigo-100 to-indigo-200', primary: 'indigo', ring: 'ring-indigo-500' },
-      '#14b8a6': { gradient: 'from-teal-50 via-teal-100 to-teal-200', primary: 'teal', ring: 'ring-teal-500' }
+      '#3b82f6': { gradient: 'from-blue-50 via-blue-100 to-blue-200', primary: 'blue', ring: 'ring-blue-500', text: 'text-blue-900', border: 'border-blue-200' },
+      '#8b5cf6': { gradient: 'from-purple-50 via-purple-100 to-purple-200', primary: 'purple', ring: 'ring-purple-500', text: 'text-purple-900', border: 'border-purple-200' },
+      '#10b981': { gradient: 'from-green-50 via-green-100 to-green-200', primary: 'green', ring: 'ring-green-500', text: 'text-green-900', border: 'border-green-200' },
+      '#ef4444': { gradient: 'from-red-50 via-red-100 to-red-200', primary: 'red', ring: 'ring-red-500', text: 'text-red-900', border: 'border-red-200' },
+      '#f59e0b': { gradient: 'from-orange-50 via-orange-100 to-orange-200', primary: 'orange', ring: 'ring-orange-500', text: 'text-orange-900', border: 'border-orange-200' },
+      '#ec4899': { gradient: 'from-pink-50 via-pink-100 to-pink-200', primary: 'pink', ring: 'ring-pink-500', text: 'text-pink-900', border: 'border-pink-200' },
+      '#6366f1': { gradient: 'from-indigo-50 via-indigo-100 to-indigo-200', primary: 'indigo', ring: 'ring-indigo-500', text: 'text-indigo-900', border: 'border-indigo-200' },
+      '#14b8a6': { gradient: 'from-teal-50 via-teal-100 to-teal-200', primary: 'teal', ring: 'ring-teal-500', text: 'text-teal-900', border: 'border-teal-200' },
+      '#eab308': { gradient: 'from-yellow-50 via-yellow-100 to-yellow-200', primary: 'yellow', ring: 'ring-yellow-500', text: 'text-yellow-900', border: 'border-yellow-200' },
+      '#64748b': { gradient: 'from-slate-50 via-slate-100 to-slate-200', primary: 'slate', ring: 'ring-slate-500', text: 'text-slate-900', border: 'border-slate-200' }
     };
     return colorMap[color] || colorMap['#3b82f6'];
   };
@@ -144,11 +148,11 @@ const UserProfile: React.FC<UserProfileProps> = ({ onThemeChange, currentTheme }
     <div className={`min-h-screen bg-gradient-to-br ${themeColors.gradient} p-6`}>
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Header */}
-        <div className="bg-white/80 backdrop-blur-xl border border-gray-200 rounded-3xl shadow-2xl p-8">
-          <h1 className={`text-4xl font-thin mb-2 bg-gradient-to-r from-${themeColors.primary}-600 via-${themeColors.primary}-700 to-${themeColors.primary}-800 bg-clip-text text-transparent`}>
+        <div className={`bg-white/80 backdrop-blur-xl ${themeColors.border} rounded-3xl shadow-2xl p-8`}>
+          <h1 className={`text-4xl font-thin mb-2 ${themeColors.text}`}>
             User Profile
           </h1>
-          <p className="text-gray-700">Manage your account settings and preferences</p>
+          <p className={themeColors.text}>Manage your account settings and preferences</p>
         </div>
 
         {/* Success/Error Messages */}
@@ -172,8 +176,8 @@ const UserProfile: React.FC<UserProfileProps> = ({ onThemeChange, currentTheme }
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Profile Information */}
-          <div className="bg-white/80 backdrop-blur-xl border border-blue-200 rounded-3xl shadow-2xl p-8">
-            <h2 className="text-2xl font-medium text-gray-800 mb-6 flex items-center gap-2">
+          <div className={`bg-white/80 backdrop-blur-xl ${themeColors.border} rounded-3xl shadow-2xl p-8`}>
+            <h2 className={`text-2xl font-medium ${themeColors.text} mb-6 flex items-center gap-2`}>
               👤 Profile Information
             </h2>
 
@@ -307,8 +311,8 @@ const UserProfile: React.FC<UserProfileProps> = ({ onThemeChange, currentTheme }
           </div>
 
           {/* Theme Customization */}
-          <div className="bg-white/80 backdrop-blur-xl border border-blue-200 rounded-3xl shadow-2xl p-8">
-            <h2 className="text-2xl font-medium text-gray-800 mb-6 flex items-center gap-2">
+          <div className={`bg-white/80 backdrop-blur-xl ${themeColors.border} rounded-3xl shadow-2xl p-8`}>
+            <h2 className={`text-2xl font-medium ${themeColors.text} mb-6 flex items-center gap-2`}>
               🎨 Theme Customization
             </h2>
 
@@ -340,8 +344,8 @@ const UserProfile: React.FC<UserProfileProps> = ({ onThemeChange, currentTheme }
 
             {/* User Info */}
             {user && (
-              <div className="mt-8 pt-6 border-t border-blue-200">
-                <h3 className="text-lg font-medium text-gray-800 mb-4">Account Information</h3>
+              <div className={`mt-8 pt-6 border-t ${themeColors.border}`}>
+                <h3 className={`text-lg font-medium ${themeColors.text} mb-4`}>Account Information</h3>
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
                     <span className="text-gray-600">Member since:</span>

@@ -8,7 +8,7 @@ import { User } from '../entities/user.entity';
 import { UpdateProfileDto, UpdateThemeDto, ChangePasswordDto } from '../dto/user-profile.dto';
 
 @ApiTags('User Profile')
-@Controller('api/user')
+@Controller('user')
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
 export class UserProfileController {
@@ -89,6 +89,10 @@ export class UserProfileController {
     const user = await this.userRepository.findOne({
       where: { id: userId },
     });
+
+    if (!user) {
+      throw new ConflictException('User not found');
+    }
 
     // Verify current password
     const isCurrentPasswordValid = await bcrypt.compare(changePasswordDto.currentPassword, user.password);

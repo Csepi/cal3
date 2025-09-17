@@ -17,6 +17,8 @@ const Calendar: React.FC<CalendarProps> = ({ themeColor }) => {
   const [error, setError] = useState<string | null>(null);
   const [showEventModal, setShowEventModal] = useState(false);
   const [showCalendarModal, setShowCalendarModal] = useState(false);
+  const [showEventDetailsModal, setShowEventDetailsModal] = useState(false);
+  const [selectedEvents, setSelectedEvents] = useState<Event[]>([]);
   const [eventForm, setEventForm] = useState<Partial<CreateEventRequest>>({
     title: '',
     description: '',
@@ -26,13 +28,13 @@ const Calendar: React.FC<CalendarProps> = ({ themeColor }) => {
     endTime: '',
     isAllDay: false,
     location: '',
-    color: '#3b82f6',
+    color: themeColor,
     calendarId: undefined
   });
   const [calendarForm, setCalendarForm] = useState<Partial<CreateCalendarRequest>>({
     name: '',
     description: '',
-    color: '#3b82f6'
+    color: themeColor
   });
 
   const monthNames = [
@@ -41,6 +43,265 @@ const Calendar: React.FC<CalendarProps> = ({ themeColor }) => {
   ];
 
   const dayHeaders = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+  // Helper function to get theme-based colors with gradients
+  const getThemeColors = (color: string) => {
+    const colorMap: Record<string, any> = {
+      '#3b82f6': { // Blue
+        primary: 'blue',
+        secondary: 'indigo',
+        light: 'blue-50',
+        border: 'blue-200',
+        accent: 'blue-400',
+        hover: 'blue-600',
+        gradient: {
+          header: 'from-blue-500 to-indigo-500',
+          today: 'from-blue-400 to-indigo-500',
+          selected: 'from-indigo-500 to-purple-500',
+          events: 'from-blue-100 to-indigo-100',
+          background: 'from-blue-50 via-blue-100 to-blue-200'
+        },
+        text: {
+          title: 'text-blue-900'
+        },
+        button: 'bg-blue-500 hover:bg-blue-600',
+        focus: 'focus:ring-blue-500',
+        animatedGradient: {
+          circle1: 'from-blue-300 to-indigo-300',
+          circle2: 'from-indigo-300 to-purple-300',
+          circle3: 'from-purple-300 to-blue-300'
+        }
+      },
+      '#8b5cf6': { // Purple
+        primary: 'purple',
+        secondary: 'violet',
+        light: 'purple-50',
+        border: 'purple-200',
+        accent: 'purple-400',
+        hover: 'purple-600',
+        gradient: {
+          header: 'from-purple-500 to-violet-500',
+          today: 'from-purple-400 to-violet-500',
+          selected: 'from-violet-500 to-purple-600',
+          events: 'from-purple-100 to-violet-100',
+          background: 'from-purple-50 via-purple-100 to-purple-200'
+        },
+        text: {
+          title: 'text-purple-900'
+        },
+        button: 'bg-purple-500 hover:bg-purple-600',
+        focus: 'focus:ring-purple-500',
+        animatedGradient: {
+          circle1: 'from-purple-300 to-violet-300',
+          circle2: 'from-violet-300 to-indigo-300',
+          circle3: 'from-indigo-300 to-purple-300'
+        }
+      },
+      '#10b981': { // Green
+        primary: 'green',
+        secondary: 'emerald',
+        light: 'green-50',
+        border: 'green-200',
+        accent: 'green-400',
+        hover: 'green-600',
+        gradient: {
+          header: 'from-green-500 to-emerald-500',
+          today: 'from-green-400 to-emerald-500',
+          selected: 'from-emerald-500 to-green-600',
+          events: 'from-green-100 to-emerald-100',
+          background: 'from-green-50 via-green-100 to-green-200'
+        },
+        text: {
+          title: 'text-green-900'
+        },
+        button: 'bg-green-500 hover:bg-green-600',
+        focus: 'focus:ring-green-500',
+        animatedGradient: {
+          circle1: 'from-green-300 to-emerald-300',
+          circle2: 'from-emerald-300 to-teal-300',
+          circle3: 'from-teal-300 to-green-300'
+        }
+      },
+      '#ef4444': { // Red
+        primary: 'red',
+        secondary: 'rose',
+        light: 'red-50',
+        border: 'red-200',
+        accent: 'red-400',
+        hover: 'red-600',
+        gradient: {
+          header: 'from-red-500 to-rose-500',
+          today: 'from-red-400 to-rose-500',
+          selected: 'from-rose-500 to-red-600',
+          events: 'from-red-100 to-rose-100',
+          background: 'from-red-50 via-red-100 to-red-200'
+        },
+        text: {
+          title: 'text-red-900'
+        },
+        button: 'bg-red-500 hover:bg-red-600',
+        focus: 'focus:ring-red-500',
+        animatedGradient: {
+          circle1: 'from-red-300 to-rose-300',
+          circle2: 'from-rose-300 to-pink-300',
+          circle3: 'from-pink-300 to-red-300'
+        }
+      },
+      '#f59e0b': { // Orange
+        primary: 'orange',
+        secondary: 'amber',
+        light: 'orange-50',
+        border: 'orange-200',
+        accent: 'orange-400',
+        hover: 'orange-600',
+        gradient: {
+          header: 'from-orange-500 to-amber-500',
+          today: 'from-orange-400 to-amber-500',
+          selected: 'from-amber-500 to-orange-600',
+          events: 'from-orange-100 to-amber-100',
+          background: 'from-orange-50 via-orange-100 to-orange-200'
+        },
+        text: {
+          title: 'text-orange-900'
+        },
+        button: 'bg-orange-500 hover:bg-orange-600',
+        focus: 'focus:ring-orange-500',
+        animatedGradient: {
+          circle1: 'from-orange-300 to-amber-300',
+          circle2: 'from-amber-300 to-yellow-300',
+          circle3: 'from-yellow-300 to-orange-300'
+        }
+      },
+      '#ec4899': { // Pink
+        primary: 'pink',
+        secondary: 'rose',
+        light: 'pink-50',
+        border: 'pink-200',
+        accent: 'pink-400',
+        hover: 'pink-600',
+        gradient: {
+          header: 'from-pink-500 to-rose-500',
+          today: 'from-pink-400 to-rose-500',
+          selected: 'from-rose-500 to-pink-600',
+          events: 'from-pink-100 to-rose-100',
+          background: 'from-pink-50 via-pink-100 to-pink-200'
+        },
+        text: {
+          title: 'text-pink-900'
+        },
+        button: 'bg-pink-500 hover:bg-pink-600',
+        focus: 'focus:ring-pink-500',
+        animatedGradient: {
+          circle1: 'from-pink-300 to-rose-300',
+          circle2: 'from-rose-300 to-red-300',
+          circle3: 'from-red-300 to-pink-300'
+        }
+      },
+      '#6366f1': { // Indigo
+        primary: 'indigo',
+        secondary: 'blue',
+        light: 'indigo-50',
+        border: 'indigo-200',
+        accent: 'indigo-400',
+        hover: 'indigo-600',
+        gradient: {
+          header: 'from-indigo-500 to-blue-500',
+          today: 'from-indigo-400 to-blue-500',
+          selected: 'from-blue-500 to-indigo-600',
+          events: 'from-indigo-100 to-blue-100',
+          background: 'from-indigo-50 via-indigo-100 to-indigo-200'
+        },
+        text: {
+          title: 'text-indigo-900'
+        },
+        button: 'bg-indigo-500 hover:bg-indigo-600',
+        focus: 'focus:ring-indigo-500',
+        animatedGradient: {
+          circle1: 'from-indigo-300 to-blue-300',
+          circle2: 'from-blue-300 to-sky-300',
+          circle3: 'from-sky-300 to-indigo-300'
+        }
+      },
+      '#14b8a6': { // Teal
+        primary: 'teal',
+        secondary: 'cyan',
+        light: 'teal-50',
+        border: 'teal-200',
+        accent: 'teal-400',
+        hover: 'teal-600',
+        gradient: {
+          header: 'from-teal-500 to-cyan-500',
+          today: 'from-teal-400 to-cyan-500',
+          selected: 'from-cyan-500 to-teal-600',
+          events: 'from-teal-100 to-cyan-100',
+          background: 'from-teal-50 via-teal-100 to-teal-200'
+        },
+        text: {
+          title: 'text-teal-900'
+        },
+        button: 'bg-teal-500 hover:bg-teal-600',
+        focus: 'focus:ring-teal-500',
+        animatedGradient: {
+          circle1: 'from-teal-300 to-cyan-300',
+          circle2: 'from-cyan-300 to-sky-300',
+          circle3: 'from-sky-300 to-teal-300'
+        }
+      },
+      '#eab308': { // Yellow
+        primary: 'yellow',
+        secondary: 'amber',
+        light: 'yellow-50',
+        border: 'yellow-200',
+        accent: 'yellow-400',
+        hover: 'yellow-600',
+        gradient: {
+          header: 'from-yellow-500 to-amber-500',
+          today: 'from-yellow-400 to-amber-500',
+          selected: 'from-amber-500 to-yellow-600',
+          events: 'from-yellow-100 to-amber-100',
+          background: 'from-yellow-50 via-yellow-100 to-yellow-200'
+        },
+        text: {
+          title: 'text-yellow-800'
+        },
+        button: 'bg-yellow-500 hover:bg-yellow-600',
+        focus: 'focus:ring-yellow-500',
+        animatedGradient: {
+          circle1: 'from-yellow-300 to-amber-300',
+          circle2: 'from-amber-300 to-orange-300',
+          circle3: 'from-orange-300 to-yellow-300'
+        }
+      },
+      '#64748b': { // Slate
+        primary: 'slate',
+        secondary: 'gray',
+        light: 'slate-50',
+        border: 'slate-200',
+        accent: 'slate-400',
+        hover: 'slate-600',
+        gradient: {
+          header: 'from-slate-500 to-gray-500',
+          today: 'from-slate-400 to-gray-500',
+          selected: 'from-gray-500 to-slate-600',
+          events: 'from-slate-100 to-gray-100',
+          background: 'from-slate-50 via-slate-100 to-slate-200'
+        },
+        text: {
+          title: 'text-slate-800'
+        },
+        button: 'bg-slate-500 hover:bg-slate-600',
+        focus: 'focus:ring-slate-500',
+        animatedGradient: {
+          circle1: 'from-slate-300 to-gray-300',
+          circle2: 'from-gray-300 to-zinc-300',
+          circle3: 'from-zinc-300 to-slate-300'
+        }
+      }
+    };
+    return colorMap[color] || colorMap['#3b82f6']; // Default to blue
+  };
+
+  const themeColors = getThemeColors(themeColor);
 
   useEffect(() => {
     loadData();
@@ -163,8 +424,8 @@ const Calendar: React.FC<CalendarProps> = ({ themeColor }) => {
   const handleDateClick = (date: Date, dayEvents: Event[]) => {
     setSelectedDate(date);
     if (dayEvents.length > 0) {
-      const eventTitles = dayEvents.map(e => e.title).join(', ');
-      alert(`Events on ${date.toDateString()}:\\n${eventTitles}`);
+      setSelectedEvents(dayEvents);
+      setShowEventDetailsModal(true);
     }
   };
 
@@ -242,7 +503,7 @@ const Calendar: React.FC<CalendarProps> = ({ themeColor }) => {
       const calendarData: CreateCalendarRequest = {
         name: calendarForm.name,
         description: calendarForm.description,
-        color: calendarForm.color || '#3b82f6'
+        color: calendarForm.color || themeColor
       };
 
       try {
@@ -258,7 +519,7 @@ const Calendar: React.FC<CalendarProps> = ({ themeColor }) => {
           id: Math.max(...calendars.map(c => c.id), 0) + 1,
           name: calendarForm.name,
           description: calendarForm.description || '',
-          color: calendarForm.color || '#3b82f6',
+          color: calendarForm.color || themeColor,
           visibility: 'private' as any,
           isActive: true,
           owner: {
@@ -290,7 +551,7 @@ const Calendar: React.FC<CalendarProps> = ({ themeColor }) => {
       endTime: '',
       isAllDay: false,
       location: '',
-      color: '#3b82f6',
+      color: themeColor,
       calendarId: undefined
     });
     setShowEventModal(false);
@@ -300,7 +561,7 @@ const Calendar: React.FC<CalendarProps> = ({ themeColor }) => {
     setCalendarForm({
       name: '',
       description: '',
-      color: '#3b82f6'
+      color: themeColor
     });
     setShowCalendarModal(false);
   };
@@ -334,20 +595,20 @@ const Calendar: React.FC<CalendarProps> = ({ themeColor }) => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-100 to-blue-200">
+    <div className={`min-h-screen bg-gradient-to-br ${themeColors.gradient.background}`}>
       {/* Animated Background */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-r from-blue-300 to-indigo-300 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-r from-indigo-300 to-purple-300 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse animation-delay-2000"></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-60 h-60 bg-gradient-to-r from-purple-300 to-blue-300 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse animation-delay-4000"></div>
+        <div className={`absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-r ${themeColors.animatedGradient?.circle1 || 'from-blue-300 to-indigo-300'} rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse`}></div>
+        <div className={`absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-r ${themeColors.animatedGradient?.circle2 || 'from-indigo-300 to-purple-300'} rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse animation-delay-2000`}></div>
+        <div className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-60 h-60 bg-gradient-to-r ${themeColors.animatedGradient?.circle3 || 'from-purple-300 to-blue-300'} rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse animation-delay-4000`}></div>
       </div>
 
       {/* Header */}
-      <header className="relative z-10 backdrop-blur-sm bg-white/60 border-b border-blue-200 text-gray-800 py-6">
+      <header className={`relative z-10 backdrop-blur-sm bg-white/60 border-b border-${themeColors.border} text-gray-800 py-6`}>
         <div className="container mx-auto px-4 flex items-center justify-between">
           {/* Left side - Title */}
           <div className="flex items-center gap-4">
-            <h1 className="text-3xl font-semibold bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent">
+            <h1 className={`text-3xl font-semibold ${themeColors.text.title}`}>
               Calendar
             </h1>
 
@@ -402,13 +663,13 @@ const Calendar: React.FC<CalendarProps> = ({ themeColor }) => {
             <div className="flex space-x-3">
               <button
                 onClick={() => navigateMonth('prev')}
-                className="w-12 h-12 bg-blue-500 border border-blue-400 text-white rounded-2xl hover:bg-blue-600 flex items-center justify-center transition-all duration-300 hover:scale-110 hover:rotate-3 shadow-lg"
+                className={`w-12 h-12 ${themeColors.button} text-white rounded-2xl flex items-center justify-center transition-all duration-300 hover:scale-110 hover:rotate-3 shadow-lg`}
               >
                 ←
               </button>
               <button
                 onClick={() => navigateMonth('next')}
-                className="w-12 h-12 bg-indigo-500 border border-indigo-400 text-white rounded-2xl hover:bg-indigo-600 flex items-center justify-center transition-all duration-300 hover:scale-110 hover:-rotate-3 shadow-lg"
+                className={`w-12 h-12 ${themeColors.button} text-white rounded-2xl flex items-center justify-center transition-all duration-300 hover:scale-110 hover:-rotate-3 shadow-lg`}
               >
                 →
               </button>
@@ -416,12 +677,12 @@ const Calendar: React.FC<CalendarProps> = ({ themeColor }) => {
           </div>
 
           {/* Calendar Grid */}
-          <div className="grid grid-cols-7 gap-2 p-2 bg-blue-50 rounded-2xl border border-blue-200">
+          <div className={`grid grid-cols-7 gap-2 p-2 bg-${themeColors.light} rounded-2xl border border-${themeColors.border}`}>
             {/* Day Headers */}
             {dayHeaders.map((day) => (
               <div
                 key={day}
-                className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white text-center py-4 font-medium text-sm rounded-xl shadow-md"
+                className={`bg-gradient-to-r ${themeColors.gradient.header} text-white text-center py-4 font-medium text-sm rounded-xl shadow-md`}
               >
                 {day}
               </div>
@@ -435,16 +696,16 @@ const Calendar: React.FC<CalendarProps> = ({ themeColor }) => {
                 className={`
                   p-4 min-h-[90px] cursor-pointer transition-all duration-300 flex flex-col justify-start rounded-xl border group hover:scale-105
                   ${isCurrentMonth
-                    ? 'bg-white border-blue-200 text-gray-800 hover:bg-blue-50 hover:border-blue-300'
+                    ? `bg-white border-${themeColors.border} text-gray-800 hover:bg-${themeColors.light} hover:border-${themeColors.accent}`
                     : 'text-gray-400 bg-gray-50 border-gray-200'}
                   ${isToday
-                    ? 'bg-gradient-to-br from-blue-400 to-indigo-500 text-white border-blue-500 shadow-lg shadow-blue-400/30'
+                    ? `bg-gradient-to-br ${themeColors.gradient.today} text-white border-${themeColors.primary}-500 shadow-lg shadow-${themeColors.primary}-400/30`
                     : ''}
                   ${isSelected
-                    ? 'bg-gradient-to-br from-indigo-500 to-purple-500 text-white border-indigo-600 shadow-lg shadow-indigo-400/30'
+                    ? `bg-gradient-to-br ${themeColors.gradient.selected} text-white border-${themeColors.secondary}-600 shadow-lg shadow-${themeColors.secondary}-400/30`
                     : ''}
                   ${dayEvents.length > 0 && !isToday && !isSelected
-                    ? 'bg-gradient-to-br from-blue-100 to-indigo-100 border-blue-300'
+                    ? `bg-gradient-to-br ${themeColors.gradient.events} border-${themeColors.accent}`
                     : ''}
                 `}
               >
@@ -497,7 +758,7 @@ const Calendar: React.FC<CalendarProps> = ({ themeColor }) => {
                         className={`text-xs px-2 py-1 rounded-full font-medium transition-all duration-200 hover:scale-105 ${
                           isToday || isSelected
                             ? 'bg-white/20 text-white border border-white/40'
-                            : 'bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700 border border-gray-300 shadow-sm'
+                            : `bg-gradient-to-r from-${themeColors.light} to-${themeColors.border} text-gray-700 border border-${themeColors.border} shadow-sm`
                         }`}
                         title={`${dayEvents.length - 3} more events`}
                       >
@@ -523,7 +784,7 @@ const Calendar: React.FC<CalendarProps> = ({ themeColor }) => {
               </h3>
               <button
                 onClick={handleAddCalendar}
-                className="text-sm bg-gradient-to-r from-blue-500 to-indigo-500 text-white px-4 py-2 rounded-xl hover:from-blue-600 hover:to-indigo-600 transition-all duration-200 flex items-center gap-2 shadow-md hover:shadow-lg hover:scale-105"
+                className={`text-sm ${themeColors.button} text-white px-4 py-2 rounded-xl transition-all duration-200 flex items-center gap-2 shadow-md hover:shadow-lg hover:scale-105`}
               >
                 <span className="text-xs">+</span>
                 New Calendar
@@ -548,10 +809,10 @@ const Calendar: React.FC<CalendarProps> = ({ themeColor }) => {
                     `}
                     style={{
                       background: selectedCalendarId === calendar.id
-                        ? `linear-gradient(135deg, ${calendar.color}, ${calendar.color}dd)`
+                        ? `linear-gradient(135deg, ${userData?.themeColor || '#3b82f6'}, ${userData?.themeColor || '#3b82f6'}dd)`
                         : `linear-gradient(135deg, ${calendar.color}20, ${calendar.color}10)`,
                       boxShadow: selectedCalendarId === calendar.id
-                        ? `0 8px 25px ${calendar.color}44`
+                        ? `0 8px 25px ${userData?.themeColor || '#3b82f6'}44`
                         : `0 2px 8px ${calendar.color}22`
                     }}
                   >
@@ -747,7 +1008,7 @@ const Calendar: React.FC<CalendarProps> = ({ themeColor }) => {
 
           <button
             onClick={handleAddEvent}
-            className="w-full bg-blue-500 text-white py-4 px-6 rounded-2xl font-medium hover:bg-blue-600 transition-all duration-300 hover:scale-105 border border-blue-400 shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
+            className={`w-full ${themeColors.button} text-white py-4 px-6 rounded-2xl font-medium transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center gap-2`}
           >
             <span className="text-xl">+</span>
             Add Event
@@ -758,9 +1019,9 @@ const Calendar: React.FC<CalendarProps> = ({ themeColor }) => {
       {/* Modern Event Creation Modal */}
       {showEventModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-3xl p-8 w-full max-w-2xl shadow-2xl max-h-[90vh] overflow-y-auto">
+          <div className={`bg-gradient-to-br ${themeColors.gradient.background} rounded-3xl p-8 w-full max-w-2xl shadow-2xl max-h-[90vh] overflow-y-auto border border-${themeColors.border}`}>
             <div className="flex justify-between items-center mb-8">
-              <h2 className="text-3xl font-light text-gray-800">✨ Create New Event</h2>
+              <h2 className={`text-3xl font-light ${themeColors.text.title}`}>✨ Create New Event</h2>
               <button
                 onClick={resetForm}
                 className="w-10 h-10 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition-all duration-200 text-gray-600 hover:text-gray-800"
@@ -779,7 +1040,7 @@ const Calendar: React.FC<CalendarProps> = ({ themeColor }) => {
                   type="text"
                   value={eventForm.title || ''}
                   onChange={(e) => setEventForm({ ...eventForm, title: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all duration-200 bg-gray-50 focus:bg-white"
+                  className={`w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 ${themeColors.focus} outline-none transition-all duration-200 bg-white/80 focus:bg-white`}
                   placeholder="What's happening?"
                   required
                 />
@@ -794,13 +1055,13 @@ const Calendar: React.FC<CalendarProps> = ({ themeColor }) => {
                   value={eventForm.description || ''}
                   onChange={(e) => setEventForm({ ...eventForm, description: e.target.value })}
                   rows={3}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all duration-200 bg-gray-50 focus:bg-white resize-none"
+                  className={`w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 ${themeColors.focus} outline-none transition-all duration-200 bg-white/80 focus:bg-white resize-none`}
                   placeholder="Add more details..."
                 />
               </div>
 
               {/* All Day Toggle */}
-              <div className="flex items-center space-x-3 p-4 bg-blue-50 border border-blue-200 rounded-xl">
+              <div className={`flex items-center space-x-3 p-4 rounded-xl`} style={{backgroundColor: `${themeColor}15`, borderColor: `${themeColor}30`, border: '1px solid'}}>
                 <input
                   type="checkbox"
                   id="isAllDay"
@@ -811,9 +1072,10 @@ const Calendar: React.FC<CalendarProps> = ({ themeColor }) => {
                     startTime: e.target.checked ? '' : eventForm.startTime,
                     endTime: e.target.checked ? '' : eventForm.endTime
                   })}
-                  className="w-5 h-5 text-blue-600 rounded focus:ring-blue-500"
+                  className={`w-5 h-5 rounded ${themeColors.focus}`}
+                  style={{accentColor: themeColor}}
                 />
-                <label htmlFor="isAllDay" className="text-sm font-medium text-blue-700">
+                <label htmlFor="isAllDay" className="text-sm font-medium" style={{color: themeColor}}>
                   🌅 All Day Event
                 </label>
               </div>
@@ -835,7 +1097,7 @@ const Calendar: React.FC<CalendarProps> = ({ themeColor }) => {
                         startDate: e.target.value,
                         endDate: eventForm.endDate || e.target.value
                       })}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all duration-200"
+                      className={`w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 ${themeColors.focus} outline-none transition-all duration-200`}
                       required
                     />
                   </div>
@@ -846,7 +1108,7 @@ const Calendar: React.FC<CalendarProps> = ({ themeColor }) => {
                         type="time"
                         value={eventForm.startTime || ''}
                         onChange={(e) => setEventForm({ ...eventForm, startTime: e.target.value })}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all duration-200"
+                        className={`w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 ${themeColors.focus} outline-none transition-all duration-200`}
                       />
                     </div>
                   )}
@@ -863,7 +1125,7 @@ const Calendar: React.FC<CalendarProps> = ({ themeColor }) => {
                       type="date"
                       value={eventForm.endDate || eventForm.startDate || ''}
                       onChange={(e) => setEventForm({ ...eventForm, endDate: e.target.value })}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all duration-200"
+                      className={`w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 ${themeColors.focus} outline-none transition-all duration-200`}
                     />
                   </div>
                   {!eventForm.isAllDay && (
@@ -873,7 +1135,7 @@ const Calendar: React.FC<CalendarProps> = ({ themeColor }) => {
                         type="time"
                         value={eventForm.endTime || ''}
                         onChange={(e) => setEventForm({ ...eventForm, endTime: e.target.value })}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all duration-200"
+                        className={`w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 ${themeColors.focus} outline-none transition-all duration-200`}
                       />
                     </div>
                   )}
@@ -898,7 +1160,7 @@ const Calendar: React.FC<CalendarProps> = ({ themeColor }) => {
                         color: selectedCalendar?.color || eventForm.color
                       });
                     }}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all duration-200 bg-gray-50 focus:bg-white"
+                    className={`w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 ${themeColors.focus} outline-none transition-all duration-200 bg-white/80 focus:bg-white`}
                   >
                     <option value="">Select Calendar</option>
                     {calendars.map((calendar) => (
@@ -918,7 +1180,7 @@ const Calendar: React.FC<CalendarProps> = ({ themeColor }) => {
                     type="text"
                     value={eventForm.location || ''}
                     onChange={(e) => setEventForm({ ...eventForm, location: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all duration-200 bg-gray-50 focus:bg-white"
+                    className={`w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 ${themeColors.focus} outline-none transition-all duration-200 bg-white/80 focus:bg-white`}
                     placeholder="Where is it happening?"
                   />
                 </div>
@@ -955,13 +1217,13 @@ const Calendar: React.FC<CalendarProps> = ({ themeColor }) => {
                 <button
                   type="button"
                   onClick={resetForm}
-                  className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-all duration-200 font-medium"
+                  className="flex-1 px-6 py-3 border-2 border-gray-400 text-gray-700 bg-gray-50 rounded-xl hover:bg-gray-200 hover:border-gray-500 transition-all duration-200 font-medium shadow-sm hover:shadow-md"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 px-6 py-3 bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition-all duration-200 font-medium shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
+                  className={`flex-1 px-6 py-3 ${themeColors.button} text-white rounded-xl transition-all duration-200 font-medium shadow-lg hover:shadow-xl flex items-center justify-center gap-2`}
                 >
                   <span>✨</span>
                   Create Event
@@ -975,9 +1237,9 @@ const Calendar: React.FC<CalendarProps> = ({ themeColor }) => {
       {/* Modern Calendar Creation Modal */}
       {showCalendarModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-3xl p-8 w-full max-w-lg shadow-2xl">
+          <div className={`bg-gradient-to-br ${themeColors.gradient.background} rounded-3xl p-8 w-full max-w-lg shadow-2xl backdrop-blur-sm border border-white/20`}>
             <div className="flex justify-between items-center mb-8">
-              <h2 className="text-3xl font-light text-gray-800">🗓️ Create New Calendar</h2>
+              <h2 className={`text-3xl font-light ${themeColors.text.title}`}>🗓️ Create New Calendar</h2>
               <button
                 onClick={resetCalendarForm}
                 className="w-10 h-10 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition-all duration-200 text-gray-600 hover:text-gray-800"
@@ -996,7 +1258,7 @@ const Calendar: React.FC<CalendarProps> = ({ themeColor }) => {
                   type="text"
                   value={calendarForm.name || ''}
                   onChange={(e) => setCalendarForm({ ...calendarForm, name: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all duration-200 bg-gray-50 focus:bg-white"
+                  className={`w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 ${themeColors.focus} outline-none transition-all duration-200 bg-white/80 focus:bg-white`}
                   placeholder="What's this calendar for?"
                   required
                 />
@@ -1011,7 +1273,7 @@ const Calendar: React.FC<CalendarProps> = ({ themeColor }) => {
                   value={calendarForm.description || ''}
                   onChange={(e) => setCalendarForm({ ...calendarForm, description: e.target.value })}
                   rows={3}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all duration-200 bg-gray-50 focus:bg-white resize-none"
+                  className={`w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 ${themeColors.focus} outline-none transition-all duration-200 bg-white/80 focus:bg-white resize-none`}
                   placeholder="Describe this calendar..."
                 />
               </div>
@@ -1077,7 +1339,7 @@ const Calendar: React.FC<CalendarProps> = ({ themeColor }) => {
                 <button
                   type="button"
                   onClick={resetCalendarForm}
-                  className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-all duration-200 font-medium"
+                  className="flex-1 px-6 py-3 border-2 border-gray-400 text-gray-700 bg-gray-50 rounded-xl hover:bg-gray-200 hover:border-gray-500 transition-all duration-200 font-medium shadow-sm hover:shadow-md"
                 >
                   Cancel
                 </button>
@@ -1093,6 +1355,114 @@ const Calendar: React.FC<CalendarProps> = ({ themeColor }) => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modern Event Details Modal */}
+      {showEventDetailsModal && selectedEvents.length > 0 && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className={`bg-gradient-to-br ${themeColors.gradient.background} rounded-3xl p-8 w-full max-w-2xl shadow-2xl backdrop-blur-sm border border-white/20 max-h-[80vh] overflow-y-auto`}>
+            <div className="flex justify-between items-center mb-8">
+              <h2 className={`text-3xl font-light ${themeColors.text.title}`}>
+                📅 Events on {selectedDate?.toLocaleDateString('en-US', {
+                  weekday: 'long',
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric'
+                })}
+              </h2>
+              <button
+                onClick={() => setShowEventDetailsModal(false)}
+                className="w-10 h-10 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition-all duration-200 text-gray-600 hover:text-gray-800"
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              {selectedEvents.map((event, index) => (
+                <div
+                  key={event.id}
+                  className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-white/30 shadow-lg hover:shadow-xl transition-all duration-300"
+                  style={{
+                    borderLeft: `6px solid ${event.color || themeColor}`
+                  }}
+                >
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="flex-1">
+                      <h3 className="text-xl font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                        <div
+                          className="w-4 h-4 rounded-full shadow-sm"
+                          style={{ backgroundColor: event.color || themeColor }}
+                        ></div>
+                        {event.title}
+                      </h3>
+                      {event.description && (
+                        <p className="text-gray-600 text-sm mb-3 leading-relaxed">
+                          {event.description}
+                        </p>
+                      )}
+                    </div>
+                    <button
+                      onClick={() => handleDeleteEvent(event.id)}
+                      className="w-8 h-8 bg-red-500 text-white rounded-lg hover:bg-red-600 flex items-center justify-center text-sm font-bold transition-all duration-300 hover:scale-110 hover:rotate-6 border border-red-400 shadow-md flex-shrink-0 ml-4"
+                      title="Delete Event"
+                    >
+                      🗑️
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                    <div className="flex items-center gap-2 text-gray-600">
+                      <span className="text-blue-500">🕒</span>
+                      <span className="font-medium">Time:</span>
+                      <span>
+                        {event.isAllDay ? 'All Day' : `${event.startTime || 'No time'} - ${event.endTime || 'No end time'}`}
+                      </span>
+                    </div>
+
+                    {event.location && (
+                      <div className="flex items-center gap-2 text-gray-600">
+                        <span className="text-green-500">📍</span>
+                        <span className="font-medium">Location:</span>
+                        <span>{event.location}</span>
+                      </div>
+                    )}
+
+                    {event.calendar && (
+                      <div className="flex items-center gap-2 text-gray-600">
+                        <span className="text-purple-500">📋</span>
+                        <span className="font-medium">Calendar:</span>
+                        <span>{event.calendar.name}</span>
+                      </div>
+                    )}
+
+                    <div className="flex items-center gap-2 text-gray-600">
+                      <span className="text-orange-500">📊</span>
+                      <span className="font-medium">Type:</span>
+                      <span className="px-2 py-1 bg-gray-100 rounded-lg text-xs font-medium">
+                        {event.isAllDay ? 'All-day Event' : 'Timed Event'}
+                      </span>
+                    </div>
+                  </div>
+
+                  {index < selectedEvents.length - 1 && (
+                    <div className="mt-4 border-b border-gray-200"></div>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-8 pt-6 border-t border-white/20 flex justify-center">
+              <button
+                onClick={() => setShowEventDetailsModal(false)}
+                className={`px-8 py-3 ${themeColors.button} text-white rounded-xl font-medium transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl flex items-center gap-2`}
+              >
+                <span>✨</span>
+                Close
+              </button>
+            </div>
           </div>
         </div>
       )}
