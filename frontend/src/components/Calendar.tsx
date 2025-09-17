@@ -19,6 +19,7 @@ const Calendar: React.FC<CalendarProps> = ({ themeColor }) => {
   const [showCalendarModal, setShowCalendarModal] = useState(false);
   const [showEventDetailsModal, setShowEventDetailsModal] = useState(false);
   const [selectedEvents, setSelectedEvents] = useState<Event[]>([]);
+  const [activeTab, setActiveTab] = useState<'calendars' | 'events'>('calendars');
   const [eventForm, setEventForm] = useState<Partial<CreateEventRequest>>({
     title: '',
     description: '',
@@ -772,152 +773,138 @@ const Calendar: React.FC<CalendarProps> = ({ themeColor }) => {
           </div>
         </section>
 
-        {/* Events Section */}
-        <section className="backdrop-blur-md bg-white/70 border border-blue-200 rounded-3xl shadow-xl p-8 hover:bg-white/80 transition-all duration-300">
-          <h2 className="text-2xl font-light text-gray-800 mb-6">Events</h2>
+        {/* Calendar & Events Section */}
+        <section className="backdrop-blur-md bg-white/70 border border-blue-200 rounded-3xl shadow-xl p-6 hover:bg-white/80 transition-all duration-300">
+          {/* Tab Navigation */}
+          <div className="flex mb-6 bg-gray-100 rounded-xl p-1">
+            <button
+              onClick={() => setActiveTab('calendars')}
+              className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all duration-200 ${
+                activeTab === 'calendars'
+                  ? 'text-white shadow-md'
+                  : 'text-gray-600 hover:text-gray-800'
+              }`}
+              style={{
+                backgroundColor: activeTab === 'calendars' ? themeColor : 'transparent'
+              }}
+            >
+              🗓️ Calendars
+            </button>
+            <button
+              onClick={() => setActiveTab('events')}
+              className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all duration-200 ${
+                activeTab === 'events'
+                  ? 'text-white shadow-md'
+                  : 'text-gray-600 hover:text-gray-800'
+              }`}
+              style={{
+                backgroundColor: activeTab === 'events' ? themeColor : 'transparent'
+              }}
+            >
+              📅 Events
+            </button>
+          </div>
 
-          {/* Calendar Selector */}
-          <div className="mb-6 space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-medium text-gray-700 flex items-center gap-2">
-                🗓️ Calendars
-              </h3>
-              <button
-                onClick={handleAddCalendar}
-                className={`text-sm ${themeColors.button} text-white px-4 py-2 rounded-xl transition-all duration-200 flex items-center gap-2 shadow-md hover:shadow-lg hover:scale-105`}
-              >
-                <span className="text-xs">+</span>
-                New Calendar
-              </button>
-            </div>
+          {/* Calendars Tab */}
+          {activeTab === 'calendars' && (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-medium text-gray-700">My Calendars</h3>
+                <button
+                  onClick={handleAddCalendar}
+                  className={`text-sm ${themeColors.button} text-white px-3 py-1.5 rounded-lg transition-all duration-200 flex items-center gap-1.5 shadow-sm hover:shadow-md hover:scale-105`}
+                >
+                  <span className="text-sm">+</span>
+                  New
+                </button>
+              </div>
 
-            {/* Enhanced Calendar Grid with Event Color Previews */}
-            <div className="grid grid-cols-1 gap-2 max-h-32 overflow-y-auto">
-              {calendars.map((calendar) => {
-                const calendarEvents = events.filter(e => e.calendar?.id === calendar.id || (!e.calendar && calendar.id === selectedCalendarId));
-                const eventColors = [...new Set(calendarEvents.map(e => e.color).filter(Boolean))];
+              {/* Simplified Calendar List */}
+              <div className="space-y-2 max-h-96 overflow-y-auto">
+                {calendars.map((calendar) => {
+                  const calendarEvents = events.filter(e => e.calendar?.id === calendar.id || (!e.calendar && calendar.id === selectedCalendarId));
 
-                return (
-                  <div
-                    key={calendar.id}
-                    onClick={() => setSelectedCalendarId(calendar.id)}
-                    className={`
-                      p-3 rounded-2xl cursor-pointer transition-all duration-300 border-2 group hover:scale-105 hover:shadow-md relative overflow-hidden
-                      ${selectedCalendarId === calendar.id
-                        ? 'border-white shadow-lg scale-105'
-                        : 'border-gray-200 hover:border-gray-300'}
-                    `}
-                    style={{
-                      background: selectedCalendarId === calendar.id
-                        ? `linear-gradient(135deg, ${userData?.themeColor || '#3b82f6'}, ${userData?.themeColor || '#3b82f6'}dd)`
-                        : `linear-gradient(135deg, ${calendar.color}20, ${calendar.color}10)`,
-                      boxShadow: selectedCalendarId === calendar.id
-                        ? `0 8px 25px ${userData?.themeColor || '#3b82f6'}44`
-                        : `0 2px 8px ${calendar.color}22`
-                    }}
-                  >
-                    {/* Event color accent bars */}
-                    {eventColors.length > 0 && (
-                      <div className="absolute top-0 right-0 bottom-0 w-1 flex flex-col">
-                        {eventColors.slice(0, 3).map((color, index) => (
+                  return (
+                    <div
+                      key={calendar.id}
+                      onClick={() => setSelectedCalendarId(calendar.id)}
+                      className={`
+                        p-3 rounded-xl cursor-pointer transition-all duration-200 border group hover:shadow-sm
+                        ${selectedCalendarId === calendar.id
+                          ? 'border-2 shadow-md'
+                          : 'border border-gray-200 hover:border-gray-300'}
+                      `}
+                      style={{
+                        background: selectedCalendarId === calendar.id
+                          ? `linear-gradient(135deg, ${themeColor}15, ${themeColor}08)`
+                          : 'white',
+                        borderColor: selectedCalendarId === calendar.id ? themeColor : undefined
+                      }}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
                           <div
-                            key={`${color}-${index}`}
-                            className="flex-1 opacity-60"
+                            className="w-3 h-3 rounded-full shadow-sm"
                             style={{
-                              background: `linear-gradient(135deg, ${color}, ${color}dd)`
+                              backgroundColor: calendar.color
                             }}
                           />
-                        ))}
-                      </div>
-                    )}
 
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="relative">
-                          {/* Main calendar color indicator */}
-                          <div
-                            className="w-4 h-4 rounded-full shadow-md ring-2 ring-white"
-                            style={{
-                              background: `linear-gradient(135deg, ${calendar.color}, ${calendar.color}dd)`,
-                              boxShadow: `0 2px 8px ${calendar.color}44`
-                            }}
-                          />
-
-                          {/* Event color overlay for calendars with custom event colors */}
-                          {eventColors.length > 0 && (
-                            <div className="absolute -bottom-1 -right-1 w-2 h-2 rounded-full border border-white shadow-sm"
-                                 style={{ background: `linear-gradient(45deg, ${eventColors[0]}, ${eventColors[0]}dd)` }}
-                                 title="Has custom event colors" />
-                          )}
-                        </div>
-
-                        <div>
                           <div className="flex items-center gap-2">
-                            <div
+                            <span
                               className={`font-medium transition-colors ${
                                 selectedCalendarId === calendar.id
-                                  ? 'text-white'
-                                  : 'text-gray-800 group-hover:text-gray-900'
+                                  ? 'text-gray-900'
+                                  : 'text-gray-700 group-hover:text-gray-900'
                               }`}
                             >
                               {calendar.name}
-                            </div>
+                            </span>
 
-                            {/* Event count badge */}
                             {calendarEvents.length > 0 && (
                               <span
-                                className={`text-xs px-1.5 py-0.5 rounded-full font-medium ${
+                                className={`text-xs px-2 py-0.5 rounded-full font-medium ${
                                   selectedCalendarId === calendar.id
-                                    ? 'bg-white/20 text-white'
-                                    : 'bg-gray-100 text-gray-600'
+                                    ? 'text-gray-600'
+                                    : 'bg-gray-100 text-gray-500'
                                 }`}
+                                style={{
+                                  backgroundColor: selectedCalendarId === calendar.id ? `${themeColor}20` : undefined,
+                                  color: selectedCalendarId === calendar.id ? themeColor : undefined
+                                }}
                               >
                                 {calendarEvents.length}
                               </span>
                             )}
                           </div>
-
-                          {calendar.description && (
-                            <div
-                              className={`text-xs transition-colors ${
-                                selectedCalendarId === calendar.id
-                                  ? 'text-white/80'
-                                  : 'text-gray-600'
-                              }`}
-                            >
-                              {calendar.description}
-                            </div>
-                          )}
                         </div>
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        {/* Event color dots preview */}
-                        {eventColors.length > 0 && (
-                          <div className="flex gap-0.5">
-                            {eventColors.slice(0, 3).map((color, index) => (
-                              <div
-                                key={`dot-${color}-${index}`}
-                                className="w-1.5 h-1.5 rounded-full"
-                                style={{ background: color }}
-                                title={`Custom event color`}
-                              />
-                            ))}
-                          </div>
-                        )}
 
                         {selectedCalendarId === calendar.id && (
-                          <div className="text-white text-sm">✓</div>
+                          <div className="text-sm" style={{ color: themeColor }}>✓</div>
                         )}
                       </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
-          </div>
+          )}
 
-          <div className="space-y-4 mb-8">
+          {/* Events Tab */}
+          {activeTab === 'events' && (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-medium text-gray-700">
+                  Events
+                  {selectedCalendarId && calendars.find(c => c.id === selectedCalendarId) && (
+                    <span className="text-sm font-normal text-gray-500 ml-2">
+                      in {calendars.find(c => c.id === selectedCalendarId)?.name}
+                    </span>
+                  )}
+                </h3>
+              </div>
+
+              <div className="space-y-4 max-h-96 overflow-y-auto">
             {events.length === 0 ? (
               <div className="text-center py-12 text-gray-500">
                 <div className="text-6xl mb-4 opacity-40">📅</div>
@@ -1004,15 +991,19 @@ const Calendar: React.FC<CalendarProps> = ({ themeColor }) => {
                   </div>
                 ))
             )}
-          </div>
+              </div>
 
-          <button
-            onClick={handleAddEvent}
-            className={`w-full ${themeColors.button} text-white py-4 px-6 rounded-2xl font-medium transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center gap-2`}
-          >
-            <span className="text-xl">+</span>
-            Add Event
-          </button>
+              <div className="mt-6">
+                <button
+                  onClick={handleAddEvent}
+                  className={`w-full ${themeColors.button} text-white py-3 px-6 rounded-xl font-medium transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center gap-2`}
+                >
+                  <span className="text-lg">+</span>
+                  Add Event
+                </button>
+              </div>
+            </div>
+          )}
         </section>
       </main>
 
