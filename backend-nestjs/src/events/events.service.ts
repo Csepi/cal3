@@ -1,9 +1,8 @@
 import { Injectable, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Between } from 'typeorm';
+import { Repository } from 'typeorm';
 import { Event } from '../entities/event.entity';
-import { Calendar, SharePermission } from '../entities/calendar.entity';
-import { CalendarShare } from '../entities/calendar.entity';
+import { Calendar, SharePermission, CalendarShare } from '../entities/calendar.entity';
 import { CreateEventDto, UpdateEventDto } from '../dto/event.dto';
 
 @Injectable()
@@ -39,13 +38,7 @@ export class EventsService {
       throw new ForbiddenException('Insufficient permissions to create events in this calendar');
     }
 
-    const event = this.eventRepository.create({
-      ...eventData,
-      calendarId,
-      createdById: userId,
-      startDate: new Date(eventData.startDate),
-      endDate: eventData.endDate ? new Date(eventData.endDate) : undefined,
-    });
+    const event = this.createEventEntity(eventData, calendarId, userId);
 
     return this.eventRepository.save(event);
   }
@@ -81,13 +74,7 @@ export class EventsService {
       throw new NotFoundException('Calendar not found');
     }
 
-    const event = this.eventRepository.create({
-      ...eventData,
-      calendarId: calendar.id,
-      createdById: 1, // Default to user ID 1 for public events
-      startDate: new Date(eventData.startDate),
-      endDate: eventData.endDate ? new Date(eventData.endDate) : undefined,
-    });
+    const event = this.createEventEntity(eventData, calendar.id, 1);
 
     return this.eventRepository.save(event);
   }
@@ -171,6 +158,14 @@ export class EventsService {
     }
     if (updateEventDto.endDate) {
       updateEventDto.endDate = new Date(updateEventDto.endDate) as any;
+    }
+
+    // Handle time fields - convert empty strings to undefined
+    if ('startTime' in updateEventDto) {
+      (updateEventDto as any).startTime = updateEventDto.startTime && updateEventDto.startTime !== '' ? updateEventDto.startTime : undefined;
+    }
+    if ('endTime' in updateEventDto) {
+      (updateEventDto as any).endTime = updateEventDto.endTime && updateEventDto.endTime !== '' ? updateEventDto.endTime : undefined;
     }
 
     Object.assign(event, updateEventDto);
@@ -276,5 +271,17 @@ export class EventsService {
     });
 
     return !!share && (share.permission === SharePermission.WRITE || share.permission === SharePermission.ADMIN);
+  }
+
+  private createEventEntity(eventData: any, calendarId: number, createdById: number) {
+    return this.eventRepository.create({
+      ...eventData,
+      calendarId,
+      createdById,
+      startDate: new Date(eventData.startDate),
+      endDate: eventData.endDate ? new Date(eventData.endDate) : undefined,
+      startTime: eventData.startTime && eventData.startTime !== '' ? eventData.startTime : undefined,
+      endTime: eventData.endTime && eventData.endTime !== '' ? eventData.endTime : undefined,
+    });
   }
 }
