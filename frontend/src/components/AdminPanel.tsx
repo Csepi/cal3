@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import ConfirmationDialog from './ConfirmationDialog';
 
 interface User {
   id: number;
@@ -55,7 +56,11 @@ interface DatabaseStats {
   lastUpdated: string;
 }
 
-const AdminPanel: React.FC = () => {
+interface AdminPanelProps {
+  themeColor?: string;
+}
+
+const AdminPanel: React.FC<AdminPanelProps> = ({ themeColor = '#3b82f6' }) => {
   const [activeTab, setActiveTab] = useState<'users' | 'calendars' | 'events' | 'shares' | 'stats'>('stats');
   const [users, setUsers] = useState<User[]>([]);
   const [calendars, setCalendars] = useState<Calendar[]>([]);
@@ -73,6 +78,20 @@ const AdminPanel: React.FC = () => {
 
   // Form data
   const [formData, setFormData] = useState<any>({});
+
+  // Confirmation dialog state
+  const [confirmDialog, setConfirmDialog] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+    confirmText?: string;
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: () => {}
+  });
 
   const apiCall = async (endpoint: string, token: string, method: string = 'GET', data?: any) => {
     const options: RequestInit = {
@@ -176,18 +195,44 @@ const AdminPanel: React.FC = () => {
     }
   };
 
-  const handleDelete = async (entityType: 'user' | 'calendar' | 'event', id: number) => {
-    if (!window.confirm(`Are you sure you want to delete this ${entityType}?`)) return;
+  const handleDelete = (entityType: 'user' | 'calendar' | 'event', id: number) => {
+    // Get the item details for a more specific confirmation message
+    let itemName = '';
+    let item: any = null;
 
-    try {
-      const token = localStorage.getItem('admin_token');
-      if (!token) return;
-
-      await apiCall(`/admin/${entityType}s/${id}`, token, 'DELETE');
-      await loadData(entityType + 's');
-    } catch (err) {
-      setError(err instanceof Error ? err.message : `Failed to delete ${entityType}`);
+    if (entityType === 'user') {
+      item = users.find(u => u.id === id);
+      itemName = item ? `${item.username} (${item.email})` : 'this user';
+    } else if (entityType === 'calendar') {
+      item = calendars.find(c => c.id === id);
+      itemName = item ? item.name : 'this calendar';
+    } else if (entityType === 'event') {
+      item = events.find(e => e.id === id);
+      itemName = item ? item.title : 'this event';
     }
+
+    setConfirmDialog({
+      isOpen: true,
+      title: `Delete ${entityType.charAt(0).toUpperCase() + entityType.slice(1)}`,
+      message: `Are you sure you want to delete "${itemName}"? This action cannot be undone and may affect other related data.`,
+      confirmText: `Delete ${entityType.charAt(0).toUpperCase() + entityType.slice(1)}`,
+      onConfirm: async () => {
+        try {
+          const token = localStorage.getItem('admin_token');
+          if (!token) {
+            setConfirmDialog({ ...confirmDialog, isOpen: false });
+            return;
+          }
+
+          await apiCall(`/admin/${entityType}s/${id}`, token, 'DELETE');
+          await loadData(entityType + 's');
+          setConfirmDialog({ ...confirmDialog, isOpen: false });
+        } catch (err) {
+          setError(err instanceof Error ? err.message : `Failed to delete ${entityType}`);
+          setConfirmDialog({ ...confirmDialog, isOpen: false });
+        }
+      }
+    });
   };
 
   const handleUpdateUserRole = async (userId: number, role: string) => {
@@ -931,6 +976,17 @@ const AdminPanel: React.FC = () => {
       </div>
 
       {renderModal()}
+
+      {/* Confirmation Dialog */}
+      <ConfirmationDialog
+        isOpen={confirmDialog.isOpen}
+        title={confirmDialog.title}
+        message={confirmDialog.message}
+        confirmText={confirmDialog.confirmText}
+        themeColor={themeColor}
+        onConfirm={confirmDialog.onConfirm}
+        onCancel={() => setConfirmDialog({ ...confirmDialog, isOpen: false })}
+      />
     </div>
   );
 };

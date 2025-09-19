@@ -9,7 +9,7 @@ export class MicrosoftStrategy extends PassportStrategy(Strategy, 'microsoft') {
     super({
       clientID: process.env.MICROSOFT_CLIENT_ID || 'your-microsoft-client-id',
       clientSecret: process.env.MICROSOFT_CLIENT_SECRET || 'your-microsoft-client-secret',
-      callbackURL: process.env.MICROSOFT_CALLBACK_URL || 'http://localhost:3001/api/auth/microsoft/callback',
+      callbackURL: process.env.MICROSOFT_CALLBACK_URL || 'http://localhost:8081/api/auth/microsoft/callback',
       scope: ['openid', 'profile', 'email'],
       tenant: 'common',
     });

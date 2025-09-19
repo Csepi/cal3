@@ -250,6 +250,98 @@ class ApiService {
 
     return await response.json();
   }
+
+  // Calendar Sync methods
+  async getCalendarSyncStatus(): Promise<any> {
+    const response = await fetch(`${API_BASE_URL}/api/calendar-sync/status`, {
+      headers: this.getAuthHeaders(),
+    });
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        throw new Error('Authentication required. Please log in to view sync status.');
+      }
+      // Return default status if sync not configured yet
+      if (response.status === 404) {
+        return {
+          providers: [
+            { provider: 'google', isConnected: false, calendars: [], syncedCalendars: [] },
+            { provider: 'microsoft', isConnected: false, calendars: [], syncedCalendars: [] }
+          ]
+        };
+      }
+      throw new Error('Failed to fetch sync status');
+    }
+
+    return await response.json();
+  }
+
+  async getCalendarAuthUrl(provider: 'google' | 'microsoft'): Promise<string> {
+    const response = await fetch(`${API_BASE_URL}/api/calendar-sync/auth/${provider}`, {
+      headers: this.getAuthHeaders(),
+    });
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        throw new Error('Authentication required. Please log in to connect calendar.');
+      }
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to get authorization URL');
+    }
+
+    const data = await response.json();
+    return data.authUrl;
+  }
+
+  async syncCalendars(syncData: { provider: string, calendars: Array<{ externalId: string, localName: string }> }): Promise<any> {
+    const response = await fetch(`${API_BASE_URL}/api/calendar-sync/sync`, {
+      method: 'POST',
+      headers: this.getAuthHeaders(),
+      body: JSON.stringify(syncData),
+    });
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        throw new Error('Authentication required. Please log in to sync calendars.');
+      }
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to sync calendars');
+    }
+
+    return await response.json();
+  }
+
+  async disconnectCalendarProvider(): Promise<void> {
+    const response = await fetch(`${API_BASE_URL}/api/calendar-sync/disconnect`, {
+      method: 'POST',
+      headers: this.getAuthHeaders(),
+    });
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        throw new Error('Authentication required. Please log in to disconnect provider.');
+      }
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to disconnect provider');
+    }
+  }
+
+  async forceCalendarSync(): Promise<any> {
+    const response = await fetch(`${API_BASE_URL}/api/calendar-sync/force`, {
+      method: 'POST',
+      headers: this.getAuthHeaders(),
+    });
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        throw new Error('Authentication required. Please log in to force sync.');
+      }
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to force sync');
+    }
+
+    return await response.json();
+  }
 }
 
 export const apiService = new ApiService();

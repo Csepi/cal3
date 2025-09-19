@@ -48,9 +48,27 @@ export class AuthController {
   @UseGuards(AuthGuard('google'))
   @ApiOperation({ summary: 'Google OAuth callback' })
   async googleAuthRedirect(@Req() req, @Res() res) {
-    const result = req.user;
-    // Redirect to frontend with token
-    const redirectUrl = `http://localhost:8080/auth/callback?token=${result.access_token}&provider=google`;
+    const authResult = req.user;
+    console.log('Google OAuth callback - authResult:', JSON.stringify(authResult, null, 2));
+
+    // Check if this is a calendar sync request
+    const state = req.query.state;
+    if (state && state.includes('calendar-sync')) {
+      // Extract user ID from JWT token if available
+      const userId = authResult.userId || authResult.id;
+      const code = req.query.code;
+
+      if (code && userId) {
+        // This is a calendar sync request, redirect to calendar sync controller
+        const redirectUrl = `http://localhost:8081/api/calendar-sync/callback/google?code=${code}&state=${state}&userId=${userId}`;
+        return res.redirect(redirectUrl);
+      }
+    }
+
+    // Regular auth flow
+    const token = authResult.access_token;
+    const redirectUrl = `http://localhost:8080/auth/callback?token=${token}&provider=google`;
+    console.log('Google OAuth callback - redirectUrl:', redirectUrl);
     return res.redirect(redirectUrl);
   }
 
@@ -66,9 +84,27 @@ export class AuthController {
   @UseGuards(AuthGuard('microsoft'))
   @ApiOperation({ summary: 'Microsoft OAuth callback' })
   async microsoftAuthRedirect(@Req() req, @Res() res) {
-    const result = req.user;
-    // Redirect to frontend with token
-    const redirectUrl = `http://localhost:8080/auth/callback?token=${result.access_token}&provider=microsoft`;
+    const authResult = req.user;
+    console.log('Microsoft OAuth callback - authResult:', JSON.stringify(authResult, null, 2));
+
+    // Check if this is a calendar sync request
+    const state = req.query.state;
+    if (state && state.includes('calendar-sync')) {
+      // Extract user ID from JWT token if available
+      const userId = authResult.userId || authResult.id;
+      const code = req.query.code;
+
+      if (code && userId) {
+        // This is a calendar sync request, redirect to calendar sync controller
+        const redirectUrl = `http://localhost:8081/api/calendar-sync/callback/microsoft?code=${code}&state=${state}&userId=${userId}`;
+        return res.redirect(redirectUrl);
+      }
+    }
+
+    // Regular auth flow
+    const token = authResult.access_token;
+    const redirectUrl = `http://localhost:8080/auth/callback?token=${token}&provider=microsoft`;
+    console.log('Microsoft OAuth callback - redirectUrl:', redirectUrl);
     return res.redirect(redirectUrl);
   }
 }

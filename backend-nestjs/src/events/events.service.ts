@@ -273,15 +273,17 @@ export class EventsService {
     return !!share && (share.permission === SharePermission.WRITE || share.permission === SharePermission.ADMIN);
   }
 
-  private createEventEntity(eventData: any, calendarId: number, createdById: number) {
-    return this.eventRepository.create({
-      ...eventData,
-      calendarId,
-      createdById,
-      startDate: new Date(eventData.startDate),
-      endDate: eventData.endDate ? new Date(eventData.endDate) : undefined,
-      startTime: eventData.startTime && eventData.startTime !== '' ? eventData.startTime : undefined,
-      endTime: eventData.endTime && eventData.endTime !== '' ? eventData.endTime : undefined,
-    });
+  private createEventEntity(eventData: any, calendarId: number, createdById: number): Event {
+    const event = new Event();
+    Object.assign(event, eventData);
+    event.calendarId = calendarId;
+    event.createdById = createdById;
+    event.startDate = new Date(eventData.startDate);
+    if (eventData.endDate) {
+      event.endDate = new Date(eventData.endDate);
+    }
+    event.startTime = eventData.startTime && eventData.startTime !== '' ? eventData.startTime : undefined;
+    event.endTime = eventData.endTime && eventData.endTime !== '' ? eventData.endTime : undefined;
+    return event;
   }
 }

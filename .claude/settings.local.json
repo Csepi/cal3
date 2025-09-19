@@ -82,7 +82,14 @@
       "Bash(az postgres flexible-server firewall-rule create:*)",
       "Bash(az postgres flexible-server list:*)",
       "Bash(psql:*)",
-      "Bash(git checkout:*)"
+      "Bash(git checkout:*)",
+      "Bash(tasklist:*)",
+      "Bash(sqlite3:*)",
+      "Bash(DB_PASSWORD=\"Enter.Enter\" PORT=8081 JWT_SECRET=\"calendar-secret-key\" npm run start:dev)",
+      "Bash(ping:*)",
+      "Bash(npm run:*)",
+      "Bash(set JWT_SECRET=calendar-secret-key)",
+      "Bash(az postgres flexible-server db create:*)"
     ],
     "deny": [],
     "ask": []

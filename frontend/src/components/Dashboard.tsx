@@ -3,18 +3,28 @@ import Login from './Login';
 import Calendar from './Calendar';
 import AdminPanel from './AdminPanel';
 import UserProfile from './UserProfile';
+import CalendarSync from './CalendarSync';
 import { apiService } from '../services/api';
 
 const Dashboard: React.FC = () => {
   const [user, setUser] = useState<string | null>(null);
   const [userRole, setUserRole] = useState<string>('user');
-  const [currentView, setCurrentView] = useState<'calendar' | 'admin' | 'profile'>('calendar');
+  const [currentView, setCurrentView] = useState<'calendar' | 'admin' | 'profile' | 'sync'>('calendar');
   const [themeColor, setThemeColor] = useState<string>('#3b82f6');
   const [userProfile, setUserProfile] = useState<any>(null);
 
   const handleLogin = (username: string, token?: string, role?: string, userData?: any) => {
     setUser(username);
     setUserRole(role || 'user');
+
+    // Store authentication data in localStorage for persistence
+    localStorage.setItem('username', username);
+    localStorage.setItem('userRole', role || 'user');
+    if (token) {
+      localStorage.setItem('authToken', token);
+      // Note: apiService automatically reads token from localStorage in getAuthHeaders()
+    }
+
     if (userData && userData.themeColor) {
       setThemeColor(userData.themeColor);
     }
@@ -27,7 +37,13 @@ const Dashboard: React.FC = () => {
     setCurrentView('calendar');
     setThemeColor('#3b82f6');
     setUserProfile(null);
+
+    // Clear all authentication data from localStorage
+    localStorage.removeItem('username');
+    localStorage.removeItem('userRole');
+    localStorage.removeItem('authToken');
     localStorage.removeItem('admin_token');
+
     apiService.logout();
   };
 
@@ -46,6 +62,19 @@ const Dashboard: React.FC = () => {
   const handleThemeChange = (newTheme: string) => {
     setThemeColor(newTheme);
   };
+
+  // Initialize authentication state from localStorage on component mount
+  useEffect(() => {
+    const storedUsername = localStorage.getItem('username');
+    const storedRole = localStorage.getItem('userRole');
+    const authToken = localStorage.getItem('authToken');
+
+    if (storedUsername && authToken) {
+      setUser(storedUsername);
+      setUserRole(storedRole || 'user');
+      // Note: apiService automatically reads token from localStorage in getAuthHeaders()
+    }
+  }, []);
 
   // Load user profile on component mount if logged in
   useEffect(() => {
@@ -153,6 +182,16 @@ const Dashboard: React.FC = () => {
               >
                 👤 Profile
               </button>
+              <button
+                onClick={() => setCurrentView('sync')}
+                className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 ${
+                  currentView === 'sync'
+                    ? `${themeColors.primary} text-white shadow-lg`
+                    : `${themeColors.accent} hover:bg-white/50`
+                }`}
+              >
+                🔄 Calendar Sync
+              </button>
               {userRole === 'admin' && (
                 <button
                   onClick={() => setCurrentView('admin')}
@@ -182,7 +221,8 @@ const Dashboard: React.FC = () => {
         {currentView === 'profile' && (
           <UserProfile onThemeChange={handleThemeChange} currentTheme={themeColor} />
         )}
-        {currentView === 'admin' && userRole === 'admin' && <AdminPanel />}
+        {currentView === 'sync' && <CalendarSync themeColor={themeColor} />}
+        {currentView === 'admin' && userRole === 'admin' && <AdminPanel themeColor={themeColor} />}
       </div>
     </div>
   );

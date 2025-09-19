@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import type { Event, CreateEventRequest } from '../types/Event';
 import type { Calendar as CalendarType, CreateCalendarRequest } from '../types/Calendar';
 import { apiService } from '../services/api';
+import ConfirmationDialog from './ConfirmationDialog';
 
 interface CalendarProps {
   themeColor: string;
@@ -36,6 +37,20 @@ const Calendar: React.FC<CalendarProps> = ({ themeColor }) => {
     name: '',
     description: '',
     color: themeColor
+  });
+
+  // Confirmation dialog state
+  const [confirmDialog, setConfirmDialog] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+    confirmText?: string;
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: () => {}
   });
 
   const monthNames = [
@@ -574,15 +589,26 @@ const Calendar: React.FC<CalendarProps> = ({ themeColor }) => {
     return '#3b82f6';
   };
 
-  const handleDeleteEvent = async (eventId: number) => {
-    if (window.confirm('Are you sure you want to delete this event?')) {
-      try {
-        await apiService.deleteEvent(eventId);
-        await loadEvents(); // Refresh events
-      } catch (err) {
-        alert(err instanceof Error ? err.message : 'Failed to delete event');
+  const handleDeleteEvent = (eventId: number) => {
+    const event = events.find(e => e.id === eventId);
+    const eventTitle = event?.title || 'this event';
+
+    setConfirmDialog({
+      isOpen: true,
+      title: 'Delete Event',
+      message: `Are you sure you want to delete "${eventTitle}"? This action cannot be undone.`,
+      confirmText: 'Delete Event',
+      onConfirm: async () => {
+        try {
+          await apiService.deleteEvent(eventId);
+          await loadEvents(); // Refresh events
+          setConfirmDialog({ ...confirmDialog, isOpen: false });
+        } catch (err) {
+          alert(err instanceof Error ? err.message : 'Failed to delete event');
+          setConfirmDialog({ ...confirmDialog, isOpen: false });
+        }
       }
-    }
+    });
   };
 
   const calendarDays = generateCalendarDays();
@@ -1485,6 +1511,17 @@ const Calendar: React.FC<CalendarProps> = ({ themeColor }) => {
           </div>
         </div>
       )}
+
+      {/* Confirmation Dialog */}
+      <ConfirmationDialog
+        isOpen={confirmDialog.isOpen}
+        title={confirmDialog.title}
+        message={confirmDialog.message}
+        confirmText={confirmDialog.confirmText}
+        themeColor={themeColor}
+        onConfirm={confirmDialog.onConfirm}
+        onCancel={() => setConfirmDialog({ ...confirmDialog, isOpen: false })}
+      />
     </div>
   );
 };
