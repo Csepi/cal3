@@ -311,8 +311,12 @@ class ApiService {
     return await response.json();
   }
 
-  async disconnectCalendarProvider(): Promise<void> {
-    const response = await fetch(`${API_BASE_URL}/api/calendar-sync/disconnect`, {
+  async disconnectCalendarProvider(provider?: 'google' | 'microsoft'): Promise<void> {
+    const url = provider
+      ? `${API_BASE_URL}/api/calendar-sync/disconnect/${provider}`
+      : `${API_BASE_URL}/api/calendar-sync/disconnect`;
+
+    const response = await fetch(url, {
       method: 'POST',
       headers: this.getAuthHeaders(),
     });

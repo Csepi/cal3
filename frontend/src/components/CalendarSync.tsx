@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { apiService } from '../services/api';
+import LoadingScreen from './LoadingScreen';
+import { useLoadingProgress } from '../hooks/useLoadingProgress';
 
 interface CalendarSyncProps {
   themeColor: string;
@@ -35,8 +37,9 @@ const CalendarSync: React.FC<CalendarSyncProps> = ({ themeColor }) => {
     providers: []
   });
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedCalendars, setSelectedCalendars] = useState<string[]>([]);
-  const [customCalendarNames, setCustomCalendarNames] = useState<Record<string, string>>({});
+  const [selectedCalendars, setSelectedCalendars] = useState<Record<string, string[]>>({});
+  const [customCalendarNames, setCustomCalendarNames] = useState<Record<string, Record<string, string>>>({});
+  const { loadingState, withProgress } = useLoadingProgress();
 
   // Helper function to get theme-based colors with gradients (matching Calendar component)
   const getThemeColors = (color: string) => {
@@ -299,6 +302,52 @@ const CalendarSync: React.FC<CalendarSyncProps> = ({ themeColor }) => {
 
   useEffect(() => {
     loadSyncStatus();
+
+    // Handle success/error URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const success = urlParams.get('success');
+    const error = urlParams.get('error');
+
+    if (success === 'connected') {
+      // Clear URL parameters to avoid issues with browser extensions
+      const newUrl = window.location.pathname;
+      window.history.replaceState({}, document.title, newUrl);
+
+      // Show success message
+      setTimeout(() => {
+        alert('Calendar connected successfully! Your events are now being synced.');
+      }, 1000);
+    } else if (error) {
+      // Clear URL parameters to avoid issues with browser extensions
+      const newUrl = window.location.pathname;
+      window.history.replaceState({}, document.title, newUrl);
+
+      // Show error message
+      const details = urlParams.get('details');
+      const errorMessage = details ? `Calendar sync failed: ${decodeURIComponent(details)}` : 'Calendar sync failed. Please try again.';
+      setTimeout(() => {
+        alert(errorMessage);
+      }, 1000);
+    }
+
+    // Suppress browser extension async response errors
+    const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
+      if (event.reason && typeof event.reason.message === 'string') {
+        const message = event.reason.message.toLowerCase();
+        if (message.includes('listener indicated an asynchronous response') ||
+            message.includes('message channel closed before a response was received')) {
+          // This is a browser extension error, suppress it
+          event.preventDefault();
+          console.debug('Suppressed browser extension async response error:', event.reason.message);
+        }
+      }
+    };
+
+    window.addEventListener('unhandledrejection', handleUnhandledRejection);
+
+    return () => {
+      window.removeEventListener('unhandledrejection', handleUnhandledRejection);
+    };
   }, []);
 
   const loadSyncStatus = async () => {
@@ -306,37 +355,29 @@ const CalendarSync: React.FC<CalendarSyncProps> = ({ themeColor }) => {
       setIsLoading(true);
       const status = await apiService.getCalendarSyncStatus();
 
-      // Convert new multi-provider format to old single-provider format for compatibility
-      let convertedStatus;
-      if (status.providers && Array.isArray(status.providers)) {
-        // For now, use the first connected provider or show not connected
-        const connectedProvider = status.providers.find(p => p.isConnected);
-        if (connectedProvider) {
-          convertedStatus = {
-            isConnected: true,
-            provider: connectedProvider.provider,
-            calendars: connectedProvider.calendars,
-            syncedCalendars: connectedProvider.syncedCalendars
-          };
-        } else {
-          // No providers connected, pick the first one for UI purposes
-          const firstProvider = status.providers[0];
-          convertedStatus = {
-            isConnected: false,
-            provider: firstProvider ? firstProvider.provider : null,
-            calendars: firstProvider ? firstProvider.calendars : [],
-            syncedCalendars: []
-          };
-        }
+      // Ensure we always have an array of providers
+      if (!status.providers || !Array.isArray(status.providers)) {
+        // Initialize with default providers if not present
+        setSyncStatus({
+          providers: [
+            { provider: 'google', isConnected: false, calendars: [], syncedCalendars: [] },
+            { provider: 'microsoft', isConnected: false, calendars: [], syncedCalendars: [] }
+          ]
+        });
       } else {
-        // Old format, use as-is
-        convertedStatus = status;
+        setSyncStatus(status);
       }
 
-      setSyncStatus(convertedStatus);
-      console.log('Sync status loaded:', convertedStatus);
+      console.log('Sync status loaded:', status);
     } catch (err) {
       console.warn('Could not load sync status:', err);
+      // Initialize with default providers on error
+      setSyncStatus({
+        providers: [
+          { provider: 'google', isConnected: false, calendars: [], syncedCalendars: [] },
+          { provider: 'microsoft', isConnected: false, calendars: [], syncedCalendars: [] }
+        ]
+      });
     } finally {
       setIsLoading(false);
     }
@@ -353,78 +394,122 @@ const CalendarSync: React.FC<CalendarSyncProps> = ({ themeColor }) => {
     }
   };
 
-  const handleCalendarSelect = (calendarId: string, isSelected: boolean) => {
+  const handleCalendarSelect = (provider: string, calendarId: string, isSelected: boolean) => {
+    const currentSelected = selectedCalendars[provider] || [];
+    const currentNames = customCalendarNames[provider] || {};
+
     if (isSelected) {
-      setSelectedCalendars([...selectedCalendars, calendarId]);
+      setSelectedCalendars({
+        ...selectedCalendars,
+        [provider]: [...currentSelected, calendarId]
+      });
+
       // Set default name
-      const calendar = syncStatus.calendars.find(c => c.id === calendarId);
+      const providerData = syncStatus.providers.find(p => p.provider === provider);
+      const calendar = providerData?.calendars.find(c => c.id === calendarId);
       if (calendar) {
         setCustomCalendarNames({
           ...customCalendarNames,
-          [calendarId]: calendar.name
+          [provider]: {
+            ...currentNames,
+            [calendarId]: calendar.name
+          }
         });
       }
     } else {
-      setSelectedCalendars(selectedCalendars.filter(id => id !== calendarId));
-      const newNames = { ...customCalendarNames };
+      setSelectedCalendars({
+        ...selectedCalendars,
+        [provider]: currentSelected.filter(id => id !== calendarId)
+      });
+
+      const newNames = { ...currentNames };
       delete newNames[calendarId];
-      setCustomCalendarNames(newNames);
+      setCustomCalendarNames({
+        ...customCalendarNames,
+        [provider]: newNames
+      });
     }
   };
 
-  const handleCustomNameChange = (calendarId: string, name: string) => {
+  const handleCustomNameChange = (provider: string, calendarId: string, name: string) => {
+    const currentNames = customCalendarNames[provider] || {};
     setCustomCalendarNames({
       ...customCalendarNames,
-      [calendarId]: name
+      [provider]: {
+        ...currentNames,
+        [calendarId]: name
+      }
     });
   };
 
-  const handleSyncCalendars = async () => {
+  const handleSyncCalendars = async (provider: string) => {
     try {
-      setIsLoading(true);
-      await apiService.syncCalendars({
-        provider: syncStatus.provider!,
-        calendars: selectedCalendars.map(id => ({
-          externalId: id,
-          localName: customCalendarNames[id] || syncStatus.calendars.find(c => c.id === id)?.name || 'Synced Calendar'
-        }))
-      });
-      await loadSyncStatus();
-      setSelectedCalendars([]);
-      setCustomCalendarNames({});
+      const providerSelectedCalendars = selectedCalendars[provider] || [];
+      const providerCustomNames = customCalendarNames[provider] || {};
+      const providerData = syncStatus.providers.find(p => p.provider === provider);
+
+      if (providerSelectedCalendars.length === 0) {
+        alert('Please select at least one calendar to sync.');
+        return;
+      }
+
+      await withProgress(async (updateProgress) => {
+        updateProgress(10, 'Preparing calendar sync...');
+
+        updateProgress(30, `Syncing ${providerSelectedCalendars.length} calendars with ${provider}...`);
+
+        await apiService.syncCalendars({
+          provider: provider as 'google' | 'microsoft',
+          calendars: providerSelectedCalendars.map(id => ({
+            externalId: id,
+            localName: providerCustomNames[id] || providerData?.calendars.find(c => c.id === id)?.name || 'Synced Calendar'
+          }))
+        });
+
+        updateProgress(70, 'Refreshing sync status...');
+        await loadSyncStatus();
+
+        updateProgress(90, 'Clearing selections...');
+        // Clear selections for this provider
+        setSelectedCalendars({
+          ...selectedCalendars,
+          [provider]: []
+        });
+        setCustomCalendarNames({
+          ...customCalendarNames,
+          [provider]: {}
+        });
+      }, `Syncing ${providerSelectedCalendars.length} calendars...`);
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Failed to sync calendars');
-    } finally {
-      setIsLoading(false);
     }
   };
 
-  const handleDisconnect = async () => {
+  const handleDisconnect = async (provider: string) => {
     try {
-      setIsLoading(true);
-      await apiService.disconnectCalendarProvider();
-      setSyncStatus({
-        isConnected: false,
-        provider: null,
-        calendars: [],
-        syncedCalendars: []
-      });
+      await withProgress(async (updateProgress) => {
+        updateProgress(20, `Disconnecting from ${provider}...`);
+        await apiService.disconnectCalendarProvider(provider as 'google' | 'microsoft');
+
+        updateProgress(80, 'Refreshing sync status...');
+        await loadSyncStatus();
+      }, `Disconnecting ${provider}...`);
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Failed to disconnect');
-    } finally {
-      setIsLoading(false);
     }
   };
 
   const handleForcSync = async () => {
     try {
-      setIsLoading(true);
-      await apiService.forceCalendarSync();
-      await loadSyncStatus();
+      await withProgress(async (updateProgress) => {
+        updateProgress(20, 'Initializing force sync...');
+        await apiService.forceCalendarSync();
+
+        updateProgress(80, 'Refreshing sync status...');
+        await loadSyncStatus();
+      }, 'Force syncing calendars...');
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Failed to sync');
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -437,7 +522,16 @@ const CalendarSync: React.FC<CalendarSyncProps> = ({ themeColor }) => {
   }
 
   return (
-    <div className={`min-h-screen bg-gradient-to-br ${themeColors.gradient.background}`}>
+    <>
+      {loadingState.isLoading && (
+        <LoadingScreen
+          progress={loadingState.progress}
+          message={loadingState.message}
+          themeColor={themeColor}
+          overlay={true}
+        />
+      )}
+      <div className={`min-h-screen bg-gradient-to-br ${themeColors.gradient.background}`}>
       {/* Animated Background */}
       <div className="absolute inset-0 overflow-hidden">
         <div className={`absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-r ${themeColors.animatedGradient?.circle1 || 'from-blue-300 to-indigo-300'} rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse`}></div>
@@ -456,176 +550,171 @@ const CalendarSync: React.FC<CalendarSyncProps> = ({ themeColor }) => {
         </div>
       </header>
 
-      <main className="relative z-10 max-w-4xl mx-auto p-6 mt-12">{/* Main Content Container */}
-
-        {!syncStatus.isConnected ? (
-          /* Provider Selection */
-          <div className="backdrop-blur-md bg-white/70 border border-blue-200 rounded-3xl shadow-xl p-8 hover:bg-white/80 transition-all duration-300">
-            <h2 className={`text-2xl font-semibold ${themeColors.text.title} mb-6`}>Connect Calendar Provider</h2>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Google Option */}
-              <div className="border-2 border-gray-200 rounded-xl p-6 hover:border-blue-300 transition-all duration-300">
-                <div className="flex items-center space-x-4 mb-4">
-                  <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center">
-                    <span className="text-white text-xl">📧</span>
+      <main className="relative z-10 max-w-4xl mx-auto p-6 mt-12">
+        <div className="space-y-8">
+          {/* Provider Cards */}
+          {syncStatus.providers.map((provider) => (
+            <div key={provider.provider} className="backdrop-blur-md bg-white/70 border border-blue-200 rounded-3xl shadow-xl hover:bg-white/80 transition-all duration-300">
+              {/* Provider Header */}
+              <div className="p-6 border-b border-gray-200">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-4">
+                    <div className={`w-12 h-12 ${provider.provider === 'google' ? 'bg-blue-500' : 'bg-blue-600'} rounded-full flex items-center justify-center`}>
+                      <span className="text-white text-xl">{provider.provider === 'google' ? '📧' : '🏢'}</span>
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-800">
+                        {provider.provider === 'google' ? 'Google Calendar' : 'Microsoft Outlook'}
+                      </h3>
+                      <p className={`text-sm ${provider.isConnected ? 'text-green-600' : 'text-gray-600'}`}>
+                        {provider.isConnected ? '✅ Connected' : '❌ Not connected'}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-gray-800">Google Calendar</h3>
-                    <p className="text-gray-600 text-sm">Sync with your Google Calendar events</p>
+                  <div className="flex space-x-3">
+                    {provider.isConnected ? (
+                      <>
+                        <button
+                          onClick={handleForcSync}
+                          className={`px-4 py-2 ${themeColors.button} text-white rounded-xl font-medium transition-all duration-300 hover:scale-105 shadow-md`}
+                        >
+                          🔄 Force Sync
+                        </button>
+                        <button
+                          onClick={() => handleDisconnect(provider.provider)}
+                          className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-xl font-medium transition-all duration-300 hover:scale-105 shadow-md"
+                        >
+                          🔌 Disconnect
+                        </button>
+                      </>
+                    ) : (
+                      <button
+                        onClick={() => handleProviderConnect(provider.provider)}
+                        className={`px-4 py-2 ${provider.provider === 'google' ? 'bg-blue-500 hover:bg-blue-600' : 'bg-blue-600 hover:bg-blue-700'} text-white rounded-xl font-medium transition-all duration-300 hover:scale-105 shadow-md`}
+                      >
+                        Connect {provider.provider === 'google' ? 'Google' : 'Microsoft'}
+                      </button>
+                    )}
                   </div>
                 </div>
-                <button
-                  onClick={() => handleProviderConnect('google')}
-                  className="w-full bg-blue-500 hover:bg-blue-600 text-white py-3 px-4 rounded-xl font-medium transition-all duration-300 hover:scale-105 shadow-md"
-                >
-                  Connect Google Calendar
-                </button>
               </div>
 
-              {/* Microsoft Option */}
-              <div className="border-2 border-gray-200 rounded-xl p-6 hover:border-blue-300 transition-all duration-300">
-                <div className="flex items-center space-x-4 mb-4">
-                  <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center">
-                    <span className="text-white text-xl">🏢</span>
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-gray-800">Microsoft Outlook</h3>
-                    <p className="text-gray-600 text-sm">Sync with your Microsoft Outlook calendar</p>
-                  </div>
-                </div>
-                <button
-                  onClick={() => handleProviderConnect('microsoft')}
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-xl font-medium transition-all duration-300 hover:scale-105 shadow-md"
-                >
-                  Connect Microsoft Outlook
-                </button>
-              </div>
-            </div>
-          </div>
-        ) : (
-          /* Connected State */
-          <div className="space-y-8">
-            {/* Connection Status */}
-            <div className="backdrop-blur-md bg-white/70 border border-blue-200 rounded-3xl shadow-xl p-6 hover:bg-white/80 transition-all duration-300">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                  <div className={`w-12 h-12 ${syncStatus.provider === 'google' ? 'bg-blue-500' : 'bg-blue-600'} rounded-full flex items-center justify-center`}>
-                    <span className="text-white text-xl">{syncStatus.provider === 'google' ? '📧' : '🏢'}</span>
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-gray-800">
-                      Connected to {syncStatus.provider === 'google' ? 'Google Calendar' : 'Microsoft Outlook'}
-                    </h3>
-                    <p className="text-green-600 text-sm">✅ Active connection</p>
-                  </div>
-                </div>
-                <div className="flex space-x-3">
-                  <button
-                    onClick={handleForcSync}
-                    className={`px-4 py-2 ${themeColors.button} text-white rounded-xl font-medium transition-all duration-300 hover:scale-105 shadow-md`}
-                  >
-                    🔄 Force Sync
-                  </button>
-                  <button
-                    onClick={handleDisconnect}
-                    className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-xl font-medium transition-all duration-300 hover:scale-105 shadow-md"
-                  >
-                    🔌 Disconnect
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Available Calendars */}
-            {syncStatus.calendars.length > 0 && (
-              <div className="backdrop-blur-md bg-white/70 border border-blue-200 rounded-3xl shadow-xl p-6 hover:bg-white/80 transition-all duration-300">
-                <h3 className={`text-xl font-semibold ${themeColors.text.title} mb-4`}>Available Calendars</h3>
-                <div className="space-y-4">
-                  {syncStatus.calendars.map((calendar) => (
-                    <div key={calendar.id} className={`border rounded-xl p-4 ${selectedCalendars.includes(calendar.id) ? `bg-${themeColors.light} border-${themeColors.border} border-2` : 'border-gray-200'}`}>
-                      <div className="flex items-start space-x-4">
-                        <input
-                          type="checkbox"
-                          checked={selectedCalendars.includes(calendar.id)}
-                          onChange={(e) => handleCalendarSelect(calendar.id, e.target.checked)}
-                          className="mt-1"
-                        />
-                        <div className="flex-1">
-                          <div className="flex items-center space-x-2">
-                            <h4 className="font-medium text-gray-800">{calendar.name}</h4>
-                            {calendar.primary && (
-                              <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">Primary</span>
-                            )}
-                          </div>
-                          {calendar.description && (
-                            <p className="text-gray-600 text-sm mt-1">{calendar.description}</p>
-                          )}
-                          {selectedCalendars.includes(calendar.id) && (
-                            <div className="mt-3">
-                              <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Local Calendar Name:
-                              </label>
-                              <input
-                                type="text"
-                                value={customCalendarNames[calendar.id] || calendar.name}
-                                onChange={(e) => handleCustomNameChange(calendar.id, e.target.value)}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                placeholder="Enter custom name for this calendar"
-                              />
+              {/* Provider Content */}
+              {provider.isConnected && (
+                <div className="p-6 space-y-6">
+                  {/* Available Calendars */}
+                  {provider.calendars.length > 0 && (
+                    <div>
+                      <h4 className={`text-lg font-semibold ${themeColors.text.title} mb-4`}>Available Calendars</h4>
+                      <div className="space-y-3">
+                        {provider.calendars.map((calendar) => {
+                          const providerSelectedCalendars = selectedCalendars[provider.provider] || [];
+                          const providerCustomNames = customCalendarNames[provider.provider] || {};
+                          return (
+                            <div key={calendar.id} className={`border rounded-xl p-4 ${providerSelectedCalendars.includes(calendar.id) ? `bg-${themeColors.light} border-${themeColors.border} border-2` : 'border-gray-200'}`}>
+                              <div className="flex items-start space-x-4">
+                                <input
+                                  type="checkbox"
+                                  checked={providerSelectedCalendars.includes(calendar.id)}
+                                  onChange={(e) => handleCalendarSelect(provider.provider, calendar.id, e.target.checked)}
+                                  className="mt-1"
+                                />
+                                <div className="flex-1">
+                                  <div className="flex items-center space-x-2">
+                                    <h5 className="font-medium text-gray-800">{calendar.name}</h5>
+                                    {calendar.primary && (
+                                      <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">Primary</span>
+                                    )}
+                                  </div>
+                                  {calendar.description && (
+                                    <p className="text-gray-600 text-sm mt-1">{calendar.description}</p>
+                                  )}
+                                  {providerSelectedCalendars.includes(calendar.id) && (
+                                    <div className="mt-3">
+                                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Local Calendar Name:
+                                      </label>
+                                      <input
+                                        type="text"
+                                        value={providerCustomNames[calendar.id] || calendar.name}
+                                        onChange={(e) => handleCustomNameChange(provider.provider, calendar.id, e.target.value)}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        placeholder="Enter custom name for this calendar"
+                                      />
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
                             </div>
-                          )}
+                          );
+                        })}
+                      </div>
+
+                      {(selectedCalendars[provider.provider]?.length > 0) && (
+                        <div className="mt-6">
+                          <button
+                            onClick={() => handleSyncCalendars(provider.provider)}
+                            className={`px-6 py-3 ${themeColors.button} text-white rounded-xl font-medium transition-all duration-300 hover:scale-105 shadow-lg`}
+                          >
+                            🔄 Sync Selected Calendars ({selectedCalendars[provider.provider].length})
+                          </button>
                         </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Synced Calendars */}
+                  {provider.syncedCalendars.length > 0 && (
+                    <div>
+                      <h4 className={`text-lg font-semibold ${themeColors.text.title} mb-4`}>Synced Calendars</h4>
+                      <div className="space-y-3">
+                        {provider.syncedCalendars.map((syncedCal, index) => (
+                          <div key={index} className={`bg-${themeColors.light} border border-${themeColors.border} rounded-xl p-4`}>
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <h5 className="font-medium text-gray-800">{syncedCal.localName}</h5>
+                                <p className="text-gray-600 text-sm">
+                                  Synced from: {syncedCal.externalName}
+                                </p>
+                                <p className="text-gray-500 text-xs">
+                                  Last sync: {new Date(syncedCal.lastSync).toLocaleString()}
+                                </p>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">
+                                  ✅ Active
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
                       </div>
                     </div>
-                  ))}
-                </div>
+                  )}
 
-                {selectedCalendars.length > 0 && (
-                  <div className="mt-6">
-                    <button
-                      onClick={handleSyncCalendars}
-                      className={`px-6 py-3 ${themeColors.button} text-white rounded-xl font-medium transition-all duration-300 hover:scale-105 shadow-lg`}
-                    >
-                      🔄 Sync Selected Calendars ({selectedCalendars.length})
-                    </button>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Synced Calendars */}
-            {syncStatus.syncedCalendars.length > 0 && (
-              <div className="backdrop-blur-md bg-white/70 border border-blue-200 rounded-3xl shadow-xl p-6 hover:bg-white/80 transition-all duration-300">
-                <h3 className={`text-xl font-semibold ${themeColors.text.title} mb-4`}>Synced Calendars</h3>
-                <div className="space-y-4">
-                  {syncStatus.syncedCalendars.map((syncedCal, index) => (
-                    <div key={index} className={`bg-${themeColors.light} border border-${themeColors.border} rounded-xl p-4`}>
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <h4 className="font-medium text-gray-800">{syncedCal.localName}</h4>
-                          <p className="text-gray-600 text-sm">
-                            Synced from: {syncedCal.externalName} ({syncedCal.provider})
-                          </p>
-                          <p className="text-gray-500 text-xs">
-                            Last sync: {new Date(syncedCal.lastSync).toLocaleString()}
-                          </p>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">
-                            ✅ Active
-                          </span>
-                        </div>
-                      </div>
+                  {/* No data states */}
+                  {provider.calendars.length === 0 && provider.syncedCalendars.length === 0 && (
+                    <div className="text-center py-8">
+                      <p className="text-gray-600">No calendars available for this provider.</p>
                     </div>
-                  ))}
+                  )}
                 </div>
-              </div>
-            )}
-          </div>
-        )}
+              )}
+
+              {/* Not connected state */}
+              {!provider.isConnected && (
+                <div className="p-6 text-center">
+                  <p className="text-gray-600 mb-4">
+                    Connect your {provider.provider === 'google' ? 'Google Calendar' : 'Microsoft Outlook'} to sync your events.
+                  </p>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
       </main>
-    </div>
+      </div>
+    </>
   );
 };
 

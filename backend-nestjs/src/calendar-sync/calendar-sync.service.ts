@@ -505,7 +505,19 @@ export class CalendarSyncService {
 
   private async fetchMicrosoftCalendarEvents(syncConnection: CalendarSyncConnection, calendarId: string): Promise<any[]> {
     try {
-      const response = await fetch(`https://graph.microsoft.com/v1.0/me/calendars/${calendarId}/events`, {
+      // Set date range: 30 days ago to 365 days in the future
+      const startDate = new Date();
+      startDate.setDate(startDate.getDate() - 30);
+      const endDate = new Date();
+      endDate.setDate(endDate.getDate() + 365);
+
+      const queryParams = new URLSearchParams({
+        '$filter': `start/dateTime ge '${startDate.toISOString()}' and start/dateTime le '${endDate.toISOString()}'`,
+        '$orderby': 'start/dateTime',
+        '$top': '1000' // Limit to 1000 events to avoid performance issues
+      });
+
+      const response = await fetch(`https://graph.microsoft.com/v1.0/me/calendars/${calendarId}/events?${queryParams}`, {
         headers: {
           Authorization: `Bearer ${syncConnection.accessToken}`,
         },
@@ -517,6 +529,7 @@ export class CalendarSyncService {
       }
 
       const data = await response.json();
+      this.logger.log(`[fetchMicrosoftCalendarEvents] Fetched ${data.value?.length || 0} events for calendar ${calendarId}`);
       return data.value || [];
     } catch (error) {
       this.logger.error(`[fetchMicrosoftCalendarEvents] Error:`, error.stack);
@@ -526,7 +539,21 @@ export class CalendarSyncService {
 
   private async fetchGoogleCalendarEvents(syncConnection: CalendarSyncConnection, calendarId: string): Promise<any[]> {
     try {
-      const response = await fetch(`https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events`, {
+      // Set date range: 30 days ago to 365 days in the future
+      const startDate = new Date();
+      startDate.setDate(startDate.getDate() - 30);
+      const endDate = new Date();
+      endDate.setDate(endDate.getDate() + 365);
+
+      const queryParams = new URLSearchParams({
+        'timeMin': startDate.toISOString(),
+        'timeMax': endDate.toISOString(),
+        'orderBy': 'startTime',
+        'singleEvents': 'true',
+        'maxResults': '1000' // Limit to 1000 events to avoid performance issues
+      });
+
+      const response = await fetch(`https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events?${queryParams}`, {
         headers: {
           Authorization: `Bearer ${syncConnection.accessToken}`,
         },
@@ -538,6 +565,7 @@ export class CalendarSyncService {
       }
 
       const data = await response.json();
+      this.logger.log(`[fetchGoogleCalendarEvents] Fetched ${data.items?.length || 0} events for calendar ${calendarId}`);
       return data.items || [];
     } catch (error) {
       this.logger.error(`[fetchGoogleCalendarEvents] Error:`, error.stack);

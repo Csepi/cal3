@@ -88,31 +88,34 @@ export class AdminService {
     return this.userRepository.save(user);
   }
 
-  async deleteUser(userId: number): Promise<void> {
+  async deleteUser(userId: number): Promise<{ message: string }> {
     const user = await this.userRepository.findOne({ where: { id: userId } });
     if (!user) {
       throw new NotFoundException('User not found');
     }
 
     await this.userRepository.remove(user);
+    return { message: 'User deleted successfully' };
   }
 
-  async deleteCalendar(calendarId: number): Promise<void> {
+  async deleteCalendar(calendarId: number): Promise<{ message: string }> {
     const calendar = await this.calendarRepository.findOne({ where: { id: calendarId } });
     if (!calendar) {
       throw new NotFoundException('Calendar not found');
     }
 
     await this.calendarRepository.remove(calendar);
+    return { message: 'Calendar deleted successfully' };
   }
 
-  async deleteEvent(eventId: number): Promise<void> {
+  async deleteEvent(eventId: number): Promise<{ message: string }> {
     const event = await this.eventRepository.findOne({ where: { id: eventId } });
     if (!event) {
       throw new NotFoundException('Event not found');
     }
 
     await this.eventRepository.remove(event);
+    return { message: 'Event deleted successfully' };
   }
 
   // CREATE OPERATIONS

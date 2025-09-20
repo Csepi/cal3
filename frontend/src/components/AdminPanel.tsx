@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import ConfirmationDialog from './ConfirmationDialog';
+import LoadingScreen from './LoadingScreen';
+import { useLoadingProgress, simulateProgress } from '../hooks/useLoadingProgress';
 
 interface User {
   id: number;
@@ -69,6 +71,13 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ themeColor = '#3b82f6' }) => {
   const [stats, setStats] = useState<DatabaseStats | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const { loadingState, withProgress } = useLoadingProgress();
+
+  // Selection states for bulk operations
+  const [selectedUsers, setSelectedUsers] = useState<number[]>([]);
+  const [selectedCalendars, setSelectedCalendars] = useState<number[]>([]);
+  const [selectedEvents, setSelectedEvents] = useState<number[]>([]);
+  const [lastSelectedIndex, setLastSelectedIndex] = useState<{ [key: string]: number }>({});
 
   // Modal states
   const [showModal, setShowModal] = useState(false);
@@ -92,6 +101,67 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ themeColor = '#3b82f6' }) => {
     message: '',
     onConfirm: () => {}
   });
+
+  // Helper function to handle checkbox selection with shift support
+  const handleItemSelection = (
+    itemId: number,
+    itemType: 'user' | 'calendar' | 'event',
+    isChecked: boolean,
+    shiftKey: boolean = false
+  ) => {
+    const getterMap = {
+      user: () => selectedUsers,
+      calendar: () => selectedCalendars,
+      event: () => selectedEvents
+    };
+
+    const setterMap = {
+      user: setSelectedUsers,
+      calendar: setSelectedCalendars,
+      event: setSelectedEvents
+    };
+
+    const dataMap = {
+      user: () => users,
+      calendar: () => calendars,
+      event: () => events
+    };
+
+    const currentSelected = getterMap[itemType]();
+    const setter = setterMap[itemType];
+    const allItems = dataMap[itemType]();
+
+    if (shiftKey && lastSelectedIndex[itemType] !== undefined) {
+      // Shift-click: select range
+      const currentIndex = allItems.findIndex(item => item.id === itemId);
+      const lastIndex = lastSelectedIndex[itemType];
+      const startIndex = Math.min(currentIndex, lastIndex);
+      const endIndex = Math.max(currentIndex, lastIndex);
+
+      const rangeIds = allItems.slice(startIndex, endIndex + 1).map(item => item.id);
+      const newSelected = [...new Set([...currentSelected, ...rangeIds])];
+      setter(newSelected);
+    } else {
+      // Regular click
+      if (isChecked) {
+        setter([...currentSelected, itemId]);
+      } else {
+        setter(currentSelected.filter(id => id !== itemId));
+      }
+
+      const currentIndex = allItems.findIndex(item => item.id === itemId);
+      setLastSelectedIndex(prev => ({ ...prev, [itemType]: currentIndex }));
+    }
+  };
+
+  // Clear selections when tab changes
+  const handleTabChange = (newTab: 'users' | 'calendars' | 'events' | 'shares' | 'stats') => {
+    setSelectedUsers([]);
+    setSelectedCalendars([]);
+    setSelectedEvents([]);
+    setLastSelectedIndex({});
+    setActiveTab(newTab);
+  };
 
   const apiCall = async (endpoint: string, token: string, method: string = 'GET', data?: any) => {
     const options: RequestInit = {
@@ -117,49 +187,85 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ themeColor = '#3b82f6' }) => {
   };
 
   const loadData = async (dataType: string) => {
-    setLoading(true);
     setError('');
 
     try {
-      const token = localStorage.getItem('admin_token');
-      if (!token) {
-        setError('No admin token found. Please login as admin.');
-        return;
-      }
+      await withProgress(async (updateProgress) => {
+        updateProgress(10, 'Checking authentication...');
 
-      let data;
-      switch (dataType) {
-        case 'users':
-          data = await apiCall('/admin/users', token);
-          setUsers(data);
-          break;
-        case 'calendars':
-          data = await apiCall('/admin/calendars', token);
-          setCalendars(data);
-          break;
-        case 'events':
-          data = await apiCall('/admin/events', token);
-          setEvents(data);
-          break;
-        case 'shares':
-          data = await apiCall('/admin/calendar-shares', token);
-          setShares(data);
-          break;
-        case 'stats':
-          data = await apiCall('/admin/stats', token);
-          setStats(data);
-          break;
-      }
+        const token = localStorage.getItem('admin_token');
+        if (!token) {
+          setError('No admin token found. Please login as admin.');
+          return;
+        }
+
+        updateProgress(30, `Loading ${dataType}...`);
+
+        let data;
+        switch (dataType) {
+          case 'users':
+            updateProgress(50, 'Fetching user data...');
+            data = await apiCall('/admin/users', token);
+            updateProgress(80, 'Processing users...');
+            setUsers(data);
+            break;
+          case 'calendars':
+            updateProgress(50, 'Fetching calendar data...');
+            data = await apiCall('/admin/calendars', token);
+            updateProgress(80, 'Processing calendars...');
+            setCalendars(data);
+            break;
+          case 'events':
+            updateProgress(50, 'Fetching event data...');
+            data = await apiCall('/admin/events', token);
+            updateProgress(80, 'Processing events...');
+            setEvents(data);
+            break;
+          case 'shares':
+            updateProgress(50, 'Fetching share data...');
+            data = await apiCall('/admin/calendar-shares', token);
+            updateProgress(80, 'Processing shares...');
+            setShares(data);
+            break;
+          case 'stats':
+            updateProgress(50, 'Fetching statistics...');
+            data = await apiCall('/admin/stats', token);
+            updateProgress(80, 'Processing statistics...');
+            setStats(data);
+            break;
+        }
+
+        updateProgress(95, 'Finalizing...');
+      }, `Loading ${dataType}...`);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load data');
-    } finally {
-      setLoading(false);
     }
   };
 
   useEffect(() => {
     loadData(activeTab);
   }, [activeTab]);
+
+  // Helper function to select/deselect all items
+  const handleSelectAll = (entityType: 'user' | 'calendar' | 'event', isChecked: boolean) => {
+    const dataMap = {
+      user: () => users.map(u => u.id),
+      calendar: () => calendars.map(c => c.id),
+      event: () => events.map(e => e.id)
+    };
+
+    const setterMap = {
+      user: setSelectedUsers,
+      calendar: setSelectedCalendars,
+      event: setSelectedEvents
+    };
+
+    if (isChecked) {
+      setterMap[entityType](dataMap[entityType]());
+    } else {
+      setterMap[entityType]([]);
+    }
+  };
 
   const formatDate = (dateString: string): string => {
     return new Date(dateString).toLocaleString();
@@ -230,6 +336,80 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ themeColor = '#3b82f6' }) => {
         } catch (err) {
           setError(err instanceof Error ? err.message : `Failed to delete ${entityType}`);
           setConfirmDialog({ ...confirmDialog, isOpen: false });
+        }
+      }
+    });
+  };
+
+  // Bulk delete functionality
+  const handleBulkDelete = (entityType: 'user' | 'calendar' | 'event') => {
+    const getSelectedIds = () => {
+      switch (entityType) {
+        case 'user': return selectedUsers;
+        case 'calendar': return selectedCalendars;
+        case 'event': return selectedEvents;
+        default: return [];
+      }
+    };
+
+    const selectedIds = getSelectedIds();
+    if (selectedIds.length === 0) return;
+
+    const itemNames = selectedIds.map(id => {
+      if (entityType === 'user') {
+        const user = users.find(u => u.id === id);
+        return user ? `${user.username} (${user.email})` : `User ${id}`;
+      } else if (entityType === 'calendar') {
+        const calendar = calendars.find(c => c.id === id);
+        return calendar ? calendar.name : `Calendar ${id}`;
+      } else if (entityType === 'event') {
+        const event = events.find(e => e.id === id);
+        return event ? event.title : `Event ${id}`;
+      }
+      return `${entityType} ${id}`;
+    });
+
+    setConfirmDialog({
+      isOpen: true,
+      title: `Delete ${selectedIds.length} ${entityType.charAt(0).toUpperCase() + entityType.slice(1)}${selectedIds.length > 1 ? 's' : ''}`,
+      message: `Are you sure you want to delete the following ${selectedIds.length} ${entityType}${selectedIds.length > 1 ? 's' : ''}?\n\n${itemNames.join('\n')}\n\nThis action cannot be undone and may affect other related data.`,
+      confirmText: `Delete ${selectedIds.length} ${entityType.charAt(0).toUpperCase() + entityType.slice(1)}${selectedIds.length > 1 ? 's' : ''}`,
+      onConfirm: async () => {
+        setConfirmDialog({ ...confirmDialog, isOpen: false });
+
+        try {
+          await withProgress(async (updateProgress) => {
+            updateProgress(10, 'Preparing to delete items...');
+
+            const token = localStorage.getItem('admin_token');
+            if (!token) {
+              throw new Error('No admin token found');
+            }
+
+            updateProgress(20, `Deleting ${selectedIds.length} ${entityType}${selectedIds.length > 1 ? 's' : ''}...`);
+
+            // Delete items with progress tracking
+            const deletePromises = selectedIds.map(async (id, index) => {
+              const result = await apiCall(`/admin/${entityType}s/${id}`, token, 'DELETE');
+              const progress = 20 + ((index + 1) / selectedIds.length) * 60;
+              updateProgress(progress, `Deleted ${index + 1} of ${selectedIds.length} items...`);
+              return result;
+            });
+
+            await Promise.all(deletePromises);
+
+            updateProgress(85, 'Clearing selections...');
+
+            // Clear selections
+            if (entityType === 'user') setSelectedUsers([]);
+            if (entityType === 'calendar') setSelectedCalendars([]);
+            if (entityType === 'event') setSelectedEvents([]);
+
+            updateProgress(95, 'Refreshing data...');
+            await loadData(entityType + 's');
+          }, `Deleting ${selectedIds.length} ${entityType}${selectedIds.length > 1 ? 's' : ''}...`);
+        } catch (err) {
+          setError(err instanceof Error ? err.message : `Failed to delete ${entityType}s`);
         }
       }
     });
@@ -354,7 +534,20 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ themeColor = '#3b82f6' }) => {
   const renderUsers = () => (
     <div>
       <div className="mb-6 flex justify-between items-center">
-        <h3 className="text-xl font-medium text-gray-800">Users Management</h3>
+        <div className="flex items-center gap-4">
+          <h3 className="text-xl font-medium text-gray-800">Users Management</h3>
+          {selectedUsers.length > 0 && (
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-gray-600">({selectedUsers.length} selected)</span>
+              <button
+                onClick={() => handleBulkDelete('user')}
+                className="bg-red-500 text-white px-3 py-1 rounded-lg hover:bg-red-600 transition-all duration-200 text-sm flex items-center gap-1"
+              >
+                🗑️ Delete Selected
+              </button>
+            </div>
+          )}
+        </div>
         <button
           onClick={() => openCreateModal('user')}
           className="bg-blue-500 text-white px-4 py-2 rounded-xl hover:bg-blue-600 transition-all duration-200 flex items-center gap-2"
@@ -367,6 +560,14 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ themeColor = '#3b82f6' }) => {
         <table className="min-w-full bg-white border border-blue-200 rounded-2xl overflow-hidden shadow-sm">
           <thead className="bg-gradient-to-r from-blue-100 to-indigo-100">
             <tr>
+              <th className="px-6 py-4 text-left text-sm font-medium text-gray-800 border-b border-blue-200">
+                <input
+                  type="checkbox"
+                  checked={users.length > 0 && selectedUsers.length === users.length}
+                  onChange={(e) => handleSelectAll('user', e.target.checked)}
+                  className="rounded"
+                />
+              </th>
               <th className="px-6 py-4 text-left text-sm font-medium text-gray-800 border-b border-blue-200">ID</th>
               <th className="px-6 py-4 text-left text-sm font-medium text-gray-800 border-b border-blue-200">Username</th>
               <th className="px-6 py-4 text-left text-sm font-medium text-gray-800 border-b border-blue-200">Email</th>
@@ -377,8 +578,16 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ themeColor = '#3b82f6' }) => {
             </tr>
           </thead>
           <tbody>
-            {users.map((user) => (
-              <tr key={user.id} className="hover:bg-blue-50 transition-all duration-200">
+            {users.map((user, index) => (
+              <tr key={user.id} className={`hover:bg-blue-50 transition-all duration-200 ${selectedUsers.includes(user.id) ? 'bg-blue-50' : ''}`}>
+                <td className="px-6 py-4 border-b border-blue-100 text-sm text-gray-700">
+                  <input
+                    type="checkbox"
+                    checked={selectedUsers.includes(user.id)}
+                    onChange={(e) => handleItemSelection(user.id, 'user', e.target.checked, e.shiftKey)}
+                    className="rounded"
+                  />
+                </td>
                 <td className="px-6 py-4 border-b border-blue-100 text-sm text-gray-700">{user.id}</td>
                 <td className="px-6 py-4 border-b border-blue-100 text-sm text-gray-900 font-medium">{user.username}</td>
                 <td className="px-6 py-4 border-b border-blue-100 text-sm text-gray-700">{user.email}</td>
@@ -434,7 +643,20 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ themeColor = '#3b82f6' }) => {
   const renderCalendars = () => (
     <div>
       <div className="mb-6 flex justify-between items-center">
-        <h3 className="text-xl font-medium text-gray-800">Calendars Management</h3>
+        <div className="flex items-center gap-4">
+          <h3 className="text-xl font-medium text-gray-800">Calendars Management</h3>
+          {selectedCalendars.length > 0 && (
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-gray-600">({selectedCalendars.length} selected)</span>
+              <button
+                onClick={() => handleBulkDelete('calendar')}
+                className="bg-red-500 text-white px-3 py-1 rounded-lg hover:bg-red-600 transition-all duration-200 text-sm flex items-center gap-1"
+              >
+                🗑️ Delete Selected
+              </button>
+            </div>
+          )}
+        </div>
         <button
           onClick={() => openCreateModal('calendar')}
           className="bg-green-500 text-white px-4 py-2 rounded-xl hover:bg-green-600 transition-all duration-200 flex items-center gap-2"
@@ -447,6 +669,14 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ themeColor = '#3b82f6' }) => {
         <table className="min-w-full bg-white border border-green-200 rounded-2xl overflow-hidden shadow-sm">
           <thead className="bg-gradient-to-r from-green-100 to-emerald-100">
             <tr>
+              <th className="px-6 py-4 text-left text-sm font-medium text-gray-800 border-b border-green-200">
+                <input
+                  type="checkbox"
+                  checked={calendars.length > 0 && selectedCalendars.length === calendars.length}
+                  onChange={(e) => handleSelectAll('calendar', e.target.checked)}
+                  className="rounded"
+                />
+              </th>
               <th className="px-6 py-4 text-left text-sm font-medium text-gray-800 border-b border-green-200">ID</th>
               <th className="px-6 py-4 text-left text-sm font-medium text-gray-800 border-b border-green-200">Name</th>
               <th className="px-6 py-4 text-left text-sm font-medium text-gray-800 border-b border-green-200">Description</th>
@@ -458,7 +688,15 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ themeColor = '#3b82f6' }) => {
           </thead>
           <tbody>
             {calendars.map((calendar) => (
-              <tr key={calendar.id} className="hover:bg-green-50 transition-all duration-200">
+              <tr key={calendar.id} className={`hover:bg-green-50 transition-all duration-200 ${selectedCalendars.includes(calendar.id) ? 'bg-green-50' : ''}`}>
+                <td className="px-6 py-4 border-b border-green-100 text-sm text-gray-700">
+                  <input
+                    type="checkbox"
+                    checked={selectedCalendars.includes(calendar.id)}
+                    onChange={(e) => handleItemSelection(calendar.id, 'calendar', e.target.checked, e.shiftKey)}
+                    className="rounded"
+                  />
+                </td>
                 <td className="px-6 py-4 border-b border-green-100 text-sm text-gray-700">{calendar.id}</td>
                 <td className="px-6 py-4 border-b border-green-100 text-sm text-gray-900 font-medium">{calendar.name}</td>
                 <td className="px-6 py-4 border-b border-green-100 text-sm text-gray-700">{calendar.description || 'N/A'}</td>
@@ -506,7 +744,20 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ themeColor = '#3b82f6' }) => {
   const renderEvents = () => (
     <div>
       <div className="mb-6 flex justify-between items-center">
-        <h3 className="text-xl font-medium text-gray-800">Events Management</h3>
+        <div className="flex items-center gap-4">
+          <h3 className="text-xl font-medium text-gray-800">Events Management</h3>
+          {selectedEvents.length > 0 && (
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-gray-600">({selectedEvents.length} selected)</span>
+              <button
+                onClick={() => handleBulkDelete('event')}
+                className="bg-red-500 text-white px-3 py-1 rounded-lg hover:bg-red-600 transition-all duration-200 text-sm flex items-center gap-1"
+              >
+                🗑️ Delete Selected
+              </button>
+            </div>
+          )}
+        </div>
         <button
           onClick={() => openCreateModal('event')}
           className="bg-yellow-500 text-white px-4 py-2 rounded-xl hover:bg-yellow-600 transition-all duration-200 flex items-center gap-2"
@@ -519,6 +770,14 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ themeColor = '#3b82f6' }) => {
         <table className="min-w-full bg-white border border-yellow-200 rounded-2xl overflow-hidden shadow-sm">
           <thead className="bg-gradient-to-r from-yellow-100 to-amber-100">
             <tr>
+              <th className="px-6 py-4 text-left text-sm font-medium text-gray-800 border-b border-yellow-200">
+                <input
+                  type="checkbox"
+                  checked={events.length > 0 && selectedEvents.length === events.length}
+                  onChange={(e) => handleSelectAll('event', e.target.checked)}
+                  className="rounded"
+                />
+              </th>
               <th className="px-6 py-4 text-left text-sm font-medium text-gray-800 border-b border-yellow-200">ID</th>
               <th className="px-6 py-4 text-left text-sm font-medium text-gray-800 border-b border-yellow-200">Title</th>
               <th className="px-6 py-4 text-left text-sm font-medium text-gray-800 border-b border-yellow-200">Calendar</th>
@@ -531,7 +790,15 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ themeColor = '#3b82f6' }) => {
           </thead>
           <tbody>
             {events.map((event) => (
-              <tr key={event.id} className="hover:bg-yellow-50 transition-all duration-200">
+              <tr key={event.id} className={`hover:bg-yellow-50 transition-all duration-200 ${selectedEvents.includes(event.id) ? 'bg-yellow-50' : ''}`}>
+                <td className="px-6 py-4 border-b border-yellow-100 text-sm text-gray-700">
+                  <input
+                    type="checkbox"
+                    checked={selectedEvents.includes(event.id)}
+                    onChange={(e) => handleItemSelection(event.id, 'event', e.target.checked, e.shiftKey)}
+                    className="rounded"
+                  />
+                </td>
                 <td className="px-6 py-4 border-b border-yellow-100 text-sm text-gray-700">{event.id}</td>
                 <td className="px-6 py-4 border-b border-yellow-100 text-sm text-gray-900 font-medium">{event.title}</td>
                 <td className="px-6 py-4 border-b border-yellow-100 text-sm text-gray-700">{event.calendar?.name}</td>
@@ -890,7 +1157,16 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ themeColor = '#3b82f6' }) => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-100 to-blue-200 relative">
+    <>
+      {loadingState.isLoading && (
+        <LoadingScreen
+          progress={loadingState.progress}
+          message={loadingState.message}
+          themeColor={themeColor}
+          overlay={true}
+        />
+      )}
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-100 to-blue-200 relative">
       {/* Animated Background */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-r from-blue-300 to-indigo-300 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse"></div>
@@ -916,7 +1192,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ themeColor = '#3b82f6' }) => {
             ].map((tab) => (
               <button
                 key={tab.key}
-                onClick={() => setActiveTab(tab.key as any)}
+                onClick={() => handleTabChange(tab.key as any)}
                 className={`px-6 py-3 rounded-2xl font-medium text-sm transition-all duration-300 flex items-center gap-2 ${
                   activeTab === tab.key
                     ? 'bg-blue-500 text-white shadow-lg scale-105'
@@ -987,7 +1263,8 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ themeColor = '#3b82f6' }) => {
         onConfirm={confirmDialog.onConfirm}
         onCancel={() => setConfirmDialog({ ...confirmDialog, isOpen: false })}
       />
-    </div>
+      </div>
+    </>
   );
 };
 

@@ -80,7 +80,7 @@ export class CalendarSyncController {
         userIdToUse,
       );
 
-      this.logger.log(`[handleOAuthCallback] OAuth callback completed successfully, redirecting to success page`);
+      this.logger.log(`[handleOAuthCallback] OAuth callback completed successfully, redirecting to calendar sync page`);
       return res.redirect('http://localhost:8080/calendar-sync?success=connected');
     } catch (error) {
       this.logger.error(`[handleOAuthCallback] OAuth callback error for provider ${provider}:`, error.stack);
