@@ -301,6 +301,12 @@ const CalendarSync: React.FC<CalendarSyncProps> = ({ themeColor }) => {
   const themeColors = getThemeColors(themeColor);
 
   useEffect(() => {
+    // Add meta tag for extension compatibility
+    const metaTag = document.createElement('meta');
+    metaTag.name = 'extension-compatibility';
+    metaTag.content = 'allow-unsafe-inline';
+    document.head.appendChild(metaTag);
+
     loadSyncStatus();
 
     // Handle success/error URL parameters
@@ -335,18 +341,50 @@ const CalendarSync: React.FC<CalendarSyncProps> = ({ themeColor }) => {
       if (event.reason && typeof event.reason.message === 'string') {
         const message = event.reason.message.toLowerCase();
         if (message.includes('listener indicated an asynchronous response') ||
-            message.includes('message channel closed before a response was received')) {
+            message.includes('message channel closed before a response was received') ||
+            message.includes('extension context invalidated') ||
+            message.includes('chrome-extension:') ||
+            message.includes('moz-extension:')) {
           // This is a browser extension error, suppress it
           event.preventDefault();
-          console.debug('Suppressed browser extension async response error:', event.reason.message);
+          console.debug('Suppressed browser extension error:', event.reason.message);
+          return;
         }
       }
+      // For other errors, log them for debugging
+      console.warn('Unhandled promise rejection:', event.reason);
+    };
+
+    // Suppress browser extension console errors
+    const handleError = (event: ErrorEvent) => {
+      if (event.error && event.error.message) {
+        const message = event.error.message.toLowerCase();
+        if (message.includes('extension context invalidated') ||
+            message.includes('chrome-extension:') ||
+            message.includes('moz-extension:') ||
+            message.includes('listener indicated an asynchronous response')) {
+          // Suppress browser extension errors
+          event.preventDefault();
+          console.debug('Suppressed browser extension console error:', event.error.message);
+          return;
+        }
+      }
+      // For other errors, let them through for debugging
+      console.warn('Console error:', event.error);
     };
 
     window.addEventListener('unhandledrejection', handleUnhandledRejection);
+    window.addEventListener('error', handleError);
 
     return () => {
       window.removeEventListener('unhandledrejection', handleUnhandledRejection);
+      window.removeEventListener('error', handleError);
+
+      // Cleanup meta tag
+      const existingMeta = document.querySelector('meta[name="extension-compatibility"]');
+      if (existingMeta) {
+        existingMeta.remove();
+      }
     };
   }, []);
 
@@ -551,6 +589,19 @@ const CalendarSync: React.FC<CalendarSyncProps> = ({ themeColor }) => {
       </header>
 
       <main className="relative z-10 max-w-4xl mx-auto p-6 mt-12">
+        {/* Browser Extension Compatibility Notice */}
+        <div className="mb-6 backdrop-blur-md bg-blue-50/70 border border-blue-200 rounded-xl p-4 shadow-sm">
+          <div className="flex items-start space-x-3">
+            <div className="text-blue-500 text-xl">ℹ️</div>
+            <div>
+              <h4 className="font-medium text-blue-900 mb-1">Browser Extension Compatibility</h4>
+              <p className="text-blue-800 text-sm">
+                If you see "Extension context invalidated" errors, these are harmless browser extension interactions and won't affect calendar syncing functionality.
+              </p>
+            </div>
+          </div>
+        </div>
+
         <div className="space-y-8">
           {/* Provider Cards */}
           {syncStatus.providers.map((provider) => (

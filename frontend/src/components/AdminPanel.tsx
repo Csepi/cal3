@@ -63,6 +63,20 @@ interface AdminPanelProps {
 }
 
 const AdminPanel: React.FC<AdminPanelProps> = ({ themeColor = '#3b82f6' }) => {
+  // Helper function to get admin token with fallback
+  const getAdminToken = (): string | null => {
+    let token = localStorage.getItem('admin_token');
+
+    // Fallback to regular auth token if user has admin role
+    if (!token) {
+      const userRole = localStorage.getItem('userRole');
+      if (userRole === 'admin') {
+        token = localStorage.getItem('authToken');
+      }
+    }
+
+    return token;
+  };
   const [activeTab, setActiveTab] = useState<'users' | 'calendars' | 'events' | 'shares' | 'stats'>('stats');
   const [users, setUsers] = useState<User[]>([]);
   const [calendars, setCalendars] = useState<Calendar[]>([]);
@@ -193,7 +207,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ themeColor = '#3b82f6' }) => {
       await withProgress(async (updateProgress) => {
         updateProgress(10, 'Checking authentication...');
 
-        const token = localStorage.getItem('admin_token');
+        const token = getAdminToken();
         if (!token) {
           setError('No admin token found. Please login as admin.');
           return;
@@ -274,7 +288,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ themeColor = '#3b82f6' }) => {
   // CRUD Operations
   const handleCreate = async (entityType: 'user' | 'calendar' | 'event', data: any) => {
     try {
-      const token = localStorage.getItem('admin_token');
+      const token = getAdminToken();
       if (!token) return;
 
       await apiCall(`/admin/${entityType}s`, token, 'POST', data);
@@ -288,7 +302,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ themeColor = '#3b82f6' }) => {
 
   const handleUpdate = async (entityType: 'user' | 'calendar' | 'event', id: number, data: any) => {
     try {
-      const token = localStorage.getItem('admin_token');
+      const token = getAdminToken();
       if (!token) return;
 
       await apiCall(`/admin/${entityType}s/${id}`, token, 'PATCH', data);
@@ -324,7 +338,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ themeColor = '#3b82f6' }) => {
       confirmText: `Delete ${entityType.charAt(0).toUpperCase() + entityType.slice(1)}`,
       onConfirm: async () => {
         try {
-          const token = localStorage.getItem('admin_token');
+          const token = getAdminToken();
           if (!token) {
             setConfirmDialog({ ...confirmDialog, isOpen: false });
             return;
@@ -381,7 +395,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ themeColor = '#3b82f6' }) => {
           await withProgress(async (updateProgress) => {
             updateProgress(10, 'Preparing to delete items...');
 
-            const token = localStorage.getItem('admin_token');
+            const token = getAdminToken();
             if (!token) {
               throw new Error('No admin token found');
             }
@@ -417,7 +431,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ themeColor = '#3b82f6' }) => {
 
   const handleUpdateUserRole = async (userId: number, role: string) => {
     try {
-      const token = localStorage.getItem('admin_token');
+      const token = getAdminToken();
       if (!token) return;
 
       await apiCall(`/admin/users/${userId}/role`, token, 'PATCH', { role });
@@ -429,7 +443,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ themeColor = '#3b82f6' }) => {
 
   const handleChangePassword = async (userId: number, password: string) => {
     try {
-      const token = localStorage.getItem('admin_token');
+      const token = getAdminToken();
       if (!token) return;
 
       await apiCall(`/admin/users/${userId}/password`, token, 'PATCH', { password });

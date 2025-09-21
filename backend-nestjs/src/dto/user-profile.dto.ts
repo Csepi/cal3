@@ -1,4 +1,4 @@
-import { IsString, IsOptional, IsEmail, MinLength, Matches } from 'class-validator';
+import { IsString, IsOptional, IsEmail, MinLength, Matches, IsNumber, IsIn, Min, Max } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 
 export class UpdateProfileDto {
@@ -22,6 +22,30 @@ export class UpdateProfileDto {
   @IsOptional()
   @IsString()
   lastName?: string;
+
+  @ApiPropertyOptional({ example: 1, description: 'Week start day (0=Sunday, 1=Monday, etc.)' })
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  @Max(6)
+  weekStartDay?: number;
+
+  @ApiPropertyOptional({ example: 'month', description: 'Default calendar view (month or week)' })
+  @IsOptional()
+  @IsString()
+  @IsIn(['month', 'week'])
+  defaultCalendarView?: string;
+
+  @ApiPropertyOptional({ example: 'America/New_York', description: 'User timezone (e.g., America/New_York, Europe/London, UTC)' })
+  @IsOptional()
+  @IsString()
+  timezone?: string;
+
+  @ApiPropertyOptional({ example: '24h', description: 'Time format preference (12h or 24h)' })
+  @IsOptional()
+  @IsString()
+  @IsIn(['12h', '24h'])
+  timeFormat?: string;
 }
 
 export class UpdateThemeDto {

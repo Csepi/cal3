@@ -28,6 +28,12 @@ const AuthCallback: React.FC<AuthCallbackProps> = ({ onLogin }) => {
         // Store the token and user info in localStorage
         localStorage.setItem('username', payload.username || `${provider}_user`);
         localStorage.setItem('userRole', payload.role || 'user');
+
+        // Store admin token if user has admin role
+        if (payload.role === 'admin') {
+          localStorage.setItem('admin_token', token);
+        }
+
         console.log('AuthCallback - Calling onLogin with:', payload.username || `${provider}_user`, token, payload.role || 'user');
         onLogin(payload.username || `${provider}_user`, token, payload.role || 'user');
       } catch (error) {

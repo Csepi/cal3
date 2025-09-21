@@ -41,6 +41,20 @@ export interface Event {
   createdById?: number;
 }
 
+export enum RecurrenceType {
+  NONE = 'none',
+  DAILY = 'daily',
+  WEEKLY = 'weekly',
+  MONTHLY = 'monthly',
+  YEARLY = 'yearly'
+}
+
+export enum RecurrenceUpdateMode {
+  SINGLE = 'single',
+  ALL = 'all',
+  FUTURE = 'future'
+}
+
 export interface CreateEventRequest {
   title: string;
   description?: string;
@@ -52,4 +66,10 @@ export interface CreateEventRequest {
   location?: string;
   color?: string;
   calendarId?: number;
+  recurrenceType?: RecurrenceType;
+  recurrenceRule?: any;
+}
+
+export interface UpdateEventRequest extends CreateEventRequest {
+  updateMode?: RecurrenceUpdateMode;
 }

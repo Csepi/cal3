@@ -576,6 +576,13 @@ export class CalendarSyncService {
   private async createLocalEventFromExternal(syncConnection: CalendarSyncConnection, syncedCalendar: SyncedCalendar, externalEvent: any): Promise<void> {
     this.logger.log(`[createLocalEventFromExternal] Creating local event from external: ${externalEvent.id} - ${externalEvent.subject || externalEvent.summary}`);
 
+    // Get user timezone preference (default to UTC if not set)
+    const user = await this.userRepository.findOne({
+      where: { id: syncConnection.userId },
+      select: ['timezone']
+    });
+    const userTimezone = user?.timezone || 'UTC';
+
     let eventData: any = {};
 
     if (syncConnection.provider === SyncProvider.MICROSOFT) {
@@ -592,9 +599,16 @@ export class CalendarSyncService {
           eventData.startDate = new Date(externalEvent.start.dateTime || externalEvent.start.date);
           eventData.startTime = null;
         } else {
+          // Parse the external datetime with timezone info
           const startDateTime = new Date(externalEvent.start.dateTime);
-          eventData.startDate = new Date(startDateTime.toDateString());
-          eventData.startTime = startDateTime.toTimeString().split(' ')[0];
+
+          // Convert to user's timezone
+          const userLocalString = startDateTime.toLocaleString("sv-SE", { timeZone: userTimezone });
+          const [datePart, timePart] = userLocalString.split(' ');
+
+          // Extract date and time in user timezone
+          eventData.startDate = datePart; // YYYY-MM-DD format (sv-SE locale gives ISO date format)
+          eventData.startTime = timePart.substring(0, 5); // HH:MM format
         }
       }
 
@@ -603,9 +617,16 @@ export class CalendarSyncService {
           eventData.endDate = new Date(externalEvent.end.dateTime || externalEvent.end.date);
           eventData.endTime = null;
         } else {
+          // Parse the external datetime with timezone info
           const endDateTime = new Date(externalEvent.end.dateTime);
-          eventData.endDate = new Date(endDateTime.toDateString());
-          eventData.endTime = endDateTime.toTimeString().split(' ')[0];
+
+          // Convert to user's timezone
+          const userLocalString = endDateTime.toLocaleString("sv-SE", { timeZone: userTimezone });
+          const [datePart, timePart] = userLocalString.split(' ');
+
+          // Extract date and time in user timezone
+          eventData.endDate = datePart; // YYYY-MM-DD format (sv-SE locale gives ISO date format)
+          eventData.endTime = timePart.substring(0, 5); // HH:MM format
         }
       }
     } else if (syncConnection.provider === SyncProvider.GOOGLE) {
@@ -625,9 +646,16 @@ export class CalendarSyncService {
         } else if (externalEvent.start.dateTime) {
           // Timed event
           eventData.isAllDay = false;
+          // Parse the external datetime with timezone info
           const startDateTime = new Date(externalEvent.start.dateTime);
-          eventData.startDate = new Date(startDateTime.toDateString());
-          eventData.startTime = startDateTime.toTimeString().split(' ')[0];
+
+          // Convert to user's timezone
+          const userLocalString = startDateTime.toLocaleString("sv-SE", { timeZone: userTimezone });
+          const [datePart, timePart] = userLocalString.split(' ');
+
+          // Extract date and time in user timezone
+          eventData.startDate = datePart; // YYYY-MM-DD format (sv-SE locale gives ISO date format)
+          eventData.startTime = timePart.substring(0, 5); // HH:MM format
         }
       }
 
@@ -636,9 +664,16 @@ export class CalendarSyncService {
           eventData.endDate = new Date(externalEvent.end.date);
           eventData.endTime = null;
         } else if (externalEvent.end.dateTime) {
+          // Parse the external datetime with timezone info
           const endDateTime = new Date(externalEvent.end.dateTime);
-          eventData.endDate = new Date(endDateTime.toDateString());
-          eventData.endTime = endDateTime.toTimeString().split(' ')[0];
+
+          // Convert to user's timezone
+          const userLocalString = endDateTime.toLocaleString("sv-SE", { timeZone: userTimezone });
+          const [datePart, timePart] = userLocalString.split(' ');
+
+          // Extract date and time in user timezone
+          eventData.endDate = datePart; // YYYY-MM-DD format (sv-SE locale gives ISO date format)
+          eventData.endTime = timePart.substring(0, 5); // HH:MM format
         }
       }
     }

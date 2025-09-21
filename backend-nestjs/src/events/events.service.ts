@@ -146,10 +146,18 @@ export class EventsService {
   async update(id: number, updateEventDto: UpdateEventDto, userId: number): Promise<Event> {
     const event = await this.findOne(id, userId);
 
-    // Check if user has write access to the calendar
+    // Check if user has write access to the current calendar
     const hasWriteAccess = await this.checkWriteAccess(event.calendarId, userId);
     if (!hasWriteAccess) {
       throw new ForbiddenException('Insufficient permissions to update this event');
+    }
+
+    // If calendarId is being changed, check access to the new calendar
+    if (updateEventDto.calendarId && updateEventDto.calendarId !== event.calendarId) {
+      const hasNewCalendarAccess = await this.checkWriteAccess(updateEventDto.calendarId, userId);
+      if (!hasNewCalendarAccess) {
+        throw new ForbiddenException('Insufficient permissions to move event to the specified calendar');
+      }
     }
 
     // Update date fields if provided

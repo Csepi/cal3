@@ -1,4 +1,4 @@
-import type { Event, CreateEventRequest } from '../types/Event';
+import type { Event, CreateEventRequest, UpdateEventRequest } from '../types/Event';
 import type { Calendar, CreateCalendarRequest, UpdateCalendarRequest } from '../types/Calendar';
 
 const API_BASE_URL = 'http://localhost:8081';
@@ -39,6 +39,24 @@ class ApiService {
       }
       const errorData = await response.json();
       throw new Error(errorData.message || 'Failed to create event');
+    }
+
+    return await response.json();
+  }
+
+  async updateEvent(eventId: number, eventData: UpdateEventRequest): Promise<Event> {
+    const response = await fetch(`${API_BASE_URL}/api/events/${eventId}`, {
+      method: 'PATCH',
+      headers: this.getAuthHeaders(),
+      body: JSON.stringify(eventData),
+    });
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        throw new Error('Authentication required. Please log in to update events.');
+      }
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to update event');
     }
 
     return await response.json();

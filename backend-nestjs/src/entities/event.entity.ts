@@ -67,6 +67,18 @@ export class Event {
   @Column({ type: 'json', nullable: true })
   recurrenceRule: any; // Store complex recurrence rules as JSON
 
+  @Column({ nullable: true })
+  parentEventId: number; // Reference to the original event in a recurring series
+
+  @Column({ nullable: true })
+  recurrenceId: string; // Unique identifier for the recurring series
+
+  @Column({ type: 'date', nullable: true })
+  originalDate: Date; // Original date for modified instances of recurring events
+
+  @Column({ default: false })
+  isRecurrenceException: boolean; // True if this is a modified instance of a recurring event
+
   @Column({ length: 7, nullable: true })
   color: string;
 

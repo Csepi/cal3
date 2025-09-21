@@ -17,7 +17,9 @@ const UserProfile: React.FC<UserProfileProps> = ({ onThemeChange, currentTheme }
     username: '',
     email: '',
     firstName: '',
-    lastName: ''
+    lastName: '',
+    timezone: '',
+    timeFormat: ''
   });
 
   const [passwordForm, setPasswordForm] = useState({
@@ -27,16 +29,110 @@ const UserProfile: React.FC<UserProfileProps> = ({ onThemeChange, currentTheme }
   });
 
   const themeColorOptions = [
-    { name: 'Blue', value: '#3b82f6', gradient: 'from-blue-500 to-blue-600' },
-    { name: 'Purple', value: '#8b5cf6', gradient: 'from-purple-500 to-purple-600' },
-    { name: 'Green', value: '#10b981', gradient: 'from-green-500 to-green-600' },
     { name: 'Red', value: '#ef4444', gradient: 'from-red-500 to-red-600' },
     { name: 'Orange', value: '#f59e0b', gradient: 'from-orange-500 to-orange-600' },
-    { name: 'Pink', value: '#ec4899', gradient: 'from-pink-500 to-pink-600' },
-    { name: 'Indigo', value: '#6366f1', gradient: 'from-indigo-500 to-indigo-600' },
-    { name: 'Teal', value: '#14b8a6', gradient: 'from-teal-500 to-teal-600' },
     { name: 'Yellow', value: '#eab308', gradient: 'from-yellow-500 to-yellow-600' },
+    { name: 'Green', value: '#10b981', gradient: 'from-green-500 to-green-600' },
+    { name: 'Blue', value: '#3b82f6', gradient: 'from-blue-500 to-blue-600' },
+    { name: 'Indigo', value: '#6366f1', gradient: 'from-indigo-500 to-indigo-600' },
+    { name: 'Purple', value: '#8b5cf6', gradient: 'from-purple-500 to-purple-600' },
+    { name: 'Pink', value: '#ec4899', gradient: 'from-pink-500 to-pink-600' },
+    { name: 'Teal', value: '#14b8a6', gradient: 'from-teal-500 to-teal-600' },
+    { name: 'Emerald', value: '#22c55e', gradient: 'from-emerald-500 to-emerald-600' },
+    { name: 'Cyan', value: '#06b6d4', gradient: 'from-cyan-500 to-cyan-600' },
     { name: 'Slate', value: '#64748b', gradient: 'from-slate-500 to-slate-600' }
+  ];
+
+  const timezoneOptions = [
+    // UTC
+    { name: 'UTC (Coordinated Universal Time)', value: 'UTC' },
+
+    // Americas
+    { name: 'Alaska Time (Anchorage)', value: 'America/Anchorage' },
+    { name: 'Pacific Time (Los Angeles)', value: 'America/Los_Angeles' },
+    { name: 'Mountain Time (Denver)', value: 'America/Denver' },
+    { name: 'Central Time (Chicago)', value: 'America/Chicago' },
+    { name: 'Eastern Time (New York)', value: 'America/New_York' },
+    { name: 'Atlantic Time (Halifax)', value: 'America/Halifax' },
+    { name: 'Newfoundland Time (St. Johns)', value: 'America/St_Johns' },
+    { name: 'Mexico City', value: 'America/Mexico_City' },
+    { name: 'Guatemala City', value: 'America/Guatemala' },
+    { name: 'Bogotá', value: 'America/Bogota' },
+    { name: 'Lima', value: 'America/Lima' },
+    { name: 'Santiago', value: 'America/Santiago' },
+    { name: 'São Paulo', value: 'America/Sao_Paulo' },
+    { name: 'Buenos Aires', value: 'America/Argentina/Buenos_Aires' },
+    { name: 'Montevideo', value: 'America/Montevideo' },
+
+    // Europe
+    { name: 'London (GMT/BST)', value: 'Europe/London' },
+    { name: 'Dublin', value: 'Europe/Dublin' },
+    { name: 'Paris', value: 'Europe/Paris' },
+    { name: 'Berlin', value: 'Europe/Berlin' },
+    { name: 'Amsterdam', value: 'Europe/Amsterdam' },
+    { name: 'Brussels', value: 'Europe/Brussels' },
+    { name: 'Vienna', value: 'Europe/Vienna' },
+    { name: 'Zurich', value: 'Europe/Zurich' },
+    { name: 'Rome', value: 'Europe/Rome' },
+    { name: 'Madrid', value: 'Europe/Madrid' },
+    { name: 'Stockholm', value: 'Europe/Stockholm' },
+    { name: 'Copenhagen', value: 'Europe/Copenhagen' },
+    { name: 'Oslo', value: 'Europe/Oslo' },
+    { name: 'Helsinki', value: 'Europe/Helsinki' },
+    { name: 'Warsaw', value: 'Europe/Warsaw' },
+    { name: 'Prague', value: 'Europe/Prague' },
+    { name: 'Budapest', value: 'Europe/Budapest' },
+    { name: 'Athens', value: 'Europe/Athens' },
+    { name: 'Istanbul', value: 'Europe/Istanbul' },
+    { name: 'Moscow', value: 'Europe/Moscow' },
+    { name: 'Kiev', value: 'Europe/Kiev' },
+
+    // Africa
+    { name: 'Cairo', value: 'Africa/Cairo' },
+    { name: 'Lagos', value: 'Africa/Lagos' },
+    { name: 'Johannesburg', value: 'Africa/Johannesburg' },
+    { name: 'Nairobi', value: 'Africa/Nairobi' },
+    { name: 'Casablanca', value: 'Africa/Casablanca' },
+    { name: 'Algiers', value: 'Africa/Algiers' },
+
+    // Asia
+    { name: 'Dubai', value: 'Asia/Dubai' },
+    { name: 'Tehran', value: 'Asia/Tehran' },
+    { name: 'Kabul', value: 'Asia/Kabul' },
+    { name: 'Karachi', value: 'Asia/Karachi' },
+    { name: 'Mumbai (Kolkata)', value: 'Asia/Kolkata' },
+    { name: 'Dhaka', value: 'Asia/Dhaka' },
+    { name: 'Yangon', value: 'Asia/Yangon' },
+    { name: 'Bangkok', value: 'Asia/Bangkok' },
+    { name: 'Jakarta', value: 'Asia/Jakarta' },
+    { name: 'Singapore', value: 'Asia/Singapore' },
+    { name: 'Manila', value: 'Asia/Manila' },
+    { name: 'Hong Kong', value: 'Asia/Hong_Kong' },
+    { name: 'Taipei', value: 'Asia/Taipei' },
+    { name: 'Shanghai', value: 'Asia/Shanghai' },
+    { name: 'Beijing', value: 'Asia/Beijing' },
+    { name: 'Seoul', value: 'Asia/Seoul' },
+    { name: 'Tokyo', value: 'Asia/Tokyo' },
+    { name: 'Vladivostok', value: 'Asia/Vladivostok' },
+
+    // Australia & Pacific
+    { name: 'Perth', value: 'Australia/Perth' },
+    { name: 'Adelaide', value: 'Australia/Adelaide' },
+    { name: 'Darwin', value: 'Australia/Darwin' },
+    { name: 'Brisbane', value: 'Australia/Brisbane' },
+    { name: 'Sydney', value: 'Australia/Sydney' },
+    { name: 'Melbourne', value: 'Australia/Melbourne' },
+    { name: 'Hobart', value: 'Australia/Hobart' },
+    { name: 'Auckland', value: 'Pacific/Auckland' },
+    { name: 'Fiji', value: 'Pacific/Fiji' },
+    { name: 'Honolulu', value: 'Pacific/Honolulu' },
+    { name: 'Samoa', value: 'Pacific/Samoa' },
+    { name: 'Tahiti', value: 'Pacific/Tahiti' }
+  ];
+
+  const timeFormatOptions = [
+    { name: '12-hour (1:30 PM)', value: '12h' },
+    { name: '24-hour (13:30)', value: '24h' }
   ];
 
   useEffect(() => {
@@ -52,7 +148,9 @@ const UserProfile: React.FC<UserProfileProps> = ({ onThemeChange, currentTheme }
         username: userProfile.username || '',
         email: userProfile.email || '',
         firstName: userProfile.firstName || '',
-        lastName: userProfile.lastName || ''
+        lastName: userProfile.lastName || '',
+        timezone: userProfile.timezone || 'UTC',
+        timeFormat: userProfile.timeFormat || '24h'
       });
       setError(null);
     } catch (err) {
@@ -117,15 +215,17 @@ const UserProfile: React.FC<UserProfileProps> = ({ onThemeChange, currentTheme }
   // Helper function to get theme-based colors
   const getThemeColors = (color: string) => {
     const colorMap: Record<string, any> = {
-      '#3b82f6': { gradient: 'from-blue-50 via-blue-100 to-blue-200', primary: 'blue', ring: 'ring-blue-500', text: 'text-blue-900', border: 'border-blue-200' },
-      '#8b5cf6': { gradient: 'from-purple-50 via-purple-100 to-purple-200', primary: 'purple', ring: 'ring-purple-500', text: 'text-purple-900', border: 'border-purple-200' },
-      '#10b981': { gradient: 'from-green-50 via-green-100 to-green-200', primary: 'green', ring: 'ring-green-500', text: 'text-green-900', border: 'border-green-200' },
       '#ef4444': { gradient: 'from-red-50 via-red-100 to-red-200', primary: 'red', ring: 'ring-red-500', text: 'text-red-900', border: 'border-red-200' },
       '#f59e0b': { gradient: 'from-orange-50 via-orange-100 to-orange-200', primary: 'orange', ring: 'ring-orange-500', text: 'text-orange-900', border: 'border-orange-200' },
-      '#ec4899': { gradient: 'from-pink-50 via-pink-100 to-pink-200', primary: 'pink', ring: 'ring-pink-500', text: 'text-pink-900', border: 'border-pink-200' },
-      '#6366f1': { gradient: 'from-indigo-50 via-indigo-100 to-indigo-200', primary: 'indigo', ring: 'ring-indigo-500', text: 'text-indigo-900', border: 'border-indigo-200' },
-      '#14b8a6': { gradient: 'from-teal-50 via-teal-100 to-teal-200', primary: 'teal', ring: 'ring-teal-500', text: 'text-teal-900', border: 'border-teal-200' },
       '#eab308': { gradient: 'from-yellow-50 via-yellow-100 to-yellow-200', primary: 'yellow', ring: 'ring-yellow-500', text: 'text-yellow-900', border: 'border-yellow-200' },
+      '#10b981': { gradient: 'from-green-50 via-green-100 to-green-200', primary: 'green', ring: 'ring-green-500', text: 'text-green-900', border: 'border-green-200' },
+      '#3b82f6': { gradient: 'from-blue-50 via-blue-100 to-blue-200', primary: 'blue', ring: 'ring-blue-500', text: 'text-blue-900', border: 'border-blue-200' },
+      '#6366f1': { gradient: 'from-indigo-50 via-indigo-100 to-indigo-200', primary: 'indigo', ring: 'ring-indigo-500', text: 'text-indigo-900', border: 'border-indigo-200' },
+      '#8b5cf6': { gradient: 'from-purple-50 via-purple-100 to-purple-200', primary: 'purple', ring: 'ring-purple-500', text: 'text-purple-900', border: 'border-purple-200' },
+      '#ec4899': { gradient: 'from-pink-50 via-pink-100 to-pink-200', primary: 'pink', ring: 'ring-pink-500', text: 'text-pink-900', border: 'border-pink-200' },
+      '#14b8a6': { gradient: 'from-teal-50 via-teal-100 to-teal-200', primary: 'teal', ring: 'ring-teal-500', text: 'text-teal-900', border: 'border-teal-200' },
+      '#22c55e': { gradient: 'from-emerald-50 via-emerald-100 to-emerald-200', primary: 'emerald', ring: 'ring-emerald-500', text: 'text-emerald-900', border: 'border-emerald-200' },
+      '#06b6d4': { gradient: 'from-cyan-50 via-cyan-100 to-cyan-200', primary: 'cyan', ring: 'ring-cyan-500', text: 'text-cyan-900', border: 'border-cyan-200' },
       '#64748b': { gradient: 'from-slate-50 via-slate-100 to-slate-200', primary: 'slate', ring: 'ring-slate-500', text: 'text-slate-900', border: 'border-slate-200' }
     };
     return colorMap[color] || colorMap['#3b82f6'];
@@ -235,6 +335,44 @@ const UserProfile: React.FC<UserProfileProps> = ({ onThemeChange, currentTheme }
                     onChange={(e) => setProfileForm(prev => ({...prev, lastName: e.target.value}))}
                     className={`w-full px-4 py-3 bg-white border border-gray-300 text-gray-800 rounded-xl focus:ring-2 ${themeColors.ring} focus:border-${themeColors.primary}-500 outline-none transition-all duration-300`}
                   />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="timezone" className="block text-sm font-medium text-gray-700 mb-2">
+                    🌍 Timezone
+                  </label>
+                  <select
+                    id="timezone"
+                    value={profileForm.timezone}
+                    onChange={(e) => setProfileForm(prev => ({...prev, timezone: e.target.value}))}
+                    className={`w-full px-4 py-3 bg-white border border-gray-300 text-gray-800 rounded-xl focus:ring-2 ${themeColors.ring} focus:border-${themeColors.primary}-500 outline-none transition-all duration-300`}
+                  >
+                    {timezoneOptions.map((tz) => (
+                      <option key={tz.value} value={tz.value}>
+                        {tz.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label htmlFor="timeFormat" className="block text-sm font-medium text-gray-700 mb-2">
+                    🕐 Time Format
+                  </label>
+                  <select
+                    id="timeFormat"
+                    value={profileForm.timeFormat}
+                    onChange={(e) => setProfileForm(prev => ({...prev, timeFormat: e.target.value}))}
+                    className={`w-full px-4 py-3 bg-white border border-gray-300 text-gray-800 rounded-xl focus:ring-2 ${themeColors.ring} focus:border-${themeColors.primary}-500 outline-none transition-all duration-300`}
+                  >
+                    {timeFormatOptions.map((format) => (
+                      <option key={format.value} value={format.value}>
+                        {format.name}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               </div>
 

@@ -50,6 +50,18 @@ export class User {
   @Column({ length: 7, default: '#3b82f6' })
   themeColor: string;
 
+  @Column({ default: 1 }) // 0 = Sunday, 1 = Monday, 2 = Tuesday, etc.
+  weekStartDay: number;
+
+  @Column({ default: 'month' }) // 'month' or 'week'
+  defaultCalendarView: string;
+
+  @Column({ default: 'UTC' }) // User's timezone (e.g., 'America/New_York', 'Europe/London', 'UTC')
+  timezone: string;
+
+  @Column({ default: '24h' }) // '12h' or '24h'
+  timeFormat: string;
+
   @CreateDateColumn()
   createdAt: Date;
 

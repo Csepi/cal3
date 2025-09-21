@@ -2,6 +2,12 @@ import { IsString, IsOptional, IsEnum, IsNumber, IsBoolean, IsDateString } from 
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { EventStatus, RecurrenceType } from '../entities/event.entity';
 
+export enum RecurrenceUpdateMode {
+  SINGLE = 'single', // Update only this instance
+  ALL = 'all', // Update all instances in the series
+  FUTURE = 'future' // Update this and all future instances
+}
+
 export class CreateEventDto {
   @ApiProperty({ example: 'Team Meeting', description: 'Event title' })
   @IsString()
@@ -58,6 +64,13 @@ export class CreateEventDto {
   @IsOptional()
   @IsEnum(RecurrenceType)
   recurrenceType?: RecurrenceType;
+
+  @ApiPropertyOptional({
+    example: { interval: 1, until: '2024-12-31' },
+    description: 'Recurrence rule configuration (JSON)'
+  })
+  @IsOptional()
+  recurrenceRule?: any;
 
   @ApiPropertyOptional({ example: '#ef4444', description: 'Event color (hex code)' })
   @IsOptional()
@@ -134,6 +147,13 @@ export class UpdateEventDto {
   @IsEnum(RecurrenceType)
   recurrenceType?: RecurrenceType;
 
+  @ApiPropertyOptional({
+    example: { interval: 1, until: '2024-12-31' },
+    description: 'Recurrence rule configuration (JSON)'
+  })
+  @IsOptional()
+  recurrenceRule?: any;
+
   @ApiPropertyOptional({ example: '#10b981', description: 'Event color (hex code)' })
   @IsOptional()
   @IsString()
@@ -143,6 +163,20 @@ export class UpdateEventDto {
   @IsOptional()
   @IsString()
   notes?: string;
+
+  @ApiPropertyOptional({ example: 1, description: 'Calendar ID to move event to (optional)' })
+  @IsOptional()
+  @IsNumber()
+  calendarId?: number;
+
+  @ApiPropertyOptional({
+    enum: RecurrenceUpdateMode,
+    example: RecurrenceUpdateMode.SINGLE,
+    description: 'How to update recurring events: single instance, all instances, or future instances'
+  })
+  @IsOptional()
+  @IsEnum(RecurrenceUpdateMode)
+  updateMode?: RecurrenceUpdateMode;
 }
 
 export class EventResponseDto {
