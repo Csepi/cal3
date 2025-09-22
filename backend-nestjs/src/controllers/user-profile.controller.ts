@@ -24,7 +24,7 @@ export class UserProfileController {
   async getProfile(@Request() req) {
     const user = await this.userRepository.findOne({
       where: { id: req.user.id },
-      select: ['id', 'username', 'email', 'firstName', 'lastName', 'role', 'themeColor', 'weekStartDay', 'defaultCalendarView', 'timezone', 'timeFormat', 'createdAt', 'updatedAt'],
+      select: ['id', 'username', 'email', 'firstName', 'lastName', 'role', 'themeColor', 'weekStartDay', 'defaultCalendarView', 'timezone', 'timeFormat', 'usagePlans', 'createdAt', 'updatedAt'],
     });
 
     return user;
@@ -56,7 +56,7 @@ export class UserProfileController {
 
     const updatedUser = await this.userRepository.findOne({
       where: { id: userId },
-      select: ['id', 'username', 'email', 'firstName', 'lastName', 'role', 'themeColor', 'weekStartDay', 'defaultCalendarView', 'timezone', 'timeFormat', 'createdAt', 'updatedAt'],
+      select: ['id', 'username', 'email', 'firstName', 'lastName', 'role', 'themeColor', 'weekStartDay', 'defaultCalendarView', 'timezone', 'timeFormat', 'usagePlans', 'createdAt', 'updatedAt'],
     });
 
     return updatedUser;
@@ -73,7 +73,7 @@ export class UserProfileController {
 
     const updatedUser = await this.userRepository.findOne({
       where: { id: userId },
-      select: ['id', 'username', 'email', 'firstName', 'lastName', 'role', 'themeColor', 'weekStartDay', 'defaultCalendarView', 'timezone', 'timeFormat', 'createdAt', 'updatedAt'],
+      select: ['id', 'username', 'email', 'firstName', 'lastName', 'role', 'themeColor', 'weekStartDay', 'defaultCalendarView', 'timezone', 'timeFormat', 'usagePlans', 'createdAt', 'updatedAt'],
     });
 
     return updatedUser;

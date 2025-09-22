@@ -19,7 +19,8 @@ const UserProfile: React.FC<UserProfileProps> = ({ onThemeChange, currentTheme }
     firstName: '',
     lastName: '',
     timezone: '',
-    timeFormat: ''
+    timeFormat: '',
+    usagePlans: ['user']
   });
 
   const [passwordForm, setPasswordForm] = useState({
@@ -43,6 +44,13 @@ const UserProfile: React.FC<UserProfileProps> = ({ onThemeChange, currentTheme }
     { name: 'Lime', value: '#65a30d', gradient: 'from-lime-500 to-lime-600' },
     { name: 'Rose', value: '#f43f5e', gradient: 'from-rose-500 to-rose-600' },
     { name: 'Slate', value: '#64748b', gradient: 'from-slate-500 to-slate-600' }
+  ];
+
+  const usagePlanOptions = [
+    { value: 'child', label: 'Child', description: 'Basic features for children' },
+    { value: 'user', label: 'User', description: 'Standard user features' },
+    { value: 'store', label: 'Store', description: 'Advanced features for businesses' },
+    { value: 'enterprise', label: 'Enterprise', description: 'Full enterprise features' }
   ];
 
   const timezoneOptions = [
@@ -152,7 +160,8 @@ const UserProfile: React.FC<UserProfileProps> = ({ onThemeChange, currentTheme }
         firstName: userProfile.firstName || '',
         lastName: userProfile.lastName || '',
         timezone: userProfile.timezone || 'UTC',
-        timeFormat: userProfile.timeFormat || '24h'
+        timeFormat: userProfile.timeFormat || '24h',
+        usagePlans: userProfile.usagePlans || ['user']
       });
       setError(null);
     } catch (err) {
@@ -262,6 +271,28 @@ const UserProfile: React.FC<UserProfileProps> = ({ onThemeChange, currentTheme }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to update theme');
     }
+  };
+
+  const handleUsagePlanChange = (planValue: string) => {
+    const currentPlans = profileForm.usagePlans;
+    let newPlans;
+
+    if (currentPlans.includes(planValue)) {
+      // Remove if already selected (but keep at least one plan)
+      if (currentPlans.length > 1) {
+        newPlans = currentPlans.filter(plan => plan !== planValue);
+      } else {
+        newPlans = currentPlans; // Don't allow removing the last plan
+      }
+    } else {
+      // Add if not selected
+      newPlans = [...currentPlans, planValue];
+    }
+
+    setProfileForm(prev => ({
+      ...prev,
+      usagePlans: newPlans
+    }));
   };
 
   const handlePasswordSubmit = async (e: React.FormEvent) => {
@@ -428,6 +459,50 @@ const UserProfile: React.FC<UserProfileProps> = ({ onThemeChange, currentTheme }
                     onChange={(e) => setProfileForm(prev => ({...prev, lastName: e.target.value}))}
                     className={`w-full px-4 py-3 bg-white border border-gray-300 text-gray-800 rounded-xl focus:ring-2 ${themeColors.ring} focus:border-${themeColors.primary}-500 outline-none transition-all duration-300`}
                   />
+                </div>
+              </div>
+
+              {/* Usage Plans Section */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  📋 Usage Plans
+                </label>
+                <div className="grid grid-cols-2 gap-3">
+                  {usagePlanOptions.map((plan) => (
+                    <div
+                      key={plan.value}
+                      onClick={() => handleUsagePlanChange(plan.value)}
+                      className={`p-4 border rounded-xl cursor-pointer transition-all duration-200 hover:shadow-md ${
+                        profileForm.usagePlans.includes(plan.value)
+                          ? `border-${themeColors.primary}-500 bg-${themeColors.primary}-50 ${themeColors.ring}`
+                          : 'border-gray-200 bg-white hover:border-gray-300'
+                      }`}
+                    >
+                      <div className="flex items-start space-x-3">
+                        <div className={`mt-1 w-4 h-4 rounded border-2 flex-shrink-0 ${
+                          profileForm.usagePlans.includes(plan.value)
+                            ? `border-${themeColors.primary}-500 bg-${themeColors.primary}-500`
+                            : 'border-gray-300'
+                        }`}>
+                          {profileForm.usagePlans.includes(plan.value) && (
+                            <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                          )}
+                        </div>
+                        <div className="flex-1">
+                          <div className={`font-medium ${
+                            profileForm.usagePlans.includes(plan.value) ? themeColors.text : 'text-gray-900'
+                          }`}>
+                            {plan.label}
+                          </div>
+                          <div className="text-sm text-gray-500 mt-1">
+                            {plan.description}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
 

@@ -17,6 +17,13 @@ export enum UserRole {
   ADMIN = 'admin',
 }
 
+export enum UsagePlan {
+  CHILD = 'child',
+  USER = 'user',
+  STORE = 'store',
+  ENTERPRISE = 'enterprise',
+}
+
 @Entity('users')
 export class User {
   @PrimaryGeneratedColumn()
@@ -61,6 +68,9 @@ export class User {
 
   @Column({ default: '24h' }) // '12h' or '24h'
   timeFormat: string;
+
+  @Column({ type: 'json', default: () => "'[\"user\"]'" }) // Array of usage plans
+  usagePlans: UsagePlan[];
 
   @CreateDateColumn()
   createdAt: Date;

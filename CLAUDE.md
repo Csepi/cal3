@@ -217,6 +217,15 @@ cd backend-nestjs && npm run build
 - Rate limiting for API endpoints
 - Secure calendar sync token storage
 
+## File Security Guidelines
+**⚠️ NEVER COMMIT THESE FILES TO GIT:**
+- `.env` files (contain sensitive database credentials and OAuth secrets)
+- `settings.local.json` files (contain local development settings)
+- MCP-related files (model context protocol configuration files)
+- Any files containing API keys, passwords, or access tokens
+
+These files should always be added to `.gitignore` to prevent accidental exposure of sensitive information.
+
 ---
 
 ## Quick Reference

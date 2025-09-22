@@ -1,5 +1,6 @@
-import { IsString, IsOptional, IsEmail, MinLength, Matches, IsNumber, IsIn, Min, Max } from 'class-validator';
+import { IsString, IsOptional, IsEmail, MinLength, Matches, IsNumber, IsIn, Min, Max, IsArray, IsEnum } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
+import { UsagePlan } from '../entities/user.entity';
 
 export class UpdateProfileDto {
   @ApiPropertyOptional({ example: 'john_doe', description: 'Username' })
@@ -46,6 +47,12 @@ export class UpdateProfileDto {
   @IsString()
   @IsIn(['12h', '24h'])
   timeFormat?: string;
+
+  @ApiPropertyOptional({ example: ['user', 'store'], description: 'Usage plans (multiple select)' })
+  @IsOptional()
+  @IsArray()
+  @IsEnum(UsagePlan, { each: true })
+  usagePlans?: UsagePlan[];
 }
 
 export class UpdateThemeDto {
