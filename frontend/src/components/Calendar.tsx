@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import type { Event, CreateEventRequest, UpdateEventRequest, RecurrencePattern, RecurrenceType } from '../types/Event';
+import type { Event, CreateEventRequest, UpdateEventRequest, RecurrencePattern } from '../types/Event';
+import { RecurrenceType } from '../types/Event';
 import type { Calendar as CalendarType, CreateCalendarRequest } from '../types/Calendar';
 import { apiService } from '../services/api';
 import ConfirmationDialog from './ConfirmationDialog';

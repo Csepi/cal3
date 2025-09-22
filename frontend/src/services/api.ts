@@ -1,4 +1,5 @@
-import type { Event, CreateEventRequest, UpdateEventRequest, RecurrencePattern, RecurrenceType, RecurrenceEndType } from '../types/Event';
+import type { Event, CreateEventRequest, UpdateEventRequest, RecurrencePattern } from '../types/Event';
+import { RecurrenceType, RecurrenceEndType } from '../types/Event';
 import type { Calendar, CreateCalendarRequest, UpdateCalendarRequest } from '../types/Calendar';
 import type { WeekDay } from '../components/RecurrenceSelector';
 
