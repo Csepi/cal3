@@ -113,7 +113,11 @@ export class EventsService {
       .createQueryBuilder('event')
       .leftJoinAndSelect('event.calendar', 'calendar')
       .leftJoinAndSelect('event.createdBy', 'createdBy')
-      .where('event.calendarId IN (:...calendarIds)', { calendarIds });
+      .where('event.calendarId IN (:...calendarIds)', { calendarIds })
+      // Exclude parent/template events (only show instances or non-recurring events)
+      .andWhere('(event.recurrenceType = :noneType OR event.parentEventId IS NOT NULL)', {
+        noneType: RecurrenceType.NONE
+      });
 
     // Add date filters if provided
     if (startDate && endDate) {
@@ -132,7 +136,11 @@ export class EventsService {
       .createQueryBuilder('event')
       .leftJoinAndSelect('event.calendar', 'calendar')
       .leftJoinAndSelect('event.createdBy', 'createdBy')
-      .where('calendar.visibility = :visibility', { visibility: 'public' });
+      .where('calendar.visibility = :visibility', { visibility: 'public' })
+      // Exclude parent/template events (only show instances or non-recurring events)
+      .andWhere('(event.recurrenceType = :noneType OR event.parentEventId IS NOT NULL)', {
+        noneType: RecurrenceType.NONE
+      });
 
     // Add date filters if provided
     if (startDate && endDate) {
