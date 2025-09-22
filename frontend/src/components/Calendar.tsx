@@ -389,8 +389,17 @@ const Calendar: React.FC<CalendarProps> = ({ themeColor }) => {
       await withProgress(async (updateProgress) => {
         if (editingEvent) {
           updateProgress(30, 'Updating event...');
-          // Check if this is a recurring event and handle accordingly
-          if (editingEvent.parentEventId || editingEvent.recurrenceId || editingEvent.isRecurring) {
+          // Check if recurrence pattern is being added to a non-recurring event
+          if (recurrencePattern && recurrencePattern.type !== RecurrenceType.NONE) {
+            // Event is being converted to recurring or updated with recurrence
+            const formattedEventData = formatEventForAPI(eventForm);
+            const updateData = {
+              ...formattedEventData,
+              updateScope: 'all' as const,
+              recurrence: recurrencePattern
+            };
+            await apiService.updateRecurringEvent(editingEvent.id, updateData);
+          } else if (editingEvent.parentEventId || editingEvent.recurrenceId || editingEvent.isRecurring) {
             // This should have been handled by the RecurrenceEditDialog
             // For safety, use regular update
             const formattedEventData = formatEventForAPI(eventForm);
