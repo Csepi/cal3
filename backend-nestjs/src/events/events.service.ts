@@ -358,10 +358,16 @@ export class EventsService {
       throw new ForbiddenException('Insufficient permissions to update this event');
     }
 
+    // Handle conversion from non-recurring to recurring event
     if (event.recurrenceType === RecurrenceType.NONE) {
-      // Not a recurring event, use regular update
-      this.sanitizeAndAssignUpdateData(event, updateData);
-      return [await this.eventRepository.save(event)];
+      if (recurrence && recurrence.type !== RecurrenceType.NONE) {
+        // Convert event to recurring
+        return await this.convertToRecurringEvent(event, updateData, recurrence);
+      } else {
+        // Not converting to recurring, use regular update
+        this.sanitizeAndAssignUpdateData(event, updateData);
+        return [await this.eventRepository.save(event)];
+      }
     }
 
     switch (updateScope) {
@@ -642,5 +648,32 @@ export class EventsService {
     event.startTime = eventData.startTime && eventData.startTime !== '' ? eventData.startTime : undefined;
     event.endTime = eventData.endTime && eventData.endTime !== '' ? eventData.endTime : undefined;
     return event;
+  }
+
+  private async convertToRecurringEvent(event: Event, updateData: any, recurrence: RecurrencePatternDto): Promise<Event[]> {
+    // Apply any basic updates to the event first
+    this.sanitizeAndAssignUpdateData(event, updateData);
+
+    // Set up recurrence properties
+    event.recurrenceType = recurrence.type;
+    event.recurrenceRule = JSON.stringify(this.buildRecurrenceRule(recurrence));
+
+    // Save the updated parent event
+    const savedEvent = await this.eventRepository.save(event);
+
+    // Generate recurring instances
+    try {
+      const instances = this.generateRecurringInstances(savedEvent, recurrence);
+
+      if (instances.length > 0) {
+        const savedInstances = await this.eventRepository.save(instances);
+        return [savedEvent, ...savedInstances];
+      }
+    } catch (error) {
+      console.error('Error generating recurring instances during conversion:', error);
+      // Return just the parent event if instance generation fails
+    }
+
+    return [savedEvent];
   }
 }
