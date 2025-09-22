@@ -20,6 +20,12 @@ const MonthView: React.FC<MonthViewProps> = ({
   weekStartDay,
   themeColor
 }) => {
+  // Helper function to get background style based on theme color
+  const getBackgroundStyle = () => {
+    return {
+      background: `linear-gradient(135deg, ${themeColor}08 0%, white 50%, ${themeColor}05 100%)`
+    };
+  };
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
@@ -93,7 +99,7 @@ const MonthView: React.FC<MonthViewProps> = ({
   const selectedDateEvents = selectedDate ? getEventsForDate(selectedDate) : [];
 
   return (
-    <div className="flex h-full bg-gradient-to-br from-gray-50 via-white to-gray-50/50">
+    <div className="flex h-full" style={getBackgroundStyle()}>
       {/* Calendar Grid */}
       <div className="flex-1 flex flex-col">
         {/* Day Headers */}
@@ -153,14 +159,14 @@ const MonthView: React.FC<MonthViewProps> = ({
                     return (
                       <div
                         key={event.id}
-                        className="text-xs p-1 rounded cursor-pointer truncate border-l-2 hover:shadow-sm transition-all duration-200"
+                        className="text-xs p-1 rounded cursor-pointer truncate border-l-4 hover:shadow-md transition-all duration-200"
                         style={{
                           background: hasGradient
-                            ? `linear-gradient(135deg, ${calendarColor}20, ${eventColor}30, ${eventColor}40)`
-                            : `linear-gradient(135deg, ${eventColor}30, ${eventColor}50)`,
-                          borderLeftColor: eventColor,
-                          color: eventColor,
-                          boxShadow: `0 2px 4px ${eventColor}20`
+                            ? `linear-gradient(135deg, ${calendarColor}40, ${eventColor}60, ${eventColor}70)`
+                            : `linear-gradient(135deg, ${calendarColor || eventColor}50, ${eventColor}70)`,
+                          borderLeftColor: calendarColor || eventColor,
+                          color: calendarColor || eventColor,
+                          boxShadow: `0 3px 8px ${(calendarColor || eventColor)}30`
                         }}
                         onClick={(e) => {
                           e.stopPropagation();
@@ -168,8 +174,11 @@ const MonthView: React.FC<MonthViewProps> = ({
                         }}
                         title={`${event.title}\n${event.startTime || 'All day'} - ${event.endTime || ''}\n${event.location || ''}`}
                       >
-                        <div className="font-medium truncate">
+                        <div className="font-medium truncate flex items-center">
                           {event.title}
+                          {(event.parentEventId || event.recurrenceId || event.isRecurring) && (
+                            <span className="ml-1 text-xs" title="Recurring Event">🔄</span>
+                          )}
                         </div>
                         {!event.isAllDay && event.startTime && (
                           <div className="opacity-75">
@@ -226,8 +235,13 @@ const MonthView: React.FC<MonthViewProps> = ({
                     onClick={() => onEventClick(event)}
                   >
                     <div className="flex items-start justify-between mb-2">
-                      <h4 className="font-medium text-gray-900 flex-1 pr-2">
+                      <h4 className="font-medium text-gray-900 flex-1 pr-2 flex items-center">
                         {event.title}
+                        {(event.parentEventId || event.recurrenceId || event.isRecurring) && (
+                          <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full" title="Recurring Event">
+                            🔄 Recurring
+                          </span>
+                        )}
                       </h4>
                       {event.isAllDay && (
                         <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full">

@@ -1,9 +1,10 @@
-import { Injectable, ForbiddenException, NotFoundException } from '@nestjs/common';
+import { Injectable, ForbiddenException, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Event } from '../entities/event.entity';
+import { Event, RecurrenceType } from '../entities/event.entity';
 import { Calendar, SharePermission, CalendarShare } from '../entities/calendar.entity';
 import { CreateEventDto, UpdateEventDto } from '../dto/event.dto';
+import { CreateRecurringEventDto, UpdateRecurringEventDto, RecurrencePatternDto, WeekDay, RecurrenceEndType } from '../dto/recurrence.dto';
 
 @Injectable()
 export class EventsService {
@@ -39,8 +40,28 @@ export class EventsService {
     }
 
     const event = this.createEventEntity(eventData, calendarId, userId);
+    const savedEvent = await this.eventRepository.save(event);
 
-    return this.eventRepository.save(event);
+    // Check if this is a recurring event and generate instances
+    if (savedEvent.recurrenceType && savedEvent.recurrenceType !== RecurrenceType.NONE && savedEvent.recurrenceRule) {
+      try {
+        const recurrenceData = typeof savedEvent.recurrenceRule === 'string'
+          ? JSON.parse(savedEvent.recurrenceRule)
+          : savedEvent.recurrenceRule;
+
+        const recurrencePattern = this.convertRuleToPattern(recurrenceData, savedEvent.recurrenceType);
+        const instances = this.generateRecurringInstances(savedEvent, recurrencePattern);
+
+        if (instances.length > 0) {
+          await this.eventRepository.save(instances);
+        }
+      } catch (error) {
+        console.error('Error generating recurring instances:', error);
+        // Continue without instances if there's an error
+      }
+    }
+
+    return savedEvent;
   }
 
   async createPublic(createEventDto: CreateEventDto): Promise<Event> {
@@ -180,8 +201,15 @@ export class EventsService {
     return this.eventRepository.save(event);
   }
 
-  async remove(id: number, userId: number): Promise<void> {
-    const event = await this.findOne(id, userId);
+  async remove(id: number, userId: number, scope: 'this' | 'future' | 'all' = 'this'): Promise<void> {
+    const event = await this.eventRepository.findOne({
+      where: { id },
+      relations: ['calendar', 'createdBy'],
+    });
+
+    if (!event) {
+      throw new NotFoundException('Event not found');
+    }
 
     // Check if user has write access to the calendar
     const hasWriteAccess = await this.checkWriteAccess(event.calendarId, userId);
@@ -189,7 +217,11 @@ export class EventsService {
       throw new ForbiddenException('Insufficient permissions to delete this event');
     }
 
-    await this.eventRepository.remove(event);
+    if (event.recurrenceType !== RecurrenceType.NONE) {
+      await this.removeRecurringEvent(event, scope);
+    } else {
+      await this.eventRepository.remove(event);
+    }
   }
 
   async removePublic(id: number): Promise<void> {
@@ -279,6 +311,303 @@ export class EventsService {
     });
 
     return !!share && (share.permission === SharePermission.WRITE || share.permission === SharePermission.ADMIN);
+  }
+
+  async createRecurring(createRecurringEventDto: CreateRecurringEventDto, userId: number): Promise<Event[]> {
+    const { recurrence, ...eventData } = createRecurringEventDto;
+
+    if (!createRecurringEventDto.calendarId) {
+      throw new NotFoundException('Calendar ID is required');
+    }
+
+    // Check if user has write access to the calendar
+    const hasWriteAccess = await this.checkWriteAccess(createRecurringEventDto.calendarId, userId);
+    if (!hasWriteAccess) {
+      throw new ForbiddenException('Insufficient permissions to create events in this calendar');
+    }
+
+    // Create the parent event
+    const parentEvent = this.createEventEntity(eventData, createRecurringEventDto.calendarId, userId);
+    parentEvent.recurrenceType = recurrence.type;
+    parentEvent.recurrenceRule = JSON.stringify(this.buildRecurrenceRule(recurrence));
+
+    const savedParentEvent = await this.eventRepository.save(parentEvent);
+
+    // Generate recurring instances
+    const instances = this.generateRecurringInstances(savedParentEvent, recurrence);
+    const savedInstances = await this.eventRepository.save(instances);
+
+    return [savedParentEvent, ...savedInstances];
+  }
+
+  async updateRecurring(id: number, updateRecurringEventDto: UpdateRecurringEventDto, userId: number): Promise<Event[]> {
+    const { updateScope, recurrence, ...updateData } = updateRecurringEventDto;
+
+    const event = await this.eventRepository.findOne({
+      where: { id },
+      relations: ['calendar', 'createdBy'],
+    });
+
+    if (!event) {
+      throw new NotFoundException('Event not found');
+    }
+
+    // Check if user has write access
+    const hasWriteAccess = await this.checkWriteAccess(event.calendarId, userId);
+    if (!hasWriteAccess) {
+      throw new ForbiddenException('Insufficient permissions to update this event');
+    }
+
+    if (event.recurrenceType === RecurrenceType.NONE) {
+      // Not a recurring event, use regular update
+      Object.assign(event, updateData);
+      return [await this.eventRepository.save(event)];
+    }
+
+    switch (updateScope) {
+      case 'this':
+        return await this.updateSingleInstance(event, updateData);
+      case 'future':
+        return await this.updateFutureInstances(event, updateData, recurrence);
+      case 'all':
+        return await this.updateAllInstances(event, updateData, recurrence);
+      default:
+        throw new BadRequestException('Invalid update scope');
+    }
+  }
+
+  private async removeRecurringEvent(event: Event, scope: 'this' | 'future' | 'all'): Promise<void> {
+    const parentEventId = event.parentEventId || event.id;
+
+    switch (scope) {
+      case 'this':
+        if (event.parentEventId) {
+          // Mark as exception instead of deleting
+          event.isRecurrenceException = true;
+          await this.eventRepository.save(event);
+        } else {
+          // This is the parent event, delete all instances
+          await this.eventRepository.delete({ parentEventId: event.id });
+          await this.eventRepository.remove(event);
+        }
+        break;
+      case 'future':
+        if (event.parentEventId) {
+          // Delete this and all future instances
+          const eventDate = new Date(event.startDate);
+          await this.eventRepository
+            .createQueryBuilder()
+            .delete()
+            .where('parentEventId = :parentEventId AND startDate >= :startDate', {
+              parentEventId,
+              startDate: eventDate,
+            })
+            .execute();
+        } else {
+          // Delete all instances and parent
+          await this.eventRepository.delete({ parentEventId: event.id });
+          await this.eventRepository.remove(event);
+        }
+        break;
+      case 'all':
+        // Delete all instances and parent
+        await this.eventRepository.delete({ parentEventId });
+        if (!event.parentEventId) {
+          await this.eventRepository.remove(event);
+        } else {
+          const parentEvent = await this.eventRepository.findOne({ where: { id: parentEventId } });
+          if (parentEvent) {
+            await this.eventRepository.remove(parentEvent);
+          }
+        }
+        break;
+    }
+  }
+
+  private async updateSingleInstance(event: Event, updateData: any): Promise<Event[]> {
+    if (event.parentEventId) {
+      // This is already an instance, just update it
+      Object.assign(event, updateData);
+      return [await this.eventRepository.save(event)];
+    } else {
+      // This is the parent, create an exception
+      const exception = this.createEventEntity(updateData, event.calendarId, event.createdById);
+      exception.parentEventId = event.id;
+      exception.recurrenceId = `${event.id}-exception-${Date.now()}`;
+      exception.originalDate = event.startDate;
+      exception.isRecurrenceException = true;
+      exception.recurrenceType = RecurrenceType.NONE;
+
+      return [await this.eventRepository.save(exception)];
+    }
+  }
+
+  private async updateFutureInstances(event: Event, updateData: any, newRecurrence?: RecurrencePatternDto): Promise<Event[]> {
+    const parentEventId = event.parentEventId || event.id;
+    const eventDate = new Date(event.startDate);
+
+    // Delete existing future instances
+    await this.eventRepository
+      .createQueryBuilder()
+      .delete()
+      .where('parentEventId = :parentEventId AND startDate >= :startDate', {
+        parentEventId,
+        startDate: eventDate,
+      })
+      .execute();
+
+    // Update parent event if modifying recurrence
+    if (!event.parentEventId && newRecurrence) {
+      event.recurrenceRule = JSON.stringify(this.buildRecurrenceRule(newRecurrence));
+      await this.eventRepository.save(event);
+    }
+
+    // Generate new instances from this date forward
+    const parentEvent = event.parentEventId
+      ? await this.eventRepository.findOne({ where: { id: parentEventId } })
+      : event;
+
+    if (parentEvent && newRecurrence) {
+      const newInstances = this.generateRecurringInstances(parentEvent, newRecurrence, eventDate);
+      return await this.eventRepository.save(newInstances);
+    }
+
+    return [];
+  }
+
+  private async updateAllInstances(event: Event, updateData: any, newRecurrence?: RecurrencePatternDto): Promise<Event[]> {
+    const parentEventId = event.parentEventId || event.id;
+
+    // Delete all existing instances
+    await this.eventRepository.delete({ parentEventId });
+
+    // Update parent event
+    const parentEvent = event.parentEventId
+      ? await this.eventRepository.findOne({ where: { id: parentEventId } })
+      : event;
+
+    if (!parentEvent) {
+      throw new NotFoundException('Parent event not found');
+    }
+
+    Object.assign(parentEvent, updateData);
+    if (newRecurrence) {
+      parentEvent.recurrenceRule = JSON.stringify(this.buildRecurrenceRule(newRecurrence));
+    }
+
+    const savedParentEvent = await this.eventRepository.save(parentEvent);
+
+    // Generate new instances if there's still a recurrence pattern
+    if (newRecurrence && newRecurrence.type !== RecurrenceType.NONE) {
+      const newInstances = this.generateRecurringInstances(savedParentEvent, newRecurrence);
+      const savedInstances = await this.eventRepository.save(newInstances);
+      return [savedParentEvent, ...savedInstances];
+    }
+
+    return [savedParentEvent];
+  }
+
+  private generateRecurringInstances(parentEvent: Event, recurrence: RecurrencePatternDto, startFrom?: Date): Event[] {
+    const instances: Event[] = [];
+    const startDate = startFrom || new Date(parentEvent.startDate);
+    const maxInstances = recurrence.endType === RecurrenceEndType.COUNT ? recurrence.count || 52 : 365; // Default limits
+    const endDate = recurrence.endType === RecurrenceEndType.DATE ? new Date(recurrence.endDate!) : null;
+
+    let currentDate = new Date(startDate);
+    let instanceCount = 0;
+
+    while (instanceCount < maxInstances) {
+      if (endDate && currentDate > endDate) {
+        break;
+      }
+
+      const instance = new Event();
+      Object.assign(instance, {
+        title: parentEvent.title,
+        description: parentEvent.description,
+        location: parentEvent.location,
+        isAllDay: parentEvent.isAllDay,
+        startTime: parentEvent.startTime,
+        endTime: parentEvent.endTime,
+        color: parentEvent.color,
+        calendarId: parentEvent.calendarId,
+        createdById: parentEvent.createdById,
+        parentEventId: parentEvent.id,
+        recurrenceId: `${parentEvent.id}-${currentDate.toISOString()}`,
+        originalDate: new Date(currentDate),
+        recurrenceType: RecurrenceType.NONE,
+      });
+
+      instance.startDate = new Date(currentDate);
+
+      if (parentEvent.endDate) {
+        const daysDiff = Math.floor((new Date(parentEvent.endDate).getTime() - new Date(parentEvent.startDate).getTime()) / (1000 * 60 * 60 * 24));
+        instance.endDate = new Date(currentDate);
+        instance.endDate.setDate(instance.endDate.getDate() + daysDiff);
+      }
+
+      instances.push(instance);
+
+      // Calculate next occurrence
+      currentDate = this.getNextOccurrence(currentDate, recurrence);
+      instanceCount++;
+
+      if (recurrence.endType === RecurrenceEndType.COUNT && instanceCount >= (recurrence.count || 1)) {
+        break;
+      }
+    }
+
+    return instances;
+  }
+
+  private getNextOccurrence(currentDate: Date, recurrence: RecurrencePatternDto): Date {
+    const nextDate = new Date(currentDate);
+    const interval = recurrence.interval || 1;
+
+    switch (recurrence.type) {
+      case RecurrenceType.DAILY:
+        nextDate.setDate(nextDate.getDate() + interval);
+        break;
+      case RecurrenceType.WEEKLY:
+        nextDate.setDate(nextDate.getDate() + (7 * interval));
+        break;
+      case RecurrenceType.MONTHLY:
+        nextDate.setMonth(nextDate.getMonth() + interval);
+        break;
+      case RecurrenceType.YEARLY:
+        nextDate.setFullYear(nextDate.getFullYear() + interval);
+        break;
+    }
+
+    return nextDate;
+  }
+
+  private buildRecurrenceRule(recurrence: RecurrencePatternDto): any {
+    return {
+      frequency: recurrence.type,
+      interval: recurrence.interval || 1,
+      endType: recurrence.endType || RecurrenceEndType.NEVER,
+      count: recurrence.count,
+      endDate: recurrence.endDate,
+      daysOfWeek: recurrence.daysOfWeek,
+      dayOfMonth: recurrence.dayOfMonth,
+      monthOfYear: recurrence.monthOfYear,
+      timezone: recurrence.timezone,
+    };
+  }
+
+  private convertRuleToPattern(rule: any, recurrenceType: RecurrenceType): RecurrencePatternDto {
+    const pattern = new RecurrencePatternDto();
+    pattern.type = recurrenceType;
+    pattern.interval = rule.interval || 1;
+    pattern.endType = rule.endType || RecurrenceEndType.NEVER;
+    pattern.count = rule.count;
+    pattern.endDate = rule.endDate;
+    pattern.daysOfWeek = rule.daysOfWeek;
+    pattern.dayOfMonth = rule.dayOfMonth;
+    pattern.monthOfYear = rule.monthOfYear;
+    pattern.timezone = rule.timezone;
+    return pattern;
   }
 
   private createEventEntity(eventData: any, calendarId: number, createdById: number): Event {

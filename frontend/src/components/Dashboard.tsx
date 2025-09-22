@@ -134,6 +134,42 @@ const Dashboard: React.FC = () => {
         secondary: 'bg-teal-100 border-teal-200 text-teal-700',
         accent: 'text-teal-600',
         gradient: 'from-teal-50 via-teal-100 to-teal-200'
+      },
+      '#eab308': { // Yellow
+        primary: 'bg-yellow-500 hover:bg-yellow-600',
+        secondary: 'bg-yellow-100 border-yellow-200 text-yellow-700',
+        accent: 'text-yellow-600',
+        gradient: 'from-yellow-50 via-yellow-100 to-yellow-200'
+      },
+      '#22c55e': { // Emerald
+        primary: 'bg-emerald-500 hover:bg-emerald-600',
+        secondary: 'bg-emerald-100 border-emerald-200 text-emerald-700',
+        accent: 'text-emerald-600',
+        gradient: 'from-emerald-50 via-emerald-100 to-emerald-200'
+      },
+      '#06b6d4': { // Cyan
+        primary: 'bg-cyan-500 hover:bg-cyan-600',
+        secondary: 'bg-cyan-100 border-cyan-200 text-cyan-700',
+        accent: 'text-cyan-600',
+        gradient: 'from-cyan-50 via-cyan-100 to-cyan-200'
+      },
+      '#65a30d': { // Lime
+        primary: 'bg-lime-500 hover:bg-lime-600',
+        secondary: 'bg-lime-100 border-lime-200 text-lime-700',
+        accent: 'text-lime-600',
+        gradient: 'from-lime-50 via-lime-100 to-lime-200'
+      },
+      '#f43f5e': { // Rose
+        primary: 'bg-rose-500 hover:bg-rose-600',
+        secondary: 'bg-rose-100 border-rose-200 text-rose-700',
+        accent: 'text-rose-600',
+        gradient: 'from-rose-50 via-rose-100 to-rose-200'
+      },
+      '#64748b': { // Slate
+        primary: 'bg-slate-500 hover:bg-slate-600',
+        secondary: 'bg-slate-100 border-slate-200 text-slate-700',
+        accent: 'text-slate-600',
+        gradient: 'from-slate-50 via-slate-100 to-slate-200'
       }
     };
 
@@ -147,7 +183,7 @@ const Dashboard: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen">
+    <div className={`min-h-screen bg-gradient-to-br ${themeColors.gradient}`}>
       {/* User Header */}
       <div className="bg-white/80 backdrop-blur-md border-b border-gray-200 sticky top-0 z-50 shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">

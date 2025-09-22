@@ -20,6 +20,12 @@ const WeekView: React.FC<WeekViewProps> = ({
   weekStartDay,
   themeColor
 }) => {
+  // Helper function to get background style based on theme color
+  const getBackgroundStyle = () => {
+    return {
+      background: `linear-gradient(135deg, ${themeColor}08 0%, white 50%, ${themeColor}05 100%)`
+    };
+  };
   const hours = Array.from({ length: 24 }, (_, i) => i);
 
   // Time range selection state
@@ -241,7 +247,7 @@ const WeekView: React.FC<WeekViewProps> = ({
   };
 
   return (
-    <div className="flex flex-col h-full bg-gradient-to-br from-gray-50 via-white to-gray-50/50">
+    <div className="flex flex-col h-full" style={getBackgroundStyle()}>
       {/* Week Header */}
       <div className="flex border-b border-gray-200 bg-white/80 backdrop-blur-sm">
         {/* Time column header */}
@@ -327,17 +333,17 @@ const WeekView: React.FC<WeekViewProps> = ({
                       return (
                         <div
                           key={event.id}
-                          className="absolute inset-x-0 cursor-pointer rounded border-l-3 hover:shadow-md transition-all duration-200 z-20"
+                          className="absolute inset-x-0 cursor-pointer rounded border-l-4 hover:shadow-lg transition-all duration-200 z-20"
                           style={{
                             height: `${duration * 60 - 4}px`, // 60px per hour minus gap
                             width: eventWidth,
                             left: eventLeft,
                             background: hasGradient
-                              ? `linear-gradient(135deg, ${calendarColor}60, ${eventColor}70, ${eventColor}80)`
-                              : `linear-gradient(135deg, ${eventColor}50, ${eventColor}70)`,
-                            borderLeftColor: eventColor,
-                            borderLeftWidth: '4px',
-                            boxShadow: `0 2px 8px ${eventColor}30`
+                              ? `linear-gradient(135deg, ${calendarColor}50, ${eventColor}70, ${eventColor}80)`
+                              : `linear-gradient(135deg, ${calendarColor || eventColor}60, ${eventColor}80)`,
+                            borderLeftColor: calendarColor || eventColor,
+                            borderLeftWidth: '5px',
+                            boxShadow: `0 4px 12px ${(calendarColor || eventColor)}40`
                           }}
                           onClick={() => onEventClick(event)}
                           title={`${event.title}\n${event.startTime || 'All day'} - ${event.endTime || ''}\n${event.location || ''}`}
@@ -354,7 +360,12 @@ const WeekView: React.FC<WeekViewProps> = ({
                               }}
                               title={event.title}
                             >
-                              {event.title}
+                              <div className="flex items-center">
+                                {event.title}
+                                {(event.parentEventId || event.recurrenceId || event.isRecurring) && (
+                                  <span className="ml-1 text-xs" title="Recurring Event">🔄</span>
+                                )}
+                              </div>
                             </div>
 
                             {/* Time display for non-all-day events */}

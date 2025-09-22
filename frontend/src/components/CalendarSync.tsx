@@ -293,12 +293,131 @@ const CalendarSync: React.FC<CalendarSyncProps> = ({ themeColor }) => {
           circle2: 'from-gray-300 to-zinc-300',
           circle3: 'from-zinc-300 to-slate-300'
         }
+      },
+      '#22c55e': { // Emerald
+        primary: 'emerald',
+        secondary: 'green',
+        light: 'emerald-50',
+        border: 'emerald-200',
+        accent: 'emerald-400',
+        hover: 'emerald-600',
+        gradient: {
+          header: 'from-emerald-500 to-green-500',
+          today: 'from-emerald-400 to-green-500',
+          selected: 'from-green-500 to-emerald-600',
+          events: 'from-emerald-100 to-green-100',
+          background: 'from-emerald-50 via-emerald-100 to-emerald-200'
+        },
+        text: {
+          title: 'text-emerald-800'
+        },
+        button: 'bg-emerald-500 hover:bg-emerald-600',
+        focus: 'focus:ring-emerald-500',
+        animatedGradient: {
+          circle1: 'from-emerald-300 to-green-300',
+          circle2: 'from-green-300 to-teal-300',
+          circle3: 'from-teal-300 to-emerald-300'
+        }
+      },
+      '#06b6d4': { // Cyan
+        primary: 'cyan',
+        secondary: 'sky',
+        light: 'cyan-50',
+        border: 'cyan-200',
+        accent: 'cyan-400',
+        hover: 'cyan-600',
+        gradient: {
+          header: 'from-cyan-500 to-sky-500',
+          today: 'from-cyan-400 to-sky-500',
+          selected: 'from-sky-500 to-cyan-600',
+          events: 'from-cyan-100 to-sky-100',
+          background: 'from-cyan-50 via-cyan-100 to-cyan-200'
+        },
+        text: {
+          title: 'text-cyan-800'
+        },
+        button: 'bg-cyan-500 hover:bg-cyan-600',
+        focus: 'focus:ring-cyan-500',
+        animatedGradient: {
+          circle1: 'from-cyan-300 to-sky-300',
+          circle2: 'from-sky-300 to-blue-300',
+          circle3: 'from-blue-300 to-cyan-300'
+        }
+      },
+      '#65a30d': { // Lime
+        primary: 'lime',
+        secondary: 'yellow',
+        light: 'lime-50',
+        border: 'lime-200',
+        accent: 'lime-400',
+        hover: 'lime-600',
+        gradient: {
+          header: 'from-lime-500 to-yellow-500',
+          today: 'from-lime-400 to-yellow-500',
+          selected: 'from-yellow-500 to-lime-600',
+          events: 'from-lime-100 to-yellow-100',
+          background: 'from-lime-50 via-lime-100 to-lime-200'
+        },
+        text: {
+          title: 'text-lime-800'
+        },
+        button: 'bg-lime-500 hover:bg-lime-600',
+        focus: 'focus:ring-lime-500',
+        animatedGradient: {
+          circle1: 'from-lime-300 to-yellow-300',
+          circle2: 'from-yellow-300 to-green-300',
+          circle3: 'from-green-300 to-lime-300'
+        }
+      },
+      '#f43f5e': { // Rose
+        primary: 'rose',
+        secondary: 'pink',
+        light: 'rose-50',
+        border: 'rose-200',
+        accent: 'rose-400',
+        hover: 'rose-600',
+        gradient: {
+          header: 'from-rose-500 to-pink-500',
+          today: 'from-rose-400 to-pink-500',
+          selected: 'from-pink-500 to-rose-600',
+          events: 'from-rose-100 to-pink-100',
+          background: 'from-rose-50 via-rose-100 to-rose-200'
+        },
+        text: {
+          title: 'text-rose-800'
+        },
+        button: 'bg-rose-500 hover:bg-rose-600',
+        focus: 'focus:ring-rose-500',
+        animatedGradient: {
+          circle1: 'from-rose-300 to-pink-300',
+          circle2: 'from-pink-300 to-red-300',
+          circle3: 'from-red-300 to-rose-300'
+        }
       }
     };
     return colorMap[color] || colorMap['#3b82f6']; // Default to blue
   };
 
   const themeColors = getThemeColors(themeColor);
+
+  // Simple theme gradient helper for consistency with other components
+  const getSimpleThemeGradient = (color: string) => {
+    const gradientMap: Record<string, string> = {
+      '#ef4444': 'from-red-50 via-red-100 to-red-200',
+      '#f59e0b': 'from-orange-50 via-orange-100 to-orange-200',
+      '#eab308': 'from-yellow-50 via-yellow-100 to-yellow-200',
+      '#10b981': 'from-green-50 via-green-100 to-green-200',
+      '#3b82f6': 'from-blue-50 via-blue-100 to-blue-200',
+      '#6366f1': 'from-indigo-50 via-indigo-100 to-indigo-200',
+      '#8b5cf6': 'from-purple-50 via-purple-100 to-purple-200',
+      '#ec4899': 'from-pink-50 via-pink-100 to-pink-200',
+      '#14b8a6': 'from-teal-50 via-teal-100 to-teal-200',
+      '#22c55e': 'from-emerald-50 via-emerald-100 to-emerald-200',
+      '#06b6d4': 'from-cyan-50 via-cyan-100 to-cyan-200',
+      '#64748b': 'from-slate-50 via-slate-100 to-slate-200'
+    };
+    return gradientMap[color] || gradientMap['#3b82f6'];
+  };
 
   useEffect(() => {
     // Add meta tag for extension compatibility
@@ -553,7 +672,7 @@ const CalendarSync: React.FC<CalendarSyncProps> = ({ themeColor }) => {
 
   if (isLoading) {
     return (
-      <div className={`min-h-screen bg-gradient-to-br ${themeColors.gradient.background} flex justify-center items-center`}>
+      <div className={`min-h-screen bg-gradient-to-br ${getSimpleThemeGradient(themeColor)} flex justify-center items-center`}>
         <div className="text-xl text-gray-600">Loading calendar sync...</div>
       </div>
     );
@@ -569,7 +688,7 @@ const CalendarSync: React.FC<CalendarSyncProps> = ({ themeColor }) => {
           overlay={true}
         />
       )}
-      <div className={`min-h-screen bg-gradient-to-br ${themeColors.gradient.background}`}>
+      <div className={`min-h-screen bg-gradient-to-br ${getSimpleThemeGradient(themeColor)}`}>
       {/* Animated Background */}
       <div className="absolute inset-0 overflow-hidden">
         <div className={`absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-r ${themeColors.animatedGradient?.circle1 || 'from-blue-300 to-indigo-300'} rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse`}></div>

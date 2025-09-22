@@ -13,6 +13,7 @@ import {
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { EventsService } from './events.service';
 import { CreateEventDto, UpdateEventDto, EventResponseDto } from '../dto/event.dto';
+import { UpdateRecurringEventDto, CreateRecurringEventDto } from '../dto/recurrence.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
 @ApiTags('Events')
@@ -29,6 +30,17 @@ export class EventsController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   create(@Body() createEventDto: CreateEventDto, @Request() req) {
     return this.eventsService.create(createEventDto, req.user.id);
+  }
+
+  @Post('recurring')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Create a new recurring event' })
+  @ApiResponse({ status: 201, description: 'Recurring event created successfully', type: [EventResponseDto] })
+  @ApiResponse({ status: 400, description: 'Invalid input data' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  createRecurring(@Body() createRecurringEventDto: CreateRecurringEventDto, @Request() req) {
+    return this.eventsService.createRecurring(createRecurringEventDto, req.user.id);
   }
 
   @Get()
@@ -84,6 +96,19 @@ export class EventsController {
   @ApiResponse({ status: 403, description: 'Insufficient permissions' })
   remove(@Param('id') id: string, @Request() req) {
     return this.eventsService.remove(+id, req.user.id);
+  }
+
+  @Patch(':id/recurring')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Update recurring event' })
+  @ApiParam({ name: 'id', description: 'Event ID', type: 'number' })
+  @ApiResponse({ status: 200, description: 'Recurring event updated successfully', type: [EventResponseDto] })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Insufficient permissions' })
+  @ApiResponse({ status: 404, description: 'Event not found' })
+  updateRecurring(@Param('id') id: string, @Body() updateRecurringEventDto: UpdateRecurringEventDto, @Request() req) {
+    return this.eventsService.updateRecurring(+id, updateRecurringEventDto, req.user.id);
   }
 
   @Get('calendar/:calendarId')

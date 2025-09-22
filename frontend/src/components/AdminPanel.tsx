@@ -63,6 +63,28 @@ interface AdminPanelProps {
 }
 
 const AdminPanel: React.FC<AdminPanelProps> = ({ themeColor = '#3b82f6' }) => {
+  // Helper function to get theme-based colors
+  const getThemeColors = (color: string) => {
+    const colorMap: Record<string, any> = {
+      '#ef4444': { gradient: 'from-red-50 via-red-100 to-red-200' },
+      '#f59e0b': { gradient: 'from-orange-50 via-orange-100 to-orange-200' },
+      '#eab308': { gradient: 'from-yellow-50 via-yellow-100 to-yellow-200' },
+      '#10b981': { gradient: 'from-green-50 via-green-100 to-green-200' },
+      '#3b82f6': { gradient: 'from-blue-50 via-blue-100 to-blue-200' },
+      '#6366f1': { gradient: 'from-indigo-50 via-indigo-100 to-indigo-200' },
+      '#8b5cf6': { gradient: 'from-purple-50 via-purple-100 to-purple-200' },
+      '#ec4899': { gradient: 'from-pink-50 via-pink-100 to-pink-200' },
+      '#14b8a6': { gradient: 'from-teal-50 via-teal-100 to-teal-200' },
+      '#22c55e': { gradient: 'from-emerald-50 via-emerald-100 to-emerald-200' },
+      '#06b6d4': { gradient: 'from-cyan-50 via-cyan-100 to-cyan-200' },
+      '#65a30d': { gradient: 'from-lime-50 via-lime-100 to-lime-200' },
+      '#f43f5e': { gradient: 'from-rose-50 via-rose-100 to-rose-200' },
+      '#64748b': { gradient: 'from-slate-50 via-slate-100 to-slate-200' }
+    };
+    return colorMap[color] || colorMap['#3b82f6']; // Default to blue
+  };
+
+  const themeColors = getThemeColors(themeColor);
   // Helper function to get admin token with fallback
   const getAdminToken = (): string | null => {
     let token = localStorage.getItem('admin_token');
@@ -1180,7 +1202,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ themeColor = '#3b82f6' }) => {
           overlay={true}
         />
       )}
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-100 to-blue-200 relative">
+      <div className={`min-h-screen bg-gradient-to-br ${themeColors.gradient} relative`}>
       {/* Animated Background */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-r from-blue-300 to-indigo-300 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse"></div>

@@ -1,5 +1,55 @@
-import type { Event, CreateEventRequest, UpdateEventRequest } from '../types/Event';
+import type { Event, CreateEventRequest, UpdateEventRequest, RecurrencePattern, RecurrenceType, RecurrenceEndType } from '../types/Event';
 import type { Calendar, CreateCalendarRequest, UpdateCalendarRequest } from '../types/Calendar';
+import type { WeekDay } from '../components/RecurrenceSelector';
+
+export interface CreateRecurringEventRequest extends CreateEventRequest {
+  recurrence: RecurrencePattern;
+}
+
+export interface UpdateRecurringEventRequest extends UpdateEventRequest {
+  recurrence?: RecurrencePattern;
+  updateScope: 'this' | 'future' | 'all';
+}
+
+// Map frontend RecurrenceType to backend format (values are already lowercase)
+const mapRecurrenceType = (type: RecurrenceType): string => {
+  return type; // Direct mapping since enum values match backend expectations
+};
+
+// Map frontend RecurrencePattern to backend recurrenceRule format
+const mapRecurrenceRule = (pattern: RecurrencePattern): any => {
+  if (pattern.type === RecurrenceType.NONE) {
+    return null;
+  }
+
+  const rule: any = {
+    interval: pattern.interval || 1
+  };
+
+  // Add end condition
+  if (pattern.endType === RecurrenceEndType.COUNT && pattern.count) {
+    rule.count = pattern.count;
+  } else if (pattern.endType === RecurrenceEndType.DATE && pattern.endDate) {
+    rule.until = pattern.endDate;
+  }
+
+  // Add days of week for weekly recurrence
+  if (pattern.type === RecurrenceType.WEEKLY && pattern.daysOfWeek) {
+    rule.daysOfWeek = pattern.daysOfWeek;
+  }
+
+  // Add day of month for monthly recurrence
+  if (pattern.type === RecurrenceType.MONTHLY && pattern.dayOfMonth) {
+    rule.dayOfMonth = pattern.dayOfMonth;
+  }
+
+  // Add month of year for yearly recurrence
+  if (pattern.type === RecurrenceType.YEARLY && pattern.monthOfYear) {
+    rule.monthOfYear = pattern.monthOfYear;
+  }
+
+  return rule;
+};
 
 const API_BASE_URL = 'http://localhost:8081';
 
@@ -44,6 +94,41 @@ class ApiService {
     return await response.json();
   }
 
+  // Create event with recurrence pattern mapped to backend format
+  async createEventWithRecurrence(eventData: CreateEventRequest, recurrence: RecurrencePattern): Promise<Event> {
+    const recurringEventData = {
+      ...eventData,
+      recurrence: {
+        type: mapRecurrenceType(recurrence.type),
+        interval: recurrence.interval || 1,
+        daysOfWeek: recurrence.daysOfWeek,
+        dayOfMonth: recurrence.dayOfMonth,
+        monthOfYear: recurrence.monthOfYear,
+        endType: recurrence.endType || RecurrenceEndType.NEVER,
+        count: recurrence.count,
+        endDate: recurrence.endDate,
+        timezone: recurrence.timezone
+      }
+    };
+
+    const response = await fetch(`${API_BASE_URL}/api/events/recurring`, {
+      method: 'POST',
+      headers: this.getAuthHeaders(),
+      body: JSON.stringify(recurringEventData),
+    });
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        throw new Error('Authentication required. Please log in to create recurring events.');
+      }
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to create recurring event');
+    }
+
+    const events = await response.json();
+    return events[0]; // Return the parent event
+  }
+
   async updateEvent(eventId: number, eventData: UpdateEventRequest): Promise<Event> {
     const response = await fetch(`${API_BASE_URL}/api/events/${eventId}`, {
       method: 'PATCH',
@@ -62,8 +147,8 @@ class ApiService {
     return await response.json();
   }
 
-  async deleteEvent(eventId: number): Promise<void> {
-    const response = await fetch(`${API_BASE_URL}/api/events/${eventId}`, {
+  async deleteEvent(eventId: number, scope: 'this' | 'future' | 'all' = 'this'): Promise<void> {
+    const response = await fetch(`${API_BASE_URL}/api/events/${eventId}?scope=${scope}`, {
       method: 'DELETE',
       headers: this.getAuthHeaders(),
     });
@@ -75,6 +160,26 @@ class ApiService {
       const errorData = await response.json();
       throw new Error(errorData.message || 'Failed to delete event');
     }
+  }
+
+  // Recurring event methods
+
+  async updateRecurringEvent(eventId: number, eventData: UpdateRecurringEventRequest): Promise<Event[]> {
+    const response = await fetch(`${API_BASE_URL}/api/events/${eventId}/recurring`, {
+      method: 'PATCH',
+      headers: this.getAuthHeaders(),
+      body: JSON.stringify(eventData),
+    });
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        throw new Error('Authentication required. Please log in to update recurring events.');
+      }
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to update recurring event');
+    }
+
+    return await response.json();
   }
 
   // Calendar methods

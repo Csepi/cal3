@@ -4,7 +4,7 @@ import { Repository } from 'typeorm';
 import { CalendarSyncConnection, SyncedCalendar, SyncEventMapping, SyncProvider, SyncStatus } from '../entities/calendar-sync.entity';
 import { User } from '../entities/user.entity';
 import { Calendar } from '../entities/calendar.entity';
-import { Event } from '../entities/event.entity';
+import { Event, RecurrenceType } from '../entities/event.entity';
 import { CalendarSyncStatusDto, SyncCalendarsDto, ExternalCalendarDto, SyncedCalendarInfoDto, ProviderSyncStatusDto } from '../dto/calendar-sync.dto';
 
 @Injectable()
@@ -549,7 +549,7 @@ export class CalendarSyncService {
         'timeMin': startDate.toISOString(),
         'timeMax': endDate.toISOString(),
         'orderBy': 'startTime',
-        'singleEvents': 'true',
+        'singleEvents': 'false', // Changed to false to get recurring events as series
         'maxResults': '1000' // Limit to 1000 events to avoid performance issues
       });
 
@@ -612,6 +612,25 @@ export class CalendarSyncService {
         }
       }
 
+      // Handle recurrence for Microsoft Graph
+      if (externalEvent.recurrence) {
+        const recurrenceData = this.parseMicrosoftRecurrence(externalEvent.recurrence);
+        eventData.recurrenceType = recurrenceData.type;
+        eventData.recurrenceRule = JSON.stringify(recurrenceData.rule);
+      } else {
+        eventData.recurrenceType = RecurrenceType.NONE;
+      }
+
+      // Handle recurring event instance vs parent for Microsoft
+      if (externalEvent.seriesMasterId) {
+        // This is an instance of a recurring event
+        eventData.parentEventId = externalEvent.seriesMasterId;
+        eventData.recurrenceId = externalEvent.id;
+        if (externalEvent.originalStart) {
+          eventData.originalDate = new Date(externalEvent.originalStart);
+        }
+      }
+
       if (externalEvent.end) {
         if (externalEvent.isAllDay) {
           eventData.endDate = new Date(externalEvent.end.dateTime || externalEvent.end.date);
@@ -636,6 +655,26 @@ export class CalendarSyncService {
         description: externalEvent.description || '',
         location: externalEvent.location || '',
       };
+
+      // Handle recurrence for Google Calendar
+      if (externalEvent.recurrence && externalEvent.recurrence.length > 0) {
+        const rrule = externalEvent.recurrence[0]; // Google uses RRULE format
+        const recurrenceData = this.parseGoogleRecurrence(rrule);
+        eventData.recurrenceType = recurrenceData.type;
+        eventData.recurrenceRule = JSON.stringify(recurrenceData.rule);
+      } else {
+        eventData.recurrenceType = RecurrenceType.NONE;
+      }
+
+      // Handle recurring event instance vs parent
+      if (externalEvent.recurringEventId) {
+        // This is an instance of a recurring event
+        eventData.parentEventId = externalEvent.recurringEventId;
+        eventData.recurrenceId = externalEvent.id;
+        if (externalEvent.originalStartTime) {
+          eventData.originalDate = new Date(externalEvent.originalStartTime.dateTime || externalEvent.originalStartTime.date);
+        }
+      }
 
       if (externalEvent.start) {
         if (externalEvent.start.date) {
@@ -700,5 +739,98 @@ export class CalendarSyncService {
     await this.syncEventMappingRepository.save(eventMapping);
 
     this.logger.log(`[createLocalEventFromExternal] Created local event ID: ${savedEvent.id} mapped to external ID: ${externalEvent.id}`);
+  }
+
+  private parseGoogleRecurrence(rrule: string): { type: RecurrenceType; rule: any } {
+    this.logger.log(`[parseGoogleRecurrence] Parsing RRULE: ${rrule}`);
+
+    // Extract frequency from RRULE (e.g., "RRULE:FREQ=DAILY;INTERVAL=1")
+    const freqMatch = rrule.match(/FREQ=(\w+)/);
+    const intervalMatch = rrule.match(/INTERVAL=(\d+)/);
+    const countMatch = rrule.match(/COUNT=(\d+)/);
+    const untilMatch = rrule.match(/UNTIL=([^;]+)/);
+    const bydayMatch = rrule.match(/BYDAY=([^;]+)/);
+
+    if (!freqMatch) {
+      return { type: RecurrenceType.NONE, rule: null };
+    }
+
+    const frequency = freqMatch[1];
+    const interval = intervalMatch ? parseInt(intervalMatch[1]) : 1;
+
+    let type: RecurrenceType;
+    switch (frequency) {
+      case 'DAILY':
+        type = RecurrenceType.DAILY;
+        break;
+      case 'WEEKLY':
+        type = RecurrenceType.WEEKLY;
+        break;
+      case 'MONTHLY':
+        type = RecurrenceType.MONTHLY;
+        break;
+      case 'YEARLY':
+        type = RecurrenceType.YEARLY;
+        break;
+      default:
+        return { type: RecurrenceType.NONE, rule: null };
+    }
+
+    const rule: any = {
+      frequency,
+      interval,
+      rrule: rrule
+    };
+
+    if (countMatch) {
+      rule.count = parseInt(countMatch[1]);
+    }
+
+    if (untilMatch) {
+      rule.until = new Date(untilMatch[1]);
+    }
+
+    if (bydayMatch) {
+      rule.byDay = bydayMatch[1].split(',');
+    }
+
+    return { type, rule };
+  }
+
+  private parseMicrosoftRecurrence(recurrence: any): { type: RecurrenceType; rule: any } {
+    this.logger.log(`[parseMicrosoftRecurrence] Parsing Microsoft recurrence:`, JSON.stringify(recurrence));
+
+    if (!recurrence.pattern) {
+      return { type: RecurrenceType.NONE, rule: null };
+    }
+
+    const pattern = recurrence.pattern;
+    let type: RecurrenceType;
+
+    switch (pattern.type) {
+      case 'daily':
+        type = RecurrenceType.DAILY;
+        break;
+      case 'weekly':
+        type = RecurrenceType.WEEKLY;
+        break;
+      case 'absoluteMonthly':
+      case 'relativeMonthly':
+        type = RecurrenceType.MONTHLY;
+        break;
+      case 'absoluteYearly':
+      case 'relativeYearly':
+        type = RecurrenceType.YEARLY;
+        break;
+      default:
+        return { type: RecurrenceType.NONE, rule: null };
+    }
+
+    const rule: any = {
+      pattern: pattern,
+      range: recurrence.range || null
+    };
+
+    return { type, rule };
   }
 }

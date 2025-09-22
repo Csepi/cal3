@@ -22,14 +22,70 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
     apiService.initiateMicrosoftLogin();
   };
 
+  // Enhanced validation functions
+  const validateRegistration = (): string[] => {
+    const errors: string[] = [];
+
+    if (!username.trim()) {
+      errors.push('Username is required');
+    } else if (username.trim().length < 3) {
+      errors.push('Username must be at least 3 characters long');
+    } else if (username.trim().length > 20) {
+      errors.push('Username must be less than 20 characters');
+    } else if (!/^[a-zA-Z0-9_]+$/.test(username.trim())) {
+      errors.push('Username can only contain letters, numbers, and underscores');
+    }
+
+    if (!email.trim()) {
+      errors.push('Email is required');
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      errors.push('Please enter a valid email address');
+    }
+
+    if (!password) {
+      errors.push('Password is required');
+    } else if (password.length < 6) {
+      errors.push('Password must be at least 6 characters long');
+    } else if (password.length > 100) {
+      errors.push('Password must be less than 100 characters');
+    } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(password)) {
+      errors.push('Password must contain at least one uppercase letter, one lowercase letter, and one number');
+    }
+
+    if (firstName && firstName.length > 50) {
+      errors.push('First name must be less than 50 characters');
+    }
+
+    if (lastName && lastName.length > 50) {
+      errors.push('Last name must be less than 50 characters');
+    }
+
+    return errors;
+  };
+
+  const validateLogin = (): string[] => {
+    const errors: string[] = [];
+
+    if (!username.trim()) {
+      errors.push('Email or username is required');
+    }
+
+    if (!password) {
+      errors.push('Password is required');
+    }
+
+    return errors;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
     if (isRegistering) {
       // Registration validation
-      if (!username.trim() || !email.trim() || !password.trim()) {
-        setError('Please fill in all required fields');
+      const validationErrors = validateRegistration();
+      if (validationErrors.length > 0) {
+        setError(`Please fix the following errors:\n${validationErrors.join('\n')}`);
         return;
       }
 
@@ -52,8 +108,9 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
       }
     } else {
       // Login validation
-      if (!username.trim() || !password.trim()) {
-        setError('Please enter both email/username and password');
+      const validationErrors = validateLogin();
+      if (validationErrors.length > 0) {
+        setError(`Please fix the following errors:\n${validationErrors.join('\n')}`);
         return;
       }
 
@@ -189,10 +246,26 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
           </div>
 
           {error && (
-            <div className="bg-red-50 border border-red-300 text-red-700 px-5 py-4 rounded-2xl text-sm">
-              <div className="flex items-center gap-2">
-                <span>⚠️</span>
-                {error}
+            <div className="bg-red-50 border border-red-300 rounded-2xl p-4">
+              <div className="flex items-start space-x-3">
+                <div className="flex-shrink-0">
+                  <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-sm font-medium text-red-800">Please fix the following errors:</h3>
+                  <div className="mt-2 text-sm text-red-700">
+                    <div className="whitespace-pre-line">
+                      {error.split('\n').slice(1).map((errorLine, index) => (
+                        <div key={index} className="flex items-start space-x-2">
+                          <span className="text-red-500">•</span>
+                          <span>{errorLine}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           )}

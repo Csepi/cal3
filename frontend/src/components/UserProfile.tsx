@@ -40,6 +40,8 @@ const UserProfile: React.FC<UserProfileProps> = ({ onThemeChange, currentTheme }
     { name: 'Teal', value: '#14b8a6', gradient: 'from-teal-500 to-teal-600' },
     { name: 'Emerald', value: '#22c55e', gradient: 'from-emerald-500 to-emerald-600' },
     { name: 'Cyan', value: '#06b6d4', gradient: 'from-cyan-500 to-cyan-600' },
+    { name: 'Lime', value: '#65a30d', gradient: 'from-lime-500 to-lime-600' },
+    { name: 'Rose', value: '#f43f5e', gradient: 'from-rose-500 to-rose-600' },
     { name: 'Slate', value: '#64748b', gradient: 'from-slate-500 to-slate-600' }
   ];
 
@@ -160,10 +162,86 @@ const UserProfile: React.FC<UserProfileProps> = ({ onThemeChange, currentTheme }
     }
   };
 
+  // Enhanced validation functions
+  const validateProfileForm = (): string[] => {
+    const errors: string[] = [];
+
+    if (!profileForm.username.trim()) {
+      errors.push('Username is required');
+    } else if (profileForm.username.trim().length < 3) {
+      errors.push('Username must be at least 3 characters long');
+    } else if (profileForm.username.trim().length > 20) {
+      errors.push('Username must be less than 20 characters');
+    } else if (!/^[a-zA-Z0-9_]+$/.test(profileForm.username.trim())) {
+      errors.push('Username can only contain letters, numbers, and underscores');
+    }
+
+    if (!profileForm.email.trim()) {
+      errors.push('Email is required');
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(profileForm.email.trim())) {
+      errors.push('Please enter a valid email address');
+    }
+
+    if (profileForm.firstName && profileForm.firstName.length > 50) {
+      errors.push('First name must be less than 50 characters');
+    }
+
+    if (profileForm.lastName && profileForm.lastName.length > 50) {
+      errors.push('Last name must be less than 50 characters');
+    }
+
+    if (!profileForm.timezone) {
+      errors.push('Please select a timezone');
+    }
+
+    if (!profileForm.timeFormat) {
+      errors.push('Please select a time format');
+    }
+
+    return errors;
+  };
+
+  const validatePasswordForm = (): string[] => {
+    const errors: string[] = [];
+
+    if (!passwordForm.currentPassword) {
+      errors.push('Current password is required');
+    }
+
+    if (!passwordForm.newPassword) {
+      errors.push('New password is required');
+    } else if (passwordForm.newPassword.length < 6) {
+      errors.push('New password must be at least 6 characters long');
+    } else if (passwordForm.newPassword.length > 100) {
+      errors.push('New password must be less than 100 characters');
+    } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(passwordForm.newPassword)) {
+      errors.push('New password must contain at least one uppercase letter, one lowercase letter, and one number');
+    }
+
+    if (!passwordForm.confirmPassword) {
+      errors.push('Please confirm your new password');
+    } else if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+      errors.push('New passwords do not match');
+    }
+
+    if (passwordForm.currentPassword === passwordForm.newPassword) {
+      errors.push('New password must be different from current password');
+    }
+
+    return errors;
+  };
+
   const handleProfileSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setSuccess(null);
+
+    // Validate form before proceeding
+    const validationErrors = validateProfileForm();
+    if (validationErrors.length > 0) {
+      setError(`Please fix the following errors:\n${validationErrors.join('\n')}`);
+      return;
+    }
 
     try {
       const updatedUser = await apiService.updateUserProfile(profileForm);
@@ -191,13 +269,10 @@ const UserProfile: React.FC<UserProfileProps> = ({ onThemeChange, currentTheme }
     setError(null);
     setSuccess(null);
 
-    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-      setError('New passwords do not match');
-      return;
-    }
-
-    if (passwordForm.newPassword.length < 6) {
-      setError('New password must be at least 6 characters long');
+    // Validate form before proceeding
+    const validationErrors = validatePasswordForm();
+    if (validationErrors.length > 0) {
+      setError(`Please fix the following errors:\n${validationErrors.join('\n')}`);
       return;
     }
 
@@ -226,6 +301,8 @@ const UserProfile: React.FC<UserProfileProps> = ({ onThemeChange, currentTheme }
       '#14b8a6': { gradient: 'from-teal-50 via-teal-100 to-teal-200', primary: 'teal', ring: 'ring-teal-500', text: 'text-teal-900', border: 'border-teal-200' },
       '#22c55e': { gradient: 'from-emerald-50 via-emerald-100 to-emerald-200', primary: 'emerald', ring: 'ring-emerald-500', text: 'text-emerald-900', border: 'border-emerald-200' },
       '#06b6d4': { gradient: 'from-cyan-50 via-cyan-100 to-cyan-200', primary: 'cyan', ring: 'ring-cyan-500', text: 'text-cyan-900', border: 'border-cyan-200' },
+      '#65a30d': { gradient: 'from-lime-50 via-lime-100 to-lime-200', primary: 'lime', ring: 'ring-lime-500', text: 'text-lime-900', border: 'border-lime-200' },
+      '#f43f5e': { gradient: 'from-rose-50 via-rose-100 to-rose-200', primary: 'rose', ring: 'ring-rose-500', text: 'text-rose-900', border: 'border-rose-200' },
       '#64748b': { gradient: 'from-slate-50 via-slate-100 to-slate-200', primary: 'slate', ring: 'ring-slate-500', text: 'text-slate-900', border: 'border-slate-200' }
     };
     return colorMap[color] || colorMap['#3b82f6'];
@@ -266,10 +343,26 @@ const UserProfile: React.FC<UserProfileProps> = ({ onThemeChange, currentTheme }
         )}
 
         {error && (
-          <div className="bg-red-50 border border-red-300 text-red-700 px-6 py-4 rounded-2xl">
-            <div className="flex items-center gap-2">
-              <span>⚠️</span>
-              {error}
+          <div className="bg-red-50 border border-red-300 rounded-2xl p-4">
+            <div className="flex items-start space-x-3">
+              <div className="flex-shrink-0">
+                <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <h3 className="text-sm font-medium text-red-800">Please fix the following errors:</h3>
+                <div className="mt-2 text-sm text-red-700">
+                  <div className="whitespace-pre-line">
+                    {error.split('\n').slice(1).map((errorLine, index) => (
+                      <div key={index} className="flex items-start space-x-2">
+                        <span className="text-red-500">•</span>
+                        <span>{errorLine}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         )}
@@ -458,21 +551,26 @@ const UserProfile: React.FC<UserProfileProps> = ({ onThemeChange, currentTheme }
               Choose your preferred color theme. This will affect the appearance of the entire application.
             </p>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-4 gap-3">
               {themeColorOptions.map((color) => (
                 <button
                   key={color.value}
                   onClick={() => handleThemeChange(color.value)}
-                  className={`relative group p-4 rounded-2xl border-2 transition-all duration-300 hover:scale-105 ${
+                  className={`relative group p-3 rounded-xl border-2 transition-all duration-300 hover:scale-110 ${
                     currentTheme === color.value
                       ? 'border-gray-800 ring-2 ring-gray-400 shadow-lg'
                       : 'border-gray-300 hover:border-gray-400'
                   }`}
                 >
-                  <div className={`w-full h-12 bg-gradient-to-r ${color.gradient} rounded-xl mb-3 shadow-md`}></div>
-                  <p className="text-sm font-medium text-gray-700 text-center">{color.name}</p>
+                  <div
+                    className="w-full h-8 rounded-lg mb-2 shadow-md"
+                    style={{
+                      background: `linear-gradient(135deg, ${color.value}40, ${color.value}80, ${color.value})`
+                    }}
+                  ></div>
+                  <p className="text-xs font-medium text-gray-700 text-center truncate">{color.name}</p>
                   {currentTheme === color.value && (
-                    <div className="absolute -top-2 -right-2 w-6 h-6 bg-green-500 text-white rounded-full flex items-center justify-center text-xs font-bold">
+                    <div className="absolute -top-1 -right-1 w-5 h-5 bg-green-500 text-white rounded-full flex items-center justify-center text-xs font-bold">
                       ✓
                     </div>
                   )}

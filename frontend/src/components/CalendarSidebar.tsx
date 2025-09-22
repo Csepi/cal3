@@ -20,11 +20,35 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
   onEditCalendar,
   themeColor
 }) => {
+  // Helper function to get theme-based colors
+  const getThemeColors = (color: string) => {
+    const colorMap: Record<string, any> = {
+      '#ef4444': { gradient: 'from-red-50 via-red-100 to-red-200', primary: 'red', light: 'red-100', text: 'red-700', hover: 'red-200' },
+      '#f59e0b': { gradient: 'from-orange-50 via-orange-100 to-orange-200', primary: 'orange', light: 'orange-100', text: 'orange-700', hover: 'orange-200' },
+      '#eab308': { gradient: 'from-yellow-50 via-yellow-100 to-yellow-200', primary: 'yellow', light: 'yellow-100', text: 'yellow-700', hover: 'yellow-200' },
+      '#10b981': { gradient: 'from-green-50 via-green-100 to-green-200', primary: 'green', light: 'green-100', text: 'green-700', hover: 'green-200' },
+      '#3b82f6': { gradient: 'from-blue-50 via-blue-100 to-blue-200', primary: 'blue', light: 'blue-100', text: 'blue-700', hover: 'blue-200' },
+      '#6366f1': { gradient: 'from-indigo-50 via-indigo-100 to-indigo-200', primary: 'indigo', light: 'indigo-100', text: 'indigo-700', hover: 'indigo-200' },
+      '#8b5cf6': { gradient: 'from-purple-50 via-purple-100 to-purple-200', primary: 'purple', light: 'purple-100', text: 'purple-700', hover: 'purple-200' },
+      '#ec4899': { gradient: 'from-pink-50 via-pink-100 to-pink-200', primary: 'pink', light: 'pink-100', text: 'pink-700', hover: 'pink-200' },
+      '#14b8a6': { gradient: 'from-teal-50 via-teal-100 to-teal-200', primary: 'teal', light: 'teal-100', text: 'teal-700', hover: 'teal-200' },
+      '#22c55e': { gradient: 'from-emerald-50 via-emerald-100 to-emerald-200', primary: 'emerald', light: 'emerald-100', text: 'emerald-700', hover: 'emerald-200' },
+      '#06b6d4': { gradient: 'from-cyan-50 via-cyan-100 to-cyan-200', primary: 'cyan', light: 'cyan-100', text: 'cyan-700', hover: 'cyan-200' },
+      '#65a30d': { gradient: 'from-lime-50 via-lime-100 to-lime-200', primary: 'lime', light: 'lime-100', text: 'lime-700', hover: 'lime-200' },
+      '#f43f5e': { gradient: 'from-rose-50 via-rose-100 to-rose-200', primary: 'rose', light: 'rose-100', text: 'rose-700', hover: 'rose-200' },
+      '#64748b': { gradient: 'from-slate-50 via-slate-100 to-slate-200', primary: 'slate', light: 'slate-100', text: 'slate-700', hover: 'slate-200' }
+    };
+    return colorMap[color] || colorMap['#3b82f6'];
+  };
+
+  const themeColors = getThemeColors(themeColor);
   const allSelected = calendars.length > 0 && selectedCalendars.length === calendars.length;
   const someSelected = selectedCalendars.length > 0 && selectedCalendars.length < calendars.length;
 
   return (
-    <div className="w-80 bg-white border-r border-gray-200 flex flex-col h-full">
+    <div className="w-80 border-r border-gray-200 flex flex-col h-full" style={{
+      background: `linear-gradient(135deg, white 0%, ${themeColor}05 50%, white 100%)`
+    }}>
       {/* Header */}
       <div className="p-4 border-b border-gray-200">
         <h3 className="text-lg font-semibold text-gray-800 mb-3">My Calendars</h3>
@@ -37,7 +61,7 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
             className={`px-3 py-1 text-xs rounded-md transition-all duration-200 ${
               allSelected
                 ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
+                : `bg-${themeColors.light} text-${themeColors.text} hover:bg-${themeColors.hover}`
             }`}
           >
             Select All
@@ -48,7 +72,7 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
             className={`px-3 py-1 text-xs rounded-md transition-all duration-200 ${
               selectedCalendars.length === 0
                 ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                : 'bg-red-100 text-red-700 hover:bg-red-200'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
           >
             Deselect All

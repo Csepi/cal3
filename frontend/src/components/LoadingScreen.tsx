@@ -16,76 +16,20 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({
   // Helper function to get theme-based colors
   const getThemeColors = (color: string) => {
     const colorMap: Record<string, any> = {
-      '#3b82f6': { // Blue
-        primary: 'blue-500',
-        light: 'blue-100',
-        gradient: 'from-blue-500 to-indigo-500',
-        ring: 'ring-blue-500',
-        text: 'text-blue-600'
-      },
-      '#8b5cf6': { // Purple
-        primary: 'purple-500',
-        light: 'purple-100',
-        gradient: 'from-purple-500 to-violet-500',
-        ring: 'ring-purple-500',
-        text: 'text-purple-600'
-      },
-      '#10b981': { // Green
-        primary: 'green-500',
-        light: 'green-100',
-        gradient: 'from-green-500 to-emerald-500',
-        ring: 'ring-green-500',
-        text: 'text-green-600'
-      },
-      '#ef4444': { // Red
-        primary: 'red-500',
-        light: 'red-100',
-        gradient: 'from-red-500 to-rose-500',
-        ring: 'ring-red-500',
-        text: 'text-red-600'
-      },
-      '#f59e0b': { // Orange
-        primary: 'orange-500',
-        light: 'orange-100',
-        gradient: 'from-orange-500 to-amber-500',
-        ring: 'ring-orange-500',
-        text: 'text-orange-600'
-      },
-      '#ec4899': { // Pink
-        primary: 'pink-500',
-        light: 'pink-100',
-        gradient: 'from-pink-500 to-rose-500',
-        ring: 'ring-pink-500',
-        text: 'text-pink-600'
-      },
-      '#6366f1': { // Indigo
-        primary: 'indigo-500',
-        light: 'indigo-100',
-        gradient: 'from-indigo-500 to-blue-500',
-        ring: 'ring-indigo-500',
-        text: 'text-indigo-600'
-      },
-      '#14b8a6': { // Teal
-        primary: 'teal-500',
-        light: 'teal-100',
-        gradient: 'from-teal-500 to-cyan-500',
-        ring: 'ring-teal-500',
-        text: 'text-teal-600'
-      },
-      '#eab308': { // Yellow
-        primary: 'yellow-500',
-        light: 'yellow-100',
-        gradient: 'from-yellow-500 to-amber-500',
-        ring: 'ring-yellow-500',
-        text: 'text-yellow-600'
-      },
-      '#64748b': { // Slate
-        primary: 'slate-500',
-        light: 'slate-100',
-        gradient: 'from-slate-500 to-gray-500',
-        ring: 'ring-slate-500',
-        text: 'text-slate-600'
-      }
+      '#ef4444': { gradient: 'from-red-50 via-red-100 to-red-200', spinner: 'border-red-500', text: 'text-red-600' },
+      '#f59e0b': { gradient: 'from-orange-50 via-orange-100 to-orange-200', spinner: 'border-orange-500', text: 'text-orange-600' },
+      '#eab308': { gradient: 'from-yellow-50 via-yellow-100 to-yellow-200', spinner: 'border-yellow-500', text: 'text-yellow-600' },
+      '#10b981': { gradient: 'from-green-50 via-green-100 to-green-200', spinner: 'border-green-500', text: 'text-green-600' },
+      '#3b82f6': { gradient: 'from-blue-50 via-blue-100 to-blue-200', spinner: 'border-blue-500', text: 'text-blue-600' },
+      '#6366f1': { gradient: 'from-indigo-50 via-indigo-100 to-indigo-200', spinner: 'border-indigo-500', text: 'text-indigo-600' },
+      '#8b5cf6': { gradient: 'from-purple-50 via-purple-100 to-purple-200', spinner: 'border-purple-500', text: 'text-purple-600' },
+      '#ec4899': { gradient: 'from-pink-50 via-pink-100 to-pink-200', spinner: 'border-pink-500', text: 'text-pink-600' },
+      '#14b8a6': { gradient: 'from-teal-50 via-teal-100 to-teal-200', spinner: 'border-teal-500', text: 'text-teal-600' },
+      '#22c55e': { gradient: 'from-emerald-50 via-emerald-100 to-emerald-200', spinner: 'border-emerald-500', text: 'text-emerald-600' },
+      '#06b6d4': { gradient: 'from-cyan-50 via-cyan-100 to-cyan-200', spinner: 'border-cyan-500', text: 'text-cyan-600' },
+      '#65a30d': { gradient: 'from-lime-50 via-lime-100 to-lime-200', spinner: 'border-lime-500', text: 'text-lime-600' },
+      '#f43f5e': { gradient: 'from-rose-50 via-rose-100 to-rose-200', spinner: 'border-rose-500', text: 'text-rose-600' },
+      '#64748b': { gradient: 'from-slate-50 via-slate-100 to-slate-200', spinner: 'border-slate-500', text: 'text-slate-600' }
     };
     return colorMap[color] || colorMap['#3b82f6'];
   };
@@ -94,7 +38,7 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({
 
   const containerClasses = overlay
     ? "fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]"
-    : "min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100";
+    : `min-h-screen flex items-center justify-center bg-gradient-to-br ${themeColors.gradient}`;
 
   return (
     <div className={containerClasses}>
@@ -104,7 +48,7 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({
           <div className="relative">
             {/* Outer spinning ring */}
             <div className={`w-16 h-16 border-4 border-gray-200 rounded-full animate-spin`}>
-              <div className={`w-full h-full border-4 border-transparent border-t-${themeColors.primary} rounded-full`}></div>
+              <div className={`w-full h-full border-4 border-transparent ${themeColors.spinner} border-t-4 rounded-full`}></div>
             </div>
 
             {/* Inner pulsing dot */}
