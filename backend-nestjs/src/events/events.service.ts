@@ -360,7 +360,7 @@ export class EventsService {
 
     if (event.recurrenceType === RecurrenceType.NONE) {
       // Not a recurring event, use regular update
-      Object.assign(event, updateData);
+      this.sanitizeAndAssignUpdateData(event, updateData);
       return [await this.eventRepository.save(event)];
     }
 
@@ -427,7 +427,7 @@ export class EventsService {
   private async updateSingleInstance(event: Event, updateData: any): Promise<Event[]> {
     if (event.parentEventId) {
       // This is already an instance, just update it
-      Object.assign(event, updateData);
+      this.sanitizeAndAssignUpdateData(event, updateData);
       return [await this.eventRepository.save(event)];
     } else {
       // This is the parent, create an exception
@@ -490,7 +490,7 @@ export class EventsService {
       throw new NotFoundException('Parent event not found');
     }
 
-    Object.assign(parentEvent, updateData);
+    this.sanitizeAndAssignUpdateData(parentEvent, updateData);
     if (newRecurrence) {
       parentEvent.recurrenceRule = JSON.stringify(this.buildRecurrenceRule(newRecurrence));
     }
@@ -608,6 +608,26 @@ export class EventsService {
     pattern.monthOfYear = rule.monthOfYear;
     pattern.timezone = rule.timezone;
     return pattern;
+  }
+
+  private sanitizeAndAssignUpdateData(event: Event, updateData: any): void {
+    // Handle date fields
+    if (updateData.startDate) {
+      updateData.startDate = new Date(updateData.startDate);
+    }
+    if (updateData.endDate) {
+      updateData.endDate = new Date(updateData.endDate);
+    }
+
+    // Handle time fields - convert empty strings to undefined
+    if ('startTime' in updateData) {
+      updateData.startTime = updateData.startTime && updateData.startTime !== '' ? updateData.startTime : undefined;
+    }
+    if ('endTime' in updateData) {
+      updateData.endTime = updateData.endTime && updateData.endTime !== '' ? updateData.endTime : undefined;
+    }
+
+    Object.assign(event, updateData);
   }
 
   private createEventEntity(eventData: any, calendarId: number, createdById: number): Event {
