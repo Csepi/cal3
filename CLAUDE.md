@@ -29,12 +29,14 @@ cd backend-nestjs && npm run seed
 ## Current Development Status
 
 ### ✅ Recently Completed Features
-1. **Comprehensive Timezone Support** - 70+ world timezones covering all continents
-2. **Extended Color Palette** - 12 total theme colors including Emerald (#22c55e) and Cyan (#06b6d4)
-3. **Week View Time Range Selection** - Mouse drag functionality for creating events
-4. **Profile Color Theming** - Applied to monthly and weekly view backgrounds
-5. **Modernized UI** - Softer gradients, backdrop-blur effects, improved readability
-6. **Browser Extension Error Handling** - Robust suppression of extension context errors
+1. **Admin Usage Plan Management** - Individual and bulk modification of user usage plans with set/add/remove operations
+2. **Expanded Color Palette** - 16 total theme colors in rainbow order including Sky (#0ea5e9) and Violet (#7c3aed)
+3. **Usage Plans Read-Only Display** - User profile shows usage plans as non-editable badges in Account Information
+4. **Comprehensive Timezone Support** - 70+ world timezones covering all continents
+5. **Week View Time Range Selection** - Mouse drag functionality for creating events
+6. **Profile Color Theming** - Applied to monthly and weekly view backgrounds with consistent gradients
+7. **Modernized UI** - Softer gradients, backdrop-blur effects, improved readability
+8. **Browser Extension Error Handling** - Robust suppression of extension context errors
 
 ### 🔧 Key Components Structure
 ```
@@ -50,12 +52,13 @@ frontend/src/components/
 ```
 
 ### 🎨 Theming System
-The application uses a comprehensive color system with 12 theme colors:
-- Red (#ef4444), Orange (#f59e0b), Yellow (#eab308), Green (#10b981)
-- Emerald (#22c55e), Teal (#14b8a6), Cyan (#06b6d4), Blue (#3b82f6)
-- Indigo (#6366f1), Purple (#8b5cf6), Pink (#ec4899), Slate (#64748b)
+The application uses a comprehensive color system with **16 theme colors** in rainbow order:
+- **Red** (#ef4444), **Orange** (#f59e0b), **Yellow** (#eab308), **Lime** (#84cc16)
+- **Green** (#10b981), **Emerald** (#22c55e), **Teal** (#14b8a6), **Cyan** (#06b6d4)
+- **Sky** (#0ea5e9), **Blue** (#3b82f6), **Indigo** (#6366f1), **Violet** (#7c3aed)
+- **Purple** (#8b5cf6), **Pink** (#ec4899), **Rose** (#f43f5e), **Slate** (#64748b)
 
-Each color has corresponding gradients, hover states, and accessibility considerations.
+Each color has corresponding gradients, hover states, button styles, and accessibility considerations across all components.
 
 ### 🌐 Timezone Implementation
 Timezone support covers major cities across:
@@ -85,9 +88,12 @@ Timezone support covers major cities across:
 ## Common Development Tasks
 
 ### Adding New Colors
-1. Update `themeColorOptions` in `UserProfile.tsx`
-2. Add color mapping in `Calendar.tsx` `getThemeColors()` function
-3. Include gradient definitions for consistency
+1. Update `themeColorOptions` in `UserProfile.tsx` (maintain rainbow order)
+2. Add color mapping in all `getThemeColors()` functions:
+   - Calendar.tsx, Dashboard.tsx, LoadingScreen.tsx
+   - AdminPanel.tsx, CalendarSidebar.tsx
+   - RecurrenceSelector.tsx, RecurrenceEditDialog.tsx
+3. Include gradient definitions, button styles, and text colors for consistency
 
 ### Timezone Management
 Timezones are defined in `UserProfile.tsx` with format:
@@ -101,6 +107,14 @@ Events use the `Event` interface in `types/Event.ts`:
 - Color coding and calendar association
 - Timezone-aware date handling
 
+### Usage Plans Management
+Usage plans control feature access and are managed by admins:
+- **Available Plans**: Child, User, Store, Enterprise
+- **Admin Controls**: Individual user modification via modal
+- **Bulk Operations**: Set (replace), Add (append), Remove (subtract)
+- **User Display**: Read-only badges in Account Information section
+- **Backend**: Stored as JSON array in user entity (`usagePlans` field)
+
 ## API Integration
 
 ### Backend Endpoints
@@ -108,6 +122,8 @@ Events use the `Event` interface in `types/Event.ts`:
 - `/api/events` - CRUD operations for events
 - `/api/calendar-sync` - External calendar integration
 - `/api/auth` - Authentication and authorization
+- `/api/admin/users/:id/usage-plans` - Admin-only usage plan modification (PATCH)
+- `/api/admin/users` - Admin user management with usage plans display
 
 ### Error Handling
 - Frontend: Comprehensive try-catch with user feedback
