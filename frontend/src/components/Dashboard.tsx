@@ -153,11 +153,23 @@ const Dashboard: React.FC = () => {
         accent: 'text-cyan-600',
         gradient: 'from-cyan-50 via-cyan-100 to-cyan-200'
       },
-      '#65a30d': { // Lime
+      '#0ea5e9': { // Sky
+        primary: 'bg-sky-500 hover:bg-sky-600',
+        secondary: 'bg-sky-100 border-sky-200 text-sky-700',
+        accent: 'text-sky-600',
+        gradient: 'from-sky-50 via-sky-100 to-sky-200'
+      },
+      '#84cc16': { // Lime
         primary: 'bg-lime-500 hover:bg-lime-600',
         secondary: 'bg-lime-100 border-lime-200 text-lime-700',
         accent: 'text-lime-600',
         gradient: 'from-lime-50 via-lime-100 to-lime-200'
+      },
+      '#7c3aed': { // Violet
+        primary: 'bg-violet-500 hover:bg-violet-600',
+        secondary: 'bg-violet-100 border-violet-200 text-violet-700',
+        accent: 'text-violet-600',
+        gradient: 'from-violet-50 via-violet-100 to-violet-200'
       },
       '#f43f5e': { // Rose
         primary: 'bg-rose-500 hover:bg-rose-600',

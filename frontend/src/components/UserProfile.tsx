@@ -33,15 +33,17 @@ const UserProfile: React.FC<UserProfileProps> = ({ onThemeChange, currentTheme }
     { name: 'Red', value: '#ef4444', gradient: 'from-red-500 to-red-600' },
     { name: 'Orange', value: '#f59e0b', gradient: 'from-orange-500 to-orange-600' },
     { name: 'Yellow', value: '#eab308', gradient: 'from-yellow-500 to-yellow-600' },
+    { name: 'Lime', value: '#84cc16', gradient: 'from-lime-500 to-lime-600' },
     { name: 'Green', value: '#10b981', gradient: 'from-green-500 to-green-600' },
+    { name: 'Emerald', value: '#22c55e', gradient: 'from-emerald-500 to-emerald-600' },
+    { name: 'Teal', value: '#14b8a6', gradient: 'from-teal-500 to-teal-600' },
+    { name: 'Cyan', value: '#06b6d4', gradient: 'from-cyan-500 to-cyan-600' },
+    { name: 'Sky', value: '#0ea5e9', gradient: 'from-sky-500 to-sky-600' },
     { name: 'Blue', value: '#3b82f6', gradient: 'from-blue-500 to-blue-600' },
     { name: 'Indigo', value: '#6366f1', gradient: 'from-indigo-500 to-indigo-600' },
+    { name: 'Violet', value: '#7c3aed', gradient: 'from-violet-500 to-violet-600' },
     { name: 'Purple', value: '#8b5cf6', gradient: 'from-purple-500 to-purple-600' },
     { name: 'Pink', value: '#ec4899', gradient: 'from-pink-500 to-pink-600' },
-    { name: 'Teal', value: '#14b8a6', gradient: 'from-teal-500 to-teal-600' },
-    { name: 'Emerald', value: '#22c55e', gradient: 'from-emerald-500 to-emerald-600' },
-    { name: 'Cyan', value: '#06b6d4', gradient: 'from-cyan-500 to-cyan-600' },
-    { name: 'Lime', value: '#65a30d', gradient: 'from-lime-500 to-lime-600' },
     { name: 'Rose', value: '#f43f5e', gradient: 'from-rose-500 to-rose-600' },
     { name: 'Slate', value: '#64748b', gradient: 'from-slate-500 to-slate-600' }
   ];
@@ -140,7 +142,8 @@ const UserProfile: React.FC<UserProfileProps> = ({ onThemeChange, currentTheme }
     { name: 'Tahiti', value: 'Pacific/Tahiti' }
   ];
 
-  const timeFormatOptions = [
+  // Time format options for user preference
+  const userTimeFormatOptions = [
     { name: '12-hour (1:30 PM)', value: '12h' },
     { name: '24-hour (13:30)', value: '24h' }
   ];
@@ -324,15 +327,17 @@ const UserProfile: React.FC<UserProfileProps> = ({ onThemeChange, currentTheme }
       '#ef4444': { gradient: 'from-red-50 via-red-100 to-red-200', primary: 'red', ring: 'ring-red-500', text: 'text-red-900', border: 'border-red-200' },
       '#f59e0b': { gradient: 'from-orange-50 via-orange-100 to-orange-200', primary: 'orange', ring: 'ring-orange-500', text: 'text-orange-900', border: 'border-orange-200' },
       '#eab308': { gradient: 'from-yellow-50 via-yellow-100 to-yellow-200', primary: 'yellow', ring: 'ring-yellow-500', text: 'text-yellow-900', border: 'border-yellow-200' },
+      '#84cc16': { gradient: 'from-lime-50 via-lime-100 to-lime-200', primary: 'lime', ring: 'ring-lime-500', text: 'text-lime-900', border: 'border-lime-200' },
       '#10b981': { gradient: 'from-green-50 via-green-100 to-green-200', primary: 'green', ring: 'ring-green-500', text: 'text-green-900', border: 'border-green-200' },
+      '#22c55e': { gradient: 'from-emerald-50 via-emerald-100 to-emerald-200', primary: 'emerald', ring: 'ring-emerald-500', text: 'text-emerald-900', border: 'border-emerald-200' },
+      '#14b8a6': { gradient: 'from-teal-50 via-teal-100 to-teal-200', primary: 'teal', ring: 'ring-teal-500', text: 'text-teal-900', border: 'border-teal-200' },
+      '#06b6d4': { gradient: 'from-cyan-50 via-cyan-100 to-cyan-200', primary: 'cyan', ring: 'ring-cyan-500', text: 'text-cyan-900', border: 'border-cyan-200' },
+      '#0ea5e9': { gradient: 'from-sky-50 via-sky-100 to-sky-200', primary: 'sky', ring: 'ring-sky-500', text: 'text-sky-900', border: 'border-sky-200' },
       '#3b82f6': { gradient: 'from-blue-50 via-blue-100 to-blue-200', primary: 'blue', ring: 'ring-blue-500', text: 'text-blue-900', border: 'border-blue-200' },
       '#6366f1': { gradient: 'from-indigo-50 via-indigo-100 to-indigo-200', primary: 'indigo', ring: 'ring-indigo-500', text: 'text-indigo-900', border: 'border-indigo-200' },
+      '#7c3aed': { gradient: 'from-violet-50 via-violet-100 to-violet-200', primary: 'violet', ring: 'ring-violet-500', text: 'text-violet-900', border: 'border-violet-200' },
       '#8b5cf6': { gradient: 'from-purple-50 via-purple-100 to-purple-200', primary: 'purple', ring: 'ring-purple-500', text: 'text-purple-900', border: 'border-purple-200' },
       '#ec4899': { gradient: 'from-pink-50 via-pink-100 to-pink-200', primary: 'pink', ring: 'ring-pink-500', text: 'text-pink-900', border: 'border-pink-200' },
-      '#14b8a6': { gradient: 'from-teal-50 via-teal-100 to-teal-200', primary: 'teal', ring: 'ring-teal-500', text: 'text-teal-900', border: 'border-teal-200' },
-      '#22c55e': { gradient: 'from-emerald-50 via-emerald-100 to-emerald-200', primary: 'emerald', ring: 'ring-emerald-500', text: 'text-emerald-900', border: 'border-emerald-200' },
-      '#06b6d4': { gradient: 'from-cyan-50 via-cyan-100 to-cyan-200', primary: 'cyan', ring: 'ring-cyan-500', text: 'text-cyan-900', border: 'border-cyan-200' },
-      '#65a30d': { gradient: 'from-lime-50 via-lime-100 to-lime-200', primary: 'lime', ring: 'ring-lime-500', text: 'text-lime-900', border: 'border-lime-200' },
       '#f43f5e': { gradient: 'from-rose-50 via-rose-100 to-rose-200', primary: 'rose', ring: 'ring-rose-500', text: 'text-rose-900', border: 'border-rose-200' },
       '#64748b': { gradient: 'from-slate-50 via-slate-100 to-slate-200', primary: 'slate', ring: 'ring-slate-500', text: 'text-slate-900', border: 'border-slate-200' }
     };
@@ -462,49 +467,6 @@ const UserProfile: React.FC<UserProfileProps> = ({ onThemeChange, currentTheme }
                 </div>
               </div>
 
-              {/* Usage Plans Section */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  📋 Usage Plans
-                </label>
-                <div className="grid grid-cols-2 gap-3">
-                  {usagePlanOptions.map((plan) => (
-                    <div
-                      key={plan.value}
-                      onClick={() => handleUsagePlanChange(plan.value)}
-                      className={`p-4 border rounded-xl cursor-pointer transition-all duration-200 hover:shadow-md ${
-                        profileForm.usagePlans.includes(plan.value)
-                          ? `border-${themeColors.primary}-500 bg-${themeColors.primary}-50 ${themeColors.ring}`
-                          : 'border-gray-200 bg-white hover:border-gray-300'
-                      }`}
-                    >
-                      <div className="flex items-start space-x-3">
-                        <div className={`mt-1 w-4 h-4 rounded border-2 flex-shrink-0 ${
-                          profileForm.usagePlans.includes(plan.value)
-                            ? `border-${themeColors.primary}-500 bg-${themeColors.primary}-500`
-                            : 'border-gray-300'
-                        }`}>
-                          {profileForm.usagePlans.includes(plan.value) && (
-                            <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                            </svg>
-                          )}
-                        </div>
-                        <div className="flex-1">
-                          <div className={`font-medium ${
-                            profileForm.usagePlans.includes(plan.value) ? themeColors.text : 'text-gray-900'
-                          }`}>
-                            {plan.label}
-                          </div>
-                          <div className="text-sm text-gray-500 mt-1">
-                            {plan.description}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -535,7 +497,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ onThemeChange, currentTheme }
                     onChange={(e) => setProfileForm(prev => ({...prev, timeFormat: e.target.value}))}
                     className={`w-full px-4 py-3 bg-white border border-gray-300 text-gray-800 rounded-xl focus:ring-2 ${themeColors.ring} focus:border-${themeColors.primary}-500 outline-none transition-all duration-300`}
                   >
-                    {timeFormatOptions.map((format) => (
+                    {userTimeFormatOptions.map((format) => (
                       <option key={format.value} value={format.value}>
                         {format.name}
                       </option>
@@ -657,7 +619,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ onThemeChange, currentTheme }
             {user && (
               <div className={`mt-8 pt-6 border-t ${themeColors.border}`}>
                 <h3 className={`text-lg font-medium ${themeColors.text} mb-4`}>Account Information</h3>
-                <div className="space-y-2 text-sm">
+                <div className="space-y-3 text-sm">
                   <div className="flex justify-between">
                     <span className="text-gray-600">Member since:</span>
                     <span className="font-medium">
@@ -675,6 +637,26 @@ const UserProfile: React.FC<UserProfileProps> = ({ onThemeChange, currentTheme }
                     <span className="font-medium">
                       {new Date(user.updatedAt).toLocaleDateString()}
                     </span>
+                  </div>
+
+                  {/* Usage Plans - Read Only Display */}
+                  <div className="pt-3 mt-3 border-t border-gray-200">
+                    <div className="flex justify-between items-start mb-2">
+                      <span className="text-gray-600">Usage Plans:</span>
+                      {user.role !== 'admin' && (
+                        <span className="text-xs text-gray-400 italic">Admin Only</span>
+                      )}
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {user.usagePlans?.map((plan: string) => (
+                        <span
+                          key={plan}
+                          className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700 border border-gray-300"
+                        >
+                          {usagePlanOptions.find(p => p.value === plan)?.label || plan}
+                        </span>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>

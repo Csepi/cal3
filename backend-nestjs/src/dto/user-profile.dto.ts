@@ -47,12 +47,6 @@ export class UpdateProfileDto {
   @IsString()
   @IsIn(['12h', '24h'])
   timeFormat?: string;
-
-  @ApiPropertyOptional({ example: ['user', 'store'], description: 'Usage plans (multiple select)' })
-  @IsOptional()
-  @IsArray()
-  @IsEnum(UsagePlan, { each: true })
-  usagePlans?: UsagePlan[];
 }
 
 export class UpdateThemeDto {
@@ -72,4 +66,11 @@ export class ChangePasswordDto {
   @IsString()
   @MinLength(6)
   newPassword: string;
+}
+
+export class UpdateUsagePlansDto {
+  @ApiPropertyOptional({ example: ['user', 'store'], description: 'Usage plans (multiple select) - Admin only' })
+  @IsArray()
+  @IsEnum(UsagePlan, { each: true })
+  usagePlans: UsagePlan[];
 }

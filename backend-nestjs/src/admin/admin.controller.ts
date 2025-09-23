@@ -13,6 +13,7 @@ import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagg
 import { AdminService } from './admin.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { AdminGuard } from './admin.guard';
+import { UpdateUsagePlansDto } from '../dto/user-profile.dto';
 
 @ApiTags('Admin')
 @Controller('admin')
@@ -65,6 +66,16 @@ export class AdminController {
     @Body() updateRoleDto: { role: string }
   ) {
     return this.adminService.updateUserRole(+id, updateRoleDto.role);
+  }
+
+  @Patch('users/:id/usage-plans')
+  @ApiOperation({ summary: 'Update user usage plans (Admin only)' })
+  @ApiResponse({ status: 200, description: 'User usage plans updated successfully' })
+  updateUserUsagePlans(
+    @Param('id') id: string,
+    @Body() updateUsagePlansDto: UpdateUsagePlansDto
+  ) {
+    return this.adminService.updateUserUsagePlans(+id, updateUsagePlansDto.usagePlans);
   }
 
   @Delete('users/:id')

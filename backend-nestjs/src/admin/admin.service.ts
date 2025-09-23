@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { User, UserRole } from '../entities/user.entity';
+import { User, UserRole, UsagePlan } from '../entities/user.entity';
 import { Calendar } from '../entities/calendar.entity';
 import { Event } from '../entities/event.entity';
 import { CalendarShare } from '../entities/calendar.entity';
@@ -22,7 +22,7 @@ export class AdminService {
 
   async getAllUsers(): Promise<User[]> {
     return this.userRepository.find({
-      select: ['id', 'username', 'email', 'firstName', 'lastName', 'role', 'isActive', 'createdAt', 'updatedAt'],
+      select: ['id', 'username', 'email', 'firstName', 'lastName', 'role', 'usagePlans', 'isActive', 'createdAt', 'updatedAt'],
       order: { createdAt: 'DESC' },
     });
   }
@@ -85,6 +85,16 @@ export class AdminService {
     }
 
     user.role = role as any;
+    return this.userRepository.save(user);
+  }
+
+  async updateUserUsagePlans(userId: number, usagePlans: UsagePlan[]): Promise<User> {
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    user.usagePlans = usagePlans;
     return this.userRepository.save(user);
   }
 

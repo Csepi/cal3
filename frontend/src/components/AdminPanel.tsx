@@ -10,6 +10,7 @@ interface User {
   firstName?: string;
   lastName?: string;
   role: string;
+  usagePlans?: string[];
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -69,15 +70,17 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ themeColor = '#3b82f6' }) => {
       '#ef4444': { gradient: 'from-red-50 via-red-100 to-red-200' },
       '#f59e0b': { gradient: 'from-orange-50 via-orange-100 to-orange-200' },
       '#eab308': { gradient: 'from-yellow-50 via-yellow-100 to-yellow-200' },
+      '#84cc16': { gradient: 'from-lime-50 via-lime-100 to-lime-200' },
       '#10b981': { gradient: 'from-green-50 via-green-100 to-green-200' },
+      '#22c55e': { gradient: 'from-emerald-50 via-emerald-100 to-emerald-200' },
+      '#14b8a6': { gradient: 'from-teal-50 via-teal-100 to-teal-200' },
+      '#06b6d4': { gradient: 'from-cyan-50 via-cyan-100 to-cyan-200' },
+      '#0ea5e9': { gradient: 'from-sky-50 via-sky-100 to-sky-200' },
       '#3b82f6': { gradient: 'from-blue-50 via-blue-100 to-blue-200' },
       '#6366f1': { gradient: 'from-indigo-50 via-indigo-100 to-indigo-200' },
+      '#7c3aed': { gradient: 'from-violet-50 via-violet-100 to-violet-200' },
       '#8b5cf6': { gradient: 'from-purple-50 via-purple-100 to-purple-200' },
       '#ec4899': { gradient: 'from-pink-50 via-pink-100 to-pink-200' },
-      '#14b8a6': { gradient: 'from-teal-50 via-teal-100 to-teal-200' },
-      '#22c55e': { gradient: 'from-emerald-50 via-emerald-100 to-emerald-200' },
-      '#06b6d4': { gradient: 'from-cyan-50 via-cyan-100 to-cyan-200' },
-      '#65a30d': { gradient: 'from-lime-50 via-lime-100 to-lime-200' },
       '#f43f5e': { gradient: 'from-rose-50 via-rose-100 to-rose-200' },
       '#64748b': { gradient: 'from-slate-50 via-slate-100 to-slate-200' }
     };
@@ -117,7 +120,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ themeColor = '#3b82f6' }) => {
 
   // Modal states
   const [showModal, setShowModal] = useState(false);
-  const [modalType, setModalType] = useState<'create' | 'edit' | 'password'>('create');
+  const [modalType, setModalType] = useState<'create' | 'edit' | 'password' | 'usagePlans' | 'bulkUsagePlans'>('create');
   const [modalEntity, setModalEntity] = useState<'user' | 'calendar' | 'event'>('user');
   const [editingItem, setEditingItem] = useState<any>(null);
 
@@ -500,6 +503,77 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ themeColor = '#3b82f6' }) => {
     setShowModal(true);
   };
 
+  const openUsagePlansModal = (user: User) => {
+    setModalType('usagePlans');
+    setModalEntity('user');
+    setEditingItem(user);
+    setFormData({ usagePlans: user.usagePlans || [] });
+    setShowModal(true);
+  };
+
+  const openBulkUsagePlansModal = () => {
+    setModalType('bulkUsagePlans');
+    setModalEntity('user');
+    setFormData({ usagePlans: [], operation: 'set' });
+    setShowModal(true);
+  };
+
+  const handleUpdateUsagePlans = async (userId: number, usagePlans: string[]) => {
+    try {
+      const token = getAdminToken();
+      if (!token) return;
+
+      await apiCall(`/admin/users/${userId}/usage-plans`, token, 'PATCH', { usagePlans });
+      await loadData('users');
+      setShowModal(false);
+      setFormData({});
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update usage plans');
+    }
+  };
+
+  const handleBulkUpdateUsagePlans = async () => {
+    try {
+      const token = getAdminToken();
+      if (!token) return;
+
+      const operation = formData.operation || 'set';
+      const plans = formData.usagePlans || [];
+
+      await withProgress(async (updateProgress) => {
+        updateProgress(10, 'Preparing bulk update...');
+
+        const updatePromises = selectedUsers.map(async (userId, index) => {
+          const user = users.find(u => u.id === userId);
+          if (!user) return;
+
+          let newPlans: string[] = [];
+          if (operation === 'set') {
+            newPlans = plans;
+          } else if (operation === 'add') {
+            newPlans = [...new Set([...(user.usagePlans || []), ...plans])];
+          } else if (operation === 'remove') {
+            newPlans = (user.usagePlans || []).filter(p => !plans.includes(p));
+          }
+
+          await apiCall(`/admin/users/${userId}/usage-plans`, token, 'PATCH', { usagePlans: newPlans });
+          const progress = 10 + ((index + 1) / selectedUsers.length) * 80;
+          updateProgress(progress, `Updated ${index + 1} of ${selectedUsers.length} users...`);
+        });
+
+        await Promise.all(updatePromises);
+
+        updateProgress(95, 'Refreshing data...');
+        await loadData('users');
+        setShowModal(false);
+        setFormData({});
+        setSelectedUsers([]);
+      }, `Updating usage plans for ${selectedUsers.length} users...`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to bulk update usage plans');
+    }
+  };
+
   // Render functions
   const renderStats = () => (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -576,6 +650,12 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ themeColor = '#3b82f6' }) => {
             <div className="flex items-center gap-2">
               <span className="text-sm text-gray-600">({selectedUsers.length} selected)</span>
               <button
+                onClick={openBulkUsagePlansModal}
+                className="bg-purple-500 text-white px-3 py-1 rounded-lg hover:bg-purple-600 transition-all duration-200 text-sm flex items-center gap-1"
+              >
+                📋 Usage Plans
+              </button>
+              <button
                 onClick={() => handleBulkDelete('user')}
                 className="bg-red-500 text-white px-3 py-1 rounded-lg hover:bg-red-600 transition-all duration-200 text-sm flex items-center gap-1"
               >
@@ -609,6 +689,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ themeColor = '#3b82f6' }) => {
               <th className="px-6 py-4 text-left text-sm font-medium text-gray-800 border-b border-blue-200">Email</th>
               <th className="px-6 py-4 text-left text-sm font-medium text-gray-800 border-b border-blue-200">Name</th>
               <th className="px-6 py-4 text-left text-sm font-medium text-gray-800 border-b border-blue-200">Role</th>
+              <th className="px-6 py-4 text-left text-sm font-medium text-gray-800 border-b border-blue-200">Usage Plans</th>
               <th className="px-6 py-4 text-left text-sm font-medium text-gray-800 border-b border-blue-200">Active</th>
               <th className="px-6 py-4 text-left text-sm font-medium text-gray-800 border-b border-blue-200">Actions</th>
             </tr>
@@ -640,6 +721,18 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ themeColor = '#3b82f6' }) => {
                   </select>
                 </td>
                 <td className="px-6 py-4 border-b border-blue-100 text-sm">
+                  <div className="flex flex-wrap gap-1">
+                    {(user.usagePlans || []).map(plan => (
+                      <span key={plan} className="px-2 py-1 bg-purple-100 text-purple-700 border border-purple-300 rounded text-xs">
+                        {plan}
+                      </span>
+                    ))}
+                    {(!user.usagePlans || user.usagePlans.length === 0) && (
+                      <span className="px-2 py-1 bg-gray-100 text-gray-500 rounded text-xs">None</span>
+                    )}
+                  </div>
+                </td>
+                <td className="px-6 py-4 border-b border-blue-100 text-sm">
                   <span className={`px-3 py-1 rounded-full text-xs font-medium border ${
                     user.isActive ? 'bg-green-100 text-green-700 border-green-300' : 'bg-red-100 text-red-700 border-red-300'
                   }`}>
@@ -655,8 +748,14 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ themeColor = '#3b82f6' }) => {
                       ✏️ Edit
                     </button>
                     <button
-                      onClick={() => openPasswordModal(user)}
+                      onClick={() => openUsagePlansModal(user)}
                       className="text-xs px-3 py-2 bg-purple-500 text-white rounded-xl hover:bg-purple-600 transition-all duration-200 hover:scale-105 shadow-sm"
+                    >
+                      📋 Plans
+                    </button>
+                    <button
+                      onClick={() => openPasswordModal(user)}
+                      className="text-xs px-3 py-2 bg-indigo-500 text-white rounded-xl hover:bg-indigo-600 transition-all duration-200 hover:scale-105 shadow-sm"
                     >
                       🔒 Password
                     </button>
@@ -877,12 +976,23 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ themeColor = '#3b82f6' }) => {
 
     const isCreate = modalType === 'create';
     const isPassword = modalType === 'password';
+    const isUsagePlans = modalType === 'usagePlans';
+    const isBulkUsagePlans = modalType === 'bulkUsagePlans';
+
+    const usagePlanOptions = [
+      { value: 'child', label: 'Child' },
+      { value: 'user', label: 'User' },
+      { value: 'store', label: 'Store' },
+      { value: 'enterprise', label: 'Enterprise' }
+    ];
 
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
         <div className="bg-white rounded-2xl p-8 w-full max-w-md shadow-2xl max-h-[90vh] overflow-y-auto">
           <h2 className="text-2xl font-bold mb-6 text-gray-800">
             {isPassword ? `Change Password for ${editingItem?.username}` :
+             isUsagePlans ? `Manage Usage Plans for ${editingItem?.username}` :
+             isBulkUsagePlans ? `Bulk Update Usage Plans (${selectedUsers.length} users)` :
              `${isCreate ? 'Create' : 'Edit'} ${modalEntity.charAt(0).toUpperCase() + modalEntity.slice(1)}`}
           </h2>
 
@@ -905,6 +1015,107 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ themeColor = '#3b82f6' }) => {
                   disabled={!formData.password}
                 >
                   Change Password
+                </button>
+                <button
+                  onClick={() => setShowModal(false)}
+                  className="flex-1 bg-gray-500 text-white py-3 rounded-xl hover:bg-gray-600 transition-all"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          ) : isUsagePlans ? (
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-3">Select Usage Plans</label>
+                <div className="space-y-2">
+                  {usagePlanOptions.map(plan => (
+                    <label key={plan.value} className="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg hover:bg-purple-50 cursor-pointer transition-all">
+                      <input
+                        type="checkbox"
+                        checked={(formData.usagePlans || []).includes(plan.value)}
+                        onChange={(e) => {
+                          const currentPlans = formData.usagePlans || [];
+                          if (e.target.checked) {
+                            setFormData({ ...formData, usagePlans: [...currentPlans, plan.value] });
+                          } else {
+                            setFormData({ ...formData, usagePlans: currentPlans.filter((p: string) => p !== plan.value) });
+                          }
+                        }}
+                        className="w-4 h-4 text-purple-600 bg-gray-100 border-gray-300 rounded focus:ring-purple-500"
+                      />
+                      <span className="text-sm font-medium text-gray-700">{plan.label}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+              <div className="flex space-x-4">
+                <button
+                  onClick={() => handleUpdateUsagePlans(editingItem.id, formData.usagePlans || [])}
+                  className="flex-1 bg-purple-500 text-white py-3 rounded-xl hover:bg-purple-600 transition-all"
+                >
+                  Update Plans
+                </button>
+                <button
+                  onClick={() => setShowModal(false)}
+                  className="flex-1 bg-gray-500 text-white py-3 rounded-xl hover:bg-gray-600 transition-all"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          ) : isBulkUsagePlans ? (
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Operation</label>
+                <select
+                  value={formData.operation || 'set'}
+                  onChange={(e) => setFormData({ ...formData, operation: e.target.value })}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 outline-none"
+                >
+                  <option value="set">Set (Replace all plans)</option>
+                  <option value="add">Add (Add to existing plans)</option>
+                  <option value="remove">Remove (Remove from existing plans)</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-3">Select Usage Plans</label>
+                <div className="space-y-2">
+                  {usagePlanOptions.map(plan => (
+                    <label key={plan.value} className="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg hover:bg-purple-50 cursor-pointer transition-all">
+                      <input
+                        type="checkbox"
+                        checked={(formData.usagePlans || []).includes(plan.value)}
+                        onChange={(e) => {
+                          const currentPlans = formData.usagePlans || [];
+                          if (e.target.checked) {
+                            setFormData({ ...formData, usagePlans: [...currentPlans, plan.value] });
+                          } else {
+                            setFormData({ ...formData, usagePlans: currentPlans.filter((p: string) => p !== plan.value) });
+                          }
+                        }}
+                        className="w-4 h-4 text-purple-600 bg-gray-100 border-gray-300 rounded focus:ring-purple-500"
+                      />
+                      <span className="text-sm font-medium text-gray-700">{plan.label}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                <p className="text-sm text-blue-800">
+                  <strong>Note:</strong> This will affect {selectedUsers.length} selected user{selectedUsers.length > 1 ? 's' : ''}.
+                  {formData.operation === 'set' && ' All existing plans will be replaced.'}
+                  {formData.operation === 'add' && ' Plans will be added to existing ones.'}
+                  {formData.operation === 'remove' && ' Selected plans will be removed from users.'}
+                </p>
+              </div>
+              <div className="flex space-x-4">
+                <button
+                  onClick={handleBulkUpdateUsagePlans}
+                  className="flex-1 bg-purple-500 text-white py-3 rounded-xl hover:bg-purple-600 transition-all"
+                  disabled={(formData.usagePlans || []).length === 0}
+                >
+                  Update {selectedUsers.length} User{selectedUsers.length > 1 ? 's' : ''}
                 </button>
                 <button
                   onClick={() => setShowModal(false)}
