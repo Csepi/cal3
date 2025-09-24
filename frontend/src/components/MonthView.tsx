@@ -9,6 +9,7 @@ interface MonthViewProps {
   onEventClick: (event: Event) => void;
   weekStartDay: number; // 0 = Sunday, 1 = Monday
   themeColor: string;
+  reservations?: any[];
 }
 
 const MonthView: React.FC<MonthViewProps> = ({
@@ -18,7 +19,8 @@ const MonthView: React.FC<MonthViewProps> = ({
   onDateClick,
   onEventClick,
   weekStartDay,
-  themeColor
+  themeColor,
+  reservations = []
 }) => {
   // Helper function to get background style based on theme color
   const getBackgroundStyle = () => {
@@ -80,6 +82,21 @@ const MonthView: React.FC<MonthViewProps> = ({
       const timeA = a.startTime ? a.startTime : '00:00';
       const timeB = b.startTime ? b.startTime : '00:00';
       return timeA.localeCompare(timeB);
+    });
+  };
+
+  // Get reservations for a specific date
+  const getReservationsForDate = (date: Date): any[] => {
+    const dayStart = new Date(date);
+    dayStart.setHours(0, 0, 0, 0);
+    const dayEnd = new Date(date);
+    dayEnd.setHours(23, 59, 59, 999);
+
+    return reservations.filter(reservation => {
+      const resStart = new Date(reservation.startTime);
+      return resStart >= dayStart && resStart <= dayEnd;
+    }).sort((a, b) => {
+      return new Date(a.startTime).getTime() - new Date(b.startTime).getTime();
     });
   };
 
@@ -188,6 +205,28 @@ const MonthView: React.FC<MonthViewProps> = ({
                       </div>
                     );
                   })}
+
+                  {/* Reservations */}
+                  {getReservationsForDate(date).slice(0, maxDisplayEvents - dayEvents.length).map(reservation => (
+                    <div
+                      key={`res-${reservation.id}`}
+                      className="text-xs p-1 rounded cursor-pointer truncate border-l-4 hover:shadow-md transition-all duration-200"
+                      style={{
+                        background: 'linear-gradient(135deg, #f9731640, #f9731660, #f9731670)',
+                        borderLeftColor: '#f97316',
+                        color: '#f97316',
+                        boxShadow: '0 3px 8px #f9731630'
+                      }}
+                      title={`📅 ${reservation.resource?.name}\n${new Date(reservation.startTime).toLocaleTimeString()} - ${new Date(reservation.endTime).toLocaleTimeString()}\nStatus: ${reservation.status}`}
+                    >
+                      <div className="font-medium truncate flex items-center">
+                        📅 {reservation.resource?.name}
+                      </div>
+                      <div className="opacity-75">
+                        {new Date(reservation.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </div>
+                    </div>
+                  ))}
 
                   {/* More events indicator */}
                   {hasMoreEvents && (

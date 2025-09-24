@@ -9,6 +9,7 @@ interface WeekViewProps {
   onTimeRangeSelect?: (date: Date, startHour: number, endHour: number) => void;
   weekStartDay: number; // 0 = Sunday, 1 = Monday
   themeColor: string;
+  reservations?: any[];
 }
 
 const WeekView: React.FC<WeekViewProps> = ({
@@ -18,7 +19,8 @@ const WeekView: React.FC<WeekViewProps> = ({
   onEventClick,
   onTimeRangeSelect,
   weekStartDay,
-  themeColor
+  themeColor,
+  reservations = []
 }) => {
   // Helper function to get background style based on theme color
   const getBackgroundStyle = () => {
@@ -71,6 +73,39 @@ const WeekView: React.FC<WeekViewProps> = ({
       const timeB = b.startTime ? b.startTime : '00:00';
       return timeA.localeCompare(timeB);
     });
+  };
+
+  // Get reservations for a specific date
+  const getReservationsForDay = (date: Date): any[] => {
+    const dayStart = new Date(date);
+    dayStart.setHours(0, 0, 0, 0);
+    const dayEnd = new Date(date);
+    dayEnd.setHours(23, 59, 59, 999);
+
+    return reservations.filter(reservation => {
+      const resStart = new Date(reservation.startTime);
+      return resStart >= dayStart && resStart <= dayEnd;
+    }).sort((a, b) => {
+      return new Date(a.startTime).getTime() - new Date(b.startTime).getTime();
+    });
+  };
+
+  // Get reservations that start at a specific hour
+  const getReservationsStartingAtHour = (date: Date, hour: number): any[] => {
+    const dayReservations = getReservationsForDay(date);
+
+    return dayReservations.filter(reservation => {
+      const resStart = new Date(reservation.startTime);
+      return resStart.getHours() === hour;
+    });
+  };
+
+  // Calculate reservation duration in hours
+  const getReservationDuration = (reservation: any): number => {
+    const start = new Date(reservation.startTime);
+    const end = new Date(reservation.endTime);
+    const durationInMinutes = (end.getTime() - start.getTime()) / (1000 * 60);
+    return Math.max(1, Math.ceil(durationInMinutes / 60));
   };
 
   // Calculate event duration in hours
@@ -297,6 +332,7 @@ const WeekView: React.FC<WeekViewProps> = ({
             {/* Day columns */}
             {weekDays.map(day => {
               const eventsStartingHere = getEventsStartingAtHour(day, hour);
+              const reservationsStartingHere = getReservationsStartingAtHour(day, hour);
               const allDayEvents = getEventsForDay(day);
 
               return (
@@ -402,6 +438,45 @@ const WeekView: React.FC<WeekViewProps> = ({
                             {duration > 1 && (
                               <div className="absolute bottom-1 right-1 text-xs opacity-60 bg-white rounded px-1">
                                 {duration}h
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+
+                    {/* Reservations that start at this hour */}
+                    {reservationsStartingHere.map((reservation, resIndex) => {
+                      const duration = getReservationDuration(reservation);
+                      const totalItems = eventsStartingHere.length + reservationsStartingHere.length;
+                      const itemWidth = totalItems > 1 ? `${100 / totalItems}%` : '100%';
+                      const itemLeft = totalItems > 1 ? `${((eventsStartingHere.length + resIndex) * 100) / totalItems}%` : '0%';
+
+                      return (
+                        <div
+                          key={`res-${reservation.id}`}
+                          className="absolute inset-x-0 cursor-pointer rounded border-l-4 hover:shadow-lg transition-all duration-200 z-20"
+                          style={{
+                            height: `${duration * 60 - 4}px`,
+                            width: itemWidth,
+                            left: itemLeft,
+                            background: 'linear-gradient(135deg, #f9731660, #f9731680)',
+                            borderLeftColor: '#f97316',
+                            boxShadow: '0 2px 6px rgba(249, 115, 22, 0.3)'
+                          }}
+                          title={`📅 ${reservation.resource?.name}\n${new Date(reservation.startTime).toLocaleTimeString()} - ${new Date(reservation.endTime).toLocaleTimeString()}\nStatus: ${reservation.status}`}
+                        >
+                          <div className="p-2 h-full overflow-hidden">
+                            <div className="font-semibold text-xs mb-1" style={{ color: '#f97316' }}>
+                              📅 {reservation.resource?.name}
+                            </div>
+                            <div className="text-xs opacity-75" style={{ color: '#f97316' }}>
+                              {new Date(reservation.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                              {duration < 2 && ` - ${new Date(reservation.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`}
+                            </div>
+                            {duration >= 2 && (
+                              <div className="text-xs opacity-60 mt-1" style={{ color: '#f97316' }}>
+                                {reservation.status}
                               </div>
                             )}
                           </div>

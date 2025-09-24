@@ -9,11 +9,20 @@ import { CalendarsModule } from './calendars/calendars.module';
 import { EventsModule } from './events/events.module';
 import { AdminModule } from './admin/admin.module';
 import { CalendarSyncModule } from './calendar-sync/calendar-sync.module';
+import { OrganisationsModule } from './organisations/organisations.module';
+import { ResourceTypesModule } from './resource-types/resource-types.module';
+import { ResourcesModule } from './resources/resources.module';
+import { ReservationsModule } from './reservations/reservations.module';
 import { UserProfileController } from './controllers/user-profile.controller';
 import { User } from './entities/user.entity';
 import { Calendar, CalendarShare } from './entities/calendar.entity';
 import { Event } from './entities/event.entity';
 import { CalendarSyncConnection, SyncedCalendar, SyncEventMapping } from './entities/calendar-sync.entity';
+import { Organisation } from './entities/organisation.entity';
+import { ResourceType } from './entities/resource-type.entity';
+import { Resource } from './entities/resource.entity';
+import { OperatingHours } from './entities/operating-hours.entity';
+import { Reservation } from './entities/reservation.entity';
 
 @Module({
   imports: [
@@ -28,14 +37,14 @@ import { CalendarSyncConnection, SyncedCalendar, SyncEventMapping } from './enti
         username: process.env.DB_USERNAME || 'db_admin',
         password: process.env.DB_PASSWORD || 'Enter.Enter',
         database: process.env.DB_NAME || 'cal3',
-        entities: [User, Calendar, CalendarShare, Event, CalendarSyncConnection, SyncedCalendar, SyncEventMapping],
+        entities: [User, Calendar, CalendarShare, Event, CalendarSyncConnection, SyncedCalendar, SyncEventMapping, Organisation, ResourceType, Resource, OperatingHours, Reservation],
         synchronize: process.env.NODE_ENV !== 'production',
         ssl: { rejectUnauthorized: false },
         logging: process.env.NODE_ENV === 'development',
       } : {
         type: 'sqlite',
         database: process.env.DB_DATABASE || 'cal3.db',
-        entities: [User, Calendar, CalendarShare, Event, CalendarSyncConnection, SyncedCalendar, SyncEventMapping],
+        entities: [User, Calendar, CalendarShare, Event, CalendarSyncConnection, SyncedCalendar, SyncEventMapping, Organisation, ResourceType, Resource, OperatingHours, Reservation],
         synchronize: true,
         logging: process.env.NODE_ENV === 'development',
       }
@@ -46,6 +55,10 @@ import { CalendarSyncConnection, SyncedCalendar, SyncEventMapping } from './enti
     EventsModule,
     AdminModule,
     CalendarSyncModule,
+    OrganisationsModule,
+    ResourceTypesModule,
+    ResourcesModule,
+    ReservationsModule,
     TypeOrmModule.forFeature([User]),
   ],
   controllers: [AppController, UserProfileController],

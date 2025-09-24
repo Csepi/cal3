@@ -102,15 +102,22 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ themeColor = '#3b82f6' }) => {
 
     return token;
   };
-  const [activeTab, setActiveTab] = useState<'users' | 'calendars' | 'events' | 'shares' | 'stats'>('stats');
+  const [activeTab, setActiveTab] = useState<'users' | 'calendars' | 'events' | 'shares' | 'reservations' | 'stats'>('stats');
   const [users, setUsers] = useState<User[]>([]);
   const [calendars, setCalendars] = useState<Calendar[]>([]);
   const [events, setEvents] = useState<Event[]>([]);
   const [shares, setShares] = useState<CalendarShare[]>([]);
+  const [reservations, setReservations] = useState<any[]>([]);
+  const [resources, setResources] = useState<any[]>([]);
   const [stats, setStats] = useState<DatabaseStats | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const { loadingState, withProgress } = useLoadingProgress();
+
+  const [filterStatus, setFilterStatus] = useState<string>('all');
+  const [filterResource, setFilterResource] = useState<string>('all');
+  const [startDate, setStartDate] = useState<string>('');
+  const [endDate, setEndDate] = useState<string>('');
 
   // Selection states for bulk operations
   const [selectedUsers, setSelectedUsers] = useState<number[]>([]);
@@ -194,7 +201,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ themeColor = '#3b82f6' }) => {
   };
 
   // Clear selections when tab changes
-  const handleTabChange = (newTab: 'users' | 'calendars' | 'events' | 'shares' | 'stats') => {
+  const handleTabChange = (newTab: 'users' | 'calendars' | 'events' | 'shares' | 'reservations' | 'stats') => {
     setSelectedUsers([]);
     setSelectedCalendars([]);
     setSelectedEvents([]);
@@ -265,6 +272,16 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ themeColor = '#3b82f6' }) => {
             data = await apiCall('/admin/calendar-shares', token);
             updateProgress(80, 'Processing shares...');
             setShares(data);
+            break;
+          case 'reservations':
+            updateProgress(50, 'Fetching reservation data...');
+            const [resData, resourceData] = await Promise.all([
+              apiCall('/reservations', token),
+              apiCall('/resources', token)
+            ]);
+            updateProgress(80, 'Processing reservations...');
+            setReservations(resData);
+            setResources(resourceData);
             break;
           case 'stats':
             updateProgress(50, 'Fetching statistics...');
@@ -876,6 +893,165 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ themeColor = '#3b82f6' }) => {
     </div>
   );
 
+  const handleDeleteReservation = async (id: number) => {
+    setConfirmDialog({
+      isOpen: true,
+      title: 'Delete Reservation',
+      message: 'Are you sure you want to delete this reservation? This action cannot be undone.',
+      confirmText: 'Delete',
+      onConfirm: async () => {
+        try {
+          const token = getAdminToken();
+          if (!token) return;
+
+          await apiCall(`/reservations/${id}`, token, 'DELETE');
+          await loadData('reservations');
+          setConfirmDialog({ ...confirmDialog, isOpen: false });
+        } catch (err) {
+          setError(err instanceof Error ? err.message : 'Failed to delete reservation');
+          setConfirmDialog({ ...confirmDialog, isOpen: false });
+        }
+      }
+    });
+  };
+
+  const handleUpdateReservationStatus = async (id: number, status: string) => {
+    try {
+      const token = getAdminToken();
+      if (!token) return;
+
+      await apiCall(`/reservations/${id}`, token, 'PATCH', { status });
+      await loadData('reservations');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update reservation status');
+    }
+  };
+
+  const renderReservations = () => {
+    const filteredReservations = reservations.filter(reservation => {
+      if (filterStatus !== 'all' && reservation.status !== filterStatus) return false;
+      if (filterResource !== 'all' && reservation.resource?.id !== parseInt(filterResource)) return false;
+      if (startDate && new Date(reservation.startTime) < new Date(startDate)) return false;
+      if (endDate && new Date(reservation.endTime) > new Date(endDate)) return false;
+      return true;
+    });
+
+    return (
+      <div>
+        <div className="mb-6">
+          <h3 className="text-xl font-medium text-gray-800 mb-4">Reservations Management</h3>
+
+          {/* Filters */}
+          <div className="grid grid-cols-4 gap-4 mb-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
+              <select
+                value={filterStatus}
+                onChange={(e) => setFilterStatus(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none"
+              >
+                <option value="all">All Statuses</option>
+                <option value="pending">Pending</option>
+                <option value="confirmed">Confirmed</option>
+                <option value="completed">Completed</option>
+                <option value="cancelled">Cancelled</option>
+                <option value="waitlist">Waitlist</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Resource</label>
+              <select
+                value={filterResource}
+                onChange={(e) => setFilterResource(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none"
+              >
+                <option value="all">All Resources</option>
+                {resources.map(resource => (
+                  <option key={resource.id} value={resource.id}>{resource.name}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Start Date</label>
+              <input
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">End Date</label>
+              <input
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="min-w-full bg-white border border-orange-200 rounded-2xl overflow-hidden shadow-sm">
+            <thead className="bg-gradient-to-r from-orange-100 to-yellow-100">
+              <tr>
+                <th className="px-6 py-4 text-left text-sm font-medium text-gray-800 border-b border-orange-200">ID</th>
+                <th className="px-6 py-4 text-left text-sm font-medium text-gray-800 border-b border-orange-200">Resource</th>
+                <th className="px-6 py-4 text-left text-sm font-medium text-gray-800 border-b border-orange-200">Start Time</th>
+                <th className="px-6 py-4 text-left text-sm font-medium text-gray-800 border-b border-orange-200">End Time</th>
+                <th className="px-6 py-4 text-left text-sm font-medium text-gray-800 border-b border-orange-200">Quantity</th>
+                <th className="px-6 py-4 text-left text-sm font-medium text-gray-800 border-b border-orange-200">Status</th>
+                <th className="px-6 py-4 text-left text-sm font-medium text-gray-800 border-b border-orange-200">Created By</th>
+                <th className="px-6 py-4 text-left text-sm font-medium text-gray-800 border-b border-orange-200">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredReservations.map((reservation) => (
+                <tr key={reservation.id} className="hover:bg-orange-50 transition-all duration-200">
+                  <td className="px-6 py-4 border-b border-orange-100 text-sm text-gray-700">{reservation.id}</td>
+                  <td className="px-6 py-4 border-b border-orange-100 text-sm text-gray-900 font-medium">{reservation.resource?.name || 'N/A'}</td>
+                  <td className="px-6 py-4 border-b border-orange-100 text-sm text-gray-700">{formatDate(reservation.startTime)}</td>
+                  <td className="px-6 py-4 border-b border-orange-100 text-sm text-gray-700">{formatDate(reservation.endTime)}</td>
+                  <td className="px-6 py-4 border-b border-orange-100 text-sm text-gray-700">{reservation.quantity}</td>
+                  <td className="px-6 py-4 border-b border-orange-100 text-sm">
+                    <select
+                      value={reservation.status}
+                      onChange={(e) => handleUpdateReservationStatus(reservation.id, e.target.value)}
+                      className="px-3 py-1 rounded-full text-xs font-medium border bg-white"
+                    >
+                      <option value="pending">Pending</option>
+                      <option value="confirmed">Confirmed</option>
+                      <option value="completed">Completed</option>
+                      <option value="cancelled">Cancelled</option>
+                      <option value="waitlist">Waitlist</option>
+                    </select>
+                  </td>
+                  <td className="px-6 py-4 border-b border-orange-100 text-sm text-gray-700">{reservation.createdBy?.username || 'N/A'}</td>
+                  <td className="px-6 py-4 border-b border-orange-100 text-sm">
+                    <button
+                      onClick={() => handleDeleteReservation(reservation.id)}
+                      className="text-xs px-3 py-2 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-all duration-200"
+                    >
+                      🗑️ Delete
+                    </button>
+                  </td>
+                </tr>
+              ))}
+              {filteredReservations.length === 0 && (
+                <tr>
+                  <td colSpan={8} className="px-6 py-8 text-center text-gray-500">
+                    No reservations found matching the filters
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    );
+  };
+
   const renderEvents = () => (
     <div>
       <div className="mb-6 flex justify-between items-center">
@@ -1435,6 +1611,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ themeColor = '#3b82f6' }) => {
               { key: 'users', label: 'Users', icon: '👥' },
               { key: 'calendars', label: 'Calendars', icon: '📅' },
               { key: 'events', label: 'Events', icon: '✨' },
+              { key: 'reservations', label: 'Reservations', icon: '🎫' },
               { key: 'shares', label: 'Shares', icon: '🤝' }
             ].map((tab) => (
               <button
@@ -1485,6 +1662,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ themeColor = '#3b82f6' }) => {
               {activeTab === 'users' && renderUsers()}
               {activeTab === 'calendars' && renderCalendars()}
               {activeTab === 'events' && renderEvents()}
+              {activeTab === 'reservations' && renderReservations()}
               {activeTab === 'shares' && (
                 <div className="text-center py-12">
                   <p className="text-xl text-gray-600">

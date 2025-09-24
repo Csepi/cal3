@@ -9,6 +9,7 @@ import {
 } from 'typeorm';
 import { Calendar } from './calendar.entity';
 import { Event } from './event.entity';
+import { Organisation } from './organisation.entity';
 import { Exclude } from 'class-transformer';
 
 export enum UserRole {
@@ -89,4 +90,8 @@ export class User {
   // One user creates many events
   @OneToMany(() => Event, (event) => event.createdBy, { cascade: true })
   createdEvents: Event[];
+
+  // Many users can belong to many organisations
+  @ManyToMany(() => Organisation, (organisation) => organisation.users)
+  organisations: Organisation[];
 }

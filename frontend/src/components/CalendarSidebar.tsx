@@ -9,6 +9,11 @@ interface CalendarSidebarProps {
   onDeselectAll: () => void;
   onEditCalendar: (calendar: CalendarType) => void;
   themeColor: string;
+  resources?: any[];
+  selectedResources?: number[];
+  onToggleResource?: (resourceId: number) => void;
+  onSelectAllResources?: () => void;
+  onDeselectAllResources?: () => void;
 }
 
 const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
@@ -18,7 +23,12 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
   onSelectAll,
   onDeselectAll,
   onEditCalendar,
-  themeColor
+  themeColor,
+  resources = [],
+  selectedResources = [],
+  onToggleResource,
+  onSelectAllResources,
+  onDeselectAllResources
 }) => {
   // Helper function to get theme-based colors
   const getThemeColors = (color: string) => {
@@ -193,6 +203,81 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
         </div>
       </div>
 
+      {/* Reservations Section */}
+      {resources.length > 0 && (
+        <>
+          <div className="p-4 border-t border-gray-200">
+            <h3 className="text-lg font-semibold text-gray-800 mb-3">Reservations</h3>
+
+            <div className="flex gap-2 mb-3">
+              <button
+                onClick={onSelectAllResources}
+                disabled={selectedResources.length === resources.length}
+                className={`px-3 py-1 text-xs rounded-md transition-all duration-200 ${
+                  selectedResources.length === resources.length
+                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                    : `bg-${themeColors.light} text-${themeColors.text} hover:bg-${themeColors.hover}`
+                }`}
+              >
+                Select All
+              </button>
+              <button
+                onClick={onDeselectAllResources}
+                disabled={selectedResources.length === 0}
+                className={`px-3 py-1 text-xs rounded-md transition-all duration-200 ${
+                  selectedResources.length === 0
+                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                Deselect All
+              </button>
+            </div>
+
+            <div className="space-y-2 max-h-48 overflow-y-auto">
+              {resources.map((resource) => {
+                const isSelected = selectedResources.includes(resource.id);
+                return (
+                  <div
+                    key={resource.id}
+                    className={`group flex items-center p-2 rounded-lg border transition-all duration-300 cursor-pointer ${
+                      isSelected
+                        ? 'border-orange-300 bg-orange-50'
+                        : 'border-gray-200 bg-white hover:border-gray-300'
+                    }`}
+                    onClick={() => onToggleResource?.(resource.id)}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={isSelected}
+                      onChange={() => onToggleResource?.(resource.id)}
+                      className="w-4 h-4 text-orange-600 bg-gray-100 border-gray-300 rounded focus:ring-orange-500 focus:ring-2 mr-3"
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                    <div
+                      className="w-3 h-3 rounded-full mr-2"
+                      style={{ backgroundColor: '#f97316' }}
+                    />
+                    <div className="flex-1 min-w-0">
+                      <h4 className={`text-sm font-medium truncate ${
+                        isSelected ? 'text-orange-900' : 'text-gray-900'
+                      }`}>
+                        {resource.name}
+                      </h4>
+                      {resource.resourceType && (
+                        <p className="text-xs text-gray-500 truncate">
+                          {resource.resourceType.name}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </>
+      )}
+
       {/* Footer with selection summary */}
       {calendars.length > 0 && (
         <div className="p-4 border-t border-gray-200 bg-gray-50">
@@ -202,6 +287,15 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
             </span>
             {' calendars selected'}
           </div>
+
+          {resources.length > 0 && (
+            <div className="text-xs text-gray-600 mt-1">
+              <span className="font-medium">
+                {selectedResources.length} of {resources.length}
+              </span>
+              {' resources selected'}
+            </div>
+          )}
 
           {someSelected && (
             <div className="mt-2 text-xs text-amber-600 bg-amber-50 px-2 py-1 rounded">

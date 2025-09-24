@@ -4,12 +4,13 @@ import Calendar from './Calendar';
 import AdminPanel from './AdminPanel';
 import UserProfile from './UserProfile';
 import CalendarSync from './CalendarSync';
+import ReservationsPanel from './ReservationsPanel';
 import { apiService } from '../services/api';
 
 const Dashboard: React.FC = () => {
   const [user, setUser] = useState<string | null>(null);
   const [userRole, setUserRole] = useState<string>('user');
-  const [currentView, setCurrentView] = useState<'calendar' | 'admin' | 'profile' | 'sync'>('calendar');
+  const [currentView, setCurrentView] = useState<'calendar' | 'admin' | 'profile' | 'sync' | 'reservations'>('calendar');
   const [themeColor, setThemeColor] = useState<string>('#3b82f6');
   const [userProfile, setUserProfile] = useState<any>(null);
 
@@ -240,6 +241,16 @@ const Dashboard: React.FC = () => {
               >
                 🔄 Calendar Sync
               </button>
+              <button
+                onClick={() => setCurrentView('reservations')}
+                className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 ${
+                  currentView === 'reservations'
+                    ? `${themeColors.primary} text-white shadow-lg`
+                    : `${themeColors.accent} hover:bg-white/50`
+                }`}
+              >
+                📅 Reservations
+              </button>
               {userRole === 'admin' && (
                 <button
                   onClick={() => setCurrentView('admin')}
@@ -270,6 +281,7 @@ const Dashboard: React.FC = () => {
           <UserProfile onThemeChange={handleThemeChange} currentTheme={themeColor} />
         )}
         {currentView === 'sync' && <CalendarSync themeColor={themeColor} />}
+        {currentView === 'reservations' && <ReservationsPanel themeColor={themeColor} />}
         {currentView === 'admin' && userRole === 'admin' && <AdminPanel themeColor={themeColor} />}
       </div>
     </div>

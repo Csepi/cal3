@@ -49,6 +49,10 @@ const Calendar: React.FC<CalendarProps> = ({ themeColor }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const [reservations, setReservations] = useState<any[]>([]);
+  const [resources, setResources] = useState<any[]>([]);
+  const [selectedResources, setSelectedResources] = useState<number[]>([]);
+
   // Modal states
   const [showEventModal, setShowEventModal] = useState(false);
   const [showCalendarModal, setShowCalendarModal] = useState(false);
@@ -130,9 +134,12 @@ const Calendar: React.FC<CalendarProps> = ({ themeColor }) => {
       const calendarsData = await apiService.getAllCalendars();
       setCalendars(calendarsData);
 
-      updateProgress(50, 'Loading events...');
+      updateProgress(40, 'Loading events...');
       const eventsData = await apiService.getAllEvents();
       setEvents(eventsData);
+
+      updateProgress(60, 'Loading reservations...');
+      await loadReservationsAndResources();
 
       updateProgress(80, 'Initializing calendar selection...');
       // Initialize selected calendars if not set
@@ -143,6 +150,40 @@ const Calendar: React.FC<CalendarProps> = ({ themeColor }) => {
 
       updateProgress(100, 'Ready!');
     }, 'Loading calendar data...');
+  };
+
+  const loadReservationsAndResources = async () => {
+    try {
+      const token = localStorage.getItem('authToken');
+
+      const [reservationsResponse, resourcesResponse] = await Promise.all([
+        fetch('http://localhost:8081/api/reservations', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }),
+        fetch('http://localhost:8081/api/resources', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        })
+      ]);
+
+      if (reservationsResponse.ok) {
+        const reservationsData = await reservationsResponse.json();
+        setReservations(reservationsData);
+      }
+
+      if (resourcesResponse.ok) {
+        const resourcesData = await resourcesResponse.json();
+        setResources(resourcesData);
+        setSelectedResources(resourcesData.map((r: any) => r.id));
+      }
+    } catch (err) {
+      console.error('Failed to load reservations:', err);
+    }
   };
 
   useEffect(() => {
@@ -617,6 +658,15 @@ const Calendar: React.FC<CalendarProps> = ({ themeColor }) => {
           onDeselectAll={handleDeselectAllCalendars}
           onEditCalendar={handleEditCalendar}
           themeColor={themeColor}
+          resources={resources}
+          selectedResources={selectedResources}
+          onToggleResource={(id) => {
+            setSelectedResources(prev =>
+              prev.includes(id) ? prev.filter(rid => rid !== id) : [...prev, id]
+            );
+          }}
+          onSelectAllResources={() => setSelectedResources(resources.map(r => r.id))}
+          onDeselectAllResources={() => setSelectedResources([])}
         />
 
         {/* Main Calendar Area */}
@@ -713,6 +763,7 @@ const Calendar: React.FC<CalendarProps> = ({ themeColor }) => {
                 onEventClick={handleEventClick}
                 weekStartDay={settings.weekStartDay}
                 themeColor={themeColor}
+                reservations={reservations.filter(r => selectedResources.includes(r.resource?.id))}
               />
             ) : (
               <WeekView
@@ -721,6 +772,7 @@ const Calendar: React.FC<CalendarProps> = ({ themeColor }) => {
                 onDateClick={handleDateClick}
                 onEventClick={handleEventClick}
                 onTimeRangeSelect={handleTimeRangeSelect}
+                reservations={reservations.filter(r => selectedResources.includes(r.resource?.id))}
                 weekStartDay={settings.weekStartDay}
                 themeColor={themeColor}
               />
