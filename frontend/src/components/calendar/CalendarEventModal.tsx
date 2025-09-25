@@ -1,0 +1,438 @@
+/**
+ * CalendarEventModal component for creating and editing calendar events
+ *
+ * This component provides a comprehensive modal interface for event management,
+ * including form validation, recurrence patterns, and theme integration.
+ * It replaces the inline modal logic from the monolithic Calendar component.
+ */
+
+import React, { useState, useEffect } from 'react';
+import { Modal, Button, Input, Card } from '../ui';
+import { getThemeConfig } from '../../constants';
+import type { Event, CreateEventRequest, UpdateEventRequest, RecurrencePattern } from '../../types/Event';
+import type { Calendar as CalendarType } from '../../types/Calendar';
+import RecurrenceSelector from '../RecurrenceSelector';
+
+export interface CalendarEventModalProps {
+  /** Whether the modal is open */
+  isOpen: boolean;
+  /** Function to close the modal */
+  onClose: () => void;
+  /** Function to save the event */
+  onSave: (eventData: CreateEventRequest | UpdateEventRequest) => Promise<void>;
+  /** Event being edited (null for creating new event) */
+  editingEvent?: Event | null;
+  /** Available calendars for selection */
+  calendars: CalendarType[];
+  /** Selected date (for new events) */
+  selectedDate?: Date | null;
+  /** Current theme color */
+  themeColor: string;
+  /** Error message to display */
+  error?: string | null;
+  /** Whether the form is currently submitting */
+  loading?: boolean;
+}
+
+/**
+ * Modal component for comprehensive event creation and editing
+ */
+export const CalendarEventModal: React.FC<CalendarEventModalProps> = ({
+  isOpen,
+  onClose,
+  onSave,
+  editingEvent,
+  calendars,
+  selectedDate,
+  themeColor,
+  error,
+  loading = false
+}) => {
+  const themeConfig = getThemeConfig(themeColor);
+
+  // Form state
+  const [eventForm, setEventForm] = useState<Partial<CreateEventRequest>>({
+    title: '',
+    description: '',
+    startDate: '',
+    startTime: '',
+    endDate: '',
+    endTime: '',
+    isAllDay: false,
+    location: '',
+    color: themeColor,
+    calendarId: undefined
+  });
+
+  const [recurrencePattern, setRecurrencePattern] = useState<RecurrencePattern | null>(null);
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+
+  /**
+   * Initialize form data when modal opens or editing event changes
+   */
+  useEffect(() => {
+    if (isOpen) {
+      if (editingEvent) {
+        // Editing existing event
+        setEventForm({
+          title: editingEvent.title,
+          description: editingEvent.description || '',
+          startDate: editingEvent.startDate,
+          startTime: editingEvent.startTime || '',
+          endDate: editingEvent.endDate,
+          endTime: editingEvent.endTime || '',
+          isAllDay: editingEvent.isAllDay,
+          location: editingEvent.location || '',
+          color: editingEvent.color,
+          calendarId: editingEvent.calendar.id
+        });
+
+        // Set recurrence pattern if event has recurrence
+        if (editingEvent.recurrencePattern) {
+          setRecurrencePattern(editingEvent.recurrencePattern);
+        } else {
+          setRecurrencePattern(null);
+        }
+      } else {
+        // Creating new event
+        const defaultCalendar = calendars.find(cal => cal.name === 'Personal') || calendars[0];
+        const startDate = selectedDate ? selectedDate.toISOString().split('T')[0] : new Date().toISOString().split('T')[0];
+
+        setEventForm({
+          title: '',
+          description: '',
+          startDate,
+          startTime: '09:00',
+          endDate: startDate,
+          endTime: '10:00',
+          isAllDay: false,
+          location: '',
+          color: themeColor,
+          calendarId: defaultCalendar?.id
+        });
+        setRecurrencePattern(null);
+      }
+
+      // Clear form errors
+      setFormErrors({});
+    }
+  }, [isOpen, editingEvent, calendars, selectedDate, themeColor]);
+
+  /**
+   * Handle form field changes
+   */
+  const handleFormChange = (field: string, value: any) => {
+    setEventForm(prev => ({
+      ...prev,
+      [field]: value
+    }));
+
+    // Clear field-specific error when user starts typing
+    if (formErrors[field]) {
+      setFormErrors(prev => ({
+        ...prev,
+        [field]: ''
+      }));
+    }
+
+    // Auto-adjust end date when start date changes
+    if (field === 'startDate' && eventForm.endDate === eventForm.startDate) {
+      setEventForm(prev => ({
+        ...prev,
+        endDate: value
+      }));
+    }
+  };
+
+  /**
+   * Validate form data
+   */
+  const validateForm = (): boolean => {
+    const errors: Record<string, string> = {};
+
+    if (!eventForm.title?.trim()) {
+      errors.title = 'Event title is required';
+    }
+
+    if (!eventForm.startDate) {
+      errors.startDate = 'Start date is required';
+    }
+
+    if (!eventForm.endDate) {
+      errors.endDate = 'End date is required';
+    }
+
+    if (!eventForm.calendarId) {
+      errors.calendarId = 'Please select a calendar';
+    }
+
+    // Date validation
+    if (eventForm.startDate && eventForm.endDate) {
+      const startDateTime = new Date(`${eventForm.startDate}T${eventForm.startTime || '00:00'}`);
+      const endDateTime = new Date(`${eventForm.endDate}T${eventForm.endTime || '23:59'}`);
+
+      if (endDateTime < startDateTime) {
+        errors.endDate = 'End date must be after start date';
+      }
+    }
+
+    // Time validation for non-all-day events
+    if (!eventForm.isAllDay) {
+      if (!eventForm.startTime) {
+        errors.startTime = 'Start time is required';
+      }
+      if (!eventForm.endTime) {
+        errors.endTime = 'End time is required';
+      }
+    }
+
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  /**
+   * Handle form submission
+   */
+  const handleSubmit = async () => {
+    if (!validateForm()) return;
+
+    try {
+      const eventData = {
+        ...eventForm,
+        ...(recurrencePattern && { recurrencePattern })
+      } as CreateEventRequest | UpdateEventRequest;
+
+      await onSave(eventData);
+      onClose();
+    } catch (err) {
+      // Error is handled by parent component
+      console.error('Error saving event:', err);
+    }
+  };
+
+  /**
+   * Handle modal close with confirmation if form has changes
+   */
+  const handleClose = () => {
+    const hasChanges = editingEvent
+      ? Object.keys(eventForm).some(key => eventForm[key as keyof typeof eventForm] !== (editingEvent as any)[key])
+      : Object.values(eventForm).some(value => value !== '' && value !== false && value !== undefined);
+
+    if (hasChanges) {
+      const confirmClose = window.confirm('You have unsaved changes. Are you sure you want to close?');
+      if (!confirmClose) return;
+    }
+
+    onClose();
+  };
+
+  return (
+    <Modal
+      isOpen={isOpen}
+      onClose={handleClose}
+      title={editingEvent ? 'Edit Event' : 'Create New Event'}
+      size="lg"
+      themeColor={themeColor}
+    >
+      <div className="space-y-6">
+        {/* Error Message */}
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+            <div className="flex items-center">
+              <svg className="w-5 h-5 text-red-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <p className="text-red-700">{error}</p>
+            </div>
+          </div>
+        )}
+
+        {/* Basic Information */}
+        <Card
+          header={<h3 className="text-lg font-semibold text-gray-800">📝 Event Details</h3>}
+          padding="lg"
+          themeColor={themeColor}
+        >
+          <div className="space-y-4">
+            {/* Event Title */}
+            <Input
+              label="Event Title"
+              value={eventForm.title || ''}
+              onChange={(e) => handleFormChange('title', e.target.value)}
+              error={formErrors.title}
+              required
+              themeColor={themeColor}
+              placeholder="Enter event title..."
+            />
+
+            {/* Calendar Selection */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Calendar <span className="text-red-500">*</span>
+              </label>
+              <select
+                value={eventForm.calendarId || ''}
+                onChange={(e) => handleFormChange('calendarId', parseInt(e.target.value))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">Select a calendar...</option>
+                {calendars.map((calendar) => (
+                  <option key={calendar.id} value={calendar.id}>
+                    {calendar.name}
+                  </option>
+                ))}
+              </select>
+              {formErrors.calendarId && (
+                <p className="mt-1 text-sm text-red-600">{formErrors.calendarId}</p>
+              )}
+            </div>
+
+            {/* Description */}
+            <Input
+              label="Description"
+              value={eventForm.description || ''}
+              onChange={(e) => handleFormChange('description', e.target.value)}
+              themeColor={themeColor}
+              placeholder="Enter event description..."
+              multiline
+              rows={3}
+            />
+
+            {/* Location */}
+            <Input
+              label="Location"
+              value={eventForm.location || ''}
+              onChange={(e) => handleFormChange('location', e.target.value)}
+              themeColor={themeColor}
+              placeholder="Enter event location..."
+            />
+          </div>
+        </Card>
+
+        {/* Date & Time */}
+        <Card
+          header={<h3 className="text-lg font-semibold text-gray-800">🕒 Date & Time</h3>}
+          padding="lg"
+          themeColor={themeColor}
+        >
+          <div className="space-y-4">
+            {/* All Day Toggle */}
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                id="isAllDay"
+                checked={eventForm.isAllDay || false}
+                onChange={(e) => handleFormChange('isAllDay', e.target.checked)}
+                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+              />
+              <label htmlFor="isAllDay" className="ml-3 text-sm text-gray-700">
+                All day event
+              </label>
+            </div>
+
+            {/* Start Date & Time */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Input
+                label="Start Date"
+                type="date"
+                value={eventForm.startDate || ''}
+                onChange={(e) => handleFormChange('startDate', e.target.value)}
+                error={formErrors.startDate}
+                required
+                themeColor={themeColor}
+              />
+
+              {!eventForm.isAllDay && (
+                <Input
+                  label="Start Time"
+                  type="time"
+                  value={eventForm.startTime || ''}
+                  onChange={(e) => handleFormChange('startTime', e.target.value)}
+                  error={formErrors.startTime}
+                  required
+                  themeColor={themeColor}
+                />
+              )}
+            </div>
+
+            {/* End Date & Time */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Input
+                label="End Date"
+                type="date"
+                value={eventForm.endDate || ''}
+                onChange={(e) => handleFormChange('endDate', e.target.value)}
+                error={formErrors.endDate}
+                required
+                themeColor={themeColor}
+              />
+
+              {!eventForm.isAllDay && (
+                <Input
+                  label="End Time"
+                  type="time"
+                  value={eventForm.endTime || ''}
+                  onChange={(e) => handleFormChange('endTime', e.target.value)}
+                  error={formErrors.endTime}
+                  required
+                  themeColor={themeColor}
+                />
+              )}
+            </div>
+          </div>
+        </Card>
+
+        {/* Event Color */}
+        <Card
+          header={<h3 className="text-lg font-semibold text-gray-800">🎨 Event Color</h3>}
+          padding="lg"
+          themeColor={themeColor}
+        >
+          <Input
+            label="Color"
+            type="color"
+            value={eventForm.color || themeColor}
+            onChange={(e) => handleFormChange('color', e.target.value)}
+            themeColor={themeColor}
+          />
+        </Card>
+
+        {/* Recurrence Pattern */}
+        <Card
+          header={<h3 className="text-lg font-semibold text-gray-800">🔄 Repeat Event</h3>}
+          padding="lg"
+          themeColor={themeColor}
+        >
+          <RecurrenceSelector
+            recurrencePattern={recurrencePattern}
+            onRecurrenceChange={setRecurrencePattern}
+            themeColor={themeColor}
+          />
+        </Card>
+
+        {/* Actions */}
+        <div className="flex justify-end space-x-3 pt-6 border-t border-gray-200">
+          <Button
+            variant="outline"
+            onClick={handleClose}
+            disabled={loading}
+            themeColor={themeColor}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="primary"
+            onClick={handleSubmit}
+            loading={loading}
+            themeColor={themeColor}
+          >
+            {loading
+              ? (editingEvent ? 'Updating...' : 'Creating...')
+              : (editingEvent ? 'Update Event' : 'Create Event')
+            }
+          </Button>
+        </div>
+      </div>
+    </Modal>
+  );
+};

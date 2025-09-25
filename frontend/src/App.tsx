@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import Dashboard from './components/Dashboard'
-import AuthCallback from './components/AuthCallback'
+import { AuthCallback } from './components/auth'
 import { useState } from 'react'
 
 function App() {
