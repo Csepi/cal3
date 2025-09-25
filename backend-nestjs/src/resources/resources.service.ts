@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Resource } from '../entities/resource.entity';
@@ -46,7 +46,7 @@ export class ResourcesService {
   async findOne(id: number): Promise<Resource> {
     const resource = await this.resourceRepository.findOne({
       where: { id },
-      relations: ['resourceType', 'managedBy', 'operatingHours'],
+      relations: ['resourceType', 'managedBy'],
     });
 
     if (!resource) {
@@ -58,12 +58,44 @@ export class ResourcesService {
 
   async update(id: number, updateDto: UpdateResourceDto): Promise<Resource> {
     const resource = await this.findOne(id);
+
+    // Handle managedBy relationship if provided
+    if (updateDto.managedById !== undefined) {
+      if (updateDto.managedById) {
+        // In a real implementation, you'd validate the user exists
+        resource.managedBy = { id: updateDto.managedById } as any;
+      } else {
+        resource.managedBy = null as any;
+      }
+      delete updateDto.managedById;
+    }
+
+    // Update other fields
     Object.assign(resource, updateDto);
     return await this.resourceRepository.save(resource);
   }
 
   async remove(id: number): Promise<void> {
-    const resource = await this.findOne(id);
+    const resource = await this.resourceRepository.findOne({
+      where: { id },
+      relations: ['reservations'],
+    });
+
+    if (!resource) {
+      throw new NotFoundException(`Resource #${id} not found`);
+    }
+
+    // Check if there are any reservations for this resource
+    if (resource.reservations && resource.reservations.length > 0) {
+      const activeReservations = resource.reservations.filter(
+        r => r.status !== 'cancelled' && r.status !== 'completed'
+      );
+
+      if (activeReservations.length > 0) {
+        throw new BadRequestException(`Cannot delete resource with active reservations. Cancel or complete ${activeReservations.length} reservation(s) first.`);
+      }
+    }
+
     await this.resourceRepository.remove(resource);
   }
 }

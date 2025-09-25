@@ -92,8 +92,8 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
         </div>
       </div>
 
-      {/* Calendar List */}
-      <div className="flex-1 overflow-y-auto p-4">
+      {/* Calendar List - Reduced height when reservations present */}
+      <div className={`${resources.length > 0 ? 'flex-none max-h-64' : 'flex-1'} overflow-y-auto p-4`}>
         <div className="space-y-2">
           {calendars.map((calendar) => {
             const isSelected = selectedCalendars.includes(calendar.id);
@@ -203,10 +203,10 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
         </div>
       </div>
 
-      {/* Reservations Section */}
+      {/* Reservations Section - Much larger space */}
       {resources.length > 0 && (
         <>
-          <div className="p-4 border-t border-gray-200">
+          <div className="flex-1 p-4 border-t border-gray-200 flex flex-col">
             <h3 className="text-lg font-semibold text-gray-800 mb-3">Reservations</h3>
 
             <div className="flex gap-2 mb-3">
@@ -234,7 +234,7 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
               </button>
             </div>
 
-            <div className="space-y-2 max-h-48 overflow-y-auto">
+            <div className="space-y-2 flex-1 overflow-y-auto">
               {resources.map((resource) => {
                 const isSelected = selectedResources.includes(resource.id);
                 return (

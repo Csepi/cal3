@@ -36,18 +36,18 @@ export class ReservationsService {
     if (resourceId) {
       return await this.reservationRepository.find({
         where: { resource: { id: resourceId } },
-        relations: ['resource', 'createdBy'],
+        relations: ['resource', 'resource.resourceType', 'createdBy'],
       });
     }
     return await this.reservationRepository.find({
-      relations: ['resource', 'createdBy'],
+      relations: ['resource', 'resource.resourceType', 'createdBy'],
     });
   }
 
   async findOne(id: number): Promise<Reservation> {
     const reservation = await this.reservationRepository.findOne({
       where: { id },
-      relations: ['resource', 'createdBy'],
+      relations: ['resource', 'resource.resourceType', 'createdBy'],
     });
 
     if (!reservation) {
