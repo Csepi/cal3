@@ -10,6 +10,8 @@ interface WeekViewProps {
   weekStartDay: number; // 0 = Sunday, 1 = Monday
   themeColor: string;
   reservations?: any[];
+  userTimezone?: string;
+  timeFormat?: string;
 }
 
 const WeekView: React.FC<WeekViewProps> = ({
@@ -20,7 +22,9 @@ const WeekView: React.FC<WeekViewProps> = ({
   onTimeRangeSelect,
   weekStartDay,
   themeColor,
-  reservations = []
+  reservations = [],
+  userTimezone,
+  timeFormat = '12' // Default to 12-hour format
 }) => {
   // Helper function to get background style based on theme color
   const getBackgroundStyle = () => {
@@ -156,10 +160,60 @@ const WeekView: React.FC<WeekViewProps> = ({
   };
 
   const formatHour = (hour: number): string => {
+    // Create a date object for the hour on the current date
+    const date = new Date(currentDate);
+    date.setHours(hour, 0, 0, 0);
+
+    // If user has a timezone preference, format accordingly
+    if (userTimezone) {
+      try {
+        const options: Intl.DateTimeFormatOptions = {
+          hour: 'numeric',
+          hour12: timeFormat === '12',
+          timeZone: userTimezone
+        };
+        return new Intl.DateTimeFormat('en-US', options).format(date);
+      } catch (error) {
+        console.warn('Invalid timezone:', userTimezone, error);
+        // Fallback to default formatting
+      }
+    }
+
+    // Default fallback formatting based on timeFormat preference
+    if (timeFormat === '24') {
+      return `${hour.toString().padStart(2, '0')}:00`;
+    }
+
+    // Default 12-hour format
     if (hour === 0) return '12 AM';
     if (hour === 12) return '12 PM';
     if (hour < 12) return `${hour} AM`;
     return `${hour - 12} PM`;
+  };
+
+  const formatTime = (date: Date): string => {
+    if (userTimezone) {
+      try {
+        const options: Intl.DateTimeFormatOptions = {
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: timeFormat === '12',
+          timeZone: userTimezone
+        };
+        return new Intl.DateTimeFormat('en-US', options).format(date);
+      } catch (error) {
+        console.warn('Invalid timezone:', userTimezone, error);
+        // Fallback to default formatting
+      }
+    }
+
+    // Default fallback formatting based on timeFormat preference
+    if (timeFormat === '24') {
+      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+    }
+
+    // Default 12-hour format
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
   };
 
   const formatDate = (date: Date): string => {
@@ -464,15 +518,15 @@ const WeekView: React.FC<WeekViewProps> = ({
                             borderLeftColor: '#f97316',
                             boxShadow: '0 2px 6px rgba(249, 115, 22, 0.3)'
                           }}
-                          title={`📅 ${reservation.resource?.name}\n${new Date(reservation.startTime).toLocaleTimeString()} - ${new Date(reservation.endTime).toLocaleTimeString()}\nStatus: ${reservation.status}`}
+                          title={`📅 ${reservation.resource?.name}\n${formatTime(new Date(reservation.startTime))} - ${formatTime(new Date(reservation.endTime))}\nStatus: ${reservation.status}`}
                         >
                           <div className="p-2 h-full overflow-hidden">
                             <div className="font-semibold text-xs mb-1" style={{ color: '#f97316' }}>
                               📅 {reservation.resource?.name}
                             </div>
                             <div className="text-xs opacity-75" style={{ color: '#f97316' }}>
-                              {new Date(reservation.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                              {duration < 2 && ` - ${new Date(reservation.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`}
+                              {formatTime(new Date(reservation.startTime))}
+                              {duration < 2 && ` - ${formatTime(new Date(reservation.endTime))}`}
                             </div>
                             {duration >= 2 && (
                               <div className="text-xs opacity-60 mt-1" style={{ color: '#f97316' }}>

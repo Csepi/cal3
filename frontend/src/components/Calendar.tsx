@@ -61,6 +61,9 @@ const Calendar: React.FC<CalendarProps> = ({ themeColor }) => {
   const [editingEvent, setEditingEvent] = useState<Event | null>(null);
   const [editingCalendar, setEditingCalendar] = useState<CalendarType | null>(null);
 
+  // User profile state for timezone settings
+  const [userProfile, setUserProfile] = useState<any>(null);
+
   // Modal-specific error states
   const [eventModalError, setEventModalError] = useState<string | null>(null);
   const [calendarModalError, setCalendarModalError] = useState<string | null>(null);
@@ -130,18 +133,26 @@ const Calendar: React.FC<CalendarProps> = ({ themeColor }) => {
   // Load data
   const loadData = async () => {
     await withProgress(async (updateProgress) => {
-      updateProgress(10, 'Loading calendars...');
+      updateProgress(10, 'Loading user profile...');
+      try {
+        const profileData = await apiService.getUserProfile();
+        setUserProfile(profileData);
+      } catch (err) {
+        console.warn('Could not load user profile:', err);
+      }
+
+      updateProgress(20, 'Loading calendars...');
       const calendarsData = await apiService.getAllCalendars();
       setCalendars(calendarsData);
 
-      updateProgress(40, 'Loading events...');
+      updateProgress(50, 'Loading events...');
       const eventsData = await apiService.getAllEvents();
       setEvents(eventsData);
 
-      updateProgress(60, 'Loading reservations...');
+      updateProgress(70, 'Loading reservations...');
       await loadReservationsAndResources();
 
-      updateProgress(80, 'Initializing calendar selection...');
+      updateProgress(90, 'Initializing calendar selection...');
       // Initialize selected calendars if not set
       if (settings.selectedCalendars.length === 0 && calendarsData.length > 0) {
         const allCalendarIds = calendarsData.map(cal => cal.id);
@@ -775,6 +786,8 @@ const Calendar: React.FC<CalendarProps> = ({ themeColor }) => {
                 reservations={reservations.filter(r => selectedResources.includes(r.resource?.id))}
                 weekStartDay={settings.weekStartDay}
                 themeColor={themeColor}
+                userTimezone={userProfile?.timezone}
+                timeFormat={userProfile?.timeFormat}
               />
             )}
           </div>
