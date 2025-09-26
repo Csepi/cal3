@@ -7,10 +7,11 @@ import { User } from '../entities/user.entity';
 import { Calendar } from '../entities/calendar.entity';
 import { Event } from '../entities/event.entity';
 import { CalendarShare } from '../entities/calendar.entity';
+import { Reservation } from '../entities/reservation.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User, Calendar, Event, CalendarShare]),
+    TypeOrmModule.forFeature([User, Calendar, Event, CalendarShare, Reservation]),
   ],
   controllers: [AdminController],
   providers: [AdminService, AdminGuard],

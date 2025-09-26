@@ -5,6 +5,7 @@ import { User, UserRole, UsagePlan } from '../entities/user.entity';
 import { Calendar } from '../entities/calendar.entity';
 import { Event } from '../entities/event.entity';
 import { CalendarShare } from '../entities/calendar.entity';
+import { Reservation } from '../entities/reservation.entity';
 import * as bcrypt from 'bcryptjs';
 
 @Injectable()
@@ -18,6 +19,8 @@ export class AdminService {
     private eventRepository: Repository<Event>,
     @InjectRepository(CalendarShare)
     private calendarShareRepository: Repository<CalendarShare>,
+    @InjectRepository(Reservation)
+    private reservationRepository: Repository<Reservation>,
   ) {}
 
   async getAllUsers(): Promise<User[]> {
@@ -45,6 +48,13 @@ export class AdminService {
     return this.calendarShareRepository.find({
       relations: ['calendar', 'user'],
       order: { sharedAt: 'DESC' },
+    });
+  }
+
+  async getAllReservations(): Promise<Reservation[]> {
+    return this.reservationRepository.find({
+      relations: ['resource', 'createdBy'],
+      order: { startTime: 'DESC' },
     });
   }
 
@@ -104,6 +114,21 @@ export class AdminService {
       throw new NotFoundException('User not found');
     }
 
+    // Delete related records first to avoid foreign key constraint violations
+
+    // Delete user's reservations
+    await this.reservationRepository.delete({ createdBy: { id: userId } });
+
+    // Delete user's calendar shares
+    await this.calendarShareRepository.delete({ userId: userId });
+
+    // Delete user's events
+    await this.eventRepository.delete({ createdById: userId });
+
+    // Delete user's calendars (this should cascade to events and shares)
+    await this.calendarRepository.delete({ ownerId: userId });
+
+    // Finally delete the user
     await this.userRepository.remove(user);
     return { message: 'User deleted successfully' };
   }

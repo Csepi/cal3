@@ -9,7 +9,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardHeader, Button } from '../ui';
 import { loadAdminData, formatAdminError } from './adminApiService';
-import { DatabaseStats } from './types';
+import type { DatabaseStats } from './types';
 
 export interface AdminStatsPanelProps {
   /** Current theme color for styling */

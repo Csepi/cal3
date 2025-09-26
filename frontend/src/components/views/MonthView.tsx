@@ -48,7 +48,9 @@ const MonthView: React.FC<MonthViewProps> = ({
 
     // Get all days for the 6-week calendar view
     const days: Date[] = [];
+
     for (let i = 0; i < 42; i++) {
+      // Create new date using setDate method to avoid floating point issues
       const day = new Date(startDate);
       day.setDate(startDate.getDate() + i);
       days.push(day);
@@ -59,10 +61,12 @@ const MonthView: React.FC<MonthViewProps> = ({
 
   const monthDays = getMonthDays();
   const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-  const reorderedDayNames = [
-    ...dayNames.slice(weekStartDay),
-    ...dayNames.slice(0, weekStartDay)
-  ];
+  const reorderedDayNames = weekStartDay === 0
+    ? dayNames
+    : [
+        ...dayNames.slice(weekStartDay),
+        ...dayNames.slice(0, weekStartDay)
+      ];
 
   // Get events for a specific date
   const getEventsForDate = (date: Date): Event[] => {
@@ -101,15 +105,18 @@ const MonthView: React.FC<MonthViewProps> = ({
   };
 
   const isToday = (date: Date): boolean => {
+    if (isNaN(date.getTime())) return false;
     return date.toDateString() === today.toDateString();
   };
 
   const isCurrentMonth = (date: Date): boolean => {
+    if (isNaN(date.getTime())) return false;
     return date.getMonth() === currentDate.getMonth();
   };
 
   const isSelectedDate = (date: Date): boolean => {
-    return selectedDate ? date.toDateString() === selectedDate.toDateString() : false;
+    if (isNaN(date.getTime()) || !selectedDate) return false;
+    return date.toDateString() === selectedDate.toDateString();
   };
 
   // Get events for selected date
@@ -121,9 +128,9 @@ const MonthView: React.FC<MonthViewProps> = ({
       <div className="flex-1 flex flex-col">
         {/* Day Headers */}
         <div className="grid grid-cols-7 border-b border-gray-200 bg-white/80 backdrop-blur-sm">
-          {reorderedDayNames.map(day => (
+          {reorderedDayNames.map((day, index) => (
             <div
-              key={day}
+              key={`day-header-${index}`}
               className="p-4 text-center text-sm font-medium text-gray-600 bg-gray-50 border-r border-gray-200 last:border-r-0"
             >
               {day}
@@ -138,9 +145,12 @@ const MonthView: React.FC<MonthViewProps> = ({
             const maxDisplayEvents = 3;
             const hasMoreEvents = dayEvents.length > maxDisplayEvents;
 
+            // Validate date before using toISOString()
+            const dateKey = !isNaN(date.getTime()) ? date.toISOString() : `invalid-date-${index}`;
+
             return (
               <div
-                key={date.toISOString()}
+                key={dateKey}
                 className={`border-r border-b border-gray-200 last:border-r-0 p-2 cursor-pointer hover:bg-gray-50 transition-colors ${
                   isSelectedDate(date) ? 'bg-blue-100 ring-2 ring-blue-300' : ''
                 } ${isToday(date) ? 'bg-blue-50' : ''}`}
@@ -155,7 +165,7 @@ const MonthView: React.FC<MonthViewProps> = ({
                       ? 'text-gray-900'
                       : 'text-gray-400'
                   }`}>
-                    {date.getDate()}
+                    {!isNaN(date.getTime()) ? date.getDate() : '?'}
                   </span>
 
                   {/* Event count indicator */}

@@ -18,8 +18,8 @@ export const USAGE_PLAN_OPTIONS = [
 
 // Time format options for user preferences
 export const TIME_FORMAT_OPTIONS = [
-  { value: '12', label: '12-hour (AM/PM)' },
-  { value: '24', label: '24-hour' }
+  { value: '12h', label: '12-hour (AM/PM)' },
+  { value: '24h', label: '24-hour' }
 ] as const;
 
 // Comprehensive timezone options organized by region
@@ -81,7 +81,6 @@ export const TIMEZONE_OPTIONS = [
   { name: 'Seoul', value: 'Asia/Seoul' },
   { name: 'Tokyo', value: 'Asia/Tokyo' },
   { name: 'Shanghai', value: 'Asia/Shanghai' },
-  { name: 'Beijing', value: 'Asia/Shanghai' },
   { name: 'Jakarta', value: 'Asia/Jakarta' },
   { name: 'Kuala Lumpur', value: 'Asia/Kuala_Lumpur' },
   { name: 'Ho Chi Minh City', value: 'Asia/Ho_Chi_Minh' },
@@ -96,11 +95,9 @@ export const TIMEZONE_OPTIONS = [
   { name: 'Sydney', value: 'Australia/Sydney' },
   { name: 'Melbourne', value: 'Australia/Melbourne' },
   { name: 'Hobart', value: 'Australia/Hobart' },
-  { name: 'Wellington', value: 'Pacific/Auckland' },
   { name: 'Auckland', value: 'Pacific/Auckland' },
   { name: 'Fiji', value: 'Pacific/Fiji' },
   { name: 'Honolulu', value: 'Pacific/Honolulu' },
-  { name: 'Anchorage', value: 'America/Anchorage' },
   { name: 'Guam', value: 'Pacific/Guam' },
   { name: 'Port Moresby', value: 'Pacific/Port_Moresby' }
 ] as const;

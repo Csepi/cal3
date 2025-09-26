@@ -147,7 +147,7 @@ const Dashboard: React.FC = () => {
   }
 
   return (
-    <div className={`min-h-screen bg-gradient-to-br ${themeConfig.gradients.background}`}>
+    <div className={`min-h-screen bg-gradient-to-br ${themeConfig.gradient.background}`}>
       {/* Header Navigation Bar */}
       <div className="bg-white/80 backdrop-blur-md border-b border-gray-200 sticky top-0 z-50 shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
@@ -155,20 +155,20 @@ const Dashboard: React.FC = () => {
           <div className="flex items-center space-x-6">
             <div className="text-gray-800">
               <span className="text-sm text-gray-600">Welcome,</span>
-              <span className={`ml-2 text-lg font-medium ${themeConfig.text.primary}`}>{user}</span>
+              <span className={`ml-2 text-lg font-medium text-${themeConfig.text}`}>{user}</span>
               {userRole === 'admin' && (
                 <span className="ml-3 px-3 py-1 bg-red-100 border border-red-300 text-red-700 text-xs rounded-full font-medium">🔥 Admin</span>
               )}
             </div>
 
             {/* Main Navigation Tabs */}
-            <div className={`flex space-x-1 bg-white/50 backdrop-blur-sm border-2 ${themeConfig.borders.primary} rounded-2xl p-1`}>
+            <div className={`flex space-x-1 bg-white/50 backdrop-blur-sm border-2 border-${themeConfig.border} rounded-2xl p-1`}>
               <button
                 onClick={() => setCurrentView('calendar')}
                 className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 ${
                   currentView === 'calendar'
-                    ? `${themeConfig.buttons.primary} text-white shadow-lg`
-                    : `${themeConfig.text.primary} hover:bg-white/50`
+                    ? `${themeConfig.button} text-white shadow-lg`
+                    : `text-${themeConfig.text} hover:bg-white/50`
                 }`}
               >
                 📅 Calendar
@@ -177,8 +177,8 @@ const Dashboard: React.FC = () => {
                 onClick={() => setCurrentView('profile')}
                 className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 ${
                   currentView === 'profile'
-                    ? `${themeConfig.buttons.primary} text-white shadow-lg`
-                    : `${themeConfig.text.primary} hover:bg-white/50`
+                    ? `${themeConfig.button} text-white shadow-lg`
+                    : `text-${themeConfig.text} hover:bg-white/50`
                 }`}
               >
                 👤 Profile
@@ -187,8 +187,8 @@ const Dashboard: React.FC = () => {
                 onClick={() => setCurrentView('sync')}
                 className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 ${
                   currentView === 'sync'
-                    ? `${themeConfig.buttons.primary} text-white shadow-lg`
-                    : `${themeConfig.text.primary} hover:bg-white/50`
+                    ? `${themeConfig.button} text-white shadow-lg`
+                    : `text-${themeConfig.text} hover:bg-white/50`
                 }`}
               >
                 🔄 Calendar Sync
@@ -197,8 +197,8 @@ const Dashboard: React.FC = () => {
                 onClick={() => setCurrentView('reservations')}
                 className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 ${
                   currentView === 'reservations'
-                    ? `${themeConfig.buttons.primary} text-white shadow-lg`
-                    : `${themeConfig.text.primary} hover:bg-white/50`
+                    ? `${themeConfig.button} text-white shadow-lg`
+                    : `text-${themeConfig.text} hover:bg-white/50`
                 }`}
               >
                 📅 Reservations

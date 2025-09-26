@@ -51,6 +51,13 @@ export class AdminController {
     return this.adminService.getAllCalendarShares();
   }
 
+  @Get('reservations')
+  @ApiOperation({ summary: 'Get all reservations (Admin only)' })
+  @ApiResponse({ status: 200, description: 'Reservations retrieved successfully' })
+  getAllReservations() {
+    return this.adminService.getAllReservations();
+  }
+
   @Get('stats')
   @ApiOperation({ summary: 'Get database statistics (Admin only)' })
   @ApiResponse({ status: 200, description: 'Statistics retrieved successfully' })

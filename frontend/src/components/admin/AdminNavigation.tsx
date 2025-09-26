@@ -7,7 +7,7 @@
  */
 
 import React from 'react';
-import { AdminTab } from './types';
+import type { AdminTab } from './types';
 import { getThemeConfig } from '../../constants';
 
 export interface AdminNavigationProps {

@@ -14,13 +14,17 @@
  */
 
 import React, { useState } from 'react';
-import LoadingScreen from './LoadingScreen';
+import { LoadingScreen } from './common';
 import { useLoadingProgress } from '../hooks/useLoadingProgress';
 import { getThemeConfig } from '../constants';
 import {
   AdminNavigation,
   AdminStatsPanel,
   AdminUserPanel,
+  AdminCalendarPanel,
+  AdminEventPanel,
+  AdminSharePanel,
+  AdminReservationPanel,
   type AdminTab
 } from './admin';
 
@@ -65,40 +69,13 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ themeColor = '#3b82f6' }) => {
         return <AdminUserPanel {...panelProps} />;
 
       case 'calendars':
-        return (
-          <div className="text-center py-12">
-            <div className="text-gray-400 text-4xl mb-4">📅</div>
-            <p className="text-gray-600 mb-4">Calendar Management</p>
-            <p className="text-gray-500 text-sm">This panel is under development</p>
-          </div>
-        );
-
+        return <AdminCalendarPanel {...panelProps} />;
       case 'events':
-        return (
-          <div className="text-center py-12">
-            <div className="text-gray-400 text-4xl mb-4">📝</div>
-            <p className="text-gray-600 mb-4">Event Management</p>
-            <p className="text-gray-500 text-sm">This panel is under development</p>
-          </div>
-        );
-
+        return <AdminEventPanel {...panelProps} />;
       case 'shares':
-        return (
-          <div className="text-center py-12">
-            <div className="text-gray-400 text-4xl mb-4">🤝</div>
-            <p className="text-gray-600 mb-4">Share Management</p>
-            <p className="text-gray-500 text-sm">This panel is under development</p>
-          </div>
-        );
-
+        return <AdminSharePanel {...panelProps} />;
       case 'reservations':
-        return (
-          <div className="text-center py-12">
-            <div className="text-gray-400 text-4xl mb-4">🏢</div>
-            <p className="text-gray-600 mb-4">Reservation Management</p>
-            <p className="text-gray-500 text-sm">This panel is under development</p>
-          </div>
-        );
+        return <AdminReservationPanel {...panelProps} />;
 
       default:
         return (

@@ -708,18 +708,6 @@ const CalendarSync: React.FC<CalendarSyncProps> = ({ themeColor }) => {
       </header>
 
       <main className="relative z-10 max-w-4xl mx-auto p-6 mt-12">
-        {/* Browser Extension Compatibility Notice */}
-        <div className="mb-6 backdrop-blur-md bg-blue-50/70 border border-blue-200 rounded-xl p-4 shadow-sm">
-          <div className="flex items-start space-x-3">
-            <div className="text-blue-500 text-xl">ℹ️</div>
-            <div>
-              <h4 className="font-medium text-blue-900 mb-1">Browser Extension Compatibility</h4>
-              <p className="text-blue-800 text-sm">
-                If you see "Extension context invalidated" errors, these are harmless browser extension interactions and won't affect calendar syncing functionality.
-              </p>
-            </div>
-          </div>
-        </div>
 
         <div className="space-y-8">
           {/* Provider Cards */}

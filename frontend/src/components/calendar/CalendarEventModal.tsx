@@ -7,8 +7,8 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { Modal, Button, Input, Card } from '../ui';
-import { getThemeConfig } from '../../constants';
+import { Button, Input, Card, SimpleModal } from '../ui';
+import { getThemeConfig, THEME_COLOR_OPTIONS } from '../../constants';
 import type { Event, CreateEventRequest, UpdateEventRequest, RecurrencePattern } from '../../types/Event';
 import type { Calendar as CalendarType } from '../../types/Calendar';
 import RecurrenceSelector from '../RecurrenceSelector';
@@ -36,6 +36,7 @@ export interface CalendarEventModalProps {
 
 /**
  * Modal component for comprehensive event creation and editing
+ * Updated to use SimpleModal for better rendering
  */
 export const CalendarEventModal: React.FC<CalendarEventModalProps> = ({
   isOpen,
@@ -96,7 +97,7 @@ export const CalendarEventModal: React.FC<CalendarEventModalProps> = ({
       } else {
         // Creating new event
         const defaultCalendar = calendars.find(cal => cal.name === 'Personal') || calendars[0];
-        const startDate = selectedDate ? selectedDate.toISOString().split('T')[0] : new Date().toISOString().split('T')[0];
+        const startDate = selectedDate && !isNaN(selectedDate.getTime()) ? selectedDate.toISOString().split('T')[0] : new Date().toISOString().split('T')[0];
 
         setEventForm({
           title: '',
@@ -197,9 +198,21 @@ export const CalendarEventModal: React.FC<CalendarEventModalProps> = ({
     if (!validateForm()) return;
 
     try {
+      // Transform recurrence pattern to backend format
+      const recurrenceData = recurrencePattern ? {
+        recurrenceType: recurrencePattern.type,
+        recurrenceRule: {
+          interval: recurrencePattern.interval,
+          daysOfWeek: recurrencePattern.daysOfWeek,
+          endType: recurrencePattern.endType,
+          count: recurrencePattern.count,
+          endDate: recurrencePattern.endDate
+        }
+      } : {};
+
       const eventData = {
         ...eventForm,
-        ...(recurrencePattern && { recurrencePattern })
+        ...recurrenceData
       } as CreateEventRequest | UpdateEventRequest;
 
       await onSave(eventData);
@@ -227,12 +240,11 @@ export const CalendarEventModal: React.FC<CalendarEventModalProps> = ({
   };
 
   return (
-    <Modal
+    <SimpleModal
       isOpen={isOpen}
       onClose={handleClose}
       title={editingEvent ? 'Edit Event' : 'Create New Event'}
       size="lg"
-      themeColor={themeColor}
     >
       <div className="space-y-6">
         {/* Error Message */}
@@ -388,13 +400,77 @@ export const CalendarEventModal: React.FC<CalendarEventModalProps> = ({
           padding="lg"
           themeColor={themeColor}
         >
-          <Input
-            label="Color"
-            type="color"
-            value={eventForm.color || themeColor}
-            onChange={(e) => handleFormChange('color', e.target.value)}
-            themeColor={themeColor}
-          />
+          <div className="space-y-4">
+            <p className="text-sm text-gray-600">
+              Choose a color to help identify this event visually
+            </p>
+
+            {/* Color Grid */}
+            <div className="grid grid-cols-4 gap-3">
+              {THEME_COLOR_OPTIONS.map((colorOption) => (
+                <button
+                  key={colorOption.value}
+                  onClick={() => handleFormChange('color', colorOption.value)}
+                  disabled={loading}
+                  className={`
+                    relative p-3 rounded-lg border-2 transition-all duration-200 hover:scale-105
+                    ${eventForm.color === colorOption.value
+                      ? 'border-gray-800 shadow-lg ring-2 ring-offset-2 ring-gray-300'
+                      : 'border-gray-200 hover:border-gray-300'
+                    }
+                  `}
+                  title={`Select ${colorOption.name} color`}
+                >
+                  {/* Color Preview Circle */}
+                  <div
+                    className="w-8 h-8 rounded-full mx-auto mb-2 shadow-md"
+                    style={{ backgroundColor: colorOption.value }}
+                  />
+
+                  {/* Color Name */}
+                  <div className="text-xs font-medium text-gray-700 text-center">
+                    {colorOption.name}
+                  </div>
+
+                  {/* Selected Indicator */}
+                  {eventForm.color === colorOption.value && (
+                    <div className="absolute -top-1 -right-1 w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
+                      <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                  )}
+                </button>
+              ))}
+            </div>
+
+            {/* Custom Color Input */}
+            <div className="pt-4 border-t border-gray-200">
+              <Input
+                label="Custom Color"
+                type="color"
+                value={eventForm.color || themeColor}
+                onChange={(e) => handleFormChange('color', e.target.value)}
+                themeColor={themeColor}
+              />
+            </div>
+
+            {/* Color Preview */}
+            <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
+              <div className="flex items-center space-x-3">
+                <div
+                  className="w-6 h-6 rounded-full border-2 border-white shadow-md"
+                  style={{ backgroundColor: eventForm.color || themeColor }}
+                />
+                <div>
+                  <p className="text-sm font-medium text-gray-800">Preview</p>
+                  <p className="text-xs text-gray-500">
+                    This color will be used for this event
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
         </Card>
 
         {/* Recurrence Pattern */}
@@ -404,8 +480,8 @@ export const CalendarEventModal: React.FC<CalendarEventModalProps> = ({
           themeColor={themeColor}
         >
           <RecurrenceSelector
-            recurrencePattern={recurrencePattern}
-            onRecurrenceChange={setRecurrencePattern}
+            value={recurrencePattern}
+            onChange={setRecurrencePattern}
             themeColor={themeColor}
           />
         </Card>
@@ -433,6 +509,6 @@ export const CalendarEventModal: React.FC<CalendarEventModalProps> = ({
           </Button>
         </div>
       </div>
-    </Modal>
+    </SimpleModal>
   );
 };

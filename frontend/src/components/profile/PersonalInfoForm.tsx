@@ -16,7 +16,7 @@ export interface PersonalInfoFormData {
   lastName: string;
   timezone: string;
   timeFormat: string;
-  usagePlans: string[];
+  usagePlans?: string[]; // Optional, for display purposes only
 }
 
 export interface PersonalInfoFormProps {
@@ -185,7 +185,7 @@ export const PersonalInfoForm: React.FC<PersonalInfoFormProps> = ({
               Usage Plans
             </label>
             <div className="flex flex-wrap gap-2">
-              {formData.usagePlans.map((plan) => (
+              {formData.usagePlans?.map((plan) => (
                 <span
                   key={plan}
                   className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 border border-blue-200"

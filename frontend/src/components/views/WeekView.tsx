@@ -7,7 +7,7 @@ interface WeekViewProps {
   onDateClick: (date: Date) => void;
   onEventClick: (event: Event) => void;
   onTimeRangeSelect?: (date: Date, startHour: number, endHour: number) => void;
-  weekStartDay: number; // 0 = Sunday, 1 = Monday
+  weekStartDay?: number; // 0 = Sunday, 1 = Monday, defaults to 1 (Monday)
   themeColor: string;
   reservations?: any[];
   userTimezone?: string;
@@ -20,7 +20,7 @@ const WeekView: React.FC<WeekViewProps> = ({
   onDateClick,
   onEventClick,
   onTimeRangeSelect,
-  weekStartDay,
+  weekStartDay = 1, // Default to Monday
   themeColor,
   reservations = [],
   userTimezone,
@@ -41,9 +41,13 @@ const WeekView: React.FC<WeekViewProps> = ({
 
   // Get the start of the week
   const getWeekStart = (date: Date): Date => {
+    if (!date || isNaN(date.getTime())) {
+      return new Date(); // fallback to current date
+    }
+
     const day = date.getDay();
     const diff = (day + 7 - weekStartDay) % 7;
-    const weekStart = new Date(date);
+    const weekStart = new Date(date.getTime());
     weekStart.setDate(date.getDate() - diff);
     weekStart.setHours(0, 0, 0, 0);
     return weekStart;
@@ -217,6 +221,9 @@ const WeekView: React.FC<WeekViewProps> = ({
   };
 
   const formatDate = (date: Date): string => {
+    if (!date || isNaN(date.getTime())) {
+      return '?';
+    }
     return date.getDate().toString();
   };
 
@@ -347,7 +354,7 @@ const WeekView: React.FC<WeekViewProps> = ({
         {/* Day headers */}
         {weekDays.map((day, index) => (
           <div
-            key={day.toISOString()}
+            key={`day-header-${index}`}
             className={`flex-1 border-r border-gray-200 p-4 text-center cursor-pointer hover:bg-gray-50 transition-colors ${
               isToday(day) ? 'bg-blue-50' : ''
             }`}
@@ -384,14 +391,14 @@ const WeekView: React.FC<WeekViewProps> = ({
             </div>
 
             {/* Day columns */}
-            {weekDays.map(day => {
+            {weekDays.map((day, dayIndex) => {
               const eventsStartingHere = getEventsStartingAtHour(day, hour);
               const reservationsStartingHere = getReservationsStartingAtHour(day, hour);
               const allDayEvents = getEventsForDay(day);
 
               return (
                 <div
-                  key={`${day.toISOString()}-${hour}`}
+                  key={`day-${dayIndex}-hour-${hour}`}
                   className={`flex-1 border-r border-gray-200 p-1 min-h-[60px] relative cursor-pointer ${
                     hour % 2 === 0 ? 'bg-white' : 'bg-gray-50/30'
                   } ${isToday(day) ? 'bg-blue-50/30' : ''} ${

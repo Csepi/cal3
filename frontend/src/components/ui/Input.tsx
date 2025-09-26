@@ -47,6 +47,9 @@ export const Input: React.FC<InputProps> = ({
   id,
   ...props
 }) => {
+  // Filter out non-standard HTML attributes
+  const { multiline, ...inputProps } = props as any;
+
   // Get theme configuration
   const themeConfig = themeColor ? getThemeConfig(themeColor) : null;
 
@@ -141,7 +144,7 @@ export const Input: React.FC<InputProps> = ({
         <input
           id={inputId}
           className={inputClasses}
-          {...props}
+          {...inputProps}
         />
       </div>
 

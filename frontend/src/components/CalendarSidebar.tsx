@@ -17,8 +17,8 @@ interface CalendarSidebarProps {
 }
 
 const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
-  calendars,
-  selectedCalendars,
+  calendars = [],
+  selectedCalendars = [],
   onToggleCalendar,
   onSelectAll,
   onDeselectAll,

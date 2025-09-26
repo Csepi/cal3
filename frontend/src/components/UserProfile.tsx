@@ -44,8 +44,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ onThemeChange, currentTheme }
     firstName: '',
     lastName: '',
     timezone: '',
-    timeFormat: '',
-    usagePlans: ['user']
+    timeFormat: ''
   });
 
   const [passwordForm, setPasswordForm] = useState<PasswordFormData>({
@@ -182,7 +181,8 @@ const UserProfile: React.FC<UserProfileProps> = ({ onThemeChange, currentTheme }
       setProfileLoading(true);
       setError(null);
 
-      await apiService.updateUserProfile(profileForm);
+      const { usagePlans, ...profileData } = profileForm;
+      await apiService.updateUserProfile(profileData);
 
       setSuccess('Profile updated successfully!');
       setTimeout(() => setSuccess(null), 3000);

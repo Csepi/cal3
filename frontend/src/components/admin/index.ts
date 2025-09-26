@@ -14,4 +14,8 @@ export * from './adminApiService';
 // Components
 export * from './AdminStatsPanel';
 export * from './AdminUserPanel';
+export * from './AdminCalendarPanel';
+export * from './AdminEventPanel';
+export * from './AdminSharePanel';
+export * from './AdminReservationPanel';
 export * from './AdminNavigation';

@@ -7,7 +7,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { Modal, Button, Input, Card } from '../ui';
+import { SimpleModal, Button, Input, Card } from '../ui';
 import { getThemeConfig, THEME_COLOR_OPTIONS } from '../../constants';
 import type { Calendar as CalendarType, CreateCalendarRequest, UpdateCalendarRequest } from '../../types/Calendar';
 import { apiService } from '../../services/api';
@@ -29,6 +29,7 @@ export interface CalendarManagerProps {
 
 /**
  * Comprehensive calendar management modal component
+ * Updated to use SimpleModal for better rendering
  */
 export const CalendarManager: React.FC<CalendarManagerProps> = ({
   isOpen,
@@ -192,12 +193,11 @@ export const CalendarManager: React.FC<CalendarManagerProps> = ({
   };
 
   return (
-    <Modal
+    <SimpleModal
       isOpen={isOpen}
       onClose={handleClose}
       title={editingCalendar ? 'Edit Calendar' : 'Create New Calendar'}
       size="md"
-      themeColor={themeColor}
     >
       <div className="space-y-6">
         {/* Error Message */}
@@ -377,6 +377,6 @@ export const CalendarManager: React.FC<CalendarManagerProps> = ({
           </div>
         )}
       </div>
-    </Modal>
+    </SimpleModal>
   );
 };

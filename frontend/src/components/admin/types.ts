@@ -48,9 +48,34 @@ export interface Event {
 export interface CalendarShare {
   id: number;
   permission: string;
-  sharedAt: string;
+  createdAt: string;
   calendar: Calendar;
-  user: User;
+  sharedWith: User;
+}
+
+export interface Resource {
+  id: number;
+  name: string;
+  resourceType: ResourceType;
+}
+
+export interface ResourceType {
+  id: number;
+  name: string;
+}
+
+export interface Reservation {
+  id: number;
+  title: string;
+  description?: string;
+  startTime: string;
+  endTime: string;
+  status: string;
+  isRecurring: boolean;
+  recurrencePattern?: Record<string, any>;
+  resource: Resource;
+  createdBy: User;
+  createdAt: string;
 }
 
 export interface DatabaseStats {

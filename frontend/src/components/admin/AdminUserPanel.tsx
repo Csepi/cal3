@@ -8,8 +8,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { Card, CardHeader, Button, Input } from '../ui';
-import { loadAdminData, formatAdminError, bulkDelete, bulkUpdateUsagePlans } from './adminApiService';
-import { User, SelectionState } from './types';
+import { loadAdminData, formatAdminError, bulkDelete, bulkUpdateUsagePlans, adminApiCall, getAdminToken } from './adminApiService';
+import type { User, SelectionState } from './types';
 import { USAGE_PLAN_OPTIONS } from '../../constants';
 
 export interface AdminUserPanelProps {
@@ -177,6 +177,76 @@ export const AdminUserPanel: React.FC<AdminUserPanelProps> = ({
 
     } catch (err) {
       console.error('Error in bulk delete:', err);
+      setError(formatAdminError(err));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /**
+   * Delete a single user
+   */
+  const handleDeleteUser = async (userId: number, username: string) => {
+    const confirmMessage = `Are you sure you want to delete user "${username}"? This action cannot be undone.`;
+    if (!window.confirm(confirmMessage)) return;
+
+    try {
+      setLoading(true);
+      const token = getAdminToken();
+      if (!token) {
+        throw new Error('No admin token found. Please login as admin.');
+      }
+
+      await adminApiCall({
+        endpoint: `/admin/users/${userId}`,
+        token,
+        method: 'DELETE'
+      });
+
+      // Reload users to reflect changes
+      await loadUsers();
+    } catch (err) {
+      console.error('Error deleting user:', err);
+      setError(formatAdminError(err));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /**
+   * Handle user edit (placeholder for future modal implementation)
+   */
+  const handleEditUser = async (user: User) => {
+    // For now, we'll implement a simple prompt-based edit
+    // In a real application, this would open a modal with a proper form
+
+    const newUsername = window.prompt('Enter new username:', user.username);
+    if (!newUsername || newUsername === user.username) return;
+
+    const newEmail = window.prompt('Enter new email:', user.email);
+    if (!newEmail || newEmail === user.email) return;
+
+    try {
+      setLoading(true);
+      const token = getAdminToken();
+      if (!token) {
+        throw new Error('No admin token found. Please login as admin.');
+      }
+
+      await adminApiCall({
+        endpoint: `/admin/users/${user.id}`,
+        token,
+        method: 'PATCH',
+        data: {
+          username: newUsername,
+          email: newEmail
+        }
+      });
+
+      // Reload users to reflect changes
+      await loadUsers();
+    } catch (err) {
+      console.error('Error updating user:', err);
       setError(formatAdminError(err));
     } finally {
       setLoading(false);
@@ -451,6 +521,8 @@ export const AdminUserPanel: React.FC<AdminUserPanelProps> = ({
                         variant="outline"
                         size="sm"
                         themeColor={themeColor}
+                        onClick={() => handleEditUser(user)}
+                        disabled={loading}
                       >
                         Edit
                       </Button>
@@ -458,6 +530,8 @@ export const AdminUserPanel: React.FC<AdminUserPanelProps> = ({
                         variant="outline"
                         size="sm"
                         className="text-red-600 border-red-600 hover:bg-red-50"
+                        onClick={() => handleDeleteUser(user.id, user.username)}
+                        disabled={loading}
                       >
                         Delete
                       </Button>

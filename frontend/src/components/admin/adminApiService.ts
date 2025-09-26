@@ -5,7 +5,7 @@
  * including authentication, error handling, and common operations.
  */
 
-import { AdminApiOptions, BulkOperationResult } from './types';
+import type { AdminApiOptions, BulkOperationResult } from './types';
 
 /**
  * Get admin authentication token with fallback logic
