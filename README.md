@@ -30,7 +30,8 @@ Cal3 is a comprehensive, full-stack calendar and reservation management system b
 
 ### 👤 **User Management & Admin Panel**
 - **Role-Based Access**: Admin and user roles with appropriate permissions
-- **User Profiles**: Personal settings, timezone preferences, and theme selection
+- **User Profiles**: Personal settings, timezone preferences, theme selection, and time format settings
+- **Time Format Settings**: 12-hour and 24-hour format support across calendar views and event management
 - **Usage Plans**: Flexible user tier system (Child, User, Store, Enterprise)
 - **Admin Dashboard**: Comprehensive user management with bulk operations
 - **Profile Customization**: 16 theme colors and personalized settings
@@ -165,6 +166,7 @@ npm run dev -- --port 8080
 
 **Week View**
 - Hourly time slots with precise event positioning
+- User-configurable time format (12-hour AM/PM or 24-hour)
 - Drag-to-select time ranges for new events
 - Reservation blocks with status indicators
 - Mobile-responsive design

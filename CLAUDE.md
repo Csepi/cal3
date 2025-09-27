@@ -29,14 +29,15 @@ cd backend-nestjs && npm run seed
 ## Current Development Status
 
 ### ✅ Recently Completed Features
-1. **Admin Usage Plan Management** - Individual and bulk modification of user usage plans with set/add/remove operations
-2. **Expanded Color Palette** - 16 total theme colors in rainbow order including Sky (#0ea5e9) and Violet (#7c3aed)
-3. **Usage Plans Read-Only Display** - User profile shows usage plans as non-editable badges in Account Information
-4. **Comprehensive Timezone Support** - 70+ world timezones covering all continents
-5. **Week View Time Range Selection** - Mouse drag functionality for creating events
-6. **Profile Color Theming** - Applied to monthly and weekly view backgrounds with consistent gradients
-7. **Modernized UI** - Softer gradients, backdrop-blur effects, improved readability
-8. **Browser Extension Error Handling** - Robust suppression of extension context errors
+1. **Hour Format Settings Integration** - User profile time format (12h/24h) now applies to WeekView and CalendarEventModal
+2. **Admin Usage Plan Management** - Individual and bulk modification of user usage plans with set/add/remove operations
+3. **Expanded Color Palette** - 16 total theme colors in rainbow order including Sky (#0ea5e9) and Violet (#7c3aed)
+4. **Usage Plans Read-Only Display** - User profile shows usage plans as non-editable badges in Account Information
+5. **Comprehensive Timezone Support** - 70+ world timezones covering all continents
+6. **Week View Time Range Selection** - Mouse drag functionality for creating events
+7. **Profile Color Theming** - Applied to monthly and weekly view backgrounds with consistent gradients
+8. **Modernized UI** - Softer gradients, backdrop-blur effects, improved readability
+9. **Browser Extension Error Handling** - Robust suppression of extension context errors
 
 ### 🔧 Key Components Structure
 ```
@@ -106,6 +107,14 @@ Events use the `Event` interface in `types/Event.ts`:
 - Support for all-day events
 - Color coding and calendar association
 - Timezone-aware date handling
+
+### Time Format Implementation
+Time format settings flow from user profile through component hierarchy:
+- **Profile Setting**: Users select '12h' or '24h' format in UserProfile.tsx
+- **Data Flow**: Dashboard → Calendar → EnhancedCalendar → WeekView/CalendarEventModal
+- **Format Conversion**: '12h'/'24h' from profile converts to '12'/'24' for WeekView API
+- **Default Values**: Falls back to '12h' format when user preference unavailable
+- **Components Updated**: Calendar.tsx, Dashboard.tsx, EnhancedCalendar.tsx, CalendarEventModal.tsx
 
 ### Usage Plans Management
 Usage plans control feature access and are managed by admins:
@@ -286,3 +295,30 @@ cd backend-nestjs && npm run migration:drop && npm run migration:run
 ```
 
 This guide should help future AI sessions understand the current state and continue development effectively.
+
+## Documentation Status
+
+### 📚 Current Documentation
+All primary documentation has been updated to reflect the current application state:
+- **README.md** - Comprehensive project overview with latest features including hour format settings
+- **API_DOCUMENTATION.md** - Complete API reference with all endpoints and examples
+- **DEPLOYMENT.md** - Full deployment guide covering multiple platforms and configurations
+- **setup-guide.md** - Complete setup instructions from initial installation to running application
+- **frontend/README.md** - Detailed frontend architecture and development guide
+- **backend-nestjs/README.md** - Complete backend documentation and API development guide
+- **CLAUDE.md** - This development guide with latest features and patterns
+
+### ⚠️ Legacy Documentation Files
+These files exist but are outdated and should not be used for current development:
+- **REACT-DEPLOYMENT.md** - Old deployment guide (replaced by DEPLOYMENT.md)
+- **SSO.md** - Legacy SSO setup (integrated into setup-guide.md)
+- **Google Sync.md** - Outdated sync documentation (covered in API_DOCUMENTATION.md)
+- **RESERVATION_SYSTEM_PLAN.md** - Planning document (features now implemented)
+
+### 📝 Documentation Maintenance
+All current documentation reflects:
+- Hour format settings integration across components
+- Latest 16-color theming system
+- Updated API endpoints and authentication
+- Modern deployment practices
+- Current development workflow and patterns

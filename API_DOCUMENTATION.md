@@ -211,6 +211,8 @@ Update user profile information.
 }
 ```
 
+**Note:** The `timeFormat` setting is now fully integrated across the frontend, affecting the display format in WeekView calendar and CalendarEventModal components. Changes to this setting are immediately reflected in all calendar views.
+
 **Response (200 OK):**
 ```json
 {
