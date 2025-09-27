@@ -28,6 +28,8 @@ export interface CalendarEventModalProps {
   selectedDate?: Date | null;
   /** Current theme color */
   themeColor: string;
+  /** Time format preference (12h/24h) */
+  timeFormat?: string;
   /** Error message to display */
   error?: string | null;
   /** Whether the form is currently submitting */
@@ -46,6 +48,7 @@ export const CalendarEventModal: React.FC<CalendarEventModalProps> = ({
   calendars,
   selectedDate,
   themeColor,
+  timeFormat = '12h',
   error,
   loading = false
 }) => {

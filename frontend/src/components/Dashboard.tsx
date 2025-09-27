@@ -231,7 +231,7 @@ const Dashboard: React.FC = () => {
       {/* Main Content Area - Conditionally Rendered Based on Active View */}
       <div className="relative">
         {currentView === 'calendar' && (
-          <Calendar themeColor={themeColor} />
+          <Calendar themeColor={themeColor} timeFormat={userProfile?.timeFormat || '12h'} />
         )}
         {currentView === 'profile' && (
           <UserProfile
