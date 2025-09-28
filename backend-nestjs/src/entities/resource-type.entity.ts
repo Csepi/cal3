@@ -40,6 +40,9 @@ export class ResourceType {
   @Column({ default: true })
   isActive: boolean;
 
+  @Column()
+  organisationId: number;
+
   @ManyToOne(() => Organisation, (organisation) => organisation.resourceTypes)
   organisation: Organisation;
 

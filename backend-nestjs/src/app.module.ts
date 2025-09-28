@@ -14,12 +14,17 @@ import { ResourceTypesModule } from './resource-types/resource-types.module';
 import { ResourcesModule } from './resources/resources.module';
 import { ReservationsModule } from './reservations/reservations.module';
 import { UserProfileController } from './controllers/user-profile.controller';
+import { UserPermissionsController } from './controllers/user-permissions.controller';
+import { CommonModule } from './common/common.module';
 import { User } from './entities/user.entity';
 import { Calendar, CalendarShare } from './entities/calendar.entity';
 import { Event } from './entities/event.entity';
 import { CalendarSyncConnection, SyncedCalendar, SyncEventMapping } from './entities/calendar-sync.entity';
 import { Organisation } from './entities/organisation.entity';
 import { OrganisationAdmin } from './entities/organisation-admin.entity';
+import { OrganisationUser } from './entities/organisation-user.entity';
+import { OrganisationResourceTypePermission } from './entities/organisation-resource-type-permission.entity';
+import { OrganisationCalendarPermission } from './entities/organisation-calendar-permission.entity';
 import { ReservationCalendar } from './entities/reservation-calendar.entity';
 import { ReservationCalendarRole } from './entities/reservation-calendar-role.entity';
 import { ResourceType } from './entities/resource-type.entity';
@@ -40,14 +45,14 @@ import { Reservation } from './entities/reservation.entity';
         username: process.env.DB_USERNAME || 'db_admin',
         password: process.env.DB_PASSWORD || 'Enter.Enter',
         database: process.env.DB_NAME || 'cal3',
-        entities: [User, Calendar, CalendarShare, Event, CalendarSyncConnection, SyncedCalendar, SyncEventMapping, Organisation, OrganisationAdmin, ReservationCalendar, ReservationCalendarRole, ResourceType, Resource, OperatingHours, Reservation],
+        entities: [User, Calendar, CalendarShare, Event, CalendarSyncConnection, SyncedCalendar, SyncEventMapping, Organisation, OrganisationAdmin, OrganisationUser, OrganisationResourceTypePermission, OrganisationCalendarPermission, ReservationCalendar, ReservationCalendarRole, ResourceType, Resource, OperatingHours, Reservation],
         synchronize: process.env.NODE_ENV !== 'production',
         ssl: { rejectUnauthorized: false },
         logging: process.env.NODE_ENV === 'development',
       } : {
         type: 'sqlite',
         database: process.env.DB_DATABASE || 'cal3.db',
-        entities: [User, Calendar, CalendarShare, Event, CalendarSyncConnection, SyncedCalendar, SyncEventMapping, Organisation, OrganisationAdmin, ReservationCalendar, ReservationCalendarRole, ResourceType, Resource, OperatingHours, Reservation],
+        entities: [User, Calendar, CalendarShare, Event, CalendarSyncConnection, SyncedCalendar, SyncEventMapping, Organisation, OrganisationAdmin, OrganisationUser, OrganisationResourceTypePermission, OrganisationCalendarPermission, ReservationCalendar, ReservationCalendarRole, ResourceType, Resource, OperatingHours, Reservation],
         synchronize: true,
         logging: process.env.NODE_ENV === 'development',
       }
@@ -62,9 +67,10 @@ import { Reservation } from './entities/reservation.entity';
     ResourceTypesModule,
     ResourcesModule,
     ReservationsModule,
+    CommonModule,
     TypeOrmModule.forFeature([User]),
   ],
-  controllers: [AppController, UserProfileController],
+  controllers: [AppController, UserProfileController, UserPermissionsController],
   providers: [AppService],
 })
 export class AppModule {}

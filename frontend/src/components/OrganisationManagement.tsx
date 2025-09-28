@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { apiService } from '../services/api';
+import { UserPermissionsService } from '../services/userPermissions';
+import OrganisationUserManagement from './OrganisationUserManagement';
 
 interface Organisation {
   id: number;
@@ -31,9 +33,31 @@ const OrganisationManagement: React.FC<OrganisationManagementProps> = ({ themeCo
     email: ''
   });
 
+  // User permissions state
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+  const [permissionsLoading, setPermissionsLoading] = useState(true);
+
   useEffect(() => {
-    loadOrganisations();
+    loadUserPermissions();
   }, []);
+
+  useEffect(() => {
+    if (!permissionsLoading) {
+      loadOrganisations();
+    }
+  }, [permissionsLoading, isSuperAdmin]);
+
+  const loadUserPermissions = async () => {
+    try {
+      const permissions = await UserPermissionsService.getUserPermissions();
+      setIsSuperAdmin(permissions.isSuperAdmin);
+    } catch (err) {
+      console.error('Failed to load permissions:', err);
+      setIsSuperAdmin(false);
+    } finally {
+      setPermissionsLoading(false);
+    }
+  };
 
   const loadOrganisations = async () => {
     setLoading(true);
@@ -142,10 +166,26 @@ const OrganisationManagement: React.FC<OrganisationManagementProps> = ({ themeCo
     setShowModal(true);
   };
 
+  // Show loading state while permissions are being checked
+  if (permissionsLoading) {
+    return (
+      <div className="flex justify-center items-center py-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+        <span className="ml-2 text-gray-600">Loading permissions...</span>
+      </div>
+    );
+  }
+
+  // Show organization user management for non-super-admin users
+  if (!isSuperAdmin) {
+    return <OrganisationUserManagement themeColor={themeColor} />;
+  }
+
+  // Show organization CRUD for super admins
   return (
     <div>
       <div className="mb-6 flex justify-between items-center">
-        <h3 className="text-xl font-medium text-gray-800">Organisations</h3>
+        <h3 className="text-xl font-medium text-gray-800">Organisations (Admin)</h3>
         <button
           onClick={openCreateModal}
           className="bg-blue-500 text-white px-4 py-2 rounded-xl hover:bg-blue-600 transition-all duration-200 flex items-center gap-2"

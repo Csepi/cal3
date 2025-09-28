@@ -8,6 +8,8 @@ import { OrganisationsService } from './organisations.service';
 import { OrganisationAdminController } from './organisation-admin.controller';
 import { OrganisationAdminService } from './organisation-admin.service';
 import { CalendarsModule } from '../calendars/calendars.module';
+import { CommonModule } from '../common/common.module';
+import { AdminGuard } from '../auth/guards/admin.guard';
 
 @Module({
   imports: [
@@ -16,7 +18,8 @@ import { CalendarsModule } from '../calendars/calendars.module';
       OrganisationAdmin,
       User
     ]),
-    CalendarsModule
+    CalendarsModule,
+    CommonModule // This imports UserPermissionsService
   ],
   controllers: [
     OrganisationsController,
@@ -24,7 +27,8 @@ import { CalendarsModule } from '../calendars/calendars.module';
   ],
   providers: [
     OrganisationsService,
-    OrganisationAdminService
+    OrganisationAdminService,
+    AdminGuard
   ],
   exports: [
     OrganisationsService,

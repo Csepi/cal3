@@ -1,8 +1,9 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Organisation } from '../entities/organisation.entity';
 import { User } from '../entities/user.entity';
+import { OrganisationUser, OrganisationRoleType } from '../entities/organisation-user.entity';
 import { CreateOrganisationDto, UpdateOrganisationDto } from '../dto/organisation.dto';
 
 @Injectable()
@@ -12,6 +13,8 @@ export class OrganisationsService {
     private organisationRepository: Repository<Organisation>,
     @InjectRepository(User)
     private userRepository: Repository<User>,
+    @InjectRepository(OrganisationUser)
+    private organisationUserRepository: Repository<OrganisationUser>,
   ) {}
 
   async create(createDto: CreateOrganisationDto): Promise<Organisation> {

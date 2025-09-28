@@ -23,6 +23,7 @@ import UserProfile from './UserProfile';
 import CalendarSync from './sync/CalendarSync';
 import ReservationsPanel from './ReservationsPanel';
 import { apiService } from '../services/api';
+import { UserPermissionsService } from '../services/userPermissions';
 import { THEME_COLORS, getThemeConfig } from '../constants/theme';
 
 /**
@@ -39,6 +40,10 @@ const Dashboard: React.FC = () => {
   const [currentView, setCurrentView] = useState<DashboardView>('calendar');
   const [themeColor, setThemeColor] = useState<string>(THEME_COLORS.BLUE);
   const [userProfile, setUserProfile] = useState<any>(null);
+
+  // Permissions state
+  const [canAccessReservations, setCanAccessReservations] = useState<boolean>(false);
+  const [permissionsLoading, setPermissionsLoading] = useState<boolean>(true);
 
   /**
    * Handles user login and initializes user session
@@ -68,6 +73,9 @@ const Dashboard: React.FC = () => {
 
     // Load complete user profile from server
     loadUserProfile();
+
+    // Load user permissions
+    loadUserPermissions();
   };
 
   /**
@@ -82,11 +90,18 @@ const Dashboard: React.FC = () => {
     setThemeColor(THEME_COLORS.BLUE);
     setUserProfile(null);
 
+    // Reset permissions state
+    setCanAccessReservations(false);
+    setPermissionsLoading(true);
+
     // Clear all authentication data from localStorage
     localStorage.removeItem('username');
     localStorage.removeItem('userRole');
     localStorage.removeItem('authToken');
     localStorage.removeItem('admin_token');
+
+    // Clear permissions cache
+    UserPermissionsService.clearCache();
 
     // Notify API service to clear any cached tokens
     apiService.logout();
@@ -107,6 +122,23 @@ const Dashboard: React.FC = () => {
       }
     } catch (err) {
       console.warn('Could not load user profile:', err);
+    }
+  };
+
+  /**
+   * Loads user permissions from the server
+   * Called after login and when permissions need to be refreshed
+   */
+  const loadUserPermissions = async () => {
+    try {
+      setPermissionsLoading(true);
+      const hasReservationAccess = await UserPermissionsService.canAccessReservations();
+      setCanAccessReservations(hasReservationAccess);
+    } catch (err) {
+      console.warn('Could not load user permissions:', err);
+      setCanAccessReservations(false);
+    } finally {
+      setPermissionsLoading(false);
     }
   };
 
@@ -132,12 +164,20 @@ const Dashboard: React.FC = () => {
     }
   }, []);
 
-  // Load user profile on component mount if logged in
+  // Load user profile and permissions on component mount if logged in
   useEffect(() => {
     if (user && apiService.isAuthenticated()) {
       loadUserProfile();
+      loadUserPermissions();
     }
   }, [user]);
+
+  // Redirect to calendar if user loses access to current view
+  useEffect(() => {
+    if (!permissionsLoading && currentView === 'reservations' && !canAccessReservations) {
+      setCurrentView('calendar');
+    }
+  }, [permissionsLoading, currentView, canAccessReservations]);
 
   // Get centralized theme configuration
   const themeConfig = getThemeConfig(themeColor);
@@ -193,16 +233,19 @@ const Dashboard: React.FC = () => {
               >
                 🔄 Calendar Sync
               </button>
-              <button
-                onClick={() => setCurrentView('reservations')}
-                className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 ${
-                  currentView === 'reservations'
-                    ? `${themeConfig.button} text-white shadow-lg`
-                    : `text-${themeConfig.text} hover:bg-white/50`
-                }`}
-              >
-                📅 Reservations
-              </button>
+              {/* Conditionally show Reservations tab based on user permissions */}
+              {canAccessReservations && (
+                <button
+                  onClick={() => setCurrentView('reservations')}
+                  className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 ${
+                    currentView === 'reservations'
+                      ? `${themeConfig.button} text-white shadow-lg`
+                      : `text-${themeConfig.text} hover:bg-white/50`
+                  }`}
+                >
+                  📅 Reservations
+                </button>
+              )}
               {userRole === 'admin' && (
                 <button
                   onClick={() => setCurrentView('admin')}
@@ -242,7 +285,7 @@ const Dashboard: React.FC = () => {
         {currentView === 'sync' && (
           <CalendarSync themeColor={themeColor} />
         )}
-        {currentView === 'reservations' && (
+        {currentView === 'reservations' && canAccessReservations && (
           <ReservationsPanel themeColor={themeColor} />
         )}
         {/* Admin Panel - Only accessible to admin users */}

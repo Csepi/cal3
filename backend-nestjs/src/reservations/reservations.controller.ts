@@ -1,12 +1,17 @@
-import { Controller, Get, Post, Patch, Delete, Body, Param, Query, UseGuards, Req } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, Body, Param, Query, UseGuards, Req, ForbiddenException } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { ReservationAccessGuard } from '../auth/guards/reservation-access.guard';
 import { ReservationsService } from './reservations.service';
 import { CreateReservationDto, UpdateReservationDto } from '../dto/reservation.dto';
+import { UserPermissionsService } from '../common/services/user-permissions.service';
 
 @Controller('reservations')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, ReservationAccessGuard) // Require both authentication and reservation access
 export class ReservationsController {
-  constructor(private readonly reservationsService: ReservationsService) {}
+  constructor(
+    private readonly reservationsService: ReservationsService,
+    private readonly userPermissionsService: UserPermissionsService,
+  ) {}
 
   @Post()
   async create(@Body() createDto: CreateReservationDto, @Req() req) {

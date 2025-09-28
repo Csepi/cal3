@@ -43,6 +43,12 @@ export const AdminUserPanel: React.FC<AdminUserPanelProps> = ({
   const [roleFilter, setRoleFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
 
+  // Organization management state
+  const [showOrgManagementModal, setShowOrgManagementModal] = useState(false);
+  const [selectedUserForOrgs, setSelectedUserForOrgs] = useState<User | null>(null);
+  const [userOrganizations, setUserOrganizations] = useState<any[]>([]);
+  const [availableOrganizations, setAvailableOrganizations] = useState<any[]>([]);
+
   /**
    * Load users from the API with progress tracking
    */
@@ -247,6 +253,111 @@ export const AdminUserPanel: React.FC<AdminUserPanelProps> = ({
       await loadUsers();
     } catch (err) {
       console.error('Error updating user:', err);
+      setError(formatAdminError(err));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /**
+   * Handle organization management for a user
+   */
+  const handleManageOrganizations = async (user: User) => {
+    setSelectedUserForOrgs(user);
+    setShowOrgManagementModal(true);
+
+    try {
+      setLoading(true);
+      const token = getAdminToken();
+      if (!token) {
+        throw new Error('No admin token found. Please login as admin.');
+      }
+
+      // Load user's current organizations
+      const userOrgsResponse = await adminApiCall({
+        endpoint: `/admin/users/${user.id}/organizations`,
+        token,
+        method: 'GET'
+      });
+      setUserOrganizations(userOrgsResponse);
+
+      // Load all available organizations
+      const allOrgsResponse = await adminApiCall({
+        endpoint: '/admin/organizations',
+        token,
+        method: 'GET'
+      });
+      setAvailableOrganizations(allOrgsResponse);
+
+    } catch (err) {
+      console.error('Error loading organizations for user:', err);
+      setError(formatAdminError(err));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /**
+   * Add user to organization with a specific role
+   */
+  const handleAddUserToOrganization = async (organizationId: number, role: 'admin' | 'editor' | 'user') => {
+    if (!selectedUserForOrgs) return;
+
+    try {
+      setLoading(true);
+      const token = getAdminToken();
+      if (!token) {
+        throw new Error('No admin token found. Please login as admin.');
+      }
+
+      await adminApiCall({
+        endpoint: `/admin/organizations/${organizationId}/users`,
+        token,
+        method: 'POST',
+        data: {
+          userId: selectedUserForOrgs.id,
+          role: role
+        }
+      });
+
+      // Reload user organizations
+      await handleManageOrganizations(selectedUserForOrgs);
+
+    } catch (err) {
+      console.error('Error adding user to organization:', err);
+      setError(formatAdminError(err));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /**
+   * Remove user from organization
+   */
+  const handleRemoveUserFromOrganization = async (organizationId: number) => {
+    if (!selectedUserForOrgs) return;
+
+    const confirmMessage = `Are you sure you want to remove ${getUserDisplayName(selectedUserForOrgs)} from this organization?`;
+    if (!window.confirm(confirmMessage)) return;
+
+    try {
+      setLoading(true);
+      const token = getAdminToken();
+      if (!token) {
+        throw new Error('No admin token found. Please login as admin.');
+      }
+
+      await adminApiCall({
+        endpoint: `/admin/organizations/${organizationId}/users/${selectedUserForOrgs.id}`,
+        token,
+        method: 'DELETE'
+      });
+
+      // Reload user organizations
+      await handleManageOrganizations(selectedUserForOrgs);
+
+    } catch (err) {
+      console.error('Error removing user from organization:', err);
       setError(formatAdminError(err));
     } finally {
       setLoading(false);
@@ -526,6 +637,19 @@ export const AdminUserPanel: React.FC<AdminUserPanelProps> = ({
                       >
                         Edit
                       </Button>
+                      {/* Organization Management Button - Only for Store/Enterprise users */}
+                      {(user.usagePlans?.includes('STORE') || user.usagePlans?.includes('ENTERPRISE')) && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="text-blue-600 border-blue-600 hover:bg-blue-50"
+                          onClick={() => handleManageOrganizations(user)}
+                          disabled={loading}
+                          title="Manage organization membership"
+                        >
+                          Organizations
+                        </Button>
+                      )}
                       <Button
                         variant="outline"
                         size="sm"
@@ -572,6 +696,120 @@ export const AdminUserPanel: React.FC<AdminUserPanelProps> = ({
           </div>
         )}
       </Card>
+
+      {/* Organization Management Modal */}
+      {showOrgManagementModal && selectedUserForOrgs && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-4xl mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-bold text-gray-800">
+                Organization Management - {getUserDisplayName(selectedUserForOrgs)}
+              </h2>
+              <button
+                onClick={() => setShowOrgManagementModal(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Current Organizations */}
+              <div>
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">Current Organizations</h3>
+                <div className="space-y-3">
+                  {userOrganizations.map((org) => (
+                    <div key={org.id} className="bg-gray-50 rounded-lg p-4 flex justify-between items-center">
+                      <div>
+                        <div className="font-medium text-gray-900">{org.name}</div>
+                        <div className="text-sm text-gray-600">Role: {org.role}</div>
+                        {org.description && (
+                          <div className="text-sm text-gray-500 mt-1">{org.description}</div>
+                        )}
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="text-red-600 border-red-600 hover:bg-red-50"
+                        onClick={() => handleRemoveUserFromOrganization(org.id)}
+                        disabled={loading}
+                      >
+                        Remove
+                      </Button>
+                    </div>
+                  ))}
+                  {userOrganizations.length === 0 && (
+                    <div className="text-center py-8 text-gray-500">
+                      User is not a member of any organizations
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Available Organizations */}
+              <div>
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">Add to Organization</h3>
+                <div className="space-y-3">
+                  {availableOrganizations
+                    .filter(org => !userOrganizations.some(userOrg => userOrg.id === org.id))
+                    .map((org) => (
+                      <div key={org.id} className="bg-blue-50 rounded-lg p-4">
+                        <div className="font-medium text-gray-900 mb-2">{org.name}</div>
+                        {org.description && (
+                          <div className="text-sm text-gray-600 mb-3">{org.description}</div>
+                        )}
+                        <div className="flex space-x-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="text-blue-600 border-blue-600 hover:bg-blue-100"
+                            onClick={() => handleAddUserToOrganization(org.id, 'user')}
+                            disabled={loading}
+                          >
+                            Add as User
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="text-green-600 border-green-600 hover:bg-green-100"
+                            onClick={() => handleAddUserToOrganization(org.id, 'editor')}
+                            disabled={loading}
+                          >
+                            Add as Editor
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="text-red-600 border-red-600 hover:bg-red-100"
+                            onClick={() => handleAddUserToOrganization(org.id, 'admin')}
+                            disabled={loading}
+                          >
+                            Add as Admin
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  {availableOrganizations.filter(org => !userOrganizations.some(userOrg => userOrg.id === org.id)).length === 0 && (
+                    <div className="text-center py-8 text-gray-500">
+                      No additional organizations available
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-end mt-6">
+              <Button
+                variant="outline"
+                onClick={() => setShowOrgManagementModal(false)}
+                className="px-6"
+              >
+                Close
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

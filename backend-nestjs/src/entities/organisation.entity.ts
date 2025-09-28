@@ -36,6 +36,12 @@ export class Organisation {
   @Column({ default: true })
   isActive: boolean;
 
+  @Column({ default: false })
+  useGranularResourcePermissions: boolean;
+
+  @Column({ default: false })
+  useGranularCalendarPermissions: boolean;
+
   @ManyToMany(() => User, (user) => user.organisations)
   @JoinTable({
     name: 'organisation_users',

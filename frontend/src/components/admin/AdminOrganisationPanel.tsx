@@ -339,7 +339,19 @@ export const AdminOrganisationPanel: React.FC<AdminOrganisationPanelProps> = ({
    */
   const getAvailableUsers = () => {
     const adminUserIds = orgAdmins.map(admin => admin.userId);
-    return allUsers.filter(user => !adminUserIds.includes(user.id) && user.role !== 'admin');
+    return allUsers.filter(user => {
+      // Exclude users who are already organization admins
+      if (adminUserIds.includes(user.id)) return false;
+
+      // Exclude global admins
+      if (user.role === 'admin') return false;
+
+      // Only include users with Store or Enterprise plans for organization admin assignment
+      const hasRequiredPlan = user.usagePlans &&
+        (user.usagePlans.includes('STORE') || user.usagePlans.includes('ENTERPRISE'));
+
+      return hasRequiredPlan;
+    });
   };
 
   /**
@@ -347,7 +359,16 @@ export const AdminOrganisationPanel: React.FC<AdminOrganisationPanelProps> = ({
    */
   const getAvailableOrgUsers = () => {
     const memberUserIds = orgUsers.map(user => user.id);
-    return allUsers.filter(user => !memberUserIds.includes(user.id));
+    return allUsers.filter(user => {
+      // Exclude users who are already organization members
+      if (memberUserIds.includes(user.id)) return false;
+
+      // Only include users with Store or Enterprise plans for organization membership
+      const hasRequiredPlan = user.usagePlans &&
+        (user.usagePlans.includes('STORE') || user.usagePlans.includes('ENTERPRISE'));
+
+      return hasRequiredPlan;
+    });
   };
 
   /**
@@ -680,6 +701,9 @@ export const AdminOrganisationPanel: React.FC<AdminOrganisationPanelProps> = ({
           <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Assign Organization Admin</h3>
             <div className="space-y-4">
+              <div className="text-sm text-gray-600 mb-2">
+                <span className="font-medium">Note:</span> Only users with Store or Enterprise plans can be assigned as organization administrators.
+              </div>
               <select
                 value={selectedUserId || ''}
                 onChange={(e) => setSelectedUserId(Number(e.target.value) || null)}
@@ -721,6 +745,9 @@ export const AdminOrganisationPanel: React.FC<AdminOrganisationPanelProps> = ({
           <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Add User to Organization</h3>
             <div className="space-y-4">
+              <div className="text-sm text-gray-600 mb-2">
+                <span className="font-medium">Note:</span> Only users with Store or Enterprise plans can be added to organizations.
+              </div>
               <select
                 value={selectedUserId || ''}
                 onChange={(e) => setSelectedUserId(Number(e.target.value) || null)}
