@@ -12,7 +12,7 @@ import {
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiParam } from '@nestjs/swagger';
 import { CalendarsService } from './calendars.service';
 import { CreateCalendarDto, UpdateCalendarDto, ShareCalendarDto, CalendarResponseDto } from '../dto/calendar.dto';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 @ApiTags('Calendars')
 @Controller('calendars')

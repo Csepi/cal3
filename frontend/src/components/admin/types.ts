@@ -101,7 +101,7 @@ export interface BulkOperationResult {
 
 export type ModalType = 'create' | 'edit' | 'password' | 'usagePlans' | 'bulkUsagePlans';
 export type EntityType = 'user' | 'calendar' | 'event';
-export type AdminTab = 'users' | 'calendars' | 'events' | 'shares' | 'reservations' | 'stats';
+export type AdminTab = 'users' | 'calendars' | 'events' | 'shares' | 'reservations' | 'organizations' | 'stats';
 
 export interface ConfirmDialogState {
   isOpen: boolean;
@@ -123,4 +123,53 @@ export interface FilterState {
   resource: string;
   startDate: string;
   endDate: string;
+}
+
+export interface Organisation {
+  id: number;
+  name: string;
+  description?: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+  adminCount?: number;
+  userCount?: number;
+  calendarCount?: number;
+}
+
+export interface OrganisationAdmin {
+  id: number;
+  organisationId: number;
+  userId: number;
+  assignedById?: number;
+  createdAt: string;
+  user: User;
+  organisation: Organisation;
+  assignedBy?: User;
+}
+
+export interface ReservationCalendar {
+  id: number;
+  calendarId: number;
+  organisationId: number;
+  createdById: number;
+  reservationRules?: string;
+  createdAt: string;
+  calendar: Calendar;
+  organisation: Organisation;
+  createdBy: User;
+  roleCount?: number;
+}
+
+export interface ReservationCalendarRole {
+  id: number;
+  reservationCalendarId: number;
+  userId: number;
+  role: 'editor' | 'reviewer';
+  isOrganisationAdmin: boolean;
+  assignedById?: number;
+  createdAt: string;
+  user: User;
+  reservationCalendar: ReservationCalendar;
+  assignedBy?: User;
 }

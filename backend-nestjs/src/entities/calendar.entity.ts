@@ -11,6 +11,7 @@ import {
 } from 'typeorm';
 import { User } from './user.entity';
 import { Event } from './event.entity';
+import { ReservationCalendar } from './reservation-calendar.entity';
 
 export enum CalendarVisibility {
   PRIVATE = 'private',
@@ -47,6 +48,12 @@ export class Calendar {
   @Column({ default: true })
   isActive: boolean;
 
+  @Column({ default: false })
+  isReservationCalendar: boolean; // Indicates if this is a reservation calendar
+
+  @Column({ nullable: true })
+  organisationId: number; // For reservation calendars, links to organisation
+
   @CreateDateColumn()
   createdAt: Date;
 
@@ -74,6 +81,10 @@ export class Calendar {
   // One calendar has many events
   @OneToMany(() => Event, (event) => event.calendar, { cascade: true })
   events: Event[];
+
+  // Reservation calendar configuration (one-to-one relationship)
+  @OneToMany(() => ReservationCalendar, (reservationCalendar) => reservationCalendar.calendar)
+  reservationCalendarConfig: ReservationCalendar[];
 }
 
 // Separate entity for calendar sharing permissions

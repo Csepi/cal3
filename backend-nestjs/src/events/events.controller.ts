@@ -14,7 +14,7 @@ import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiParam, ApiQuery }
 import { EventsService } from './events.service';
 import { CreateEventDto, UpdateEventDto, EventResponseDto } from '../dto/event.dto';
 import { UpdateRecurringEventDto, CreateRecurringEventDto } from '../dto/recurrence.dto';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 @ApiTags('Events')
 @Controller('events')

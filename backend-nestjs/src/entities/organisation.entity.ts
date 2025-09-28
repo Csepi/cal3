@@ -10,6 +10,8 @@ import {
 } from 'typeorm';
 import { User } from './user.entity';
 import { ResourceType } from './resource-type.entity';
+import { OrganisationAdmin } from './organisation-admin.entity';
+import { ReservationCalendar } from './reservation-calendar.entity';
 
 @Entity('organisations')
 export class Organisation {
@@ -44,6 +46,14 @@ export class Organisation {
 
   @OneToMany(() => ResourceType, (resourceType) => resourceType.organisation)
   resourceTypes: ResourceType[];
+
+  // Organisation admin relationships
+  @OneToMany(() => OrganisationAdmin, (orgAdmin) => orgAdmin.organisation)
+  organisationAdmins: OrganisationAdmin[];
+
+  // Reservation calendar relationships
+  @OneToMany(() => ReservationCalendar, (reservationCalendar) => reservationCalendar.organisation)
+  reservationCalendars: ReservationCalendar[];
 
   @CreateDateColumn()
   createdAt: Date;

@@ -9,6 +9,6 @@ import { User } from '../entities/user.entity';
   imports: [TypeOrmModule.forFeature([Calendar, CalendarShare, User])],
   providers: [CalendarsService],
   controllers: [CalendarsController],
-  exports: [CalendarsService],
+  exports: [CalendarsService, TypeOrmModule],
 })
 export class CalendarsModule {}

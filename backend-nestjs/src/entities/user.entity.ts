@@ -10,6 +10,8 @@ import {
 import { Calendar } from './calendar.entity';
 import { Event } from './event.entity';
 import { Organisation } from './organisation.entity';
+import { OrganisationAdmin } from './organisation-admin.entity';
+import { ReservationCalendarRole } from './reservation-calendar-role.entity';
 import { Exclude } from 'class-transformer';
 
 export enum UserRole {
@@ -94,4 +96,18 @@ export class User {
   // Many users can belong to many organisations
   @ManyToMany(() => Organisation, (organisation) => organisation.users)
   organisations: Organisation[];
+
+  // Organisation admin relationships
+  @OneToMany(() => OrganisationAdmin, (orgAdmin) => orgAdmin.user)
+  organisationAdminRoles: OrganisationAdmin[];
+
+  @OneToMany(() => OrganisationAdmin, (orgAdmin) => orgAdmin.assignedBy)
+  assignedOrganisationAdminRoles: OrganisationAdmin[];
+
+  // Reservation calendar role relationships
+  @OneToMany(() => ReservationCalendarRole, (role) => role.user)
+  reservationCalendarRoles: ReservationCalendarRole[];
+
+  @OneToMany(() => ReservationCalendarRole, (role) => role.assignedBy)
+  assignedReservationCalendarRoles: ReservationCalendarRole[];
 }

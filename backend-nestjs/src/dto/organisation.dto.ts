@@ -1,4 +1,4 @@
-import { IsString, IsOptional, IsBoolean, IsEmail, IsPhoneNumber } from 'class-validator';
+import { IsString, IsOptional, IsBoolean, IsEmail, IsPhoneNumber, IsNumber } from 'class-validator';
 
 export class CreateOrganisationDto {
   @IsString()
@@ -48,6 +48,6 @@ export class UpdateOrganisationDto {
 }
 
 export class AssignUserDto {
-  @IsString()
+  @IsNumber()
   userId: number;
 }

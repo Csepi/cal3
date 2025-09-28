@@ -1,5 +1,5 @@
 import { Controller, Get, Post, Patch, Delete, Body, Param, Query, UseGuards } from '@nestjs/common';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { ResourceTypesService } from './resource-types.service';
 import { CreateResourceTypeDto, UpdateResourceTypeDto } from '../dto/resource-type.dto';
 

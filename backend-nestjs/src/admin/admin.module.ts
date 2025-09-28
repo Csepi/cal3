@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AdminController } from './admin.controller';
 import { AdminService } from './admin.service';
-import { AdminGuard } from './admin.guard';
+import { AdminGuard } from '../auth/guards/admin.guard';
 import { User } from '../entities/user.entity';
 import { Calendar } from '../entities/calendar.entity';
 import { Event } from '../entities/event.entity';

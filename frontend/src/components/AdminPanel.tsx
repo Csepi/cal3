@@ -21,6 +21,7 @@ import {
   AdminNavigation,
   AdminStatsPanel,
   AdminUserPanel,
+  AdminOrganisationPanel,
   AdminCalendarPanel,
   AdminEventPanel,
   AdminSharePanel,
@@ -67,6 +68,9 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ themeColor = '#3b82f6' }) => {
 
       case 'users':
         return <AdminUserPanel {...panelProps} />;
+
+      case 'organizations':
+        return <AdminOrganisationPanel {...panelProps} />;
 
       case 'calendars':
         return <AdminCalendarPanel {...panelProps} />;

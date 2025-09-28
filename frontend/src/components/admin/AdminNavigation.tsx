@@ -35,6 +35,11 @@ const TAB_CONFIG: Record<AdminTab, { label: string; icon: string; description: s
     icon: '👥',
     description: 'User management and profiles'
   },
+  organizations: {
+    label: 'Organizations',
+    icon: '🏛️',
+    description: 'Organization and admin management'
+  },
   calendars: {
     label: 'Calendars',
     icon: '📅',

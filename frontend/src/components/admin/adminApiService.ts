@@ -84,7 +84,8 @@ export const loadAdminData = async <T>(
 
   updateProgress?.(100, `${resource} loaded successfully`);
 
-  return response;
+  // Extract data from response object if it exists, otherwise return the response directly
+  return response.data || response;
 };
 
 /**
