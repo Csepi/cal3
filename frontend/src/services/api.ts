@@ -375,6 +375,78 @@ class ApiService {
     return await response.json();
   }
 
+  // Generic HTTP methods
+  async get(endpoint: string): Promise<any> {
+    const response = await fetch(`${API_BASE_URL}/api${endpoint}`, {
+      headers: this.getAuthHeaders(),
+    });
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        throw new Error('Authentication required. Please log in.');
+      }
+      const errorData = await response.json();
+      throw new Error(errorData.message || `Failed to fetch ${endpoint}`);
+    }
+
+    return await response.json();
+  }
+
+  async post(endpoint: string, data?: any): Promise<any> {
+    const response = await fetch(`${API_BASE_URL}/api${endpoint}`, {
+      method: 'POST',
+      headers: this.getAuthHeaders(),
+      ...(data && { body: JSON.stringify(data) }),
+    });
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        throw new Error('Authentication required. Please log in.');
+      }
+      const errorData = await response.json();
+      throw new Error(errorData.message || `Failed to post to ${endpoint}`);
+    }
+
+    return await response.json();
+  }
+
+  async patch(endpoint: string, data?: any): Promise<any> {
+    const response = await fetch(`${API_BASE_URL}/api${endpoint}`, {
+      method: 'PATCH',
+      headers: this.getAuthHeaders(),
+      ...(data && { body: JSON.stringify(data) }),
+    });
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        throw new Error('Authentication required. Please log in.');
+      }
+      const errorData = await response.json();
+      throw new Error(errorData.message || `Failed to patch ${endpoint}`);
+    }
+
+    return await response.json();
+  }
+
+  async delete(endpoint: string): Promise<any> {
+    const response = await fetch(`${API_BASE_URL}/api${endpoint}`, {
+      method: 'DELETE',
+      headers: this.getAuthHeaders(),
+    });
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        throw new Error('Authentication required. Please log in.');
+      }
+      if (response.status !== 204) { // 204 No Content is ok for deletes
+        const errorData = await response.json();
+        throw new Error(errorData.message || `Failed to delete ${endpoint}`);
+      }
+    }
+
+    return response.status === 204 ? null : await response.json();
+  }
+
   // Calendar Sync methods
   async getCalendarSyncStatus(): Promise<any> {
     const response = await fetch(`${API_BASE_URL}/api/calendar-sync/status`, {

@@ -163,10 +163,11 @@ const ReservationManagement: React.FC<ReservationManagementProps> = ({
   const loadOrganizations = async () => {
     try {
       const token = localStorage.getItem('authToken');
-      const response = await fetch('http://localhost:8081/api/organisations', {
+      const response = await fetch(`http://localhost:8081/api/organisations?t=${Date.now()}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-cache'
         }
       });
 

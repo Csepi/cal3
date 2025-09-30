@@ -178,4 +178,57 @@ export class AdminController {
   getEvent(@Param('id') id: string) {
     return this.adminService.getEvent(+id);
   }
+
+  // ORGANIZATION MANAGEMENT OPERATIONS
+  @Get('organizations')
+  @ApiOperation({ summary: 'Get all organizations (Admin only)' })
+  @ApiResponse({ status: 200, description: 'Organizations retrieved successfully' })
+  getAllOrganizations() {
+    console.log('🔍 AdminController.getAllOrganizations called (this returns ALL organizations without filtering)');
+    return this.adminService.getAllOrganizations();
+  }
+
+  @Get('users/:id/organizations')
+  @ApiOperation({ summary: 'Get organizations for a specific user (Admin only)' })
+  @ApiResponse({ status: 200, description: 'User organizations retrieved successfully' })
+  getUserOrganizations(@Param('id') id: string) {
+    return this.adminService.getUserOrganizations(+id);
+  }
+
+  @Post('users/:id/organizations')
+  @ApiOperation({ summary: 'Add user to organization (Admin only)' })
+  @ApiResponse({ status: 200, description: 'User added to organization successfully' })
+  addUserToOrganization(
+    @Param('id') id: string,
+    @Body() addToOrgDto: { organizationId: number }
+  ) {
+    return this.adminService.addUserToOrganization(+id, addToOrgDto.organizationId);
+  }
+
+  @Delete('users/:id/organizations/:orgId')
+  @ApiOperation({ summary: 'Remove user from organization (Admin only)' })
+  @ApiResponse({ status: 200, description: 'User removed from organization successfully' })
+  removeUserFromOrganization(
+    @Param('id') id: string,
+    @Param('orgId') orgId: string
+  ) {
+    return this.adminService.removeUserFromOrganization(+id, +orgId);
+  }
+
+  @Get('organizations/:id/users')
+  @ApiOperation({ summary: 'Get organization users with roles (Admin only)' })
+  @ApiResponse({ status: 200, description: 'Organization users retrieved successfully' })
+  getOrganizationUsers(@Param('id') id: string) {
+    return this.adminService.getOrganizationUsers(+id);
+  }
+
+  @Post('organizations/:id/users')
+  @ApiOperation({ summary: 'Add user to organization with role (Admin only)' })
+  @ApiResponse({ status: 200, description: 'User added to organization successfully' })
+  addUserToOrganizationWithRole(
+    @Param('id') id: string,
+    @Body() addUserDto: { userId: number; role: string }
+  ) {
+    return this.adminService.addUserToOrganizationWithRole(addUserDto.userId, +id, addUserDto.role);
+  }
 }

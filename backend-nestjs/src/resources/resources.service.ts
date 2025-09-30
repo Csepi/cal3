@@ -43,6 +43,25 @@ export class ResourcesService {
     });
   }
 
+  async findAllByOrganizations(organizationIds: number[], resourceTypeId?: number): Promise<Resource[]> {
+    console.log('🔍 ResourcesService.findAllByOrganizations called with orgIds:', organizationIds, 'resourceTypeId:', resourceTypeId);
+
+    const queryBuilder = this.resourceRepository
+      .createQueryBuilder('resource')
+      .leftJoinAndSelect('resource.resourceType', 'resourceType')
+      .leftJoinAndSelect('resource.managedBy', 'managedBy')
+      .where('resourceType.organisationId IN (:...organizationIds)', { organizationIds });
+
+    if (resourceTypeId) {
+      queryBuilder.andWhere('resourceType.id = :resourceTypeId', { resourceTypeId });
+    }
+
+    const resources = await queryBuilder.getMany();
+    console.log('📋 Found resources:', resources.map(r => `${r.id}:${r.name} (org: ${r.resourceType?.organisationId})`));
+
+    return resources;
+  }
+
   async findOne(id: number): Promise<Resource> {
     const resource = await this.resourceRepository.findOne({
       where: { id },

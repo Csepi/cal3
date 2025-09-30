@@ -49,6 +49,11 @@ export const AdminUserPanel: React.FC<AdminUserPanelProps> = ({
   const [userOrganizations, setUserOrganizations] = useState<any[]>([]);
   const [availableOrganizations, setAvailableOrganizations] = useState<any[]>([]);
 
+  // Bulk usage plans modal state
+  const [showBulkUsagePlansModal, setShowBulkUsagePlansModal] = useState(false);
+  const [bulkPlansToUpdate, setBulkPlansToUpdate] = useState<string[]>([]);
+  const [bulkUpdateOperation, setBulkUpdateOperation] = useState<'set' | 'add' | 'remove'>('set');
+
   /**
    * Load users from the API with progress tracking
    */
@@ -303,6 +308,13 @@ export const AdminUserPanel: React.FC<AdminUserPanelProps> = ({
   const handleAddUserToOrganization = async (organizationId: number, role: 'admin' | 'editor' | 'user') => {
     if (!selectedUserForOrgs) return;
 
+    // Validate that user has Store or Enterprise plan for organization roles
+    const hasRequiredPlan = selectedUserForOrgs.usagePlans?.includes('STORE') || selectedUserForOrgs.usagePlans?.includes('ENTERPRISE');
+    if (!hasRequiredPlan) {
+      setError('User must have Store or Enterprise plan to be assigned to organization roles. Please update their usage plans first.');
+      return;
+    }
+
     try {
       setLoading(true);
       const token = getAdminToken();
@@ -311,7 +323,7 @@ export const AdminUserPanel: React.FC<AdminUserPanelProps> = ({
       }
 
       await adminApiCall({
-        endpoint: `/admin/organizations/${organizationId}/users`,
+        endpoint: `/organisations/${organizationId}/users`,
         token,
         method: 'POST',
         data: {
@@ -348,7 +360,7 @@ export const AdminUserPanel: React.FC<AdminUserPanelProps> = ({
       }
 
       await adminApiCall({
-        endpoint: `/admin/organizations/${organizationId}/users/${selectedUserForOrgs.id}`,
+        endpoint: `/organisations/${organizationId}/users/${selectedUserForOrgs.id}`,
         token,
         method: 'DELETE'
       });
@@ -392,6 +404,26 @@ export const AdminUserPanel: React.FC<AdminUserPanelProps> = ({
     } finally {
       setLoading(false);
     }
+  };
+
+  /**
+   * Open bulk usage plans modal
+   */
+  const setModalType = (modalType: string) => {
+    if (modalType === 'bulkUsagePlans') {
+      setShowBulkUsagePlansModal(true);
+      setBulkPlansToUpdate([]);
+      setBulkUpdateOperation('set');
+    }
+  };
+
+  /**
+   * Handle bulk usage plans modal submission
+   */
+  const handleBulkUsagePlansSubmit = async () => {
+    await handleBulkUsagePlanUpdate(bulkPlansToUpdate, bulkUpdateOperation);
+    setShowBulkUsagePlansModal(false);
+    setBulkPlansToUpdate([]);
   };
 
   /**
@@ -520,6 +552,7 @@ export const AdminUserPanel: React.FC<AdminUserPanelProps> = ({
                   variant="outline"
                   size="sm"
                   themeColor={themeColor}
+                  onClick={() => setModalType('bulkUsagePlans')}
                 >
                   Bulk Edit Plans
                 </Button>
@@ -637,19 +670,17 @@ export const AdminUserPanel: React.FC<AdminUserPanelProps> = ({
                       >
                         Edit
                       </Button>
-                      {/* Organization Management Button - Only for Store/Enterprise users */}
-                      {(user.usagePlans?.includes('STORE') || user.usagePlans?.includes('ENTERPRISE')) && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="text-blue-600 border-blue-600 hover:bg-blue-50"
-                          onClick={() => handleManageOrganizations(user)}
-                          disabled={loading}
-                          title="Manage organization membership"
-                        >
-                          Organizations
-                        </Button>
-                      )}
+                      {/* Organization Management Button - Available for all users */}
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="text-blue-600 border-blue-600 hover:bg-blue-50"
+                        onClick={() => handleManageOrganizations(user)}
+                        disabled={loading}
+                        title="Manage organization membership (requires Store/Enterprise plan for roles)"
+                      >
+                        Organizations
+                      </Button>
                       <Button
                         variant="outline"
                         size="sm"
@@ -713,6 +744,36 @@ export const AdminUserPanel: React.FC<AdminUserPanelProps> = ({
               </button>
             </div>
 
+            {/* User Plan Information */}
+            <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="font-medium text-gray-800">Current Usage Plans</h4>
+                  <div className="flex space-x-2 mt-2">
+                    {selectedUserForOrgs.usagePlans?.map((plan) => (
+                      <span
+                        key={plan}
+                        className={`px-3 py-1 rounded-full text-xs font-medium ${
+                          plan === 'STORE' || plan === 'ENTERPRISE'
+                            ? 'bg-green-100 text-green-700 border border-green-300'
+                            : 'bg-gray-100 text-gray-700 border border-gray-300'
+                        }`}
+                      >
+                        {plan}
+                      </span>
+                    )) || <span className="text-gray-500 text-sm">No plans assigned</span>}
+                  </div>
+                </div>
+                <div className="text-right">
+                  {(selectedUserForOrgs.usagePlans?.includes('STORE') || selectedUserForOrgs.usagePlans?.includes('ENTERPRISE')) ? (
+                    <div className="text-green-600 text-sm font-medium">✓ Eligible for organization roles</div>
+                  ) : (
+                    <div className="text-red-600 text-sm font-medium">⚠ Requires Store or Enterprise plan</div>
+                  )}
+                </div>
+              </div>
+            </div>
+
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Current Organizations */}
               <div>
@@ -759,33 +820,43 @@ export const AdminUserPanel: React.FC<AdminUserPanelProps> = ({
                           <div className="text-sm text-gray-600 mb-3">{org.description}</div>
                         )}
                         <div className="flex space-x-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="text-blue-600 border-blue-600 hover:bg-blue-100"
-                            onClick={() => handleAddUserToOrganization(org.id, 'user')}
-                            disabled={loading}
-                          >
-                            Add as User
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="text-green-600 border-green-600 hover:bg-green-100"
-                            onClick={() => handleAddUserToOrganization(org.id, 'editor')}
-                            disabled={loading}
-                          >
-                            Add as Editor
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="text-red-600 border-red-600 hover:bg-red-100"
-                            onClick={() => handleAddUserToOrganization(org.id, 'admin')}
-                            disabled={loading}
-                          >
-                            Add as Admin
-                          </Button>
+                          {(() => {
+                            const hasRequiredPlan = selectedUserForOrgs.usagePlans?.includes('STORE') || selectedUserForOrgs.usagePlans?.includes('ENTERPRISE');
+                            return (
+                              <>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className={`${hasRequiredPlan ? 'text-blue-600 border-blue-600 hover:bg-blue-100' : 'text-gray-400 border-gray-300 cursor-not-allowed'}`}
+                                  onClick={() => handleAddUserToOrganization(org.id, 'user')}
+                                  disabled={loading || !hasRequiredPlan}
+                                  title={hasRequiredPlan ? 'Add as organization user' : 'Requires Store or Enterprise plan'}
+                                >
+                                  Add as User
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className={`${hasRequiredPlan ? 'text-green-600 border-green-600 hover:bg-green-100' : 'text-gray-400 border-gray-300 cursor-not-allowed'}`}
+                                  onClick={() => handleAddUserToOrganization(org.id, 'editor')}
+                                  disabled={loading || !hasRequiredPlan}
+                                  title={hasRequiredPlan ? 'Add as organization editor' : 'Requires Store or Enterprise plan'}
+                                >
+                                  Add as Editor
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className={`${hasRequiredPlan ? 'text-red-600 border-red-600 hover:bg-red-100' : 'text-gray-400 border-gray-300 cursor-not-allowed'}`}
+                                  onClick={() => handleAddUserToOrganization(org.id, 'admin')}
+                                  disabled={loading || !hasRequiredPlan}
+                                  title={hasRequiredPlan ? 'Add as organization admin' : 'Requires Store or Enterprise plan'}
+                                >
+                                  Add as Admin
+                                </Button>
+                              </>
+                            );
+                          })()}
                         </div>
                       </div>
                     ))}
@@ -805,6 +876,85 @@ export const AdminUserPanel: React.FC<AdminUserPanelProps> = ({
                 className="px-6"
               >
                 Close
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Bulk Usage Plans Modal */}
+      {showBulkUsagePlansModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              Bulk Update Usage Plans
+            </h3>
+
+            <div className="mb-4">
+              <p className="text-sm text-gray-600 mb-3">
+                Update usage plans for {selectedUsers.length} selected user(s)
+              </p>
+
+              {/* Operation Selection */}
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Operation
+                </label>
+                <select
+                  value={bulkUpdateOperation}
+                  onChange={(e) => setBulkUpdateOperation(e.target.value as 'set' | 'add' | 'remove')}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                >
+                  <option value="set">Set (Replace current plans)</option>
+                  <option value="add">Add (Add to existing plans)</option>
+                  <option value="remove">Remove (Remove from existing plans)</option>
+                </select>
+              </div>
+
+              {/* Plans Selection */}
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Select Plans
+                </label>
+                <div className="space-y-2 max-h-48 overflow-y-auto">
+                  {USAGE_PLAN_OPTIONS.map((plan) => (
+                    <label key={plan} className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={bulkPlansToUpdate.includes(plan)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setBulkPlansToUpdate([...bulkPlansToUpdate, plan]);
+                          } else {
+                            setBulkPlansToUpdate(bulkPlansToUpdate.filter(p => p !== plan));
+                          }
+                        }}
+                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                      />
+                      <span className="ml-2 text-sm text-gray-700">{plan}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-end space-x-3">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setShowBulkUsagePlansModal(false);
+                  setBulkPlansToUpdate([]);
+                }}
+                disabled={loading}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleBulkUsagePlansSubmit}
+                disabled={loading || bulkPlansToUpdate.length === 0}
+                themeColor={themeColor}
+              >
+                {loading ? 'Updating...' : 'Update Plans'}
               </Button>
             </div>
           </div>

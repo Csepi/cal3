@@ -422,9 +422,10 @@ interface CalendarGridProps {
   state: CalendarState;
   actions: CalendarActions;
   themeConfig: ThemeConfig;
+  timeFormat: string;
 }
 
-const CalendarGrid: React.FC<CalendarGridProps> = ({ state, actions, themeConfig }) => {
+const CalendarGrid: React.FC<CalendarGridProps> = ({ state, actions, themeConfig, timeFormat }) => {
   const { currentDate, currentView, events, selectedCalendars, reservations, selectedReservations } = state;
 
   // Filter events based on selected calendars
@@ -774,6 +775,7 @@ export const EnhancedCalendar: React.FC<EnhancedCalendarProps> = ({
             state={state}
             actions={actions}
             themeConfig={themeConfig}
+            timeFormat={timeFormat}
           />
         </main>
       </div>

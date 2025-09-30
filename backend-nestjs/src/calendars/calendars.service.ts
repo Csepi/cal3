@@ -26,27 +26,36 @@ export class CalendarsService {
   }
 
   async findAll(userId: number): Promise<Calendar[]> {
-    // Get calendars owned by user and calendars shared with user
+    console.log('🔍 CalendarsService.findAll called for user:', userId);
+
+    // Get regular calendars (non-reservation) owned by user and calendars shared with user
     const ownedCalendars = await this.calendarRepository.find({
-      where: { ownerId: userId, isActive: true },
+      where: { ownerId: userId, isActive: true, isReservationCalendar: false },
       relations: ['owner', 'sharedWith'],
     });
+    console.log('📋 Found owned calendars:', ownedCalendars.map(c => `${c.id}:${c.name}`));
 
     const sharedCalendars = await this.calendarRepository
       .createQueryBuilder('calendar')
       .innerJoin('calendar.sharedWith', 'user')
       .where('user.id = :userId', { userId })
       .andWhere('calendar.isActive = true')
+      .andWhere('calendar.isReservationCalendar = false')
       .leftJoinAndSelect('calendar.owner', 'owner')
       .leftJoinAndSelect('calendar.sharedWith', 'sharedUsers')
       .getMany();
+    console.log('📋 Found shared calendars:', sharedCalendars.map(c => `${c.id}:${c.name}`));
 
-    // Combine and remove duplicates
-    const allCalendars = [...ownedCalendars, ...sharedCalendars];
-    const uniqueCalendars = allCalendars.filter(
+    // Reservation calendars are handled separately through the ReservationCalendarService
+    // to avoid circular dependencies
+
+    // Combine regular calendars only (reservation calendars will be handled separately)
+    const allRegularCalendars = [...ownedCalendars, ...sharedCalendars];
+    const uniqueCalendars = allRegularCalendars.filter(
       (calendar, index, self) => index === self.findIndex(c => c.id === calendar.id)
     );
 
+    console.log('📋 Final filtered calendars:', uniqueCalendars.map(c => `${c.id}:${c.name} (reservation: ${c.isReservationCalendar})`));
     return uniqueCalendars;
   }
 

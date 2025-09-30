@@ -20,6 +20,8 @@ Cal3 is a comprehensive, full-stack calendar and reservation management system b
 
 ### 🏢 **Complete Reservation System**
 - **Organisation Management**: Multi-tenant system with organisation-based access control
+- **Organisation Admin Roles**: Dedicated organisation administrators with granular permissions
+- **Reservation Calendar Management**: Fine-grained calendar access control with editor/reviewer roles
 - **Resource Types**: Define categories of bookable resources with custom settings
 - **Resource Management**: Individual resource tracking with capacity limits
 - **Booking Management**: Complete reservation lifecycle from pending to completion
@@ -29,11 +31,12 @@ Cal3 is a comprehensive, full-stack calendar and reservation management system b
 - **Customer Information**: Flexible customer data collection
 
 ### 👤 **User Management & Admin Panel**
-- **Role-Based Access**: Admin and user roles with appropriate permissions
+- **Multi-Level Role System**: Global admins, organisation admins, and standard users
 - **User Profiles**: Personal settings, timezone preferences, theme selection, and time format settings
 - **Time Format Settings**: 12-hour and 24-hour format support across calendar views and event management
 - **Usage Plans**: Flexible user tier system (Child, User, Store, Enterprise)
 - **Admin Dashboard**: Comprehensive user management with bulk operations
+- **Permission Management**: Fine-grained access control for organizations and reservation calendars
 - **Profile Customization**: 16 theme colors and personalized settings
 
 ### 🔗 **Calendar Integration**
@@ -51,8 +54,10 @@ Cal3 is a comprehensive, full-stack calendar and reservation management system b
 
 ### 🔐 **Security & Authentication**
 - **JWT Authentication**: Secure token-based authentication system
+- **Multi-Level RBAC**: Role-based access control with global admin, org admin, and calendar-level roles
 - **Password Management**: Secure password hashing and reset functionality
-- **API Security**: Protected routes with role-based authorization
+- **API Security**: Protected routes with comprehensive authorization guards
+- **Permission Service**: Centralized permission management for organization and calendar access
 - **Input Validation**: Comprehensive server-side and client-side validation
 
 ## 🏗️ Architecture
@@ -96,17 +101,19 @@ frontend/src/
 ## 🛠️ Technology Stack
 
 ### **Core Technologies**
-- **Frontend**: React 18, TypeScript, Vite, Tailwind CSS
-- **Backend**: NestJS, TypeORM, Node.js
+- **Frontend**: React 19, TypeScript, Vite, Tailwind CSS
+- **Backend**: NestJS 11, TypeORM, Node.js
 - **Database**: PostgreSQL (production), SQLite (development)
-- **Authentication**: JWT, Passport.js
-- **API**: RESTful APIs with comprehensive documentation
+- **Authentication**: JWT, Passport.js (Google OAuth, Microsoft OAuth)
+- **Authorization**: Custom RBAC with guards and decorators
+- **API**: RESTful APIs with Swagger/OpenAPI documentation
 
 ### **Development Tools**
 - **Hot Reload**: Vite for frontend, NestJS for backend
-- **Type Safety**: Full TypeScript coverage
+- **Type Safety**: Full TypeScript coverage (TypeScript 5.8+)
 - **Code Quality**: ESLint, Prettier
 - **Version Control**: Git with conventional commits
+- **API Documentation**: Swagger UI with comprehensive endpoint documentation
 
 ## 📋 Quick Start
 
@@ -222,6 +229,8 @@ npm run dev -- --port 8080
 POST /api/auth/login          # User login
 POST /api/auth/register       # User registration
 GET  /api/auth/profile        # Get current user profile
+GET  /api/auth/google         # Google OAuth login
+GET  /api/auth/microsoft      # Microsoft OAuth login
 ```
 
 ### **Calendar & Events**
@@ -236,8 +245,8 @@ DELETE /api/events/:id       # Delete event
 
 ### **Reservation System**
 ```
-GET    /api/organisations     # Get organisations
-POST   /api/organisations     # Create organisation
+GET    /api/organisations     # Get accessible organisations
+POST   /api/organisations     # Create organisation (admin)
 GET    /api/resource-types    # Get resource types
 POST   /api/resource-types    # Create resource type
 GET    /api/resources         # Get resources
@@ -247,12 +256,43 @@ POST   /api/reservations      # Create reservation
 PATCH  /api/reservations/:id  # Update reservation status
 ```
 
+### **Organisation Admin Management**
+```
+POST   /api/organisations/:id/admins         # Assign org admin
+DELETE /api/organisations/:id/admins/:userId # Remove org admin
+GET    /api/organisations/:id/admins         # Get org admins
+POST   /api/organisations/:id/users          # Add user to org
+DELETE /api/organisations/:id/users/:userId  # Remove user from org
+GET    /api/organisations/admin-roles        # Get user's admin roles
+```
+
+### **Reservation Calendar Management**
+```
+POST   /api/organisations/:id/reservation-calendars  # Create calendar
+GET    /api/organisations/:id/reservation-calendars  # Get org calendars
+POST   /api/reservation-calendars/:id/roles          # Assign role
+DELETE /api/reservation-calendars/:id/roles/:userId  # Remove role
+GET    /api/users/reservation-calendars              # Get accessible calendars
+```
+
+### **User Permissions**
+```
+GET    /api/user-permissions                        # Get user permissions
+GET    /api/user-permissions/accessible-organizations  # Get accessible orgs
+GET    /api/user-permissions/accessible-reservation-calendars  # Get accessible calendars
+```
+
 ### **Admin Operations**
 ```
-GET    /api/admin/users       # Get all users
-PATCH  /api/admin/users/:id/usage-plans  # Modify user plans
-GET    /api/admin/stats       # Get system statistics
+GET    /api/admin/users                    # Get all users
+PATCH  /api/admin/users/:id/usage-plans    # Modify user plans
+GET    /api/admin/stats                    # Get system statistics
+GET    /api/admin/organizations            # Get all organizations
+POST   /api/admin/users/:id/organizations  # Add user to org
+GET    /api/admin/reservations             # Get all reservations
 ```
+
+For complete API documentation with request/response examples, see [API_DOCUMENTATION.md](API_DOCUMENTATION.md)
 
 ## 🔧 Configuration
 
@@ -289,11 +329,17 @@ These ports must not be changed as they are referenced throughout the applicatio
 - **Calendars**: User calendars and sharing
 - **Events**: Calendar events with recurrence support
 - **Organisations**: Multi-tenant business entities
+- **OrganisationAdmins**: Organisation-level administrators
+- **ReservationCalendars**: Fine-grained calendar access control
+- **ReservationCalendarRoles**: User roles for calendars (editor/reviewer)
 - **Resources**: Bookable items with capacity
 - **Reservations**: Booking records with status workflow
 
 ### **Key Relationships**
 - Users ↔ Organisations (Many-to-Many)
+- Users ↔ OrganisationAdmins (Many-to-Many through join table)
+- Organisations → ReservationCalendars (One-to-Many)
+- ReservationCalendars ↔ Users (Many-to-Many through ReservationCalendarRoles)
 - Organisations → Resource Types (One-to-Many)
 - Resource Types → Resources (One-to-Many)
 - Resources → Reservations (One-to-Many)
@@ -345,6 +391,23 @@ npm run build
 docker-compose up -d
 ```
 
+## 🎉 Key Features Highlights
+
+### **Recent Additions (v1.2.0)**
+- ✅ **Organisation Admin System**: Dedicated admin roles at the organisation level
+- ✅ **Reservation Calendar Roles**: Editor and reviewer roles for fine-grained access control
+- ✅ **Permission Service**: Centralized permission management system
+- ✅ **Multi-Level RBAC**: Comprehensive role-based access control hierarchy
+- ✅ **Enhanced Admin Panel**: Complete organization and user management interface
+
+### **Established Features**
+- ✅ **Hour Format Settings**: 12h/24h time format across all calendar views
+- ✅ **16 Theme Colors**: Complete rainbow color palette with gradients
+- ✅ **Timezone Support**: 70+ world timezones with automatic conversion
+- ✅ **Usage Plans Management**: Flexible tier system with admin controls
+- ✅ **Recurring Events**: Full support for daily, weekly, and monthly patterns
+- ✅ **OAuth Integration**: Google and Microsoft calendar synchronization
+
 ## 🤝 Contributing
 
 1. Fork the repository
@@ -359,6 +422,7 @@ docker-compose up -d
 - Maintain test coverage
 - Follow the existing code style
 - Update documentation as needed
+- Test with multiple user roles (admin, org admin, user)
 
 ## 📝 License
 

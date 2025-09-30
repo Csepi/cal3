@@ -22,7 +22,12 @@ export class OrganisationsController {
   @Get()
   async findAll(@Req() req) {
     // Return only organizations the user has access to
-    return await this.userPermissionsService.getUserAccessibleOrganizations(req.user.id);
+    console.log('🔍 OrganisationsController.findAll called for user:', req.user.id, 'role:', req.user.role, 'username:', req.user.username);
+    const organizations = await this.userPermissionsService.getUserAccessibleOrganizations(req.user.id);
+    console.log('📋 User accessible organizations count:', organizations.length);
+    console.log('📋 Organization IDs returned:', organizations.map(org => `${org.id}:${org.name}`));
+    console.log('📋 Full organization data:', JSON.stringify(organizations.map(org => ({ id: org.id, name: org.name })), null, 2));
+    return organizations;
   }
 
   @Get(':id')

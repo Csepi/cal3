@@ -6,6 +6,8 @@ import { Calendar } from '../entities/calendar.entity';
 import { Event } from '../entities/event.entity';
 import { CalendarShare } from '../entities/calendar.entity';
 import { Reservation } from '../entities/reservation.entity';
+import { Organisation } from '../entities/organisation.entity';
+import { OrganisationUser } from '../entities/organisation-user.entity';
 import * as bcrypt from 'bcryptjs';
 
 @Injectable()
@@ -21,6 +23,10 @@ export class AdminService {
     private calendarShareRepository: Repository<CalendarShare>,
     @InjectRepository(Reservation)
     private reservationRepository: Repository<Reservation>,
+    @InjectRepository(Organisation)
+    private organisationRepository: Repository<Organisation>,
+    @InjectRepository(OrganisationUser)
+    private organisationUserRepository: Repository<OrganisationUser>,
   ) {}
 
   async getAllUsers(): Promise<User[]> {
@@ -269,5 +275,121 @@ export class AdminService {
       throw new NotFoundException('Event not found');
     }
     return event;
+  }
+
+  // ORGANIZATION MANAGEMENT OPERATIONS
+  async getAllOrganizations(): Promise<Organisation[]> {
+    return this.organisationRepository.find({
+      order: { name: 'ASC' },
+    });
+  }
+
+  async getUserOrganizations(userId: number): Promise<Organisation[]> {
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const orgUsers = await this.organisationUserRepository.find({
+      where: { userId },
+      relations: ['organisation'],
+    });
+
+    return orgUsers.map(orgUser => orgUser.organisation);
+  }
+
+  async addUserToOrganization(userId: number, organizationId: number): Promise<{ message: string }> {
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const organization = await this.organisationRepository.findOne({ where: { id: organizationId } });
+    if (!organization) {
+      throw new NotFoundException('Organization not found');
+    }
+
+    // Check if user is already in the organization
+    const existingOrgUser = await this.organisationUserRepository.findOne({
+      where: { userId, organisationId: organizationId },
+    });
+
+    if (existingOrgUser) {
+      return { message: 'User is already a member of this organization' };
+    }
+
+    // Add user to organization
+    const orgUser = this.organisationUserRepository.create({
+      userId,
+      organisationId: organizationId,
+    });
+
+    await this.organisationUserRepository.save(orgUser);
+    return { message: 'User added to organization successfully' };
+  }
+
+  async removeUserFromOrganization(userId: number, organizationId: number): Promise<{ message: string }> {
+    const orgUser = await this.organisationUserRepository.findOne({
+      where: { userId, organisationId: organizationId },
+    });
+
+    if (!orgUser) {
+      throw new NotFoundException('User is not a member of this organization');
+    }
+
+    await this.organisationUserRepository.remove(orgUser);
+    return { message: 'User removed from organization successfully' };
+  }
+
+  async getOrganizationUsers(organizationId: number): Promise<any[]> {
+    const organization = await this.organisationRepository.findOne({ where: { id: organizationId } });
+    if (!organization) {
+      throw new NotFoundException('Organization not found');
+    }
+
+    const orgUsers = await this.organisationUserRepository.find({
+      where: { organisationId: organizationId },
+      relations: ['user'],
+    });
+
+    return orgUsers.map(orgUser => ({
+      ...orgUser.user,
+      organizationRole: orgUser.role,
+      assignedAt: orgUser.assignedAt,
+    }));
+  }
+
+  async addUserToOrganizationWithRole(userId: number, organizationId: number, role: string): Promise<{ message: string }> {
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const organization = await this.organisationRepository.findOne({ where: { id: organizationId } });
+    if (!organization) {
+      throw new NotFoundException('Organization not found');
+    }
+
+    // Check if user is already in the organization
+    const existingOrgUser = await this.organisationUserRepository.findOne({
+      where: { userId, organisationId: organizationId },
+    });
+
+    if (existingOrgUser) {
+      // Update existing role
+      existingOrgUser.role = role as any;
+      await this.organisationUserRepository.save(existingOrgUser);
+      return { message: 'User role updated in organization successfully' };
+    }
+
+    // Add user to organization with specified role
+    const orgUser = this.organisationUserRepository.create({
+      userId,
+      organisationId: organizationId,
+      role: role as any,
+    });
+
+    await this.organisationUserRepository.save(orgUser);
+    return { message: 'User added to organization successfully' };
   }
 }

@@ -173,3 +173,12 @@ export interface ReservationCalendarRole {
   reservationCalendar: ReservationCalendar;
   assignedBy?: User;
 }
+
+export interface MemberWithRole extends User {
+  /** Organization role (admin, editor, or user) */
+  organizationRole: 'admin' | 'editor' | 'user';
+  /** When the user was assigned to this role */
+  assignedAt?: string;
+  /** Whether this is an organization admin */
+  isOrgAdmin?: boolean;
+}

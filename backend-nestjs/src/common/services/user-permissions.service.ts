@@ -79,28 +79,62 @@ export class UserPermissionsService {
       throw new Error('User not found');
     }
 
+    console.log('👤 User details:', {
+      id: user.id,
+      username: user.username,
+      role: user.role,
+      usagePlans: user.usagePlans
+    });
+
     const canAccessReservations = this.hasReservationAccess(user);
     const isSuperAdmin = this.isSuperAdmin(user);
+
+    console.log('🔍 User access checks:', {
+      canAccessReservations,
+      isSuperAdmin,
+      userRole: user.role
+    });
 
     // Get organization access
     let accessibleOrganizationIds: number[] = [];
     let adminOrganizationIds: number[] = [];
 
     if (isSuperAdmin) {
+      console.log('🌟 User is super admin - granting access to all organizations');
       // Super admin can see all organizations
       const allOrganizations = await this.organisationRepository.find();
       accessibleOrganizationIds = allOrganizations.map(org => org.id);
       adminOrganizationIds = accessibleOrganizationIds; // Super admin can admin all
+      console.log('📋 All organizations for super admin:', allOrganizations.map(org => `${org.id}:${org.name}`));
     } else {
-      // Regular member organizations
+      console.log('👤 Regular user - checking specific permissions');
+
+      // Regular member organizations (many-to-many relation)
       const memberOrgIds = user.organisations?.map(org => org.id) || [];
+      console.log('📋 Member organizations:', memberOrgIds);
 
-      // Admin organizations
+      // Admin organizations (Cal3-level org admins)
       const adminOrgIds = user.organisationAdminRoles?.map(role => role.organisationId) || [];
+      console.log('📋 Admin organizations (Cal3-level):', adminOrgIds);
 
-      // Combine and deduplicate
-      accessibleOrganizationIds = [...new Set([...memberOrgIds, ...adminOrgIds])];
-      adminOrganizationIds = adminOrgIds;
+      // Organizations where user has roles via OrganisationUser table (admin/editor/user)
+      const organisationUserRoles = await this.organisationUserRepository.find({
+        where: { userId },
+      });
+      const roleBasedOrgIds = organisationUserRoles.map(role => role.organisationId);
+      console.log('📋 Role-based organizations:', roleBasedOrgIds, 'with roles:', organisationUserRoles.map(r => `${r.organisationId}:${r.role}`));
+
+      // Combine and deduplicate all accessible organizations
+      accessibleOrganizationIds = [...new Set([...memberOrgIds, ...adminOrgIds, ...roleBasedOrgIds])];
+
+      // Admin organizations include both Cal3-admins and OrganisationUser admins
+      const orgUserAdminIds = organisationUserRoles
+        .filter(role => role.role === 'admin')
+        .map(role => role.organisationId);
+      adminOrganizationIds = [...new Set([...adminOrgIds, ...orgUserAdminIds])];
+
+      console.log('📋 Final accessible organization IDs:', accessibleOrganizationIds);
+      console.log('📋 Final admin organization IDs:', adminOrganizationIds);
     }
 
     // Get reservation calendar access
@@ -160,16 +194,26 @@ export class UserPermissionsService {
    * Get organizations that a user can access
    */
   async getUserAccessibleOrganizations(userId: number): Promise<Organisation[]> {
+    console.log('🔍 getUserAccessibleOrganizations called for user:', userId);
     const permissions = await this.getUserPermissions(userId);
+    console.log('📋 User permissions:', {
+      accessibleOrganizationIds: permissions.accessibleOrganizationIds,
+      adminOrganizationIds: permissions.adminOrganizationIds,
+      canAccessReservations: permissions.canAccessReservations
+    });
 
     if (permissions.accessibleOrganizationIds.length === 0) {
+      console.log('⚠️  No accessible organizations found for user');
       return [];
     }
 
-    return await this.organisationRepository.find({
+    const organizations = await this.organisationRepository.find({
       where: { id: In(permissions.accessibleOrganizationIds) },
       relations: ['users', 'organisationAdmins', 'reservationCalendars']
     });
+
+    console.log('📋 Found organizations:', organizations.map(org => `${org.id}:${org.name}`));
+    return organizations;
   }
 
   /**

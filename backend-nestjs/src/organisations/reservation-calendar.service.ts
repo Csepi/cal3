@@ -1,11 +1,11 @@
 import { Injectable, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, In } from 'typeorm';
 import { ReservationCalendar } from '../entities/reservation-calendar.entity';
 import { ReservationCalendarRole, ReservationCalendarRoleType } from '../entities/reservation-calendar-role.entity';
 import { Calendar, CalendarVisibility } from '../entities/calendar.entity';
 import { Organisation } from '../entities/organisation.entity';
-import { User, UserRole } from '../entities/user.entity';
+import { User, UserRole, UsagePlan } from '../entities/user.entity';
 import { OrganisationAdminService } from './organisation-admin.service';
 import { CreateReservationCalendarDto, AssignRoleDto } from './dto';
 
@@ -210,14 +210,83 @@ export class ReservationCalendarService {
 
   /**
    * Get all reservation calendars that a user has access to
+   * Uses both explicit roles and organization-based permissions
    */
   async getUserReservationCalendars(userId: number): Promise<ReservationCalendar[]> {
-    const roles = await this.reservationCalendarRoleRepository.find({
-      where: { userId },
-      relations: ['reservationCalendar', 'reservationCalendar.calendar', 'reservationCalendar.organisation'],
+    console.log('🔍 getUserReservationCalendars called for user:', userId);
+
+    // Get user to check permissions
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+      relations: ['organisations', 'organisationAdminRoles']
     });
 
-    return roles.map(role => role.reservationCalendar);
+    if (!user) {
+      console.log('⚠️  User not found');
+      return [];
+    }
+
+    console.log('👤 User details:', {
+      id: user.id,
+      role: user.role,
+      usagePlans: user.usagePlans
+    });
+
+    // Check if user has reservation access (needs Store or Enterprise plan)
+    const hasReservationAccess = user.usagePlans?.some(plan =>
+      plan === UsagePlan.STORE || plan === UsagePlan.ENTERPRISE
+    );
+
+    if (!hasReservationAccess) {
+      console.log('⚠️  User does not have reservation access (needs Store or Enterprise plan)');
+      return [];
+    }
+
+    let accessibleCalendars: ReservationCalendar[] = [];
+
+    // For super admin, get all reservation calendars
+    if (user.role === UserRole.ADMIN) {
+      console.log('🌟 Super admin - getting all reservation calendars');
+      accessibleCalendars = await this.reservationCalendarRepository.find({
+        relations: ['calendar', 'organisation', 'createdBy'],
+      });
+    } else {
+      // Get calendars through explicit roles
+      const explicitRoles = await this.reservationCalendarRoleRepository.find({
+        where: { userId },
+        relations: ['reservationCalendar', 'reservationCalendar.calendar', 'reservationCalendar.organisation'],
+      });
+      console.log('📋 Explicit roles found:', explicitRoles.length);
+
+      // Get accessible organization IDs
+      const memberOrgIds = user.organisations?.map(org => org.id) || [];
+      const adminOrgIds = user.organisationAdminRoles?.map(role => role.organisationId) || [];
+      const accessibleOrgIds = [...new Set([...memberOrgIds, ...adminOrgIds])];
+
+      console.log('📋 User accessible organization IDs:', accessibleOrgIds);
+
+      // Get reservation calendars from accessible organizations
+      let orgBasedCalendars: ReservationCalendar[] = [];
+      if (accessibleOrgIds.length > 0) {
+        orgBasedCalendars = await this.reservationCalendarRepository.find({
+          where: { organisationId: In(accessibleOrgIds) },
+          relations: ['calendar', 'organisation', 'createdBy'],
+        });
+        console.log('📋 Organization-based calendars found:', orgBasedCalendars.length);
+      }
+
+      // Combine and deduplicate
+      const explicitCalendars = explicitRoles.map(role => role.reservationCalendar);
+      const allCalendars = [...explicitCalendars, ...orgBasedCalendars];
+
+      // Remove duplicates based on calendar ID
+      accessibleCalendars = allCalendars.filter(
+        (calendar, index, self) => index === self.findIndex(c => c.id === calendar.id)
+      );
+    }
+
+    console.log('📋 Final accessible reservation calendars:', accessibleCalendars.map(c => `${c.id}:${c.calendar.name} (org: ${c.organisationId})`));
+    return accessibleCalendars;
   }
 
   /**

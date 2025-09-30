@@ -8,6 +8,8 @@ import { EventStatus, RecurrenceType } from '../entities/event.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../entities/user.entity';
+import { Organisation } from '../entities/organisation.entity';
+import { OrganisationUser } from '../entities/organisation-user.entity';
 
 async function seed() {
   const app = await NestFactory.createApplicationContext(AppModule);
@@ -16,6 +18,8 @@ async function seed() {
   const calendarsService = app.get(CalendarsService);
   const eventsService = app.get(EventsService);
   const userRepository = app.get('UserRepository');
+  const organisationRepository = app.get('OrganisationRepository');
+  const organisationUserRepository = app.get('OrganisationUserRepository');
 
   console.log('🌱 Starting database seeding...');
 
@@ -54,11 +58,19 @@ async function seed() {
         lastName: 'Johnson'
       });
       alice = aliceResult.user;
+      // Assign usage plans to Alice
+      alice.usagePlans = ['USER', 'STORE'];
+      await userRepository.save(alice);
       console.log(`✅ Created user: ${alice.username} (ID: ${alice.id})`);
     } catch (error) {
       if (error.message?.includes('already exists')) {
         console.log('ℹ️  Alice already exists, fetching...');
         alice = await userRepository.findOne({ where: { username: 'alice' } });
+        // Update usage plans for existing user
+        if (alice) {
+          alice.usagePlans = ['USER', 'STORE'];
+          await userRepository.save(alice);
+        }
       } else {
         throw error;
       }
@@ -73,11 +85,19 @@ async function seed() {
         lastName: 'Smith'
       });
       bob = bobResult.user;
+      // Assign usage plans to Bob
+      bob.usagePlans = ['USER', 'ENTERPRISE'];
+      await userRepository.save(bob);
       console.log(`✅ Created user: ${bob.username} (ID: ${bob.id})`);
     } catch (error) {
       if (error.message?.includes('already exists')) {
         console.log('ℹ️  Bob already exists, fetching...');
         bob = await userRepository.findOne({ where: { username: 'bob' } });
+        // Update usage plans for existing user
+        if (bob) {
+          bob.usagePlans = ['USER', 'ENTERPRISE'];
+          await userRepository.save(bob);
+        }
       } else {
         throw error;
       }
@@ -92,15 +112,75 @@ async function seed() {
         lastName: 'Brown'
       });
       charlie = charlieResult.user;
+      // Assign usage plans to Charlie
+      charlie.usagePlans = ['USER'];
+      await userRepository.save(charlie);
       console.log(`✅ Created user: ${charlie.username} (ID: ${charlie.id})`);
     } catch (error) {
       if (error.message?.includes('already exists')) {
         console.log('ℹ️  Charlie already exists, fetching...');
         charlie = await userRepository.findOne({ where: { username: 'charlie' } });
+        // Update usage plans for existing user
+        if (charlie) {
+          charlie.usagePlans = ['USER'];
+          await userRepository.save(charlie);
+        }
       } else {
         throw error;
       }
     }
+
+    // Create sample organizations
+    console.log('\n🏢 Creating sample organizations...');
+
+    const orgTechCorp = await organisationRepository.save(organisationRepository.create({
+      name: 'TechCorp Solutions',
+      description: 'Leading technology solutions company',
+    }));
+    console.log(`✅ Created organization: ${orgTechCorp.name} (ID: ${orgTechCorp.id})`);
+
+    const orgStartupHub = await organisationRepository.save(organisationRepository.create({
+      name: 'Startup Hub',
+      description: 'Innovation and startup incubator',
+    }));
+    console.log(`✅ Created organization: ${orgStartupHub.name} (ID: ${orgStartupHub.id})`);
+
+    const orgConsultingGroup = await organisationRepository.save(organisationRepository.create({
+      name: 'Consulting Group',
+      description: 'Professional business consulting services',
+    }));
+    console.log(`✅ Created organization: ${orgConsultingGroup.name} (ID: ${orgConsultingGroup.id})`);
+
+    // Add users to organizations
+    console.log('\n👥 Adding users to organizations...');
+
+    // Add Alice to TechCorp as admin
+    await organisationUserRepository.save(organisationUserRepository.create({
+      userId: alice.id,
+      organisationId: orgTechCorp.id,
+    }));
+    console.log(`✅ Added ${alice.username} to ${orgTechCorp.name}`);
+
+    // Add Bob to TechCorp as regular member
+    await organisationUserRepository.save(organisationUserRepository.create({
+      userId: bob.id,
+      organisationId: orgTechCorp.id,
+    }));
+    console.log(`✅ Added ${bob.username} to ${orgTechCorp.name}`);
+
+    // Add Alice to Startup Hub as well
+    await organisationUserRepository.save(organisationUserRepository.create({
+      userId: alice.id,
+      organisationId: orgStartupHub.id,
+    }));
+    console.log(`✅ Added ${alice.username} to ${orgStartupHub.name}`);
+
+    // Add Charlie to Consulting Group
+    await organisationUserRepository.save(organisationUserRepository.create({
+      userId: charlie.id,
+      organisationId: orgConsultingGroup.id,
+    }));
+    console.log(`✅ Added ${charlie.username} to ${orgConsultingGroup.name}`);
 
     // Create sample calendars
     console.log('\n📅 Creating sample calendars...');
@@ -335,6 +415,8 @@ async function seed() {
     console.log('\n✅ Sample data creation completed!');
     console.log('\n📊 Summary:');
     console.log('👥 Users: 4 (admin, alice, bob, charlie)');
+    console.log('🏢 Organizations: 3 (TechCorp Solutions, Startup Hub, Consulting Group)');
+    console.log('👔 Organization Members: 5 relationships across users');
     console.log('📅 Calendars: 5 (2 personal, 2 shared, 1 public)');
     console.log('📝 Events: 11 (various types and recurrence patterns)');
     console.log('🤝 Shares: 3 calendar sharing relationships');

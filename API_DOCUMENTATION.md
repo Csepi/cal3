@@ -13,8 +13,11 @@
    - [Reservations](#reservations)
    - [Operating Hours](#operating-hours)
 7. [Admin](#admin)
-8. [Data Models](#data-models)
-9. [Error Handling](#error-handling)
+8. [Organisation Admin Management](#organisation-admin-management)
+9. [Reservation Calendars](#reservation-calendars)
+10. [User Permissions](#user-permissions)
+11. [Data Models](#data-models)
+12. [Error Handling](#error-handling)
 
 ---
 
@@ -1788,6 +1791,31 @@ Delete event (admin).
 
 ---
 
+### GET /admin/reservations
+Get all reservations in the system (Admin only).
+
+**Response (200 OK):**
+```json
+[
+  {
+    "id": 22,
+    "startTime": "2025-09-25T14:00:00.000Z",
+    "endTime": "2025-09-25T15:30:00.000Z",
+    "status": "confirmed",
+    "resource": {
+      "id": 14,
+      "name": "Meeting Room Alpha"
+    },
+    "createdBy": {
+      "id": 1,
+      "username": "admin"
+    }
+  }
+]
+```
+
+---
+
 ### GET /admin/calendar-shares
 Get all calendar sharing records.
 
@@ -1806,6 +1834,520 @@ Get all calendar sharing records.
     },
     "permission": "write",
     "sharedAt": "2024-01-10T00:00:00.000Z"
+  }
+]
+```
+
+---
+
+## Organisation Admin Management
+
+**Note:** These endpoints manage organisation-level administrators and user assignments. Global admins have full access, while organisation admins can only manage their assigned organisations.
+
+### POST /organisations/:id/admins
+Assign a user as organisation admin (Global admin only).
+
+**Request Body:**
+```json
+{
+  "userId": 5
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "message": "Organisation admin assigned successfully",
+  "data": {
+    "id": 1,
+    "userId": 5,
+    "organisationId": 2,
+    "createdAt": "2025-09-29T12:00:00.000Z"
+  }
+}
+```
+
+**Error Responses:**
+- `403 Forbidden` - Only global admins can assign organisation admins
+- `404 Not Found` - User or organisation not found
+
+---
+
+### DELETE /organisations/:id/admins/:userId
+Remove a user from organisation admin role (Global admin only).
+
+**Response (200 OK):**
+```json
+{
+  "message": "Organisation admin removed successfully"
+}
+```
+
+---
+
+### GET /organisations/:id/admins
+Get all organisation admins for a specific organisation.
+
+**Response (200 OK):**
+```json
+{
+  "message": "Organisation admins retrieved successfully",
+  "data": [
+    {
+      "id": 1,
+      "userId": 5,
+      "organisationId": 2,
+      "user": {
+        "id": 5,
+        "username": "orgadmin1",
+        "email": "orgadmin@example.com",
+        "firstName": "John",
+        "lastName": "Admin"
+      },
+      "createdAt": "2025-09-29T12:00:00.000Z"
+    }
+  ]
+}
+```
+
+---
+
+### POST /organisations/:id/users
+Add a user to an organisation (Org admin or Global admin).
+
+**Request Body:**
+```json
+{
+  "userId": 7
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "message": "User added to organisation successfully"
+}
+```
+
+---
+
+### DELETE /organisations/:id/users/:userId
+Remove a user from an organisation (Org admin or Global admin).
+
+**Response (200 OK):**
+```json
+{
+  "message": "User removed from organisation successfully"
+}
+```
+
+---
+
+### GET /organisations/:id/users
+Get all users in an organisation.
+
+**Response (200 OK):**
+```json
+{
+  "message": "Organisation users retrieved successfully",
+  "data": [
+    {
+      "id": 7,
+      "username": "user1",
+      "email": "user1@example.com",
+      "firstName": "Jane",
+      "lastName": "Doe"
+    }
+  ]
+}
+```
+
+---
+
+### GET /organisations/admin-roles
+Get all organisations where the current user is an admin.
+
+**Response (200 OK):**
+```json
+{
+  "message": "User organisation admin roles retrieved successfully",
+  "data": [
+    {
+      "id": 1,
+      "organisationId": 2,
+      "organisation": {
+        "id": 2,
+        "name": "Salon Elegance",
+        "description": "Premium hairdressing salon"
+      }
+    }
+  ]
+}
+```
+
+---
+
+### GET /organisations/:id/admin-status
+Check if the current user is an admin for a specific organisation.
+
+**Response (200 OK):**
+```json
+{
+  "message": "Organisation admin status retrieved successfully",
+  "data": {
+    "isAdmin": true
+  }
+}
+```
+
+---
+
+### GET /admin/organizations
+Get all organizations in the system (Global admin only).
+
+**Response (200 OK):**
+```json
+[
+  {
+    "id": 2,
+    "name": "Salon Elegance",
+    "description": "Premium hairdressing salon",
+    "isActive": true,
+    "users": [],
+    "resourceTypes": []
+  }
+]
+```
+
+---
+
+### GET /admin/users/:id/organizations
+Get organizations for a specific user (Global admin only).
+
+**Response (200 OK):**
+```json
+[
+  {
+    "id": 2,
+    "name": "Salon Elegance",
+    "description": "Premium hairdressing salon"
+  }
+]
+```
+
+---
+
+### POST /admin/users/:id/organizations
+Add user to organization (Global admin only).
+
+**Request Body:**
+```json
+{
+  "organizationId": 2
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "message": "User added to organization successfully"
+}
+```
+
+---
+
+### DELETE /admin/users/:id/organizations/:orgId
+Remove user from organization (Global admin only).
+
+**Response (200 OK):**
+```json
+{
+  "message": "User removed from organization successfully"
+}
+```
+
+---
+
+### GET /admin/organizations/:id/users
+Get organization users with roles (Global admin only).
+
+**Response (200 OK):**
+```json
+[
+  {
+    "id": 5,
+    "username": "user1",
+    "email": "user1@example.com",
+    "isOrgAdmin": true
+  }
+]
+```
+
+---
+
+### POST /admin/organizations/:id/users
+Add user to organization with role (Global admin only).
+
+**Request Body:**
+```json
+{
+  "userId": 7,
+  "role": "admin"
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "message": "User added to organization successfully"
+}
+```
+
+---
+
+## Reservation Calendars
+
+**Note:** Reservation calendars provide fine-grained access control for reservation management within organisations. Users can have different roles (editor, reviewer) on different calendars.
+
+### POST /organisations/:id/reservation-calendars
+Create a new reservation calendar for an organisation (Org admin or Global admin).
+
+**Request Body:**
+```json
+{
+  "name": "Main Booking Calendar",
+  "description": "Primary reservation calendar for all bookings"
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "message": "Reservation calendar created successfully",
+  "data": {
+    "id": 1,
+    "name": "Main Booking Calendar",
+    "description": "Primary reservation calendar for all bookings",
+    "organisationId": 2,
+    "createdAt": "2025-09-29T12:00:00.000Z"
+  }
+}
+```
+
+---
+
+### GET /organisations/:id/reservation-calendars
+Get all reservation calendars for an organisation (Org admin or Global admin).
+
+**Response (200 OK):**
+```json
+{
+  "message": "Organisation reservation calendars retrieved successfully",
+  "data": [
+    {
+      "id": 1,
+      "name": "Main Booking Calendar",
+      "description": "Primary reservation calendar",
+      "organisationId": 2,
+      "organisation": {
+        "id": 2,
+        "name": "Salon Elegance"
+      }
+    }
+  ]
+}
+```
+
+---
+
+### POST /reservation-calendars/:id/roles
+Assign a role to a user for a reservation calendar (Org admin or Global admin).
+
+**Request Body:**
+```json
+{
+  "userId": 7,
+  "role": "editor"
+}
+```
+
+**Available Roles:**
+- `editor` - Can create, edit, and delete reservations
+- `reviewer` - Can view and approve reservations, but cannot edit
+
+**Response (200 OK):**
+```json
+{
+  "message": "Calendar role assigned successfully",
+  "data": {
+    "id": 1,
+    "userId": 7,
+    "reservationCalendarId": 1,
+    "role": "editor",
+    "createdAt": "2025-09-29T12:00:00.000Z"
+  }
+}
+```
+
+---
+
+### DELETE /reservation-calendars/:id/roles/:userId
+Remove a role from a user for a reservation calendar (Org admin or Global admin).
+
+**Response (200 OK):**
+```json
+{
+  "message": "Calendar role removed successfully"
+}
+```
+
+---
+
+### GET /reservation-calendars/:id/roles
+Get all roles for a specific reservation calendar.
+
+**Response (200 OK):**
+```json
+{
+  "message": "Calendar roles retrieved successfully",
+  "data": [
+    {
+      "id": 1,
+      "userId": 7,
+      "role": "editor",
+      "user": {
+        "id": 7,
+        "username": "editor1",
+        "email": "editor@example.com"
+      }
+    },
+    {
+      "id": 2,
+      "userId": 8,
+      "role": "reviewer",
+      "user": {
+        "id": 8,
+        "username": "reviewer1",
+        "email": "reviewer@example.com"
+      }
+    }
+  ]
+}
+```
+
+---
+
+### GET /users/reservation-calendars
+Get all reservation calendars that the current user has access to.
+
+**Response (200 OK):**
+```json
+{
+  "message": "User reservation calendars retrieved successfully",
+  "data": [
+    {
+      "id": 1,
+      "name": "Main Booking Calendar",
+      "description": "Primary reservation calendar",
+      "role": "editor",
+      "organisation": {
+        "id": 2,
+        "name": "Salon Elegance"
+      }
+    }
+  ]
+}
+```
+
+---
+
+### GET /reservation-calendars/:id/my-role
+Get user's role for a specific reservation calendar.
+
+**Response (200 OK):**
+```json
+{
+  "message": "User calendar role retrieved successfully",
+  "data": {
+    "role": "editor",
+    "canEdit": true,
+    "canReview": true
+  }
+}
+```
+
+---
+
+### GET /reservation-calendars/:id/has-role/:role
+Check if user has a specific role for a reservation calendar.
+
+**Parameters:**
+- `role`: "editor" | "reviewer"
+
+**Response (200 OK):**
+```json
+{
+  "message": "Role check completed successfully",
+  "data": {
+    "hasRole": true
+  }
+}
+```
+
+---
+
+## User Permissions
+
+**Note:** These endpoints provide information about the current user's permissions and accessible resources.
+
+### GET /user-permissions
+Get current user permissions.
+
+**Response (200 OK):**
+```json
+{
+  "canAccessReservations": true,
+  "accessibleOrganizationIds": [2, 5],
+  "adminOrganizationIds": [2],
+  "editableReservationCalendarIds": [1, 3],
+  "viewableReservationCalendarIds": [1, 2, 3, 4],
+  "isSuperAdmin": false
+}
+```
+
+---
+
+### GET /user-permissions/accessible-organizations
+Get organizations accessible to current user.
+
+**Response (200 OK):**
+```json
+[
+  {
+    "id": 2,
+    "name": "Salon Elegance",
+    "description": "Premium hairdressing salon",
+    "isActive": true
+  }
+]
+```
+
+---
+
+### GET /user-permissions/accessible-reservation-calendars
+Get reservation calendars accessible to current user.
+
+**Response (200 OK):**
+```json
+[
+  {
+    "id": 1,
+    "name": "Main Booking Calendar",
+    "role": "editor",
+    "organisation": {
+      "id": 2,
+      "name": "Salon Elegance"
+    }
   }
 ]
 ```
@@ -2147,7 +2689,7 @@ For API support and questions:
 ---
 
 **Last Updated:** September 2025
-**API Version:** 1.1.0
+**API Version:** 1.2.0
 
 ## Reservation System Testing Results
 
