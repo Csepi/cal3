@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import Dashboard from './components/Dashboard'
 import { AuthCallback } from './components/auth'
+import PublicBookingPage from './components/PublicBookingPage'
 import { useState } from 'react'
 
 function App() {
@@ -18,6 +19,7 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/auth/callback" element={<AuthCallback onLogin={handleLogin} />} />
+        <Route path="/public-booking/:token" element={<PublicBookingPage />} />
         <Route path="/*" element={<Dashboard />} />
       </Routes>
     </BrowserRouter>

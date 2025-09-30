@@ -6,10 +6,12 @@ import {
   UpdateDateColumn,
   ManyToOne,
   OneToMany,
+  BeforeInsert,
 } from 'typeorm';
 import { ResourceType } from './resource-type.entity';
 import { Reservation } from './reservation.entity';
 import { User } from './user.entity';
+import { v4 as uuidv4 } from 'uuid';
 
 @Entity('resources')
 export class Resource {
@@ -27,6 +29,16 @@ export class Resource {
 
   @Column({ default: true })
   isActive: boolean;
+
+  @Column({ unique: true, nullable: true })
+  publicBookingToken: string;
+
+  @BeforeInsert()
+  generatePublicBookingToken() {
+    if (!this.publicBookingToken) {
+      this.publicBookingToken = uuidv4();
+    }
+  }
 
   @ManyToOne(() => ResourceType, (resourceType) => resourceType.resources)
   resourceType: ResourceType;

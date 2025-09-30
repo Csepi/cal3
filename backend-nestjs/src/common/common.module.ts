@@ -9,7 +9,10 @@ import { OrganisationCalendarPermission } from '../entities/organisation-calenda
 import { ReservationCalendarRole } from '../entities/reservation-calendar-role.entity';
 import { ReservationCalendar } from '../entities/reservation-calendar.entity';
 import { ResourceType } from '../entities/resource-type.entity';
+import { Resource } from '../entities/resource.entity';
+import { Reservation } from '../entities/reservation.entity';
 import { UserPermissionsService } from './services/user-permissions.service';
+import { CascadeDeletionService } from './services/cascade-deletion.service';
 
 @Global() // Make this module global so its exports are available everywhere
 @Module({
@@ -24,9 +27,11 @@ import { UserPermissionsService } from './services/user-permissions.service';
       ReservationCalendarRole,
       ReservationCalendar,
       ResourceType,
+      Resource,
+      Reservation,
     ]),
   ],
-  providers: [UserPermissionsService],
-  exports: [UserPermissionsService, TypeOrmModule],
+  providers: [UserPermissionsService, CascadeDeletionService],
+  exports: [UserPermissionsService, CascadeDeletionService, TypeOrmModule],
 })
 export class CommonModule {}

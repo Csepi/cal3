@@ -59,3 +59,7 @@ cal3-clean-deploy.zip
 
 # Claude settings
 .claude/settings.local.json
+
+# MCP configuration (contains sensitive credentials)
+.mcp.json
+settings.local.json
