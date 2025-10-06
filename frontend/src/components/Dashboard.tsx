@@ -22,6 +22,7 @@ import AdminPanel from './AdminPanel';
 import UserProfile from './UserProfile';
 import CalendarSync from './sync/CalendarSync';
 import ReservationsPanel from './ReservationsPanel';
+import { AutomationPanel } from './automation/AutomationPanel';
 import { apiService } from '../services/api';
 import { UserPermissionsService } from '../services/userPermissions';
 import { THEME_COLORS, getThemeConfig } from '../constants/theme';
@@ -29,7 +30,7 @@ import { THEME_COLORS, getThemeConfig } from '../constants/theme';
 /**
  * View types for the main navigation
  */
-type DashboardView = 'calendar' | 'admin' | 'profile' | 'sync' | 'reservations';
+type DashboardView = 'calendar' | 'admin' | 'profile' | 'sync' | 'reservations' | 'automation';
 
 const Dashboard: React.FC = () => {
   // Authentication and user state
@@ -233,6 +234,16 @@ const Dashboard: React.FC = () => {
               >
                 🔄 Calendar Sync
               </button>
+              <button
+                onClick={() => setCurrentView('automation')}
+                className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 ${
+                  currentView === 'automation'
+                    ? `${themeConfig.button} text-white shadow-lg`
+                    : `text-${themeConfig.text} hover:bg-white/50`
+                }`}
+              >
+                🤖 Automation
+              </button>
               {/* Conditionally show Reservations tab based on user permissions */}
               {canAccessReservations && (
                 <button
@@ -284,6 +295,9 @@ const Dashboard: React.FC = () => {
         )}
         {currentView === 'sync' && (
           <CalendarSync themeColor={themeColor} />
+        )}
+        {currentView === 'automation' && (
+          <AutomationPanel themeColor={themeColor} />
         )}
         {currentView === 'reservations' && canAccessReservations && (
           <ReservationsPanel themeColor={themeColor} />
