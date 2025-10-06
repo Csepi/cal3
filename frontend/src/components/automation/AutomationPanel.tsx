@@ -4,6 +4,7 @@ import { AutomationRuleDetailDto, CreateAutomationRuleDto, UpdateAutomationRuleD
 import { AutomationList } from './AutomationList';
 import { AutomationRuleModal } from './AutomationRuleModal';
 import { AutomationDetailView } from './AutomationDetailView';
+import { DeleteRuleDialog } from './dialogs/DeleteRuleDialog';
 
 interface AutomationPanelProps {
   themeColor?: string;
@@ -33,6 +34,7 @@ export function AutomationPanel({ themeColor = '#3b82f6' }: AutomationPanelProps
   const [modalOpen, setModalOpen] = useState(false);
   const [editingRule, setEditingRule] = useState<AutomationRuleDetailDto | undefined>(undefined);
   const [searchValue, setSearchValue] = useState('');
+  const [deleteDialogRule, setDeleteDialogRule] = useState<AutomationRuleDetailDto | null>(null);
 
   // Handle view rule details
   const handleViewRule = (ruleId: number) => {
@@ -54,13 +56,23 @@ export function AutomationPanel({ themeColor = '#3b82f6' }: AutomationPanelProps
     }
   };
 
-  // Handle delete rule
+  // Handle delete rule - open dialog
   const handleDeleteRule = async (ruleId: number) => {
-    if (confirm('Are you sure you want to delete this automation rule?')) {
+    const rule = rules.find((r) => r.id === ruleId);
+    if (rule) {
+      setDeleteDialogRule(rule as AutomationRuleDetailDto);
+    }
+  };
+
+  // Confirm delete from dialog
+  const confirmDeleteRule = async () => {
+    if (deleteDialogRule) {
       try {
-        await deleteRule(ruleId);
+        await deleteRule(deleteDialogRule.id);
+        setDeleteDialogRule(null);
       } catch (err) {
         console.error('Failed to delete rule:', err);
+        throw err;
       }
     }
   };
@@ -274,6 +286,16 @@ export function AutomationPanel({ themeColor = '#3b82f6' }: AutomationPanelProps
           rule={editingRule}
           onClose={handleCloseModal}
           onSave={handleSaveRule}
+          themeColor={themeColor}
+        />
+      )}
+
+      {/* Delete Confirmation Dialog */}
+      {deleteDialogRule && (
+        <DeleteRuleDialog
+          rule={deleteDialogRule}
+          onConfirm={confirmDeleteRule}
+          onCancel={() => setDeleteDialogRule(null)}
           themeColor={themeColor}
         />
       )}

@@ -3,6 +3,7 @@ import {
   NotFoundException,
   ForbiddenException,
   BadRequestException,
+  Logger,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -33,6 +34,12 @@ import {
 
 @Injectable()
 export class AutomationService {
+  private readonly logger = new Logger(AutomationService.name);
+
+  // Rate limiting: Track last execution time per rule
+  private readonly executionTimestamps = new Map<number, number>();
+  private readonly RATE_LIMIT_MS = 60000; // 1 minute cooldown between executions
+
   constructor(
     @InjectRepository(AutomationRule)
     private readonly ruleRepository: Repository<AutomationRule>,
@@ -266,6 +273,22 @@ export class AutomationService {
     if (rule.createdById !== userId) {
       throw new ForbiddenException('You do not have access to this rule');
     }
+
+    // Rate limiting check
+    const now = Date.now();
+    const lastExecution = this.executionTimestamps.get(ruleId);
+
+    if (lastExecution && now - lastExecution < this.RATE_LIMIT_MS) {
+      const remainingSeconds = Math.ceil((this.RATE_LIMIT_MS - (now - lastExecution)) / 1000);
+      throw new BadRequestException(
+        `Rate limit exceeded. Please wait ${remainingSeconds} seconds before running this rule again.`
+      );
+    }
+
+    // Update execution timestamp
+    this.executionTimestamps.set(ruleId, now);
+
+    this.logger.log(`Executing rule ${ruleId} retroactively for user ${userId}`);
 
     // Get all user's events for retroactive execution
     const events = await this.eventRepository

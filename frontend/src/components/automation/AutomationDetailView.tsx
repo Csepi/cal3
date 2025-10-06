@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { AutomationRuleDetailDto } from '../../types/Automation';
 import { useAutomationMetadata } from '../../hooks/useAutomationMetadata';
-import { formatRelativeTime } from '../../services/automationService';
+import { formatRelativeTime, executeRuleNow } from '../../services/automationService';
 import { AuditLogViewer } from './AuditLogViewer';
 import { AutomationRuleModal } from './AutomationRuleModal';
+import { RetroactiveExecutionDialog } from './dialogs/RetroactiveExecutionDialog';
+import { DeleteRuleDialog } from './dialogs/DeleteRuleDialog';
 
 interface AutomationDetailViewProps {
   rule: AutomationRuleDetailDto;
@@ -24,6 +26,8 @@ export const AutomationDetailView: React.FC<AutomationDetailViewProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<'overview' | 'history'>('overview');
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showRunNowDialog, setShowRunNowDialog] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const { getTriggerTypeLabel, getConditionFieldLabel, getOperatorLabel, getActionTypeLabel } =
     useAutomationMetadata();
@@ -35,6 +39,25 @@ export const AutomationDetailView: React.FC<AutomationDetailViewProps> = ({
   const handleEditSave = async () => {
     setShowEditModal(false);
     onUpdate();
+  };
+
+  const handleRunNow = () => {
+    setShowRunNowDialog(true);
+  };
+
+  const handleRunNowConfirm = async () => {
+    const result = await executeRuleNow(rule.id);
+    onUpdate(); // Refresh to update execution count
+    return result;
+  };
+
+  const handleDelete = () => {
+    setShowDeleteDialog(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    await onDelete();
+    setShowDeleteDialog(false);
   };
 
   return (
@@ -76,6 +99,15 @@ export const AutomationDetailView: React.FC<AutomationDetailViewProps> = ({
               />
             </button>
 
+            {/* Run Now Button */}
+            <button
+              onClick={handleRunNow}
+              style={{ backgroundColor: themeColor }}
+              className="px-3 py-2 text-white rounded-lg hover:opacity-90 transition-opacity text-sm"
+            >
+              ▶️ Run Now
+            </button>
+
             {/* Edit Button */}
             <button
               onClick={handleEdit}
@@ -86,7 +118,7 @@ export const AutomationDetailView: React.FC<AutomationDetailViewProps> = ({
 
             {/* Delete Button */}
             <button
-              onClick={onDelete}
+              onClick={handleDelete}
               className="px-3 py-2 border border-red-300 text-red-600 rounded-lg hover:bg-red-50 transition-colors text-sm"
             >
               🗑️ Delete
@@ -248,6 +280,26 @@ export const AutomationDetailView: React.FC<AutomationDetailViewProps> = ({
           rule={rule}
           onClose={() => setShowEditModal(false)}
           onSave={handleEditSave}
+          themeColor={themeColor}
+        />
+      )}
+
+      {/* Run Now Dialog */}
+      {showRunNowDialog && (
+        <RetroactiveExecutionDialog
+          rule={rule}
+          onConfirm={handleRunNowConfirm}
+          onCancel={() => setShowRunNowDialog(false)}
+          themeColor={themeColor}
+        />
+      )}
+
+      {/* Delete Confirmation Dialog */}
+      {showDeleteDialog && (
+        <DeleteRuleDialog
+          rule={rule}
+          onConfirm={handleDeleteConfirm}
+          onCancel={() => setShowDeleteDialog(false)}
           themeColor={themeColor}
         />
       )}
