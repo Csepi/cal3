@@ -2,7 +2,7 @@
 
 **Version:** 1.0
 **Last Updated:** 2025-10-06
-**Status:** Phase 5 Complete (Database + API + Rule Engine + Triggers + Frontend UI)
+**Status:** Phase 6 Complete (Database + API + Rule Engine + Triggers + Frontend UI + Advanced Builders)
 **Branch:** task_automation
 
 ---
@@ -929,9 +929,7 @@ const { data, loading, error } = useAuditLogs({
 - Loading and empty states
 - Error handling with user-friendly messages
 
-**Pending (Future - Phase 6-8):**
-- [ ] Advanced condition builder with grouping
-- [ ] Advanced action builder with all action types
+**Pending (Future - Phase 7-8):**
 - [ ] Audit log viewer UI
 - [ ] Execution statistics dashboard
 - [ ] Rule templates
@@ -939,9 +937,123 @@ const { data, loading, error } = useAuditLogs({
 - [ ] Import/export rules
 - [ ] E2E testing
 
-### Phase 6-8: Future Phases ⏳ **PENDING**
+### Phase 6: Frontend Components - Advanced Builders ✅ **COMPLETE**
 
-**Note:** Core automation system with basic frontend UI is now functional!
+**Status:** Completed 2025-10-06
+
+**Completed:**
+- ✅ Create TriggerSelector component with visual configuration
+- ✅ Create ConditionBuilder component with boolean logic
+- ✅ Create ConditionRow component with field/operator/value selection
+- ✅ Create ActionBuilder component with drag-and-drop reordering
+- ✅ Create ActionRow component with type-specific forms
+- ✅ Create SetEventColorForm component with preset colors
+- ✅ Refactor AutomationRuleModal to use new builders
+- ✅ TypeScript compilation successful
+- ✅ All components integrate seamlessly
+
+**Files Created:**
+- `frontend/src/components/automation/builders/TriggerSelector.tsx` (260 lines) - Advanced trigger configuration
+- `frontend/src/components/automation/builders/ConditionBuilder.tsx` (158 lines) - Condition management with logic
+- `frontend/src/components/automation/builders/ConditionRow.tsx` (183 lines) - Individual condition editing
+- `frontend/src/components/automation/builders/ActionBuilder.tsx` (200 lines) - Action management with reordering
+- `frontend/src/components/automation/builders/ActionRow.tsx` (204 lines) - Type-specific action forms
+- `frontend/src/components/automation/builders/SetEventColorForm.tsx` (115 lines) - Color picker with presets
+
+**Files Modified:**
+- `frontend/src/components/automation/AutomationRuleModal.tsx` - Refactored to use builder components (from 580 to 320 lines)
+
+**Features Implemented:**
+
+**TriggerSelector:**
+- Dropdown with all 7 trigger types
+- Visual icons and descriptions
+- Dynamic configuration forms:
+  - EVENT_STARTS_IN: Minutes before with preset quick-select buttons
+  - EVENT_ENDS_IN: Minutes before configuration
+  - SCHEDULED_TIME: Cron expression editor with common patterns
+- Info boxes for triggers without configuration
+- Disabled state for editing existing rules (trigger type is immutable)
+
+**ConditionBuilder:**
+- AND/OR logic operator selection at rule level
+- Visual logic operator indicators between conditions
+- Add/remove conditions dynamically (1-10 max)
+- Validation warnings for empty or excessive conditions
+- Helper text and tooltips
+
+**ConditionRow:**
+- Three-column layout: Field | Operator | Value
+- Field selector with all 11 event fields
+- Operator selector (filtered by selected field's data type)
+- Smart value input:
+  - Text input for strings
+  - Number input for numeric fields
+  - Color picker for color fields
+  - Textarea for long strings
+  - Auto-hide for operators that don't need values (is_empty, is_true, etc.)
+- Field metadata display (data type)
+- Delete button (hidden when only one condition)
+
+**ActionBuilder:**
+- Drag-and-drop reordering (native HTML5 drag API)
+- Order indicators (1, 2, 3...)
+- Add/remove actions dynamically (1-5 max)
+- Validation warnings
+- Coming soon actions list
+- Helper text about execution order
+
+**ActionRow:**
+- Action type selector with icons and descriptions
+- Drag handle for reordering
+- Type-specific configuration forms:
+  - SET_EVENT_COLOR: Full color picker with 16 presets
+  - ADD_EVENT_TAG: Tag input
+  - SEND_NOTIFICATION: Title + message fields
+  - UPDATE_EVENT_TITLE: Template with {{originalTitle}} support
+  - UPDATE_EVENT_DESCRIPTION: New text + mode (replace/append/prepend)
+- Coming soon placeholders for unimplemented actions
+- Delete button (hidden when only one action)
+
+**SetEventColorForm:**
+- Native HTML5 color picker
+- Hex color text input with validation
+- 16 preset color buttons (matching app theme colors)
+- Live preview of selected color
+- Preview event card showing color in context
+- Visual feedback for selected preset
+
+**User Experience Improvements:**
+- Character counters for name (200) and description (1000)
+- Validation with user-friendly error messages
+- Loading states during save
+- Responsive layout (max-w-5xl modal)
+- Scrollable content area
+- Sticky header and footer
+- Improved visual hierarchy with section dividers
+- Consistent spacing and padding
+- Better form labeling and help text
+
+**Technical Highlights:**
+- Modular component architecture
+- Reusable builder components
+- Type-safe props and state management
+- Native HTML5 drag-and-drop (no external libraries)
+- Dynamic form rendering based on selected types
+- Smart field filtering (operators by field type)
+- Comprehensive validation before save
+
+**Pending (Future - Phase 7-8):**
+- [ ] Audit log viewer UI
+- [ ] Execution statistics dashboard
+- [ ] Rule templates
+- [ ] Bulk operations
+- [ ] Import/export rules
+- [ ] E2E testing
+
+### Phase 7-8: Future Phases ⏳ **PENDING**
+
+**Note:** Core automation system with advanced UI builders is now functional!
 
 See [Implementation Roadmap](#implementation-roadmap) for details on advanced features.
 
