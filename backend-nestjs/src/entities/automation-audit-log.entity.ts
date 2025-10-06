@@ -7,6 +7,7 @@ import {
 } from 'typeorm';
 import { AutomationRule, TriggerType } from './automation-rule.entity';
 import { Event } from './event.entity';
+import { User } from './user.entity';
 
 export enum AuditLogStatus {
   SUCCESS = 'success',
@@ -76,6 +77,17 @@ export class AutomationAuditLog {
 
   @Column({ default: 0 })
   duration_ms: number;
+
+  // Alias for API compatibility
+  get executionTimeMs(): number {
+    return this.duration_ms;
+  }
+
+  @ManyToOne(() => User, { nullable: true, onDelete: 'SET NULL' })
+  executedBy: User;
+
+  @Column({ nullable: true })
+  executedByUserId: number;
 
   @CreateDateColumn()
   executedAt: Date;

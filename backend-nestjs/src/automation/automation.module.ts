@@ -6,6 +6,8 @@ import { AutomationAction } from '../entities/automation-action.entity';
 import { AutomationAuditLog } from '../entities/automation-audit-log.entity';
 import { Event } from '../entities/event.entity';
 import { Calendar } from '../entities/calendar.entity';
+import { AutomationController } from './automation.controller';
+import { AutomationService } from './automation.service';
 
 @Module({
   imports: [
@@ -18,8 +20,8 @@ import { Calendar } from '../entities/calendar.entity';
       Calendar,
     ]),
   ],
-  controllers: [],
-  providers: [],
-  exports: [],
+  controllers: [AutomationController],
+  providers: [AutomationService],
+  exports: [AutomationService],
 })
 export class AutomationModule {}
