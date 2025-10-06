@@ -236,23 +236,13 @@ export const useOrganizationDetails = (orgId: number | null) => {
         throw new Error('No admin token found. Please login as admin.');
       }
 
-      if (role === 'admin') {
-        // Assign as organization admin
-        await adminApiCall({
-          endpoint: `/organisations/${orgId}/admins`,
-          token,
-          method: 'POST',
-          data: { userId }
-        });
-      } else {
-        // Assign as editor or user
-        await adminApiCall({
-          endpoint: `/organisations/${orgId}/users`,
-          token,
-          method: 'POST',
-          data: { userId, role }
-        });
-      }
+      // Use the assign endpoint that accepts role
+      await adminApiCall({
+        endpoint: `/organisations/${orgId}/users/assign`,
+        token,
+        method: 'POST',
+        data: { userId, role }
+      });
 
       // Reload organization data
       await loadOrganizationData();

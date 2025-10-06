@@ -24,8 +24,9 @@ interface ResourceInfo {
 }
 
 interface TimeSlot {
-  start: string;
-  end: string;
+  startTime: string;
+  endTime: string;
+  available: boolean;
 }
 
 interface CustomerInfo {
@@ -133,15 +134,16 @@ const PublicBookingPage: React.FC = () => {
       setSubmitting(true);
       setError(null);
 
+      // The backend expects startTime and endTime as full ISO date strings, not just time
+      // selectedSlot.startTime and endTime are already ISO strings from the backend
       const bookingData = {
-        date: selectedDate,
-        startTime: selectedSlot.start,
-        endTime: selectedSlot.end,
+        startTime: selectedSlot.startTime,
+        endTime: selectedSlot.endTime,
         customerName,
         customerEmail,
         customerPhone,
-        customerInfo: Object.keys(customerInfo).length > 0 ? customerInfo : undefined,
-        notes: bookingNotes || undefined
+        notes: bookingNotes || undefined,
+        quantity: 1
       };
 
       const response = await fetch(`${API_BASE_URL}/api/public/booking/${token}/reserve`, {
@@ -183,8 +185,18 @@ const PublicBookingPage: React.FC = () => {
   };
 
   const formatTime = (time: string) => {
-    const [hours, minutes] = time.split(':');
-    const hour = parseInt(hours, 10);
+    // Handle ISO timestamps like "2025-10-01T13:00:00.000Z" and simple time formats like "HH:mm:ss"
+    let timeStr = time;
+
+    // If it's an ISO timestamp, extract just the time portion
+    if (time.includes('T')) {
+      const date = new Date(time);
+      timeStr = date.toTimeString().split(' ')[0]; // Gets "HH:mm:ss"
+    }
+
+    const parts = timeStr.split(':');
+    const hour = parseInt(parts[0], 10);
+    const minutes = parts[1] || '00';
     const ampm = hour >= 12 ? 'PM' : 'AM';
     const displayHour = hour > 12 ? hour - 12 : hour === 0 ? 12 : hour;
     return `${displayHour}:${minutes} ${ampm}`;
@@ -351,17 +363,19 @@ const PublicBookingPage: React.FC = () => {
                 </div>
               ) : (
                 <div className="grid grid-cols-2 gap-2 max-h-96 overflow-y-auto">
-                  {availableSlots.map((slot, index) => (
+                  {availableSlots
+                    .filter(slot => slot.available)
+                    .map((slot, index) => (
                     <button
                       key={index}
                       onClick={() => handleSlotSelect(slot)}
                       className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
-                        selectedSlot?.start === slot.start && selectedSlot?.end === slot.end
+                        selectedSlot?.startTime === slot.startTime && selectedSlot?.endTime === slot.endTime
                           ? 'bg-blue-600 text-white'
                           : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                       }`}
                     >
-                      {formatTime(slot.start)} - {formatTime(slot.end)}
+                      {formatTime(slot.startTime)} - {formatTime(slot.endTime)}
                     </button>
                   ))}
                 </div>
@@ -395,7 +409,7 @@ const PublicBookingPage: React.FC = () => {
                     })}
                   </p>
                   <p className="text-md text-blue-800">
-                    {formatTime(selectedSlot.start)} - {formatTime(selectedSlot.end)}
+                    {formatTime(selectedSlot.startTime)} - {formatTime(selectedSlot.endTime)}
                   </p>
                 </div>
 

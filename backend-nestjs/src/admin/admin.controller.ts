@@ -231,4 +231,12 @@ export class AdminController {
   ) {
     return this.adminService.addUserToOrganizationWithRole(addUserDto.userId, +id, addUserDto.role);
   }
+
+  // PUBLIC BOOKING INITIALIZATION
+  @Post('public-booking/initialize')
+  @ApiOperation({ summary: 'Initialize public booking (generate tokens and operating hours) (Admin only)' })
+  @ApiResponse({ status: 200, description: 'Public booking initialized successfully' })
+  initializePublicBooking() {
+    return this.adminService.initializePublicBooking();
+  }
 }

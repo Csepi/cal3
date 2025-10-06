@@ -88,6 +88,75 @@ const ReservationsPanel: React.FC<ReservationsPanelProps> = ({ themeColor = '#3b
     loading: false
   });
 
+  // Add Resource Type modal state
+  const [resourceTypeModal, setResourceTypeModal] = useState<{
+    isOpen: boolean;
+    loading: boolean;
+    editMode: boolean;
+    editId: number | null;
+    name: string;
+    description: string;
+    minBookingDuration: string;
+    bufferTime: string;
+  }>({
+    isOpen: false,
+    loading: false,
+    editMode: false,
+    editId: null,
+    name: '',
+    description: '',
+    minBookingDuration: '30',
+    bufferTime: '0'
+  });
+
+  // Add Resource modal state
+  const [resourceModal, setResourceModal] = useState<{
+    isOpen: boolean;
+    loading: boolean;
+    editMode: boolean;
+    editId: number | null;
+    name: string;
+    description: string;
+    capacity: string;
+    resourceTypeId: string;
+  }>({
+    isOpen: false,
+    loading: false,
+    editMode: false,
+    editId: null,
+    name: '',
+    description: '',
+    capacity: '1',
+    resourceTypeId: ''
+  });
+
+  // Add Reservation modal state
+  const [reservationModal, setReservationModal] = useState<{
+    isOpen: boolean;
+    loading: boolean;
+    resourceId: string;
+    startDate: string;
+    startTime: string;
+    endTime: string;
+    customerName: string;
+    customerEmail: string;
+    customerPhone: string;
+    notes: string;
+    quantity: string;
+  }>({
+    isOpen: false,
+    loading: false,
+    resourceId: '',
+    startDate: new Date().toISOString().split('T')[0], // Today's date
+    startTime: '09:00',
+    endTime: '10:00',
+    customerName: '',
+    customerEmail: '',
+    customerPhone: '',
+    notes: '',
+    quantity: '1'
+  });
+
   // Theme configuration
   const getThemeColors = (color: string) => {
     const colorMap: Record<string, any> = {
@@ -130,6 +199,10 @@ const ReservationsPanel: React.FC<ReservationsPanelProps> = ({ themeColor = '#3b
       setLoading(true);
       setError(null);
 
+      // Get current logged-in user's profile to get their ID
+      const userProfile = await apiService.getUserProfile();
+      const currentUserId = userProfile.id;
+
       const orgs = await UserPermissionsService.getAccessibleOrganizations();
 
       // Get user-organization roles from the organizations endpoint
@@ -138,12 +211,18 @@ const ReservationsPanel: React.FC<ReservationsPanelProps> = ({ themeColor = '#3b
           try {
             // Try to get organization users to determine role
             const users = await apiService.get(`/organisations/${org.id}/users/list`);
-            const currentUser = users.find((u: any) => u.userId === org.userId);
+            const currentUserInOrg = users.find((u: any) => u.userId === currentUserId);
+
+            // Map role from backend ('admin', 'editor', 'user') to frontend format ('ORG_ADMIN', 'EDITOR', 'USER')
+            const role = currentUserInOrg?.role;
+            const mappedRole = role === 'admin' ? 'ORG_ADMIN' : role === 'editor' ? 'EDITOR' : 'USER';
+
             return {
               ...org,
-              role: currentUser?.role || 'USER'
+              role: mappedRole
             };
           } catch (err) {
+            console.error(`Failed to fetch users for org ${org.id}:`, err);
             // If can't fetch users, default to USER role
             return { ...org, role: 'USER' as const };
           }
@@ -301,6 +380,326 @@ const ReservationsPanel: React.FC<ReservationsPanelProps> = ({ themeColor = '#3b
       item: null,
       preview: null,
       loading: false
+    });
+  };
+
+  // Public Booking Initialization
+  const handleInitializePublicBooking = async () => {
+    if (!confirm('This will generate public booking tokens for all resources and default operating hours for all resource types. Continue?')) {
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const result = await apiService.post('/admin/public-booking/initialize', {});
+
+      alert(`Public booking initialized successfully!\n\nResources updated: ${result.resourcesUpdated}\nResource types with hours: ${result.resourceTypesWithHours}${result.errors.length > 0 ? '\n\nErrors: ' + result.errors.join('\n') : ''}`);
+
+      // Reload data to show updated tokens
+      await loadOrganizationData();
+    } catch (err: any) {
+      console.error('Failed to initialize public booking:', err);
+      alert(`Failed to initialize public booking: ${err.message || 'Unknown error'}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Resource Type handlers
+  const handleAddResourceTypeClick = () => {
+    setResourceTypeModal({
+      isOpen: true,
+      loading: false,
+      editMode: false,
+      editId: null,
+      name: '',
+      description: '',
+      minBookingDuration: '30',
+      bufferTime: '0'
+    });
+  };
+
+  const handleEditResourceTypeClick = (type: ResourceType) => {
+    setResourceTypeModal({
+      isOpen: true,
+      loading: false,
+      editMode: true,
+      editId: type.id,
+      name: type.name,
+      description: type.description || '',
+      minBookingDuration: String(type.minBookingDuration || 30),
+      bufferTime: String(type.bufferTime || 0)
+    });
+  };
+
+  const handleSaveResourceType = async () => {
+    if (!resourceTypeModal.name.trim()) {
+      alert('Please enter a resource type name');
+      return;
+    }
+
+    if (!resourceTypeModal.editMode && !selectedOrgId) {
+      alert('No organization selected');
+      return;
+    }
+
+    try {
+      setResourceTypeModal(prev => ({ ...prev, loading: true }));
+
+      const payload: any = {
+        name: resourceTypeModal.name.trim(),
+      };
+
+      // Add organisationId only for create mode
+      if (!resourceTypeModal.editMode) {
+        payload.organisationId = selectedOrgId;
+      }
+
+      // Only add optional fields if they have values
+      if (resourceTypeModal.description.trim()) {
+        payload.description = resourceTypeModal.description.trim();
+      }
+
+      const minDuration = parseInt(resourceTypeModal.minBookingDuration);
+      if (!isNaN(minDuration) && minDuration > 0) {
+        payload.minBookingDuration = minDuration;
+      }
+
+      const buffer = parseInt(resourceTypeModal.bufferTime);
+      if (!isNaN(buffer) && buffer >= 0) {
+        payload.bufferTime = buffer;
+      }
+
+      if (resourceTypeModal.editMode && resourceTypeModal.editId) {
+        // Update existing resource type
+        await apiService.patch(`/resource-types/${resourceTypeModal.editId}`, payload);
+      } else {
+        // Create new resource type
+        await apiService.post('/resource-types', payload);
+      }
+
+      // Reload organization data
+      await loadOrganizationData();
+
+      // Close modal
+      setResourceTypeModal({
+        isOpen: false,
+        loading: false,
+        editMode: false,
+        editId: null,
+        name: '',
+        description: '',
+        minBookingDuration: '30',
+        bufferTime: '0'
+      });
+    } catch (err: any) {
+      console.error(`Failed to ${resourceTypeModal.editMode ? 'update' : 'create'} resource type:`, err);
+      alert(`Failed to ${resourceTypeModal.editMode ? 'update' : 'create'} resource type: ${err.message || 'Unknown error'}`);
+      setResourceTypeModal(prev => ({ ...prev, loading: false }));
+    }
+  };
+
+  const handleResourceTypeModalClose = () => {
+    setResourceTypeModal({
+      isOpen: false,
+      loading: false,
+      editMode: false,
+      editId: null,
+      name: '',
+      description: '',
+      minBookingDuration: '30',
+      bufferTime: '0'
+    });
+  };
+
+  // Resource handlers
+  const handleAddResourceClick = () => {
+    setResourceModal({
+      isOpen: true,
+      loading: false,
+      editMode: false,
+      editId: null,
+      name: '',
+      description: '',
+      capacity: '1',
+      resourceTypeId: resourceTypes.length > 0 ? String(resourceTypes[0].id) : ''
+    });
+  };
+
+  const handleEditResourceClick = (resource: Resource) => {
+    setResourceModal({
+      isOpen: true,
+      loading: false,
+      editMode: true,
+      editId: resource.id,
+      name: resource.name,
+      description: resource.description || '',
+      capacity: String(resource.capacity || 1),
+      resourceTypeId: String(resource.resourceTypeId)
+    });
+  };
+
+  const handleSaveResource = async () => {
+    if (!resourceModal.name.trim()) {
+      alert('Please enter a resource name');
+      return;
+    }
+
+    if (!resourceModal.resourceTypeId) {
+      alert('Please select a resource type');
+      return;
+    }
+
+    try {
+      setResourceModal(prev => ({ ...prev, loading: true }));
+
+      const payload: any = {
+        name: resourceModal.name.trim(),
+      };
+
+      // Add resourceTypeId only for create mode
+      if (!resourceModal.editMode) {
+        payload.resourceTypeId = parseInt(resourceModal.resourceTypeId);
+      }
+
+      // Only add optional fields if they have values
+      if (resourceModal.description.trim()) {
+        payload.description = resourceModal.description.trim();
+      }
+
+      const capacity = parseInt(resourceModal.capacity);
+      if (!isNaN(capacity) && capacity > 0) {
+        payload.capacity = capacity;
+      }
+
+      if (resourceModal.editMode && resourceModal.editId) {
+        // Update existing resource
+        await apiService.patch(`/resources/${resourceModal.editId}`, payload);
+      } else {
+        // Create new resource
+        payload.resourceTypeId = parseInt(resourceModal.resourceTypeId);
+        await apiService.post('/resources', payload);
+      }
+
+      // Reload organization data
+      await loadOrganizationData();
+
+      // Close modal
+      setResourceModal({
+        isOpen: false,
+        loading: false,
+        editMode: false,
+        editId: null,
+        name: '',
+        description: '',
+        capacity: '1',
+        resourceTypeId: ''
+      });
+    } catch (err: any) {
+      console.error(`Failed to ${resourceModal.editMode ? 'update' : 'create'} resource:`, err);
+      alert(`Failed to ${resourceModal.editMode ? 'update' : 'create'} resource: ${err.message || 'Unknown error'}`);
+      setResourceModal(prev => ({ ...prev, loading: false }));
+    }
+  };
+
+  const handleResourceModalClose = () => {
+    setResourceModal({
+      isOpen: false,
+      loading: false,
+      editMode: false,
+      editId: null,
+      name: '',
+      description: '',
+      capacity: '1',
+      resourceTypeId: ''
+    });
+  };
+
+  // Reservation handlers
+  const handleAddReservationClick = () => {
+    setReservationModal({
+      isOpen: true,
+      loading: false,
+      resourceId: '',
+      startDate: new Date().toISOString().split('T')[0],
+      startTime: '09:00',
+      endTime: '10:00',
+      customerName: '',
+      customerEmail: '',
+      customerPhone: '',
+      notes: '',
+      quantity: '1'
+    });
+  };
+
+  const handleSaveReservation = async () => {
+    if (!reservationModal.resourceId) {
+      alert('Please select a resource');
+      return;
+    }
+    if (!reservationModal.customerName.trim() || !reservationModal.customerEmail.trim() || !reservationModal.customerPhone.trim()) {
+      alert('Please fill in all required customer information');
+      return;
+    }
+
+    try {
+      setReservationModal(prev => ({ ...prev, loading: true }));
+
+      // Combine date and time into ISO strings
+      const startDateTime = new Date(`${reservationModal.startDate}T${reservationModal.startTime}:00`).toISOString();
+      const endDateTime = new Date(`${reservationModal.startDate}T${reservationModal.endTime}:00`).toISOString();
+
+      const payload = {
+        resourceId: parseInt(reservationModal.resourceId),
+        startTime: startDateTime,
+        endTime: endDateTime,
+        quantity: parseInt(reservationModal.quantity),
+        customerName: reservationModal.customerName.trim(),
+        customerEmail: reservationModal.customerEmail.trim(),
+        customerPhone: reservationModal.customerPhone.trim(),
+        notes: reservationModal.notes.trim() || undefined,
+        status: 'CONFIRMED'
+      };
+
+      await apiService.post('/reservations', payload);
+
+      // Reload organization data
+      await loadOrganizationData();
+
+      // Close modal
+      setReservationModal({
+        isOpen: false,
+        loading: false,
+        resourceId: '',
+        startDate: new Date().toISOString().split('T')[0],
+        startTime: '09:00',
+        endTime: '10:00',
+        customerName: '',
+        customerEmail: '',
+        customerPhone: '',
+        notes: '',
+        quantity: '1'
+      });
+    } catch (err: any) {
+      console.error('Failed to create reservation:', err);
+      alert(`Failed to create reservation: ${err.message || 'Unknown error'}`);
+      setReservationModal(prev => ({ ...prev, loading: false }));
+    }
+  };
+
+  const handleReservationModalClose = () => {
+    setReservationModal({
+      isOpen: false,
+      loading: false,
+      resourceId: '',
+      startDate: new Date().toISOString().split('T')[0],
+      startTime: '09:00',
+      endTime: '10:00',
+      customerName: '',
+      customerEmail: '',
+      customerPhone: '',
+      notes: '',
+      quantity: '1'
     });
   };
 
@@ -474,11 +873,25 @@ const ReservationsPanel: React.FC<ReservationsPanelProps> = ({ themeColor = '#3b
                 <div>
                   <div className="flex items-center justify-between mb-6">
                     <h2 className="text-2xl font-bold text-gray-800">📋 Resource Types</h2>
-                    {canEdit() && (
-                      <button className={`${themeColors.primary} text-white px-4 py-2 rounded-xl font-medium`}>
-                        + Add Resource Type
-                      </button>
-                    )}
+                    <div className="flex gap-2">
+                      {canManageUsers() && (
+                        <button
+                          onClick={handleInitializePublicBooking}
+                          className="bg-purple-600 text-white px-4 py-2 rounded-xl font-medium hover:opacity-90 transition-opacity"
+                          title="Generate public booking tokens and default operating hours"
+                        >
+                          🔧 Initialize Public Booking
+                        </button>
+                      )}
+                      {canEdit() && (
+                        <button
+                          onClick={handleAddResourceTypeClick}
+                          className={`${themeColors.primary} text-white px-4 py-2 rounded-xl font-medium hover:opacity-90 transition-opacity`}
+                        >
+                          + Add Resource Type
+                        </button>
+                      )}
+                    </div>
                   </div>
                   {resourceTypes.length === 0 ? (
                     <div className="text-center py-12 text-gray-500">
@@ -501,7 +914,10 @@ const ReservationsPanel: React.FC<ReservationsPanelProps> = ({ themeColor = '#3b
                             </div>
                             {canEdit() && (
                               <div className="flex gap-2">
-                                <button className="text-blue-600 hover:text-blue-800 px-3 py-1 rounded-lg hover:bg-blue-50">
+                                <button
+                                  onClick={() => handleEditResourceTypeClick(type)}
+                                  className="text-blue-600 hover:text-blue-800 px-3 py-1 rounded-lg hover:bg-blue-50"
+                                >
                                   Edit
                                 </button>
                                 <button
@@ -525,7 +941,10 @@ const ReservationsPanel: React.FC<ReservationsPanelProps> = ({ themeColor = '#3b
                   <div className="flex items-center justify-between mb-6">
                     <h2 className="text-2xl font-bold text-gray-800">🪑 Resources</h2>
                     {canEdit() && (
-                      <button className={`${themeColors.primary} text-white px-4 py-2 rounded-xl font-medium`}>
+                      <button
+                        onClick={handleAddResourceClick}
+                        className={`${themeColors.primary} text-white px-4 py-2 rounded-xl font-medium hover:opacity-90 transition-opacity`}
+                      >
                         + Add Resource
                       </button>
                     )}
@@ -571,7 +990,10 @@ const ReservationsPanel: React.FC<ReservationsPanelProps> = ({ themeColor = '#3b
                             </div>
                             {canEdit() && (
                               <div className="flex gap-2 ml-4">
-                                <button className="text-blue-600 hover:text-blue-800 px-3 py-1 rounded-lg hover:bg-blue-50 text-sm">
+                                <button
+                                  onClick={() => handleEditResourceClick(resource)}
+                                  className="text-blue-600 hover:text-blue-800 px-3 py-1 rounded-lg hover:bg-blue-50 text-sm"
+                                >
                                   Edit
                                 </button>
                                 <button
@@ -594,6 +1016,14 @@ const ReservationsPanel: React.FC<ReservationsPanelProps> = ({ themeColor = '#3b
                 <div>
                   <div className="flex items-center justify-between mb-6">
                     <h2 className="text-2xl font-bold text-gray-800">📆 Reservations</h2>
+                    {canEdit() && (
+                      <button
+                        onClick={handleAddReservationClick}
+                        className={`${themeColors.primary} text-white px-4 py-2 rounded-xl font-medium hover:opacity-90 transition-opacity`}
+                      >
+                        + Create Reservation
+                      </button>
+                    )}
                   </div>
                   {reservations.length === 0 ? (
                     <div className="text-center py-12 text-gray-500">
@@ -665,6 +1095,207 @@ const ReservationsPanel: React.FC<ReservationsPanelProps> = ({ themeColor = '#3b
         )}
       </div>
 
+      {/* Add/Edit Resource Type Modal */}
+      {resourceTypeModal.isOpen && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-3xl shadow-2xl max-w-lg w-full p-8 max-h-[90vh] overflow-y-auto">
+            <h2 className="text-2xl font-bold text-gray-800 mb-6">
+              📋 {resourceTypeModal.editMode ? 'Edit' : 'Add'} Resource Type
+            </h2>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Name <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={resourceTypeModal.name}
+                  onChange={(e) => setResourceTypeModal(prev => ({ ...prev, name: e.target.value }))}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="e.g., Meeting Room, Desk, Equipment"
+                  disabled={resourceTypeModal.loading}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Description
+                </label>
+                <textarea
+                  value={resourceTypeModal.description}
+                  onChange={(e) => setResourceTypeModal(prev => ({ ...prev, description: e.target.value }))}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Optional description"
+                  rows={3}
+                  disabled={resourceTypeModal.loading}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Min Booking Duration (minutes)
+                  </label>
+                  <input
+                    type="number"
+                    value={resourceTypeModal.minBookingDuration}
+                    onChange={(e) => setResourceTypeModal(prev => ({ ...prev, minBookingDuration: e.target.value }))}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    min="1"
+                    disabled={resourceTypeModal.loading}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Buffer Time (minutes)
+                  </label>
+                  <input
+                    type="number"
+                    value={resourceTypeModal.bufferTime}
+                    onChange={(e) => setResourceTypeModal(prev => ({ ...prev, bufferTime: e.target.value }))}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    min="0"
+                    disabled={resourceTypeModal.loading}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-3 mt-8">
+              <button
+                onClick={handleResourceTypeModalClose}
+                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-xl font-medium hover:bg-gray-50 transition-colors"
+                disabled={resourceTypeModal.loading}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSaveResourceType}
+                className={`flex-1 px-4 py-2 ${themeColors.primary} text-white rounded-xl font-medium transition-opacity ${resourceTypeModal.loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                disabled={resourceTypeModal.loading}
+              >
+                {resourceTypeModal.loading
+                  ? (resourceTypeModal.editMode ? 'Saving...' : 'Creating...')
+                  : (resourceTypeModal.editMode ? 'Save' : 'Create')
+                }
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add/Edit Resource Modal */}
+      {resourceModal.isOpen && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-3xl shadow-2xl max-w-lg w-full p-8 max-h-[90vh] overflow-y-auto">
+            <h2 className="text-2xl font-bold text-gray-800 mb-6">
+              🪑 {resourceModal.editMode ? 'Edit' : 'Add'} Resource
+            </h2>
+
+            {resourceTypes.length === 0 ? (
+              <div className="text-center py-8">
+                <p className="text-gray-600 mb-4">You need to create a resource type first before adding resources.</p>
+                <button
+                  onClick={() => {
+                    handleResourceModalClose();
+                    handleAddResourceTypeClick();
+                  }}
+                  className={`${themeColors.primary} text-white px-4 py-2 rounded-xl font-medium`}
+                >
+                  Create Resource Type
+                </button>
+              </div>
+            ) : (
+              <>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Name <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={resourceModal.name}
+                      onChange={(e) => setResourceModal(prev => ({ ...prev, name: e.target.value }))}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="e.g., Conference Room A, Desk #12"
+                      disabled={resourceModal.loading}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Description
+                    </label>
+                    <textarea
+                      value={resourceModal.description}
+                      onChange={(e) => setResourceModal(prev => ({ ...prev, description: e.target.value }))}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Optional description"
+                      rows={3}
+                      disabled={resourceModal.loading}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Resource Type <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      value={resourceModal.resourceTypeId}
+                      onChange={(e) => setResourceModal(prev => ({ ...prev, resourceTypeId: e.target.value }))}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      disabled={resourceModal.loading}
+                    >
+                      {resourceTypes.map((type) => (
+                        <option key={type.id} value={type.id}>
+                          {type.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Capacity
+                    </label>
+                    <input
+                      type="number"
+                      value={resourceModal.capacity}
+                      onChange={(e) => setResourceModal(prev => ({ ...prev, capacity: e.target.value }))}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      min="1"
+                      disabled={resourceModal.loading}
+                    />
+                  </div>
+                </div>
+
+                <div className="flex gap-3 mt-8">
+                  <button
+                    onClick={handleResourceModalClose}
+                    className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-xl font-medium hover:bg-gray-50 transition-colors"
+                    disabled={resourceModal.loading}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleSaveResource}
+                    className={`flex-1 px-4 py-2 ${themeColors.primary} text-white rounded-xl font-medium transition-opacity ${resourceModal.loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    disabled={resourceModal.loading}
+                  >
+                    {resourceModal.loading
+                      ? (resourceModal.editMode ? 'Saving...' : 'Creating...')
+                      : (resourceModal.editMode ? 'Save' : 'Create')
+                    }
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Delete Confirmation Modal */}
       <DeleteConfirmationModal
         isOpen={deleteModal.isOpen}
@@ -676,6 +1307,170 @@ const ReservationsPanel: React.FC<ReservationsPanelProps> = ({ themeColor = '#3b
         cascadePreview={deleteModal.preview}
         isLoading={deleteModal.loading}
       />
+
+      {/* Create Reservation Modal */}
+      {reservationModal.isOpen && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-3xl shadow-2xl max-w-2xl w-full p-8 max-h-[90vh] overflow-y-auto">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">Create Reservation</h2>
+
+            <div className="space-y-4">
+              {/* Resource Selection */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Resource <span className="text-red-500">*</span>
+                </label>
+                <select
+                  value={reservationModal.resourceId}
+                  onChange={(e) => setReservationModal(prev => ({ ...prev, resourceId: e.target.value }))}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  disabled={reservationModal.loading}
+                >
+                  <option value="">Select a resource</option>
+                  {resources.map(resource => (
+                    <option key={resource.id} value={resource.id}>
+                      {resource.name} ({resource.resourceType?.name})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Date */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Date <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="date"
+                  value={reservationModal.startDate}
+                  onChange={(e) => setReservationModal(prev => ({ ...prev, startDate: e.target.value }))}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  disabled={reservationModal.loading}
+                />
+              </div>
+
+              {/* Time Range */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Start Time <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="time"
+                    value={reservationModal.startTime}
+                    onChange={(e) => setReservationModal(prev => ({ ...prev, startTime: e.target.value }))}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    disabled={reservationModal.loading}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    End Time <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="time"
+                    value={reservationModal.endTime}
+                    onChange={(e) => setReservationModal(prev => ({ ...prev, endTime: e.target.value }))}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    disabled={reservationModal.loading}
+                  />
+                </div>
+              </div>
+
+              {/* Quantity */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Quantity <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  value={reservationModal.quantity}
+                  onChange={(e) => setReservationModal(prev => ({ ...prev, quantity: e.target.value }))}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  disabled={reservationModal.loading}
+                />
+              </div>
+
+              {/* Customer Information */}
+              <div className="border-t border-gray-200 pt-4 mt-4">
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">Customer Information</h3>
+
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Full Name <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={reservationModal.customerName}
+                      onChange={(e) => setReservationModal(prev => ({ ...prev, customerName: e.target.value }))}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      disabled={reservationModal.loading}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Email <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="email"
+                      value={reservationModal.customerEmail}
+                      onChange={(e) => setReservationModal(prev => ({ ...prev, customerEmail: e.target.value }))}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      disabled={reservationModal.loading}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Phone <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="tel"
+                      value={reservationModal.customerPhone}
+                      onChange={(e) => setReservationModal(prev => ({ ...prev, customerPhone: e.target.value }))}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      disabled={reservationModal.loading}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Notes
+                    </label>
+                    <textarea
+                      value={reservationModal.notes}
+                      onChange={(e) => setReservationModal(prev => ({ ...prev, notes: e.target.value }))}
+                      rows={3}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                      disabled={reservationModal.loading}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={handleSaveReservation}
+                disabled={reservationModal.loading}
+                className="flex-1 bg-blue-600 text-white px-6 py-3 rounded-xl font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {reservationModal.loading ? 'Creating...' : 'Create Reservation'}
+              </button>
+              <button
+                onClick={handleReservationModalClose}
+                disabled={reservationModal.loading}
+                className="flex-1 bg-gray-100 text-gray-700 px-6 py-3 rounded-xl font-medium hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

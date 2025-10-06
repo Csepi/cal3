@@ -1,4 +1,4 @@
-import { IsString, IsOptional, IsEmail, MinLength, Matches, IsNumber, IsIn, Min, Max, IsArray, IsEnum } from 'class-validator';
+import { IsString, IsOptional, IsEmail, MinLength, Matches, IsNumber, IsIn, Min, Max, IsArray, IsEnum, IsBoolean } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { UsagePlan } from '../entities/user.entity';
 
@@ -47,6 +47,17 @@ export class UpdateProfileDto {
   @IsString()
   @IsIn(['12h', '24h'])
   timeFormat?: string;
+
+  @ApiPropertyOptional({ example: false, description: 'Hide the Reservations tab in the UI' })
+  @IsOptional()
+  @IsBoolean()
+  hideReservationsTab?: boolean;
+
+  @ApiPropertyOptional({ example: [1, 2, 3], description: 'Array of resource IDs to hide in calendar view' })
+  @IsOptional()
+  @IsArray()
+  @IsNumber({}, { each: true })
+  hiddenResourceIds?: number[];
 }
 
 export class UpdateThemeDto {

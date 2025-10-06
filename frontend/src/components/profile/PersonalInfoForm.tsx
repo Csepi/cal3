@@ -16,6 +16,7 @@ export interface PersonalInfoFormData {
   lastName: string;
   timezone: string;
   timeFormat: string;
+  hideReservationsTab?: boolean; // Optional, to hide the Reservations tab
   usagePlans?: string[]; // Optional, for display purposes only
 }
 
@@ -23,7 +24,7 @@ export interface PersonalInfoFormProps {
   /** Current form data */
   formData: PersonalInfoFormData;
   /** Function to update form data */
-  onFormDataChange: (field: string, value: string) => void;
+  onFormDataChange: (field: string, value: string | boolean) => void;
   /** Function to handle form submission */
   onSubmit: (e: React.FormEvent) => void;
   /** Whether the form is currently submitting */
@@ -171,6 +172,22 @@ export const PersonalInfoForm: React.FC<PersonalInfoFormProps> = ({
                 {errors.timeFormat}
               </p>
             )}
+          </div>
+
+          {/* Hide Reservations Tab Checkbox */}
+          <div>
+            <label className="flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                checked={formData.hideReservationsTab || false}
+                onChange={(e) => onFormDataChange('hideReservationsTab', e.target.checked)}
+                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+              />
+              <span className="ml-3 text-sm text-gray-700">Hide Reservations tab</span>
+            </label>
+            <p className="mt-1 ml-7 text-xs text-gray-500">
+              When enabled, the Reservations tab will be hidden from the main dashboard
+            </p>
           </div>
         </div>
 

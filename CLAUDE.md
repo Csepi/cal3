@@ -20,6 +20,16 @@ cd backend-nestjs && PORT=8081 JWT_SECRET="calendar-secret-key" npm run start:de
 cd backend-nestjs && npm run seed
 ```
 
+## Browser MCP Testing Protocol
+**⚠️ CRITICAL: ALWAYS USE BROWSER MCP FOR TESTING:**
+- **ALWAYS** use Browser MCP (mcp__browsermcp__*) tools for testing the application
+- Test **EVERY** feature and setting after making changes
+- Navigate through all pages and verify functionality visually
+- Take screenshots to verify UI changes
+- Test user interactions (clicks, forms, navigation)
+- Verify error states and edge cases
+- **DO NOT** rely solely on code changes - always verify in the browser
+
 ## CRITICAL PORT REQUIREMENTS
 **⚠️ MANDATORY PORT CONFIGURATION:**
 - **Frontend**: ALWAYS use port 8080 (never use any other port)

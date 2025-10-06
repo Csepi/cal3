@@ -20,6 +20,8 @@ export interface CalendarEventModalProps {
   onClose: () => void;
   /** Function to save the event */
   onSave: (eventData: CreateEventRequest | UpdateEventRequest) => Promise<void>;
+  /** Function to delete the event (optional, for edit mode) */
+  onDelete?: (eventId: number) => Promise<void>;
   /** Event being edited (null for creating new event) */
   editingEvent?: Event | null;
   /** Available calendars for selection */
@@ -44,6 +46,7 @@ export const CalendarEventModal: React.FC<CalendarEventModalProps> = ({
   isOpen,
   onClose,
   onSave,
+  onDelete,
   editingEvent,
   calendars,
   selectedDate,
@@ -192,6 +195,22 @@ export const CalendarEventModal: React.FC<CalendarEventModalProps> = ({
 
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
+  };
+
+  /**
+   * Handle event deletion
+   */
+  const handleDelete = async () => {
+    if (!editingEvent || !onDelete) return;
+
+    if (confirm(`Are you sure you want to delete "${editingEvent.title}"?`)) {
+      try {
+        await onDelete(editingEvent.id);
+        handleClose();
+      } catch (error) {
+        console.error('Failed to delete event:', error);
+      }
+    }
   };
 
   /**
@@ -490,26 +509,41 @@ export const CalendarEventModal: React.FC<CalendarEventModalProps> = ({
         </Card>
 
         {/* Actions */}
-        <div className="flex justify-end space-x-3 pt-6 border-t border-gray-200">
-          <Button
-            variant="outline"
-            onClick={handleClose}
-            disabled={loading}
-            themeColor={themeColor}
-          >
-            Cancel
-          </Button>
-          <Button
-            variant="primary"
-            onClick={handleSubmit}
-            loading={loading}
-            themeColor={themeColor}
-          >
-            {loading
-              ? (editingEvent ? 'Updating...' : 'Creating...')
-              : (editingEvent ? 'Update Event' : 'Create Event')
-            }
-          </Button>
+        <div className="flex justify-between items-center pt-6 border-t border-gray-200">
+          <div>
+            {editingEvent && onDelete && (
+              <Button
+                variant="outline"
+                onClick={handleDelete}
+                disabled={loading}
+                themeColor="#ef4444"
+                className="text-red-600 border-red-300 hover:bg-red-50"
+              >
+                🗑️ Delete Event
+              </Button>
+            )}
+          </div>
+          <div className="flex space-x-3">
+            <Button
+              variant="outline"
+              onClick={handleClose}
+              disabled={loading}
+              themeColor={themeColor}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              onClick={handleSubmit}
+              loading={loading}
+              themeColor={themeColor}
+            >
+              {loading
+                ? (editingEvent ? 'Updating...' : 'Creating...')
+                : (editingEvent ? 'Update Event' : 'Create Event')
+              }
+            </Button>
+          </div>
         </div>
       </div>
     </SimpleModal>

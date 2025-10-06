@@ -75,6 +75,12 @@ export class User {
   @Column({ type: 'json', default: () => "'[\"user\"]'" }) // Array of usage plans
   usagePlans: UsagePlan[];
 
+  @Column({ default: false }) // Hide the Reservations tab in the UI
+  hideReservationsTab: boolean;
+
+  @Column({ type: 'json', nullable: true }) // Array of resource IDs to hide in calendar view
+  hiddenResourceIds: number[];
+
   @CreateDateColumn()
   createdAt: Date;
 

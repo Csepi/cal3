@@ -100,37 +100,20 @@ function useCalendarState(themeColor: string) {
     try {
       setState(prev => ({ ...prev, loading: true, error: null }));
 
-      const [eventsData, calendarsData] = await Promise.all([
+      const [eventsData, calendarsData, reservationsData] = await Promise.all([
         apiService.getAllEvents(),
         apiService.getAllCalendars(),
+        apiService.get('/reservations').catch(() => []), // Fetch real reservations, fallback to empty array
       ]);
 
       const selectedCalendars = calendarsData.map(cal => cal.id);
-
-      // Mock reservations data for demonstration
-      const mockReservations = [
-        {
-          id: 1,
-          resource: { name: 'Conference Room A' },
-          startTime: new Date().toISOString(),
-          endTime: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(), // 2 hours later
-          status: 'confirmed'
-        },
-        {
-          id: 2,
-          resource: { name: 'Meeting Room B' },
-          startTime: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // tomorrow
-          endTime: new Date(Date.now() + 25 * 60 * 60 * 1000).toISOString(), // tomorrow + 1 hour
-          status: 'pending'
-        }
-      ];
 
       setState(prev => ({
         ...prev,
         events: eventsData,
         calendars: calendarsData,
         selectedCalendars,
-        reservations: mockReservations,
+        reservations: reservationsData,
         loading: false,
       }));
     } catch (error) {
@@ -488,6 +471,8 @@ interface CalendarSidebarProps {
   actions: CalendarActions;
   themeConfig: ThemeConfig;
   onCreateCalendar: () => void;
+  onEditCalendar?: (calendar: CalendarType) => void;
+  onDeleteCalendar?: (calendar: CalendarType) => void;
 }
 
 const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
@@ -495,6 +480,8 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
   actions,
   themeConfig,
   onCreateCalendar,
+  onEditCalendar,
+  onDeleteCalendar,
 }) => {
   return (
     <aside className={`w-80 bg-gradient-to-b ${themeConfig.gradient.background} border-r border-gray-200 p-6`}>
@@ -530,7 +517,7 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
                 key={calendar.id}
                 className={`
                   flex items-center space-x-3 p-3 rounded-lg cursor-pointer transition-all duration-200
-                  hover:shadow-md border-l-4
+                  hover:shadow-md border-l-4 group
                   ${state.selectedCalendars.includes(calendar.id) ? 'shadow-sm' : ''}
                 `}
                 style={{
@@ -556,10 +543,36 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
                     </svg>
                   )}
                 </div>
-                <div className="flex-1">
-                  <div className="font-medium text-gray-800">{calendar.name}</div>
+                <div className="flex-1 min-w-0">
+                  <div className="font-medium text-gray-800 truncate">{calendar.name}</div>
                   {calendar.description && (
                     <div className="text-sm text-gray-600 truncate">{calendar.description}</div>
+                  )}
+                </div>
+                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  {onEditCalendar && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onEditCalendar(calendar);
+                      }}
+                      className="p-1 hover:bg-gray-200 rounded transition-all duration-200"
+                      title="Edit Calendar"
+                    >
+                      <span className="text-xs">✏️</span>
+                    </button>
+                  )}
+                  {onDeleteCalendar && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onDeleteCalendar(calendar);
+                      }}
+                      className="p-1 hover:bg-red-100 rounded transition-all duration-200"
+                      title="Delete Calendar"
+                    >
+                      <span className="text-xs">🗑️</span>
+                    </button>
                   )}
                 </div>
               </div>
@@ -574,68 +587,72 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
           </div>
 
           <div className="space-y-2">
-            {/* Reservations toggle */}
-            <div
-              className={`
-                flex items-center space-x-3 p-3 rounded-lg cursor-pointer transition-all duration-200
-                hover:shadow-md border-l-4
-                ${state.selectedReservations ? 'shadow-sm' : ''}
-              `}
-              style={{
-                borderLeftColor: '#f97316',
-                background: state.selectedReservations
-                  ? 'linear-gradient(135deg, #f9731615, white)'
-                  : 'linear-gradient(135deg, #f9731608, transparent)'
-              }}
-              onClick={() => actions.toggleReservations()}
-            >
-              <div
-                className="w-4 h-4 rounded border-2 flex items-center justify-center"
-                style={{
-                  backgroundColor: state.selectedReservations ? '#f97316' : 'transparent',
-                  borderColor: '#f97316'
-                }}
-              >
-                {state.selectedReservations && (
-                  <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                  </svg>
-                )}
-              </div>
-              <div className="flex-1">
-                <div className="font-medium text-gray-800 flex items-center">
-                  📅 Room Reservations
-                  <span className="ml-2 text-xs bg-orange-100 text-orange-800 px-2 py-1 rounded-full">
-                    {state.reservations.length}
-                  </span>
-                </div>
-                <div className="text-sm text-gray-600">Conference rooms & meeting spaces</div>
-              </div>
-            </div>
-
-            {/* Show individual reservations when expanded */}
-            {state.selectedReservations && (
-              <div className="ml-6 space-y-1">
-                {state.reservations.map(reservation => (
+            {/* Reservations toggle - only show if there are reservations */}
+            {state.reservations && state.reservations.length > 0 && (
+              <>
+                <div
+                  className={`
+                    flex items-center space-x-3 p-3 rounded-lg cursor-pointer transition-all duration-200
+                    hover:shadow-md border-l-4
+                    ${state.selectedReservations ? 'shadow-sm' : ''}
+                  `}
+                  style={{
+                    borderLeftColor: '#f97316',
+                    background: state.selectedReservations
+                      ? 'linear-gradient(135deg, #f9731615, white)'
+                      : 'linear-gradient(135deg, #f9731608, transparent)'
+                  }}
+                  onClick={() => actions.toggleReservations()}
+                >
                   <div
-                    key={reservation.id}
-                    className="flex items-center space-x-2 p-2 rounded bg-orange-50 border border-orange-100"
+                    className="w-4 h-4 rounded border-2 flex items-center justify-center"
+                    style={{
+                      backgroundColor: state.selectedReservations ? '#f97316' : 'transparent',
+                      borderColor: '#f97316'
+                    }}
                   >
-                    <div
-                      className="w-3 h-3 rounded-full"
-                      style={{ backgroundColor: '#f97316' }}
-                    />
-                    <div className="flex-1">
-                      <div className="text-sm font-medium text-gray-800">
-                        {reservation.resource.name}
-                      </div>
-                      <div className="text-xs text-gray-600">
-                        {new Date(reservation.startTime).toLocaleDateString()} • {reservation.status}
-                      </div>
-                    </div>
+                    {state.selectedReservations && (
+                      <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                    )}
                   </div>
-                ))}
-              </div>
+                  <div className="flex-1">
+                    <div className="font-medium text-gray-800 flex items-center">
+                      📅 Room Reservations
+                      <span className="ml-2 text-xs bg-orange-100 text-orange-800 px-2 py-1 rounded-full">
+                        {state.reservations.length}
+                      </span>
+                    </div>
+                    <div className="text-sm text-gray-600">Conference rooms & meeting spaces</div>
+                  </div>
+                </div>
+
+                {/* Show individual reservations when expanded */}
+                {state.selectedReservations && (
+                  <div className="ml-6 space-y-1">
+                    {state.reservations.map(reservation => (
+                      <div
+                        key={reservation.id}
+                        className="flex items-center space-x-2 p-2 rounded bg-orange-50 border border-orange-100"
+                      >
+                        <div
+                          className="w-3 h-3 rounded-full"
+                          style={{ backgroundColor: '#f97316' }}
+                        />
+                        <div className="flex-1">
+                          <div className="text-sm font-medium text-gray-800">
+                            {reservation.resource.name}
+                          </div>
+                          <div className="text-xs text-gray-600">
+                            {new Date(reservation.startTime).toLocaleDateString()} • {reservation.status}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </>
             )}
           </div>
         </div>
@@ -686,6 +703,21 @@ export const EnhancedCalendar: React.FC<EnhancedCalendarProps> = ({
     }
   }, [modalData.editingEvent, loadData, setErrors, setModals]);
 
+  const handleDeleteEvent = useCallback(async (eventId: number) => {
+    try {
+      await apiService.deleteEvent(eventId);
+      await loadData();
+      setModals(prev => ({ ...prev, eventModal: false }));
+    } catch (error) {
+      console.error('Error deleting event:', error);
+      setErrors(prev => ({
+        ...prev,
+        event: error instanceof Error ? error.message : 'Failed to delete event'
+      }));
+      throw error;
+    }
+  }, [loadData, setErrors, setModals]);
+
   const handleCalendarChange = useCallback(async () => {
     try {
       await loadData();
@@ -698,6 +730,25 @@ export const EnhancedCalendar: React.FC<EnhancedCalendarProps> = ({
       }));
     }
   }, [loadData, setErrors, setModals]);
+
+  const handleEditCalendar = useCallback((calendar: CalendarType) => {
+    setModalData(prev => ({ ...prev, editingCalendar: calendar }));
+    setModals(prev => ({ ...prev, calendarModal: true }));
+  }, [setModalData, setModals]);
+
+  const handleDeleteCalendar = useCallback(async (calendar: CalendarType) => {
+    if (!confirm(`Are you sure you want to delete "${calendar.name}"? This will also delete all events in this calendar.`)) {
+      return;
+    }
+
+    try {
+      await apiService.deleteCalendar(calendar.id);
+      await loadData();
+    } catch (error) {
+      console.error('Error deleting calendar:', error);
+      alert(error instanceof Error ? error.message : 'Failed to delete calendar');
+    }
+  }, [loadData]);
 
   // Loading state
   if (state.loading) {
@@ -767,6 +818,8 @@ export const EnhancedCalendar: React.FC<EnhancedCalendarProps> = ({
             setModalData(prev => ({ ...prev, editingCalendar: null }));
             setModals(prev => ({ ...prev, calendarModal: true }));
           }}
+          onEditCalendar={handleEditCalendar}
+          onDeleteCalendar={handleDeleteCalendar}
         />
 
         {/* Calendar Grid */}
@@ -786,6 +839,7 @@ export const EnhancedCalendar: React.FC<EnhancedCalendarProps> = ({
         isOpen={modals.eventModal}
         onClose={() => setModals(prev => ({ ...prev, eventModal: false }))}
         onSave={handleSaveEvent}
+        onDelete={handleDeleteEvent}
         editingEvent={modalData.editingEvent}
         calendars={state.calendars}
         selectedDate={state.selectedDate}

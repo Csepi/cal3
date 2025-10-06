@@ -8,6 +8,7 @@ interface CalendarSidebarProps {
   onSelectAll: () => void;
   onDeselectAll: () => void;
   onEditCalendar: (calendar: CalendarType) => void;
+  onDeleteCalendar?: (calendar: CalendarType) => void;
   themeColor: string;
   resources?: any[];
   selectedResources?: number[];
@@ -23,6 +24,7 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
   onSelectAll,
   onDeselectAll,
   onEditCalendar,
+  onDeleteCalendar,
   themeColor,
   resources = [],
   selectedResources = [],
@@ -154,6 +156,20 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
                       >
                         <span className="text-xs">✏️</span>
                       </button>
+
+                      {/* Delete button */}
+                      {onDeleteCalendar && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onDeleteCalendar(calendar);
+                          }}
+                          className="p-1 opacity-60 hover:opacity-100 hover:bg-red-100 rounded transition-all duration-200"
+                          title="Delete Calendar"
+                        >
+                          <span className="text-xs">🗑️</span>
+                        </button>
+                      )}
 
                       {/* Owner indicator */}
                       {calendar.owner && (

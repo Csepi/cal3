@@ -233,8 +233,8 @@ const Dashboard: React.FC = () => {
               >
                 🔄 Calendar Sync
               </button>
-              {/* Conditionally show Reservations tab based on user permissions */}
-              {canAccessReservations && (
+              {/* Conditionally show Reservations tab based on user permissions and preferences */}
+              {canAccessReservations && !userProfile?.hideReservationsTab && (
                 <button
                   onClick={() => setCurrentView('reservations')}
                   className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 ${
@@ -285,7 +285,7 @@ const Dashboard: React.FC = () => {
         {currentView === 'sync' && (
           <CalendarSync themeColor={themeColor} />
         )}
-        {currentView === 'reservations' && canAccessReservations && (
+        {currentView === 'reservations' && canAccessReservations && !userProfile?.hideReservationsTab && (
           <ReservationsPanel themeColor={themeColor} />
         )}
         {/* Admin Panel - Only accessible to admin users */}

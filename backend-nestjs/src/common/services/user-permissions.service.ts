@@ -99,43 +99,41 @@ export class UserPermissionsService {
     let accessibleOrganizationIds: number[] = [];
     let adminOrganizationIds: number[] = [];
 
-    if (isSuperAdmin) {
-      console.log('🌟 User is super admin - granting access to all organizations');
-      // Super admin can see all organizations
-      const allOrganizations = await this.organisationRepository.find();
-      accessibleOrganizationIds = allOrganizations.map(org => org.id);
-      adminOrganizationIds = accessibleOrganizationIds; // Super admin can admin all
-      console.log('📋 All organizations for super admin:', allOrganizations.map(org => `${org.id}:${org.name}`));
-    } else {
-      console.log('👤 Regular user - checking specific permissions');
+    // Check BOTH organisation_users table AND organisation_admins table
+    console.log('👤 Checking explicit organization roles via organisation_users table');
 
-      // Regular member organizations (many-to-many relation)
-      const memberOrgIds = user.organisations?.map(org => org.id) || [];
-      console.log('📋 Member organizations:', memberOrgIds);
+    const organisationUserRoles = await this.organisationUserRepository.find({
+      where: { userId },
+    });
 
-      // Admin organizations (Cal3-level org admins)
-      const adminOrgIds = user.organisationAdminRoles?.map(role => role.organisationId) || [];
-      console.log('📋 Admin organizations (Cal3-level):', adminOrgIds);
+    console.log('📋 Organisation user roles found:', organisationUserRoles.map(r => `Org ${r.organisationId}: ${r.role}`));
 
-      // Organizations where user has roles via OrganisationUser table (admin/editor/user)
-      const organisationUserRoles = await this.organisationUserRepository.find({
-        where: { userId },
-      });
-      const roleBasedOrgIds = organisationUserRoles.map(role => role.organisationId);
-      console.log('📋 Role-based organizations:', roleBasedOrgIds, 'with roles:', organisationUserRoles.map(r => `${r.organisationId}:${r.role}`));
+    // Check organisation_admins table for admin assignments
+    console.log('👤 Checking organization admin assignments via organisation_admins table');
 
-      // Combine and deduplicate all accessible organizations
-      accessibleOrganizationIds = [...new Set([...memberOrgIds, ...adminOrgIds, ...roleBasedOrgIds])];
+    const organisationAdminRoles = await this.organisationAdminRepository.find({
+      where: { userId },
+    });
 
-      // Admin organizations include both Cal3-admins and OrganisationUser admins
-      const orgUserAdminIds = organisationUserRoles
-        .filter(role => role.role === 'admin')
-        .map(role => role.organisationId);
-      adminOrganizationIds = [...new Set([...adminOrgIds, ...orgUserAdminIds])];
+    console.log('📋 Organisation admin assignments found:', organisationAdminRoles.map(r => `Org ${r.organisationId}`));
 
-      console.log('📋 Final accessible organization IDs:', accessibleOrganizationIds);
-      console.log('📋 Final admin organization IDs:', adminOrganizationIds);
-    }
+    // Combine accessible organizations from both tables
+    const userOrgIds = organisationUserRoles.map(role => role.organisationId);
+    const adminOrgIds = organisationAdminRoles.map(role => role.organisationId);
+
+    accessibleOrganizationIds = [...new Set([...userOrgIds, ...adminOrgIds])];
+
+    // Admin organizations include:
+    // 1. Those where user has 'admin' role in organisation_users
+    // 2. Those where user is in organisation_admins table
+    const userAdminOrgIds = organisationUserRoles
+      .filter(role => role.role === 'admin')
+      .map(role => role.organisationId);
+
+    adminOrganizationIds = [...new Set([...userAdminOrgIds, ...adminOrgIds])];
+
+    console.log('📋 Final accessible organization IDs:', accessibleOrganizationIds);
+    console.log('📋 Final admin organization IDs:', adminOrganizationIds);
 
     // Get reservation calendar access
     let editableReservationCalendarIds: number[] = [];
@@ -149,31 +147,49 @@ export class UserPermissionsService {
         viewableReservationCalendarIds = editableReservationCalendarIds;
       } else {
         // Get reservation calendars from admin organizations (auto-editor access)
-        const adminOrgReservationCalendars = await this.reservationCalendarRepository.find({
-          where: { organisationId: In(adminOrganizationIds) }
-        });
+        console.log('🔍 Checking reservation calendars for admin org IDs:', adminOrganizationIds);
 
-        // Get explicitly assigned reservation calendar roles
-        const explicitRoles = user.reservationCalendarRoles || [];
-        const explicitEditableIds = explicitRoles
-          .filter(role => role.role === ReservationCalendarRoleType.EDITOR)
-          .map(role => role.reservationCalendarId);
-        const explicitViewableIds = explicitRoles
-          .map(role => role.reservationCalendarId);
+        if (adminOrganizationIds.length > 0) {
+          const adminOrgReservationCalendars = await this.reservationCalendarRepository.find({
+            where: { organisationId: In(adminOrganizationIds) }
+          });
+          console.log('📋 Found reservation calendars in admin orgs:', adminOrgReservationCalendars.map(cal => `${cal.id}`));
 
-        // Combine access
-        editableReservationCalendarIds = [
-          ...adminOrgReservationCalendars.map(cal => cal.id),
-          ...explicitEditableIds
-        ];
-        viewableReservationCalendarIds = [
-          ...editableReservationCalendarIds,
-          ...explicitViewableIds
-        ];
+          // Get explicitly assigned reservation calendar roles
+          const explicitRoles = user.reservationCalendarRoles || [];
+          const explicitEditableIds = explicitRoles
+            .filter(role => role.role === ReservationCalendarRoleType.EDITOR)
+            .map(role => role.reservationCalendarId);
+          const explicitViewableIds = explicitRoles
+            .map(role => role.reservationCalendarId);
 
-        // Remove duplicates
-        editableReservationCalendarIds = [...new Set(editableReservationCalendarIds)];
-        viewableReservationCalendarIds = [...new Set(viewableReservationCalendarIds)];
+          // Combine access
+          editableReservationCalendarIds = [
+            ...adminOrgReservationCalendars.map(cal => cal.id),
+            ...explicitEditableIds
+          ];
+          viewableReservationCalendarIds = [
+            ...editableReservationCalendarIds,
+            ...explicitViewableIds
+          ];
+
+          // Remove duplicates
+          editableReservationCalendarIds = [...new Set(editableReservationCalendarIds)];
+          viewableReservationCalendarIds = [...new Set(viewableReservationCalendarIds)];
+        } else {
+          console.log('⚠️  No admin organizations, checking explicit roles only');
+
+          // Get explicitly assigned reservation calendar roles
+          const explicitRoles = user.reservationCalendarRoles || [];
+          editableReservationCalendarIds = explicitRoles
+            .filter(role => role.role === ReservationCalendarRoleType.EDITOR)
+            .map(role => role.reservationCalendarId);
+          viewableReservationCalendarIds = explicitRoles
+            .map(role => role.reservationCalendarId);
+        }
+
+        console.log('📋 Final editable reservation calendar IDs:', editableReservationCalendarIds);
+        console.log('📋 Final viewable reservation calendar IDs:', viewableReservationCalendarIds);
       }
     }
 

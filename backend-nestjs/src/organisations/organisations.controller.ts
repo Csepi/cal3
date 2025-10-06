@@ -16,8 +16,9 @@ export class OrganisationsController {
 
   @Post()
   @UseGuards(AdminGuard) // Only super admins can create organizations
-  async create(@Body() createDto: CreateOrganisationDto) {
-    return await this.organisationsService.create(createDto);
+  async create(@Body() createDto: CreateOrganisationDto, @Req() req) {
+    // Create the organization and automatically add the creator as ORG_ADMIN
+    return await this.organisationsService.createWithCreator(createDto, req.user.id);
   }
 
   @Get()

@@ -467,4 +467,4 @@ For support, please open an issue on GitHub or contact the development team.
 
 ---
 
-**Cal3** - Empowering businesses with modern calendar and reservation management solutions. Built with ❤️ using modern web technologies.
+**Cal3** - Empowering everyone from indivials up to businesses with modern calendar and reservation management solutions. Built with ❤️ using modern technologies.

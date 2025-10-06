@@ -28,6 +28,34 @@ export class OrganisationsService {
     return await this.organisationRepository.save(organisation);
   }
 
+  /**
+   * Create organization and automatically add creator as ORG_ADMIN
+   */
+  async createWithCreator(createDto: CreateOrganisationDto, creatorId: number): Promise<Organisation> {
+    // Create the organization
+    const organisation = this.organisationRepository.create(createDto);
+    const savedOrg = await this.organisationRepository.save(organisation);
+
+    // Get the creator user
+    const creator = await this.userRepository.findOne({ where: { id: creatorId } });
+    if (!creator) {
+      throw new NotFoundException(`Creator user #${creatorId} not found`);
+    }
+
+    // Automatically add creator as ORG_ADMIN in organisation_users table
+    const orgUser = this.organisationUserRepository.create({
+      organisationId: savedOrg.id,
+      userId: creatorId,
+      role: OrganisationRoleType.ADMIN,
+      assignedById: creatorId, // Self-assigned
+    });
+    await this.organisationUserRepository.save(orgUser);
+
+    console.log(`✅ Created organization #${savedOrg.id} and automatically added creator #${creatorId} as ORG_ADMIN`);
+
+    return savedOrg;
+  }
+
   async findAll(): Promise<Organisation[]> {
     return await this.organisationRepository.find({
       relations: ['users', 'resourceTypes'],
@@ -182,12 +210,51 @@ export class OrganisationsService {
 
   /**
    * Get all users assigned to an organization with their roles
+   * IMPORTANT: This includes BOTH organisation_users and organisation_admins
    */
   async getOrganizationUsers(organisationId: number): Promise<OrganisationUser[]> {
-    return await this.organisationUserRepository.find({
+    console.log(`🔍 getOrganizationUsers called for org #${organisationId}`);
+
+    // Get users from organisation_users table
+    const orgUsers = await this.organisationUserRepository.find({
       where: { organisationId },
       relations: ['user'],
     });
+    console.log(`📋 Found ${orgUsers.length} users in organisation_users table:`, orgUsers.map(u => `${u.userId}:${u.role}`));
+
+    // Get users from organisation_admins table
+    const orgAdmins = await this.organisationAdminRepository.find({
+      where: { organisationId },
+      relations: ['user'],
+    });
+    console.log(`👑 Found ${orgAdmins.length} admins in organisation_admins table:`, orgAdmins.map(a => a.userId));
+
+    // Convert OrganisationAdmin records to OrganisationUser format with ADMIN role
+    const adminUsersAsOrgUsers: OrganisationUser[] = orgAdmins.map(admin => {
+      const orgUser = new OrganisationUser();
+      orgUser.id = admin.id;
+      orgUser.organisationId = admin.organisationId;
+      orgUser.userId = admin.userId;
+      orgUser.user = admin.user;
+      orgUser.role = OrganisationRoleType.ADMIN; // Mark as ADMIN
+      orgUser.assignedAt = admin.assignedAt;
+      console.log(`✨ Converting admin user #${admin.userId} to OrganisationUser with ADMIN role`);
+      return orgUser;
+    });
+
+    // Combine both lists, removing duplicates (prefer ADMIN role if user is in both tables)
+    const userMap = new Map<number, OrganisationUser>();
+
+    // First add regular org users
+    orgUsers.forEach(ou => userMap.set(ou.userId, ou));
+
+    // Then add/override with org admins (ADMIN takes precedence)
+    adminUsersAsOrgUsers.forEach(ou => userMap.set(ou.userId, ou));
+
+    const result = Array.from(userMap.values());
+    console.log(`📊 Final result: ${result.length} users total:`, result.map(u => `${u.userId}:${u.role}`));
+
+    return result;
   }
 
   /**
