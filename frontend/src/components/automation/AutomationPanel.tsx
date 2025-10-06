@@ -3,6 +3,7 @@ import { useAutomationRules } from '../../hooks/useAutomationRules';
 import { AutomationRuleDetailDto, CreateAutomationRuleDto, UpdateAutomationRuleDto } from '../../types/Automation';
 import { AutomationList } from './AutomationList';
 import { AutomationRuleModal } from './AutomationRuleModal';
+import { AutomationDetailView } from './AutomationDetailView';
 
 interface AutomationPanelProps {
   themeColor?: string;
@@ -11,11 +12,13 @@ interface AutomationPanelProps {
 export function AutomationPanel({ themeColor = '#3b82f6' }: AutomationPanelProps) {
   const {
     rules,
+    selectedRule,
     isLoading,
     error,
     pagination,
     filters,
     fetchRules,
+    fetchRuleById,
     createRule,
     updateRule,
     deleteRule,
@@ -24,11 +27,17 @@ export function AutomationPanel({ themeColor = '#3b82f6' }: AutomationPanelProps
     setFilters,
     resetFilters,
     clearError,
+    clearSelectedRule,
   } = useAutomationRules();
 
   const [modalOpen, setModalOpen] = useState(false);
   const [editingRule, setEditingRule] = useState<AutomationRuleDetailDto | undefined>(undefined);
   const [searchValue, setSearchValue] = useState('');
+
+  // Handle view rule details
+  const handleViewRule = (ruleId: number) => {
+    fetchRuleById(ruleId);
+  };
 
   // Handle create new rule
   const handleCreateRule = () => {
@@ -40,7 +49,6 @@ export function AutomationPanel({ themeColor = '#3b82f6' }: AutomationPanelProps
   const handleEditRule = (ruleId: number) => {
     const rule = rules.find((r) => r.id === ruleId);
     if (rule) {
-      // Fetch full rule details if needed
       setEditingRule(rule as AutomationRuleDetailDto);
       setModalOpen(true);
     }
@@ -103,6 +111,23 @@ export function AutomationPanel({ themeColor = '#3b82f6' }: AutomationPanelProps
   const handlePageChange = (page: number) => {
     setPage(page);
   };
+
+  // Show detail view if a rule is selected
+  if (selectedRule) {
+    return (
+      <AutomationDetailView
+        rule={selectedRule}
+        onBack={clearSelectedRule}
+        onUpdate={fetchRules}
+        onToggle={(enabled) => handleToggleRule(selectedRule.id, enabled)}
+        onDelete={async () => {
+          await handleDeleteRule(selectedRule.id);
+          clearSelectedRule();
+        }}
+        themeColor={themeColor}
+      />
+    );
+  }
 
   return (
     <div className="automation-panel h-full flex flex-col">
@@ -212,13 +237,12 @@ export function AutomationPanel({ themeColor = '#3b82f6' }: AutomationPanelProps
           rules={rules}
           isLoading={isLoading}
           themeColor={themeColor}
-          onView={(id) => handleEditRule(id)}
+          onView={(id) => handleViewRule(id)}
           onEdit={(id) => handleEditRule(id)}
           onDelete={(id) => handleDeleteRule(id)}
           onToggle={(id, enabled) => handleToggleRule(id, enabled)}
         />
       </div>
-
       {/* Pagination */}
       {pagination.totalPages > 1 && (
         <div className="p-4 border-t border-gray-200 flex items-center justify-between">

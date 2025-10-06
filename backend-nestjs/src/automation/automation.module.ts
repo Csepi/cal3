@@ -10,6 +10,7 @@ import { AutomationController } from './automation.controller';
 import { AutomationService } from './automation.service';
 import { AutomationEvaluatorService } from './automation-evaluator.service';
 import { AutomationSchedulerService } from './automation-scheduler.service';
+import { AutomationAuditService } from './automation-audit.service';
 import { ActionExecutorRegistry } from './executors/action-executor-registry';
 import { SetEventColorExecutor } from './executors/set-event-color.executor';
 
@@ -29,6 +30,7 @@ import { SetEventColorExecutor } from './executors/set-event-color.executor';
     AutomationService,
     AutomationEvaluatorService,
     AutomationSchedulerService,
+    AutomationAuditService,
     ActionExecutorRegistry,
     SetEventColorExecutor,
   ],
