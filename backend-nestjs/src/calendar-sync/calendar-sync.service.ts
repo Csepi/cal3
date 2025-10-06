@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException, UnauthorizedException, Logger } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, UnauthorizedException, Logger, Inject, forwardRef } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CalendarSyncConnection, SyncedCalendar, SyncEventMapping, SyncProvider, SyncStatus } from '../entities/calendar-sync.entity';
@@ -24,6 +24,8 @@ export class CalendarSyncService {
     private eventRepository: Repository<Event>,
     @InjectRepository(User)
     private userRepository: Repository<User>,
+    @Inject(forwardRef(() => require('../automation/automation.service').AutomationService))
+    private automationService?: any,
   ) {}
 
   async getSyncStatus(userId: number): Promise<CalendarSyncStatusDto> {
@@ -727,6 +729,11 @@ export class CalendarSyncService {
 
     const savedEvent = await this.eventRepository.save(localEvent) as unknown as Event;
 
+    // Trigger automation rules for calendar.imported
+    this.triggerCalendarImportRules(savedEvent, syncConnection.userId).catch(err =>
+      this.logger.error('Automation trigger error:', err)
+    );
+
     // Create event mapping
     const eventMapping = this.syncEventMappingRepository.create({
       syncedCalendarId: syncedCalendar.id,
@@ -832,5 +839,47 @@ export class CalendarSyncService {
     };
 
     return { type, rule };
+  }
+
+  /**
+   * Trigger automation rules for calendar import events
+   * Executes asynchronously without blocking the sync flow
+   */
+  private async triggerCalendarImportRules(event: Event, userId: number): Promise<void> {
+    if (!this.automationService) {
+      return; // Automation service not available (optional dependency)
+    }
+
+    try {
+      // Load event with calendar relationship
+      const fullEvent = await this.eventRepository.findOne({
+        where: { id: event.id },
+        relations: ['calendar'],
+      });
+
+      if (!fullEvent) return;
+
+      // Find all enabled rules for calendar.imported trigger
+      const rules = await this.automationService.findRulesByTrigger?.(
+        'calendar.imported',
+        userId,
+      );
+
+      if (!rules || rules.length === 0) return;
+
+      // Execute each rule asynchronously
+      for (const rule of rules) {
+        this.automationService
+          .executeRuleOnEvent(rule, fullEvent)
+          .catch((error: Error) => {
+            this.logger.error(
+              `Failed to execute automation rule ${rule.id} on imported event ${event.id}:`,
+              error.message,
+            );
+          });
+      }
+    } catch (error) {
+      this.logger.error('Error triggering calendar import automation rules:', error);
+    }
   }
 }

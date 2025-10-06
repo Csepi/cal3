@@ -443,6 +443,25 @@ export class AutomationService {
   }
 
   // ========================================
+  // TRIGGER SYSTEM OPERATIONS
+  // ========================================
+
+  /**
+   * Find all enabled rules for a specific trigger type and user
+   * Used by event lifecycle hooks and other trigger sources
+   */
+  async findRulesByTrigger(triggerType: string, userId: number): Promise<AutomationRule[]> {
+    return this.ruleRepository.find({
+      where: {
+        createdById: userId,
+        triggerType: triggerType as any,
+        isEnabled: true,
+      },
+      relations: ['conditions', 'actions'],
+    });
+  }
+
+  // ========================================
   // AUDIT LOG OPERATIONS
   // ========================================
 

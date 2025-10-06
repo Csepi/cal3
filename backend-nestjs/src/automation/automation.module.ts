@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AutomationRule } from '../entities/automation-rule.entity';
 import { AutomationCondition } from '../entities/automation-condition.entity';
@@ -9,6 +9,7 @@ import { Calendar } from '../entities/calendar.entity';
 import { AutomationController } from './automation.controller';
 import { AutomationService } from './automation.service';
 import { AutomationEvaluatorService } from './automation-evaluator.service';
+import { AutomationSchedulerService } from './automation-scheduler.service';
 import { ActionExecutorRegistry } from './executors/action-executor-registry';
 import { SetEventColorExecutor } from './executors/set-event-color.executor';
 
@@ -27,6 +28,7 @@ import { SetEventColorExecutor } from './executors/set-event-color.executor';
   providers: [
     AutomationService,
     AutomationEvaluatorService,
+    AutomationSchedulerService,
     ActionExecutorRegistry,
     SetEventColorExecutor,
   ],
