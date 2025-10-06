@@ -11,6 +11,8 @@ import { AutomationCondition } from '../entities/automation-condition.entity';
 import { AutomationAction } from '../entities/automation-action.entity';
 import { AutomationAuditLog, AuditLogStatus } from '../entities/automation-audit-log.entity';
 import { Event } from '../entities/event.entity';
+import { AutomationEvaluatorService } from './automation-evaluator.service';
+import { ActionExecutorRegistry } from './executors/action-executor-registry';
 import {
   CreateAutomationRuleDto,
   UpdateAutomationRuleDto,
@@ -42,6 +44,8 @@ export class AutomationService {
     private readonly auditLogRepository: Repository<AutomationAuditLog>,
     @InjectRepository(Event)
     private readonly eventRepository: Repository<Event>,
+    private readonly evaluatorService: AutomationEvaluatorService,
+    private readonly executorRegistry: ActionExecutorRegistry,
   ) {}
 
   // ========================================
@@ -273,11 +277,18 @@ export class AutomationService {
 
     let executionCount = 0;
 
-    // Execute rule against each event (this will be implemented in Phase 3)
-    // For now, we'll just return the count of events that would be processed
+    // Execute rule against each event
     for (const event of events) {
-      // TODO: Implement actual rule evaluation and action execution in Phase 3
-      // For now, just count events
+      // Load full event with calendar relationship for condition evaluation
+      const fullEvent = await this.eventRepository.findOne({
+        where: { id: event.id },
+        relations: ['calendar'],
+      });
+
+      if (!fullEvent) continue;
+
+      // Execute the rule and create audit log
+      await this.executeRuleOnEvent(rule, fullEvent, userId);
       executionCount++;
     }
 
@@ -287,6 +298,148 @@ export class AutomationService {
     await this.ruleRepository.save(rule);
 
     return executionCount;
+  }
+
+  /**
+   * Execute a rule on a single event
+   * @param rule The rule to execute
+   * @param event The event to execute the rule on
+   * @param executedByUserId Optional user ID for manual execution
+   */
+  async executeRuleOnEvent(
+    rule: AutomationRule,
+    event: Event,
+    executedByUserId?: number,
+  ): Promise<void> {
+    const startTime = Date.now();
+    const executedAt = new Date();
+
+    try {
+      // Step 1: Evaluate conditions
+      const conditionsResult = await this.evaluatorService.evaluateConditions(rule, event);
+
+      // Step 2: If conditions pass, execute actions
+      let actionResults: ActionResultDto[] = [];
+      let status: AuditLogStatus = AuditLogStatus.SKIPPED;
+
+      if (conditionsResult.passed) {
+        // Execute all actions
+        const executionPromises = rule.actions.map((action) =>
+          this.executeAction(action, event),
+        );
+
+        const results = await Promise.allSettled(executionPromises);
+
+        actionResults = results.map((result, index) => {
+          if (result.status === 'fulfilled') {
+            return result.value;
+          } else {
+            // Handle rejected promise
+            return {
+              actionId: rule.actions[index].id,
+              actionType: rule.actions[index].actionType,
+              success: false,
+              error: result.reason?.message || 'Unknown error',
+              executedAt,
+            };
+          }
+        });
+
+        // Determine overall status
+        const allSuccess = actionResults.every((r) => r.success);
+        const someSuccess = actionResults.some((r) => r.success);
+
+        if (allSuccess) {
+          status = AuditLogStatus.SUCCESS;
+        } else if (someSuccess) {
+          status = AuditLogStatus.PARTIAL_SUCCESS;
+        } else {
+          status = AuditLogStatus.FAILURE;
+        }
+      }
+
+      // Step 3: Create audit log
+      const executionTimeMs = Date.now() - startTime;
+
+      const auditLog = this.auditLogRepository.create({
+        rule: { id: rule.id } as AutomationRule,
+        event: { id: event.id } as Event,
+        triggerType: rule.triggerType,
+        triggerContext: { manual: executedByUserId ? true : false },
+        conditionsResult: {
+          passed: conditionsResult.passed,
+          evaluations: conditionsResult.evaluations,
+        },
+        actionResults:
+          actionResults.length > 0
+            ? actionResults.map((ar) => ({
+                actionId: ar.actionId,
+                actionType: ar.actionType,
+                success: ar.success,
+                result: ar.data || null,
+                errorMessage: ar.error,
+              }))
+            : undefined,
+        status,
+        executedByUserId,
+        duration_ms: executionTimeMs,
+        executedAt,
+      });
+
+      await this.auditLogRepository.save(auditLog);
+    } catch (error) {
+      // Log execution failure
+      const executionTimeMs = Date.now() - startTime;
+
+      const auditLog = this.auditLogRepository.create({
+        rule: { id: rule.id } as AutomationRule,
+        event: { id: event.id } as Event,
+        triggerType: rule.triggerType,
+        triggerContext: { manual: executedByUserId ? true : false },
+        conditionsResult: { passed: false, evaluations: [] },
+        actionResults: undefined,
+        status: AuditLogStatus.FAILURE,
+        errorMessage: error.message,
+        executedByUserId,
+        duration_ms: executionTimeMs,
+        executedAt,
+      });
+
+      await this.auditLogRepository.save(auditLog);
+    }
+  }
+
+  /**
+   * Execute a single action using the executor registry
+   * @param action The action to execute
+   * @param event The event to execute the action on
+   * @returns Action execution result
+   */
+  private async executeAction(
+    action: AutomationAction,
+    event: Event,
+  ): Promise<ActionResultDto> {
+    try {
+      const executor = this.executorRegistry.getExecutor(action.actionType);
+      const result = await executor.execute(action, event);
+
+      return {
+        actionId: result.actionId,
+        actionType: result.actionType,
+        success: result.success,
+        error: result.error,
+        data: result.data,
+        executedAt: result.executedAt,
+      };
+    } catch (error) {
+      return {
+        actionId: action.id,
+        actionType: action.actionType,
+        success: false,
+        error: error.message,
+        executedAt: new Date(),
+      };
+    }
   }
 
   // ========================================

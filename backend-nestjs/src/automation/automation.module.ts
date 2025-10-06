@@ -8,6 +8,9 @@ import { Event } from '../entities/event.entity';
 import { Calendar } from '../entities/calendar.entity';
 import { AutomationController } from './automation.controller';
 import { AutomationService } from './automation.service';
+import { AutomationEvaluatorService } from './automation-evaluator.service';
+import { ActionExecutorRegistry } from './executors/action-executor-registry';
+import { SetEventColorExecutor } from './executors/set-event-color.executor';
 
 @Module({
   imports: [
@@ -21,7 +24,12 @@ import { AutomationService } from './automation.service';
     ]),
   ],
   controllers: [AutomationController],
-  providers: [AutomationService],
-  exports: [AutomationService],
+  providers: [
+    AutomationService,
+    AutomationEvaluatorService,
+    ActionExecutorRegistry,
+    SetEventColorExecutor,
+  ],
+  exports: [AutomationService, AutomationEvaluatorService],
 })
 export class AutomationModule {}
