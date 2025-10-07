@@ -45,6 +45,15 @@ Cal3 is a comprehensive, full-stack calendar and reservation management system b
 - **Two-Way Sync**: Import and export events between calendars
 - **Sync Status Monitoring**: Real-time sync status and error handling
 
+### 🤖 **Calendar Automation System**
+- **Rule-Based Automation**: Create intelligent rules that respond to event lifecycle triggers
+- **Event Lifecycle Triggers**: Automatic actions on event.created, event.updated, event.deleted, and time-based triggers
+- **Flexible Conditions**: Boolean logic (AND/OR/NOT) with 15+ operators for precise control
+- **Extensible Actions**: Plugin architecture supporting event coloring and future actions
+- **Retroactive Execution**: "Run Now" feature to apply rules to existing events
+- **Comprehensive Audit Logging**: Detailed execution history with 1000-entry circular buffer per rule
+- **User-Scoped Rules**: Private automations with complete isolation between users
+
 ### 🎨 **Modern UI/UX**
 - **Responsive Design**: Mobile-first approach with touch-friendly interactions
 - **Glass Morphism**: Modern backdrop-blur effects and gradient designs
@@ -92,6 +101,11 @@ frontend/src/
 │   ├── UserProfile.tsx   # User settings
 │   ├── AdminPanel.tsx    # Admin management
 │   ├── ReservationsPanel.tsx  # Reservation system
+│   ├── automation/       # Automation system components
+│   │   ├── AutomationPanel.tsx
+│   │   ├── AutomationRuleModal.tsx
+│   │   ├── AutomationDetailView.tsx
+│   │   └── builders/     # Rule builder components
 │   └── ...
 ├── services/            # API integration
 ├── types/              # TypeScript definitions
@@ -243,6 +257,19 @@ PATCH  /api/events/:id       # Update event
 DELETE /api/events/:id       # Delete event
 ```
 
+### **Automation System**
+```
+GET    /api/automation/rules              # List automation rules
+POST   /api/automation/rules              # Create rule
+GET    /api/automation/rules/:id          # Get rule details
+PUT    /api/automation/rules/:id          # Update rule
+DELETE /api/automation/rules/:id          # Delete rule
+POST   /api/automation/rules/:id/execute  # Run rule retroactively
+GET    /api/automation/rules/:id/audit-logs  # Get audit logs
+GET    /api/automation/audit-logs/:logId  # Get log details
+GET    /api/automation/rules/:id/stats    # Get execution stats
+```
+
 ### **Reservation System**
 ```
 GET    /api/organisations     # Get accessible organisations
@@ -334,6 +361,10 @@ These ports must not be changed as they are referenced throughout the applicatio
 - **ReservationCalendarRoles**: User roles for calendars (editor/reviewer)
 - **Resources**: Bookable items with capacity
 - **Reservations**: Booking records with status workflow
+- **AutomationRules**: Automation rules with triggers and conditions
+- **AutomationConditions**: Rule conditions with operators
+- **AutomationActions**: Rule actions with configurations
+- **AutomationAuditLogs**: Execution history and debugging
 
 ### **Key Relationships**
 - Users ↔ Organisations (Many-to-Many)
@@ -393,7 +424,17 @@ docker-compose up -d
 
 ## 🎉 Key Features Highlights
 
-### **Recent Additions (v1.2.0)**
+### **Recent Additions (v1.3.0)**
+- ✅ **Calendar Automation System**: Complete rule-based automation with 8 phases implemented
+  - Event lifecycle triggers (created, updated, deleted)
+  - Time-based triggers (starts_in, ends_in, scheduled.time)
+  - 15+ condition operators with boolean logic
+  - Plugin-based action system (V1: event coloring)
+  - Retroactive execution with rate limiting
+  - Circular buffer audit logging (1000 entries per rule)
+  - Complete frontend UI with builder components
+
+### **Previous Additions (v1.2.0)**
 - ✅ **Organisation Admin System**: Dedicated admin roles at the organisation level
 - ✅ **Reservation Calendar Roles**: Editor and reviewer roles for fine-grained access control
 - ✅ **Permission Service**: Centralized permission management system

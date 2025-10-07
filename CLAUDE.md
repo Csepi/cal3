@@ -29,15 +29,24 @@ cd backend-nestjs && npm run seed
 ## Current Development Status
 
 ### ✅ Recently Completed Features
-1. **Hour Format Settings Integration** - User profile time format (12h/24h) now applies to WeekView and CalendarEventModal
-2. **Admin Usage Plan Management** - Individual and bulk modification of user usage plans with set/add/remove operations
-3. **Expanded Color Palette** - 16 total theme colors in rainbow order including Sky (#0ea5e9) and Violet (#7c3aed)
-4. **Usage Plans Read-Only Display** - User profile shows usage plans as non-editable badges in Account Information
-5. **Comprehensive Timezone Support** - 70+ world timezones covering all continents
-6. **Week View Time Range Selection** - Mouse drag functionality for creating events
-7. **Profile Color Theming** - Applied to monthly and weekly view backgrounds with consistent gradients
-8. **Modernized UI** - Softer gradients, backdrop-blur effects, improved readability
-9. **Browser Extension Error Handling** - Robust suppression of extension context errors
+1. **Calendar Automation System (v1.3.0)** - Complete rule-based automation with 8 phases implemented
+   - Event lifecycle triggers (created, updated, deleted)
+   - Time-based triggers (starts_in, ends_in, scheduled.time with cron)
+   - 15+ condition operators with AND/OR boolean logic
+   - Plugin-based action executor system (V1: event coloring)
+   - Retroactive execution with rate limiting (1 min cooldown)
+   - Circular buffer audit logging (1000 entries per rule)
+   - Complete frontend UI with builder components and detail views
+   - See [docs/automation.md](docs/automation.md) for comprehensive documentation
+2. **Hour Format Settings Integration** - User profile time format (12h/24h) now applies to WeekView and CalendarEventModal
+3. **Admin Usage Plan Management** - Individual and bulk modification of user usage plans with set/add/remove operations
+4. **Expanded Color Palette** - 16 total theme colors in rainbow order including Sky (#0ea5e9) and Violet (#7c3aed)
+5. **Usage Plans Read-Only Display** - User profile shows usage plans as non-editable badges in Account Information
+6. **Comprehensive Timezone Support** - 70+ world timezones covering all continents
+7. **Week View Time Range Selection** - Mouse drag functionality for creating events
+8. **Profile Color Theming** - Applied to monthly and weekly view backgrounds with consistent gradients
+9. **Modernized UI** - Softer gradients, backdrop-blur effects, improved readability
+10. **Browser Extension Error Handling** - Robust suppression of extension context errors
 
 ### 🔧 Key Components Structure
 ```
@@ -49,6 +58,24 @@ frontend/src/components/
 ├── CalendarSync.tsx      # External calendar synchronization
 ├── UserProfile.tsx       # User settings, timezone, theme colors
 ├── AdminPanel.tsx        # Admin user management
+├── ReservationsPanel.tsx # Reservation system
+├── automation/           # Automation system components
+│   ├── AutomationPanel.tsx           # Main automation panel
+│   ├── AutomationList.tsx            # Rule list with filtering
+│   ├── AutomationRuleCard.tsx        # Individual rule display
+│   ├── AutomationRuleModal.tsx       # Create/edit rule modal
+│   ├── AutomationDetailView.tsx      # Rule detail with tabs
+│   ├── AuditLogViewer.tsx            # Execution history table
+│   ├── builders/
+│   │   ├── TriggerSelector.tsx       # Trigger configuration
+│   │   ├── ConditionBuilder.tsx      # Condition management
+│   │   ├── ConditionRow.tsx          # Individual condition
+│   │   ├── ActionBuilder.tsx         # Action management
+│   │   ├── ActionRow.tsx             # Type-specific actions
+│   │   └── SetEventColorForm.tsx     # Color picker form
+│   └── dialogs/
+│       ├── RetroactiveExecutionDialog.tsx
+│       └── DeleteRuleDialog.tsx
 └── Dashboard.tsx         # Main dashboard layout
 ```
 
@@ -72,7 +99,11 @@ Timezone support covers major cities across:
 
 ### 🔄 State Management
 - React useState/useEffect for local state
-- Custom hooks for reusable logic (useCalendarSettings)
+- Custom hooks for reusable logic:
+  - useCalendarSettings - Calendar display preferences
+  - useAutomationRules - Automation rule management
+  - useAutomationMetadata - Trigger/condition/action metadata
+  - useAuditLogs - Execution history management
 - Props drilling with TypeScript interfaces for type safety
 
 ### 🎯 Event Handling
@@ -133,6 +164,11 @@ Usage plans control feature access and are managed by admins:
 - `/api/auth` - Authentication and authorization
 - `/api/admin/users/:id/usage-plans` - Admin-only usage plan modification (PATCH)
 - `/api/admin/users` - Admin user management with usage plans display
+- `/api/automation/rules` - Automation rule CRUD operations
+- `/api/automation/rules/:id/execute` - Retroactive rule execution
+- `/api/automation/rules/:id/audit-logs` - Execution history
+- `/api/automation/audit-logs/:logId` - Detailed audit log
+- `/api/automation/rules/:id/stats` - Execution statistics
 
 ### Error Handling
 - Frontend: Comprehensive try-catch with user feedback
@@ -259,15 +295,38 @@ These files should always be added to `.gitignore` to prevent accidental exposur
 ```
 backend-nestjs/
 ├── src/entities/           # Database models
+│   ├── automation-rule.entity.ts
+│   ├── automation-condition.entity.ts
+│   ├── automation-action.entity.ts
+│   └── automation-audit-log.entity.ts
+├── src/automation/        # Automation system
+│   ├── automation.controller.ts
+│   ├── automation.service.ts
+│   ├── automation-evaluator.service.ts
+│   ├── automation-scheduler.service.ts
+│   ├── automation-audit.service.ts
+│   ├── dto/
+│   │   ├── automation-rule.dto.ts
+│   │   └── automation-audit-log.dto.ts
+│   └── executors/
+│       ├── action-executor.interface.ts
+│       ├── action-executor-registry.ts
+│       └── set-event-color.executor.ts
 ├── src/controllers/        # API endpoints
 ├── src/services/          # Business logic
 └── src/dto/               # Data transfer objects
 
 frontend/src/
 ├── components/            # React components
+│   └── automation/        # Automation components
 ├── services/             # API integration
+│   └── automationService.ts
 ├── types/                # TypeScript definitions
+│   └── Automation.ts
 └── hooks/                # Custom React hooks
+    ├── useAutomationRules.ts
+    ├── useAutomationMetadata.ts
+    └── useAuditLogs.ts
 ```
 
 ### Development Workflow
@@ -300,8 +359,9 @@ This guide should help future AI sessions understand the current state and conti
 
 ### 📚 Current Documentation
 All primary documentation has been updated to reflect the current application state:
-- **README.md** - Comprehensive project overview with latest features including hour format settings
-- **API_DOCUMENTATION.md** - Complete API reference with all endpoints and examples
+- **README.md** - Comprehensive project overview with latest features including automation system
+- **API_DOCUMENTATION.md** - Complete API reference with all endpoints including automation
+- **docs/automation.md** - Comprehensive automation system documentation (1700+ lines)
 - **DEPLOYMENT.md** - Full deployment guide covering multiple platforms and configurations
 - **setup-guide.md** - Complete setup instructions from initial installation to running application
 - **frontend/README.md** - Detailed frontend architecture and development guide
@@ -317,8 +377,37 @@ These files exist but are outdated and should not be used for current developmen
 
 ### 📝 Documentation Maintenance
 All current documentation reflects:
+- **Calendar automation system** (Phase 8 complete - Production ready)
 - Hour format settings integration across components
 - Latest 16-color theming system
 - Updated API endpoints and authentication
 - Modern deployment practices
 - Current development workflow and patterns
+
+## Automation System Overview
+
+The automation system is a complete rule-based automation platform integrated into Cal3:
+
+### Key Features
+- **7 Trigger Types**: event.created, event.updated, event.deleted, event.starts_in, event.ends_in, calendar.imported, scheduled.time
+- **11 Event Fields**: title, description, location, notes, duration, is_all_day, color, status, calendar.id, calendar.name, computed duration
+- **15+ Operators**: String (contains, equals, matches regex, etc.), Numeric (>, <, >=, <=), Boolean (is_true, is_false), Array (in, not_in)
+- **Boolean Logic**: AND/OR at rule level, NOT at condition level
+- **Action System**: Plugin architecture with self-registration (V1: set_event_color)
+- **Audit Logging**: Circular buffer (1000 entries per rule) with detailed execution traces
+- **Retroactive Execution**: "Run Now" feature with rate limiting
+- **User Scoping**: Complete isolation between users
+
+### Architecture
+- **Backend**: 8 services (automation, evaluator, scheduler, audit, 4 executors)
+- **Frontend**: 14 components (panel, modal, builders, dialogs, audit viewer)
+- **Database**: 4 tables (rules, conditions, actions, audit_logs) with 9 indexes
+- **Integration**: Hooks in EventsService, CalendarSyncService, @Cron scheduler
+
+### Development Notes
+- **Adding New Triggers**: Update TriggerType enum, add to AutomationSchedulerService
+- **Adding New Operators**: Update ConditionOperator enum, add to AutomationEvaluatorService
+- **Adding New Actions**: Create executor implementing IActionExecutor, add to AutomationModule providers
+- **Testing**: All CRUD endpoints tested, automation tab accessible at Dashboard → 🤖 Automation
+
+For complete details, see [docs/automation.md](docs/automation.md)
