@@ -6,18 +6,22 @@
 3. [Calendars](#calendars)
 4. [Events](#events)
 5. [Calendar Sync](#calendar-sync)
-6. [Reservation System](#reservation-system)
+6. [Automation System](#automation-system)
+   - [Automation Rules](#automation-rules)
+   - [Audit Logs](#audit-logs)
+   - [Rule Execution](#rule-execution)
+7. [Reservation System](#reservation-system)
    - [Organisations](#organisations)
    - [Resource Types](#resource-types)
    - [Resources](#resources)
    - [Reservations](#reservations)
    - [Operating Hours](#operating-hours)
-7. [Admin](#admin)
-8. [Organisation Admin Management](#organisation-admin-management)
-9. [Reservation Calendars](#reservation-calendars)
-10. [User Permissions](#user-permissions)
-11. [Data Models](#data-models)
-12. [Error Handling](#error-handling)
+8. [Admin](#admin)
+9. [Organisation Admin Management](#organisation-admin-management)
+10. [Reservation Calendars](#reservation-calendars)
+11. [User Permissions](#user-permissions)
+12. [Data Models](#data-models)
+13. [Error Handling](#error-handling)
 
 ---
 
@@ -899,6 +903,414 @@ Disconnect specific calendar provider.
   "message": "google calendar provider disconnected successfully"
 }
 ```
+
+---
+
+## Automation System
+
+The Cal3 automation system enables users to create intelligent rules that automatically respond to event lifecycle triggers with configurable conditions and actions. All automation endpoints require authentication.
+
+### Authentication
+
+All automation system endpoints require JWT authentication:
+```
+Authorization: Bearer <your-jwt-token>
+```
+
+---
+
+## Automation Rules
+
+### GET /automation/rules
+Get all automation rules for the authenticated user.
+
+**Query Parameters:**
+- `isEnabled` (optional): Filter by enabled status (true/false)
+- `triggerType` (optional): Filter by trigger type
+- `page` (optional): Page number (default: 1)
+- `limit` (optional): Items per page (default: 20)
+
+**Response (200 OK):**
+```json
+{
+  "data": [
+    {
+      "id": 1,
+      "name": "Color work meetings blue",
+      "description": "Automatically color all work calendar events",
+      "triggerType": "event.created",
+      "triggerConfig": null,
+      "isEnabled": true,
+      "conditionLogic": "AND",
+      "lastExecutedAt": "2025-10-06T10:00:00Z",
+      "executionCount": 150,
+      "createdAt": "2025-10-06T09:00:00Z",
+      "updatedAt": "2025-10-06T10:00:00Z",
+      "conditions": [
+        {
+          "id": 1,
+          "field": "event.calendar.name",
+          "operator": "equals",
+          "value": "Work",
+          "logicOperator": "AND",
+          "order": 0
+        }
+      ],
+      "actions": [
+        {
+          "id": 1,
+          "actionType": "set_event_color",
+          "actionConfig": {
+            "color": "#3b82f6"
+          },
+          "order": 0
+        }
+      ]
+    }
+  ],
+  "total": 1,
+  "page": 1,
+  "limit": 20
+}
+```
+
+---
+
+### GET /automation/rules/:id
+Get specific automation rule by ID.
+
+**Response (200 OK):**
+```json
+{
+  "id": 1,
+  "name": "Color work meetings blue",
+  "description": "Automatically color all work calendar events",
+  "triggerType": "event.created",
+  "triggerConfig": null,
+  "isEnabled": true,
+  "conditionLogic": "AND",
+  "lastExecutedAt": "2025-10-06T10:00:00Z",
+  "executionCount": 150,
+  "conditions": [
+    {
+      "id": 1,
+      "field": "event.calendar.name",
+      "operator": "equals",
+      "value": "Work",
+      "logicOperator": "AND",
+      "order": 0
+    }
+  ],
+  "actions": [
+    {
+      "id": 1,
+      "actionType": "set_event_color",
+      "actionConfig": {
+        "color": "#3b82f6"
+      },
+      "order": 0
+    }
+  ],
+  "createdAt": "2025-10-06T09:00:00Z",
+  "updatedAt": "2025-10-06T10:00:00Z"
+}
+```
+
+**Error Responses:**
+- `404 Not Found` - Rule does not exist
+- `403 Forbidden` - No access to rule
+
+---
+
+### POST /automation/rules
+Create a new automation rule.
+
+**Request Body:**
+```json
+{
+  "name": "Color all-day events green",
+  "description": "Automatically color all-day events",
+  "triggerType": "event.created",
+  "triggerConfig": null,
+  "conditionLogic": "AND",
+  "isEnabled": true,
+  "conditions": [
+    {
+      "field": "event.is_all_day",
+      "operator": "is_true",
+      "value": "true",
+      "logicOperator": "AND",
+      "order": 0
+    }
+  ],
+  "actions": [
+    {
+      "actionType": "set_event_color",
+      "actionConfig": {
+        "color": "#10b981"
+      },
+      "order": 0
+    }
+  ]
+}
+```
+
+**Trigger Types:**
+- `event.created` - When a new event is created
+- `event.updated` - When an event is modified
+- `event.deleted` - When an event is removed
+- `event.starts_in` - X minutes before event start (requires triggerConfig: {minutesBefore: number})
+- `event.ends_in` - X minutes before event end (requires triggerConfig: {minutesBefore: number})
+- `calendar.imported` - When events are imported from external calendars
+- `scheduled.time` - At specific times (requires triggerConfig with cron expression)
+
+**Condition Fields:**
+- `event.title` - Event title (string)
+- `event.description` - Event description (string)
+- `event.location` - Event location (string)
+- `event.notes` - Event notes (string)
+- `event.duration` - Duration in minutes (number)
+- `event.is_all_day` - Is all-day event (boolean)
+- `event.color` - Event color (string)
+- `event.status` - Event status (string)
+- `event.calendar.id` - Calendar ID (number)
+- `event.calendar.name` - Calendar name (string)
+
+**Condition Operators:**
+- String: `contains`, `not_contains`, `matches`, `not_matches`, `equals`, `not_equals`, `starts_with`, `ends_with`
+- Numeric: `greater_than`, `less_than`, `greater_than_or_equal`, `less_than_or_equal`
+- Boolean: `is_true`, `is_false`
+- Array: `in`, `not_in`
+
+**Action Types:**
+- `set_event_color` - Change event color (V1 - Available)
+- Future actions: `send_notification`, `modify_event_title`, `modify_event_description`, `create_task`, `webhook`
+
+**Response (201 Created):**
+```json
+{
+  "id": 2,
+  "name": "Color all-day events green",
+  "description": "Automatically color all-day events",
+  "triggerType": "event.created",
+  "isEnabled": true,
+  "conditions": [...],
+  "actions": [...]
+}
+```
+
+**Error Responses:**
+- `400 Bad Request` - Invalid input data
+- `409 Conflict` - Rule name already exists for this user
+
+---
+
+### PUT /automation/rules/:id
+Update an automation rule.
+
+**Request Body:**
+```json
+{
+  "name": "Updated rule name",
+  "description": "Updated description",
+  "isEnabled": false,
+  "conditionLogic": "OR",
+  "conditions": [
+    {
+      "field": "event.title",
+      "operator": "contains",
+      "value": "meeting",
+      "logicOperator": "AND",
+      "order": 0
+    }
+  ],
+  "actions": [
+    {
+      "actionType": "set_event_color",
+      "actionConfig": {
+        "color": "#ef4444"
+      },
+      "order": 0
+    }
+  ]
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "id": 1,
+  "name": "Updated rule name",
+  "description": "Updated description",
+  "isEnabled": false,
+  "updatedAt": "2025-10-06T11:00:00Z"
+}
+```
+
+---
+
+### DELETE /automation/rules/:id
+Delete an automation rule.
+
+**Response (200 OK):**
+```json
+{
+  "message": "Automation rule deleted successfully"
+}
+```
+
+---
+
+## Audit Logs
+
+### GET /automation/rules/:id/audit-logs
+Get audit logs for a specific automation rule.
+
+**Query Parameters:**
+- `status` (optional): Filter by status (success, partial_success, failure, skipped)
+- `startDate` (optional): Filter from date (YYYY-MM-DD)
+- `endDate` (optional): Filter to date (YYYY-MM-DD)
+- `page` (optional): Page number (default: 1)
+- `limit` (optional): Items per page (default: 50, max: 100)
+
+**Response (200 OK):**
+```json
+{
+  "data": [
+    {
+      "id": 100,
+      "ruleId": 1,
+      "eventId": 50,
+      "triggerType": "event.created",
+      "triggerContext": {
+        "manual": false
+      },
+      "conditionsResult": {
+        "passed": true,
+        "conditions": [
+          {
+            "field": "event.calendar.name",
+            "operator": "equals",
+            "expectedValue": "Work",
+            "actualValue": "Work",
+            "passed": true
+          }
+        ]
+      },
+      "actionResults": [
+        {
+          "actionType": "set_event_color",
+          "success": true,
+          "data": {
+            "previousColor": "#3b82f6",
+            "newColor": "#3b82f6"
+          }
+        }
+      ],
+      "status": "success",
+      "errorMessage": null,
+      "duration_ms": 45,
+      "executedAt": "2025-10-06T10:00:00Z"
+    }
+  ],
+  "total": 150,
+  "page": 1,
+  "limit": 50
+}
+```
+
+---
+
+### GET /automation/audit-logs/:logId
+Get detailed audit log by ID.
+
+**Response (200 OK):**
+```json
+{
+  "id": 100,
+  "ruleId": 1,
+  "rule": {
+    "id": 1,
+    "name": "Color work meetings blue"
+  },
+  "eventId": 50,
+  "event": {
+    "id": 50,
+    "title": "Team Meeting",
+    "calendar": {
+      "name": "Work"
+    }
+  },
+  "triggerType": "event.created",
+  "triggerContext": {
+    "manual": false
+  },
+  "conditionsResult": {
+    "passed": true,
+    "logic": "AND",
+    "conditions": [...]
+  },
+  "actionResults": [...],
+  "status": "success",
+  "errorMessage": null,
+  "duration_ms": 45,
+  "executedAt": "2025-10-06T10:00:00Z"
+}
+```
+
+---
+
+### GET /automation/rules/:id/stats
+Get execution statistics for a rule.
+
+**Response (200 OK):**
+```json
+{
+  "totalExecutions": 150,
+  "successCount": 145,
+  "failureCount": 2,
+  "partialSuccessCount": 1,
+  "skippedCount": 2,
+  "averageDuration_ms": 42.5,
+  "lastExecutedAt": "2025-10-06T10:00:00Z",
+  "successRate": 96.67
+}
+```
+
+---
+
+## Rule Execution
+
+### POST /automation/rules/:id/execute
+Execute a rule retroactively on existing events.
+
+**Note:** This endpoint has rate limiting - 1 execution per rule per minute.
+
+**Request Body:**
+```json
+{
+  "dryRun": false
+}
+```
+
+**Parameters:**
+- `dryRun` (optional): If true, simulates execution without making changes (default: false)
+
+**Response (200 OK):**
+```json
+{
+  "message": "Rule executed successfully",
+  "eventsProcessed": 25,
+  "successCount": 23,
+  "failureCount": 2,
+  "executionTime_ms": 1250
+}
+```
+
+**Error Responses:**
+- `429 Too Many Requests` - Rate limit exceeded (wait 60 seconds)
+- `404 Not Found` - Rule does not exist
+- `403 Forbidden` - No access to rule
 
 ---
 
@@ -2550,6 +2962,75 @@ Get reservation calendars accessible to current user.
   daysOfWeek?: number[]; // 0-6, for weekly recurring
   count?: number; // number of occurrences
   endDate?: Date; // alternative to count
+}
+```
+
+### AutomationRule Entity
+```typescript
+{
+  id: number;
+  name: string; // Unique per user
+  description?: string;
+  triggerType: 'event.created' | 'event.updated' | 'event.deleted' | 'event.starts_in' | 'event.ends_in' | 'calendar.imported' | 'scheduled.time';
+  triggerConfig?: Record<string, any>; // JSON object
+  isEnabled: boolean;
+  conditionLogic: 'AND' | 'OR';
+  lastExecutedAt?: Date;
+  executionCount: number;
+  conditions: AutomationCondition[];
+  actions: AutomationAction[];
+  createdBy: User;
+  createdAt: Date;
+  updatedAt: Date;
+}
+```
+
+### AutomationCondition Entity
+```typescript
+{
+  id: number;
+  field: string; // e.g., 'event.title', 'event.calendar.name'
+  operator: 'contains' | 'not_contains' | 'matches' | 'not_matches' | 'equals' | 'not_equals' |
+            'starts_with' | 'ends_with' | 'greater_than' | 'less_than' |
+            'greater_than_or_equal' | 'less_than_or_equal' | 'is_true' | 'is_false' | 'in' | 'not_in';
+  value: string; // Stored as string, parsed based on field type
+  groupId?: string; // UUID for grouping (future use)
+  logicOperator: 'AND' | 'OR' | 'NOT';
+  order: number; // Evaluation order
+  createdAt: Date;
+  updatedAt: Date;
+}
+```
+
+### AutomationAction Entity
+```typescript
+{
+  id: number;
+  actionType: 'set_event_color' | 'send_notification' | 'modify_event_title' |
+              'modify_event_description' | 'create_task' | 'webhook' | 'create_reminder' | 'move_to_calendar';
+  actionConfig: Record<string, any>; // JSON object with action-specific config
+  order: number; // Execution order
+  createdAt: Date;
+  updatedAt: Date;
+}
+```
+
+### AutomationAuditLog Entity
+```typescript
+{
+  id: number;
+  ruleId: number;
+  rule?: AutomationRule;
+  eventId?: number;
+  event?: Event;
+  triggerType: string;
+  triggerContext?: Record<string, any>; // JSON object
+  conditionsResult: Record<string, any>; // JSON object with evaluation results
+  actionResults?: Record<string, any>[]; // JSON array
+  status: 'success' | 'partial_success' | 'failure' | 'skipped';
+  errorMessage?: string;
+  duration_ms: number;
+  executedAt: Date;
 }
 ```
 

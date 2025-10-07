@@ -622,6 +622,8 @@ const CalendarSync: React.FC<CalendarSyncProps> = ({ themeColor }) => {
     try {
       const providerSelectedCalendars = selectedCalendars[provider] || [];
       const providerCustomNames = customCalendarNames[provider] || {};
+      const providerTriggerAutomation = triggerAutomation[provider] || {};
+      const providerSelectedRules = selectedRules[provider] || {};
       const providerData = syncStatus.providers.find(p => p.provider === provider);
 
       if (providerSelectedCalendars.length === 0) {
@@ -638,7 +640,9 @@ const CalendarSync: React.FC<CalendarSyncProps> = ({ themeColor }) => {
           provider: provider as 'google' | 'microsoft',
           calendars: providerSelectedCalendars.map(id => ({
             externalId: id,
-            localName: providerCustomNames[id] || providerData?.calendars.find(c => c.id === id)?.name || 'Synced Calendar'
+            localName: providerCustomNames[id] || providerData?.calendars.find(c => c.id === id)?.name || 'Synced Calendar',
+            triggerAutomationRules: providerTriggerAutomation[id] || false,
+            selectedRuleIds: providerSelectedRules[id] || []
           }))
         });
 
@@ -653,6 +657,14 @@ const CalendarSync: React.FC<CalendarSyncProps> = ({ themeColor }) => {
         });
         setCustomCalendarNames({
           ...customCalendarNames,
+          [provider]: {}
+        });
+        setTriggerAutomation({
+          ...triggerAutomation,
+          [provider]: {}
+        });
+        setSelectedRules({
+          ...selectedRules,
           [provider]: {}
         });
       }, `Syncing ${providerSelectedCalendars.length} calendars...`);
@@ -807,17 +819,78 @@ const CalendarSync: React.FC<CalendarSyncProps> = ({ themeColor }) => {
                                     <p className="text-gray-600 text-sm mt-1">{calendar.description}</p>
                                   )}
                                   {providerSelectedCalendars.includes(calendar.id) && (
-                                    <div className="mt-3">
-                                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Local Calendar Name:
-                                      </label>
-                                      <input
-                                        type="text"
-                                        value={providerCustomNames[calendar.id] || calendar.name}
-                                        onChange={(e) => handleCustomNameChange(provider.provider, calendar.id, e.target.value)}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                        placeholder="Enter custom name for this calendar"
-                                      />
+                                    <div className="mt-3 space-y-3">
+                                      <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                          Local Calendar Name:
+                                        </label>
+                                        <input
+                                          type="text"
+                                          value={providerCustomNames[calendar.id] || calendar.name}
+                                          onChange={(e) => handleCustomNameChange(provider.provider, calendar.id, e.target.value)}
+                                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                          placeholder="Enter custom name for this calendar"
+                                        />
+                                      </div>
+                                      <div className="border-t pt-3">
+                                        <div className="flex items-center space-x-2 mb-2">
+                                          <input
+                                            type="checkbox"
+                                            id={`automation-${provider.provider}-${calendar.id}`}
+                                            checked={(triggerAutomation[provider.provider]?.[calendar.id]) || false}
+                                            onChange={(e) => {
+                                              setTriggerAutomation({
+                                                ...triggerAutomation,
+                                                [provider.provider]: {
+                                                  ...(triggerAutomation[provider.provider] || {}),
+                                                  [calendar.id]: e.target.checked
+                                                }
+                                              });
+                                            }}
+                                            className="rounded"
+                                          />
+                                          <label htmlFor={`automation-${provider.provider}-${calendar.id}`} className="text-sm font-medium text-gray-700">
+                                            🤖 Trigger automation rules on imported events
+                                          </label>
+                                        </div>
+                                        {(triggerAutomation[provider.provider]?.[calendar.id]) && automationRules.length > 0 && (
+                                          <div className="ml-6 mt-2">
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                              Select Rules (optional - all enabled if none selected):
+                                            </label>
+                                            <div className="max-h-40 overflow-y-auto border border-gray-300 rounded-lg p-2 space-y-1">
+                                              {automationRules.map(rule => (
+                                                <label key={rule.id} className="flex items-center space-x-2 p-1 hover:bg-gray-50 rounded">
+                                                  <input
+                                                    type="checkbox"
+                                                    checked={(selectedRules[provider.provider]?.[calendar.id] || []).includes(rule.id)}
+                                                    onChange={(e) => {
+                                                      const currentRules = selectedRules[provider.provider]?.[calendar.id] || [];
+                                                      const newRules = e.target.checked
+                                                        ? [...currentRules, rule.id]
+                                                        : currentRules.filter(id => id !== rule.id);
+                                                      setSelectedRules({
+                                                        ...selectedRules,
+                                                        [provider.provider]: {
+                                                          ...(selectedRules[provider.provider] || {}),
+                                                          [calendar.id]: newRules
+                                                        }
+                                                      });
+                                                    }}
+                                                    className="rounded"
+                                                  />
+                                                  <span className="text-sm text-gray-700">{rule.name}</span>
+                                                </label>
+                                              ))}
+                                            </div>
+                                          </div>
+                                        )}
+                                        {(triggerAutomation[provider.provider]?.[calendar.id]) && automationRules.length === 0 && (
+                                          <p className="ml-6 mt-2 text-sm text-gray-500 italic">
+                                            No automation rules with "calendar.imported" trigger found. Create one in the Automation panel first.
+                                          </p>
+                                        )}
+                                      </div>
                                     </div>
                                   )}
                                 </div>

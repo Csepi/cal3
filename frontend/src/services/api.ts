@@ -489,7 +489,15 @@ class ApiService {
     return data.authUrl;
   }
 
-  async syncCalendars(syncData: { provider: string, calendars: Array<{ externalId: string, localName: string }> }): Promise<any> {
+  async syncCalendars(syncData: {
+    provider: string,
+    calendars: Array<{
+      externalId: string,
+      localName: string,
+      triggerAutomationRules?: boolean,
+      selectedRuleIds?: number[]
+    }>
+  }): Promise<any> {
     const response = await fetch(`${API_BASE_URL}/api/calendar-sync/sync`, {
       method: 'POST',
       headers: this.getAuthHeaders(),

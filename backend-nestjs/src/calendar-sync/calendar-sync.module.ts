@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CalendarSyncController } from './calendar-sync.controller';
 import { CalendarSyncService } from './calendar-sync.service';
@@ -6,6 +6,7 @@ import { CalendarSyncConnection, SyncedCalendar, SyncEventMapping } from '../ent
 import { Calendar } from '../entities/calendar.entity';
 import { Event } from '../entities/event.entity';
 import { User } from '../entities/user.entity';
+import { AutomationModule } from '../automation/automation.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { User } from '../entities/user.entity';
       Event,
       User,
     ]),
+    forwardRef(() => AutomationModule),
   ],
   controllers: [CalendarSyncController],
   providers: [CalendarSyncService],

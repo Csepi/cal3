@@ -1,4 +1,4 @@
-import { Injectable, ForbiddenException, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, ForbiddenException, NotFoundException, BadRequestException, Inject, forwardRef } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Event, RecurrenceType } from '../entities/event.entity';
@@ -15,6 +15,8 @@ export class EventsService {
     private calendarRepository: Repository<Calendar>,
     @InjectRepository(CalendarShare)
     private calendarShareRepository: Repository<CalendarShare>,
+    @Inject(forwardRef(() => require('../automation/automation.service').AutomationService))
+    private automationService?: any,
   ) {}
 
   async create(createEventDto: CreateEventDto, userId: number): Promise<Event> {
@@ -41,6 +43,11 @@ export class EventsService {
 
     const event = this.createEventEntity(eventData, calendarId, userId);
     const savedEvent = await this.eventRepository.save(event);
+
+    // Trigger automation rules for event.created
+    this.triggerAutomationRules('event.created', savedEvent).catch(err =>
+      console.error('Automation trigger error:', err)
+    );
 
     // Check if this is a recurring event and generate instances
     if (savedEvent.recurrenceType && savedEvent.recurrenceType !== RecurrenceType.NONE && savedEvent.recurrenceRule) {
@@ -206,7 +213,14 @@ export class EventsService {
     }
 
     Object.assign(event, updateEventDto);
-    return this.eventRepository.save(event);
+    const updatedEvent = await this.eventRepository.save(event);
+
+    // Trigger automation rules for event.updated
+    this.triggerAutomationRules('event.updated', updatedEvent).catch(err =>
+      console.error('Automation trigger error:', err)
+    );
+
+    return updatedEvent;
   }
 
   async remove(id: number, userId: number, scope: 'this' | 'future' | 'all' = 'this'): Promise<void> {
@@ -224,6 +238,11 @@ export class EventsService {
     if (!hasWriteAccess) {
       throw new ForbiddenException('Insufficient permissions to delete this event');
     }
+
+    // Trigger automation rules for event.deleted BEFORE deletion
+    this.triggerAutomationRules('event.deleted', event).catch(err =>
+      console.error('Automation trigger error:', err)
+    );
 
     if (event.recurrenceType !== RecurrenceType.NONE) {
       await this.removeRecurringEvent(event, scope);
@@ -683,5 +702,59 @@ export class EventsService {
     }
 
     return [savedEvent];
+  }
+
+  /**
+   * Trigger automation rules for event lifecycle hooks
+   * Executes asynchronously without blocking the main flow
+   */
+  private async triggerAutomationRules(triggerType: string, event: Event): Promise<void> {
+    if (!this.automationService) {
+      return; // Automation service not available (optional dependency)
+    }
+
+    try {
+      // Load event with calendar relationship if not already loaded
+      const fullEvent = event.calendar
+        ? event
+        : await this.eventRepository.findOne({
+            where: { id: event.id },
+            relations: ['calendar'],
+          });
+
+      if (!fullEvent) return;
+
+      // Load calendar with owner relationship if not already loaded
+      const calendarWithOwner = fullEvent.calendar.owner
+        ? fullEvent.calendar
+        : await this.calendarRepository.findOne({
+            where: { id: fullEvent.calendar.id },
+            relations: ['owner'],
+          });
+
+      if (!calendarWithOwner?.owner) return;
+
+      // Get automation rules (using dynamic import to avoid circular dependency)
+      const rules = await this.automationService.findRulesByTrigger?.(
+        triggerType,
+        calendarWithOwner.owner.id,
+      );
+
+      if (!rules || rules.length === 0) return;
+
+      // Execute each rule asynchronously
+      for (const rule of rules) {
+        this.automationService
+          .executeRuleOnEvent(rule, fullEvent)
+          .catch((error: Error) => {
+            console.error(
+              `Failed to execute automation rule ${rule.id} on event ${event.id}:`,
+              error.message,
+            );
+          });
+      }
+    } catch (error) {
+      console.error('Error triggering automation rules:', error);
+    }
   }
 }
