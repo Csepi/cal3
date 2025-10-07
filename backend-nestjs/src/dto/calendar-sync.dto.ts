@@ -1,4 +1,4 @@
-import { IsEnum, IsString, IsArray, IsBoolean, IsOptional, ValidateNested } from 'class-validator';
+import { IsEnum, IsString, IsArray, IsBoolean, IsOptional, ValidateNested, IsNumber } from 'class-validator';
 import { Type } from 'class-transformer';
 import { SyncProvider } from '../entities/calendar-sync.entity';
 
@@ -12,6 +12,15 @@ export class CalendarSyncDto {
   @IsOptional()
   @IsBoolean()
   bidirectionalSync?: boolean = true;
+
+  @IsOptional()
+  @IsBoolean()
+  triggerAutomationRules?: boolean = false;
+
+  @IsOptional()
+  @IsArray()
+  @IsNumber({}, { each: true })
+  selectedRuleIds?: number[];
 }
 
 export class SyncCalendarsDto {

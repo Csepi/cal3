@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { apiService } from '../../services/api';
 import { LoadingScreen } from '../common';
 import { useLoadingProgress } from '../../hooks/useLoadingProgress';
+import { getAutomationRules } from '../../services/automationService';
+import type { AutomationRuleDto, TriggerType } from '../../types/Automation';
 
 interface CalendarSyncProps {
   themeColor: string;
@@ -39,6 +41,9 @@ const CalendarSync: React.FC<CalendarSyncProps> = ({ themeColor }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [selectedCalendars, setSelectedCalendars] = useState<Record<string, string[]>>({});
   const [customCalendarNames, setCustomCalendarNames] = useState<Record<string, Record<string, string>>>({});
+  const [triggerAutomation, setTriggerAutomation] = useState<Record<string, Record<string, boolean>>>({});
+  const [selectedRules, setSelectedRules] = useState<Record<string, Record<string, number[]>>>({});
+  const [automationRules, setAutomationRules] = useState<AutomationRuleDto[]>([]);
   const { loadingState, withProgress } = useLoadingProgress();
 
   // Helper function to get theme-based colors with gradients (matching Calendar component)
@@ -427,6 +432,7 @@ const CalendarSync: React.FC<CalendarSyncProps> = ({ themeColor }) => {
     document.head.appendChild(metaTag);
 
     loadSyncStatus();
+    loadAutomationRules();
 
     // Handle success/error URL parameters
     const urlParams = new URLSearchParams(window.location.search);
@@ -537,6 +543,19 @@ const CalendarSync: React.FC<CalendarSyncProps> = ({ themeColor }) => {
       });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const loadAutomationRules = async () => {
+    try {
+      const rulesData = await getAutomationRules(1, 100, true); // Get first 100 enabled rules
+      // Filter only calendar.imported trigger rules
+      const importRules = rulesData.data.filter(rule => rule.triggerType === 'calendar.imported');
+      setAutomationRules(importRules);
+      console.log('Automation rules loaded:', importRules);
+    } catch (err) {
+      console.warn('Could not load automation rules:', err);
+      setAutomationRules([]);
     }
   };
 
