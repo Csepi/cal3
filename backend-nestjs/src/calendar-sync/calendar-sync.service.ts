@@ -175,7 +175,7 @@ export class CalendarSyncService {
 
       const savedLocalCalendar = await this.calendarRepository.save(localCalendar);
 
-      // Create sync mapping
+      // Create sync mapping with automation trigger settings
       const syncedCalendar = this.syncedCalendarRepository.create({
         syncConnectionId: syncConnection.id,
         localCalendarId: savedLocalCalendar.id,
@@ -187,8 +187,11 @@ export class CalendarSyncService {
       await this.syncedCalendarRepository.save(syncedCalendar);
     }
 
-    // Trigger initial sync
-    await this.performSync(syncConnection);
+    // Trigger initial sync with automation settings
+    await this.performSync(syncConnection, {
+      triggerAutomationRules: syncData.calendars.some(cal => cal.triggerAutomationRules),
+      selectedRuleIds: syncData.calendars.flatMap(cal => cal.selectedRuleIds || []),
+    });
   }
 
   async disconnect(userId: number): Promise<void> {
@@ -222,7 +225,7 @@ export class CalendarSyncService {
       throw new NotFoundException('No active sync connection found');
     }
 
-    await this.performSync(syncConnection);
+    await this.performSync(syncConnection, { triggerAutomationRules: false });
   }
 
   private async getExternalCalendars(syncConnection: CalendarSyncConnection): Promise<ExternalCalendarDto[]> {
@@ -444,7 +447,10 @@ export class CalendarSyncService {
     return `External Calendar ${calendarId}`;
   }
 
-  private async performSync(syncConnection: CalendarSyncConnection): Promise<void> {
+  private async performSync(
+    syncConnection: CalendarSyncConnection,
+    automationSettings?: { triggerAutomationRules?: boolean; selectedRuleIds?: number[] }
+  ): Promise<void> {
     this.logger.log(`[performSync] Starting sync for provider: ${syncConnection.provider}, user: ${syncConnection.userId}`);
 
     // Get all synced calendars for this connection
@@ -458,7 +464,7 @@ export class CalendarSyncService {
     for (const syncedCalendar of syncedCalendars) {
       try {
         this.logger.log(`[performSync] Syncing calendar: ${syncedCalendar.externalCalendarName} (${syncedCalendar.externalCalendarId})`);
-        await this.syncCalendarEvents(syncConnection, syncedCalendar);
+        await this.syncCalendarEvents(syncConnection, syncedCalendar, automationSettings);
       } catch (error) {
         this.logger.error(`[performSync] Error syncing calendar ${syncedCalendar.externalCalendarId}:`, error.stack);
       }
@@ -469,7 +475,11 @@ export class CalendarSyncService {
     this.logger.log(`[performSync] Sync completed for provider: ${syncConnection.provider}`);
   }
 
-  private async syncCalendarEvents(syncConnection: CalendarSyncConnection, syncedCalendar: SyncedCalendar): Promise<void> {
+  private async syncCalendarEvents(
+    syncConnection: CalendarSyncConnection,
+    syncedCalendar: SyncedCalendar,
+    automationSettings?: { triggerAutomationRules?: boolean; selectedRuleIds?: number[] }
+  ): Promise<void> {
     this.logger.log(`[syncCalendarEvents] Fetching events for calendar: ${syncedCalendar.externalCalendarId}`);
 
     let externalEvents: any[] = [];
@@ -493,7 +503,7 @@ export class CalendarSyncService {
     for (const externalEvent of externalEvents) {
       if (!mappedExternalIds.has(externalEvent.id)) {
         try {
-          await this.createLocalEventFromExternal(syncConnection, syncedCalendar, externalEvent);
+          await this.createLocalEventFromExternal(syncConnection, syncedCalendar, externalEvent, automationSettings);
         } catch (error) {
           this.logger.error(`[syncCalendarEvents] Error creating local event from external event ${externalEvent.id}:`, error.stack);
         }
@@ -575,7 +585,12 @@ export class CalendarSyncService {
     }
   }
 
-  private async createLocalEventFromExternal(syncConnection: CalendarSyncConnection, syncedCalendar: SyncedCalendar, externalEvent: any): Promise<void> {
+  private async createLocalEventFromExternal(
+    syncConnection: CalendarSyncConnection,
+    syncedCalendar: SyncedCalendar,
+    externalEvent: any,
+    automationSettings?: { triggerAutomationRules?: boolean; selectedRuleIds?: number[] }
+  ): Promise<void> {
     this.logger.log(`[createLocalEventFromExternal] Creating local event from external: ${externalEvent.id} - ${externalEvent.subject || externalEvent.summary}`);
 
     // Get user timezone preference (default to UTC if not set)
@@ -729,10 +744,12 @@ export class CalendarSyncService {
 
     const savedEvent = await this.eventRepository.save(localEvent) as unknown as Event;
 
-    // Trigger automation rules for calendar.imported
-    this.triggerCalendarImportRules(savedEvent, syncConnection.userId).catch(err =>
-      this.logger.error('Automation trigger error:', err)
-    );
+    // Trigger automation rules for calendar.imported only if enabled
+    if (automationSettings?.triggerAutomationRules) {
+      this.triggerCalendarImportRules(savedEvent, syncConnection.userId, automationSettings.selectedRuleIds).catch(err =>
+        this.logger.error('Automation trigger error:', err)
+      );
+    }
 
     // Create event mapping
     const eventMapping = this.syncEventMappingRepository.create({
@@ -845,7 +862,7 @@ export class CalendarSyncService {
    * Trigger automation rules for calendar import events
    * Executes asynchronously without blocking the sync flow
    */
-  private async triggerCalendarImportRules(event: Event, userId: number): Promise<void> {
+  private async triggerCalendarImportRules(event: Event, userId: number, selectedRuleIds?: number[]): Promise<void> {
     if (!this.automationService) {
       return; // Automation service not available (optional dependency)
     }
@@ -867,8 +884,19 @@ export class CalendarSyncService {
 
       if (!rules || rules.length === 0) return;
 
+      // Filter rules if specific rule IDs are provided
+      const rulesToExecute = selectedRuleIds && selectedRuleIds.length > 0
+        ? rules.filter(rule => selectedRuleIds.includes(rule.id))
+        : rules;
+
+      if (rulesToExecute.length === 0) return;
+
+      this.logger.log(
+        `[triggerCalendarImportRules] Executing ${rulesToExecute.length} automation rules for imported event ${event.id}`
+      );
+
       // Execute each rule asynchronously
-      for (const rule of rules) {
+      for (const rule of rulesToExecute) {
         this.automationService
           .executeRuleOnEvent(rule, fullEvent)
           .catch((error: Error) => {

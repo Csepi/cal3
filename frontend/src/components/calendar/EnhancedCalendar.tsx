@@ -107,30 +107,21 @@ function useCalendarState(themeColor: string) {
 
       const selectedCalendars = calendarsData.map(cal => cal.id);
 
-      // Mock reservations data for demonstration
-      const mockReservations = [
-        {
-          id: 1,
-          resource: { name: 'Conference Room A' },
-          startTime: new Date().toISOString(),
-          endTime: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(), // 2 hours later
-          status: 'confirmed'
-        },
-        {
-          id: 2,
-          resource: { name: 'Meeting Room B' },
-          startTime: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // tomorrow
-          endTime: new Date(Date.now() + 25 * 60 * 60 * 1000).toISOString(), // tomorrow + 1 hour
-          status: 'pending'
-        }
-      ];
+      // Fetch user's reservations from the API
+      let reservations: any[] = [];
+      try {
+        reservations = await apiService.get('/reservations');
+      } catch (err) {
+        console.error('Error loading reservations:', err);
+        // Non-critical error, continue with empty reservations
+      }
 
       setState(prev => ({
         ...prev,
         events: eventsData,
         calendars: calendarsData,
         selectedCalendars,
-        reservations: mockReservations,
+        reservations,
         loading: false,
       }));
     } catch (error) {

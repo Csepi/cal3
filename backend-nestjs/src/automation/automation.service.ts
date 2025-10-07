@@ -294,7 +294,7 @@ export class AutomationService {
     const events = await this.eventRepository
       .createQueryBuilder('event')
       .innerJoin('event.calendar', 'calendar')
-      .innerJoin('calendar.user', 'user')
+      .innerJoin('calendar.owner', 'user')
       .where('user.id = :userId', { userId })
       .getMany();
 
