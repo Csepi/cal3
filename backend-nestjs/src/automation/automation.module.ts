@@ -13,6 +13,7 @@ import { AutomationSchedulerService } from './automation-scheduler.service';
 import { AutomationAuditService } from './automation-audit.service';
 import { ActionExecutorRegistry } from './executors/action-executor-registry';
 import { SetEventColorExecutor } from './executors/set-event-color.executor';
+import { WebhookExecutor } from './executors/webhook.executor';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { SetEventColorExecutor } from './executors/set-event-color.executor';
     AutomationAuditService,
     ActionExecutorRegistry,
     SetEventColorExecutor,
+    WebhookExecutor,
   ],
   exports: [AutomationService, AutomationEvaluatorService],
 })

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { AutomationRuleDetailDto, AutomationRuleDto } from '../../../types/Automation';
+import type { AutomationRuleDetailDto, AutomationRuleDto } from '../../../types/Automation';
 
 interface DeleteRuleDialogProps {
   rule: AutomationRuleDetailDto | AutomationRuleDto;

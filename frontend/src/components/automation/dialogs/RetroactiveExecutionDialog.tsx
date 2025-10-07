@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { AutomationRuleDetailDto } from '../../../types/Automation';
+import type { AutomationRuleDetailDto } from '../../../types/Automation';
 
 interface RetroactiveExecutionDialogProps {
   rule: AutomationRuleDetailDto;

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { ActionType, ActionFormData } from '../../../types/Automation';
+import { ActionType } from '../../../types/Automation';
+import type { ActionFormData } from '../../../types/Automation';
 import { ActionRow } from './ActionRow';
 
 interface ActionBuilderProps {

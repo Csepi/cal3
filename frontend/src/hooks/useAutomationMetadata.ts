@@ -4,6 +4,8 @@ import {
   ConditionField,
   ConditionOperator,
   ActionType,
+} from '../types/Automation';
+import type {
   TriggerTypeMetadata,
   ConditionFieldMetadata,
   OperatorMetadata,
@@ -491,6 +493,37 @@ export function useAutomationMetadata(): UseAutomationMetadataReturn {
               min: 0,
               max: 10080,
             },
+          },
+        ],
+      },
+      {
+        value: ActionType.WEBHOOK,
+        label: 'Call Webhook',
+        description: 'Send HTTP POST request to a webhook URL',
+        icon: '🔗',
+        configFields: [
+          {
+            name: 'url',
+            label: 'Webhook URL',
+            type: 'text',
+            required: true,
+            placeholder: 'https://example.com/webhook',
+            helpText: 'The HTTP/HTTPS endpoint to call',
+          },
+          {
+            name: 'includeEventData',
+            label: 'Include Event Data',
+            type: 'checkbox',
+            required: false,
+            helpText: 'Send event details in the webhook payload',
+          },
+          {
+            name: 'headers',
+            label: 'Custom Headers (JSON)',
+            type: 'json',
+            required: false,
+            placeholder: '{"Authorization": "Bearer token"}',
+            helpText: 'Optional custom HTTP headers as JSON object',
           },
         ],
       },

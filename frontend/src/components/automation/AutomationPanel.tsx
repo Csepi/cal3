@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAutomationRules } from '../../hooks/useAutomationRules';
-import { AutomationRuleDetailDto, CreateAutomationRuleDto, UpdateAutomationRuleDto } from '../../types/Automation';
+import type { AutomationRuleDetailDto, CreateAutomationRuleDto, UpdateAutomationRuleDto } from '../../types/Automation';
 import { AutomationList } from './AutomationList';
 import { AutomationRuleModal } from './AutomationRuleModal';
 import { AutomationDetailView } from './AutomationDetailView';
@@ -48,10 +48,11 @@ export function AutomationPanel({ themeColor = '#3b82f6' }: AutomationPanelProps
   };
 
   // Handle edit rule
-  const handleEditRule = (ruleId: number) => {
-    const rule = rules.find((r) => r.id === ruleId);
-    if (rule) {
-      setEditingRule(rule as AutomationRuleDetailDto);
+  const handleEditRule = async (ruleId: number) => {
+    // Fetch full rule details (includes conditions and actions)
+    const fullRule = await fetchRuleById(ruleId);
+    if (fullRule) {
+      setEditingRule(fullRule);
       setModalOpen(true);
     }
   };
@@ -131,6 +132,7 @@ export function AutomationPanel({ themeColor = '#3b82f6' }: AutomationPanelProps
         rule={selectedRule}
         onBack={clearSelectedRule}
         onUpdate={fetchRules}
+        onSave={updateRule}
         onToggle={(enabled) => handleToggleRule(selectedRule.id, enabled)}
         onDelete={async () => {
           await handleDeleteRule(selectedRule.id);

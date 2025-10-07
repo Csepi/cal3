@@ -1,12 +1,12 @@
 import { useState, useEffect, useCallback } from 'react';
-import {
+import { TriggerType } from '../types/Automation';
+import type {
   AutomationRuleDto,
   AutomationRuleDetailDto,
   CreateAutomationRuleDto,
   UpdateAutomationRuleDto,
   PaginationState,
   AutomationFilters,
-  TriggerType,
 } from '../types/Automation';
 import {
   getAutomationRules,

@@ -1,5 +1,6 @@
 import React from 'react';
-import { ActionType, ActionFormData } from '../../../types/Automation';
+import { ActionType } from '../../../types/Automation';
+import type { ActionFormData } from '../../../types/Automation';
 import { useAutomationMetadata } from '../../../hooks/useAutomationMetadata';
 import { SetEventColorForm } from './SetEventColorForm';
 
@@ -185,6 +186,81 @@ export const ActionRow: React.FC<ActionRowProps> = ({
                   <option value="append">Append</option>
                   <option value="prepend">Prepend</option>
                 </select>
+              </div>
+            </div>
+          )}
+
+          {/* Webhook Form */}
+          {action.actionType === ActionType.WEBHOOK && (
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Webhook URL *
+                </label>
+                <input
+                  type="url"
+                  value={action.actionConfig.url || ''}
+                  onChange={(e) =>
+                    handleConfigChange({ ...action.actionConfig, url: e.target.value })
+                  }
+                  placeholder="https://example.com/webhook"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                />
+                <p className="mt-1 text-xs text-gray-500">The HTTP/HTTPS endpoint to call</p>
+              </div>
+
+              <div className="flex items-start gap-2">
+                <input
+                  type="checkbox"
+                  id={`includeEventData-${action.tempId}`}
+                  checked={action.actionConfig.includeEventData || false}
+                  onChange={(e) =>
+                    handleConfigChange({
+                      ...action.actionConfig,
+                      includeEventData: e.target.checked,
+                    })
+                  }
+                  className="mt-1 w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                />
+                <label
+                  htmlFor={`includeEventData-${action.tempId}`}
+                  className="text-sm text-gray-700 cursor-pointer"
+                >
+                  <div className="font-medium">Include Event Data</div>
+                  <div className="text-xs text-gray-500">
+                    Send event details (title, time, description, etc.) in the webhook payload
+                  </div>
+                </label>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Custom Headers (JSON, optional)
+                </label>
+                <textarea
+                  value={
+                    typeof action.actionConfig.headers === 'object'
+                      ? JSON.stringify(action.actionConfig.headers, null, 2)
+                      : action.actionConfig.headers || ''
+                  }
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    try {
+                      // Try to parse as JSON if not empty
+                      const parsed = value.trim() ? JSON.parse(value) : undefined;
+                      handleConfigChange({ ...action.actionConfig, headers: parsed });
+                    } catch {
+                      // If invalid JSON, store as string (will show validation error on save)
+                      handleConfigChange({ ...action.actionConfig, headers: value });
+                    }
+                  }}
+                  placeholder='{"Authorization": "Bearer token"}'
+                  rows={3}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm font-mono"
+                />
+                <p className="mt-1 text-xs text-gray-500">
+                  Optional custom HTTP headers as JSON object
+                </p>
               </div>
             </div>
           )}

@@ -1,5 +1,5 @@
 import React from 'react';
-import { AutomationRuleDto } from '../../types/Automation';
+import type { AutomationRuleDto } from '../../types/Automation';
 import { AutomationRuleCard } from './AutomationRuleCard';
 
 interface AutomationListProps {

@@ -1,4 +1,4 @@
-import {
+import type {
   AutomationRuleDto,
   AutomationRuleDetailDto,
   CreateAutomationRuleDto,
@@ -15,7 +15,7 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8081';
  * Get authorization headers with JWT token
  */
 function getAuthHeaders(): HeadersInit {
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem('authToken');
   return {
     'Content-Type': 'application/json',
     Authorization: `Bearer ${token}`,
@@ -107,7 +107,7 @@ export async function updateAutomationRule(
   const response = await fetch(
     `${API_BASE_URL}/api/automation/rules/${ruleId}`,
     {
-      method: 'PATCH',
+      method: 'PUT',
       headers: getAuthHeaders(),
       body: JSON.stringify(updateData),
     }
@@ -192,7 +192,8 @@ export async function getAuditLogs(
     headers: getAuthHeaders(),
   });
 
-  return handleResponse<AuditLogDto[]>(response);
+  const paginatedResponse = await handleResponse<{ data: AuditLogDto[]; pagination: any }>(response);
+  return paginatedResponse.data;
 }
 
 /**
@@ -245,7 +246,7 @@ export async function getAllAuditLogs(
  * Check if user is authenticated
  */
 export function isAuthenticated(): boolean {
-  return !!localStorage.getItem('token');
+  return !!localStorage.getItem('authToken');
 }
 
 /**

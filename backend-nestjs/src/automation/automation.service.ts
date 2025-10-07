@@ -311,14 +311,10 @@ export class AutomationService {
       if (!fullEvent) continue;
 
       // Execute the rule and create audit log
+      // Note: executeRuleOnEvent already updates metadata via updateRuleExecutionMetadata()
       await this.executeRuleOnEvent(rule, fullEvent, userId);
       executionCount++;
     }
-
-    // Update lastExecutedAt and executionCount
-    rule.lastExecutedAt = new Date();
-    rule.executionCount += executionCount;
-    await this.ruleRepository.save(rule);
 
     return executionCount;
   }
@@ -410,6 +406,9 @@ export class AutomationService {
       });
 
       await this.auditLogRepository.save(auditLog);
+
+      // Update rule metadata
+      await this.updateRuleExecutionMetadata(rule.id);
     } catch (error) {
       // Log execution failure
       const executionTimeMs = Date.now() - startTime;
@@ -429,7 +428,18 @@ export class AutomationService {
       });
 
       await this.auditLogRepository.save(auditLog);
+
+      // Update rule metadata even on failure
+      await this.updateRuleExecutionMetadata(rule.id);
     }
+  }
+
+  /**
+   * Update rule execution metadata (lastExecutedAt and executionCount)
+   */
+  private async updateRuleExecutionMetadata(ruleId: number): Promise<void> {
+    await this.ruleRepository.increment({ id: ruleId }, 'executionCount', 1);
+    await this.ruleRepository.update({ id: ruleId }, { lastExecutedAt: new Date() });
   }
 
   /**
@@ -508,6 +518,8 @@ export class AutomationService {
 
     const queryBuilder = this.auditLogRepository
       .createQueryBuilder('log')
+      .leftJoinAndSelect('log.rule', 'rule')
+      .leftJoinAndSelect('log.event', 'event')
       .where('log.ruleId = :ruleId', { ruleId })
       .orderBy('log.executedAt', 'DESC')
       .skip(skip)
@@ -527,7 +539,7 @@ export class AutomationService {
 
     const [logs, total] = await queryBuilder.getManyAndCount();
 
-    const data: AuditLogDto[] = logs.map((log) => this.mapToAuditLogDto(log));
+    const data: AuditLogDto[] = logs.map((log) => this.mapToAuditLogDto(log, true));
 
     return {
       data,
@@ -575,8 +587,8 @@ export class AutomationService {
       .addSelect('SUM(CASE WHEN status = :failure THEN 1 ELSE 0 END)', 'failureCount')
       .addSelect('SUM(CASE WHEN status = :skipped THEN 1 ELSE 0 END)', 'skippedCount')
       .addSelect('SUM(CASE WHEN status = :partial THEN 1 ELSE 0 END)', 'partialSuccessCount')
-      .addSelect('AVG(executionTimeMs)', 'avgExecutionTimeMs')
-      .addSelect('MAX(executedAt)', 'lastExecutedAt')
+      .addSelect('AVG(duration_ms)', 'avgExecutionTimeMs')
+      .addSelect('MAX(log.executedAt)', 'lastExecutedAt')
       .where('log.ruleId = :ruleId', { ruleId })
       .setParameters({
         success: AuditLogStatus.SUCCESS,
@@ -638,11 +650,11 @@ export class AutomationService {
     };
   }
 
-  private mapToAuditLogDto(log: AutomationAuditLog): AuditLogDto {
-    return {
+  private mapToAuditLogDto(log: AutomationAuditLog, includeRelationNames = false): AuditLogDto {
+    const dto: any = {
       id: log.id,
-      ruleId: log.rule.id,
-      eventId: log.event.id,
+      ruleId: log.ruleId,
+      eventId: log.eventId,
       status: log.status,
       conditionsResult: log.conditionsResult as ConditionsResultDto,
       actionResults: log.actionResults?.map((ar) => ({
@@ -658,6 +670,14 @@ export class AutomationService {
       executedAt: log.executedAt,
       executionTimeMs: log.executionTimeMs,
     };
+
+    // Include rule and event names if relations are loaded
+    if (includeRelationNames) {
+      dto.ruleName = log.rule?.name;
+      dto.eventTitle = log.event?.title;
+    }
+
+    return dto as AuditLogDto;
   }
 
   private mapToAuditLogDetailDto(log: AutomationAuditLog): AuditLogDetailDto {

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { AutomationRuleDetailDto } from '../../types/Automation';
+import type { AutomationRuleDetailDto } from '../../types/Automation';
 import { useAutomationMetadata } from '../../hooks/useAutomationMetadata';
 import { formatRelativeTime, executeRuleNow } from '../../services/automationService';
 import { AuditLogViewer } from './AuditLogViewer';
@@ -11,6 +11,7 @@ interface AutomationDetailViewProps {
   rule: AutomationRuleDetailDto;
   onBack: () => void;
   onUpdate: () => void;
+  onSave: (ruleId: number, ruleData: any) => Promise<void>;
   onToggle: (enabled: boolean) => void;
   onDelete: () => void;
   themeColor: string;
@@ -20,6 +21,7 @@ export const AutomationDetailView: React.FC<AutomationDetailViewProps> = ({
   rule,
   onBack,
   onUpdate,
+  onSave,
   onToggle,
   onDelete,
   themeColor,
@@ -36,7 +38,8 @@ export const AutomationDetailView: React.FC<AutomationDetailViewProps> = ({
     setShowEditModal(true);
   };
 
-  const handleEditSave = async () => {
+  const handleEditSave = async (ruleData: any) => {
+    await onSave(rule.id, ruleData);
     setShowEditModal(false);
     onUpdate();
   };

@@ -32,7 +32,7 @@ import {
 } from './dto/automation-audit-log.dto';
 
 @ApiTags('automation')
-@Controller('api/automation')
+@Controller('automation')
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
 export class AutomationController {
@@ -55,7 +55,7 @@ export class AutomationController {
     @Body() createRuleDto: CreateAutomationRuleDto,
     @Req() req,
   ): Promise<AutomationRuleDetailDto> {
-    const userId = req.user.userId;
+    const userId = req.user.id;
     return this.automationService.createRule(userId, createRuleDto);
   }
 
@@ -73,7 +73,7 @@ export class AutomationController {
     @Query('enabled') enabled?: string,
     @Req() req?,
   ): Promise<PaginatedAutomationRulesDto> {
-    const userId = req.user.userId;
+    const userId = req.user.id;
     const isEnabled = enabled === 'true' ? true : enabled === 'false' ? false : undefined;
     return this.automationService.listRules(userId, page, limit, isEnabled);
   }
@@ -93,7 +93,7 @@ export class AutomationController {
     @Param('id', ParseIntPipe) id: number,
     @Req() req,
   ): Promise<AutomationRuleDetailDto> {
-    const userId = req.user.userId;
+    const userId = req.user.id;
     return this.automationService.getRule(userId, id);
   }
 
@@ -114,7 +114,7 @@ export class AutomationController {
     @Body() updateRuleDto: UpdateAutomationRuleDto,
     @Req() req,
   ): Promise<AutomationRuleDetailDto> {
-    const userId = req.user.userId;
+    const userId = req.user.id;
     return this.automationService.updateRule(userId, id, updateRuleDto);
   }
 
@@ -127,7 +127,7 @@ export class AutomationController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Forbidden - not your rule' })
   async deleteRule(@Param('id', ParseIntPipe) id: number, @Req() req): Promise<void> {
-    const userId = req.user.userId;
+    const userId = req.user.id;
     await this.automationService.deleteRule(userId, id);
   }
 
@@ -151,7 +151,7 @@ export class AutomationController {
     @Param('id', ParseIntPipe) id: number,
     @Req() req,
   ): Promise<{ message: string; executionCount: number }> {
-    const userId = req.user.userId;
+    const userId = req.user.id;
     const executionCount = await this.automationService.executeRuleNow(userId, id);
     return {
       message: 'Rule execution initiated',
@@ -179,7 +179,7 @@ export class AutomationController {
     @Query() query: AuditLogQueryDto,
     @Req() req,
   ): Promise<PaginatedAuditLogsDto> {
-    const userId = req.user.userId;
+    const userId = req.user.id;
     return this.automationService.getRuleAuditLogs(userId, id, query);
   }
 
@@ -198,7 +198,7 @@ export class AutomationController {
     @Param('logId', ParseIntPipe) logId: number,
     @Req() req,
   ): Promise<AuditLogDetailDto> {
-    const userId = req.user.userId;
+    const userId = req.user.id;
     return this.automationService.getAuditLog(userId, logId);
   }
 
@@ -217,7 +217,7 @@ export class AutomationController {
     @Param('id', ParseIntPipe) id: number,
     @Req() req,
   ): Promise<AuditLogStatsDto> {
-    const userId = req.user.userId;
+    const userId = req.user.id;
     return this.automationService.getRuleStats(userId, id);
   }
 }

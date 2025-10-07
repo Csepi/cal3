@@ -101,8 +101,14 @@ export class AuditLogDto {
   @ApiProperty({ description: 'Rule ID that was executed' })
   ruleId: number;
 
+  @ApiPropertyOptional({ description: 'Rule name (included when loading list)' })
+  ruleName?: string;
+
   @ApiProperty({ description: 'Event ID that triggered the rule' })
   eventId: number;
+
+  @ApiPropertyOptional({ description: 'Event title (included when loading list)' })
+  eventTitle?: string;
 
   @ApiProperty({ description: 'Execution status', enum: AuditLogStatus })
   status: AuditLogStatus;

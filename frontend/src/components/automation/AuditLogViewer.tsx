@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { AuditLogStatus, AuditLogDto } from '../../types/Automation';
+import React, { useState, useMemo } from 'react';
+import { AuditLogStatus } from '../../types/Automation';
+import type { AuditLogDto, AuditLogQueryDto } from '../../types/Automation';
 import { useAuditLogs } from '../../hooks/useAuditLogs';
 import { formatRelativeTime, getStatusColor } from '../../services/automationService';
 import { AuditLogDetailModal } from './AuditLogDetailModal';
@@ -19,29 +20,33 @@ export const AuditLogViewer: React.FC<AuditLogViewerProps> = ({
   const [dateRange, setDateRange] = useState<DateRangeOption>('last_30_days');
   const [selectedLogId, setSelectedLogId] = useState<number | null>(null);
 
-  // Calculate date range
-  const getStartDate = (): string | undefined => {
-    if (dateRange === 'all') return undefined;
+  // Memoize query object to prevent unnecessary re-renders
+  const query = useMemo<AuditLogQueryDto>(() => {
+    // Calculate date range
+    let fromDate: string | undefined;
+    if (dateRange !== 'all') {
+      const now = new Date();
+      const daysAgo = {
+        last_7_days: 7,
+        last_30_days: 30,
+        last_90_days: 90,
+      }[dateRange];
 
-    const now = new Date();
-    const daysAgo = {
-      last_7_days: 7,
-      last_30_days: 30,
-      last_90_days: 90,
-    }[dateRange];
+      const startDate = new Date(now.getTime() - daysAgo * 24 * 60 * 60 * 1000);
+      fromDate = startDate.toISOString();
+    }
 
-    const startDate = new Date(now.getTime() - daysAgo * 24 * 60 * 60 * 1000);
-    return startDate.toISOString();
-  };
+    return {
+      status: statusFilter === 'all' ? undefined : statusFilter,
+      fromDate,
+      limit: 100,
+    };
+  }, [statusFilter, dateRange]);
 
   // Fetch logs with current filters
   const { logs, stats, isLoading, error, refresh } = useAuditLogs({
     ruleId,
-    query: {
-      status: statusFilter === 'all' ? undefined : statusFilter,
-      fromDate: getStartDate(),
-      limit: 100,
-    },
+    query,
   });
 
   // Get status icon

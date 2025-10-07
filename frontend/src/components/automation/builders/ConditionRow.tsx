@@ -2,8 +2,8 @@ import React from 'react';
 import {
   ConditionField,
   ConditionOperator,
-  ConditionFormData,
 } from '../../../types/Automation';
+import type { ConditionFormData } from '../../../types/Automation';
 import { useAutomationMetadata } from '../../../hooks/useAutomationMetadata';
 
 interface ConditionRowProps {

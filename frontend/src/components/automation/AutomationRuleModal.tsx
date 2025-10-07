@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import {
+  TriggerType,
+  ConditionLogic,
+  ConditionLogicOperator,
+} from '../../types/Automation';
+import type {
   AutomationRuleDetailDto,
   CreateAutomationRuleDto,
   UpdateAutomationRuleDto,
-  TriggerType,
-  ConditionLogic,
   ConditionFormData,
   ActionFormData,
-  ConditionLogicOperator,
 } from '../../types/Automation';
 import { TriggerSelector } from './builders/TriggerSelector';
 import { ConditionBuilder } from './builders/ConditionBuilder';
@@ -139,8 +141,12 @@ export function AutomationRuleModal({
   const handleSave = async () => {
     setError(null);
 
+    console.log('=== handleSave called ===');
+    console.log('Editing rule:', rule ? `ID ${rule.id}` : 'NEW');
+
     const validationError = validate();
     if (validationError) {
+      console.log('Validation error:', validationError);
       setError(validationError);
       return;
     }
@@ -177,8 +183,11 @@ export function AutomationRuleModal({
         })),
       };
 
+      console.log('Rule data to save:', JSON.stringify(ruleData, null, 2));
       await onSave(ruleData);
+      console.log('Save successful!');
     } catch (err) {
+      console.error('Save error:', err);
       setError(err instanceof Error ? err.message : 'Failed to save rule');
     } finally {
       setIsSaving(false);

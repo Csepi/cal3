@@ -1,5 +1,5 @@
 import React from 'react';
-import { AutomationRuleDto } from '../../types/Automation';
+import type { AutomationRuleDto } from '../../types/Automation';
 import { useAutomationMetadata } from '../../hooks/useAutomationMetadata';
 import { formatRelativeTime } from '../../services/automationService';
 

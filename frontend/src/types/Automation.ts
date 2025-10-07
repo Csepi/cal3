@@ -64,6 +64,7 @@ export enum ActionType {
   MOVE_TO_CALENDAR = 'move_to_calendar',
   CANCEL_EVENT = 'cancel_event',
   CREATE_TASK = 'create_task',
+  WEBHOOK = 'webhook',
 }
 
 export enum AuditLogStatus {
@@ -296,10 +297,11 @@ export interface ActionTypeMetadata {
 export interface ActionConfigField {
   name: string;
   label: string;
-  type: 'text' | 'number' | 'color' | 'select' | 'textarea' | 'calendar-select';
+  type: 'text' | 'number' | 'color' | 'select' | 'textarea' | 'calendar-select' | 'checkbox' | 'json';
   required: boolean;
   placeholder?: string;
   options?: { value: string; label: string }[];
+  helpText?: string;
   validation?: {
     min?: number;
     max?: number;

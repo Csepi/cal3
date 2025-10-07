@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { AuditLogDto, AuditLogQueryDto, AuditLogStatsDto } from '../types/Automation';
+import type { AuditLogDto, AuditLogQueryDto, AuditLogStatsDto } from '../types/Automation';
 import { getAuditLogs, getAuditLogStats, getAllAuditLogs } from '../services/automationService';
 
 interface UseAuditLogsOptions {
@@ -50,7 +50,7 @@ export function useAuditLogs(options: UseAuditLogsOptions = {}): UseAuditLogsRet
     } finally {
       setIsLoading(false);
     }
-  }, [ruleId, query]);
+  }, [ruleId, JSON.stringify(query)]);
 
   // Fetch statistics (only available for specific rule)
   const fetchStats = useCallback(async () => {
