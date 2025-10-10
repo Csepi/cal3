@@ -538,21 +538,149 @@ docker run -d `
 
 **Method 1: Using Stacks (Recommended)**
 
+**Important:** Portainer deployments don't include the git-ignored `config/.env` file. You have two options:
+
+**Option A: Use Portainer Environment Variables (Easiest)**
+
 1. In Portainer, go to **Stacks** → **Add stack**
 2. Name: `cal3`
-3. Build method: **Git Repository**
-4. Repository URL: `https://github.com/Csepi/cal3.git`
-5. Repository reference: `refs/heads/Docker`
-6. Compose path: `docker/docker-compose.yml`
-7. **Environment variables** → Add:
+3. Build method: **Repository** or **Web editor**
+   - **If using Repository**:
+     - URL: `https://github.com/Csepi/cal3.git`
+     - Branch: `Docker`
+     - Compose path: `docker/docker-compose.portainer.yml`
+   - **If using Web editor**: Copy the content below
+
+4. Paste this docker-compose content (or it's auto-loaded from repo):
+
+```yaml
+version: '3.9'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: cal3-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - cal3-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME}"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  backend:
+    image: ghcr.io/csepi/cal3-backend:latest
+    container_name: cal3-backend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 8081
+      DB_TYPE: postgres
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      JWT_SECRET: ${JWT_SECRET}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:8080}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      GOOGLE_CALLBACK_URL: ${GOOGLE_CALLBACK_URL}
+      MICROSOFT_CLIENT_ID: ${MICROSOFT_CLIENT_ID}
+      MICROSOFT_CLIENT_SECRET: ${MICROSOFT_CLIENT_SECRET}
+      MICROSOFT_CALLBACK_URL: ${MICROSOFT_CALLBACK_URL}
+      MICROSOFT_TENANT_ID: ${MICROSOFT_TENANT_ID:-common}
+    ports:
+      - "127.0.0.1:8081:8081"
+    networks:
+      - cal3-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:8081/api/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  frontend:
+    image: ghcr.io/csepi/cal3-frontend:latest
+    container_name: cal3-frontend
+    restart: unless-stopped
+    environment:
+      API_URL: http://backend:8081
+      NODE_ENV: production
+    ports:
+      - "${FRONTEND_PORT:-8080}:80"
+    networks:
+      - cal3-network
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  cal3-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+    name: cal3_postgres_data
+```
+
+5. Scroll down to **Environment variables** section
+6. Click **Add an environment variable** and add these (click + after each):
    ```
    DB_USERNAME=cal3_user
-   DB_PASSWORD=your-strong-password
+   DB_PASSWORD=your-strong-password-here
    DB_NAME=cal3_production
-   JWT_SECRET=your-32-char-secret
+   JWT_SECRET=your-32-char-secret-here
    FRONTEND_PORT=8080
+   FRONTEND_URL=http://localhost:8080
    ```
+
+7. **Important:** Generate secure secrets first:
+   - JWT_SECRET: Run `openssl rand -base64 32` and copy result
+   - DB_PASSWORD: Run `openssl rand -base64 24` and copy result
+
 8. Click **Deploy the stack**
+
+**Option B: Build Images Locally (If you have the source code)**
+
+If you cloned the repository locally and want to build from source:
+
+1. First, create config file on your host:
+   ```bash
+   cd /path/to/cal3/docker
+   cp config/env.example config/.env
+   nano config/.env  # Edit values
+   ```
+
+2. In Portainer:
+   - Go to **Stacks** → **Add stack**
+   - Name: `cal3`
+   - Build method: **Upload**
+   - Upload your `docker-compose.yml` file
+   - OR use **Web editor** and paste your docker-compose.yml content
+   - Portainer will use your local config/.env file
+
+3. Click **Deploy the stack**
 
 **Method 2: Upload docker-compose.yml**
 
@@ -688,6 +816,34 @@ docker run -d `
 
 #### Troubleshooting Portainer
 
+**"env file /data/compose/.../config/.env not found"**
+
+This is the most common error when deploying from Git repository.
+
+**Cause:** The `config/.env` file is git-ignored and doesn't exist in the repository.
+
+**Solutions:**
+
+1. **Use Option A above** (Portainer Environment Variables method)
+   - Don't use Git repository deployment
+   - Use Web editor with the provided docker-compose.yml
+   - Add all environment variables in Portainer UI
+   - This is the recommended approach for Portainer
+
+2. **Remove env_file references:**
+   - Edit the docker-compose.yml in Portainer
+   - Remove these lines:
+     ```yaml
+     env_file:
+       - ./config/.env
+     ```
+   - Add all environment variables directly in the compose file or Portainer UI
+
+3. **For advanced users - Create config file in Portainer:**
+   - After deploying stack, exec into container
+   - Create config/.env file manually
+   - Restart containers
+
 **Cannot access Portainer:**
 ```bash
 # Check if Portainer is running
@@ -714,6 +870,12 @@ sudo chmod 666 /var/run/docker.sock
 - Verify repository URL is accessible
 - Check Portainer logs for specific errors
 - Ensure compose file path is correct
+- Remove env_file references if using Git deployment
+
+**Images not found (ghcr.io/csepi/cal3-*):**
+- Images may not be published yet
+- Use Option B (build locally) instead
+- Or use manual container creation method with pre-built images
 
 #### Portainer Alternatives
 
