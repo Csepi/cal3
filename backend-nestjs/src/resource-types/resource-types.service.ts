@@ -86,4 +86,13 @@ export class ResourceTypesService {
     const resourceType = await this.findOne(id);
     await this.resourceTypeRepository.remove(resourceType);
   }
+
+  /**
+   * Update resource type color
+   */
+  async updateColor(id: number, color: string): Promise<ResourceType> {
+    const resourceType = await this.findOne(id);
+    resourceType.color = color;
+    return await this.resourceTypeRepository.save(resourceType);
+  }
 }

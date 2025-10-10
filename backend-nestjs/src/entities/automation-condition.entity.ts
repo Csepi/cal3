@@ -34,6 +34,8 @@ export enum ConditionOperator {
   NOT_EQUALS = 'not_equals',
   STARTS_WITH = 'starts_with',
   ENDS_WITH = 'ends_with',
+  IS_EMPTY = 'is_empty',
+  IS_NOT_EMPTY = 'is_not_empty',
 
   // Numeric operators
   GREATER_THAN = 'greater_than',
@@ -48,6 +50,8 @@ export enum ConditionOperator {
   // Array operators
   IN = 'in',
   NOT_IN = 'not_in',
+  IN_LIST = 'in_list', // Alias for frontend compatibility
+  NOT_IN_LIST = 'not_in_list', // Alias for frontend compatibility
 }
 
 export enum ConditionLogicOperator {

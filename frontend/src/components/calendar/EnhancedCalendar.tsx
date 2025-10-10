@@ -24,6 +24,21 @@ import MonthView from '../views/MonthView';
 import WeekView from '../views/WeekView';
 
 // Types for enhanced calendar
+interface ResourceType {
+  id: number;
+  name: string;
+  organisationId: number;
+  color: string;
+}
+
+interface Organization {
+  id: number;
+  name: string;
+  role: string;
+  color: string;
+  resourceTypes: ResourceType[];
+}
+
 interface CalendarState {
   currentDate: Date;
   selectedDate: Date | null;
@@ -32,7 +47,8 @@ interface CalendarState {
   calendars: CalendarType[];
   selectedCalendars: number[];
   reservations: any[];
-  selectedReservations: boolean;
+  organizations: Organization[];
+  selectedResourceTypes: number[]; // Array of selected resource type IDs
   loading: boolean;
   error: string | null;
 }
@@ -43,7 +59,10 @@ interface CalendarActions {
   setCurrentView: (view: 'month' | 'week') => void;
   navigateCalendar: (direction: 'prev' | 'next' | 'today') => void;
   toggleCalendar: (calendarId: number) => void;
-  toggleReservations: () => void;
+  toggleResourceType: (resourceTypeId: number) => void;
+  toggleOrganization: (org: Organization) => void;
+  updateOrganizationColor: (orgId: number, color: string, cascadeToResourceTypes: boolean) => Promise<void>;
+  updateResourceTypeColor: (resourceTypeId: number, color: string) => Promise<void>;
   createEvent: (date?: Date) => void;
   editEvent: (event: Event) => void;
   deleteEvent: (event: Event) => void;
@@ -65,7 +84,8 @@ function useCalendarState(themeColor: string) {
     calendars: [],
     selectedCalendars: [],
     reservations: [],
-    selectedReservations: false,
+    organizations: [],
+    selectedResourceTypes: [],
     loading: true,
     error: null,
   });
@@ -100,20 +120,61 @@ function useCalendarState(themeColor: string) {
     try {
       setState(prev => ({ ...prev, loading: true, error: null }));
 
-      const [eventsData, calendarsData, reservationsData] = await Promise.all([
+      const [eventsData, calendarsData] = await Promise.all([
         apiService.getAllEvents(),
         apiService.getAllCalendars(),
-        apiService.get('/reservations').catch(() => []), // Fetch real reservations, fallback to empty array
       ]);
 
       const selectedCalendars = calendarsData.map(cal => cal.id);
+
+      // Fetch user's accessible organizations with resource types
+      let organizations: Organization[] = [];
+      let reservations: any[] = [];
+      try {
+        // Get organizations where user has access
+        const orgsData = await apiService.get('/user-permissions/accessible-organizations');
+
+        // For each organization, fetch its resource types
+        const orgsWithResourceTypes = await Promise.all(
+          orgsData.map(async (org: any) => {
+            try {
+              const resourceTypes = await apiService.get(`/resource-types?organisationId=${org.id}`);
+              return {
+                id: org.id,
+                name: org.name,
+                role: org.role || 'USER',
+                color: org.color || '#000000', // Include organization color
+                resourceTypes: resourceTypes || []
+              };
+            } catch (err) {
+              console.error(`Error loading resource types for org ${org.id}:`, err);
+              return {
+                id: org.id,
+                name: org.name,
+                role: org.role || 'USER',
+                color: org.color || '#000000', // Include organization color
+                resourceTypes: []
+              };
+            }
+          })
+        );
+
+        organizations = orgsWithResourceTypes;
+
+        // Fetch all reservations (will be filtered by selected resource types in the UI)
+        reservations = await apiService.get('/reservations').catch(() => []);
+      } catch (err) {
+        console.error('Error loading organizations/reservations:', err);
+        // Non-critical error, continue with empty data
+      }
 
       setState(prev => ({
         ...prev,
         events: eventsData,
         calendars: calendarsData,
         selectedCalendars,
-        reservations: reservationsData,
+        organizations,
+        reservations,
         loading: false,
       }));
     } catch (error) {
@@ -170,11 +231,53 @@ function useCalendarState(themeColor: string) {
       }));
     },
 
-    toggleReservations: () => {
+    toggleResourceType: (resourceTypeId: number) => {
       setState(prev => ({
         ...prev,
-        selectedReservations: !prev.selectedReservations
+        selectedResourceTypes: prev.selectedResourceTypes.includes(resourceTypeId)
+          ? prev.selectedResourceTypes.filter(id => id !== resourceTypeId)
+          : [...prev.selectedResourceTypes, resourceTypeId]
       }));
+    },
+
+    toggleOrganization: (org: Organization) => {
+      setState(prev => {
+        const orgResourceTypeIds = org.resourceTypes.map(rt => rt.id);
+        const allSelected = orgResourceTypeIds.every(id => prev.selectedResourceTypes.includes(id));
+
+        return {
+          ...prev,
+          selectedResourceTypes: allSelected
+            ? prev.selectedResourceTypes.filter(id => !orgResourceTypeIds.includes(id))
+            : [...new Set([...prev.selectedResourceTypes, ...orgResourceTypeIds])]
+        };
+      });
+    },
+
+    updateOrganizationColor: async (orgId: number, color: string, cascadeToResourceTypes: boolean) => {
+      try {
+        await apiService.patch(`/organisations/${orgId}/color`, { color, cascadeToResourceTypes });
+        await loadData(); // Reload data to get updated colors
+      } catch (error) {
+        console.error('Error updating organization color:', error);
+        setErrors(prev => ({
+          ...prev,
+          general: error instanceof Error ? error.message : 'Failed to update organization color'
+        }));
+      }
+    },
+
+    updateResourceTypeColor: async (resourceTypeId: number, color: string) => {
+      try {
+        await apiService.patch(`/resource-types/${resourceTypeId}/color`, { color });
+        await loadData(); // Reload data to get updated colors
+      } catch (error) {
+        console.error('Error updating resource type color:', error);
+        setErrors(prev => ({
+          ...prev,
+          general: error instanceof Error ? error.message : 'Failed to update resource type color'
+        }));
+      }
     },
 
     createEvent: (date?: Date) => {
@@ -409,17 +512,58 @@ interface CalendarGridProps {
 }
 
 const CalendarGrid: React.FC<CalendarGridProps> = ({ state, actions, themeConfig, timeFormat }) => {
-  const { currentDate, currentView, events, selectedCalendars, reservations, selectedReservations } = state;
+  const { currentDate, currentView, events, selectedCalendars, reservations, selectedResourceTypes, organizations } = state;
+
+  // Filter reservations based on selected resource types
+  const filteredReservations = useMemo(() => {
+    return reservations.filter((r: any) => {
+      const resourceTypeId = r.resource?.resourceType?.id;
+      return resourceTypeId && selectedResourceTypes.includes(resourceTypeId);
+    });
+  }, [reservations, selectedResourceTypes]);
 
   // Filter events based on selected calendars
   const filteredEvents = useMemo(() => {
-    return events.filter(event => selectedCalendars.includes(event.calendar.id));
-  }, [events, selectedCalendars]);
+    const calendarEvents = events.filter(event => selectedCalendars.includes(event.calendar.id));
 
-  // Filter reservations based on selection
-  const filteredReservations = useMemo(() => {
-    return selectedReservations ? reservations : [];
-  }, [reservations, selectedReservations]);
+    // Convert filtered reservations to event format
+    const reservationEvents = filteredReservations
+      .map((r: any) => {
+        // Find the resource type to get its color
+        const resourceTypeId = r.resource?.resourceType?.id;
+        let resourceTypeColor = '#f97316'; // Default orange
+
+        if (resourceTypeId) {
+          for (const org of organizations) {
+            const resourceType = org.resourceTypes.find(rt => rt.id === resourceTypeId);
+            if (resourceType) {
+              resourceTypeColor = resourceType.color;
+              break;
+            }
+          }
+        }
+
+        return {
+          id: `reservation-${r.id}`,
+          title: r.resource?.name || 'Reservation',
+          start: r.startTime,
+          end: r.endTime,
+          color: resourceTypeColor,
+          isAllDay: false,
+          notes: r.description || `${r.status} - ${r.customerName || 'No customer'}`,
+          calendar: {
+            id: -1, // Special ID for reservations
+            name: 'Reservations',
+            color: '#f97316'
+          },
+          isReservation: true, // Flag to identify reservation events
+          reservationData: r // Keep original reservation data
+        };
+      });
+
+    // Combine calendar events and reservation events
+    return [...calendarEvents, ...reservationEvents];
+  }, [events, selectedCalendars, filteredReservations, organizations]);
 
   const handleDateClick = useCallback((date: Date) => {
     actions.setSelectedDate(date);
@@ -445,6 +589,7 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({ state, actions, themeConfig
         weekStartDay={1} // Monday start
         themeColor={themeConfig.primary}
         reservations={filteredReservations}
+        organizations={organizations}
       />
     );
   } else {
@@ -580,79 +725,145 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
           </div>
         </div>
 
-        {/* Reservations List */}
+        {/* Reservations by Organization and Resource Type */}
         <div>
           <div className="flex items-center justify-between mb-4">
             <h3 className={`text-lg font-semibold text-${themeConfig.text}`}>Reservations</h3>
           </div>
 
-          <div className="space-y-2">
-            {/* Reservations toggle - only show if there are reservations */}
-            {state.reservations && state.reservations.length > 0 && (
-              <>
-                <div
-                  className={`
-                    flex items-center space-x-3 p-3 rounded-lg cursor-pointer transition-all duration-200
-                    hover:shadow-md border-l-4
-                    ${state.selectedReservations ? 'shadow-sm' : ''}
-                  `}
-                  style={{
-                    borderLeftColor: '#f97316',
-                    background: state.selectedReservations
-                      ? 'linear-gradient(135deg, #f9731615, white)'
-                      : 'linear-gradient(135deg, #f9731608, transparent)'
-                  }}
-                  onClick={() => actions.toggleReservations()}
-                >
-                  <div
-                    className="w-4 h-4 rounded border-2 flex items-center justify-center"
-                    style={{
-                      backgroundColor: state.selectedReservations ? '#f97316' : 'transparent',
-                      borderColor: '#f97316'
-                    }}
-                  >
-                    {state.selectedReservations && (
-                      <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                      </svg>
-                    )}
-                  </div>
-                  <div className="flex-1">
-                    <div className="font-medium text-gray-800 flex items-center">
-                      📅 Room Reservations
-                      <span className="ml-2 text-xs bg-orange-100 text-orange-800 px-2 py-1 rounded-full">
-                        {state.reservations.length}
+          <div className="space-y-3">
+            {state.organizations && state.organizations.length > 0 ? (
+              state.organizations.map(org => {
+                const orgResourceTypeIds = org.resourceTypes.map(rt => rt.id);
+                const allOrgResourceTypesSelected = orgResourceTypeIds.length > 0 &&
+                  orgResourceTypeIds.every(id => state.selectedResourceTypes.includes(id));
+
+                return (
+                  <div key={org.id} className="space-y-2">
+                    {/* Organization header with checkbox and color picker */}
+                    <div className="flex items-center space-x-2 mb-2 p-2 rounded hover:bg-gray-50">
+                      <div
+                        className="w-4 h-4 rounded border-2 flex items-center justify-center flex-shrink-0 cursor-pointer"
+                        style={{
+                          backgroundColor: allOrgResourceTypesSelected ? org.color : 'transparent',
+                          borderColor: org.color
+                        }}
+                        onClick={() => actions.toggleOrganization(org)}
+                      >
+                        {allOrgResourceTypesSelected && (
+                          <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                        )}
+                      </div>
+                      <div className="flex-shrink-0 relative group">
+                        <input
+                          type="color"
+                          value={org.color}
+                          onChange={async (e) => {
+                            e.stopPropagation();
+                            const cascadeConfirm = window.confirm(
+                              `Update color for ${org.name}?\n\n` +
+                              `Click OK to also update all resource types under this organization.\n` +
+                              `Click Cancel to only update the organization color.`
+                            );
+                            await actions.updateOrganizationColor(org.id, e.target.value, cascadeConfirm);
+                          }}
+                          onClick={(e) => e.stopPropagation()}
+                          className="w-6 h-6 rounded cursor-pointer border-2 border-gray-300"
+                          title="Change organization color"
+                        />
+                      </div>
+                      <span className="text-sm font-semibold text-gray-700 cursor-pointer" onClick={() => actions.toggleOrganization(org)}>🏢 {org.name}</span>
+                      <span className={`text-xs px-2 py-0.5 rounded-full ${
+                        org.role === 'ORG_ADMIN'
+                          ? 'bg-purple-100 text-purple-700'
+                          : org.role === 'EDITOR'
+                          ? 'bg-blue-100 text-blue-700'
+                          : 'bg-gray-100 text-gray-700'
+                      }`}>
+                        {org.role === 'ORG_ADMIN' ? 'Admin' : org.role === 'EDITOR' ? 'Editor' : 'User'}
                       </span>
                     </div>
-                    <div className="text-sm text-gray-600">Conference rooms & meeting spaces</div>
-                  </div>
-                </div>
 
-                {/* Show individual reservations when expanded */}
-                {state.selectedReservations && (
-                  <div className="ml-6 space-y-1">
-                    {state.reservations.map(reservation => (
-                      <div
-                        key={reservation.id}
-                        className="flex items-center space-x-2 p-2 rounded bg-orange-50 border border-orange-100"
-                      >
-                        <div
-                          className="w-3 h-3 rounded-full"
-                          style={{ backgroundColor: '#f97316' }}
-                        />
-                        <div className="flex-1">
-                          <div className="text-sm font-medium text-gray-800">
-                            {reservation.resource.name}
+                  {/* Resource Types for this organization */}
+                  {org.resourceTypes && org.resourceTypes.length > 0 ? (
+                    <div className="ml-4 space-y-1">
+                      {org.resourceTypes.map(resourceType => {
+                        const isSelected = state.selectedResourceTypes.includes(resourceType.id);
+                        const reservationsForType = state.reservations.filter(
+                          (r: any) => r.resource?.resourceType?.id === resourceType.id
+                        );
+
+                        return (
+                          <div
+                            key={resourceType.id}
+                            className={`
+                              flex items-center space-x-2 p-2 rounded-lg transition-all duration-200
+                              hover:shadow-md border-l-4
+                              ${isSelected ? 'shadow-sm' : ''}
+                            `}
+                            style={{
+                              borderLeftColor: resourceType.color,
+                              background: isSelected
+                                ? `linear-gradient(135deg, ${resourceType.color}14, white)`
+                                : `linear-gradient(135deg, ${resourceType.color}08, transparent)`
+                            }}
+                          >
+                            <div
+                              className="w-4 h-4 rounded border-2 flex items-center justify-center flex-shrink-0 cursor-pointer"
+                              style={{
+                                backgroundColor: isSelected ? resourceType.color : 'transparent',
+                                borderColor: resourceType.color
+                              }}
+                              onClick={() => actions.toggleResourceType(resourceType.id)}
+                            >
+                              {isSelected && (
+                                <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                </svg>
+                              )}
+                            </div>
+                            <div className="flex-shrink-0 relative group">
+                              <input
+                                type="color"
+                                value={resourceType.color}
+                                onChange={async (e) => {
+                                  e.stopPropagation();
+                                  await actions.updateResourceTypeColor(resourceType.id, e.target.value);
+                                }}
+                                onClick={(e) => e.stopPropagation()}
+                                className="w-5 h-5 rounded cursor-pointer border border-gray-300"
+                                title="Change resource type color"
+                              />
+                            </div>
+                            <div className="flex-1 min-w-0 cursor-pointer" onClick={() => actions.toggleResourceType(resourceType.id)}>
+                              <div className="font-medium text-gray-800 text-sm flex items-center">
+                                📅 {resourceType.name}
+                                {reservationsForType.length > 0 && (
+                                  <span className="ml-2 text-xs px-2 py-0.5 rounded-full" style={{
+                                    backgroundColor: `${resourceType.color}20`,
+                                    color: resourceType.color
+                                  }}>
+                                    {reservationsForType.length}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
                           </div>
-                          <div className="text-xs text-gray-600">
-                            {new Date(reservation.startTime).toLocaleDateString()} • {reservation.status}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="ml-4 text-xs text-gray-500 italic">No resource types</div>
+                  )}
+                </div>
+                );
+              })
+            ) : (
+              <div className="text-sm text-gray-500 text-center py-4">
+                No organizations with reservations access
+              </div>
             )}
           </div>
         </div>

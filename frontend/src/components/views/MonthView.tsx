@@ -10,6 +10,7 @@ interface MonthViewProps {
   weekStartDay: number; // 0 = Sunday, 1 = Monday
   themeColor: string;
   reservations?: any[];
+  organizations?: any[]; // For getting resource type colors
 }
 
 const MonthView: React.FC<MonthViewProps> = ({
@@ -20,7 +21,8 @@ const MonthView: React.FC<MonthViewProps> = ({
   onEventClick,
   weekStartDay,
   themeColor,
-  reservations = []
+  reservations = [],
+  organizations = []
 }) => {
   // Helper function to get background style based on theme color
   const getBackgroundStyle = () => {
@@ -28,6 +30,21 @@ const MonthView: React.FC<MonthViewProps> = ({
       background: `linear-gradient(135deg, ${themeColor}08 0%, white 50%, ${themeColor}05 100%)`
     };
   };
+
+  // Helper function to get resource type color
+  const getResourceTypeColor = (reservation: any): string => {
+    const resourceTypeId = reservation.resource?.resourceType?.id;
+    if (!resourceTypeId) return '#f97316'; // Default orange
+
+    for (const org of organizations) {
+      const resourceType = org.resourceTypes?.find((rt: any) => rt.id === resourceTypeId);
+      if (resourceType?.color) {
+        return resourceType.color;
+      }
+    }
+    return '#f97316'; // Fallback orange
+  };
+
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
@@ -119,8 +136,9 @@ const MonthView: React.FC<MonthViewProps> = ({
     return date.toDateString() === selectedDate.toDateString();
   };
 
-  // Get events for selected date
+  // Get events and reservations for selected date
   const selectedDateEvents = selectedDate ? getEventsForDate(selectedDate) : [];
+  const selectedDateReservations = selectedDate ? getReservationsForDate(selectedDate) : [];
 
   return (
     <div className="flex h-full" style={getBackgroundStyle()}>
@@ -217,26 +235,29 @@ const MonthView: React.FC<MonthViewProps> = ({
                   })}
 
                   {/* Reservations */}
-                  {getReservationsForDate(date).slice(0, maxDisplayEvents - dayEvents.length).map(reservation => (
-                    <div
-                      key={`res-${reservation.id}`}
-                      className="text-xs p-1 rounded cursor-pointer truncate border-l-4 hover:shadow-md transition-all duration-200"
-                      style={{
-                        background: 'linear-gradient(135deg, #f9731640, #f9731660, #f9731670)',
-                        borderLeftColor: '#f97316',
-                        color: '#f97316',
-                        boxShadow: '0 3px 8px #f9731630'
-                      }}
-                      title={`📅 ${reservation.resource?.name}\n${new Date(reservation.startTime).toLocaleTimeString()} - ${new Date(reservation.endTime).toLocaleTimeString()}\nStatus: ${reservation.status}`}
-                    >
-                      <div className="font-medium truncate flex items-center">
-                        📅 {reservation.resource?.name}
+                  {getReservationsForDate(date).slice(0, maxDisplayEvents - dayEvents.length).map(reservation => {
+                    const reservationColor = getResourceTypeColor(reservation);
+                    return (
+                      <div
+                        key={`res-${reservation.id}`}
+                        className="text-xs p-1 rounded cursor-pointer truncate border-l-4 hover:shadow-md transition-all duration-200"
+                        style={{
+                          background: `linear-gradient(135deg, ${reservationColor}40, ${reservationColor}60, ${reservationColor}70)`,
+                          borderLeftColor: reservationColor,
+                          color: reservationColor,
+                          boxShadow: `0 3px 8px ${reservationColor}30`
+                        }}
+                        title={`📅 ${reservation.resource?.name}\n${new Date(reservation.startTime).toLocaleTimeString()} - ${new Date(reservation.endTime).toLocaleTimeString()}\nStatus: ${reservation.status}`}
+                      >
+                        <div className="font-medium truncate flex items-center">
+                          📅 {reservation.resource?.name}
+                        </div>
+                        <div className="opacity-75">
+                          {new Date(reservation.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </div>
                       </div>
-                      <div className="opacity-75">
-                        {new Date(reservation.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
 
                   {/* More events indicator */}
                   {hasMoreEvents && (
@@ -266,12 +287,13 @@ const MonthView: React.FC<MonthViewProps> = ({
             </h3>
             <p className="text-sm text-gray-600 mt-1">
               {selectedDateEvents.length} event{selectedDateEvents.length !== 1 ? 's' : ''}
+              {selectedDateReservations.length > 0 && ` • ${selectedDateReservations.length} reservation${selectedDateReservations.length !== 1 ? 's' : ''}`}
             </p>
           </div>
 
           {/* Events List */}
           <div className="flex-1 overflow-y-auto p-4">
-            {selectedDateEvents.length > 0 ? (
+            {selectedDateEvents.length > 0 || selectedDateReservations.length > 0 ? (
               <div className="space-y-3">
                 {selectedDateEvents.map(event => (
                   <div
@@ -334,6 +356,63 @@ const MonthView: React.FC<MonthViewProps> = ({
                     </div>
                   </div>
                 ))}
+
+                {/* Reservations */}
+                {selectedDateReservations.map(reservation => {
+                  const reservationColor = getResourceTypeColor(reservation);
+                  return (
+                    <div
+                      key={`res-${reservation.id}`}
+                      className="bg-white rounded-lg border border-gray-200 p-3 hover:shadow-lg transition-all duration-300 border-l-4 relative overflow-hidden"
+                      style={{
+                        borderLeftColor: reservationColor,
+                        background: `linear-gradient(135deg, ${reservationColor}08, ${reservationColor}12)`
+                      }}
+                    >
+                      <div className="flex items-start justify-between mb-2">
+                        <h4 className="font-medium text-gray-900 flex-1 pr-2 flex items-center">
+                          📅 {reservation.resource?.name || 'Reservation'}
+                        </h4>
+                        <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">
+                          {reservation.status}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center text-sm text-gray-600 mb-2">
+                        <span className="mr-2">🕒</span>
+                        <span>
+                          {new Date(reservation.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          {' - '}
+                          {new Date(reservation.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                      </div>
+
+                      {reservation.customerName && (
+                        <div className="flex items-center text-sm text-gray-600 mb-2">
+                          <span className="mr-2">👤</span>
+                          <span className="truncate">{reservation.customerName}</span>
+                        </div>
+                      )}
+
+                      {reservation.description && (
+                        <div className="text-sm text-gray-700 mt-2">
+                          <p className="line-clamp-2">{reservation.description}</p>
+                        </div>
+                      )}
+
+                      {/* Resource type indicator */}
+                      <div className="flex items-center mt-2 pt-2 border-t border-gray-100">
+                        <div
+                          className="w-3 h-3 rounded-full mr-2"
+                          style={{ backgroundColor: reservationColor }}
+                        />
+                        <span className="text-xs text-gray-500">
+                          Type: {reservation.resource?.resourceType?.name || 'Unknown'}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             ) : (
               <div className="flex flex-col items-center justify-center h-40 text-gray-400">

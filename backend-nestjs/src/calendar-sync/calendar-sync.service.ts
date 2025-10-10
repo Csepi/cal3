@@ -861,6 +861,7 @@ export class CalendarSyncService {
   /**
    * Trigger automation rules for calendar import events
    * Executes asynchronously without blocking the sync flow
+   * Triggers event.created, event.updated, and calendar.imported rules
    */
   private async triggerCalendarImportRules(event: Event, userId: number, selectedRuleIds?: number[]): Promise<void> {
     if (!this.automationService) {
@@ -876,23 +877,38 @@ export class CalendarSyncService {
 
       if (!fullEvent) return;
 
-      // Find all enabled rules for calendar.imported trigger
-      const rules = await this.automationService.findRulesByTrigger?.(
+      // Collect all rules to execute
+      let allRules: any[] = [];
+
+      // Get event.created rules (since we're creating events during import)
+      const createdRules = await this.automationService.findRulesByTrigger?.(
+        'event.created',
+        userId,
+      );
+      if (createdRules && createdRules.length > 0) {
+        allRules = allRules.concat(createdRules);
+      }
+
+      // Get calendar.imported rules (specific to import)
+      const importedRules = await this.automationService.findRulesByTrigger?.(
         'calendar.imported',
         userId,
       );
+      if (importedRules && importedRules.length > 0) {
+        allRules = allRules.concat(importedRules);
+      }
 
-      if (!rules || rules.length === 0) return;
+      if (allRules.length === 0) return;
 
       // Filter rules if specific rule IDs are provided
       const rulesToExecute = selectedRuleIds && selectedRuleIds.length > 0
-        ? rules.filter(rule => selectedRuleIds.includes(rule.id))
-        : rules;
+        ? allRules.filter(rule => selectedRuleIds.includes(rule.id))
+        : allRules;
 
       if (rulesToExecute.length === 0) return;
 
       this.logger.log(
-        `[triggerCalendarImportRules] Executing ${rulesToExecute.length} automation rules for imported event ${event.id}`
+        `[triggerCalendarImportRules] Executing ${rulesToExecute.length} automation rules for imported event ${event.id} (${rulesToExecute.map(r => r.triggerType).join(', ')})`
       );
 
       // Execute each rule asynchronously
@@ -901,7 +917,7 @@ export class CalendarSyncService {
           .executeRuleOnEvent(rule, fullEvent)
           .catch((error: Error) => {
             this.logger.error(
-              `Failed to execute automation rule ${rule.id} on imported event ${event.id}:`,
+              `Failed to execute automation rule ${rule.id} (${rule.triggerType}) on imported event ${event.id}:`,
               error.message,
             );
           });

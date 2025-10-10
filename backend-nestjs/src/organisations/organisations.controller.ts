@@ -212,4 +212,26 @@ export class OrganisationsController {
     const result = await this.organisationsService.deleteOrganizationCascade(organizationId, req.user.id);
     return result;
   }
+
+  /**
+   * Update organization color
+   * PATCH /api/organisations/:id/color
+   * Body: { color: string, cascadeToResourceTypes?: boolean }
+   */
+  @Patch(':id/color')
+  async updateColor(
+    @Param('id') id: string,
+    @Body() body: { color: string; cascadeToResourceTypes?: boolean },
+    @Req() req,
+  ) {
+    const organizationId = +id;
+
+    // Check if user can admin this organization
+    const canAdmin = await this.userPermissionsService.canUserAdminOrganization(req.user.id, organizationId);
+    if (!canAdmin) {
+      throw new ForbiddenException('You do not have permission to update this organisation color');
+    }
+
+    return await this.organisationsService.updateColor(organizationId, body.color, body.cascadeToResourceTypes);
+  }
 }

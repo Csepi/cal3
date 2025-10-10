@@ -60,17 +60,8 @@ export function AutomationRuleModal({
         }))
       );
     } else {
-      // Start with one empty condition
-      setConditions([
-        {
-          tempId: `cond-${Date.now()}`,
-          field: null,
-          operator: null,
-          value: '',
-          logicOperator: ConditionLogicOperator.AND,
-          order: 0,
-        },
-      ]);
+      // Start with no conditions (they're optional)
+      setConditions([]);
     }
 
     if (rule?.actions) {
@@ -105,14 +96,10 @@ export function AutomationRuleModal({
       return 'Please select a trigger type';
     }
 
-    // Validate conditions
+    // Validate conditions (now optional)
     const validConditions = conditions.filter(
       (c) => c.field && c.operator && (c.value || !requiresValue(c.operator))
     );
-
-    if (validConditions.length === 0) {
-      return 'At least one valid condition is required';
-    }
 
     if (conditions.length > 10) {
       return 'Maximum of 10 conditions allowed';
@@ -168,14 +155,16 @@ export function AutomationRuleModal({
           Object.keys(triggerConfig).length > 0 ? triggerConfig : undefined,
         isEnabled,
         conditionLogic,
-        conditions: validConditions.map((c) => ({
-          field: c.field!,
-          operator: c.operator!,
-          value: c.value,
-          groupId: c.groupId,
-          logicOperator: c.logicOperator,
-          order: c.order,
-        })),
+        ...(validConditions.length > 0 ? {
+          conditions: validConditions.map((c) => ({
+            field: c.field!,
+            operator: c.operator!,
+            value: c.value,
+            groupId: c.groupId,
+            logicOperator: c.logicOperator,
+            order: c.order,
+          }))
+        } : {}),
         actions: validActions.map((a) => ({
           actionType: a.actionType!,
           actionConfig: a.actionConfig,

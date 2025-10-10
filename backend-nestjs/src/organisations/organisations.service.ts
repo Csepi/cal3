@@ -276,4 +276,37 @@ export class OrganisationsService {
     orgUser.role = newRole;
     return await this.organisationUserRepository.save(orgUser);
   }
+
+  /**
+   * Update organization color
+   * Optionally cascade the color to all resource types
+   */
+  async updateColor(
+    organizationId: number,
+    color: string,
+    cascadeToResourceTypes = false,
+  ): Promise<Organisation> {
+    const organisation = await this.organisationRepository.findOne({
+      where: { id: organizationId },
+      relations: ['resourceTypes'],
+    });
+
+    if (!organisation) {
+      throw new NotFoundException(`Organisation #${organizationId} not found`);
+    }
+
+    organisation.color = color;
+    const updated = await this.organisationRepository.save(organisation);
+
+    // If cascade is enabled, update all resource types
+    if (cascadeToResourceTypes && organisation.resourceTypes) {
+      for (const resourceType of organisation.resourceTypes) {
+        resourceType.color = color;
+      }
+      // Save all resource types with the new color
+      await this.organisationRepository.manager.save(organisation.resourceTypes);
+    }
+
+    return updated;
+  }
 }

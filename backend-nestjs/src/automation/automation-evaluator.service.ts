@@ -205,8 +205,16 @@ export class AutomationEvaluatorService {
       case ConditionOperator.IS_FALSE:
         return Boolean(actual) === false;
 
+      // Empty/Not Empty operators
+      case ConditionOperator.IS_EMPTY:
+        return actual === '' || actual === null || actual === undefined;
+
+      case ConditionOperator.IS_NOT_EMPTY:
+        return actual !== '' && actual !== null && actual !== undefined;
+
       // Array operators
       case ConditionOperator.IN:
+      case ConditionOperator.IN_LIST:
         try {
           const values = expected.split(',').map((v) => v.trim().toLowerCase());
           return values.includes(String(actual).toLowerCase());
@@ -215,6 +223,7 @@ export class AutomationEvaluatorService {
         }
 
       case ConditionOperator.NOT_IN:
+      case ConditionOperator.NOT_IN_LIST:
         try {
           const values = expected.split(',').map((v) => v.trim().toLowerCase());
           return !values.includes(String(actual).toLowerCase());

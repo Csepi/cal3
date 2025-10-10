@@ -63,7 +63,11 @@ export const ConditionBuilder: React.FC<ConditionBuilderProps> = ({
       {/* Info Box */}
       <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
         <p className="text-sm text-gray-700">
-          {conditionLogic === ConditionLogic.AND ? (
+          {conditions.length === 0 ? (
+            <>
+              ℹ️ <strong>No conditions</strong> - the rule will trigger for all events matching the trigger.
+            </>
+          ) : conditionLogic === ConditionLogic.AND ? (
             <>
               ✓ <strong>All conditions</strong> must be true for the rule to trigger actions.
             </>
@@ -123,12 +127,6 @@ export const ConditionBuilder: React.FC<ConditionBuilderProps> = ({
       </div>
 
       {/* Validation Warning */}
-      {conditions.length === 0 && (
-        <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-          <p className="text-sm text-yellow-800">⚠️ At least one condition is required.</p>
-        </div>
-      )}
-
       {conditions.length > 10 && (
         <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
           <p className="text-sm text-yellow-800">
@@ -140,8 +138,7 @@ export const ConditionBuilder: React.FC<ConditionBuilderProps> = ({
       {/* Helper Text */}
       <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg">
         <p className="text-xs text-gray-600">
-          <strong>Tip:</strong> Conditions are evaluated against event properties. All selected
-          fields, operators, and values must be valid for the rule to save successfully.
+          <strong>Tip:</strong> Conditions are optional. If no conditions are specified, the rule will apply to all events that match the trigger. Add conditions to filter specific events.
         </p>
       </div>
     </div>

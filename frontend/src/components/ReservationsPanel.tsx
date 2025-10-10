@@ -24,6 +24,7 @@ interface Organization {
   name: string;
   description?: string;
   role?: 'USER' | 'EDITOR' | 'ORG_ADMIN';
+  color: string;
 }
 
 interface ResourceType {
@@ -34,6 +35,7 @@ interface ResourceType {
   minBookingDuration?: number;
   bufferTime?: number;
   isActive: boolean;
+  color: string;
 }
 
 interface Resource {

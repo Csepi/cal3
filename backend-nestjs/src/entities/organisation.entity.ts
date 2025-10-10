@@ -42,6 +42,9 @@ export class Organisation {
   @Column({ default: false })
   useGranularCalendarPermissions: boolean;
 
+  @Column({ length: 7, default: '#f97316' })
+  color: string;
+
   @ManyToMany(() => User, (user) => user.organisations)
   @JoinTable({
     name: 'organisation_users',

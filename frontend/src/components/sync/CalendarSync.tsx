@@ -549,10 +549,14 @@ const CalendarSync: React.FC<CalendarSyncProps> = ({ themeColor }) => {
   const loadAutomationRules = async () => {
     try {
       const rulesData = await getAutomationRules(1, 100, true); // Get first 100 enabled rules
-      // Filter only calendar.imported trigger rules
-      const importRules = rulesData.data.filter(rule => rule.triggerType === 'calendar.imported');
-      setAutomationRules(importRules);
-      console.log('Automation rules loaded:', importRules);
+      // Filter rules that would trigger on event creation/update
+      const eventRules = rulesData.data.filter(rule =>
+        rule.triggerType === 'event.created' ||
+        rule.triggerType === 'event.updated' ||
+        rule.triggerType === 'calendar.imported'
+      );
+      setAutomationRules(eventRules);
+      console.log('Automation rules loaded:', eventRules);
     } catch (err) {
       console.warn('Could not load automation rules:', err);
       setAutomationRules([]);
@@ -859,35 +863,41 @@ const CalendarSync: React.FC<CalendarSyncProps> = ({ themeColor }) => {
                                               Select Rules (optional - all enabled if none selected):
                                             </label>
                                             <div className="max-h-40 overflow-y-auto border border-gray-300 rounded-lg p-2 space-y-1">
-                                              {automationRules.map(rule => (
-                                                <label key={rule.id} className="flex items-center space-x-2 p-1 hover:bg-gray-50 rounded">
-                                                  <input
-                                                    type="checkbox"
-                                                    checked={(selectedRules[provider.provider]?.[calendar.id] || []).includes(rule.id)}
-                                                    onChange={(e) => {
-                                                      const currentRules = selectedRules[provider.provider]?.[calendar.id] || [];
-                                                      const newRules = e.target.checked
-                                                        ? [...currentRules, rule.id]
-                                                        : currentRules.filter(id => id !== rule.id);
-                                                      setSelectedRules({
-                                                        ...selectedRules,
-                                                        [provider.provider]: {
-                                                          ...(selectedRules[provider.provider] || {}),
-                                                          [calendar.id]: newRules
-                                                        }
-                                                      });
-                                                    }}
-                                                    className="rounded"
-                                                  />
-                                                  <span className="text-sm text-gray-700">{rule.name}</span>
-                                                </label>
-                                              ))}
+                                              {automationRules.map(rule => {
+                                                const triggerLabel = rule.triggerType === 'event.created' ? '📝 Created' :
+                                                                   rule.triggerType === 'event.updated' ? '✏️ Updated' :
+                                                                   rule.triggerType === 'calendar.imported' ? '📥 Imported' : rule.triggerType;
+                                                return (
+                                                  <label key={rule.id} className="flex items-center space-x-2 p-1 hover:bg-gray-50 rounded">
+                                                    <input
+                                                      type="checkbox"
+                                                      checked={(selectedRules[provider.provider]?.[calendar.id] || []).includes(rule.id)}
+                                                      onChange={(e) => {
+                                                        const currentRules = selectedRules[provider.provider]?.[calendar.id] || [];
+                                                        const newRules = e.target.checked
+                                                          ? [...currentRules, rule.id]
+                                                          : currentRules.filter(id => id !== rule.id);
+                                                        setSelectedRules({
+                                                          ...selectedRules,
+                                                          [provider.provider]: {
+                                                            ...(selectedRules[provider.provider] || {}),
+                                                            [calendar.id]: newRules
+                                                          }
+                                                        });
+                                                      }}
+                                                      className="rounded"
+                                                    />
+                                                    <span className="text-sm text-gray-700">{rule.name}</span>
+                                                    <span className="text-xs text-gray-500">({triggerLabel})</span>
+                                                  </label>
+                                                );
+                                              })}
                                             </div>
                                           </div>
                                         )}
                                         {(triggerAutomation[provider.provider]?.[calendar.id]) && automationRules.length === 0 && (
                                           <p className="ml-6 mt-2 text-sm text-gray-500 italic">
-                                            No automation rules with "calendar.imported" trigger found. Create one in the Automation panel first.
+                                            No automation rules found. Create rules with event.created, event.updated, or calendar.imported triggers in the Automation panel.
                                           </p>
                                         )}
                                       </div>

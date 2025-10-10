@@ -113,4 +113,29 @@ export class ResourceTypesController {
     const result = await this.cascadeDeletionService.deleteResourceType(resourceTypeId, req.user.id);
     return result;
   }
+
+  /**
+   * Update resource type color
+   * PATCH /api/resource-types/:id/color
+   * Body: { color: string }
+   */
+  @Patch(':id/color')
+  async updateColor(
+    @Param('id') id: string,
+    @Body() body: { color: string },
+    @Req() req,
+  ) {
+    const resourceTypeId = +id;
+
+    // Check if user can manage this resource type
+    const canManage = await this.userPermissionsService.canUserEditResourceType(
+      req.user.id,
+      resourceTypeId,
+    );
+    if (!canManage) {
+      throw new ForbiddenException('You do not have permission to update this resource type color');
+    }
+
+    return await this.resourceTypesService.updateColor(resourceTypeId, body.color);
+  }
 }

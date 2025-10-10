@@ -40,6 +40,9 @@ export class ResourceType {
   @Column({ default: true })
   isActive: boolean;
 
+  @Column({ length: 7, default: '#f97316' })
+  color: string;
+
   @Column()
   organisationId: number;
 

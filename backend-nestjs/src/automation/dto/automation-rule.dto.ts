@@ -83,12 +83,13 @@ export class CreateAutomationRuleDto {
   @IsEnum(ConditionLogic)
   conditionLogic?: ConditionLogic;
 
-  @ApiProperty({ description: 'List of conditions (max 10)', type: [CreateConditionDto] })
+  @ApiPropertyOptional({ description: 'List of conditions (max 10, optional)', type: [CreateConditionDto] })
+  @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => CreateConditionDto)
   @ArrayMaxSize(10)
-  conditions: CreateConditionDto[];
+  conditions?: CreateConditionDto[];
 
   @ApiProperty({ description: 'List of actions (1-5 required)', type: [CreateActionDto] })
   @IsArray()
