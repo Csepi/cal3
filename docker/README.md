@@ -108,6 +108,26 @@ openssl rand -base64 24  # Use for DB_PASSWORD
 
 ---
 
+## 📦 Available Docker Compose Files
+
+The project includes multiple compose files for different deployment scenarios:
+
+| File | Purpose | Image Source | Best For |
+|------|---------|--------------|----------|
+| **`docker-compose.yml`** | Production deployment | Builds locally | Standard production |
+| **`docker-compose.portainer-local.yml`** | Portainer with local build | Builds locally | **Portainer users (Recommended)** ⭐ |
+| **`docker-compose.portainer.yml`** | Portainer with pre-built images | Pulls from ghcr.io | CI/CD pipelines |
+| **`docker-compose.dev.yml`** | Development | Builds with hot reload | Local development |
+
+**Which one should I use?**
+
+- 🎯 **Deploying with Portainer?** → Use `portainer-local.yml` (no ghcr.io access needed)
+- 🚀 **Production via command line?** → Use `docker-compose.yml`
+- 💻 **Local development?** → Use `docker-compose.dev.yml`
+- ⚙️ **Have CI/CD setup?** → Use `portainer.yml` (requires ghcr.io images)
+
+---
+
 ## 📖 Detailed Setup
 
 ### Step 1: Install Docker
@@ -538,16 +558,73 @@ docker run -d `
 
 **Method 1: Using Stacks (Recommended)**
 
-**Important:** Portainer deployments don't include the git-ignored `config/.env` file. You have two options:
+**Important:** Portainer deployments don't include the git-ignored `config/.env` file. Choose based on your situation:
 
-**Option A: Use Portainer Environment Variables (Easiest)**
+**🎯 Quick Comparison:**
+
+| Feature | Option A (Local Build) | Option B (Pre-built Images) |
+|---------|----------------------|---------------------------|
+| **Setup Time** | ⏱️ First time: 10-15 min | ⚡ 2-3 minutes |
+| **GitHub Registry** | ✅ Not needed | ⚠️ Required |
+| **Authentication** | ✅ None required | ⚠️ May need ghcr.io login |
+| **Latest Code** | ✅ Always current | ⚠️ Depends on CI/CD |
+| **Disk Space** | 📦 Higher (builds on host) | 📦 Lower |
+| **Best For** | **First-time users, Testing** | Production with CI/CD |
+
+**Recommendation:** Start with **Option A** for immediate deployment without setup complexity.
+
+**🔥 QUICK START - Option A: Local Build (No GitHub Container Registry Required)**
+
+This is the **fastest and easiest** method - builds images locally without needing access to ghcr.io.
+
+1. In Portainer, go to **Stacks** → **Add stack**
+2. Name: `cal3`
+3. Build method: **Repository**
+   - URL: `https://github.com/Csepi/cal3.git`
+   - Branch: `main` (or `Docker`)
+   - **Compose path: `docker/docker-compose.portainer-local.yml`** ⭐ **NEW**
+
+   **OR** use **Web editor** and paste content from [docker-compose.portainer-local.yml](docker-compose.portainer-local.yml)
+
+4. Scroll down to **Environment variables** section
+5. Click **Add an environment variable** and add these (required):
+   ```
+   DB_USERNAME=cal3_user
+   DB_PASSWORD=your-strong-password-here
+   DB_NAME=cal3_production
+   JWT_SECRET=your-32-char-secret-here
+   FRONTEND_PORT=8080
+   FRONTEND_URL=http://localhost:8080
+   ```
+
+6. **Generate secure secrets first:**
+   ```bash
+   # Run these commands to generate secrets:
+   openssl rand -base64 32  # Use for JWT_SECRET
+   openssl rand -base64 24  # Use for DB_PASSWORD
+   ```
+
+7. Click **Deploy the stack**
+8. Wait for images to build (first time: 5-10 minutes)
+
+**✅ Advantages:**
+- No GitHub Container Registry access needed
+- No authentication required
+- Always uses latest code
+- Works offline (if repo cloned)
+
+---
+
+**Option B: Pre-built Images from GitHub Container Registry**
+
+Use this if GitHub Actions has already built the images, or you prefer using pre-built images.
 
 1. In Portainer, go to **Stacks** → **Add stack**
 2. Name: `cal3`
 3. Build method: **Repository** or **Web editor**
    - **If using Repository**:
      - URL: `https://github.com/Csepi/cal3.git`
-     - Branch: `Docker`
+     - Branch: `main`
      - Compose path: `docker/docker-compose.portainer.yml`
    - **If using Web editor**: Copy the content below
 
@@ -661,26 +738,16 @@ volumes:
 
 8. Click **Deploy the stack**
 
-**Option B: Build Images Locally (If you have the source code)**
+**✅ Advantages:**
+- Faster deployment (images pre-built)
+- Smaller resource usage during deployment
+- Works when CI/CD is set up
 
-If you cloned the repository locally and want to build from source:
+**⚠️ Requirements:**
+- GitHub Actions must have built the images
+- Images must be public, or you must authenticate with ghcr.io
 
-1. First, create config file on your host:
-   ```bash
-   cd /path/to/cal3/docker
-   cp config/env.example config/.env
-   nano config/.env  # Edit values
-   ```
-
-2. In Portainer:
-   - Go to **Stacks** → **Add stack**
-   - Name: `cal3`
-   - Build method: **Upload**
-   - Upload your `docker-compose.yml` file
-   - OR use **Web editor** and paste your docker-compose.yml content
-   - Portainer will use your local config/.env file
-
-3. Click **Deploy the stack**
+**Note:** If you get "access denied" errors, use **Option A** instead.
 
 **Method 2: Upload docker-compose.yml**
 
@@ -873,9 +940,26 @@ sudo chmod 666 /var/run/docker.sock
 - Remove env_file references if using Git deployment
 
 **Images not found (ghcr.io/csepi/cal3-*):**
-- Images may not be published yet
-- Use Option B (build locally) instead
-- Or use manual container creation method with pre-built images
+
+This error means the pre-built images aren't available in GitHub Container Registry.
+
+**Solution - Use Local Build:**
+1. Go to **Stacks** → Your stack → **Editor**
+2. Change compose path to: `docker/docker-compose.portainer-local.yml`
+3. **OR** replace image references:
+   ```yaml
+   # Change from:
+   image: ghcr.io/csepi/cal3-backend:latest
+
+   # To:
+   build:
+     context: ..
+     dockerfile: docker/Dockerfile.backend
+   ```
+4. Update and redeploy the stack
+5. Portainer will build images locally (takes 5-10 minutes first time)
+
+**Alternative:** Wait for GitHub Actions to build images, or make the packages public at https://github.com/Csepi?tab=packages
 
 #### Portainer Alternatives
 
