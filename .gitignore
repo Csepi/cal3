@@ -63,3 +63,8 @@ cal3-clean-deploy.zip
 # MCP configuration (contains sensitive credentials)
 .mcp.json
 settings.local.json
+
+# Docker
+docker/backups/
+docker/.env
+.env

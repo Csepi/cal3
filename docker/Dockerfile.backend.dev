@@ -1,0 +1,23 @@
+# ===========================================
+# Development Dockerfile for Cal3 NestJS Backend
+# Hot-reload enabled
+# ===========================================
+
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Copy package files
+COPY ../backend-nestjs/package*.json ./
+
+# Install all dependencies (including dev dependencies)
+RUN npm install
+
+# Copy source code
+COPY ../backend-nestjs/ .
+
+# Expose backend port
+EXPOSE 8081
+
+# Start in watch mode for hot reload
+CMD ["npm", "run", "start:dev"]
