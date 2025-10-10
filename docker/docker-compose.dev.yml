@@ -4,6 +4,13 @@ version: '3.9'
 # Development Docker Compose for Cal3
 # Hot-reload enabled for both frontend and backend
 # ===========================================
+#
+# Environment Configuration:
+# - Copy config/env.example to config/.env.dev
+# - Edit config/.env.dev with your dev values
+# - Or use defaults (postgres/postgres/cal3_dev)
+#
+# Applications start automatically when containers start
 
 services:
   # PostgreSQL Database (Development)
@@ -36,6 +43,15 @@ services:
       dockerfile: docker/Dockerfile.backend.dev
     container_name: cal3-backend-dev
     restart: unless-stopped
+    env_file:
+      - ./config/.env.dev
+    volumes:
+      - ./config:/app/config:ro
+      # Mount source code for hot reload
+      - ../backend-nestjs/src:/app/src
+      - ../backend-nestjs/package*.json:/app/package*.json
+      # Use named volume for node_modules to avoid conflicts
+      - backend_node_modules:/app/node_modules
     environment:
       NODE_ENV: development
       PORT: 8081
@@ -56,12 +72,6 @@ services:
       MICROSOFT_TENANT_ID: ${MICROSOFT_TENANT_ID:-common}
     ports:
       - "8081:8081"
-    volumes:
-      # Mount source code for hot reload
-      - ../backend-nestjs/src:/app/src
-      - ../backend-nestjs/package*.json:/app/package*.json
-      # Use named volume for node_modules to avoid conflicts
-      - backend_node_modules:/app/node_modules
     networks:
       - cal3-network
     depends_on:
@@ -76,12 +86,10 @@ services:
       dockerfile: docker/Dockerfile.frontend.dev
     container_name: cal3-frontend-dev
     restart: unless-stopped
-    environment:
-      NODE_ENV: development
-      VITE_API_URL: http://localhost:8081
-    ports:
-      - "8080:8080"
+    env_file:
+      - ./config/.env.dev
     volumes:
+      - ./config:/app/config:ro
       # Mount source code for hot reload
       - ../frontend/src:/app/src
       - ../frontend/package*.json:/app/package*.json
@@ -93,6 +101,11 @@ services:
       - ../frontend/postcss.config.js:/app/postcss.config.js
       # Use named volume for node_modules to avoid conflicts
       - frontend_node_modules:/app/node_modules
+    environment:
+      NODE_ENV: development
+      VITE_API_URL: http://localhost:8081
+    ports:
+      - "8080:8080"
     networks:
       - cal3-network
     depends_on:

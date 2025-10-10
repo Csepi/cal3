@@ -9,19 +9,22 @@ echo "========================================="
 echo "Starting Cal3 Production Environment"
 echo "========================================="
 
-# Check if .env exists
-if [ ! -f .env ]; then
-    echo "ERROR: .env file not found!"
-    echo "Please copy docker/.env.example to .env and configure it."
+# Navigate to docker directory first
+cd "$(dirname "$0")/.."
+
+# Check if .env exists in config folder
+if [ ! -f config/.env ]; then
+    echo "ERROR: config/.env file not found!"
+    echo "Please copy config/env.example to config/.env and configure it."
     echo ""
-    echo "  cp docker/.env.example .env"
-    echo "  nano .env"
+    echo "  cp config/env.example config/.env"
+    echo "  nano config/.env"
     echo ""
     exit 1
 fi
 
 # Validate required environment variables
-source .env
+source config/.env
 
 REQUIRED_VARS=("DB_USERNAME" "DB_PASSWORD" "DB_NAME" "JWT_SECRET")
 MISSING_VARS=()
@@ -38,7 +41,7 @@ if [ ${#MISSING_VARS[@]} -gt 0 ]; then
         echo "  - $var"
     done
     echo ""
-    echo "Please update your .env file"
+    echo "Please update your config/.env file"
     exit 1
 fi
 
@@ -53,9 +56,6 @@ if [ ${#JWT_SECRET} -lt 32 ]; then
         exit 1
     fi
 fi
-
-# Navigate to docker directory
-cd "$(dirname "$0")/.."
 
 echo ""
 echo "Building and starting Docker containers in production mode..."

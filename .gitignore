@@ -67,4 +67,7 @@ settings.local.json
 # Docker
 docker/backups/
 docker/.env
+docker/config/.env
+docker/config/.env.dev
+docker/config/.env.prod
 .env

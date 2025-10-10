@@ -3,6 +3,13 @@ version: '3.9'
 # ===========================================
 # Production Docker Compose for Cal3
 # ===========================================
+#
+# Environment Configuration:
+# - Copy config/env.example to config/.env
+# - Edit config/.env with your values
+# - The config folder is mounted as a volume
+#
+# Applications start automatically when containers start
 
 services:
   # PostgreSQL Database
@@ -51,6 +58,10 @@ services:
         NODE_ENV: production
     container_name: cal3-backend
     restart: unless-stopped
+    env_file:
+      - ./config/.env
+    volumes:
+      - ./config:/app/config:ro
     environment:
       NODE_ENV: production
       PORT: 8081
@@ -105,6 +116,10 @@ services:
         API_URL: ${API_URL:-http://localhost:8081}
     container_name: cal3-frontend
     restart: unless-stopped
+    env_file:
+      - ./config/.env
+    volumes:
+      - ./config:/etc/cal3/config:ro
     environment:
       API_URL: http://backend:8081
       NODE_ENV: production
@@ -144,3 +159,10 @@ networks:
 volumes:
   postgres_data:
     name: cal3_postgres_data
+  config:
+    name: cal3_config
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./config

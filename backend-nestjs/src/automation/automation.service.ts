@@ -87,7 +87,7 @@ export class AutomationService {
     const savedRule = await this.ruleRepository.save(rule);
 
     // Create conditions with rule relationship
-    const conditions = createRuleDto.conditions.map((condDto, index) =>
+    const conditions = (createRuleDto.conditions || []).map((condDto, index) =>
       this.conditionRepository.create({
         rule: savedRule,
         field: condDto.field,
