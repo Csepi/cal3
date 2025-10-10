@@ -1,0 +1,42 @@
+# ===========================================
+# Systemd Service for Cal3 Webhook Receiver
+# ===========================================
+#
+# Installation:
+#   1. Copy to /etc/systemd/system/cal3-webhook.service
+#   2. Update paths and user
+#   3. sudo systemctl daemon-reload
+#   4. sudo systemctl enable cal3-webhook
+#   5. sudo systemctl start cal3-webhook
+#
+# Usage:
+#   sudo systemctl status cal3-webhook
+#   sudo systemctl restart cal3-webhook
+#   sudo journalctl -u cal3-webhook -f
+
+[Unit]
+Description=Cal3 Webhook Receiver for Auto-Deploy
+After=network.target docker.service
+Requires=docker.service
+
+[Service]
+Type=simple
+User=your-user
+Group=your-group
+WorkingDirectory=/opt/cal3/docker/scripts
+Environment="NODE_ENV=production"
+Environment="WEBHOOK_PORT=3001"
+Environment="WEBHOOK_SECRET=your-secret-here"
+Environment="DOCKER_DIR=/opt/cal3/docker"
+ExecStart=/usr/bin/node /opt/cal3/docker/scripts/webhook-receiver.js
+Restart=always
+RestartSec=10
+StandardOutput=append:/var/log/cal3-webhook.log
+StandardError=append:/var/log/cal3-webhook-error.log
+
+# Security
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
