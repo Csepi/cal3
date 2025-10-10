@@ -479,6 +479,277 @@ nano config/.env
 
 See [docs/docker/CI_CD_SETUP.md](../docs/docker/CI_CD_SETUP.md) for complete guide.
 
+### Portainer (Docker Management UI)
+
+Portainer provides a web-based UI for managing Docker containers, perfect for users who prefer visual management over command-line.
+
+#### Step 1: Install Portainer
+
+**On Linux/Mac:**
+```bash
+# Create volume for Portainer data
+docker volume create portainer_data
+
+# Run Portainer
+docker run -d \
+  -p 9000:9000 \
+  -p 9443:9443 \
+  --name portainer \
+  --restart=always \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  -v portainer_data:/data \
+  portainer/portainer-ce:latest
+```
+
+**On Windows (PowerShell):**
+```powershell
+# Create volume
+docker volume create portainer_data
+
+# Run Portainer
+docker run -d `
+  -p 9000:9000 `
+  -p 9443:9443 `
+  --name portainer `
+  --restart=always `
+  -v //var/run/docker.sock:/var/run/docker.sock `
+  -v portainer_data:/data `
+  portainer/portainer-ce:latest
+```
+
+**On Synology NAS:**
+1. Open Docker app
+2. Go to Registry → Search "portainer/portainer-ce"
+3. Download latest image
+4. Launch container with:
+   - Port 9443:9443
+   - Port 9000:9000
+   - Volume: `/var/run/docker.sock` → `/var/run/docker.sock`
+   - Auto-restart enabled
+
+#### Step 2: Access Portainer
+
+1. Open browser: **https://localhost:9443** (or http://localhost:9000)
+2. Create admin account on first visit
+3. Select "Docker" environment
+4. Click "Connect"
+
+#### Step 3: Deploy Cal3 with Portainer
+
+**Method 1: Using Stacks (Recommended)**
+
+1. In Portainer, go to **Stacks** → **Add stack**
+2. Name: `cal3`
+3. Build method: **Git Repository**
+4. Repository URL: `https://github.com/Csepi/cal3.git`
+5. Repository reference: `refs/heads/Docker`
+6. Compose path: `docker/docker-compose.yml`
+7. **Environment variables** → Add:
+   ```
+   DB_USERNAME=cal3_user
+   DB_PASSWORD=your-strong-password
+   DB_NAME=cal3_production
+   JWT_SECRET=your-32-char-secret
+   FRONTEND_PORT=8080
+   ```
+8. Click **Deploy the stack**
+
+**Method 2: Upload docker-compose.yml**
+
+1. In Portainer, go to **Stacks** → **Add stack**
+2. Name: `cal3`
+3. Build method: **Web editor**
+4. Copy contents of `docker/docker-compose.yml`
+5. Paste into editor
+6. **Environment variables** → Add variables (same as above)
+7. Click **Deploy the stack**
+
+**Method 3: Manual Container Creation**
+
+1. **Create Network:**
+   - Go to **Networks** → **Add network**
+   - Name: `cal3-network`
+   - Driver: `bridge`
+   - Click **Create**
+
+2. **Create PostgreSQL Container:**
+   - Go to **Containers** → **Add container**
+   - Name: `cal3-postgres`
+   - Image: `postgres:15-alpine`
+   - Port mapping: `5432:5432`
+   - Environment variables:
+     ```
+     POSTGRES_USER=cal3_user
+     POSTGRES_PASSWORD=your-password
+     POSTGRES_DB=cal3_production
+     ```
+   - Network: `cal3-network`
+   - Volumes: Create volume `cal3_postgres_data` → `/var/lib/postgresql/data`
+   - Restart policy: `Unless stopped`
+   - Click **Deploy**
+
+3. **Create Backend Container:**
+   - **Add container**
+   - Name: `cal3-backend`
+   - Image: `ghcr.io/csepi/cal3-backend:latest` (or build locally)
+   - Port mapping: `8081:8081`
+   - Environment variables:
+     ```
+     NODE_ENV=production
+     DB_HOST=cal3-postgres
+     DB_PORT=5432
+     DB_USERNAME=cal3_user
+     DB_PASSWORD=your-password
+     DB_NAME=cal3_production
+     JWT_SECRET=your-32-char-secret
+     ```
+   - Network: `cal3-network`
+   - Restart policy: `Unless stopped`
+   - Click **Deploy**
+
+4. **Create Frontend Container:**
+   - **Add container**
+   - Name: `cal3-frontend`
+   - Image: `ghcr.io/csepi/cal3-frontend:latest` (or build locally)
+   - Port mapping: `8080:80`
+   - Environment variables:
+     ```
+     API_URL=http://cal3-backend:8081
+     NODE_ENV=production
+     ```
+   - Network: `cal3-network`
+   - Restart policy: `Unless stopped`
+   - Click **Deploy**
+
+#### Step 4: Manage Cal3 in Portainer
+
+**View Logs:**
+1. Go to **Containers**
+2. Click on container name (e.g., `cal3-backend`)
+3. Click **Logs** tab
+4. Toggle **Auto-refresh** for live logs
+
+**Restart Containers:**
+1. Go to **Containers**
+2. Select container(s)
+3. Click **Restart**
+
+**Update Configuration:**
+1. Go to **Stacks** → `cal3`
+2. Click **Editor**
+3. Modify environment variables
+4. Click **Update the stack**
+5. Select "Re-pull images and redeploy"
+
+**View Container Stats:**
+1. Go to **Containers**
+2. Click on container name
+3. Click **Stats** tab
+4. View CPU, Memory, Network usage
+
+**Execute Commands:**
+1. Go to **Containers** → Container name
+2. Click **Console**
+3. Select `/bin/sh` or `/bin/bash`
+4. Click **Connect**
+
+**Backup Database:**
+1. Go to **Containers** → `cal3-postgres`
+2. Click **Console** → Connect
+3. Run: `pg_dump -U cal3_user cal3_production > /backups/backup.sql`
+
+**Update Application:**
+1. Go to **Stacks** → `cal3`
+2. Click **Update the stack**
+3. Check "Re-pull images and redeploy"
+4. Click **Update**
+
+#### Portainer Tips
+
+**Best Practices:**
+- ✅ Use Stacks (docker-compose) for easier management
+- ✅ Set restart policy to "Unless stopped"
+- ✅ Use named volumes for data persistence
+- ✅ Label containers for better organization
+- ✅ Enable container health checks
+
+**Security:**
+- 🔒 Use HTTPS (port 9443) instead of HTTP
+- 🔒 Set strong admin password
+- 🔒 Enable 2FA in Settings
+- 🔒 Restrict access with firewalls
+- 🔒 Regularly update Portainer
+
+**Monitoring:**
+- 📊 Dashboard shows container status at a glance
+- 📊 View resource usage (CPU, Memory, Network)
+- 📊 Set up webhooks for notifications
+- 📊 Use templates for quick deployments
+
+#### Troubleshooting Portainer
+
+**Cannot access Portainer:**
+```bash
+# Check if Portainer is running
+docker ps | grep portainer
+
+# Check logs
+docker logs portainer
+
+# Restart Portainer
+docker restart portainer
+```
+
+**"Cannot connect to Docker socket":**
+```bash
+# Ensure socket is mounted (Linux)
+docker inspect portainer | grep docker.sock
+
+# Fix permissions (Linux)
+sudo chmod 666 /var/run/docker.sock
+```
+
+**Stack deployment fails:**
+- Check environment variables are set correctly
+- Verify repository URL is accessible
+- Check Portainer logs for specific errors
+- Ensure compose file path is correct
+
+#### Portainer Alternatives
+
+If you prefer other UI tools:
+
+**Dockge:**
+```bash
+docker run -d \
+  -p 5001:5001 \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  -v dockge:/app/data \
+  --name dockge \
+  louislam/dockge:1
+```
+Access: http://localhost:5001
+
+**Yacht:**
+```bash
+docker run -d \
+  -p 8000:8000 \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  -v yacht:/config \
+  --name yacht \
+  selfhostedpro/yacht
+```
+Access: http://localhost:8000
+
+**Lazydocker (Terminal UI):**
+```bash
+# Install
+curl https://raw.githubusercontent.com/jesseduffield/lazydocker/master/scripts/install_update_linux.sh | bash
+
+# Run
+lazydocker
+```
+
 ---
 
 ## 💻 Usage
