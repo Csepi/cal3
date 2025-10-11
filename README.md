@@ -167,9 +167,11 @@ npm run dev -- --port 8080
 ```
 
 4. **Access the Application**
-- Frontend: http://localhost:8080
-- Backend API: http://localhost:8081/api
-- API Documentation: http://localhost:8081/api-docs (when implemented)
+- Frontend: http://localhost:8080 (configurable via `FRONTEND_PORT` env var)
+- Backend API: http://localhost:8081/api (configurable via `BACKEND_PORT` env var)
+- API Documentation: http://localhost:8081/api-docs
+
+**Note:** All ports are fully configurable via environment variables. See [setup-guide.md](setup-guide.md) for details.
 
 ### **Default Credentials**
 - **Admin User**: `admin` / `enterenter`

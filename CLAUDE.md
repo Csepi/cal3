@@ -6,14 +6,14 @@ Cal3 is a modern full-stack calendar application built with NestJS backend and R
 ## Architecture
 - **Backend**: NestJS + TypeORM + PostgreSQL/SQLite
 - **Frontend**: React 18 + TypeScript + Tailwind CSS + Vite
-- **Development**: Hot reload enabled on both frontend (port 8080) and backend (port 8081)
+- **Development**: Hot reload enabled on both frontend and backend
 
 ## Quick Start Commands
 ```bash
-# Frontend development server - MUST USE PORT 8080
+# Frontend development server (default port: 8080, configurable via FRONTEND_PORT)
 cd frontend && npm run dev -- --port 8080
 
-# Backend development server - MUST USE PORT 8081
+# Backend development server (default port: 8081, configurable via PORT)
 cd backend-nestjs && PORT=8081 JWT_SECRET="calendar-secret-key" npm run start:dev
 
 # Database operations
@@ -30,11 +30,23 @@ cd backend-nestjs && npm run seed
 - Verify error states and edge cases
 - **DO NOT** rely solely on code changes - always verify in the browser
 
-## CRITICAL PORT REQUIREMENTS
-**⚠️ MANDATORY PORT CONFIGURATION:**
-- **Frontend**: ALWAYS use port 8080 (never use any other port)
-- **Backend**: ALWAYS use port 8081 (never use any other port)
-- These ports are hardcoded in the application configuration and MUST NOT be changed
+## Port Configuration
+**Default Ports (fully configurable via environment variables):**
+- **Frontend**: Port 8080 (set via `FRONTEND_PORT` env var)
+- **Backend**: Port 8081 (set via `PORT` env var)
+- **Database**: Port 5433 (set via `DB_PORT` env var)
+
+**Code has NO hardcoded ports** - all use environment variables with fallback defaults:
+- Frontend: `import.meta.env.VITE_API_URL || 'http://localhost:8081'`
+- Backend: `process.env.PORT || 8081`
+- Backend CORS: `process.env.FRONTEND_URL || 'http://localhost:8080'`
+
+**To use custom ports:**
+1. Set environment variables in `.env` files
+2. Update all URL variables to match (FRONTEND_URL, API_URL, VITE_API_URL)
+3. Update OAuth callback URLs if using SSO
+
+See [docker/README.md](docker/README.md) for complete port configuration guide.
 
 ## Current Development Status
 

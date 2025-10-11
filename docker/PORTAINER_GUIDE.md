@@ -25,7 +25,7 @@ Before starting, ensure you have:
 - [ ] At least 8GB RAM available
 - [ ] 20GB free disk space
 - [ ] Ports available: 9443 (Portainer), 8080 (Cal3 Frontend), 8081 (Cal3 Backend), 5433 (PostgreSQL)
-- [ ] **Note:** All Cal3 ports are configurable if you have conflicts (see deployment steps)
+- [ ] **Note:** ✅ All Cal3 ports are **fully configurable** via environment variables if you have conflicts (see Step 3 below)
 
 **Verify Docker is running:**
 ```bash
@@ -159,6 +159,13 @@ Click **+ Add an environment variable** for each of these **required** variables
 | `FRONTEND_PORT` | `8080` | Change if port 8080 is in use (e.g., `8090`) |
 | `BACKEND_PORT` | `8081` | Change if port 8081 is in use (e.g., `8082`) |
 | `DB_PORT` | `5433` | Change if port 5433 is in use (e.g., `5434`) |
+
+⚠️ **Important:** If you change ports, you **MUST also update these variables**:
+- `FRONTEND_URL` → `http://localhost:YOUR_FRONTEND_PORT`
+- `API_URL` → `http://localhost:YOUR_BACKEND_PORT`
+- `VITE_API_URL` → `http://localhost:YOUR_BACKEND_PORT`
+- `GOOGLE_CALLBACK_URL` → `http://localhost:YOUR_BACKEND_PORT/api/auth/google/callback`
+- `MICROSOFT_CALLBACK_URL` → `http://localhost:YOUR_BACKEND_PORT/api/auth/microsoft/callback`
 
 **Optional (OAuth integration):**
 | Name | Value | Notes |
@@ -367,14 +374,16 @@ Click **Deploy the stack** and wait for build to complete.
 
 ### Access Application
 
-1. **Frontend:** Open browser to http://localhost:8080
+1. **Frontend:** Open browser to http://localhost:8080 (or your `FRONTEND_PORT`)
    - You should see the Cal3 login page
 
-2. **Backend API:** http://localhost:8081/api/health
+2. **Backend API:** http://localhost:8081/api/health (or your `BACKEND_PORT`)
    - Should show: `{"status":"ok"}`
 
-3. **API Documentation:** http://localhost:8081/api/docs
+3. **API Documentation:** http://localhost:8081/api/docs (or your `BACKEND_PORT`)
    - Should show Swagger UI
+
+**If you configured custom ports**, replace `8080` and `8081` with your custom values.
 
 ### Check Logs
 

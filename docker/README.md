@@ -343,6 +343,29 @@ config/
 └── .env.dev           # Development config (auto-created)
 ```
 
+### Port Configuration
+
+**Default Ports:**
+- Frontend: `8080` (configurable via `FRONTEND_PORT`)
+- Backend: `8081` (configurable via `BACKEND_PORT`)
+- PostgreSQL: `5433` (configurable via `DB_PORT`)
+
+**To use custom ports:**
+
+```bash
+# In config/.env or config/.env.dev
+FRONTEND_PORT=3000
+BACKEND_PORT=3001
+DB_PORT=5432
+
+# Then update URLs to match
+FRONTEND_URL=http://localhost:3000
+API_URL=http://localhost:3001
+VITE_API_URL=http://localhost:3001
+```
+
+⚠️ **Important**: If you change ports, you MUST update all URL variables to match the new ports.
+
 ### Environment Variables Reference
 
 **Required (Production):**
