@@ -375,7 +375,7 @@ config/
 |---------|------|--------|
 | Frontend | 8080 | http://localhost:8080 |
 | Backend | 8081 | http://localhost:8081 |
-| PostgreSQL | 5432 | localhost:5432 |
+| PostgreSQL | 5433 | localhost:5433 |
 | API Docs | 8081 | http://localhost:8081/api/docs |
 
 ### Volumes (Data Persistence)
@@ -1267,8 +1267,28 @@ docker-compose up -d backend frontend
 **Symptoms:**
 - "port is already allocated"
 - "bind: address already in use"
+- Error on port 5432, 8080, or 8081
+
+**Common Causes:**
+- **Port 5432**: Local PostgreSQL installation or another Docker PostgreSQL container
+- **Port 8080/8081**: Other web services or development servers
 
 **Solutions:**
+
+**PostgreSQL Port Conflict (5432):**
+
+The project now uses **port 5433** by default (changed in commit 194fea4) to avoid conflicts. If you're on an older version:
+
+```bash
+# Pull latest changes
+git pull origin main
+
+# Or manually change in docker-compose file:
+# Change: "127.0.0.1:5432:5432"
+# To:     "127.0.0.1:5433:5432"
+```
+
+**Frontend/Backend Port Conflicts:**
 
 **Windows:**
 ```powershell
@@ -1278,7 +1298,7 @@ netstat -ano | findstr :8080
 # Kill process (replace PID)
 taskkill /PID <PID> /F
 
-# Or change port in config/.env
+# Or change port in config/.env or Portainer env vars
 FRONTEND_PORT=8090
 ```
 
@@ -1293,6 +1313,14 @@ kill -9 <PID>
 # Or change port
 # Edit config/.env
 FRONTEND_PORT=8090
+```
+
+**Alternative - Use Different Ports:**
+Add these environment variables in Portainer or config/.env:
+```bash
+FRONTEND_PORT=8090  # Instead of 8080
+DB_PORT=5434        # Instead of 5433
+# Backend port 8081 is hardcoded in the app
 ```
 
 ### Issue: Permission Denied (Linux)
