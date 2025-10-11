@@ -966,6 +966,28 @@ This error means the pre-built images aren't available in GitHub Container Regis
 
 **Alternative:** Wait for GitHub Actions to build images, or make the packages public at https://github.com/Csepi?tab=packages
 
+**"NanoCPUs can not be set, as your kernel does not support CPU CFS scheduler"**
+
+This error occurs when your Docker environment doesn't support CPU resource limits.
+
+**Cause:** The system kernel doesn't support CPU CFS (Completely Fair Scheduler) or cgroups are not properly mounted. Common on Windows Docker Desktop and older Linux kernels.
+
+**Solution:**
+
+The project has been updated to remove CPU limits from all docker-compose files (commit 50374b5). If you're seeing this error on an older version:
+
+```bash
+# Pull latest changes
+git pull origin main
+
+# Or manually remove CPU limits from your docker-compose file:
+# Remove these lines from each service's deploy.resources section:
+#   cpus: 'X'
+#   (Keep memory limits - they work without CPU scheduler support)
+```
+
+Memory limits are still in place for resource management and work without CPU scheduler support.
+
 **"npm run build: exit code: 2" or "executor failed running [/bin/sh -c npm run build]"**
 
 This error occurs during the Docker build process when the frontend build fails.
@@ -1362,6 +1384,50 @@ docker network inspect cal3-network
 sudo ufw allow 8080/tcp
 sudo ufw allow 8081/tcp
 ```
+
+### Issue: "NanoCPUs can not be set" Error
+
+**Symptoms:**
+- Deployment fails with "NanoCPUs can not be set, as your kernel does not support CPU CFS scheduler or the cgroup is not mounted"
+- Error during `docker-compose up` or Portainer stack deployment
+
+**Cause:**
+Your Docker environment doesn't support CPU resource limits. Common on:
+- Windows Docker Desktop (certain configurations)
+- Older Linux kernels without CPU CFS scheduler
+- Systems where cgroups are not fully mounted
+
+**Solution:**
+
+The issue has been fixed in commit 50374b5. Pull the latest changes:
+
+```bash
+git pull origin main
+```
+
+If you're using a custom compose file or older version, manually remove CPU limits:
+
+```yaml
+# Before (causes error):
+deploy:
+  resources:
+    limits:
+      cpus: '2'        # Remove this line
+      memory: 2G       # Keep this
+    reservations:
+      cpus: '1'        # Remove this line
+      memory: 512M     # Keep this
+
+# After (works everywhere):
+deploy:
+  resources:
+    limits:
+      memory: 2G       # Memory limits work without CPU scheduler
+    reservations:
+      memory: 512M
+```
+
+Memory limits still provide resource control and work on all systems.
 
 ### Issue: Docker Build Fails with "npm run build: exit code: 2"
 
