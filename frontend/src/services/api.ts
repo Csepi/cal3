@@ -52,7 +52,8 @@ const mapRecurrenceRule = (pattern: RecurrencePattern): any => {
   return rule;
 };
 
-const API_BASE_URL = 'http://localhost:8081';
+// Use environment variable or fallback to default
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8081';
 
 class ApiService {
   private getAuthHeaders(): HeadersInit {

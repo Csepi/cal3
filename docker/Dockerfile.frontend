@@ -6,6 +6,9 @@
 # Stage 1: Builder
 FROM node:18-alpine AS builder
 
+# Build argument for API URL
+ARG API_URL=http://localhost:8081
+
 WORKDIR /app
 
 # Copy package files
@@ -16,6 +19,9 @@ RUN npm ci
 
 # Copy source code
 COPY frontend/ .
+
+# Set environment variable for Vite build
+ENV VITE_API_URL=${API_URL}
 
 # Build production bundle
 RUN npm run build

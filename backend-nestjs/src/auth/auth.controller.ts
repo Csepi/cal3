@@ -66,8 +66,9 @@ export class AuthController {
     }
 
     // Regular auth flow
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:8080';
     const token = authResult.access_token;
-    const redirectUrl = `http://localhost:8080/auth/callback?token=${token}&provider=google`;
+    const redirectUrl = `${frontendUrl}/auth/callback?token=${token}&provider=google`;
     console.log('Google OAuth callback - redirectUrl:', redirectUrl);
     return res.redirect(redirectUrl);
   }
@@ -102,8 +103,9 @@ export class AuthController {
     }
 
     // Regular auth flow
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:8080';
     const token = authResult.access_token;
-    const redirectUrl = `http://localhost:8080/auth/callback?token=${token}&provider=microsoft`;
+    const redirectUrl = `${frontendUrl}/auth/callback?token=${token}&provider=microsoft`;
     console.log('Microsoft OAuth callback - redirectUrl:', redirectUrl);
     return res.redirect(redirectUrl);
   }

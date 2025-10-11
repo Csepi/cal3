@@ -24,7 +24,8 @@ Before starting, ensure you have:
 - [ ] Docker installed and running
 - [ ] At least 8GB RAM available
 - [ ] 20GB free disk space
-- [ ] Ports available: 9443 (Portainer), 8080 (Cal3 Frontend), 8081 (Cal3 Backend), 5432 (PostgreSQL)
+- [ ] Ports available: 9443 (Portainer), 8080 (Cal3 Frontend), 8081 (Cal3 Backend), 5433 (PostgreSQL)
+- [ ] **Note:** All Cal3 ports are configurable if you have conflicts (see deployment steps)
 
 **Verify Docker is running:**
 ```bash
@@ -142,7 +143,7 @@ This method uses the Git repository directly and is the easiest.
 
 **Scroll down to "Environment variables" section**
 
-Click **+ Add an environment variable** for each of these:
+Click **+ Add an environment variable** for each of these **required** variables:
 
 | Name | Value | Notes |
 |------|-------|-------|
@@ -150,8 +151,14 @@ Click **+ Add an environment variable** for each of these:
 | `DB_PASSWORD` | `YOUR_SECURE_PASSWORD` | ⚠️ Use strong password! |
 | `DB_NAME` | `cal3_production` | Database name |
 | `JWT_SECRET` | `YOUR_32_CHAR_SECRET` | ⚠️ Generate with openssl! |
-| `FRONTEND_PORT` | `8080` | Port for frontend |
 | `FRONTEND_URL` | `http://localhost:8080` | Frontend URL |
+
+**Port Configuration (Optional - only if you have port conflicts):**
+| Name | Default | Notes |
+|------|---------|-------|
+| `FRONTEND_PORT` | `8080` | Change if port 8080 is in use (e.g., `8090`) |
+| `BACKEND_PORT` | `8081` | Change if port 8081 is in use (e.g., `8082`) |
+| `DB_PORT` | `5433` | Change if port 5433 is in use (e.g., `5434`) |
 
 **Optional (OAuth integration):**
 | Name | Value | Notes |

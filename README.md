@@ -417,10 +417,25 @@ npm run build
 # Serve the dist/ folder with your preferred web server
 ```
 
-### **Docker Support** (Future Enhancement)
+### **Docker Support** ✅
+Full Docker deployment with configurable ports:
+
 ```bash
-docker-compose up -d
+# Quick start (development)
+cd docker && ./scripts/start-dev.sh
+
+# Production deployment
+cd docker && ./scripts/start-prod.sh
+
+# Configure ports if conflicts exist:
+# Add to Portainer environment variables or config/.env:
+FRONTEND_PORT=8080    # Default: 8080
+BACKEND_PORT=8081     # Default: 8081
+DB_PORT=5433          # Default: 5433
 ```
+
+📖 **Complete Docker Guide**: See [docker/README.md](docker/README.md) for detailed setup
+📖 **Portainer Guide**: See [docker/PORTAINER_GUIDE.md](docker/PORTAINER_GUIDE.md) for UI deployment
 
 ## 🎉 Key Features Highlights
 

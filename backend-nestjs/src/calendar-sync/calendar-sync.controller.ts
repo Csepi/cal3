@@ -46,14 +46,16 @@ export class CalendarSyncController {
   ) {
     this.logger.log(`[handleOAuthCallback] Received callback for provider: ${provider}, state: ${state}, userId: ${userId}, code: ${code?.substring(0, 10)}...`);
 
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:8080';
+
     if (provider !== 'google' && provider !== 'microsoft') {
       this.logger.error(`[handleOAuthCallback] Invalid provider: ${provider}`);
-      return res.redirect('http://localhost:8080?error=invalid_provider');
+      return res.redirect(`${frontendUrl}?error=invalid_provider`);
     }
 
     if (!code) {
       this.logger.error(`[handleOAuthCallback] No authorization code provided`);
-      return res.redirect('http://localhost:8080?error=authorization_denied');
+      return res.redirect(`${frontendUrl}?error=authorization_denied`);
     }
 
     try {
@@ -81,10 +83,10 @@ export class CalendarSyncController {
       );
 
       this.logger.log(`[handleOAuthCallback] OAuth callback completed successfully, redirecting to calendar sync page`);
-      return res.redirect('http://localhost:8080/calendar-sync?success=connected');
+      return res.redirect(`${frontendUrl}/calendar-sync?success=connected`);
     } catch (error) {
       this.logger.error(`[handleOAuthCallback] OAuth callback error for provider ${provider}:`, error.stack);
-      return res.redirect(`http://localhost:8080/calendar-sync?error=sync_failed&details=${encodeURIComponent(error.message)}`);
+      return res.redirect(`${frontendUrl}/calendar-sync?error=sync_failed&details=${encodeURIComponent(error.message)}`);
     }
   }
 
