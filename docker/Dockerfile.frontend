@@ -6,8 +6,9 @@
 # Stage 1: Builder
 FROM node:18-alpine AS builder
 
-# Build argument for API URL
-ARG API_URL=http://localhost:8081
+# Smart build arguments - only need BASE_URL and port
+ARG BASE_URL=http://localhost
+ARG BACKEND_PORT=8081
 
 WORKDIR /app
 
@@ -20,8 +21,9 @@ RUN npm ci
 # Copy source code
 COPY frontend/ .
 
-# Set environment variable for Vite build
-ENV VITE_API_URL=${API_URL}
+# Set environment variables for Vite build (constructs API_URL from BASE_URL + port)
+ENV VITE_BASE_URL=${BASE_URL}
+ENV VITE_BACKEND_PORT=${BACKEND_PORT}
 
 # Build production bundle
 RUN npm run build

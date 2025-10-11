@@ -6,8 +6,15 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // Enable CORS - Use FRONTEND_URL from environment or fallback to localhost
-  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:8080';
+  // Smart port and URL configuration
+  const backendPort = process.env.PORT || process.env.BACKEND_PORT || '8081';
+  const frontendPort = process.env.FRONTEND_PORT || '8080';
+  const baseUrl = process.env.BASE_URL || 'http://localhost';
+
+  // Construct frontend URL from base + port (or use explicit FRONTEND_URL if provided)
+  const frontendUrl = process.env.FRONTEND_URL || `${baseUrl}:${frontendPort}`;
+
+  // Enable CORS
   app.enableCors({
     origin: [frontendUrl, 'http://localhost:3000'],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
@@ -34,9 +41,9 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/docs', app, document);
 
-  const port = process.env.PORT || 8081;
-  await app.listen(port);
-  console.log(`🚀 Application is running on: http://localhost:${port}`);
-  console.log(`📚 API Documentation: http://localhost:${port}/api/docs`);
+  await app.listen(backendPort);
+  console.log(`🚀 Application is running on: ${baseUrl}:${backendPort}`);
+  console.log(`📚 API Documentation: ${baseUrl}:${backendPort}/api/docs`);
+  console.log(`🔗 CORS enabled for: ${frontendUrl}`);
 }
 bootstrap();

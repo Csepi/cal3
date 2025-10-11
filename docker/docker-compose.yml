@@ -62,7 +62,12 @@ services:
       - ./config:/app/config:ro
     environment:
       NODE_ENV: production
-      PORT: 8081
+      # Smart port/URL configuration - only BASE_URL and ports needed
+      BASE_URL: ${BASE_URL:-http://localhost}
+      PORT: ${BACKEND_PORT:-8081}
+      BACKEND_PORT: ${BACKEND_PORT:-8081}
+      FRONTEND_PORT: ${FRONTEND_PORT:-8080}
+      # Database
       DB_TYPE: postgres
       DB_HOST: postgres
       DB_PORT: 5432
@@ -70,7 +75,7 @@ services:
       DB_PASSWORD: ${DB_PASSWORD}
       DB_NAME: ${DB_NAME}
       JWT_SECRET: ${JWT_SECRET}
-      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:8080}
+      # OAuth (optional - will construct from BASE_URL + PORT if not provided)
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
       GOOGLE_CALLBACK_URL: ${GOOGLE_CALLBACK_URL}
@@ -79,7 +84,7 @@ services:
       MICROSOFT_CALLBACK_URL: ${MICROSOFT_CALLBACK_URL}
       MICROSOFT_TENANT_ID: ${MICROSOFT_TENANT_ID:-common}
     ports:
-      - "127.0.0.1:${BACKEND_PORT:-8081}:8081"
+      - "127.0.0.1:${BACKEND_PORT:-8081}:${BACKEND_PORT:-8081}"
     networks:
       - cal3-network
     depends_on:
@@ -109,7 +114,9 @@ services:
       context: ..
       dockerfile: docker/Dockerfile.frontend
       args:
-        API_URL: ${API_URL:-http://localhost:8081}
+        # Smart URL construction - only need BASE_URL and port
+        BASE_URL: ${BASE_URL:-http://localhost}
+        BACKEND_PORT: ${BACKEND_PORT:-8081}
     container_name: cal3-frontend
     restart: unless-stopped
     env_file:
@@ -117,7 +124,8 @@ services:
     volumes:
       - ./config:/etc/cal3/config:ro
     environment:
-      API_URL: http://backend:8081
+      BASE_URL: ${BASE_URL:-http://localhost}
+      BACKEND_PORT: ${BACKEND_PORT:-8081}
       NODE_ENV: production
     ports:
       - "${FRONTEND_PORT:-8080}:80"
