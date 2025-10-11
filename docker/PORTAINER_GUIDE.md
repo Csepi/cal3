@@ -130,7 +130,8 @@ This method uses the Git repository directly and is the easiest.
 
 3. **Repository configuration:**
    - **Repository URL:** `https://github.com/Csepi/cal3.git`
-   - **Repository reference:** `main`
+   - **Repository reference:** `refs/heads/main` ⭐ **Use full ref to avoid errors!**
+     - Alternative: `Docker` (if main doesn't work)
    - **Compose path:** `docker/docker-compose.portainer-local.yml` ⭐ **CRITICAL - Don't use the other file!**
 
 4. **Authentication:** Leave unchecked (public repo)
@@ -401,16 +402,52 @@ If something isn't working:
 - Use `docker-compose.portainer-local.yml` which doesn't need env files
 - Or add all variables in Portainer UI (recommended)
 
-### Error 3: "failed to solve: failed to fetch oauth token"
+### Error 3: "Unable to fetch git repository" or "could not find ref 'main'"
 
-**Cause:** Docker can't access GitHub to clone repository
+**Cause:** Portainer having issues accessing the Git repository or the branch reference
+
+**This is a COMMON error! Here are multiple solutions:**
+
+**Solution A - Use Full Branch Reference (EASIEST):**
+1. Delete the failed stack: **Stacks** → Select → **Remove**
+2. Create new stack again
+3. **Change Repository reference from:** `main`
+4. **To:** `refs/heads/main` ⭐ (This is the fix!)
+5. Keep everything else the same
+6. Deploy
+
+**Solution B - Try Docker Branch:**
+The Docker branch has the same files:
+1. Repository reference: `Docker` (instead of `main`)
+2. Everything else stays the same
+
+**Solution C - Use Web Editor Method (RECOMMENDED if A & B fail):**
+1. **Skip Repository method entirely**
+2. Use **Method 2: Web Editor** from above
+3. Copy/paste the complete docker-compose configuration
+4. This completely bypasses Git repository access
+5. **This works 100% of the time!**
+
+**Solution D - Use Commit SHA:**
+1. Go to: https://github.com/Csepi/cal3/commits/main
+2. Copy the latest commit SHA (e.g., `2c40f5f`)
+3. Use that as Repository reference instead of `main`
+
+**Why this happens:**
+- Portainer sometimes has issues with Git branch detection
+- Different Git servers use different ref formats
+- Network/firewall may interfere with Git operations
+
+### Error 4: "failed to solve: failed to fetch oauth token"
+
+**Cause:** Docker can't access GitHub to build from repository context
 
 **Solution:**
 1. Check your internet connection
-2. Try Method 2 (Web Editor) instead
-3. Or clone repo locally and use Upload method
+2. **Use Web Editor method instead** (Method 2 above)
+3. The Web Editor method doesn't need Git access during build
 
-### Error 4: Port already in use (8080, 8081, or 5432)
+### Error 5: Port already in use (8080, 8081, or 5432)
 
 **Cause:** Another service is using these ports
 
