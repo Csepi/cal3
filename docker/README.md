@@ -727,21 +727,27 @@ volumes:
 ```
 
 5. Scroll down to **Environment variables** section
-6. Click **Add an environment variable** and add these (click + after each):
+6. Click **Add an environment variable** and add these **required** variables (click + after each):
    ```
    DB_USERNAME=cal3_user
    DB_PASSWORD=your-strong-password-here
    DB_NAME=cal3_production
    JWT_SECRET=your-32-char-secret-here
-   FRONTEND_PORT=8080
    FRONTEND_URL=http://localhost:8080
    ```
 
-7. **Important:** Generate secure secrets first:
+7. **Optional:** Add port configuration if you have conflicts (click + after each):
+   ```
+   FRONTEND_PORT=8080    # Change to 8090 if 8080 is in use
+   BACKEND_PORT=8081     # Change to 8082 if 8081 is in use
+   DB_PORT=5433          # Change to 5434 if 5433 is in use
+   ```
+
+8. **Important:** Generate secure secrets first:
    - JWT_SECRET: Run `openssl rand -base64 32` and copy result
    - DB_PASSWORD: Run `openssl rand -base64 24` and copy result
 
-8. Click **Deploy the stack**
+9. Click **Deploy the stack**
 
 **✅ Advantages:**
 - Faster deployment (images pre-built)
@@ -1267,60 +1273,60 @@ docker-compose up -d backend frontend
 **Symptoms:**
 - "port is already allocated"
 - "bind: address already in use"
-- Error on port 5432, 8080, or 8081
+- Error on ports 5433, 8080, or 8081
 
 **Common Causes:**
-- **Port 5432**: Local PostgreSQL installation or another Docker PostgreSQL container
-- **Port 8080/8081**: Other web services or development servers
+- **Port 5433**: Another PostgreSQL instance or previous Docker container
+- **Port 8080**: Other web servers or development tools
+- **Port 8081**: Backend services or API servers
 
-**Solutions:**
+**✅ Easy Solution: Configure Different Ports**
 
-**PostgreSQL Port Conflict (5432):**
-
-The project now uses **port 5433** by default (changed in commit 194fea4) to avoid conflicts. If you're on an older version:
+All ports are now configurable via environment variables! Simply add these to Portainer or config/.env:
 
 ```bash
-# Pull latest changes
-git pull origin main
+# If port 8081 is in use (your current error):
+BACKEND_PORT=8082
 
-# Or manually change in docker-compose file:
-# Change: "127.0.0.1:5432:5432"
-# To:     "127.0.0.1:5433:5432"
+# If port 8080 is in use:
+FRONTEND_PORT=8090
+
+# If port 5433 is in use:
+DB_PORT=5434
 ```
 
-**Frontend/Backend Port Conflicts:**
+**In Portainer:**
+1. Go to **Stacks** → Your stack → **Environment variables**
+2. Click **Add an environment variable**
+3. Add: `BACKEND_PORT` = `8082` (or any free port)
+4. Click **Update the stack**
+
+**Using config/.env:**
+```bash
+# Edit docker/config/.env
+FRONTEND_PORT=8090
+BACKEND_PORT=8082
+DB_PORT=5434
+```
+
+**Alternative - Find and Kill Process Using Port:**
 
 **Windows:**
 ```powershell
-# Find process using port
-netstat -ano | findstr :8080
+# Find process using port 8081
+netstat -ano | findstr :8081
 
-# Kill process (replace PID)
+# Kill process (replace PID with actual number)
 taskkill /PID <PID> /F
-
-# Or change port in config/.env or Portainer env vars
-FRONTEND_PORT=8090
 ```
 
 **Linux/Mac:**
 ```bash
 # Find process
-lsof -i :8080
+lsof -i :8081
 
 # Kill process
 kill -9 <PID>
-
-# Or change port
-# Edit config/.env
-FRONTEND_PORT=8090
-```
-
-**Alternative - Use Different Ports:**
-Add these environment variables in Portainer or config/.env:
-```bash
-FRONTEND_PORT=8090  # Instead of 8080
-DB_PORT=5434        # Instead of 5433
-# Backend port 8081 is hardcoded in the app
 ```
 
 ### Issue: Permission Denied (Linux)
