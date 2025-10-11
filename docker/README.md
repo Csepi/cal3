@@ -503,6 +503,11 @@ See [docs/docker/CI_CD_SETUP.md](../docs/docker/CI_CD_SETUP.md) for complete gui
 
 Portainer provides a web-based UI for managing Docker containers, perfect for users who prefer visual management over command-line.
 
+**📖 Complete Step-by-Step Guide:** [PORTAINER_GUIDE.md](PORTAINER_GUIDE.md)
+Includes: Installation, deployment, troubleshooting, and management tasks with detailed explanations.
+
+**🎯 Quick Start:** Follow steps below, or use the [comprehensive guide](PORTAINER_GUIDE.md) for detailed instructions and common error solutions.
+
 #### Step 1: Install Portainer
 
 **On Linux/Mac:**
