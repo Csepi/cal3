@@ -503,7 +503,35 @@ docker restart portainer
 docker inspect portainer | grep docker.sock
 ```
 
-### Error 8: Build takes too long or times out
+### Error 8: "executor failed running [/bin/sh -c npm run build]: exit code: 127"
+
+**Cause:** Build command not found - usually missing dependencies or wrong paths
+
+**This was FIXED in commit e3bdc49 (2024-10-11)**
+
+If you still see this error:
+
+**Solution:**
+1. **Update your stack** to get the latest Dockerfiles:
+   - **Stacks** → `cal3` → **Editor**
+   - Check **Pull and redeploy**
+   - Click **Update the stack**
+
+2. **Or delete and recreate** the stack:
+   - Delete existing stack
+   - Create new one (it will pull latest code with fixes)
+
+3. **What was fixed:**
+   - Backend now installs all dependencies (including TypeScript)
+   - Correct file paths for repository builds
+   - nginx configuration paths corrected
+
+**If error persists after update:**
+- Check Portainer logs for specific error
+- Ensure you're using the latest code from GitHub
+- Try Web Editor method with updated compose file
+
+### Error 9: Build takes too long or times out
 
 **Cause:** Large images, slow internet, or insufficient resources
 
