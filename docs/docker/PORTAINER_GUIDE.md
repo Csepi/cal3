@@ -794,6 +794,6 @@ DB_SSL=false
    ```
 4. Deploy the stack (only backend and frontend will start)
 
-📖 **Complete External Database Guide:** [docs/EXTERNAL_DATABASE.md](../../EXTERNAL_DATABASE.md)
+📖 **Complete External Database Guide:** [../external-database/README.md](../external-database/README.md)
 
 ---
