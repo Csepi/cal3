@@ -47,15 +47,23 @@ import { AutomationAuditLog } from './entities/automation-audit-log.entity';
     TypeOrmModule.forRoot(
       process.env.DB_TYPE === 'postgres' ? {
         type: 'postgres',
-        host: process.env.DB_HOST || 'cal2db.postgres.database.azure.com',
+        host: process.env.DB_HOST || 'localhost',
         port: parseInt(process.env.DB_PORT || '5432', 10),
-        username: process.env.DB_USERNAME || 'db_admin',
-        password: process.env.DB_PASSWORD || 'Enter.Enter',
+        username: process.env.DB_USERNAME || 'postgres',
+        password: process.env.DB_PASSWORD,
         database: process.env.DB_NAME || 'cal3',
         entities: [User, Calendar, CalendarShare, Event, CalendarSyncConnection, SyncedCalendar, SyncEventMapping, Organisation, OrganisationAdmin, OrganisationUser, OrganisationResourceTypePermission, OrganisationCalendarPermission, ReservationCalendar, ReservationCalendarRole, ResourceType, Resource, OperatingHours, Reservation, AutomationRule, AutomationCondition, AutomationAction, AutomationAuditLog],
-        synchronize: process.env.NODE_ENV !== 'production',
-        ssl: { rejectUnauthorized: false },
-        logging: process.env.NODE_ENV === 'development',
+        synchronize: process.env.DB_SYNCHRONIZE === 'true' || process.env.NODE_ENV === 'development',
+        // SSL configuration - enable for cloud databases (Azure, AWS RDS, etc.)
+        ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: process.env.DB_SSL_REJECT_UNAUTHORIZED !== 'false' } : false,
+        logging: process.env.NODE_ENV === 'development' || process.env.DB_LOGGING === 'true',
+        // Connection pool settings for production
+        extra: {
+          max: parseInt(process.env.DB_POOL_MAX || '10', 10),
+          min: parseInt(process.env.DB_POOL_MIN || '2', 10),
+          idleTimeoutMillis: parseInt(process.env.DB_IDLE_TIMEOUT || '30000', 10),
+          connectionTimeoutMillis: parseInt(process.env.DB_CONNECTION_TIMEOUT || '10000', 10),
+        },
       } : {
         type: 'sqlite',
         database: process.env.DB_DATABASE || 'cal3.db',
