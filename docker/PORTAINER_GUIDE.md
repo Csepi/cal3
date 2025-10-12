@@ -151,31 +151,37 @@ Click **+ Add an environment variable** for each of these **required** variables
 | `DB_PASSWORD` | `YOUR_SECURE_PASSWORD` | ⚠️ Use strong password! |
 | `DB_NAME` | `cal3_production` | Database name |
 | `JWT_SECRET` | `YOUR_32_CHAR_SECRET` | ⚠️ Generate with openssl! |
-| `FRONTEND_URL` | `http://localhost:8080` | Frontend URL |
 
-**Port Configuration (Optional - only if you have port conflicts):**
+**🎯 Smart Port Configuration (Optional - uses defaults if not set):**
 | Name | Default | Notes |
 |------|---------|-------|
-| `FRONTEND_PORT` | `8080` | Change if port 8080 is in use (e.g., `8090`) |
-| `BACKEND_PORT` | `8081` | Change if port 8081 is in use (e.g., `8082`) |
-| `DB_PORT` | `5433` | Change if port 5433 is in use (e.g., `5434`) |
+| `BASE_URL` | `http://localhost` | Base domain for all services |
+| `FRONTEND_PORT` | `8080` | Frontend web interface port |
+| `BACKEND_PORT` | `8081` | Backend API port |
+| `DB_PORT` | `5433` | PostgreSQL host port |
 
-⚠️ **Important:** If you change ports, you **MUST also update these variables**:
-- `FRONTEND_URL` → `http://localhost:YOUR_FRONTEND_PORT`
-- `API_URL` → `http://localhost:YOUR_BACKEND_PORT`
-- `VITE_API_URL` → `http://localhost:YOUR_BACKEND_PORT`
-- `GOOGLE_CALLBACK_URL` → `http://localhost:YOUR_BACKEND_PORT/api/auth/google/callback`
-- `MICROSOFT_CALLBACK_URL` → `http://localhost:YOUR_BACKEND_PORT/api/auth/microsoft/callback`
+✅ **All URLs auto-constructed!** Just set `BASE_URL` and ports - no need for `FRONTEND_URL`, `API_URL`, `VITE_API_URL`, or callback URLs. They're automatically generated as:
+- Frontend URL = `BASE_URL:FRONTEND_PORT`
+- API URL = `BASE_URL:BACKEND_PORT`
+- OAuth callbacks = `BASE_URL:BACKEND_PORT/api/auth/{provider}/callback`
 
-**Optional (OAuth integration):**
+**Example with custom ports:**
+```
+BASE_URL=http://localhost
+FRONTEND_PORT=9000
+BACKEND_PORT=9001
+```
+Result: Frontend at :9000, Backend at :9001, all URLs auto-updated!
+
+**Optional (OAuth integration - only if you need Google/Microsoft login):**
 | Name | Value | Notes |
 |------|-------|-------|
 | `GOOGLE_CLIENT_ID` | Your Google Client ID | For Google login |
 | `GOOGLE_CLIENT_SECRET` | Your Google Secret | For Google login |
-| `GOOGLE_CALLBACK_URL` | `http://localhost:8081/api/auth/google/callback` | |
 | `MICROSOFT_CLIENT_ID` | Your Microsoft Client ID | For Microsoft login |
 | `MICROSOFT_CLIENT_SECRET` | Your Microsoft Secret | For Microsoft login |
-| `MICROSOFT_CALLBACK_URL` | `http://localhost:8081/api/auth/microsoft/callback` | |
+
+📝 **Note:** OAuth callback URLs are auto-constructed from `BASE_URL:BACKEND_PORT`. No need to set them manually!
 
 **🔐 Generate Secure Secrets:**
 

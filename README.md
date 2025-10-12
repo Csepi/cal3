@@ -149,7 +149,7 @@ cd cal3
 cd backend-nestjs
 npm install
 
-# Configure environment variables
+# Configure environment variables (optional for development)
 cp .env.example .env
 # Edit .env with your database credentials and OAuth secrets
 
@@ -167,11 +167,23 @@ npm run dev -- --port 8080
 ```
 
 4. **Access the Application**
-- Frontend: http://localhost:8080 (configurable via `FRONTEND_PORT` env var)
-- Backend API: http://localhost:8081/api (configurable via `BACKEND_PORT` env var)
+- Frontend: http://localhost:8080
+- Backend API: http://localhost:8081/api
 - API Documentation: http://localhost:8081/api-docs
 
-**Note:** All ports are fully configurable via environment variables. See [setup-guide.md](setup-guide.md) for details.
+### **🎯 Smart Port Configuration**
+
+Cal3 uses intelligent URL construction - **just set 3 variables**:
+
+```bash
+BASE_URL=http://localhost      # Your base domain
+FRONTEND_PORT=8080             # Frontend port (default: 8080)
+BACKEND_PORT=8081              # Backend port (default: 8081)
+```
+
+All URLs (FRONTEND_URL, API_URL, OAuth callbacks) are **automatically constructed**. No redundant configuration needed!
+
+See [CONFIGURATION_GUIDE.md](CONFIGURATION_GUIDE.md) for complete details.
 
 ### **Default Credentials**
 - **Admin User**: `admin` / `enterenter`

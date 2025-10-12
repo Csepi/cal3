@@ -345,26 +345,34 @@ config/
 
 ### Port Configuration
 
-**Default Ports:**
-- Frontend: `8080` (configurable via `FRONTEND_PORT`)
-- Backend: `8081` (configurable via `BACKEND_PORT`)
-- PostgreSQL: `5433` (configurable via `DB_PORT`)
-
-**To use custom ports:**
+**🎯 Smart Configuration** - Only 3 variables needed:
 
 ```bash
 # In config/.env or config/.env.dev
-FRONTEND_PORT=3000
-BACKEND_PORT=3001
-DB_PORT=5432
-
-# Then update URLs to match
-FRONTEND_URL=http://localhost:3000
-API_URL=http://localhost:3001
-VITE_API_URL=http://localhost:3001
+BASE_URL=http://localhost      # Base domain
+FRONTEND_PORT=8080             # Frontend port (default: 8080)
+BACKEND_PORT=8081              # Backend port (default: 8081)
+DB_PORT=5433                   # PostgreSQL port (default: 5433)
 ```
 
-⚠️ **Important**: If you change ports, you MUST update all URL variables to match the new ports.
+**All URLs automatically constructed:**
+- `FRONTEND_URL` = `BASE_URL:FRONTEND_PORT`
+- `API_URL` = `BASE_URL:BACKEND_PORT`
+- `VITE_API_URL` = `BASE_URL:BACKEND_PORT`
+- OAuth callbacks = `BASE_URL:BACKEND_PORT/api/auth/{provider}/callback`
+
+**Example with custom ports:**
+```bash
+BASE_URL=http://localhost
+FRONTEND_PORT=3000
+BACKEND_PORT=3001
+DB_PORT=5434
+# All URLs auto-constructed - no redundant configuration!
+```
+
+✅ **No more URL mismatches** - Ports and URLs stay synchronized automatically.
+
+For advanced setups (subdomains, reverse proxy), you can still override specific URLs. See [CONFIGURATION_GUIDE.md](../CONFIGURATION_GUIDE.md).
 
 ### Environment Variables Reference
 
