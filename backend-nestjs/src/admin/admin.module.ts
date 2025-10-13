@@ -14,10 +14,11 @@ import { OrganisationAdmin } from '../entities/organisation-admin.entity';
 import { ResourceType } from '../entities/resource-type.entity';
 import { Resource } from '../entities/resource.entity';
 import { OperatingHours } from '../entities/operating-hours.entity';
+import { AutomationRule } from '../entities/automation-rule.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User, Calendar, Event, CalendarShare, Reservation, Organisation, OrganisationUser, OrganisationAdmin, ResourceType, Resource, OperatingHours]),
+    TypeOrmModule.forFeature([User, Calendar, Event, CalendarShare, Reservation, Organisation, OrganisationUser, OrganisationAdmin, ResourceType, Resource, OperatingHours, AutomationRule]),
   ],
   controllers: [AdminController],
   providers: [AdminService, AdminGuard],
