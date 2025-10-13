@@ -18,6 +18,8 @@ import { AutomationModule } from './automation/automation.module';
 import { UserProfileController } from './controllers/user-profile.controller';
 import { UserPermissionsController } from './controllers/user-permissions.controller';
 import { CommonModule } from './common/common.module';
+import { FeatureFlagsController } from './common/feature-flags.controller';
+import { FeatureFlagsService } from './common/feature-flags.service';
 import { DatabaseDiagnosticsService } from './database/database-diagnostics.service';
 import { User } from './entities/user.entity';
 import { Calendar, CalendarShare } from './entities/calendar.entity';
@@ -144,7 +146,7 @@ const dbLogger = new Logger('DatabaseConnection');
     CommonModule,
     TypeOrmModule.forFeature([User]),
   ],
-  controllers: [AppController, UserProfileController, UserPermissionsController],
-  providers: [AppService, DatabaseDiagnosticsService],
+  controllers: [AppController, UserProfileController, UserPermissionsController, FeatureFlagsController],
+  providers: [AppService, DatabaseDiagnosticsService, FeatureFlagsService],
 })
 export class AppModule {}

@@ -51,7 +51,13 @@ See [docker/README.md](docker/README.md) for complete port configuration guide.
 ## Current Development Status
 
 ### ✅ Recently Completed Features
-1. **Calendar Automation System (v1.3.0)** - Complete rule-based automation with 8 phases implemented
+1. **Feature Flags System** - Comprehensive global feature control system
+   - Environment-based feature enablement (OAuth, Calendar Sync, Reservations, Automation)
+   - Automatic UI hiding of disabled features (buttons, tabs, forms)
+   - Public API endpoint for frontend feature flag queries
+   - 5-minute frontend caching for performance
+   - Complete documentation in [docs/feature-flags.md](docs/feature-flags.md)
+2. **Calendar Automation System (v1.3.0)** - Complete rule-based automation with 8 phases implemented
    - Event lifecycle triggers (created, updated, deleted)
    - Time-based triggers (starts_in, ends_in, scheduled.time with cron)
    - 15+ condition operators with AND/OR boolean logic
@@ -60,15 +66,15 @@ See [docker/README.md](docker/README.md) for complete port configuration guide.
    - Circular buffer audit logging (1000 entries per rule)
    - Complete frontend UI with builder components and detail views
    - See [docs/automation.md](docs/automation.md) for comprehensive documentation
-2. **Hour Format Settings Integration** - User profile time format (12h/24h) now applies to WeekView and CalendarEventModal
-3. **Admin Usage Plan Management** - Individual and bulk modification of user usage plans with set/add/remove operations
-4. **Expanded Color Palette** - 16 total theme colors in rainbow order including Sky (#0ea5e9) and Violet (#7c3aed)
-5. **Usage Plans Read-Only Display** - User profile shows usage plans as non-editable badges in Account Information
-6. **Comprehensive Timezone Support** - 70+ world timezones covering all continents
-7. **Week View Time Range Selection** - Mouse drag functionality for creating events
-8. **Profile Color Theming** - Applied to monthly and weekly view backgrounds with consistent gradients
-9. **Modernized UI** - Softer gradients, backdrop-blur effects, improved readability
-10. **Browser Extension Error Handling** - Robust suppression of extension context errors
+3. **Hour Format Settings Integration** - User profile time format (12h/24h) now applies to WeekView and CalendarEventModal
+4. **Admin Usage Plan Management** - Individual and bulk modification of user usage plans with set/add/remove operations
+5. **Expanded Color Palette** - 16 total theme colors in rainbow order including Sky (#0ea5e9) and Violet (#7c3aed)
+6. **Usage Plans Read-Only Display** - User profile shows usage plans as non-editable badges in Account Information
+7. **Comprehensive Timezone Support** - 70+ world timezones covering all continents
+8. **Week View Time Range Selection** - Mouse drag functionality for creating events
+9. **Profile Color Theming** - Applied to monthly and weekly view backgrounds with consistent gradients
+10. **Modernized UI** - Softer gradients, backdrop-blur effects, improved readability
+11. **Browser Extension Error Handling** - Robust suppression of extension context errors
 
 ### 🔧 Key Components Structure
 ```
@@ -177,9 +183,27 @@ Usage plans control feature access and are managed by admins:
 - **User Display**: Read-only badges in Account Information section
 - **Backend**: Stored as JSON array in user entity (`usagePlans` field)
 
+### Feature Flags System
+Feature flags provide global control over feature availability:
+- **Configuration**: Environment variables in backend `.env` file
+- **Available Flags**: `ENABLE_OAUTH`, `ENABLE_CALENDAR_SYNC`, `ENABLE_RESERVATIONS`, `ENABLE_AUTOMATION`
+- **UI Behavior**: Disabled features automatically hide all related buttons, tabs, and forms
+- **Multi-Level Control**: Combines with user permissions (e.g., Reservations requires both flag + permission)
+- **API Endpoint**: `GET /api/feature-flags` returns current flag status
+- **Frontend Caching**: 5-minute cache for performance optimization
+- **Use Cases**: Gradual feature rollout, maintenance mode, customer-specific deployments
+- **Documentation**: See [docs/feature-flags.md](docs/feature-flags.md) for complete details
+
+**Starting backend with feature flags**:
+```bash
+cd backend-nestjs
+ENABLE_OAUTH=false ENABLE_CALENDAR_SYNC=false ENABLE_RESERVATIONS=true ENABLE_AUTOMATION=true PORT=8081 JWT_SECRET="calendar-secret-key" npm run start:dev
+```
+
 ## API Integration
 
 ### Backend Endpoints
+- `/api/feature-flags` - Public endpoint for feature flag status
 - `/api/users/profile` - User profile management
 - `/api/events` - CRUD operations for events
 - `/api/calendar-sync` - External calendar integration
@@ -334,6 +358,9 @@ backend-nestjs/
 │       ├── action-executor.interface.ts
 │       ├── action-executor-registry.ts
 │       └── set-event-color.executor.ts
+├── src/common/            # Common utilities
+│   ├── feature-flags.service.ts      # Feature flag service
+│   └── feature-flags.controller.ts   # Feature flag API
 ├── src/controllers/        # API endpoints
 ├── src/services/          # Business logic
 └── src/dto/               # Data transfer objects
@@ -342,13 +369,15 @@ frontend/src/
 ├── components/            # React components
 │   └── automation/        # Automation components
 ├── services/             # API integration
-│   └── automationService.ts
+│   ├── automationService.ts
+│   └── featureFlagsService.ts         # Feature flags client
 ├── types/                # TypeScript definitions
 │   └── Automation.ts
 └── hooks/                # Custom React hooks
     ├── useAutomationRules.ts
     ├── useAutomationMetadata.ts
-    └── useAuditLogs.ts
+    ├── useAuditLogs.ts
+    └── useFeatureFlags.ts               # Feature flags hook
 ```
 
 ### Development Workflow
@@ -384,6 +413,7 @@ All primary documentation has been updated to reflect the current application st
 - **README.md** - Comprehensive project overview with latest features including automation system
 - **API_DOCUMENTATION.md** - Complete API reference with all endpoints including automation
 - **docs/automation.md** - Comprehensive automation system documentation (1700+ lines)
+- **docs/feature-flags.md** - Complete feature flags system documentation with examples and best practices
 - **DEPLOYMENT.md** - Full deployment guide covering multiple platforms and configurations
 - **setup-guide.md** - Complete setup instructions from initial installation to running application
 - **frontend/README.md** - Detailed frontend architecture and development guide
@@ -399,6 +429,7 @@ These files exist but are outdated and should not be used for current developmen
 
 ### 📝 Documentation Maintenance
 All current documentation reflects:
+- **Feature flags system** - Global feature control with UI hiding
 - **Calendar automation system** (Phase 8 complete - Production ready)
 - Hour format settings integration across components
 - Latest 16-color theming system

@@ -26,6 +26,7 @@ import { AutomationPanel } from './automation/AutomationPanel';
 import { apiService } from '../services/api';
 import { UserPermissionsService } from '../services/userPermissions';
 import { THEME_COLORS, getThemeConfig } from '../constants/theme';
+import { useFeatureFlags } from '../hooks/useFeatureFlags';
 
 /**
  * View types for the main navigation
@@ -45,6 +46,9 @@ const Dashboard: React.FC = () => {
   // Permissions state
   const [canAccessReservations, setCanAccessReservations] = useState<boolean>(false);
   const [permissionsLoading, setPermissionsLoading] = useState<boolean>(true);
+
+  // Feature flags state
+  const { flags: featureFlags, loading: featureFlagsLoading } = useFeatureFlags();
 
   /**
    * Handles user login and initializes user session
@@ -175,10 +179,17 @@ const Dashboard: React.FC = () => {
 
   // Redirect to calendar if user loses access to current view
   useEffect(() => {
-    if (!permissionsLoading && currentView === 'reservations' && !canAccessReservations) {
+    if (featureFlagsLoading || permissionsLoading) return;
+
+    // Redirect if current view's feature is disabled
+    if (currentView === 'sync' && !featureFlags.calendarSync) {
+      setCurrentView('calendar');
+    } else if (currentView === 'automation' && !featureFlags.automation) {
+      setCurrentView('calendar');
+    } else if (currentView === 'reservations' && (!featureFlags.reservations || !canAccessReservations)) {
       setCurrentView('calendar');
     }
-  }, [permissionsLoading, currentView, canAccessReservations]);
+  }, [featureFlagsLoading, permissionsLoading, currentView, featureFlags, canAccessReservations]);
 
   // Get centralized theme configuration
   const themeConfig = getThemeConfig(themeColor);
@@ -224,28 +235,34 @@ const Dashboard: React.FC = () => {
               >
                 👤 Profile
               </button>
-              <button
-                onClick={() => setCurrentView('sync')}
-                className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 ${
-                  currentView === 'sync'
-                    ? `${themeConfig.button} text-white shadow-lg`
-                    : `text-${themeConfig.text} hover:bg-white/50`
-                }`}
-              >
-                🔄 Calendar Sync
-              </button>
-              <button
-                onClick={() => setCurrentView('automation')}
-                className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 ${
-                  currentView === 'automation'
-                    ? `${themeConfig.button} text-white shadow-lg`
-                    : `text-${themeConfig.text} hover:bg-white/50`
-                }`}
-              >
-                🤖 Automation
-              </button>
-              {/* Conditionally show Reservations tab based on user permissions and preferences */}
-              {canAccessReservations && !userProfile?.hideReservationsTab && (
+              {/* Calendar Sync tab - only show if feature is enabled */}
+              {featureFlags.calendarSync && (
+                <button
+                  onClick={() => setCurrentView('sync')}
+                  className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 ${
+                    currentView === 'sync'
+                      ? `${themeConfig.button} text-white shadow-lg`
+                      : `text-${themeConfig.text} hover:bg-white/50`
+                  }`}
+                >
+                  🔄 Calendar Sync
+                </button>
+              )}
+              {/* Automation tab - only show if feature is enabled */}
+              {featureFlags.automation && (
+                <button
+                  onClick={() => setCurrentView('automation')}
+                  className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 ${
+                    currentView === 'automation'
+                      ? `${themeConfig.button} text-white shadow-lg`
+                      : `text-${themeConfig.text} hover:bg-white/50`
+                  }`}
+                >
+                  🤖 Automation
+                </button>
+              )}
+              {/* Conditionally show Reservations tab based on feature flag, user permissions, and preferences */}
+              {featureFlags.reservations && canAccessReservations && !userProfile?.hideReservationsTab && (
                 <button
                   onClick={() => setCurrentView('reservations')}
                   className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 ${
@@ -293,13 +310,13 @@ const Dashboard: React.FC = () => {
             currentTheme={themeColor}
           />
         )}
-        {currentView === 'sync' && (
+        {currentView === 'sync' && featureFlags.calendarSync && (
           <CalendarSync themeColor={themeColor} />
         )}
-        {currentView === 'automation' && (
+        {currentView === 'automation' && featureFlags.automation && (
           <AutomationPanel themeColor={themeColor} />
         )}
-        {currentView === 'reservations' && canAccessReservations && !userProfile?.hideReservationsTab && (
+        {currentView === 'reservations' && featureFlags.reservations && canAccessReservations && !userProfile?.hideReservationsTab && (
           <ReservationsPanel themeColor={themeColor} />
         )}
         {/* Admin Panel - Only accessible to admin users */}
