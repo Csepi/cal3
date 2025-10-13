@@ -101,7 +101,7 @@ export interface BulkOperationResult {
 
 export type ModalType = 'create' | 'edit' | 'password' | 'usagePlans' | 'bulkUsagePlans';
 export type EntityType = 'user' | 'calendar' | 'event';
-export type AdminTab = 'users' | 'calendars' | 'events' | 'shares' | 'reservations' | 'organizations' | 'stats';
+export type AdminTab = 'users' | 'calendars' | 'events' | 'shares' | 'reservations' | 'organizations' | 'stats' | 'system-info';
 
 export interface ConfirmDialogState {
   isOpen: boolean;

@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, DataSource } from 'typeorm';
 import { User, UserRole, UsagePlan } from '../entities/user.entity';
 import { Calendar } from '../entities/calendar.entity';
 import { Event } from '../entities/event.entity';
@@ -12,8 +12,11 @@ import { OrganisationAdmin } from '../entities/organisation-admin.entity';
 import { ResourceType } from '../entities/resource-type.entity';
 import { Resource } from '../entities/resource.entity';
 import { OperatingHours } from '../entities/operating-hours.entity';
+import { AutomationRule } from '../entities/automation-rule.entity';
 import * as bcrypt from 'bcryptjs';
 import { v4 as uuidv4 } from 'uuid';
+import { SystemInfoDto } from './dto/system-info.dto';
+import * as os from 'os';
 
 @Injectable()
 export class AdminService {
@@ -40,6 +43,9 @@ export class AdminService {
     private resourceRepository: Repository<Resource>,
     @InjectRepository(OperatingHours)
     private operatingHoursRepository: Repository<OperatingHours>,
+    @InjectRepository(AutomationRule)
+    private automationRuleRepository: Repository<AutomationRule>,
+    private dataSource: DataSource,
   ) {}
 
   async getAllUsers(): Promise<User[]> {
@@ -548,5 +554,102 @@ export class AdminService {
         ...results,
       };
     }
+  }
+
+  /**
+   * Get comprehensive system information
+   * Includes server stats, database config, environment settings, and feature flags
+   */
+  async getSystemInfo(): Promise<SystemInfoDto> {
+    const packageJson = require('../../package.json');
+
+    // Server Information
+    const memoryUsage = process.memoryUsage();
+    const cpuUsage = process.cpuUsage();
+    const serverInfo = {
+      nodeVersion: process.version,
+      platform: `${os.platform()} ${os.release()}`,
+      architecture: os.arch(),
+      uptime: process.uptime(),
+      memoryUsage: {
+        heapUsed: Math.round(memoryUsage.heapUsed / 1024 / 1024), // MB
+        heapTotal: Math.round(memoryUsage.heapTotal / 1024 / 1024), // MB
+        external: Math.round(memoryUsage.external / 1024 / 1024), // MB
+        rss: Math.round(memoryUsage.rss / 1024 / 1024), // MB
+      },
+      cpuUsage: {
+        user: Math.round(cpuUsage.user / 1000), // milliseconds
+        system: Math.round(cpuUsage.system / 1000), // milliseconds
+      },
+    };
+
+    // Database Information
+    const dbOptions = this.dataSource.options as any;
+    const databaseInfo = {
+      type: dbOptions.type,
+      host: dbOptions.host,
+      port: dbOptions.port,
+      database: dbOptions.database,
+      ssl: dbOptions.ssl ? true : false,
+      poolMax: dbOptions.extra?.max || dbOptions.poolSize || 10,
+      poolMin: dbOptions.extra?.min || 2,
+      connectionTimeout: dbOptions.extra?.connectionTimeoutMillis || 10000,
+      synchronized: dbOptions.synchronize || false,
+    };
+
+    // Environment Information
+    const environmentInfo = {
+      nodeEnv: process.env.NODE_ENV || 'development',
+      port: parseInt(process.env.PORT || process.env.BACKEND_PORT || '8081', 10),
+      baseUrl: process.env.BASE_URL || 'http://localhost',
+      frontendUrl: process.env.FRONTEND_URL || 'http://localhost:8080',
+      backendUrl: process.env.BACKEND_URL || `http://localhost:${process.env.PORT || '8081'}`,
+    };
+
+    // Feature Flags
+    const featureFlags = {
+      googleOAuthEnabled: !!(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET),
+      microsoftOAuthEnabled: !!(process.env.MICROSOFT_CLIENT_ID && process.env.MICROSOFT_CLIENT_SECRET),
+      calendarSyncEnabled: true, // Always enabled
+      automationEnabled: true, // Always enabled
+      reservationsEnabled: true, // Always enabled
+      organisationsEnabled: true, // Always enabled
+    };
+
+    // Database Statistics
+    const [
+      userCount,
+      calendarCount,
+      eventCount,
+      reservationCount,
+      automationRuleCount,
+      organisationCount
+    ] = await Promise.all([
+      this.userRepository.count(),
+      this.calendarRepository.count(),
+      this.eventRepository.count(),
+      this.reservationRepository.count(),
+      this.automationRuleRepository.count(),
+      this.organisationRepository.count(),
+    ]);
+
+    const databaseStats = {
+      users: userCount,
+      calendars: calendarCount,
+      events: eventCount,
+      reservations: reservationCount,
+      automationRules: automationRuleCount,
+      organisations: organisationCount,
+    };
+
+    return {
+      server: serverInfo as any,
+      database: databaseInfo as any,
+      environment: environmentInfo,
+      features: featureFlags,
+      stats: databaseStats,
+      timestamp: new Date().toISOString(),
+      version: packageJson.version || '1.3.0',
+    };
   }
 }

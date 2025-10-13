@@ -28,6 +28,7 @@ import {
   AdminReservationPanel,
   type AdminTab
 } from './admin';
+import SystemInfoPage from './admin/SystemInfoPage';
 
 interface AdminPanelProps {
   /** Current theme color for styling */
@@ -80,6 +81,8 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ themeColor = '#3b82f6' }) => {
         return <AdminSharePanel {...panelProps} />;
       case 'reservations':
         return <AdminReservationPanel {...panelProps} />;
+      case 'system-info':
+        return <SystemInfoPage />;
 
       default:
         return (

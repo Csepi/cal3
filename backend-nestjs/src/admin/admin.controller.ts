@@ -14,6 +14,7 @@ import { AdminService } from './admin.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { AdminGuard } from '../auth/guards/admin.guard';
 import { UpdateUsagePlansDto } from '../dto/user-profile.dto';
+import { SystemInfoDto } from './dto/system-info.dto';
 
 @ApiTags('Admin')
 @Controller('admin')
@@ -63,6 +64,13 @@ export class AdminController {
   @ApiResponse({ status: 200, description: 'Statistics retrieved successfully' })
   getDatabaseStats() {
     return this.adminService.getDatabaseStats();
+  }
+
+  @Get('system-info')
+  @ApiOperation({ summary: 'Get comprehensive system information (Admin only)' })
+  @ApiResponse({ status: 200, description: 'System information retrieved successfully', type: SystemInfoDto })
+  getSystemInfo() {
+    return this.adminService.getSystemInfo();
   }
 
   @Patch('users/:id/role')

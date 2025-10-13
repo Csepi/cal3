@@ -59,6 +59,11 @@ const TAB_CONFIG: Record<AdminTab, { label: string; icon: string; description: s
     label: 'Reservations',
     icon: '🏢',
     description: 'Resource reservations and bookings'
+  },
+  'system-info': {
+    label: 'System Info',
+    icon: '⚙️',
+    description: 'Runtime and configuration details'
   }
 };
 
