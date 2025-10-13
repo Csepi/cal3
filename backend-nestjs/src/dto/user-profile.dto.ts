@@ -58,6 +58,18 @@ export class UpdateProfileDto {
   @IsArray()
   @IsNumber({}, { each: true })
   hiddenResourceIds?: number[];
+
+  @ApiPropertyOptional({ example: [1, 2, 3], description: 'Array of calendar IDs visible in calendar view (null = all visible)' })
+  @IsOptional()
+  @IsArray()
+  @IsNumber({}, { each: true })
+  visibleCalendarIds?: number[];
+
+  @ApiPropertyOptional({ example: [1, 2, 3], description: 'Array of resource type IDs visible in calendar view (null = all visible)' })
+  @IsOptional()
+  @IsArray()
+  @IsNumber({}, { each: true })
+  visibleResourceTypeIds?: number[];
 }
 
 export class UpdateThemeDto {

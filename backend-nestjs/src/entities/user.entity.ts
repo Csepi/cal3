@@ -81,6 +81,12 @@ export class User {
   @Column({ type: 'json', nullable: true }) // Array of resource IDs to hide in calendar view
   hiddenResourceIds: number[];
 
+  @Column({ type: 'json', nullable: true }) // Array of calendar IDs visible in calendar view (null = all visible)
+  visibleCalendarIds: number[];
+
+  @Column({ type: 'json', nullable: true }) // Array of resource type IDs visible in calendar view (null = all visible)
+  visibleResourceTypeIds: number[];
+
   @CreateDateColumn()
   createdAt: Date;
 
