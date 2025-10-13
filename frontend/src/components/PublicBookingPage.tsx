@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-
-const API_BASE_URL = 'http://localhost:8081';
+import { API_BASE_URL } from '../config/apiConfig';
 
 interface ResourceInfo {
   id: number;

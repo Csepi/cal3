@@ -8,11 +8,7 @@ import type {
   AuditLogQueryDto,
   AuditLogStatsDto,
 } from '../types/Automation';
-
-// Smart URL construction from base + port or use explicit VITE_API_URL
-const BASE_URL = import.meta.env.VITE_BASE_URL || 'http://localhost';
-const BACKEND_PORT = import.meta.env.VITE_BACKEND_PORT || '8081';
-const API_BASE_URL = import.meta.env.VITE_API_URL || `${BASE_URL}:${BACKEND_PORT}`;
+import { API_BASE_URL } from '../config/apiConfig';
 
 /**
  * Get authorization headers with JWT token

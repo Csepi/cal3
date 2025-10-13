@@ -6,6 +6,7 @@
  */
 
 import type { AdminApiOptions, BulkOperationResult } from './types';
+import { API_BASE_URL } from '../../config/apiConfig';
 
 /**
  * Get admin authentication token with fallback logic
@@ -47,7 +48,7 @@ export const adminApiCall = async ({
     options.body = JSON.stringify(data);
   }
 
-  const response = await fetch(`http://localhost:8081/api${endpoint}`, options);
+  const response = await fetch(`${API_BASE_URL}/api${endpoint}`, options);
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
