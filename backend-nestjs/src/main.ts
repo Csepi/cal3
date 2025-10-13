@@ -1,49 +1,132 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { ValidationPipe } from '@nestjs/common';
+import { ValidationPipe, Logger } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import { DataSource } from 'typeorm';
+import { DatabaseDiagnosticsService } from './database/database-diagnostics.service';
+
+const logger = new Logger('Bootstrap');
+const dbLogger = new Logger('DatabaseConnection');
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const startTime = Date.now();
 
-  // Smart port and URL configuration
-  const backendPort = process.env.PORT || process.env.BACKEND_PORT || '8081';
-  const frontendPort = process.env.FRONTEND_PORT || '8080';
-  const baseUrl = process.env.BASE_URL || 'http://localhost';
+  logger.log('========================================');
+  logger.log('Starting Cal3 Application');
+  logger.log(`Timestamp: ${new Date().toISOString()}`);
+  logger.log(`Node Version: ${process.version}`);
+  logger.log(`Platform: ${process.platform}`);
+  logger.log('========================================');
 
-  // Construct frontend URL from base + port (or use explicit FRONTEND_URL if provided)
-  const frontendUrl = process.env.FRONTEND_URL || `${baseUrl}:${frontendPort}`;
+  try {
+    dbLogger.log('🔄 Creating NestJS application...');
+    const app = await NestFactory.create(AppModule, {
+      logger: ['log', 'error', 'warn', 'debug', 'verbose'],
+    });
 
-  // Enable CORS
-  app.enableCors({
-    origin: [frontendUrl, 'http://localhost:3000'],
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    credentials: true,
-  });
+    // Get DataSource to monitor connection
+    const dataSource = app.get(DataSource);
 
-  // Global validation pipe
-  app.useGlobalPipes(new ValidationPipe({
-    whitelist: true,
-    transform: true,
-    forbidNonWhitelisted: true,
-  }));
+    if (dataSource.isInitialized) {
+      const connectionDuration = Date.now() - startTime;
+      dbLogger.log(`✅ Database connection established successfully!`);
+      dbLogger.log(`⏱️  Connection time: ${connectionDuration}ms`);
+      dbLogger.log(`📊 Database: ${dataSource.options.type}`);
 
-  // API global prefix
-  app.setGlobalPrefix('api');
+      if (dataSource.options.type === 'postgres') {
+        const pgOptions = dataSource.options as any;
+        dbLogger.log(`🌐 Connected to: ${pgOptions.host}:${pgOptions.port}/${pgOptions.database}`);
+      }
 
-  // Swagger documentation
-  const config = new DocumentBuilder()
-    .setTitle('Calendar Sharing API')
-    .setDescription('A comprehensive calendar sharing application with multi-user support')
-    .setVersion('1.0')
-    .addBearerAuth()
-    .build();
-  const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api/docs', app, document);
+      // Test query to verify connection
+      try {
+        dbLogger.log('🧪 Testing database query...');
+        const queryStart = Date.now();
 
-  await app.listen(backendPort);
-  console.log(`🚀 Application is running on: ${baseUrl}:${backendPort}`);
-  console.log(`📚 API Documentation: ${baseUrl}:${backendPort}/api/docs`);
-  console.log(`🔗 CORS enabled for: ${frontendUrl}`);
+        if (dataSource.options.type === 'postgres') {
+          const result = await dataSource.query('SELECT version(), current_database(), current_user');
+          const queryDuration = Date.now() - queryStart;
+          dbLogger.log(`✅ Test query successful (${queryDuration}ms)`);
+          dbLogger.log(`   PostgreSQL: ${result[0].version.split(',')[0]}`);
+          dbLogger.log(`   Database: ${result[0].current_database}`);
+          dbLogger.log(`   User: ${result[0].current_user}`);
+        } else {
+          await dataSource.query('SELECT 1');
+          const queryDuration = Date.now() - queryStart;
+          dbLogger.log(`✅ Test query successful (${queryDuration}ms)`);
+        }
+      } catch (queryError) {
+        dbLogger.error('❌ Test query failed:', queryError.message);
+      }
+
+      // Run network diagnostics if enabled
+      if (process.env.DB_RUN_DIAGNOSTICS === 'true') {
+        const diagnosticsService = app.get(DatabaseDiagnosticsService);
+        await diagnosticsService.testNetworkConnectivity();
+      }
+    } else {
+      dbLogger.warn('⚠️  Database connection not initialized yet');
+    }
+    // Smart port and URL configuration
+    const backendPort = process.env.PORT || process.env.BACKEND_PORT || '8081';
+    const frontendPort = process.env.FRONTEND_PORT || '8080';
+    const baseUrl = process.env.BASE_URL || 'http://localhost';
+
+    // Construct frontend URL from base + port (or use explicit FRONTEND_URL if provided)
+    const frontendUrl = process.env.FRONTEND_URL || `${baseUrl}:${frontendPort}`;
+
+    // Enable CORS
+    app.enableCors({
+      origin: [frontendUrl, 'http://localhost:3000'],
+      methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+      credentials: true,
+    });
+
+    // Global validation pipe
+    app.useGlobalPipes(new ValidationPipe({
+      whitelist: true,
+      transform: true,
+      forbidNonWhitelisted: true,
+    }));
+
+    // API global prefix
+    app.setGlobalPrefix('api');
+
+    // Swagger documentation
+    const config = new DocumentBuilder()
+      .setTitle('Calendar Sharing API')
+      .setDescription('A comprehensive calendar sharing application with multi-user support')
+      .setVersion('1.0')
+      .addBearerAuth()
+      .build();
+    const document = SwaggerModule.createDocument(app, config);
+    SwaggerModule.setup('api/docs', app, document);
+
+    await app.listen(backendPort);
+
+    const totalStartupTime = Date.now() - startTime;
+    logger.log('========================================');
+    logger.log('✅ APPLICATION STARTED SUCCESSFULLY');
+    logger.log('========================================');
+    logger.log(`🚀 Server: ${baseUrl}:${backendPort}`);
+    logger.log(`📚 API Docs: ${baseUrl}:${backendPort}/api/docs`);
+    logger.log(`🔗 CORS: ${frontendUrl}`);
+    logger.log(`⏱️  Total startup time: ${totalStartupTime}ms`);
+    logger.log('========================================');
+  } catch (error) {
+    const failureDuration = Date.now() - startTime;
+    dbLogger.error('========================================');
+    dbLogger.error('❌ FATAL: Application startup failed');
+    dbLogger.error(`⏱️  Failed after ${failureDuration}ms`);
+    dbLogger.error('========================================');
+    dbLogger.error(`Error: ${error.message}`);
+    dbLogger.error(`Type: ${error.name}`);
+    if (error.stack) {
+      dbLogger.error('Stack trace:');
+      dbLogger.error(error.stack);
+    }
+    dbLogger.error('========================================');
+    process.exit(1);
+  }
 }
 bootstrap();

@@ -42,6 +42,7 @@ services:
       # DEBUG: Enable logging to see errors
       DB_SYNCHRONIZE: ${DB_SYNCHRONIZE:-false}
       DB_LOGGING: "true"  # ALWAYS ON for debugging
+      DB_RUN_DIAGNOSTICS: ${DB_RUN_DIAGNOSTICS:-false}  # Set to true to run network diagnostics
 
       # Connection Pool - EXTENDED TIMEOUTS FOR AZURE
       DB_POOL_MAX: ${DB_POOL_MAX:-10}
