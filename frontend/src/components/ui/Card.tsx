@@ -55,7 +55,7 @@ export const Card: React.FC<CardProps> = ({
 
   // Base card classes
   const baseClasses = [
-    'rounded-xl',
+    'rounded-3xl',
     'transition-all',
     'duration-300',
     onClick && 'cursor-pointer'
@@ -76,7 +76,7 @@ export const Card: React.FC<CardProps> = ({
     } else if (background === 'light' && themeConfig) {
       return `bg-${themeConfig.light}`;
     }
-    return 'bg-white';
+    return 'backdrop-blur-md bg-white/70';
   };
 
   // Border classes with theme support
@@ -85,23 +85,23 @@ export const Card: React.FC<CardProps> = ({
     if (border === 'themed' && themeConfig) {
       return `border border-${themeConfig.border}`;
     }
-    return 'border border-gray-200';
+    return 'border border-blue-200';
   };
 
   // Shadow classes
   const getShadowClasses = () => {
     if (elevated) return 'shadow-xl';
     if (hoverable) return 'shadow-md hover:shadow-lg';
-    return 'shadow-sm';
+    return 'shadow-xl';
   };
 
   // Hover effects
   const getHoverClasses = () => {
-    if (!hoverable) return '';
+    if (!hoverable) return 'hover:bg-white/80';
     if (themeConfig && background === 'white') {
       return `hover:bg-${themeConfig.light}`;
     }
-    return 'hover:bg-gray-50';
+    return 'hover:bg-white/80';
   };
 
   // Combine all classes

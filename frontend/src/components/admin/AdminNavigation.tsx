@@ -96,7 +96,7 @@ export const AdminNavigation: React.FC<AdminNavigationProps> = ({
   };
 
   return (
-    <div className={`bg-white rounded-xl shadow-sm border border-gray-200 ${className}`}>
+    <div className={`backdrop-blur-md bg-white/70 border border-blue-200 rounded-3xl shadow-xl hover:bg-white/80 transition-all duration-300 ${className}`}>
       {/* Navigation Header */}
       <div className="px-6 py-4 border-b border-gray-200">
         <div className="flex items-center space-x-3">
@@ -182,7 +182,7 @@ export const AdminNavigation: React.FC<AdminNavigationProps> = ({
       </nav>
 
       {/* Quick Actions Footer */}
-      <div className="px-6 py-4 border-t border-gray-200 bg-gray-50 rounded-b-xl">
+      <div className="px-6 py-4 border-t border-gray-200 bg-gray-50/50 rounded-b-3xl">
         <div className="flex items-center justify-between">
           <div className="text-xs text-gray-500">
             Current: <span className="font-medium text-gray-700">{TAB_CONFIG[activeTab].label}</span>
