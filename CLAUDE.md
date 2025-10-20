@@ -419,14 +419,60 @@ frontend/src/
     └── useFeatureFlags.ts               # Feature flags hook
 ```
 
+### Version Management
+**⚠️ CRITICAL: Version Increment Before Every Git Push**
+
+Before every git push, you MUST increment the bugfix version number by 1.
+
+**Version Format**: `MAJOR.MINOR.PATCH` (e.g., 1.3.0 → 1.3.1)
+
+**Files to Update**:
+1. **backend-nestjs/package.json** - Update `version` field
+2. **frontend/package.json** - Update `version` field
+
+**Process**:
+```bash
+# 1. Increment bugfix version (PATCH number)
+# Example: 1.3.0 → 1.3.1, 1.3.1 → 1.3.2, etc.
+
+# 2. Update backend-nestjs/package.json
+cd backend-nestjs
+npm version patch --no-git-tag-version
+
+# 3. Update frontend/package.json
+cd ../frontend
+npm version patch --no-git-tag-version
+
+# 4. Commit version changes
+cd ..
+git add backend-nestjs/package.json frontend/package.json
+git commit -m "chore: bump version to X.X.X"
+
+# 5. Now safe to push
+git push
+```
+
+**When to Increment**:
+- ✅ **ALWAYS** before `git push`
+- ✅ After bug fixes
+- ✅ After feature additions
+- ✅ After documentation updates
+- ✅ For any commit that will be pushed
+
+**Version Types**:
+- **PATCH (bugfix)** - Increment for bug fixes, small changes, documentation (default for every push)
+- **MINOR** - Increment for new features (e.g., 1.3.9 → 1.4.0)
+- **MAJOR** - Increment for breaking changes (e.g., 1.9.0 → 2.0.0)
+
 ### Development Workflow
 1. Check current feature status in this file
 2. Run development servers (frontend:8080, backend:8081)
 3. Make changes with hot reload
 4. Test functionality thoroughly
 5. Run type checking and linting
-6. Commit changes with descriptive messages
-7. Update this CLAUDE.md file if needed
+6. **Increment bugfix version** (see Version Management above)
+7. Commit changes with descriptive messages
+8. Update this CLAUDE.md file if needed
 
 ### Emergency Commands
 ```bash
