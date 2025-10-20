@@ -48,6 +48,45 @@ cd backend-nestjs && npm run seed
 
 See [docker/README.md](docker/README.md) for complete port configuration guide.
 
+## Environment Configuration
+
+### Database Setup
+**⚠️ IMPORTANT: External PostgreSQL Database**
+- **Database Host**: 192.168.1.101:5433
+- **Database Type**: PostgreSQL (self-hosted, shared environment)
+- **Multiple Databases**: This host contains many databases besides cal3
+- **DO NOT** modify docker-compose files to include this database
+- **DO NOT** create database containers - use existing external database only
+- **Configuration**: Set DB_HOST=192.168.1.101 and DB_PORT=5433 in backend-nestjs/.env
+
+### Environment File Usage
+- **Development Mode**: Uses `backend-nestjs/.env` file for configuration
+- **Docker Mode**: Uses environment variables from docker-compose files
+- **Never mix**: Development uses local .env, Docker uses compose environment variables
+
+### Process Management
+**⚠️ CRITICAL: Never Kill All Node Processes**
+- **NEVER** run `taskkill /f /im node.exe` - this kills ALL Node.js processes on the system
+- **ALWAYS** find the specific process by port first, then kill by PID
+- **Correct workflow**:
+  ```bash
+  # Step 1: Find process by port
+  netstat -ano | findstr :8080    # Frontend port
+  netstat -ano | findstr :8081    # Backend port
+
+  # Step 2: Kill specific process by PID (from rightmost column)
+  taskkill /f /pid <PID_NUMBER>
+
+  # Example:
+  # netstat shows: TCP 0.0.0.0:8081 LISTENING 12345
+  # Kill it: taskkill /f /pid 12345
+  ```
+- **Why this matters**: Killing all node.exe processes can terminate:
+  - Other development servers
+  - Background Node.js services
+  - IDE extensions and tools
+  - Other unrelated Node.js applications
+
 ## Current Development Status
 
 ### ✅ Recently Completed Features
@@ -391,17 +430,20 @@ frontend/src/
 
 ### Emergency Commands
 ```bash
-# Kill all node processes if stuck
-tasklist | findstr node
-taskkill /f /im node.exe
+# Find and kill specific process by port (NEVER kill all node.exe!)
+netstat -ano | findstr :8080    # Find frontend process
+netstat -ano | findstr :8081    # Find backend process
+taskkill /f /pid <PID>          # Kill by specific PID only
 
 # Reset development environment
 npm install
 rm -rf node_modules package-lock.json
 npm install
 
-# Database reset
-cd backend-nestjs && npm run migration:drop && npm run migration:run
+# Database operations (connects to 192.168.1.101:5433)
+cd backend-nestjs && npm run seed                    # Seed data
+cd backend-nestjs && npm run typeorm migration:run   # Run migrations
+cd backend-nestjs && npm run typeorm migration:revert # Revert last migration
 ```
 
 This guide should help future AI sessions understand the current state and continue development effectively.
