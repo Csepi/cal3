@@ -33,17 +33,34 @@ export class AutomationSchedulerService implements OnModuleInit {
   @Cron(CronExpression.EVERY_MINUTE)
   async checkTimeBasedTriggers() {
     try {
-      // Get all enabled time-based rules
-      const rules = await this.ruleRepository.find({
-        where: [
-          { isEnabled: true, triggerType: TriggerType.EVENT_STARTS_IN },
-          { isEnabled: true, triggerType: TriggerType.EVENT_ENDS_IN },
-          { isEnabled: true, triggerType: TriggerType.SCHEDULED_TIME },
-        ],
-        relations: ['conditions', 'actions'],
-      });
+      // Get all enabled time-based rules with retry logic for connection errors
+      let rules;
+      let retryCount = 0;
+      const maxRetries = 3;
 
-      if (rules.length === 0) {
+      while (retryCount < maxRetries) {
+        try {
+          rules = await this.ruleRepository.find({
+            where: [
+              { isEnabled: true, triggerType: TriggerType.EVENT_STARTS_IN },
+              { isEnabled: true, triggerType: TriggerType.EVENT_ENDS_IN },
+              { isEnabled: true, triggerType: TriggerType.SCHEDULED_TIME },
+            ],
+            relations: ['conditions', 'actions'],
+          });
+          break; // Success, exit retry loop
+        } catch (dbError) {
+          retryCount++;
+          if (retryCount >= maxRetries) {
+            throw dbError; // Rethrow after max retries
+          }
+          // Wait before retry (exponential backoff)
+          await new Promise(resolve => setTimeout(resolve, 1000 * retryCount));
+          this.logger.warn(`Database query retry ${retryCount}/${maxRetries}`);
+        }
+      }
+
+      if (!rules || rules.length === 0) {
         return;
       }
 
@@ -53,7 +70,13 @@ export class AutomationSchedulerService implements OnModuleInit {
         await this.processTimeBasedRule(rule);
       }
     } catch (error) {
-      this.logger.error(`Error in time-based trigger check: ${error.message}`, error.stack);
+      // Only log error if it's not a connection termination during idle time
+      if (error.message && !error.message.includes('Connection terminated unexpectedly')) {
+        this.logger.error(`Error in time-based trigger check: ${error.message}`, error.stack);
+      } else {
+        // Silent fail for connection termination - will reconnect on next run
+        this.logger.debug('Database connection temporarily unavailable, will retry on next cycle');
+      }
     }
   }
 
@@ -88,34 +111,43 @@ export class AutomationSchedulerService implements OnModuleInit {
    * triggerConfig: { minutes: 60 } // Fire 60 minutes before event starts
    */
   private async checkEventStartsIn(rule: AutomationRule): Promise<void> {
-    const minutes = rule.triggerConfig?.minutes || 60;
-    const now = new Date();
-    const targetTime = new Date(now.getTime() + minutes * 60 * 1000);
+    try {
+      const minutes = rule.triggerConfig?.minutes || 60;
+      const now = new Date();
+      const targetTime = new Date(now.getTime() + minutes * 60 * 1000);
 
-    // Find events starting around target time (within 1 minute window)
-    const windowStart = new Date(targetTime.getTime() - 30 * 1000); // 30 seconds before
-    const windowEnd = new Date(targetTime.getTime() + 30 * 1000); // 30 seconds after
+      // Find events starting around target time (within 1 minute window)
+      const windowStart = new Date(targetTime.getTime() - 30 * 1000); // 30 seconds before
+      const windowEnd = new Date(targetTime.getTime() + 30 * 1000); // 30 seconds after
 
-    const events = await this.eventRepository
-      .createQueryBuilder('event')
-      .innerJoin('event.calendar', 'calendar')
-      .where('calendar.userId = :userId', { userId: rule.createdById })
-      .andWhere('event.startDate = :date', { date: windowStart.toISOString().split('T')[0] })
-      .getMany();
+      const events = await this.eventRepository
+        .createQueryBuilder('event')
+        .innerJoin('event.calendar', 'calendar')
+        .where('calendar.userId = :userId', { userId: rule.createdById })
+        .andWhere('event.startDate = :date', { date: windowStart.toISOString().split('T')[0] })
+        .getMany();
 
-    // Filter events by time window
-    const matchingEvents = events.filter((event) => {
-      if (!event.startTime) return false;
+      // Filter events by time window
+      const matchingEvents = events.filter((event) => {
+        if (!event.startTime) return false;
 
-      const [hours, minutes] = event.startTime.split(':').map(Number);
-      const eventDateTime = new Date(event.startDate);
-      eventDateTime.setHours(hours, minutes, 0, 0);
+        const [hours, minutes] = event.startTime.split(':').map(Number);
+        const eventDateTime = new Date(event.startDate);
+        eventDateTime.setHours(hours, minutes, 0, 0);
 
-      return eventDateTime >= windowStart && eventDateTime <= windowEnd;
-    });
+        return eventDateTime >= windowStart && eventDateTime <= windowEnd;
+      });
 
-    for (const event of matchingEvents) {
-      await this.executeRuleForEvent(rule, event);
+      for (const event of matchingEvents) {
+        await this.executeRuleForEvent(rule, event);
+      }
+    } catch (error) {
+      // Gracefully handle database connection errors
+      if (error.message && error.message.includes('Connection terminated')) {
+        this.logger.debug(`Skipping rule ${rule.id} due to connection issue`);
+        return;
+      }
+      throw error;
     }
   }
 
@@ -124,32 +156,41 @@ export class AutomationSchedulerService implements OnModuleInit {
    * triggerConfig: { minutes: 15 } // Fire 15 minutes before event ends
    */
   private async checkEventEndsIn(rule: AutomationRule): Promise<void> {
-    const minutes = rule.triggerConfig?.minutes || 15;
-    const now = new Date();
-    const targetTime = new Date(now.getTime() + minutes * 60 * 1000);
+    try {
+      const minutes = rule.triggerConfig?.minutes || 15;
+      const now = new Date();
+      const targetTime = new Date(now.getTime() + minutes * 60 * 1000);
 
-    const windowStart = new Date(targetTime.getTime() - 30 * 1000);
-    const windowEnd = new Date(targetTime.getTime() + 30 * 1000);
+      const windowStart = new Date(targetTime.getTime() - 30 * 1000);
+      const windowEnd = new Date(targetTime.getTime() + 30 * 1000);
 
-    const events = await this.eventRepository
-      .createQueryBuilder('event')
-      .innerJoin('event.calendar', 'calendar')
-      .where('calendar.userId = :userId', { userId: rule.createdById })
-      .andWhere('event.endDate = :date', { date: windowStart.toISOString().split('T')[0] })
-      .getMany();
+      const events = await this.eventRepository
+        .createQueryBuilder('event')
+        .innerJoin('event.calendar', 'calendar')
+        .where('calendar.userId = :userId', { userId: rule.createdById })
+        .andWhere('event.endDate = :date', { date: windowStart.toISOString().split('T')[0] })
+        .getMany();
 
-    const matchingEvents = events.filter((event) => {
-      if (!event.endTime) return false;
+      const matchingEvents = events.filter((event) => {
+        if (!event.endTime) return false;
 
-      const [hours, minutes] = event.endTime.split(':').map(Number);
-      const eventDateTime = new Date(event.endDate);
-      eventDateTime.setHours(hours, minutes, 0, 0);
+        const [hours, minutes] = event.endTime.split(':').map(Number);
+        const eventDateTime = new Date(event.endDate);
+        eventDateTime.setHours(hours, minutes, 0, 0);
 
-      return eventDateTime >= windowStart && eventDateTime <= windowEnd;
-    });
+        return eventDateTime >= windowStart && eventDateTime <= windowEnd;
+      });
 
-    for (const event of matchingEvents) {
-      await this.executeRuleForEvent(rule, event);
+      for (const event of matchingEvents) {
+        await this.executeRuleForEvent(rule, event);
+      }
+    } catch (error) {
+      // Gracefully handle database connection errors
+      if (error.message && error.message.includes('Connection terminated')) {
+        this.logger.debug(`Skipping rule ${rule.id} due to connection issue`);
+        return;
+      }
+      throw error;
     }
   }
 
@@ -158,16 +199,25 @@ export class AutomationSchedulerService implements OnModuleInit {
    * triggerConfig: { cronExpression: '0 9 * * 1-5', targetField: 'all' }
    */
   private async checkScheduledTime(rule: AutomationRule): Promise<void> {
-    // For scheduled time triggers, we execute against all user events
-    // or specific events based on configuration
-    const events = await this.eventRepository
-      .createQueryBuilder('event')
-      .innerJoin('event.calendar', 'calendar')
-      .where('calendar.userId = :userId', { userId: rule.createdById })
-      .getMany();
+    try {
+      // For scheduled time triggers, we execute against all user events
+      // or specific events based on configuration
+      const events = await this.eventRepository
+        .createQueryBuilder('event')
+        .innerJoin('event.calendar', 'calendar')
+        .where('calendar.userId = :userId', { userId: rule.createdById })
+        .getMany();
 
-    for (const event of events) {
-      await this.executeRuleForEvent(rule, event);
+      for (const event of events) {
+        await this.executeRuleForEvent(rule, event);
+      }
+    } catch (error) {
+      // Gracefully handle database connection errors
+      if (error.message && error.message.includes('Connection terminated')) {
+        this.logger.debug(`Skipping rule ${rule.id} due to connection issue`);
+        return;
+      }
+      throw error;
     }
   }
 
