@@ -6,6 +6,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useAuth } from '@hooks/useAuth';
 import { AuthStack } from './AuthStack';
 import { MainTabs } from './MainTabs';
+import { CreateEventScreen } from '@screens/Events/CreateEventScreen';
 import type { RootStackParamList } from './types';
 
 /**
@@ -52,14 +53,26 @@ export const RootNavigator: React.FC = () => {
             }}
           />
         ) : (
-          // Main App (Tabs)
-          <Stack.Screen
-            name="Main"
-            component={MainTabs}
-            options={{
-              animationTypeForReplace: 'push',
-            }}
-          />
+          <>
+            {/* Main App (Tabs) */}
+            <Stack.Screen
+              name="Main"
+              component={MainTabs}
+              options={{
+                animationTypeForReplace: 'push',
+              }}
+            />
+            {/* Modal Screens */}
+            <Stack.Screen
+              name="CreateEvent"
+              component={CreateEventScreen}
+              options={{
+                presentation: 'modal',
+                headerShown: true,
+                title: 'Create Event',
+              }}
+            />
+          </>
         )}
       </Stack.Navigator>
     </NavigationContainer>
