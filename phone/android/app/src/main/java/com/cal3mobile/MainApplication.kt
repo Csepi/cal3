@@ -1,7 +1,6 @@
 package com.cal3mobile
 
 import android.app.Application
-import com.facebook.react.PackageList
 import com.facebook.react.ReactApplication
 import com.facebook.react.ReactHost
 import com.facebook.react.ReactNativeHost
@@ -11,14 +10,26 @@ import com.facebook.react.defaults.DefaultReactHost.getDefaultReactHost
 import com.facebook.react.defaults.DefaultReactNativeHost
 import com.facebook.soloader.SoLoader
 
+// Manually import React Native native module packages
+import com.oblador.vectoricons.VectorIconsPackage
+import com.th3rdwave.safeareacontext.SafeAreaContextPackage
+import com.swmansion.rnscreens.RNScreensPackage
+import com.reactnativecommunity.asyncstorage.AsyncStoragePackage
+import com.oblador.keychain.KeychainPackage
+
 class MainApplication : Application(), ReactApplication {
 
   override val reactNativeHost: ReactNativeHost =
       object : DefaultReactNativeHost(this) {
         override fun getPackages(): List<ReactPackage> =
-            PackageList(this).packages.apply {
-              // Packages that cannot be autolinked yet can be added manually here
-            }
+            listOf(
+              // Manually registered React Native native modules
+              VectorIconsPackage(),
+              SafeAreaContextPackage(),
+              RNScreensPackage(),
+              AsyncStoragePackage(),
+              KeychainPackage()
+            )
 
         override fun getJSMainModuleName(): String = "index"
 

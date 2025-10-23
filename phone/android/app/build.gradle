@@ -2,40 +2,41 @@ apply plugin: "com.android.application"
 apply plugin: "org.jetbrains.kotlin.android"
 apply plugin: "com.facebook.react"
 
+// Disable autolinking tasks immediately after plugin is applied
+project.afterEvaluate {
+    tasks.configureEach { task ->
+        if (task.name.contains('Autolinking') || task.name.contains('autolinking')) {
+            task.enabled = false
+        }
+    }
+}
+
 /**
- * This is the configuration block to customize your React Native Android app.
+ * React Native Configuration
+ * Configures the React Native build process, code generation, and autolinking
  */
 react {
-    /* Folders */
+    /* Project Structure */
     root = file("../../")
     reactNativeDir = file("../../node_modules/react-native")
     codegenDir = file("../../node_modules/@react-native/codegen")
 
-    /* Variants */
-    debuggableVariants = ["liteDebug", "prodDebug"]
-
-    /* Autolinking */
-    autolinkLibrariesWithApp()
+    /* Build Variants - Define which variants should be debuggable */
+    debuggableVariants = ["debug"]
 }
 
 /**
- * Set this to true to Run Proguard on Release builds to minify the Java bytecode.
+ * Build Configuration Variables
  */
-def enableProguardInReleaseBuilds = false
-
-/**
- * The preferred build flavor of JavaScriptCore (JSC)
- */
+def enableProguardInReleaseBuilds = true
+def enableSeparateBuildPerCPUArchitecture = false
 def jscFlavor = 'org.webkit:android-jsc:+'
 
 /**
- * Use Hermes engine instead of JSC
+ * Android Application Configuration
  */
-def hermesEnabled = true
-
 android {
     ndkVersion rootProject.ext.ndkVersion
-
     compileSdk rootProject.ext.compileSdkVersion
 
     namespace "com.cal3mobile"
@@ -46,8 +47,18 @@ android {
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
         versionName "0.1.0"
+
+        // MultiDex support for apps with 64K+ methods
+        multiDexEnabled true
+
+        // Vector drawable support for API < 21
+        vectorDrawables.useSupportLibrary = true
     }
 
+    /**
+     * Signing Configurations
+     * IMPORTANT: Never commit production keystores to version control
+     */
     signingConfigs {
         debug {
             storeFile file('debug.keystore')
@@ -55,32 +66,113 @@ android {
             keyAlias 'androiddebugkey'
             keyPassword 'android'
         }
+        // TODO: Add release signing config with production keystore
+        // release {
+        //     storeFile file('release.keystore')
+        //     storePassword System.getenv("KEYSTORE_PASSWORD")
+        //     keyAlias System.getenv("KEY_ALIAS")
+        //     keyPassword System.getenv("KEY_PASSWORD")
+        // }
     }
 
+    /**
+     * Build Types
+     * Define different build configurations for development and production
+     */
     buildTypes {
         debug {
             signingConfig signingConfigs.debug
+            applicationIdSuffix ".debug"
+            debuggable true
+            minifyEnabled false
+            shrinkResources false
         }
+
         release {
-            // Caution! In production, you need to generate your own keystore file.
-            // see https://reactnative.dev/docs/signed-apk-android.
-            signingConfig signingConfigs.debug
+            signingConfig signingConfigs.debug // TODO: Change to signingConfigs.release
             minifyEnabled enableProguardInReleaseBuilds
-            proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
+            shrinkResources enableProguardInReleaseBuilds
+            proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
+
+            // Ensure compatibility with production builds
+            debuggable false
+            jniDebuggable false
+            renderscriptDebuggable false
         }
+    }
+
+    /**
+     * Build Features
+     * Enable/disable specific Android build features
+     */
+    buildFeatures {
+        buildConfig true
+    }
+
+    /**
+     * Packaging Options
+     * Handle duplicate files and native libraries
+     */
+    packagingOptions {
+        // Exclude duplicate license files
+        pickFirst 'lib/x86/libc++_shared.so'
+        pickFirst 'lib/x86_64/libc++_shared.so'
+        pickFirst 'lib/armeabi-v7a/libc++_shared.so'
+        pickFirst 'lib/arm64-v8a/libc++_shared.so'
+    }
+
+    /**
+     * Compile Options
+     * Set Java version compatibility
+     */
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    /**
+     * Kotlin Options
+     * Configure Kotlin compiler settings
+     */
+    kotlinOptions {
+        jvmTarget = '17'
     }
 }
 
+/**
+ * Dependencies
+ * External libraries and React Native modules
+ */
 dependencies {
-    // The version of react-native is set by the React Native Gradle Plugin
+    // React Native - version managed by React Native Gradle Plugin
     implementation("com.facebook.react:react-android")
 
-    // Flipper is optional - commented out for now
-    // debugImplementation("com.facebook.flipper:flipper:${FLIPPER_VERSION}")
-
-    if (hermesEnabled) {
+    // Hermes JavaScript Engine - high-performance JS engine
+    if (hermesEnabled.toBoolean()) {
         implementation("com.facebook.react:hermes-android")
     } else {
         implementation jscFlavor
     }
+
+    // AndroidX Core Libraries
+    implementation 'androidx.core:core-ktx:1.12.0'
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+
+    // MultiDex support for 64K+ methods
+    implementation 'androidx.multidex:multidex:2.0.1'
+
+    // React Native Native Modules - manually linked
+    implementation project(':react-native-vector-icons')
+    implementation project(':react-native-safe-area-context')
+    implementation project(':react-native-screens')
+    implementation project(':react-native-async-storage_async-storage')
+    implementation project(':react-native-keychain')
 }
+
+/**
+ * Task Configuration
+ * Custom build tasks and optimizations
+ */
+
+// Autolinking tasks are disabled at the top of this file
+// We're using manual linking for all React Native modules

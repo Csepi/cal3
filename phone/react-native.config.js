@@ -1,11 +1,10 @@
 module.exports = {
   project: {
-    ios: null,
+    ios: {},
     android: {
       sourceDir: './android',
       appName: 'app',
       packageName: 'com.cal3mobile',
-      manifestPath: './android/app/src/main/AndroidManifest.xml',
     },
   },
 };

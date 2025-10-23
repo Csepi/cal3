@@ -35,3 +35,8 @@ allprojects {
         maven { url 'https://www.jitpack.io' }
     }
 }
+
+// Clean task to remove build artifacts
+tasks.register('clean', Delete) {
+    delete rootProject.buildDir
+}
