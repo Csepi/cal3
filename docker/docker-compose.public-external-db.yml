@@ -1,0 +1,128 @@
+version: '3.9'
+
+# ===========================================
+# Docker Compose for Public Access with External Database
+# ===========================================
+# Use this for internet-accessible deployment with external database
+# - Frontend and Backend exposed to internet (0.0.0.0)
+# - Database accessed via local network (not exposed)
+# - Ideal for hosting on a server with separate database host
+
+services:
+  # Backend API (NestJS) - Publicly accessible
+  backend:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.backend
+      args:
+        NODE_ENV: production
+    container_name: cal3-backend
+    restart: unless-stopped
+    env_file:
+      - ./config/.env
+    environment:
+      NODE_ENV: production
+      # Smart port/URL configuration
+      BASE_URL: ${BASE_URL:-http://localhost}
+      PORT: ${BACKEND_PORT:-8081}
+      BACKEND_PORT: ${BACKEND_PORT:-8081}
+      FRONTEND_PORT: ${FRONTEND_PORT:-8080}
+      # External Database Configuration (local network access)
+      DB_TYPE: postgres
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT:-5432}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      # SSL Settings (configure based on your database)
+      DB_SSL: ${DB_SSL:-false}
+      DB_SSL_REJECT_UNAUTHORIZED: ${DB_SSL_REJECT_UNAUTHORIZED:-false}
+      DB_SYNCHRONIZE: ${DB_SYNCHRONIZE:-false}
+      DB_LOGGING: ${DB_LOGGING:-false}
+      # Connection Pool (optional)
+      DB_POOL_MAX: ${DB_POOL_MAX:-10}
+      DB_POOL_MIN: ${DB_POOL_MIN:-2}
+      DB_IDLE_TIMEOUT: ${DB_IDLE_TIMEOUT:-30000}
+      DB_CONNECTION_TIMEOUT: ${DB_CONNECTION_TIMEOUT:-10000}
+      # JWT & OAuth
+      JWT_SECRET: ${JWT_SECRET}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      GOOGLE_CALLBACK_URL: ${GOOGLE_CALLBACK_URL}
+      MICROSOFT_CLIENT_ID: ${MICROSOFT_CLIENT_ID}
+      MICROSOFT_CLIENT_SECRET: ${MICROSOFT_CLIENT_SECRET}
+      MICROSOFT_CALLBACK_URL: ${MICROSOFT_CALLBACK_URL}
+      MICROSOFT_TENANT_ID: ${MICROSOFT_TENANT_ID:-common}
+    ports:
+      # IMPORTANT: Exposed to all interfaces (0.0.0.0) for internet access
+      - "0.0.0.0:${BACKEND_PORT:-8081}:${BACKEND_PORT:-8081}"
+    networks:
+      - cal3-network
+    healthcheck:
+      test: ["CMD", "sh", "-c", "node -e \"require('http').get('http://localhost:' + (process.env.BACKEND_PORT || process.env.PORT || '8081') + '/api/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})\""]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 256M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Frontend (React + Nginx) - Publicly accessible
+  frontend:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.frontend
+      args:
+        BASE_URL: ${BASE_URL:-http://localhost}
+        BACKEND_PORT: ${BACKEND_PORT:-8081}
+    container_name: cal3-frontend
+    restart: unless-stopped
+    env_file:
+      - ./config/.env
+    environment:
+      BASE_URL: ${BASE_URL:-http://localhost}
+      BACKEND_PORT: ${BACKEND_PORT:-8081}
+      NODE_ENV: production
+    ports:
+      # IMPORTANT: Exposed to all interfaces (0.0.0.0) for internet access
+      - "0.0.0.0:${FRONTEND_PORT:-8080}:80"
+    networks:
+      - cal3-network
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 128M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  cal3-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16
+
+# Note: No postgres service - using external database
+# Note: No postgres_data volume - data persisted on external database host
