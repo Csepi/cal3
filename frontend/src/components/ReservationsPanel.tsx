@@ -743,19 +743,21 @@ const ReservationsPanel: React.FC<ReservationsPanelProps> = ({ themeColor = '#3b
         <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-r from-indigo-300 to-purple-300 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse animation-delay-2000"></div>
       </div>
 
-      <div className="relative z-10 p-8">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-5xl font-thin mb-4 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent">
-            🎯 Reservations Management
-          </h1>
-          <p className="text-gray-700 text-xl font-light">
-            Manage your organization's resources and bookings
-          </p>
+      {/* Header */}
+      <header className="relative z-10 backdrop-blur-sm bg-white/60 border-b border-blue-200 text-gray-800 py-6">
+        <div className="container mx-auto px-4">
+          <div className="flex items-center gap-4">
+            <h1 className="text-3xl font-semibold text-blue-900">
+              🎯 Reservations Management
+            </h1>
+          </div>
         </div>
+      </header>
+
+      <main className="relative z-10 max-w-7xl mx-auto p-6 mt-6">
 
         {/* Organization Selector */}
-        <div className="mb-8 bg-white/80 backdrop-blur-md rounded-3xl p-6 border border-blue-200 shadow-lg">
+        <div className="mb-6 backdrop-blur-md bg-white/70 border border-blue-200 rounded-3xl p-6 shadow-xl hover:bg-white/80 transition-all duration-300">
           <h2 className="text-lg font-semibold text-gray-800 mb-4">📋 Select Organization</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {organizations.map((org) => (
@@ -816,7 +818,7 @@ const ReservationsPanel: React.FC<ReservationsPanelProps> = ({ themeColor = '#3b
             </div>
 
             {/* Content Area */}
-            <div className="min-h-96 bg-white/80 backdrop-blur-md border border-blue-200 rounded-3xl p-8 shadow-lg">
+            <div className="min-h-96 backdrop-blur-md bg-white/70 border border-blue-200 rounded-3xl p-8 shadow-xl hover:bg-white/80 transition-all duration-300">
               {error && (
                 <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700">
                   <strong>Error:</strong> {error}
@@ -1095,7 +1097,7 @@ const ReservationsPanel: React.FC<ReservationsPanelProps> = ({ themeColor = '#3b
             </div>
           </>
         )}
-      </div>
+      </main>
 
       {/* Add/Edit Resource Type Modal */}
       {resourceTypeModal.isOpen && (

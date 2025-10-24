@@ -144,143 +144,160 @@ export function AutomationPanel({ themeColor = '#3b82f6' }: AutomationPanelProps
   }
 
   return (
-    <div className="automation-panel h-full flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-blue-100 to-blue-200">
+      {/* Animated Background */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-r from-blue-300 to-indigo-300 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-r from-indigo-300 to-purple-300 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse animation-delay-2000"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-60 h-60 bg-gradient-to-r from-purple-300 to-blue-300 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse animation-delay-4000"></div>
+      </div>
+
       {/* Header */}
-      <div className="p-6 border-b border-gray-200">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h2 className="text-2xl font-bold text-gray-900">Automation Rules</h2>
-            <p className="text-sm text-gray-600 mt-1">
-              Create rules to automate your calendar workflows
-            </p>
+      <header className="relative z-10 backdrop-blur-sm bg-white/60 border-b border-blue-200 text-gray-800 py-6">
+        <div className="container mx-auto px-4 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <h1 className="text-3xl font-semibold text-blue-900">
+              🤖 Automation Rules
+            </h1>
           </div>
           <button
             onClick={handleCreateRule}
             style={{ backgroundColor: themeColor }}
-            className="px-4 py-2 text-white rounded-lg hover:opacity-90 transition-opacity flex items-center gap-2"
+            className="px-4 py-2 text-white rounded-xl font-medium transition-all duration-300 hover:scale-105 shadow-md flex items-center gap-2"
           >
             <span className="text-lg">+</span>
             <span>New Rule</span>
           </button>
         </div>
+      </header>
 
-        {/* Filters */}
-        <div className="flex flex-col sm:flex-row gap-4">
-          {/* Search */}
-          <div className="flex-1">
-            <input
-              type="text"
-              value={searchValue}
-              onChange={(e) => handleSearch(e.target.value)}
-              placeholder="Search rules by name or description..."
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+      <main className="relative z-10 max-w-7xl mx-auto p-6 mt-6">
+        <div className="backdrop-blur-md bg-white/70 border border-blue-200 rounded-3xl shadow-xl hover:bg-white/80 transition-all duration-300">
+          {/* Filter Section */}
+          <div className="p-6 border-b border-gray-200">
+
+            {/* Filters */}
+            <div className="flex flex-col sm:flex-row gap-4">
+              {/* Search */}
+              <div className="flex-1">
+                <input
+                  type="text"
+                  value={searchValue}
+                  onChange={(e) => handleSearch(e.target.value)}
+                  placeholder="Search rules by name or description..."
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              {/* Status Filter */}
+              <div className="flex gap-2">
+                <button
+                  onClick={() => handleStatusFilterChange('all')}
+                  className={`px-4 py-2 rounded-lg transition-colors ${
+                    filters.statusFilter === 'all'
+                      ? 'bg-blue-500 text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  All
+                </button>
+                <button
+                  onClick={() => handleStatusFilterChange('enabled')}
+                  className={`px-4 py-2 rounded-lg transition-colors ${
+                    filters.statusFilter === 'enabled'
+                      ? 'bg-green-500 text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  Enabled
+                </button>
+                <button
+                  onClick={() => handleStatusFilterChange('disabled')}
+                  className={`px-4 py-2 rounded-lg transition-colors ${
+                    filters.statusFilter === 'disabled'
+                      ? 'bg-gray-500 text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  Disabled
+                </button>
+              </div>
+            </div>
+
+            {/* Stats */}
+            <div className="mt-4 flex gap-4 text-sm text-gray-600">
+              <span>
+                Total: <strong>{pagination.total}</strong>
+              </span>
+              <span>
+                Enabled: <strong>{rules.filter((r) => r.isEnabled).length}</strong>
+              </span>
+              <span>
+                Disabled: <strong>{rules.filter((r) => !r.isEnabled).length}</strong>
+              </span>
+            </div>
+          </div>
+
+          {/* Error Alert */}
+          {error && (
+            <div className="p-6 pt-0">
+              <div className="p-4 bg-red-50 border border-red-200 rounded-lg flex items-start justify-between">
+                <div className="flex items-start gap-2">
+                  <span className="text-red-500">⚠️</span>
+                  <div>
+                    <p className="text-sm font-medium text-red-900">Error</p>
+                    <p className="text-sm text-red-700">{error}</p>
+                  </div>
+                </div>
+                <button
+                  onClick={clearError}
+                  className="text-red-500 hover:text-red-700"
+                >
+                  ×
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Rules List */}
+          <div className="p-6">
+            <AutomationList
+              rules={rules}
+              isLoading={isLoading}
+              themeColor={themeColor}
+              onView={(id) => handleViewRule(id)}
+              onEdit={(id) => handleEditRule(id)}
+              onDelete={(id) => handleDeleteRule(id)}
+              onToggle={(id, enabled) => handleToggleRule(id, enabled)}
             />
           </div>
 
-          {/* Status Filter */}
-          <div className="flex gap-2">
-            <button
-              onClick={() => handleStatusFilterChange('all')}
-              className={`px-4 py-2 rounded-lg transition-colors ${
-                filters.statusFilter === 'all'
-                  ? 'bg-blue-500 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
-            >
-              All
-            </button>
-            <button
-              onClick={() => handleStatusFilterChange('enabled')}
-              className={`px-4 py-2 rounded-lg transition-colors ${
-                filters.statusFilter === 'enabled'
-                  ? 'bg-green-500 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
-            >
-              Enabled
-            </button>
-            <button
-              onClick={() => handleStatusFilterChange('disabled')}
-              className={`px-4 py-2 rounded-lg transition-colors ${
-                filters.statusFilter === 'disabled'
-                  ? 'bg-gray-500 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
-            >
-              Disabled
-            </button>
-          </div>
-        </div>
-
-        {/* Stats */}
-        <div className="mt-4 flex gap-4 text-sm text-gray-600">
-          <span>
-            Total: <strong>{pagination.total}</strong>
-          </span>
-          <span>
-            Enabled: <strong>{rules.filter((r) => r.isEnabled).length}</strong>
-          </span>
-          <span>
-            Disabled: <strong>{rules.filter((r) => !r.isEnabled).length}</strong>
-          </span>
-        </div>
-      </div>
-
-      {/* Error Alert */}
-      {error && (
-        <div className="mx-6 mt-4 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start justify-between">
-          <div className="flex items-start gap-2">
-            <span className="text-red-500">⚠️</span>
-            <div>
-              <p className="text-sm font-medium text-red-900">Error</p>
-              <p className="text-sm text-red-700">{error}</p>
+          {/* Pagination */}
+          {pagination.totalPages > 1 && (
+            <div className="p-6 pt-0 border-t border-gray-200 flex items-center justify-between">
+              <div className="text-sm text-gray-600">
+                Page {pagination.page} of {pagination.totalPages}
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => handlePageChange(pagination.page - 1)}
+                  disabled={pagination.page === 1}
+                  className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Previous
+                </button>
+                <button
+                  onClick={() => handlePageChange(pagination.page + 1)}
+                  disabled={pagination.page === pagination.totalPages}
+                  className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Next
+                </button>
+              </div>
             </div>
-          </div>
-          <button
-            onClick={clearError}
-            className="text-red-500 hover:text-red-700"
-          >
-            ×
-          </button>
+          )}
         </div>
-      )}
-
-      {/* Rules List */}
-      <div className="flex-1 overflow-y-auto">
-        <AutomationList
-          rules={rules}
-          isLoading={isLoading}
-          themeColor={themeColor}
-          onView={(id) => handleViewRule(id)}
-          onEdit={(id) => handleEditRule(id)}
-          onDelete={(id) => handleDeleteRule(id)}
-          onToggle={(id, enabled) => handleToggleRule(id, enabled)}
-        />
-      </div>
-      {/* Pagination */}
-      {pagination.totalPages > 1 && (
-        <div className="p-4 border-t border-gray-200 flex items-center justify-between">
-          <div className="text-sm text-gray-600">
-            Page {pagination.page} of {pagination.totalPages}
-          </div>
-          <div className="flex gap-2">
-            <button
-              onClick={() => handlePageChange(pagination.page - 1)}
-              disabled={pagination.page === 1}
-              className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Previous
-            </button>
-            <button
-              onClick={() => handlePageChange(pagination.page + 1)}
-              disabled={pagination.page === pagination.totalPages}
-              className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Next
-            </button>
-          </div>
-        </div>
-      )}
+      </main>
 
       {/* Create/Edit Modal */}
       {modalOpen && (
