@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import type { SystemInfo } from '../../types/SystemInfo';
 import { loadAdminData } from './adminApiService';
+import ErrorBox, { ErrorDetails } from '../common/ErrorBox';
+import { extractErrorDetails } from '../../utils/errorHandler';
 
 const SystemInfoPage: React.FC = () => {
   const [systemInfo, setSystemInfo] = useState<SystemInfo | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<ErrorDetails | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
@@ -16,7 +18,7 @@ const SystemInfoPage: React.FC = () => {
         const data = await loadAdminData<SystemInfo>('/admin/system-info');
         setSystemInfo(data);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load system information');
+        setError(extractErrorDetails(err));
       } finally {
         setLoading(false);
       }
@@ -57,15 +59,16 @@ const SystemInfoPage: React.FC = () => {
 
   if (error) {
     return (
-      <div className="bg-red-50 border border-red-200 rounded-lg p-6">
-        <div className="flex items-center">
-          <svg className="w-6 h-6 text-red-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-          <div>
-            <h3 className="text-lg font-semibold text-red-800">Error Loading System Information</h3>
-            <p className="text-red-600">{error}</p>
-          </div>
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-blue-100 to-blue-200 p-6">
+        <div className="max-w-4xl mx-auto">
+          <ErrorBox
+            error={error}
+            title="Failed to Load System Information"
+            onClose={() => {
+              setError(null);
+              setRefreshKey(prev => prev + 1);
+            }}
+          />
         </div>
       </div>
     );

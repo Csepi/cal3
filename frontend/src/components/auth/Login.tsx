@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { apiService } from '../../services/api';
 import { useFeatureFlags } from '../../hooks/useFeatureFlags';
+import ErrorBox, { ErrorDetails } from '../common/ErrorBox';
+import { extractErrorDetails } from '../../utils/errorHandler';
 
 interface LoginProps {
   onLogin: (username: string, token?: string, role?: string, userData?: any) => void;
@@ -13,7 +15,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
   const [password, setPassword] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
-  const [error, setError] = useState('');
+  const [error, setError] = useState<ErrorDetails | null>(null);
 
   // Feature flags to control OAuth visibility
   const { flags: featureFlags } = useFeatureFlags();
@@ -83,13 +85,17 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError(null);
 
     if (isRegistering) {
       // Registration validation
       const validationErrors = validateRegistration();
       if (validationErrors.length > 0) {
-        setError(`Please fix the following errors:\n${validationErrors.join('\n')}`);
+        setError({
+          message: `Please fix the following errors:\n${validationErrors.join('\n')}`,
+          timestamp: new Date().toISOString(),
+          validationErrors,
+        });
         return;
       }
 
@@ -108,13 +114,17 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
         }
         onLogin(result.user.username, result.token, result.user.role, result.user);
       } catch (err: any) {
-        setError(err.message || 'Registration failed');
+        setError(extractErrorDetails(err));
       }
     } else {
       // Login validation
       const validationErrors = validateLogin();
       if (validationErrors.length > 0) {
-        setError(`Please fix the following errors:\n${validationErrors.join('\n')}`);
+        setError({
+          message: `Please fix the following errors:\n${validationErrors.join('\n')}`,
+          timestamp: new Date().toISOString(),
+          validationErrors,
+        });
         return;
       }
 
@@ -131,7 +141,10 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
         if (password === 'demo123') {
           onLogin(username);
         } else {
-          setError(err.message || 'Connection failed. Use password: demo123 for demo mode');
+          const errorDetails = extractErrorDetails(err);
+          errorDetails.demoModeAvailable = true;
+          errorDetails.message = errorDetails.message + '\n\nTip: Use password "demo123" for demo mode';
+          setError(errorDetails);
         }
       }
     }
@@ -250,28 +263,11 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
           </div>
 
           {error && (
-            <div className="bg-red-50 border border-red-300 rounded-2xl p-4">
-              <div className="flex items-start space-x-3">
-                <div className="flex-shrink-0">
-                  <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                  </svg>
-                </div>
-                <div className="flex-1">
-                  <h3 className="text-sm font-medium text-red-800">Please fix the following errors:</h3>
-                  <div className="mt-2 text-sm text-red-700">
-                    <div className="whitespace-pre-line">
-                      {error.split('\n').slice(1).map((errorLine, index) => (
-                        <div key={index} className="flex items-start space-x-2">
-                          <span className="text-red-500">•</span>
-                          <span>{errorLine}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <ErrorBox
+              error={error}
+              title={isRegistering ? 'Registration Error' : 'Login Error'}
+              onClose={() => setError(null)}
+            />
           )}
 
           <button
