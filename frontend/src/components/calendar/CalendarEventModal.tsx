@@ -267,6 +267,7 @@ export const CalendarEventModal: React.FC<CalendarEventModalProps> = ({
       onClose={handleClose}
       title={editingEvent ? 'Edit Event' : 'Create New Event'}
       size="lg"
+      fullScreenOnMobile={true}
     >
       <div className="space-y-6">
         {/* Error Message */}

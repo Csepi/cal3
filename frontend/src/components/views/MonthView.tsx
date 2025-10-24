@@ -149,9 +149,11 @@ const MonthView: React.FC<MonthViewProps> = ({
           {reorderedDayNames.map((day, index) => (
             <div
               key={`day-header-${index}`}
-              className="p-4 text-center text-sm font-medium text-gray-600 bg-gray-50 border-r border-gray-200 last:border-r-0"
+              className="p-2 md:p-4 text-center text-xs md:text-sm font-medium text-gray-600 bg-gray-50 border-r border-gray-200 last:border-r-0"
             >
-              {day}
+              {/* Show abbreviated day names on mobile */}
+              <span className="md:hidden">{day.slice(0, 1)}</span>
+              <span className="hidden md:inline">{day}</span>
             </div>
           ))}
         </div>
@@ -169,16 +171,16 @@ const MonthView: React.FC<MonthViewProps> = ({
             return (
               <div
                 key={dateKey}
-                className={`border-r border-b border-gray-200 last:border-r-0 p-2 cursor-pointer hover:bg-gray-50 transition-colors ${
+                className={`border-r border-b border-gray-200 last:border-r-0 p-1 md:p-2 cursor-pointer hover:bg-gray-50 transition-colors min-h-[60px] md:min-h-[100px] ${
                   isSelectedDate(date) ? 'bg-blue-100 ring-2 ring-blue-300' : ''
                 } ${isToday(date) ? 'bg-blue-50' : ''}`}
                 onClick={() => onDateClick(date)}
               >
                 {/* Date Number */}
                 <div className="flex justify-between items-start mb-1">
-                  <span className={`text-sm font-medium ${
+                  <span className={`text-xs md:text-sm font-medium ${
                     isToday(date)
-                      ? 'bg-blue-500 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs'
+                      ? 'bg-blue-500 text-white w-5 h-5 md:w-6 md:h-6 rounded-full flex items-center justify-center text-xs'
                       : isCurrentMonth(date)
                       ? 'text-gray-900'
                       : 'text-gray-400'
@@ -186,16 +188,16 @@ const MonthView: React.FC<MonthViewProps> = ({
                     {!isNaN(date.getTime()) ? date.getDate() : '?'}
                   </span>
 
-                  {/* Event count indicator */}
+                  {/* Event count indicator - always show on mobile */}
                   {dayEvents.length > 0 && (
-                    <span className="text-xs bg-gray-200 text-gray-600 px-1 rounded-full">
+                    <span className="text-xs bg-gray-200 text-gray-600 px-1.5 md:px-1 rounded-full font-medium">
                       {dayEvents.length}
                     </span>
                   )}
                 </div>
 
-                {/* Events */}
-                <div className="space-y-1">
+                {/* Events - hide on mobile, show only count */}
+                <div className="space-y-1 hidden md:block">
                   {dayEvents.slice(0, maxDisplayEvents).map(event => {
                     const eventColor = event.color || themeColor;
                     const calendarColor = event.calendar?.color || themeColor;
@@ -272,9 +274,9 @@ const MonthView: React.FC<MonthViewProps> = ({
         </div>
       </div>
 
-      {/* Selected Date Events Panel */}
+      {/* Selected Date Events Panel - Hide on mobile */}
       {selectedDate && (
-        <div className="w-80 border-l border-gray-200 bg-gray-50 flex flex-col">
+        <div className="hidden md:flex w-80 border-l border-gray-200 bg-gray-50 flex-col">
           {/* Panel Header */}
           <div className="p-4 border-b border-gray-200 bg-white">
             <h3 className="text-lg font-semibold text-gray-800">

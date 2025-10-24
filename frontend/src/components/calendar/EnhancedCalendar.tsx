@@ -22,6 +22,10 @@ import { ConfirmationDialog } from '../dialogs';
 import { Button } from '../ui';
 import MonthView from '../views/MonthView';
 import WeekView from '../views/WeekView';
+import { MobileDrawer } from '../mobile/MobileDrawer';
+import { BottomSheet } from '../mobile/BottomSheet';
+import { MobileDayView } from '../mobile/MobileDayView';
+import { useScreenSize } from '../../hooks/useScreenSize';
 
 // Types for enhanced calendar
 interface ResourceType {
@@ -96,6 +100,8 @@ function useCalendarState(themeColor: string) {
     calendarModal: false,
     confirmDialog: false,
     recurrenceDialog: false,
+    mobileDrawer: false,
+    mobileBottomSheet: false,
   });
 
   const [modalData, setModalData] = useState({
@@ -356,6 +362,8 @@ interface CalendarHeaderProps {
   themeConfig: ThemeConfig;
   onCreateEvent: () => void;
   onCreateCalendar: () => void;
+  onToggleMobileDrawer?: () => void;
+  isMobile?: boolean;
 }
 
 const CalendarHeader: React.FC<CalendarHeaderProps> = ({
@@ -364,6 +372,8 @@ const CalendarHeader: React.FC<CalendarHeaderProps> = ({
   themeConfig,
   onCreateEvent,
   onCreateCalendar,
+  onToggleMobileDrawer,
+  isMobile = false,
 }) => {
   const formatTitle = useMemo(() => {
     const { currentDate, currentView } = state;
@@ -392,10 +402,23 @@ const CalendarHeader: React.FC<CalendarHeaderProps> = ({
 
   return (
     <header className={`bg-gradient-to-r ${themeConfig.gradient.header} text-white shadow-lg rounded-t-3xl`}>
-      <div className="px-8 py-6">
+      <div className="px-4 md:px-8 py-4 md:py-6">
         <div className="flex items-center justify-between">
+          {/* Mobile Menu Button */}
+          {isMobile && onToggleMobileDrawer && (
+            <button
+              onClick={onToggleMobileDrawer}
+              className="p-2 mr-2 text-white hover:bg-white/30 rounded-lg transition-colors duration-200"
+              aria-label="Open menu"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+          )}
+
           {/* Navigation */}
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2 md:space-x-4">
             <div className="flex items-center space-x-2">
               <Button
                 variant="ghost"
@@ -431,11 +454,11 @@ const CalendarHeader: React.FC<CalendarHeaderProps> = ({
               Today
             </Button>
 
-            <h1 className="text-2xl font-bold ml-4">{formatTitle}</h1>
+            <h1 className="text-lg md:text-2xl font-bold ml-2 md:ml-4 truncate">{formatTitle}</h1>
           </div>
 
           {/* Actions */}
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2 md:space-x-4">
             {/* View Toggle */}
             <div className="flex items-center bg-white/20 rounded-lg p-1 backdrop-blur-sm border border-white/30">
               <Button
@@ -477,24 +500,24 @@ const CalendarHeader: React.FC<CalendarHeaderProps> = ({
                   </svg>
                 }
               >
-                <span className="hidden sm:inline">New Event</span>
-                <span className="sm:hidden">Event</span>
+                <span className="hidden md:inline">New Event</span>
               </Button>
 
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={onCreateCalendar}
-                className="bg-white/20 text-white hover:bg-white/30 border border-white/30 rounded-lg backdrop-blur-sm shadow-sm transition-all duration-200 hover:shadow-md font-medium"
-                icon={
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                }
-              >
-                <span className="hidden sm:inline">New Calendar</span>
-                <span className="sm:hidden">Calendar</span>
-              </Button>
+              {!isMobile && (
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={onCreateCalendar}
+                  className="bg-white/20 text-white hover:bg-white/30 border border-white/30 rounded-lg backdrop-blur-sm shadow-sm transition-all duration-200 hover:shadow-md font-medium"
+                  icon={
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                  }
+                >
+                  <span className="hidden md:inline">New Calendar</span>
+                </Button>
+              )}
             </div>
           </div>
         </div>
@@ -509,9 +532,11 @@ interface CalendarGridProps {
   actions: CalendarActions;
   themeConfig: ThemeConfig;
   timeFormat: string;
+  isMobile?: boolean;
+  onShowDayDetails?: (date: Date) => void;
 }
 
-const CalendarGrid: React.FC<CalendarGridProps> = ({ state, actions, themeConfig, timeFormat }) => {
+const CalendarGrid: React.FC<CalendarGridProps> = ({ state, actions, themeConfig, timeFormat, isMobile = false, onShowDayDetails }) => {
   const { currentDate, currentView, events, selectedCalendars, reservations, selectedResourceTypes, organizations } = state;
 
   // Filter reservations based on selected resource types
@@ -567,7 +592,11 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({ state, actions, themeConfig
 
   const handleDateClick = useCallback((date: Date) => {
     actions.setSelectedDate(date);
-  }, [actions]);
+    // On mobile, show bottom sheet with day details
+    if (isMobile && onShowDayDetails) {
+      onShowDayDetails(date);
+    }
+  }, [actions, isMobile, onShowDayDetails]);
 
   const handleEventClick = useCallback((event: Event) => {
     actions.editEvent(event);
@@ -577,6 +606,24 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({ state, actions, themeConfig
     // Create event with time range
     actions.createEvent(date);
   }, [actions]);
+
+  // On mobile in week view, show single day view
+  if (isMobile && currentView === 'week') {
+    return (
+      <MobileDayView
+        date={currentDate}
+        events={filteredEvents}
+        onEventClick={handleEventClick}
+        onTimeSlotClick={(hour) => {
+          const eventDate = new Date(currentDate);
+          eventDate.setHours(hour, 0, 0, 0);
+          actions.createEvent(eventDate);
+        }}
+        themeColor={themeConfig.primary}
+        timeFormat={timeFormat === '12h' ? '12' : '24'}
+      />
+    );
+  }
 
   if (currentView === 'month') {
     return (
@@ -891,6 +938,9 @@ export const EnhancedCalendar: React.FC<EnhancedCalendarProps> = ({
     loadData,
   } = useCalendarState(themeColor);
 
+  // Mobile detection
+  const { isMobile } = useScreenSize();
+
   // Event handlers
   const handleSaveEvent = useCallback(async (eventData: CreateEventRequest | UpdateEventRequest) => {
     try {
@@ -1016,22 +1066,50 @@ export const EnhancedCalendar: React.FC<EnhancedCalendarProps> = ({
           setModalData(prev => ({ ...prev, editingCalendar: null }));
           setModals(prev => ({ ...prev, calendarModal: true }));
         }}
+        onToggleMobileDrawer={() => setModals(prev => ({ ...prev, mobileDrawer: true }))}
+        isMobile={isMobile}
       />
 
       {/* Main Content */}
       <div className="flex">
-        {/* Sidebar */}
-        <CalendarSidebar
-          state={state}
-          actions={actions}
-          themeConfig={themeConfig}
-          onCreateCalendar={() => {
-            setModalData(prev => ({ ...prev, editingCalendar: null }));
-            setModals(prev => ({ ...prev, calendarModal: true }));
-          }}
-          onEditCalendar={handleEditCalendar}
-          onDeleteCalendar={handleDeleteCalendar}
-        />
+        {/* Sidebar - Hidden on mobile */}
+        {!isMobile && (
+          <CalendarSidebar
+            state={state}
+            actions={actions}
+            themeConfig={themeConfig}
+            onCreateCalendar={() => {
+              setModalData(prev => ({ ...prev, editingCalendar: null }));
+              setModals(prev => ({ ...prev, calendarModal: true }));
+            }}
+            onEditCalendar={handleEditCalendar}
+            onDeleteCalendar={handleDeleteCalendar}
+          />
+        )}
+
+        {/* Mobile Drawer */}
+        {isMobile && (
+          <MobileDrawer
+            isOpen={modals.mobileDrawer}
+            onClose={() => setModals(prev => ({ ...prev, mobileDrawer: false }))}
+            title="Calendars"
+          >
+            <CalendarSidebar
+              state={state}
+              actions={actions}
+              themeConfig={themeConfig}
+              onCreateCalendar={() => {
+                setModals(prev => ({ ...prev, mobileDrawer: false, calendarModal: true }));
+                setModalData(prev => ({ ...prev, editingCalendar: null }));
+              }}
+              onEditCalendar={(calendar) => {
+                setModals(prev => ({ ...prev, mobileDrawer: false }));
+                handleEditCalendar(calendar);
+              }}
+              onDeleteCalendar={handleDeleteCalendar}
+            />
+          </MobileDrawer>
+        )}
 
         {/* Calendar Grid */}
         <main className="flex-1 min-h-96">
@@ -1040,9 +1118,50 @@ export const EnhancedCalendar: React.FC<EnhancedCalendarProps> = ({
             actions={actions}
             themeConfig={themeConfig}
             timeFormat={timeFormat}
+            isMobile={isMobile}
+            onShowDayDetails={(date) => {
+              actions.setSelectedDate(date);
+              setModals(prev => ({ ...prev, mobileBottomSheet: true }));
+            }}
           />
         </main>
       </div>
+
+      {/* Mobile Bottom Sheet for Day Details */}
+      {isMobile && state.selectedDate && (
+        <BottomSheet
+          isOpen={modals.mobileBottomSheet}
+          onClose={() => setModals(prev => ({ ...prev, mobileBottomSheet: false }))}
+          title={state.selectedDate.toLocaleDateString('en-US', {
+            weekday: 'long',
+            month: 'long',
+            day: 'numeric'
+          })}
+        >
+          <MobileDayView
+            date={state.selectedDate}
+            events={state.events.filter(event => {
+              const eventDate = new Date(event.startDate);
+              eventDate.setHours(0, 0, 0, 0);
+              const selectedDate = new Date(state.selectedDate!);
+              selectedDate.setHours(0, 0, 0, 0);
+              return eventDate.getTime() === selectedDate.getTime();
+            })}
+            onEventClick={(event) => {
+              setModals(prev => ({ ...prev, mobileBottomSheet: false }));
+              actions.editEvent(event);
+            }}
+            onTimeSlotClick={(hour) => {
+              const eventDate = new Date(state.selectedDate!);
+              eventDate.setHours(hour, 0, 0, 0);
+              setModals(prev => ({ ...prev, mobileBottomSheet: false }));
+              actions.createEvent(eventDate);
+            }}
+            themeColor={themeConfig.primary}
+            timeFormat={timeFormat === '12h' ? '12' : '24'}
+          />
+        </BottomSheet>
+      )}
 
       {/* Modals */}
       {console.log('Rendering modals, eventModal isOpen:', modals.eventModal)}
