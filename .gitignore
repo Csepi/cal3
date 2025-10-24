@@ -71,3 +71,15 @@ docker/config/.env
 docker/config/.env.dev
 docker/config/.env.prod
 .env
+# Mobile app generated files
+frontend/android/
+frontend/ios/
+app_screenshot.png
+*.apk
+*.aab
+
+# Capacitor
+.capacitor/
+
+# Android
+frontend/android/local.properties

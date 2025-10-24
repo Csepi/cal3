@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { SystemInfo } from '../../types/SystemInfo';
+import type { SystemInfo } from '../../types/SystemInfo';
 import { loadAdminData } from './adminApiService';
 
 const SystemInfoPage: React.FC = () => {
@@ -76,26 +76,37 @@ const SystemInfoPage: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">System Information</h1>
-          <p className="text-gray-600 mt-1">Runtime and configuration details</p>
-        </div>
-        <button
-          onClick={() => setRefreshKey(prev => prev + 1)}
-          className="flex items-center px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-        >
-          <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-          </svg>
-          Refresh
-        </button>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-blue-100 to-blue-200">
+      {/* Animated Background */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-r from-blue-300 to-indigo-300 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-r from-indigo-300 to-purple-300 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse animation-delay-2000"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-60 h-60 bg-gradient-to-r from-purple-300 to-blue-300 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse animation-delay-4000"></div>
       </div>
 
-      {/* Version & Timestamp */}
-      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4">
+      {/* Header */}
+      <header className="relative z-10 backdrop-blur-sm bg-white/60 border-b border-blue-200 text-gray-800 py-6">
+        <div className="container mx-auto px-4 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <h1 className="text-3xl font-semibold text-blue-900">
+              ℹ️ System Information
+            </h1>
+          </div>
+          <button
+            onClick={() => setRefreshKey(prev => prev + 1)}
+            className="flex items-center px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-xl font-medium transition-all duration-300 hover:scale-105 shadow-md"
+          >
+            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            Refresh
+          </button>
+        </div>
+      </header>
+
+      <main className="relative z-10 max-w-7xl mx-auto p-6 mt-6 space-y-6">
+        {/* Version & Timestamp */}
+        <div className="backdrop-blur-md bg-white/70 border border-blue-200 rounded-3xl p-6 shadow-xl hover:bg-white/80 transition-all duration-300">
         <div className="flex justify-between items-center">
           <div>
             <span className="text-sm text-gray-600">Application Version</span>
@@ -108,8 +119,8 @@ const SystemInfoPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Server Information */}
-      <div className="bg-white rounded-lg shadow-md border border-gray-200">
+        {/* Server Information */}
+        <div className="backdrop-blur-md bg-white/70 border border-blue-200 rounded-3xl shadow-xl hover:bg-white/80 transition-all duration-300">
         <div className="px-6 py-4 border-b border-gray-200">
           <h2 className="text-xl font-semibold text-gray-800 flex items-center">
             <svg className="w-6 h-6 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -176,8 +187,8 @@ const SystemInfoPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Database Information */}
-      <div className="bg-white rounded-lg shadow-md border border-gray-200">
+        {/* Database Information */}
+        <div className="backdrop-blur-md bg-white/70 border border-blue-200 rounded-3xl shadow-xl hover:bg-white/80 transition-all duration-300">
         <div className="px-6 py-4 border-b border-gray-200">
           <h2 className="text-xl font-semibold text-gray-800 flex items-center">
             <svg className="w-6 h-6 mr-2 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -241,8 +252,8 @@ const SystemInfoPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Environment Information */}
-      <div className="bg-white rounded-lg shadow-md border border-gray-200">
+        {/* Environment Information */}
+        <div className="backdrop-blur-md bg-white/70 border border-blue-200 rounded-3xl shadow-xl hover:bg-white/80 transition-all duration-300">
         <div className="px-6 py-4 border-b border-gray-200">
           <h2 className="text-xl font-semibold text-gray-800 flex items-center">
             <svg className="w-6 h-6 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -284,8 +295,8 @@ const SystemInfoPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Feature Flags */}
-      <div className="bg-white rounded-lg shadow-md border border-gray-200">
+        {/* Feature Flags */}
+        <div className="backdrop-blur-md bg-white/70 border border-blue-200 rounded-3xl shadow-xl hover:bg-white/80 transition-all duration-300">
         <div className="px-6 py-4 border-b border-gray-200">
           <h2 className="text-xl font-semibold text-gray-800 flex items-center">
             <svg className="w-6 h-6 mr-2 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -318,8 +329,8 @@ const SystemInfoPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Database Statistics */}
-      <div className="bg-white rounded-lg shadow-md border border-gray-200">
+        {/* Database Statistics */}
+        <div className="backdrop-blur-md bg-white/70 border border-blue-200 rounded-3xl shadow-xl hover:bg-white/80 transition-all duration-300">
         <div className="px-6 py-4 border-b border-gray-200">
           <h2 className="text-xl font-semibold text-gray-800 flex items-center">
             <svg className="w-6 h-6 mr-2 text-teal-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -355,6 +366,7 @@ const SystemInfoPage: React.FC = () => {
           </div>
         </div>
       </div>
+      </main>
     </div>
   );
 };
