@@ -598,12 +598,18 @@ export class AdminService {
     };
 
     // Environment Information
+    const baseUrl = process.env.BASE_URL || 'http://localhost';
+    const frontendPort = process.env.FRONTEND_PORT || '8080';
+    const backendPort = process.env.PORT || process.env.BACKEND_PORT || '8081';
+
     const environmentInfo = {
       nodeEnv: process.env.NODE_ENV || 'development',
-      port: parseInt(process.env.PORT || process.env.BACKEND_PORT || '8081', 10),
-      baseUrl: process.env.BASE_URL || 'http://localhost',
-      frontendUrl: process.env.FRONTEND_URL || 'http://localhost:8080',
-      backendUrl: process.env.BACKEND_URL || `http://localhost:${process.env.PORT || '8081'}`,
+      port: parseInt(backendPort, 10),
+      baseUrl: baseUrl,
+      // Smart URL construction: use explicit FRONTEND_URL or construct from BASE_URL + FRONTEND_PORT
+      frontendUrl: process.env.FRONTEND_URL || `${baseUrl}:${frontendPort}`,
+      // Smart URL construction: use explicit BACKEND_URL or construct from BASE_URL + BACKEND_PORT
+      backendUrl: process.env.BACKEND_URL || `${baseUrl}:${backendPort}`,
     };
 
     // Feature Flags
