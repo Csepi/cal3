@@ -27,6 +27,11 @@ import { apiService } from '../services/api';
 import { UserPermissionsService } from '../services/userPermissions';
 import { THEME_COLORS, getThemeConfig } from '../constants/theme';
 import { useFeatureFlags } from '../hooks/useFeatureFlags';
+import { ResponsiveNavigation } from './mobile/organisms/ResponsiveNavigation';
+import { FloatingActionButton } from './mobile/organisms/FloatingActionButton';
+import { MobileLayout } from './mobile/templates/MobileLayout';
+import { useScreenSize } from '../hooks/useScreenSize';
+import type { TabId } from './mobile/organisms/BottomTabBar';
 
 /**
  * View types for the main navigation
@@ -49,6 +54,9 @@ const Dashboard: React.FC = () => {
 
   // Feature flags state
   const { flags: featureFlags, loading: featureFlagsLoading } = useFeatureFlags();
+
+  // Screen size detection
+  const { isMobile } = useScreenSize();
 
   /**
    * Handles user login and initializes user session
@@ -198,132 +206,82 @@ const Dashboard: React.FC = () => {
     return <Login onLogin={handleLogin} />;
   }
 
+  // Handle tab change (works for both mobile and desktop)
+  const handleTabChange = (tabId: TabId) => {
+    setCurrentView(tabId as DashboardView);
+  };
+
+  // FAB primary action (create event)
+  const handleCreateEvent = () => {
+    // This will be connected to calendar's create event
+    console.log('Create new event');
+  };
+
+  // Refresh handler for pull-to-refresh
+  const handleRefresh = async () => {
+    await loadUserProfile();
+    await loadUserPermissions();
+  };
+
   return (
-    <div className={`min-h-screen bg-gradient-to-br ${themeConfig.gradient.background}`}>
-      {/* Header Navigation Bar */}
-      <div className="bg-white/80 backdrop-blur-md border-b border-gray-200 sticky top-0 z-50 shadow-sm">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-          {/* User Information and Navigation */}
-          <div className="flex items-center space-x-6">
-            <div className="text-gray-800">
-              <span className="text-sm text-gray-600">Welcome,</span>
-              <span className={`ml-2 text-lg font-medium text-${themeConfig.text}`}>{user}</span>
-              {userRole === 'admin' && (
-                <span className="ml-3 px-3 py-1 bg-red-100 border border-red-300 text-red-700 text-xs rounded-full font-medium">🔥 Admin</span>
-              )}
-            </div>
+    <div className={`min-h-screen ${isMobile ? 'bg-white' : `bg-gradient-to-br ${themeConfig.gradient.background}`}`}>
+      {/* Responsive Navigation - Adapts to screen size */}
+      <ResponsiveNavigation
+        activeTab={currentView as TabId}
+        onTabChange={handleTabChange}
+        themeColor={themeColor}
+        userRole={userRole}
+        userName={user || ''}
+        onLogout={handleLogout}
+        featureFlags={featureFlags}
+        canAccessReservations={canAccessReservations}
+        hideReservationsTab={userProfile?.hideReservationsTab}
+        themeConfig={themeConfig}
+      />
 
-            {/* Main Navigation Tabs */}
-            <div className={`flex space-x-1 bg-white/50 backdrop-blur-sm border-2 border-${themeConfig.border} rounded-2xl p-1`}>
-              <button
-                onClick={() => setCurrentView('calendar')}
-                className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 ${
-                  currentView === 'calendar'
-                    ? `${themeConfig.button} text-white shadow-lg`
-                    : `text-${themeConfig.text} hover:bg-white/50`
-                }`}
-              >
-                📅 Calendar
-              </button>
-              <button
-                onClick={() => setCurrentView('profile')}
-                className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 ${
-                  currentView === 'profile'
-                    ? `${themeConfig.button} text-white shadow-lg`
-                    : `text-${themeConfig.text} hover:bg-white/50`
-                }`}
-              >
-                👤 Profile
-              </button>
-              {/* Calendar Sync tab - only show if feature is enabled */}
-              {featureFlags.calendarSync && (
-                <button
-                  onClick={() => setCurrentView('sync')}
-                  className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 ${
-                    currentView === 'sync'
-                      ? `${themeConfig.button} text-white shadow-lg`
-                      : `text-${themeConfig.text} hover:bg-white/50`
-                  }`}
-                >
-                  🔄 Calendar Sync
-                </button>
-              )}
-              {/* Automation tab - only show if feature is enabled */}
-              {featureFlags.automation && (
-                <button
-                  onClick={() => setCurrentView('automation')}
-                  className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 ${
-                    currentView === 'automation'
-                      ? `${themeConfig.button} text-white shadow-lg`
-                      : `text-${themeConfig.text} hover:bg-white/50`
-                  }`}
-                >
-                  🤖 Automation
-                </button>
-              )}
-              {/* Conditionally show Reservations tab based on feature flag, user permissions, and preferences */}
-              {featureFlags.reservations && canAccessReservations && !userProfile?.hideReservationsTab && (
-                <button
-                  onClick={() => setCurrentView('reservations')}
-                  className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 ${
-                    currentView === 'reservations'
-                      ? `${themeConfig.button} text-white shadow-lg`
-                      : `text-${themeConfig.text} hover:bg-white/50`
-                  }`}
-                >
-                  📅 Reservations
-                </button>
-              )}
-              {userRole === 'admin' && (
-                <button
-                  onClick={() => setCurrentView('admin')}
-                  className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 ${
-                    currentView === 'admin'
-                      ? 'bg-indigo-500 text-white shadow-lg'
-                      : 'text-indigo-700 hover:text-indigo-800 hover:bg-indigo-200'
-                  }`}
-                >
-                  ⚙️ Admin Panel
-                </button>
-              )}
-            </div>
-          </div>
-
-          {/* Logout Button */}
-          <button
-            onClick={handleLogout}
-            className="px-4 py-2 bg-red-500 border border-red-400 text-white rounded-2xl hover:bg-red-600 font-medium transition-all duration-300 hover:scale-105 shadow-md"
-          >
-            🚀 Sign Out
-          </button>
+      {/* Main Content Area with Mobile Layout Wrapper */}
+      <MobileLayout
+        showBottomNav={isMobile}
+        onRefresh={handleRefresh}
+        noPadding={currentView === 'calendar'}
+      >
+        <div className={isMobile ? '' : 'relative'}>
+          {currentView === 'calendar' && (
+            <Calendar themeColor={themeColor} timeFormat={userProfile?.timeFormat || '12h'} />
+          )}
+          {currentView === 'profile' && (
+            <UserProfile
+              onThemeChange={handleThemeChange}
+              currentTheme={themeColor}
+            />
+          )}
+          {currentView === 'sync' && featureFlags.calendarSync && (
+            <CalendarSync themeColor={themeColor} />
+          )}
+          {currentView === 'automation' && featureFlags.automation && (
+            <AutomationPanel themeColor={themeColor} />
+          )}
+          {currentView === 'reservations' && featureFlags.reservations && canAccessReservations && !userProfile?.hideReservationsTab && (
+            <ReservationsPanel themeColor={themeColor} />
+          )}
+          {/* Admin Panel - Only accessible to admin users */}
+          {currentView === 'admin' && userRole === 'admin' && (
+            <AdminPanel themeColor={themeColor} />
+          )}
         </div>
-      </div>
+      </MobileLayout>
 
-      {/* Main Content Area - Conditionally Rendered Based on Active View */}
-      <div className="relative">
-        {currentView === 'calendar' && (
-          <Calendar themeColor={themeColor} timeFormat={userProfile?.timeFormat || '12h'} />
-        )}
-        {currentView === 'profile' && (
-          <UserProfile
-            onThemeChange={handleThemeChange}
-            currentTheme={themeColor}
-          />
-        )}
-        {currentView === 'sync' && featureFlags.calendarSync && (
-          <CalendarSync themeColor={themeColor} />
-        )}
-        {currentView === 'automation' && featureFlags.automation && (
-          <AutomationPanel themeColor={themeColor} />
-        )}
-        {currentView === 'reservations' && featureFlags.reservations && canAccessReservations && !userProfile?.hideReservationsTab && (
-          <ReservationsPanel themeColor={themeColor} />
-        )}
-        {/* Admin Panel - Only accessible to admin users */}
-        {currentView === 'admin' && userRole === 'admin' && (
-          <AdminPanel themeColor={themeColor} />
-        )}
-      </div>
+      {/* FAB - Only shows on mobile, only on calendar view */}
+      {currentView === 'calendar' && (
+        <FloatingActionButton
+          primaryAction={{
+            icon: '➕',
+            label: 'New Event',
+            onClick: handleCreateEvent,
+          }}
+          themeColor={themeColor}
+        />
+      )}
     </div>
   );
 };
