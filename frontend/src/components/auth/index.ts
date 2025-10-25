@@ -7,3 +7,5 @@
 
 export { default as AuthCallback } from './AuthCallback';
 export { default as Login } from './Login';
+export { ProtectedRoute } from './ProtectedRoute';
+export { LogoutButton } from './LogoutButton';

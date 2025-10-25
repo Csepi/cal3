@@ -54,6 +54,7 @@ const mapRecurrenceRule = (pattern: RecurrencePattern): any => {
 
 // Import centralized API configuration
 import { API_BASE_URL } from '../config/apiConfig';
+import { secureFetch, authErrorHandler } from './authErrorHandler';
 
 class ApiService {
   private getAuthHeaders(): HeadersInit {
@@ -64,14 +65,31 @@ class ApiService {
     };
   }
 
-  async getAllEvents(): Promise<Event[]> {
-    const response = await fetch(`${API_BASE_URL}/api/events`, {
-      headers: this.getAuthHeaders(),
+  /**
+   * Secure fetch wrapper that handles auth errors automatically
+   * Use this for all API calls to ensure consistent security handling
+   */
+  private async secureApiFetch(url: string, options: RequestInit = {}): Promise<Response> {
+    const response = await secureFetch(url, {
+      ...options,
+      headers: {
+        ...this.getAuthHeaders(),
+        ...options.headers,
+      },
     });
+
+    // Check for auth errors (401/403)
+    if (authErrorHandler.isAuthError(response)) {
+      // authErrorHandler will handle logout and redirect
+      throw new Error(`Authentication error: ${response.status}`);
+    }
+
+    return response;
+  }
+
+  async getAllEvents(): Promise<Event[]> {
+    const response = await this.secureApiFetch(`${API_BASE_URL}/api/events`);
     if (!response.ok) {
-      if (response.status === 401) {
-        throw new Error('Authentication required. Please log in to view events.');
-      }
       throw new Error('Failed to fetch events');
     }
     const events = await response.json();
@@ -79,16 +97,12 @@ class ApiService {
   }
 
   async createEvent(eventData: CreateEventRequest): Promise<Event> {
-    const response = await fetch(`${API_BASE_URL}/api/events`, {
+    const response = await this.secureApiFetch(`${API_BASE_URL}/api/events`, {
       method: 'POST',
-      headers: this.getAuthHeaders(),
       body: JSON.stringify(eventData),
     });
 
     if (!response.ok) {
-      if (response.status === 401) {
-        throw new Error('Authentication required. Please log in to create events.');
-      }
       const errorData = await response.json();
       throw new Error(errorData.message || 'Failed to create event');
     }
