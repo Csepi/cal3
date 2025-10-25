@@ -2,6 +2,9 @@
 REM Cal3 Mobile App Build and Install Script
 REM This script builds the Android APK and optionally installs it on a connected device
 
+REM Add Node.js to PATH
+set "PATH=C:\Program Files\nodejs;%PATH%"
+
 echo ========================================
 echo Cal3 Mobile App Builder ^& Installer
 echo ========================================
@@ -16,7 +19,7 @@ if %errorlevel% neq 0 (
     pause
     exit /b 1
 )
-echo ✓ Frontend build completed!
+echo + Frontend build completed!
 echo.
 
 REM Step 2: Sync Capacitor
@@ -27,7 +30,7 @@ if %errorlevel% neq 0 (
     pause
     exit /b 1
 )
-echo ✓ Capacitor sync completed!
+echo + Capacitor sync completed!
 echo.
 
 REM Step 3: Build Android APK
@@ -41,7 +44,7 @@ if %errorlevel% neq 0 (
     exit /b 1
 )
 cd ..\..
-echo ✓ Android APK build completed!
+echo + Android APK build completed!
 echo.
 
 REM Display results
@@ -78,7 +81,7 @@ if %errorlevel% neq 0 (
     pause
     exit /b 1
 )
-echo ✓ APK installed successfully!
+echo + APK installed successfully!
 echo.
 choice /C YN /M "Do you want to launch the app now"
 if errorlevel 2 goto :end
@@ -88,7 +91,7 @@ if errorlevel 1 goto :launch
 echo.
 echo Launching Cal3 Calendar...
 adb shell am start -n com.cal3.calendar/.MainActivity
-echo ✓ App launched!
+echo + App launched!
 goto :end
 
 :skip_install

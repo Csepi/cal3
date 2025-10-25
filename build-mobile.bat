@@ -1,6 +1,9 @@
 @echo off
 REM Cal3 Mobile App Build Script
-REM This script builds the Android APK from the React frontend
+REM This script builds the Android APK without installation
+
+REM Add Node.js to PATH
+set "PATH=C:\Program Files\nodejs;%PATH%"
 
 echo ========================================
 echo Cal3 Mobile App Builder

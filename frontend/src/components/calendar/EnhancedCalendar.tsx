@@ -23,9 +23,12 @@ import { Button } from '../ui';
 import MonthView from '../views/MonthView';
 import WeekView from '../views/WeekView';
 import { MobileDrawer } from '../mobile/MobileDrawer';
-import { BottomSheet } from '../mobile/BottomSheet';
-import { MobileDayView } from '../mobile/MobileDayView';
+import { MobileMonthView } from '../mobile/calendar/MobileMonthView';
+import { MobileWeekView } from '../mobile/calendar/MobileWeekView';
+import { MobileCalendarHeader } from '../mobile/calendar/MobileCalendarHeader';
+import { DayDetailSheet } from '../mobile/calendar/DayDetailSheet';
 import { useScreenSize } from '../../hooks/useScreenSize';
+import { useSwipeGesture } from '../../hooks/useSwipeGesture';
 
 // Types for enhanced calendar
 interface ResourceType {
@@ -607,24 +610,54 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({ state, actions, themeConfig
     actions.createEvent(date);
   }, [actions]);
 
-  // On mobile in week view, show single day view
+  // Swipe gestures for navigation
+  const swipeHandlers = useSwipeGesture({
+    onSwipeLeft: () => actions.navigateCalendar('next'),
+    onSwipeRight: () => actions.navigateCalendar('prev'),
+    threshold: 50,
+    preventScroll: true,
+  });
+
+  // On mobile in week view, show mobile-optimized week view
   if (isMobile && currentView === 'week') {
     return (
-      <MobileDayView
-        date={currentDate}
-        events={filteredEvents}
-        onEventClick={handleEventClick}
-        onTimeSlotClick={(hour) => {
-          const eventDate = new Date(currentDate);
-          eventDate.setHours(hour, 0, 0, 0);
-          actions.createEvent(eventDate);
-        }}
-        themeColor={themeConfig.primary}
-        timeFormat={timeFormat === '12h' ? '12' : '24'}
-      />
+      <div {...swipeHandlers}>
+        <MobileWeekView
+          currentDate={currentDate}
+          events={filteredEvents}
+          selectedDate={state.selectedDate}
+          onDateClick={handleDateClick}
+          onEventClick={handleEventClick}
+          onTimeSlotClick={(date, hour) => {
+            const eventDate = new Date(date);
+            eventDate.setHours(hour, 0, 0, 0);
+            actions.createEvent(eventDate);
+          }}
+          themeColor={themeConfig.primary}
+          timeFormat={timeFormat === '12h' ? '12' : '24'}
+        />
+      </div>
     );
   }
 
+  // On mobile in month view, show mobile-optimized month view
+  if (isMobile && currentView === 'month') {
+    return (
+      <div {...swipeHandlers}>
+        <MobileMonthView
+          currentDate={currentDate}
+          events={filteredEvents}
+          selectedDate={state.selectedDate}
+          onDateClick={handleDateClick}
+          onEventClick={handleEventClick}
+          weekStartDay={1}
+          themeColor={themeConfig.primary}
+        />
+      </div>
+    );
+  }
+
+  // Desktop views
   if (currentView === 'month') {
     return (
       <MonthView
@@ -1056,19 +1089,30 @@ export const EnhancedCalendar: React.FC<EnhancedCalendarProps> = ({
 
   return (
     <div className={`bg-white rounded-3xl shadow-2xl overflow-hidden ${className}`}>
-      {/* Header */}
-      <CalendarHeader
-        state={state}
-        actions={actions}
-        themeConfig={themeConfig}
-        onCreateEvent={() => actions.createEvent()}
-        onCreateCalendar={() => {
-          setModalData(prev => ({ ...prev, editingCalendar: null }));
-          setModals(prev => ({ ...prev, calendarModal: true }));
-        }}
-        onToggleMobileDrawer={() => setModals(prev => ({ ...prev, mobileDrawer: true }))}
-        isMobile={isMobile}
-      />
+      {/* Header - Conditional Mobile/Desktop */}
+      {isMobile ? (
+        <MobileCalendarHeader
+          currentDate={state.currentDate}
+          currentView={state.currentView}
+          onViewChange={(view) => actions.setCurrentView(view)}
+          onNavigate={(direction) => actions.navigateCalendar(direction)}
+          onOpenCalendarSelector={() => setModals(prev => ({ ...prev, mobileDrawer: true }))}
+          themeColor={themeConfig.primary}
+        />
+      ) : (
+        <CalendarHeader
+          state={state}
+          actions={actions}
+          themeConfig={themeConfig}
+          onCreateEvent={() => actions.createEvent()}
+          onCreateCalendar={() => {
+            setModalData(prev => ({ ...prev, editingCalendar: null }));
+            setModals(prev => ({ ...prev, calendarModal: true }));
+          }}
+          onToggleMobileDrawer={() => setModals(prev => ({ ...prev, mobileDrawer: true }))}
+          isMobile={isMobile}
+        />
+      )}
 
       {/* Main Content */}
       <div className="flex">
@@ -1127,40 +1171,29 @@ export const EnhancedCalendar: React.FC<EnhancedCalendarProps> = ({
         </main>
       </div>
 
-      {/* Mobile Bottom Sheet for Day Details */}
+      {/* Mobile Day Detail Sheet */}
       {isMobile && state.selectedDate && (
-        <BottomSheet
+        <DayDetailSheet
           isOpen={modals.mobileBottomSheet}
           onClose={() => setModals(prev => ({ ...prev, mobileBottomSheet: false }))}
-          title={state.selectedDate.toLocaleDateString('en-US', {
-            weekday: 'long',
-            month: 'long',
-            day: 'numeric'
+          date={state.selectedDate}
+          events={state.events.filter(event => {
+            const eventDate = new Date(event.startDate);
+            eventDate.setHours(0, 0, 0, 0);
+            const selectedDate = new Date(state.selectedDate!);
+            selectedDate.setHours(0, 0, 0, 0);
+            return eventDate.getTime() === selectedDate.getTime();
           })}
-        >
-          <MobileDayView
-            date={state.selectedDate}
-            events={state.events.filter(event => {
-              const eventDate = new Date(event.startDate);
-              eventDate.setHours(0, 0, 0, 0);
-              const selectedDate = new Date(state.selectedDate!);
-              selectedDate.setHours(0, 0, 0, 0);
-              return eventDate.getTime() === selectedDate.getTime();
-            })}
-            onEventClick={(event) => {
-              setModals(prev => ({ ...prev, mobileBottomSheet: false }));
-              actions.editEvent(event);
-            }}
-            onTimeSlotClick={(hour) => {
-              const eventDate = new Date(state.selectedDate!);
-              eventDate.setHours(hour, 0, 0, 0);
-              setModals(prev => ({ ...prev, mobileBottomSheet: false }));
-              actions.createEvent(eventDate);
-            }}
-            themeColor={themeConfig.primary}
-            timeFormat={timeFormat === '12h' ? '12' : '24'}
-          />
-        </BottomSheet>
+          onEventClick={(event) => {
+            setModals(prev => ({ ...prev, mobileBottomSheet: false }));
+            actions.editEvent(event);
+          }}
+          onCreateEvent={(date) => {
+            setModals(prev => ({ ...prev, mobileBottomSheet: false }));
+            actions.createEvent(date);
+          }}
+          themeColor={themeConfig.primary}
+        />
       )}
 
       {/* Modals */}

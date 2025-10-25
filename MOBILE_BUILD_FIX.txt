@@ -1,0 +1,68 @@
+╔═══════════════════════════════════════════════════════════════╗
+║            MOBILE BUILD SCRIPTS - PATH FIX APPLIED            ║
+╚═══════════════════════════════════════════════════════════════╝
+
+ISSUE FIXED:
+The batch scripts were failing with:
+  '"node"' is not recognized as an internal or external command
+
+ROOT CAUSE:
+Node.js was not in the Windows CMD PATH, even though it was 
+installed at: C:\Program Files\nodejs
+
+SOLUTION APPLIED:
+All batch scripts now include this line at the beginning:
+  set "PATH=C:\Program Files\nodejs;%PATH%"
+
+This adds Node.js to PATH for the duration of the script execution.
+
+╔═══════════════════════════════════════════════════════════════╗
+║                    UPDATED BATCH FILES                        ║
+╚═══════════════════════════════════════════════════════════════╝
+
+1. build-and-install-mobile.bat  ✓ Updated
+2. build-mobile.bat              ✓ Updated  
+3. rebuild-mobile-quick.bat      ✓ Updated
+
+╔═══════════════════════════════════════════════════════════════╗
+║                      HOW TO USE NOW                           ║
+╚═══════════════════════════════════════════════════════════════╝
+
+Simply double-click any of these files in Windows Explorer:
+
+  build-and-install-mobile.bat  → Full workflow (recommended)
+  build-mobile.bat              → Build only
+  rebuild-mobile-quick.bat      → Quick rebuild
+
+Or run from CMD:
+  C:\Users\ThinkPad\cal3> build-and-install-mobile.bat
+
+╔═══════════════════════════════════════════════════════════════╗
+║                   TROUBLESHOOTING                             ║
+╚═══════════════════════════════════════════════════════════════╝
+
+If you still get "node not found" error:
+
+1. Verify Node.js is installed:
+   Open CMD and run: "C:\Program Files\nodejs\node.exe" --version
+
+2. If Node.js is in a different location, edit the batch files
+   and change this line:
+   set "PATH=C:\Program Files\nodejs;%PATH%"
+   
+   To match your installation path.
+
+3. Common Node.js installation paths:
+   - C:\Program Files\nodejs
+   - C:\Program Files (x86)\nodejs
+   - C:\nodejs
+
+╔═══════════════════════════════════════════════════════════════╗
+║                     CURRENT STATUS                            ║
+╚═══════════════════════════════════════════════════════════════╝
+
+✓ Node.js detected at: C:\Program Files\nodejs
+✓ All batch scripts updated with PATH fix
+✓ Scripts ready to use
+
+Last Updated: October 24, 2025
