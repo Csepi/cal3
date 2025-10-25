@@ -90,13 +90,23 @@ See [docker/README.md](docker/README.md) for complete port configuration guide.
 ## Current Development Status
 
 ### ✅ Recently Completed Features
-1. **Feature Flags System** - Comprehensive global feature control system
+1. **Mobile-First UI Overhaul (v1.1.9)** - Professional mobile app experience
+   - Atomic Design Pattern component library (Atoms → Molecules → Organisms → Templates)
+   - Responsive navigation with bottom tab bar on mobile
+   - Mobile-optimized calendar views (month with event dots, week with time slots)
+   - Swipe gestures for calendar navigation
+   - Touch-optimized controls (44px+ touch targets, WCAG AAA)
+   - Pull-to-refresh support
+   - Floating action button for quick actions
+   - Complete mobile component library for future page optimizations
+   - See Mobile Architecture section below for details
+2. **Feature Flags System** - Comprehensive global feature control system
    - Environment-based feature enablement (OAuth, Calendar Sync, Reservations, Automation)
    - Automatic UI hiding of disabled features (buttons, tabs, forms)
    - Public API endpoint for frontend feature flag queries
    - 5-minute frontend caching for performance
    - Complete documentation in [docs/feature-flags.md](docs/feature-flags.md)
-2. **Calendar Automation System (v1.3.0)** - Complete rule-based automation with 8 phases implemented
+3. **Calendar Automation System (v1.3.0)** - Complete rule-based automation with 8 phases implemented
    - Event lifecycle triggers (created, updated, deleted)
    - Time-based triggers (starts_in, ends_in, scheduled.time with cron)
    - 15+ condition operators with AND/OR boolean logic
@@ -114,6 +124,54 @@ See [docker/README.md](docker/README.md) for complete port configuration guide.
 9. **Profile Color Theming** - Applied to monthly and weekly view backgrounds with consistent gradients
 10. **Modernized UI** - Softer gradients, backdrop-blur effects, improved readability
 11. **Browser Extension Error Handling** - Robust suppression of extension context errors
+
+### 📱 Mobile Architecture (Atomic Design Pattern)
+
+Cal3 uses **Atomic Design Pattern** for mobile components, ensuring consistency, reusability, and scalability:
+
+```
+frontend/src/components/mobile/
+├── index.ts                    # Central export for all mobile components
+├── atoms/                      # Basic building blocks
+│   ├── TouchableArea.tsx      # 44px+ touch targets with haptic feedback
+│   ├── Icon.tsx               # Unified icon system (emoji or SVG)
+│   └── Badge.tsx              # Notification badges and dots
+├── molecules/                  # Simple component combinations
+│   ├── TabBarItem.tsx         # Individual tab with icon, label, badge
+│   ├── FormField.tsx          # Touch-optimized form input (48px height)
+│   └── ListItem.tsx           # Touch-friendly list item with actions
+├── organisms/                  # Complex UI components
+│   ├── BottomTabBar.tsx       # Main mobile navigation (role + feature-flag aware)
+│   ├── ResponsiveNavigation.tsx # Adaptive nav (bottom on mobile, horizontal on desktop)
+│   ├── FloatingActionButton.tsx # FAB for primary actions (mobile only)
+│   ├── MobileSection.tsx      # Collapsible section wrapper
+│   └── MobileTable.tsx        # Responsive table (cards on mobile, table on desktop)
+├── templates/                  # Page layouts
+│   └── MobileLayout.tsx       # Main layout with safe areas, pull-to-refresh
+└── calendar/                   # Calendar-specific mobile components
+    ├── MobileMonthView.tsx    # Google Calendar-style event dots
+    ├── MobileWeekView.tsx     # Full week with scrollable time slots
+    ├── MobileCalendarHeader.tsx # Compact header with view switcher
+    ├── DayDetailSheet.tsx     # Bottom sheet for day events
+    └── EventListItem.tsx      # Touch-friendly event card
+```
+
+**Hooks for Mobile:**
+```
+frontend/src/hooks/
+├── useScreenSize.ts           # Detect mobile/tablet/desktop breakpoints
+└── useSwipeGesture.ts         # Swipe left/right with haptic feedback
+```
+
+**Mobile Design Principles:**
+- **Touch Targets**: Minimum 44px (WCAG AAA compliance)
+- **Conditional Rendering**: No hidden DOM elements (isMobile checks)
+- **Haptic Feedback**: Vibration on interactions (navigator.vibrate)
+- **Safe Areas**: iOS notch/home bar support (env() variables)
+- **Pull-to-Refresh**: Standard mobile gesture pattern
+- **Swipe Navigation**: Left/right swipes for calendar
+- **Bottom Tab Bar**: 5-tab limit, role-based visibility
+- **Feature Preservation**: ALL features work on ALL screen sizes
 
 ### 🔧 Key Components Structure
 ```
@@ -143,7 +201,8 @@ frontend/src/components/
 │   └── dialogs/
 │       ├── RetroactiveExecutionDialog.tsx
 │       └── DeleteRuleDialog.tsx
-└── Dashboard.tsx         # Main dashboard layout
+├── Dashboard.tsx         # Main dashboard layout with responsive navigation
+└── mobile/               # See Mobile Architecture above
 ```
 
 ### 🎨 Theming System

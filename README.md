@@ -61,6 +61,16 @@ Cal3 is a comprehensive, full-stack calendar and reservation management system b
 - **Loading States**: Smooth loading animations and skeleton screens
 - **Error Handling**: User-friendly error messages and recovery options
 
+### 📱 **Mobile App (Android/iOS)**
+- **Capacitor Native**: Native Android app with web technologies
+- **Atomic Design**: Reusable component library (Atoms → Molecules → Organisms)
+- **Bottom Tab Navigation**: Role-based and feature-flag aware tabs
+- **Touch-Optimized**: 44px+ touch targets (WCAG AAA compliance)
+- **Mobile Calendar Views**: Event dots (month) and time slots (week)
+- **Swipe Gestures**: Intuitive navigation with haptic feedback
+- **Pull-to-Refresh**: Standard mobile gesture patterns
+- **Safe Area Support**: iOS notch/home bar handling
+
 ### 🔐 **Security & Authentication**
 - **JWT Authentication**: Secure token-based authentication system
 - **Multi-Level RBAC**: Role-based access control with global admin, org admin, and calendar-level roles
