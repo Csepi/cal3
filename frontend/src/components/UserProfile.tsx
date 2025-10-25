@@ -9,6 +9,7 @@ import {
   type PersonalInfoFormData,
   type PasswordFormData
 } from './profile';
+import { useScreenSize } from '../hooks/useScreenSize';
 
 /**
  * UserProfile component - Main user profile management interface
@@ -30,6 +31,9 @@ interface UserProfileProps {
  * theme preferences, and password changes through modular subcomponents.
  */
 const UserProfile: React.FC<UserProfileProps> = ({ onThemeChange, currentTheme }) => {
+  // Mobile detection
+  const { isMobile } = useScreenSize();
+
   // Core state management
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -259,32 +263,34 @@ const UserProfile: React.FC<UserProfileProps> = ({ onThemeChange, currentTheme }
   }
 
   return (
-    <div className={`min-h-screen bg-gradient-to-br ${getSimpleThemeGradient(currentTheme)}`}>
-      {/* Header */}
-      <header className="bg-white/80 backdrop-blur-sm border-b border-gray-200 text-gray-800 py-6">
-        <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-800">👤 User Profile</h1>
-              <p className="text-gray-600 mt-1">Manage your account settings and preferences</p>
-            </div>
-            {user && (
-              <div className="text-right">
-                <p className="text-sm text-gray-500">Welcome back,</p>
-                <p className="text-lg font-semibold text-gray-800">
-                  {user.firstName || user.username || 'User'}
-                </p>
+    <div className={`min-h-screen ${isMobile ? 'bg-gray-50' : `bg-gradient-to-br ${getSimpleThemeGradient(currentTheme)}`}`}>
+      {/* Header - Hidden on mobile (Dashboard handles it) */}
+      {!isMobile && (
+        <header className="bg-white/80 backdrop-blur-sm border-b border-gray-200 text-gray-800 py-6">
+          <div className="container mx-auto px-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-3xl font-bold text-gray-800">👤 User Profile</h1>
+                <p className="text-gray-600 mt-1">Manage your account settings and preferences</p>
               </div>
-            )}
+              {user && (
+                <div className="text-right">
+                  <p className="text-sm text-gray-500">Welcome back,</p>
+                  <p className="text-lg font-semibold text-gray-800">
+                    {user.firstName || user.username || 'User'}
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
-        </div>
-      </header>
+        </header>
+      )}
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-8">
+      <main className={`container mx-auto ${isMobile ? 'px-0 py-0' : 'px-4 py-8'}`}>
         {/* Status Messages */}
         {error && (
-          <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
+          <div className={`bg-red-50 border border-red-200 p-4 ${isMobile ? 'mx-4 my-4 rounded-lg' : 'mb-6 rounded-lg'}`}>
             <div className="flex items-center">
               <svg className="w-5 h-5 text-red-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -295,7 +301,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ onThemeChange, currentTheme }
         )}
 
         {success && (
-          <div className="mb-6 bg-green-50 border border-green-200 rounded-lg p-4">
+          <div className={`bg-green-50 border border-green-200 p-4 ${isMobile ? 'mx-4 my-4 rounded-lg' : 'mb-6 rounded-lg'}`}>
             <div className="flex items-center">
               <svg className="w-5 h-5 text-green-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
@@ -306,7 +312,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ onThemeChange, currentTheme }
         )}
 
         {/* Profile Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className={`grid grid-cols-1 lg:grid-cols-2 ${isMobile ? 'gap-4' : 'gap-8'}`}>
           {/* Left Column */}
           <div className="space-y-8">
             {/* Personal Information Form */}
@@ -322,7 +328,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ onThemeChange, currentTheme }
             {/* Password Management */}
             {!showPasswordForm ? (
               <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-                <div className="flex items-center justify-between">
+                <div className={`flex ${isMobile ? 'flex-col gap-4' : 'items-center justify-between'}`}>
                   <div>
                     <h3 className="text-lg font-semibold text-gray-800 mb-2">🔒 Password</h3>
                     <p className="text-gray-600 text-sm">Keep your account secure with a strong password</p>
@@ -331,6 +337,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ onThemeChange, currentTheme }
                     variant="outline"
                     themeColor={currentTheme}
                     onClick={() => setShowPasswordForm(true)}
+                    className={isMobile ? 'w-full' : ''}
                   >
                     Change Password
                   </Button>
