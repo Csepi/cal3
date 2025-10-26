@@ -14,6 +14,7 @@ import { useState, useEffect } from 'react';
 import { apiService } from '../services/api';
 import { UserPermissionsService } from '../services/userPermissions';
 import DeleteConfirmationModal from './DeleteConfirmationModal';
+import { useScreenSize } from '../hooks/useScreenSize';
 
 interface ReservationsPanelProps {
   themeColor?: string;
@@ -62,6 +63,9 @@ interface Reservation {
 }
 
 const ReservationsPanel: React.FC<ReservationsPanelProps> = ({ themeColor = '#3b82f6' }) => {
+  // Mobile detection
+  const { isMobile } = useScreenSize();
+
   // State management
   const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [selectedOrgId, setSelectedOrgId] = useState<number | null>(null);
@@ -736,25 +740,29 @@ const ReservationsPanel: React.FC<ReservationsPanelProps> = ({ themeColor = '#3b
   }
 
   return (
-    <div className={`min-h-screen bg-gradient-to-br ${themeColors.gradient} relative`}>
-      {/* Animated background elements */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-r from-blue-300 to-indigo-300 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-r from-indigo-300 to-purple-300 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse animation-delay-2000"></div>
-      </div>
-
-      {/* Header */}
-      <header className="relative z-10 backdrop-blur-sm bg-white/60 border-b border-blue-200 text-gray-800 py-6">
-        <div className="container mx-auto px-4">
-          <div className="flex items-center gap-4">
-            <h1 className="text-3xl font-semibold text-blue-900">
-              🎯 Reservations Management
-            </h1>
-          </div>
+    <div className={`min-h-screen ${isMobile ? 'bg-gray-50' : `bg-gradient-to-br ${themeColors.gradient}`} relative`}>
+      {/* Animated background elements - Desktop Only */}
+      {!isMobile && (
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-r from-blue-300 to-indigo-300 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse"></div>
+          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-r from-indigo-300 to-purple-300 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse animation-delay-2000"></div>
         </div>
-      </header>
+      )}
 
-      <main className="relative z-10 max-w-7xl mx-auto p-6 mt-6">
+      {/* Header - Hidden on mobile (Dashboard handles it) */}
+      {!isMobile && (
+        <header className="relative z-10 backdrop-blur-sm bg-white/60 border-b border-blue-200 text-gray-800 py-6">
+          <div className="container mx-auto px-4">
+            <div className="flex items-center gap-4">
+              <h1 className="text-3xl font-semibold text-blue-900">
+                🎯 Reservations Management
+              </h1>
+            </div>
+          </div>
+        </header>
+      )}
+
+      <main className={`relative z-10 max-w-7xl mx-auto ${isMobile ? 'p-4 mt-0' : 'p-6 mt-6'}`}>
 
         {/* Organization Selector */}
         <div className="mb-6 backdrop-blur-md bg-white/70 border border-blue-200 rounded-3xl p-6 shadow-xl hover:bg-white/80 transition-all duration-300">
