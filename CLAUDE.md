@@ -6,7 +6,43 @@ Cal3 is a modern full-stack calendar application built with NestJS backend and R
 ## Architecture
 - **Backend**: NestJS + TypeORM + PostgreSQL/SQLite
 - **Frontend**: React 18 + TypeScript + Tailwind CSS + Vite
+- **Mobile**: Capacitor wrapper for Android/iOS (v1.2.5)
 - **Development**: Hot reload enabled on both frontend and backend
+
+## ⚠️ MOBILE APP BUILD POLICY
+**CRITICAL - READ CAREFULLY:**
+
+From v1.2.5 onwards, mobile app builds follow a strict policy:
+
+1. **Default Behavior**: All development requests modify **ONLY THE WEB APP**
+2. **Mobile App Updates**: Mobile app is built **ONLY** when:
+   - Explicitly requested with specific command (e.g., "build mobile app")
+   - Major version release (e.g., v1.3.0, v2.0.0)
+   - User specifically mentions "mobile" or "Android/iOS app"
+
+3. **Rationale**:
+   - Mobile builds take 1-2 minutes
+   - Most changes are web-focused
+   - Mobile app shares same web bundle (Capacitor wrapper)
+   - Reduces unnecessary build time during rapid development
+
+4. **Web Development Workflow** (Default):
+   ```bash
+   # Make changes to frontend
+   # Test in browser (npm run dev)
+   # Commit and push
+   # NO mobile build unless explicitly requested
+   ```
+
+5. **Mobile Build Workflow** (Only when requested):
+   ```bash
+   cd frontend && npm run build
+   npx cap sync android
+   cd android && ./gradlew assembleDebug
+   # APK at: android/app/build/outputs/apk/debug/app-debug.apk
+   ```
+
+**Remember**: Web changes automatically work in mobile app after sync - no rebuild needed during development!
 
 ## Quick Start Commands
 ```bash
