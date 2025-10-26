@@ -43,6 +43,9 @@ export class ResourceType {
   @Column({ length: 7, default: '#f97316' })
   color: string;
 
+  @Column({ length: 10, nullable: true }) // Emoji/icon for resource type (e.g., 🏢, 🚗, 📦)
+  icon: string;
+
   @Column()
   organisationId: number;
 

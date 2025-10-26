@@ -1104,7 +1104,7 @@ export const EnhancedCalendar: React.FC<EnhancedCalendarProps> = ({
           state={state}
           actions={actions}
           themeConfig={themeConfig}
-          onCreateEvent={() => actions.createEvent()}
+          onCreateEvent={() => actions.createEvent(state.selectedDate || undefined)}
           onCreateCalendar={() => {
             setModalData(prev => ({ ...prev, editingCalendar: null }));
             setModals(prev => ({ ...prev, calendarModal: true }));

@@ -15,6 +15,7 @@ export interface Calendar {
   name: string;
   description?: string;
   color: string;
+  icon?: string;
   visibility: CalendarVisibility;
   isActive: boolean;
   owner: {
@@ -35,6 +36,7 @@ export interface CreateCalendarRequest {
   name: string;
   description?: string;
   color?: string;
+  icon?: string;
   visibility?: CalendarVisibility;
 }
 
@@ -42,5 +44,6 @@ export interface UpdateCalendarRequest {
   name?: string;
   description?: string;
   color?: string;
+  icon?: string;
   visibility?: CalendarVisibility;
 }

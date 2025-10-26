@@ -31,6 +31,14 @@ export class CreateResourceTypeDto {
   @IsBoolean()
   recurringEnabled?: boolean;
 
+  @IsOptional()
+  @IsString()
+  color?: string;
+
+  @IsOptional()
+  @IsString()
+  icon?: string;
+
   @IsInt()
   organisationId: number;
 }
@@ -66,6 +74,14 @@ export class UpdateResourceTypeDto {
   @IsOptional()
   @IsBoolean()
   recurringEnabled?: boolean;
+
+  @IsOptional()
+  @IsString()
+  color?: string;
+
+  @IsOptional()
+  @IsString()
+  icon?: string;
 
   @IsOptional()
   @IsBoolean()

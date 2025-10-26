@@ -17,6 +17,11 @@ export class CreateCalendarDto {
   @IsString()
   color?: string;
 
+  @ApiPropertyOptional({ example: '📅', description: 'Calendar icon (emoji)' })
+  @IsOptional()
+  @IsString()
+  icon?: string;
+
   @ApiPropertyOptional({
     enum: CalendarVisibility,
     example: CalendarVisibility.PRIVATE,
@@ -42,6 +47,11 @@ export class UpdateCalendarDto {
   @IsOptional()
   @IsString()
   color?: string;
+
+  @ApiPropertyOptional({ example: '📅', description: 'Calendar icon (emoji)' })
+  @IsOptional()
+  @IsString()
+  icon?: string;
 
   @ApiPropertyOptional({
     enum: CalendarVisibility,
@@ -80,6 +90,9 @@ export class CalendarResponseDto {
 
   @ApiProperty({ example: '#3b82f6', description: 'Calendar color' })
   color: string;
+
+  @ApiPropertyOptional({ example: '📅', description: 'Calendar icon' })
+  icon?: string;
 
   @ApiProperty({ enum: CalendarVisibility, description: 'Calendar visibility' })
   visibility: CalendarVisibility;

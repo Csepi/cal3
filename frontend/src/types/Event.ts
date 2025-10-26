@@ -9,6 +9,7 @@ export interface Event {
   isAllDay: boolean;
   location?: string;
   color?: string;
+  icon?: string;
   status?: string;
   recurrenceType?: string;
   recurrenceRule?: any;
@@ -87,6 +88,7 @@ export interface CreateEventRequest {
   isAllDay?: boolean;
   location?: string;
   color?: string;
+  icon?: string;
   calendarId?: number;
   recurrenceType?: RecurrenceType;
   recurrenceRule?: any;

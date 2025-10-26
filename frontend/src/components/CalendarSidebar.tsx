@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import type { Calendar as CalendarType } from '../types/Calendar';
 
 interface CalendarSidebarProps {
@@ -32,6 +32,20 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
   onSelectAllResources,
   onDeselectAllResources
 }) => {
+  // Collapsible sidebar state - persisted in localStorage
+  const [isCollapsed, setIsCollapsed] = useState(() => {
+    const saved = localStorage.getItem('calendarSidebarCollapsed');
+    return saved ? JSON.parse(saved) : false;
+  });
+
+  // Save collapse state to localStorage
+  useEffect(() => {
+    localStorage.setItem('calendarSidebarCollapsed', JSON.stringify(isCollapsed));
+  }, [isCollapsed]);
+
+  const toggleCollapse = () => {
+    setIsCollapsed(!isCollapsed);
+  };
   // Helper function to get theme-based colors
   const getThemeColors = (color: string) => {
     const colorMap: Record<string, any> = {
@@ -59,13 +73,104 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
   const allSelected = calendars.length > 0 && selectedCalendars.length === calendars.length;
   const someSelected = selectedCalendars.length > 0 && selectedCalendars.length < calendars.length;
 
+  // Collapsed view - icon-only sidebar
+  if (isCollapsed) {
+    return (
+      <div
+        className="w-16 border-r border-gray-200 flex flex-col h-full transition-all duration-300"
+        style={{
+          background: `linear-gradient(135deg, white 0%, ${themeColor}05 50%, white 100%)`
+        }}
+      >
+        {/* Expand button */}
+        <div className="p-2 border-b border-gray-200">
+          <button
+            onClick={toggleCollapse}
+            className="w-full p-2 hover:bg-gray-100 rounded-lg transition-all duration-200"
+            title="Expand sidebar"
+          >
+            <span className="text-xl">▶</span>
+          </button>
+        </div>
+
+        {/* Calendar icons */}
+        <div className="flex-1 p-2 space-y-2 overflow-y-auto">
+          {calendars.map((calendar) => {
+            const isSelected = selectedCalendars.includes(calendar.id);
+            return (
+              <button
+                key={calendar.id}
+                onClick={() => onToggleCalendar(calendar.id)}
+                className={`w-full p-2 rounded-lg transition-all duration-200 relative ${
+                  isSelected ? 'bg-blue-50' : 'hover:bg-gray-100'
+                }`}
+                title={calendar.name}
+              >
+                <div
+                  className="w-8 h-8 rounded-full mx-auto border-2 border-white shadow-md"
+                  style={{
+                    background: `linear-gradient(135deg, ${calendar.color}, ${calendar.color}dd)`,
+                    boxShadow: `0 2px 4px ${calendar.color}40, inset 0 1px 2px rgba(255,255,255,0.3)`
+                  }}
+                />
+                {isSelected && (
+                  <div className="absolute top-1 right-1 w-2 h-2 bg-blue-600 rounded-full"></div>
+                )}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Reservation icons */}
+        {resources.length > 0 && (
+          <div className="flex-1 p-2 border-t border-gray-200 space-y-2 overflow-y-auto">
+            {resources.map((resource: any) => {
+              const isSelected = selectedResources.includes(resource.id);
+              return (
+                <button
+                  key={resource.id}
+                  onClick={() => onToggleResource?.(resource.id)}
+                  className={`w-full p-2 rounded-lg transition-all duration-200 relative ${
+                    isSelected ? 'bg-blue-50' : 'hover:bg-gray-100'
+                  }`}
+                  title={resource.name}
+                >
+                  <div
+                    className="w-8 h-8 rounded-full mx-auto border-2 border-white shadow-md"
+                    style={{
+                      background: `linear-gradient(135deg, ${resource.color}, ${resource.color}dd)`,
+                      boxShadow: `0 2px 4px ${resource.color}40, inset 0 1px 2px rgba(255,255,255,0.3)`
+                    }}
+                  />
+                  {isSelected && (
+                    <div className="absolute top-1 right-1 w-2 h-2 bg-blue-600 rounded-full"></div>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // Expanded view - full sidebar (original)
   return (
-    <div className="w-80 border-r border-gray-200 flex flex-col h-full" style={{
+    <div className="w-80 border-r border-gray-200 flex flex-col h-full transition-all duration-300" style={{
       background: `linear-gradient(135deg, white 0%, ${themeColor}05 50%, white 100%)`
     }}>
       {/* Header */}
       <div className="p-4 border-b border-gray-200">
-        <h3 className="text-lg font-semibold text-gray-800 mb-3">My Calendars</h3>
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-lg font-semibold text-gray-800">My Calendars</h3>
+          <button
+            onClick={toggleCollapse}
+            className="p-1.5 hover:bg-gray-100 rounded-lg transition-all duration-200"
+            title="Collapse sidebar"
+          >
+            <span className="text-lg">◀</span>
+          </button>
+        </div>
 
         {/* Select All/None Controls */}
         <div className="flex gap-2">

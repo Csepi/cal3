@@ -82,6 +82,9 @@ export class Event {
   @Column({ length: 7, nullable: true })
   color: string;
 
+  @Column({ length: 10, nullable: true }) // Emoji/icon for event (e.g., 🎉, 📝, 🎯)
+  icon: string;
+
   @Column({ type: 'text', nullable: true })
   notes: string;
 

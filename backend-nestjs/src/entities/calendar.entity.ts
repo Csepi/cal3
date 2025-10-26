@@ -39,6 +39,9 @@ export class Calendar {
   @Column({ length: 7, default: '#3b82f6' }) // Default blue color
   color: string;
 
+  @Column({ length: 10, nullable: true }) // Emoji/icon for calendar (e.g., 📅, 🎉, 📝)
+  icon: string;
+
   @Column({
     type: 'varchar',
     default: CalendarVisibility.PRIVATE,

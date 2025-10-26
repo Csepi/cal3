@@ -77,6 +77,11 @@ export class CreateEventDto {
   @IsString()
   color?: string;
 
+  @ApiPropertyOptional({ example: '🎉', description: 'Event icon (emoji)' })
+  @IsOptional()
+  @IsString()
+  icon?: string;
+
   @ApiPropertyOptional({ example: 'Additional notes for the event', description: 'Event notes' })
   @IsOptional()
   @IsString()
@@ -158,6 +163,11 @@ export class UpdateEventDto {
   @IsOptional()
   @IsString()
   color?: string;
+
+  @ApiPropertyOptional({ example: '🎉', description: 'Event icon (emoji)' })
+  @IsOptional()
+  @IsString()
+  icon?: string;
 
   @ApiPropertyOptional({ example: 'Updated notes', description: 'Event notes' })
   @IsOptional()
