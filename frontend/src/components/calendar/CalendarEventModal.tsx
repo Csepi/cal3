@@ -8,6 +8,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Button, Input, Card, SimpleModal } from '../ui';
+import { IconPicker } from '../ui/IconPicker';
 import { getThemeConfig, THEME_COLOR_OPTIONS } from '../../constants';
 import type { Event, CreateEventRequest, UpdateEventRequest, RecurrencePattern } from '../../types/Event';
 import type { Calendar as CalendarType } from '../../types/Calendar';
@@ -68,6 +69,7 @@ export const CalendarEventModal: React.FC<CalendarEventModalProps> = ({
     isAllDay: false,
     location: '',
     color: themeColor,
+    icon: undefined,
     calendarId: undefined
   });
 
@@ -91,6 +93,7 @@ export const CalendarEventModal: React.FC<CalendarEventModalProps> = ({
           isAllDay: editingEvent.isAllDay,
           location: editingEvent.location || '',
           color: editingEvent.color,
+          icon: editingEvent.icon,
           calendarId: editingEvent.calendar.id
         });
 
@@ -115,6 +118,7 @@ export const CalendarEventModal: React.FC<CalendarEventModalProps> = ({
           isAllDay: false,
           location: '',
           color: themeColor,
+          icon: undefined,
           calendarId: defaultCalendar?.id
         });
         setRecurrencePattern(null);
@@ -341,6 +345,19 @@ export const CalendarEventModal: React.FC<CalendarEventModalProps> = ({
               themeColor={themeColor}
               placeholder="Enter event location..."
             />
+
+            {/* Icon Picker */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Event Icon (Optional)
+              </label>
+              <IconPicker
+                value={eventForm.icon}
+                onChange={(icon) => handleFormChange('icon', icon || '')}
+                category="event"
+                placeholder="Select an event icon..."
+              />
+            </div>
           </div>
         </Card>
 

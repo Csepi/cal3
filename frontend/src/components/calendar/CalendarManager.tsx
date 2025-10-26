@@ -8,6 +8,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { SimpleModal, Button, Input, Card } from '../ui';
+import { IconPicker } from '../ui/IconPicker';
 import { getThemeConfig, THEME_COLOR_OPTIONS } from '../../constants';
 import type { Calendar as CalendarType, CreateCalendarRequest, UpdateCalendarRequest } from '../../types/Calendar';
 import { apiService } from '../../services/api';
@@ -45,7 +46,8 @@ export const CalendarManager: React.FC<CalendarManagerProps> = ({
   const [calendarForm, setCalendarForm] = useState<Partial<CreateCalendarRequest>>({
     name: '',
     description: '',
-    color: themeColor
+    color: themeColor,
+    icon: undefined
   });
 
   const [loading, setLoading] = useState(false);
@@ -61,14 +63,16 @@ export const CalendarManager: React.FC<CalendarManagerProps> = ({
         setCalendarForm({
           name: editingCalendar.name,
           description: editingCalendar.description || '',
-          color: editingCalendar.color
+          color: editingCalendar.color,
+          icon: editingCalendar.icon
         });
       } else {
         // Creating new calendar
         setCalendarForm({
           name: '',
           description: '',
-          color: themeColor
+          color: themeColor,
+          icon: undefined
         });
       }
 
@@ -242,6 +246,19 @@ export const CalendarManager: React.FC<CalendarManagerProps> = ({
               rows={3}
               maxLength={500}
             />
+
+            {/* Icon Picker */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Calendar Icon (Optional)
+              </label>
+              <IconPicker
+                value={calendarForm.icon}
+                onChange={(icon) => handleFormChange('icon', icon || '')}
+                category="calendar"
+                placeholder="Select a calendar icon..."
+              />
+            </div>
           </div>
         </Card>
 
