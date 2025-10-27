@@ -708,15 +708,90 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
   onEditCalendar,
   onDeleteCalendar,
 }) => {
+  // Collapsible sidebar state - persisted in localStorage
+  const [isCollapsed, setIsCollapsed] = React.useState(() => {
+    const saved = localStorage.getItem('enhancedCalendarSidebarCollapsed');
+    return saved ? JSON.parse(saved) : true; // Default to collapsed for more screen space
+  });
+
+  // Save collapse state to localStorage
+  React.useEffect(() => {
+    localStorage.setItem('enhancedCalendarSidebarCollapsed', JSON.stringify(isCollapsed));
+  }, [isCollapsed]);
+
+  const toggleCollapse = () => {
+    setIsCollapsed(!isCollapsed);
+  };
+
+  // Collapsed view - icon-only sidebar
+  if (isCollapsed) {
+    return (
+      <aside className="w-16 bg-white border-r border-gray-200 flex flex-col transition-all duration-300">
+        {/* Expand button */}
+        <div className="p-2 border-b border-gray-200">
+          <button
+            onClick={toggleCollapse}
+            className="w-full p-2 hover:bg-gray-100 rounded-lg transition-all duration-200"
+            title="Expand sidebar"
+          >
+            <span className="text-xl">▶</span>
+          </button>
+        </div>
+
+        {/* Calendar icons */}
+        <div className="flex-1 p-2 space-y-2 overflow-y-auto">
+          {state.calendars.map((calendar) => {
+            const isSelected = state.selectedCalendars.includes(calendar.id);
+            return (
+              <button
+                key={calendar.id}
+                onClick={() => actions.toggleCalendar(calendar.id)}
+                className={`w-full p-2 rounded-lg transition-all duration-200 relative ${
+                  isSelected ? 'bg-blue-50' : 'hover:bg-gray-100'
+                }`}
+                title={calendar.name}
+              >
+                <div className="relative w-8 h-8 mx-auto">
+                  <div
+                    className="w-8 h-8 rounded-full border-2 border-white shadow-md"
+                    style={{
+                      background: `linear-gradient(135deg, ${calendar.color || '#64748b'}, ${calendar.color || '#64748b'}dd)`,
+                      boxShadow: `0 2px 4px ${calendar.color || '#64748b'}40, inset 0 1px 2px rgba(255,255,255,0.3)`
+                    }}
+                  />
+                  {calendar.icon && (
+                    <div className="absolute inset-0 flex items-center justify-center text-lg">
+                      {calendar.icon}
+                    </div>
+                  )}
+                </div>
+                {isSelected && (
+                  <div className="absolute top-1 right-1 w-2 h-2 bg-blue-600 rounded-full"></div>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      </aside>
+    );
+  }
+
+  // Expanded view
   return (
-    <aside className={`w-80 bg-gradient-to-b ${themeConfig.gradient.background} border-r border-gray-200 p-6`}>
+    <aside className={`w-80 bg-gradient-to-b ${themeConfig.gradient.background} border-r border-gray-200 p-6 transition-all duration-300`}>
       <div className="space-y-6">
-        {/* Mini Calendar */}
-        <div>
-          <h3 className={`text-lg font-semibold text-${themeConfig.text} mb-4`}>
+        {/* Collapse button at top */}
+        <div className="flex items-center justify-between border-b border-gray-200 pb-4">
+          <h3 className={`text-lg font-semibold text-${themeConfig.text}`}>
             {state.currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
           </h3>
-          {/* Mini calendar implementation would go here */}
+          <button
+            onClick={toggleCollapse}
+            className="p-1.5 hover:bg-gray-100 rounded-lg transition-all duration-200"
+            title="Collapse sidebar"
+          >
+            <span className="text-lg">◀</span>
+          </button>
         </div>
 
         {/* Calendars List */}
@@ -768,6 +843,11 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
                     </svg>
                   )}
                 </div>
+                {calendar.icon && (
+                  <div className="text-xl mr-2 flex-shrink-0">
+                    {calendar.icon}
+                  </div>
+                )}
                 <div className="flex-1 min-w-0">
                   <div className="font-medium text-gray-800 truncate">{calendar.name}</div>
                   {calendar.description && (

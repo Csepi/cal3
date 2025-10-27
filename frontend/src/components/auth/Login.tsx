@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { apiService } from '../../services/api';
 import { useFeatureFlags } from '../../hooks/useFeatureFlags';
-import ErrorBox, { ErrorDetails } from '../common/ErrorBox';
+import { ErrorBox } from '../common/ErrorBox';
+import type { ErrorDetails } from '../common/ErrorBox';
 import { extractErrorDetails } from '../../utils/errorHandler';
 
 interface LoginProps {

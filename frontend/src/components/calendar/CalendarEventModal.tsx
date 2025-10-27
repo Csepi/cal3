@@ -270,7 +270,7 @@ export const CalendarEventModal: React.FC<CalendarEventModalProps> = ({
       isOpen={isOpen}
       onClose={handleClose}
       title={editingEvent ? 'Edit Event' : 'Create New Event'}
-      size="lg"
+      size="md"
       fullScreenOnMobile={true}
     >
       <div className="space-y-6">
@@ -354,7 +354,7 @@ export const CalendarEventModal: React.FC<CalendarEventModalProps> = ({
               <IconPicker
                 value={eventForm.icon}
                 onChange={(icon) => handleFormChange('icon', icon || '')}
-                category="event"
+                category="all"
                 placeholder="Select an event icon..."
               />
             </div>

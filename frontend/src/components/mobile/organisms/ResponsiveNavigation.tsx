@@ -11,8 +11,10 @@
  */
 
 import React, { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useScreenSize } from '../../../hooks/useScreenSize';
-import { BottomTabBar, TabId } from './BottomTabBar';
+import { BottomTabBar } from './BottomTabBar';
+import type { TabId } from './BottomTabBar';
 
 interface ResponsiveNavigationProps {
   activeTab: TabId;
@@ -45,7 +47,9 @@ export const ResponsiveNavigation: React.FC<ResponsiveNavigationProps> = ({
 }) => {
   const { isMobile, isTablet, isDesktop } = useScreenSize();
   const [showFeaturesDropdown, setShowFeaturesDropdown] = useState(false);
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -132,10 +136,10 @@ export const ResponsiveNavigation: React.FC<ResponsiveNavigationProps> = ({
 
   // Desktop/Tablet: Top Horizontal Bar with Features dropdown
   return (
-    <div className="bg-white/80 backdrop-blur-md border-b border-gray-200 sticky top-0 z-50 shadow-sm">
-      <div className="max-w-7xl mx-auto px-4 md:px-6 py-3 md:py-4 flex justify-between items-center">
+    <div className="bg-white/80 backdrop-blur-md border-b border-gray-200 sticky top-0 z-[100000] shadow-sm overflow-visible">
+      <div className="max-w-7xl mx-auto px-4 md:px-6 py-3 md:py-4 flex justify-between items-center overflow-visible">
         {/* User Information and Navigation */}
-        <div className="flex items-center space-x-3 md:space-x-6 flex-1 overflow-x-auto">
+        <div className="flex items-center space-x-3 md:space-x-6 flex-1 overflow-x-auto overflow-y-visible">
           {/* User Welcome - Hide on smaller screens */}
           <div className="text-gray-800 hidden lg:block shrink-0">
             <span className="text-sm text-gray-600">Welcome,</span>
@@ -148,7 +152,7 @@ export const ResponsiveNavigation: React.FC<ResponsiveNavigationProps> = ({
           </div>
 
           {/* Navigation Tabs */}
-          <div className={`flex space-x-1 bg-white/50 backdrop-blur-sm border-2 border-${themeConfig.border} rounded-2xl p-1`}>
+          <div className={`flex space-x-1 bg-white/50 backdrop-blur-sm border-2 border-${themeConfig.border} rounded-2xl p-1 overflow-visible`}>
             {/* Main tabs (Calendar, Profile, Admin) */}
             {mainTabs.map((tab) => (
               <button
@@ -171,9 +175,19 @@ export const ResponsiveNavigation: React.FC<ResponsiveNavigationProps> = ({
 
             {/* Features Dropdown (Sync, Automation, Reservations) */}
             {hasFeatures && (
-              <div className="relative" ref={dropdownRef}>
+              <>
                 <button
-                  onClick={() => setShowFeaturesDropdown(!showFeaturesDropdown)}
+                  ref={buttonRef}
+                  onClick={() => {
+                    if (buttonRef.current) {
+                      const rect = buttonRef.current.getBoundingClientRect();
+                      setDropdownPosition({
+                        top: rect.bottom + 8,
+                        left: rect.left
+                      });
+                    }
+                    setShowFeaturesDropdown(!showFeaturesDropdown);
+                  }}
                   className={`
                     px-3 md:px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 whitespace-nowrap flex items-center gap-1
                     ${isFeatureActive
@@ -187,9 +201,16 @@ export const ResponsiveNavigation: React.FC<ResponsiveNavigationProps> = ({
                   <span className="text-xs">▾</span>
                 </button>
 
-                {/* Dropdown Menu */}
-                {showFeaturesDropdown && (
-                  <div className="absolute top-full mt-2 left-0 min-w-[200px] bg-white rounded-xl shadow-2xl border-2 border-gray-200 py-2 z-50">
+                {/* Dropdown Menu - Rendered via Portal */}
+                {showFeaturesDropdown && createPortal(
+                  <div
+                    ref={dropdownRef}
+                    className="fixed min-w-[200px] bg-white rounded-xl shadow-2xl border-2 border-gray-200 py-2 z-[999999]"
+                    style={{
+                      top: `${dropdownPosition.top}px`,
+                      left: `${dropdownPosition.left}px`
+                    }}
+                  >
                     {featureTabs.map((tab) => (
                       <button
                         key={tab.id}
@@ -209,9 +230,10 @@ export const ResponsiveNavigation: React.FC<ResponsiveNavigationProps> = ({
                         <span>{tab.label}</span>
                       </button>
                     ))}
-                  </div>
+                  </div>,
+                  document.body
                 )}
-              </div>
+              </>
             )}
           </div>
         </div>

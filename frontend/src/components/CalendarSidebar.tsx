@@ -35,7 +35,7 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
   // Collapsible sidebar state - persisted in localStorage
   const [isCollapsed, setIsCollapsed] = useState(() => {
     const saved = localStorage.getItem('calendarSidebarCollapsed');
-    return saved ? JSON.parse(saved) : false;
+    return saved ? JSON.parse(saved) : true; // Default to collapsed for more screen space
   });
 
   // Save collapse state to localStorage

@@ -132,7 +132,8 @@ export const CalendarManager: React.FC<CalendarManagerProps> = ({
         const updateData: UpdateCalendarRequest = {
           name: calendarForm.name!,
           description: calendarForm.description || '',
-          color: calendarForm.color!
+          color: calendarForm.color!,
+          icon: calendarForm.icon || undefined
         };
         await apiService.updateCalendar(editingCalendar.id, updateData);
       } else {
@@ -140,7 +141,8 @@ export const CalendarManager: React.FC<CalendarManagerProps> = ({
         const createData: CreateCalendarRequest = {
           name: calendarForm.name!,
           description: calendarForm.description || '',
-          color: calendarForm.color!
+          color: calendarForm.color!,
+          icon: calendarForm.icon || undefined
         };
         await apiService.createCalendar(createData);
       }
@@ -255,7 +257,7 @@ export const CalendarManager: React.FC<CalendarManagerProps> = ({
               <IconPicker
                 value={calendarForm.icon}
                 onChange={(icon) => handleFormChange('icon', icon || '')}
-                category="calendar"
+                category="all"
                 placeholder="Select a calendar icon..."
               />
             </div>

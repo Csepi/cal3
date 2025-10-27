@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import type { SystemInfo } from '../../types/SystemInfo';
 import { loadAdminData } from './adminApiService';
-import ErrorBox, { ErrorDetails } from '../common/ErrorBox';
+import { ErrorBox } from '../common/ErrorBox';
+import type { ErrorDetails } from '../common/ErrorBox';
 import { extractErrorDetails } from '../../utils/errorHandler';
 
 const SystemInfoPage: React.FC = () => {

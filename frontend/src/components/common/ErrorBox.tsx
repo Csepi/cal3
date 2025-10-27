@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-export interface ErrorDetails {
+export type ErrorDetails = {
   message: string;
   timestamp?: string;
   url?: string;
@@ -11,7 +11,7 @@ export interface ErrorDetails {
   responseBody?: any;
   headers?: Record<string, string>;
   [key: string]: any;
-}
+};
 
 interface ErrorBoxProps {
   error: string | Error | ErrorDetails;
@@ -20,7 +20,7 @@ interface ErrorBoxProps {
   onClose?: () => void;
 }
 
-const ErrorBox: React.FC<ErrorBoxProps> = ({
+export const ErrorBox: React.FC<ErrorBoxProps> = ({
   error,
   title = 'Error',
   className = '',
@@ -238,4 +238,5 @@ const ErrorBox: React.FC<ErrorBoxProps> = ({
   );
 };
 
+// Export both named and default for compatibility
 export default ErrorBox;
