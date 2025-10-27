@@ -11,6 +11,7 @@ export enum TriggerType {
   EVENT_ENDS_IN = 'event.ends_in',
   CALENDAR_IMPORTED = 'calendar.imported',
   SCHEDULED_TIME = 'scheduled.time',
+  WEBHOOK_INCOMING = 'webhook.incoming',
 }
 
 export enum ConditionLogic {
@@ -30,6 +31,7 @@ export enum ConditionField {
   EVENT_CALENDAR_NAME = 'event.calendarName',
   EVENT_TAGS = 'event.tags',
   EVENT_PARTICIPANTS = 'event.participants',
+  WEBHOOK_DATA = 'webhook.data',
 }
 
 export enum ConditionOperator {
@@ -143,6 +145,7 @@ export interface AutomationRuleDto {
   conditionLogic: ConditionLogic;
   lastExecutedAt: Date | null;
   executionCount: number;
+  webhookToken: string | null;
   createdAt: Date;
   updatedAt: Date;
 }

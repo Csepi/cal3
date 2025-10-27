@@ -1,8 +1,11 @@
 import React from 'react';
+import { SmartValuePicker } from '../SmartValuePicker';
+import { TriggerType } from '../../../types/Automation';
 
 interface SetEventColorFormProps {
   config: Record<string, any>;
   onChange: (config: Record<string, any>) => void;
+  triggerType?: TriggerType | null;
 }
 
 const PRESET_COLORS = [
@@ -24,49 +27,70 @@ const PRESET_COLORS = [
   { name: 'Slate', value: '#64748b' },
 ];
 
-export const SetEventColorForm: React.FC<SetEventColorFormProps> = ({ config, onChange }) => {
+export const SetEventColorForm: React.FC<SetEventColorFormProps> = ({ config, onChange, triggerType }) => {
   const selectedColor = config.color || '#3b82f6';
 
   const handleColorChange = (color: string) => {
     onChange({ color });
   };
 
+  const handleSmartValueInsert = (smartValue: string) => {
+    // Insert smart value at cursor position or append
+    handleColorChange(selectedColor + smartValue);
+  };
+
   const isValidHexColor = (color: string): boolean => {
     return /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(color);
+  };
+
+  const isSmartValue = (value: string): boolean => {
+    return /\{\{.+?\}\}/.test(value) || /\$\{.+?\}/.test(value);
   };
 
   return (
     <div className="space-y-4">
       {/* Color Picker */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">Event Color *</label>
+        <div className="flex items-center justify-between mb-2">
+          <label className="block text-sm font-medium text-gray-700">Event Color *</label>
+          {triggerType && (
+            <SmartValuePicker
+              triggerType={triggerType}
+              onInsert={handleSmartValueInsert}
+            />
+          )}
+        </div>
         <div className="flex items-center gap-3">
-          <input
-            type="color"
-            value={selectedColor}
-            onChange={(e) => handleColorChange(e.target.value)}
-            className="w-16 h-12 border border-gray-300 rounded cursor-pointer"
-          />
+          {!isSmartValue(selectedColor) && (
+            <input
+              type="color"
+              value={isValidHexColor(selectedColor) ? selectedColor : '#3b82f6'}
+              onChange={(e) => handleColorChange(e.target.value)}
+              className="w-16 h-12 border border-gray-300 rounded cursor-pointer"
+            />
+          )}
           <input
             type="text"
             value={selectedColor}
-            onChange={(e) => {
-              const value = e.target.value;
-              if (isValidHexColor(value) || value === '' || value.startsWith('#')) {
-                handleColorChange(value);
-              }
-            }}
-            placeholder="#3b82f6"
+            onChange={(e) => handleColorChange(e.target.value)}
+            placeholder="#3b82f6 or {{event.color}}"
             className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm"
           />
-          <div
-            className="w-12 h-12 rounded border-2 border-gray-300"
-            style={{ backgroundColor: isValidHexColor(selectedColor) ? selectedColor : '#f3f4f6' }}
-            title="Preview"
-          />
+          {!isSmartValue(selectedColor) && (
+            <div
+              className="w-12 h-12 rounded border-2 border-gray-300"
+              style={{ backgroundColor: isValidHexColor(selectedColor) ? selectedColor : '#f3f4f6' }}
+              title="Preview"
+            />
+          )}
         </div>
-        {!isValidHexColor(selectedColor) && selectedColor && (
-          <p className="mt-1 text-xs text-red-600">Invalid hex color format</p>
+        {!isValidHexColor(selectedColor) && !isSmartValue(selectedColor) && selectedColor && (
+          <p className="mt-1 text-xs text-red-600">Invalid hex color format or smart value</p>
+        )}
+        {isSmartValue(selectedColor) && (
+          <p className="mt-1 text-xs text-purple-600">
+            ✨ Smart value will be replaced with actual data when the action executes
+          </p>
         )}
       </div>
 
@@ -97,21 +121,29 @@ export const SetEventColorForm: React.FC<SetEventColorFormProps> = ({ config, on
       <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
         <p className="text-xs text-gray-700">
           <strong>How it works:</strong> When this rule triggers, the event's color will be
-          changed to the selected color. This applies to the event's visual appearance in the
+          changed to the selected color (or smart value result). This applies to the event's visual appearance in the
           calendar.
         </p>
+        {triggerType && (
+          <p className="text-xs text-purple-600 mt-2">
+            <strong>💡 Pro Tip:</strong> Use smart values like <code className="bg-purple-100 px-1 py-0.5 rounded">{`{{calendar.color}}`}</code> to
+            dynamically set colors based on trigger data.
+          </p>
+        )}
       </div>
 
       {/* Preview */}
-      <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg">
-        <p className="text-xs font-medium text-gray-700 mb-2">Preview:</p>
-        <div
-          className="p-3 rounded text-white font-medium text-sm"
-          style={{ backgroundColor: isValidHexColor(selectedColor) ? selectedColor : '#9ca3af' }}
-        >
-          Sample Event Title
+      {!isSmartValue(selectedColor) && (
+        <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg">
+          <p className="text-xs font-medium text-gray-700 mb-2">Preview:</p>
+          <div
+            className="p-3 rounded text-white font-medium text-sm"
+            style={{ backgroundColor: isValidHexColor(selectedColor) ? selectedColor : '#9ca3af' }}
+          >
+            Sample Event Title
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

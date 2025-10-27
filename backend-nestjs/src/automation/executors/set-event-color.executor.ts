@@ -3,8 +3,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Event } from '../../entities/event.entity';
 import { AutomationAction, ActionType } from '../../entities/automation-action.entity';
-import { IActionExecutor, ActionExecutionResult } from './action-executor.interface';
+import { IActionExecutor, ActionExecutionResult, ActionExecutionContext } from './action-executor.interface';
 import { ActionExecutorRegistry } from './action-executor-registry';
+import { AutomationSmartValuesService } from '../automation-smart-values.service';
 
 /**
  * Executor for SET_EVENT_COLOR action
@@ -18,6 +19,7 @@ export class SetEventColorExecutor implements IActionExecutor, OnModuleInit {
     @InjectRepository(Event)
     private readonly eventRepository: Repository<Event>,
     private readonly registry: ActionExecutorRegistry,
+    private readonly smartValuesService: AutomationSmartValuesService,
   ) {}
 
   onModuleInit() {
@@ -26,24 +28,41 @@ export class SetEventColorExecutor implements IActionExecutor, OnModuleInit {
   }
 
   /**
-   * Execute the set event color action
+   * Execute the set event color action with smart values support
    * @param action The action configuration with color in actionConfig
-   * @param event The event to update
+   * @param context The execution context (includes event and webhook data)
    * @returns Execution result
    */
-  async execute(action: AutomationAction, event: Event): Promise<ActionExecutionResult> {
+  async execute(action: AutomationAction, context: ActionExecutionContext): Promise<ActionExecutionResult> {
     const executedAt = new Date();
 
     try {
-      // Validate configuration
-      this.validateConfig(action.actionConfig);
+      // Webhook triggers don't have events to modify
+      if (!context.event) {
+        return {
+          success: false,
+          actionId: action.id,
+          actionType: this.actionType,
+          error: 'No event available to modify (webhook triggers cannot modify events)',
+          executedAt,
+        };
+      }
 
-      const color = action.actionConfig.color;
-      const previousColor = event.color;
+      // Interpolate smart values in action configuration
+      const interpolatedConfig = this.smartValuesService.interpolateObjectValues(
+        action.actionConfig,
+        context,
+      );
+
+      // Validate configuration (after interpolation)
+      this.validateConfig(interpolatedConfig);
+
+      const color = interpolatedConfig.color;
+      const previousColor = context.event.color;
 
       // Update event color
-      event.color = color;
-      await this.eventRepository.save(event);
+      context.event.color = color;
+      await this.eventRepository.save(context.event);
 
       return {
         success: true,
@@ -52,8 +71,8 @@ export class SetEventColorExecutor implements IActionExecutor, OnModuleInit {
         data: {
           previousColor,
           newColor: color,
-          eventId: event.id,
-          eventTitle: event.title,
+          eventId: context.event.id,
+          eventTitle: context.event.title,
         },
         executedAt,
       };

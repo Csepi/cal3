@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
-import { ActionType } from '../../../types/Automation';
+import { ActionType, TriggerType } from '../../../types/Automation';
 import type { ActionFormData } from '../../../types/Automation';
 import { ActionRow } from './ActionRow';
 
 interface ActionBuilderProps {
   actions: ActionFormData[];
   onActionsChange: (actions: ActionFormData[]) => void;
+  triggerType?: TriggerType | null;
 }
 
-export const ActionBuilder: React.FC<ActionBuilderProps> = ({ actions, onActionsChange }) => {
+export const ActionBuilder: React.FC<ActionBuilderProps> = ({ actions, onActionsChange, triggerType }) => {
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
 
   const handleAddAction = () => {
@@ -108,6 +109,7 @@ export const ActionBuilder: React.FC<ActionBuilderProps> = ({ actions, onActions
                   onUpdate={(updates) => handleUpdateAction(index, updates)}
                   onDelete={() => handleDeleteAction(index)}
                   canDelete={actions.length > 1}
+                  triggerType={triggerType}
                 />
               </div>
             </div>

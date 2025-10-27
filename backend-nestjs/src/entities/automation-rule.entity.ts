@@ -20,6 +20,7 @@ export enum TriggerType {
   EVENT_ENDS_IN = 'event.ends_in',
   CALENDAR_IMPORTED = 'calendar.imported',
   SCHEDULED_TIME = 'scheduled.time',
+  WEBHOOK_INCOMING = 'webhook.incoming',
 }
 
 export enum ConditionLogic {
@@ -62,6 +63,12 @@ export class AutomationRule {
 
   @Column({ default: 0 })
   executionCount: number;
+
+  @Column({ type: 'varchar', length: 64, nullable: true, unique: true })
+  webhookToken: string;
+
+  @Column({ type: 'varchar', length: 128, nullable: true })
+  webhookSecret: string;
 
   @ManyToOne(() => User, { onDelete: 'CASCADE' })
   createdBy: User;

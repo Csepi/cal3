@@ -145,6 +145,23 @@ export async function toggleAutomationRule(
   return updateAutomationRule(ruleId, { isEnabled: enabled });
 }
 
+/**
+ * Regenerate webhook token for a rule
+ */
+export async function regenerateWebhookToken(
+  ruleId: number
+): Promise<{ webhookToken: string }> {
+  const response = await fetch(
+    `${API_BASE_URL}/api/automation/rules/${ruleId}/webhook/regenerate`,
+    {
+      method: 'POST',
+      headers: getAuthHeaders(),
+    }
+  );
+
+  return handleResponse<{ webhookToken: string }>(response);
+}
+
 // ===== Retroactive Execution =====
 
 /**
@@ -303,3 +320,19 @@ export function getStatusColor(
       return 'gray';
   }
 }
+
+// ===== Default Export =====
+
+export const automationService = {
+  getAutomationRules,
+  getAutomationRule,
+  createAutomationRule,
+  updateAutomationRule,
+  deleteAutomationRule,
+  toggleAutomationRule,
+  regenerateWebhookToken,
+  executeRuleNow,
+  getAuditLogs,
+  getAuditLogStats,
+  getAllAuditLogs,
+};

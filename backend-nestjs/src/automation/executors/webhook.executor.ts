@@ -1,8 +1,9 @@
 import { Injectable, OnModuleInit, Logger } from '@nestjs/common';
 import { Event } from '../../entities/event.entity';
 import { AutomationAction, ActionType } from '../../entities/automation-action.entity';
-import { IActionExecutor, ActionExecutionResult } from './action-executor.interface';
+import { IActionExecutor, ActionExecutionResult, ActionExecutionContext } from './action-executor.interface';
 import { ActionExecutorRegistry } from './action-executor-registry';
+import { AutomationSmartValuesService } from '../automation-smart-values.service';
 
 /**
  * Executor for WEBHOOK action
@@ -14,7 +15,10 @@ export class WebhookExecutor implements IActionExecutor, OnModuleInit {
   readonly actionType = ActionType.WEBHOOK;
   private readonly logger = new Logger(WebhookExecutor.name);
 
-  constructor(private readonly registry: ActionExecutorRegistry) {}
+  constructor(
+    private readonly registry: ActionExecutorRegistry,
+    private readonly smartValuesService: AutomationSmartValuesService,
+  ) {}
 
   onModuleInit() {
     // Self-register with the registry
@@ -22,24 +26,38 @@ export class WebhookExecutor implements IActionExecutor, OnModuleInit {
   }
 
   /**
-   * Execute the webhook action
+   * Execute the webhook action with smart values support
    * @param action The action configuration with webhook URL and options
-   * @param event The event that triggered the action
+   * @param context The execution context (includes event and webhook data)
    * @returns Execution result
    */
-  async execute(action: AutomationAction, event: Event): Promise<ActionExecutionResult> {
+  async execute(action: AutomationAction, context: ActionExecutionContext): Promise<ActionExecutionResult> {
     const executedAt = new Date();
 
     try {
-      // Validate configuration
-      this.validateConfig(action.actionConfig);
+      // Interpolate smart values in action configuration
+      const interpolatedConfig = this.smartValuesService.interpolateObjectValues(
+        action.actionConfig,
+        context,
+      );
 
-      const { url, includeEventData, headers } = action.actionConfig;
+      // Validate configuration (after interpolation)
+      this.validateConfig(interpolatedConfig);
 
-      // Prepare payload
-      const payload = includeEventData
-        ? this.buildEventPayload(event)
-        : { timestamp: executedAt.toISOString() };
+      const { url, includeEventData, headers, customPayload } = interpolatedConfig;
+
+      // Prepare payload (support custom payload with smart values)
+      let payload: Record<string, any>;
+      if (customPayload) {
+        // Use custom payload if provided (already interpolated)
+        payload = typeof customPayload === 'string' ? JSON.parse(customPayload) : customPayload;
+      } else if (includeEventData && context.event) {
+        // Build event payload
+        payload = this.buildEventPayload(context.event);
+      } else {
+        // Default minimal payload
+        payload = { timestamp: executedAt.toISOString() };
+      }
 
       // Prepare headers
       const requestHeaders: Record<string, string> = {
