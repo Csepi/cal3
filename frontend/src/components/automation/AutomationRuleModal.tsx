@@ -307,7 +307,7 @@ export function AutomationRuleModal({
 
           {/* Actions Section */}
           <div className="border-t border-gray-200 pt-6">
-            <ActionBuilder actions={actions} onActionsChange={setActions} />
+            <ActionBuilder actions={actions} onActionsChange={setActions} triggerType={triggerType} />
           </div>
         </div>
 

@@ -11,6 +11,7 @@ import { AutomationService } from './automation.service';
 import { AutomationEvaluatorService } from './automation-evaluator.service';
 import { AutomationSchedulerService } from './automation-scheduler.service';
 import { AutomationAuditService } from './automation-audit.service';
+import { AutomationSmartValuesService } from './automation-smart-values.service';
 import { ActionExecutorRegistry } from './executors/action-executor-registry';
 import { SetEventColorExecutor } from './executors/set-event-color.executor';
 import { WebhookExecutor } from './executors/webhook.executor';
@@ -32,10 +33,11 @@ import { WebhookExecutor } from './executors/webhook.executor';
     AutomationEvaluatorService,
     AutomationSchedulerService,
     AutomationAuditService,
+    AutomationSmartValuesService,
     ActionExecutorRegistry,
     SetEventColorExecutor,
     WebhookExecutor,
   ],
-  exports: [AutomationService, AutomationEvaluatorService],
+  exports: [AutomationService, AutomationEvaluatorService, AutomationSmartValuesService],
 })
 export class AutomationModule {}

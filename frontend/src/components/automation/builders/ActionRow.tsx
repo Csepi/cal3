@@ -1,5 +1,5 @@
 import React from 'react';
-import { ActionType } from '../../../types/Automation';
+import { ActionType, TriggerType } from '../../../types/Automation';
 import type { ActionFormData } from '../../../types/Automation';
 import { useAutomationMetadata } from '../../../hooks/useAutomationMetadata';
 import { SetEventColorForm } from './SetEventColorForm';
@@ -10,6 +10,7 @@ interface ActionRowProps {
   onDelete: () => void;
   canDelete: boolean;
   dragHandleProps?: any;
+  triggerType?: TriggerType | null;
 }
 
 export const ActionRow: React.FC<ActionRowProps> = ({
@@ -18,6 +19,7 @@ export const ActionRow: React.FC<ActionRowProps> = ({
   onDelete,
   canDelete,
   dragHandleProps,
+  triggerType,
 }) => {
   const { actionTypes } = useAutomationMetadata();
 
@@ -91,7 +93,7 @@ export const ActionRow: React.FC<ActionRowProps> = ({
       {action.actionType && (
         <div className="p-4">
           {action.actionType === ActionType.SET_EVENT_COLOR && (
-            <SetEventColorForm config={action.actionConfig} onChange={handleConfigChange} />
+            <SetEventColorForm config={action.actionConfig} onChange={handleConfigChange} triggerType={triggerType} />
           )}
 
           {action.actionType === ActionType.ADD_EVENT_TAG && (

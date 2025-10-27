@@ -351,9 +351,9 @@ export class AutomationService {
       let status: AuditLogStatus = AuditLogStatus.SKIPPED;
 
       if (conditionsResult.passed) {
-        // Execute all actions
+        // Execute all actions with full context for smart values
         const executionPromises = rule.actions.map((action) =>
-          this.executeAction(action, event),
+          this.executeAction(action, event, webhookData, rule.triggerType),
         );
 
         const results = await Promise.allSettled(executionPromises);
@@ -452,18 +452,31 @@ export class AutomationService {
   }
 
   /**
-   * Execute a single action using the executor registry
+   * Execute a single action using the executor registry with smart values support
    * @param action The action to execute
-   * @param event The event to execute the action on
+   * @param event The event to execute the action on (optional for webhook triggers)
+   * @param webhookData Optional webhook data for smart values
+   * @param triggerType The type of trigger that initiated this execution
    * @returns Action execution result
    */
   private async executeAction(
     action: AutomationAction,
-    event: Event,
+    event: Event | null,
+    webhookData: Record<string, any> | null,
+    triggerType: TriggerType,
   ): Promise<ActionResultDto> {
     try {
       const executor = this.executorRegistry.getExecutor(action.actionType);
-      const result = await executor.execute(action, event);
+
+      // Build execution context for smart values
+      const context = {
+        event,
+        webhookData,
+        triggerType,
+        executedAt: new Date(),
+      };
+
+      const result = await executor.execute(action, context);
 
       return {
         actionId: result.actionId,
