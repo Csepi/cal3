@@ -1,4 +1,4 @@
-# Cal3 - Modern Calendar & Reservation Management System
+# Cal3 - Modern Cloud Calendar & Reservation Management System
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://reactjs.org/)
@@ -6,545 +6,300 @@
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white)](https://postgresql.org/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
 
-Cal3 is a comprehensive, full-stack calendar and reservation management system built with modern web technologies. It provides powerful calendar functionality alongside a complete booking/reservation system for businesses like salons, restaurants, meeting rooms, and any time-based resource management.
+Cal3 is a comprehensive, cloud-based calendar and reservation management system built with modern web technologies. It provides powerful calendar functionality alongside a complete booking system for businesses like salons, restaurants, meeting rooms, and any time-based resource management needs.
 
-## 🚀 Features Overview
+**🌐 Cloud Service** - No installation required. Access anywhere, anytime from any device.
 
-### 📅 **Core Calendar System**
+## 🚀 Core Features
+
+### 📅 **Smart Calendar System**
 - **Multi-View Calendar**: Month, Week, and Day views with seamless navigation
-- **Event Management**: Create, edit, delete, and manage events with drag-and-drop functionality
-- **Recurring Events**: Support for daily, weekly, and monthly recurring patterns
+- **Drag & Drop Events**: Create and reschedule events with intuitive drag-and-drop
+- **Time Range Selection**: Click and drag in Week view to create events instantly
+- **Recurring Events**: Daily, weekly, and monthly recurring patterns with flexible options
 - **All-Day Events**: Full support for all-day and multi-day events
-- **Color-Coded Events**: 16 beautiful theme colors with gradient backgrounds
-- **Timezone Support**: 70+ world timezones across all continents
-
-### 🏢 **Complete Reservation System**
-- **Organisation Management**: Multi-tenant system with organisation-based access control
-- **Organisation Admin Roles**: Dedicated organisation administrators with granular permissions
-- **Reservation Calendar Management**: Fine-grained calendar access control with editor/reviewer roles
-- **Resource Types**: Define categories of bookable resources with custom settings
-- **Resource Management**: Individual resource tracking with capacity limits
-- **Booking Management**: Complete reservation lifecycle from pending to completion
-- **Status Workflow**: Automated status transitions (pending → confirmed → completed/cancelled)
-- **Waitlist System**: Queue management for fully booked resources
-- **Operating Hours**: Configurable business hours per resource type
-- **Customer Information**: Flexible customer data collection
-
-### 👤 **User Management & Admin Panel**
-- **Multi-Level Role System**: Global admins, organisation admins, and standard users
-- **User Profiles**: Personal settings, timezone preferences, theme selection, and time format settings
-- **Time Format Settings**: 12-hour and 24-hour format support across calendar views and event management
-- **Usage Plans**: Flexible user tier system (Child, User, Store, Enterprise)
-- **Admin Dashboard**: Comprehensive user management with bulk operations
-- **Permission Management**: Fine-grained access control for organizations and reservation calendars
-- **Profile Customization**: 16 theme colors and personalized settings
-
-### 🔗 **Calendar Integration**
-- **External Calendar Sync**: Connect with Google Calendar, Outlook, and other providers
-- **OAuth Authentication**: Secure integration with external services
-- **Two-Way Sync**: Import and export events between calendars
-- **Sync Status Monitoring**: Real-time sync status and error handling
+- **Color-Coded Organization**: 16 beautiful theme colors with gradient backgrounds
+- **398 Emoji Icons**: Extensive icon library across Calendar, Event, Resource, and Common categories
+- **Timezone Intelligence**: 70+ world timezones with automatic conversion
+- **12/24 Hour Format**: User-configurable time format across all views
 
 ### 🤖 **Calendar Automation System**
-- **Rule-Based Automation**: Create intelligent rules that respond to event lifecycle triggers
-- **Event Lifecycle Triggers**: Automatic actions on event.created, event.updated, event.deleted, and time-based triggers
-- **Flexible Conditions**: Boolean logic (AND/OR/NOT) with 15+ operators for precise control
-- **Extensible Actions**: Plugin architecture supporting event coloring and future actions
-- **Retroactive Execution**: "Run Now" feature to apply rules to existing events
-- **Comprehensive Audit Logging**: Detailed execution history with 1000-entry circular buffer per rule
-- **User-Scoped Rules**: Private automations with complete isolation between users
+Intelligent automation that responds to your calendar events automatically:
+
+- **Event Lifecycle Triggers**: Automatic actions on event creation, updates, and deletion
+- **Time-Based Triggers**: React to events starting or ending (e.g., "30 minutes before event starts")
+- **Scheduled Actions**: Cron-based scheduling for recurring automation tasks
+- **Flexible Conditions**: Boolean logic (AND/OR/NOT) with 15+ operators
+  - String operations: contains, equals, starts with, ends with, regex matching
+  - Numeric comparisons: greater than, less than, equals, ranges
+  - Boolean checks: is true, is false
+  - List operations: in list, not in list
+- **Smart Actions**: Event coloring, status updates (extensible plugin architecture)
+- **Retroactive Execution**: Apply rules to existing events with "Run Now" feature
+- **Audit Logging**: Complete execution history with 1000-entry buffer per rule
+- **User Privacy**: All automations are private and isolated per user
+
+**Example Use Cases**:
+- Auto-color work meetings blue and personal events green
+- Flag high-priority events when title contains "urgent"
+- Track events longer than 2 hours
+- Automatically process events from specific calendars
+
+### 🏢 **Complete Reservation System**
+Professional booking management for any business:
+
+**Multi-Tenant Organization Management**
+- Create and manage multiple business organizations
+- Organization-level administrators with granular permissions
+- User assignment and role management across organizations
+- Complete isolation between organizations
+
+**Resource & Booking Management**
+- Define resource types (meeting rooms, styling chairs, tables, equipment)
+- Individual resource tracking with capacity limits
+- Configurable operating hours per resource type
+- Booking constraints (minimum duration, buffer times between bookings)
+- Real-time availability checking and conflict resolution
+
+**Reservation Workflow**
+- Status progression: Pending → Confirmed → Completed/Cancelled
+- Waitlist system for fully booked resources with auto-promotion capability
+- Customer information collection with flexible fields
+- Booking calendar with color-coded status indicators
+- Bulk operations for efficient management
+
+**Fine-Grained Access Control**
+- Reservation calendar-level permissions (Editor/Reviewer roles)
+- Organization admins with full management capabilities
+- User role assignment across multiple organizations
+- Centralized permission management system
+
+### 🔗 **External Calendar Integration**
+- **OAuth Authentication**: Secure connections with Google Calendar and Microsoft Outlook
+- **Two-Way Sync**: Import and export events between calendars
+- **Sync Status Monitoring**: Real-time status updates and error handling
+- **Multiple Account Support**: Connect multiple external calendars simultaneously
+
+### 👤 **User Management**
+- **Multi-Level Roles**: Global admins, organization admins, and standard users
+- **Personal Profiles**: Timezone preferences, theme selection, time format settings
+- **Usage Tiers**: Flexible plan system (Child, User, Store, Enterprise)
+- **Admin Dashboard**: Comprehensive user management with bulk operations
+- **Profile Customization**: 16 theme colors in rainbow order (Red → Violet)
 
 ### 🎨 **Modern UI/UX**
-- **Responsive Design**: Mobile-first approach with touch-friendly interactions
+- **Responsive Design**: Mobile-first approach optimized for all screen sizes
+- **Touch-Friendly**: 44px+ touch targets for excellent mobile experience
 - **Glass Morphism**: Modern backdrop-blur effects and gradient designs
-- **Tailwind CSS**: Utility-first styling with consistent design system
-- **Loading States**: Smooth loading animations and skeleton screens
-- **Error Handling**: User-friendly error messages and recovery options
+- **Smooth Animations**: Loading states, transitions, and skeleton screens
+- **Smart Error Handling**: User-friendly messages with recovery options
+- **React Portal Modals**: Proper z-index layering for all dialogs and dropdowns
 
-### 📱 **Mobile App (Android/iOS)**
-- **Capacitor Native**: Native Android app with web technologies
-- **Atomic Design**: Reusable component library (Atoms → Molecules → Organisms)
-- **Bottom Tab Navigation**: Role-based and feature-flag aware tabs
-- **Touch-Optimized**: 44px+ touch targets (WCAG AAA compliance)
-- **Mobile Calendar Views**: Event dots (month) and time slots (week)
-- **Swipe Gestures**: Intuitive navigation with haptic feedback
-- **Pull-to-Refresh**: Standard mobile gesture patterns
-- **Safe Area Support**: iOS notch/home bar handling
+### 📱 **Native Mobile Apps**
+**Android/iOS Apps** (Capacitor-powered):
+- Native performance with web technology foundation
+- Bottom tab navigation with role-based access
+- Optimized calendar views (event dots in month view, time slots in week view)
+- Swipe gestures with haptic feedback
+- Pull-to-refresh functionality
+- Safe area support for iOS notch/home bar
+- Touch-optimized controls (WCAG AAA compliance)
 
-### 🔐 **Security & Authentication**
+### 🔐 **Enterprise-Grade Security**
 - **JWT Authentication**: Secure token-based authentication system
-- **Multi-Level RBAC**: Role-based access control with global admin, org admin, and calendar-level roles
-- **Password Management**: Secure password hashing and reset functionality
-- **API Security**: Protected routes with comprehensive authorization guards
-- **Permission Service**: Centralized permission management for organization and calendar access
-- **Input Validation**: Comprehensive server-side and client-side validation
-
-## 🏗️ Architecture
-
-### **Backend - NestJS**
-```
-backend-nestjs/
-├── src/
-│   ├── entities/          # TypeORM database models
-│   │   ├── user.entity.ts
-│   │   ├── event.entity.ts
-│   │   ├── calendar.entity.ts
-│   │   ├── organisation.entity.ts
-│   │   ├── resource.entity.ts
-│   │   ├── reservation.entity.ts
-│   │   └── ...
-│   ├── controllers/       # API endpoint controllers
-│   ├── services/         # Business logic services
-│   ├── dto/             # Data transfer objects
-│   ├── modules/         # Feature modules
-│   └── auth/           # Authentication & authorization
-└── ...
-```
-
-### **Frontend - React TypeScript**
-```
-frontend/src/
-├── components/           # React components
-│   ├── Calendar.tsx      # Main calendar component
-│   ├── MonthView.tsx     # Month calendar view
-│   ├── WeekView.tsx      # Week calendar view
-│   ├── UserProfile.tsx   # User settings
-│   ├── AdminPanel.tsx    # Admin management
-│   ├── ReservationsPanel.tsx  # Reservation system
-│   ├── automation/       # Automation system components
-│   │   ├── AutomationPanel.tsx
-│   │   ├── AutomationRuleModal.tsx
-│   │   ├── AutomationDetailView.tsx
-│   │   └── builders/     # Rule builder components
-│   └── ...
-├── services/            # API integration
-├── types/              # TypeScript definitions
-└── hooks/             # Custom React hooks
-```
-
-## 🛠️ Technology Stack
-
-### **Core Technologies**
-- **Frontend**: React 19, TypeScript, Vite, Tailwind CSS
-- **Backend**: NestJS 11, TypeORM, Node.js
-- **Database**: PostgreSQL (production), SQLite (development)
-- **Authentication**: JWT, Passport.js (Google OAuth, Microsoft OAuth)
-- **Authorization**: Custom RBAC with guards and decorators
-- **API**: RESTful APIs with Swagger/OpenAPI documentation
-
-### **Development Tools**
-- **Hot Reload**: Vite for frontend, NestJS for backend
-- **Type Safety**: Full TypeScript coverage (TypeScript 5.8+)
-- **Code Quality**: ESLint, Prettier
-- **Version Control**: Git with conventional commits
-- **API Documentation**: Swagger UI with comprehensive endpoint documentation
-
-## 📋 Quick Start
-
-### **Prerequisites**
-- Node.js 18+ and npm
-- PostgreSQL database
-- Git
-
-### **Installation**
-
-1. **Clone the repository**
-```bash
-git clone https://github.com/Csepi/cal3.git
-cd cal3
-```
-
-2. **Backend Setup**
-```bash
-cd backend-nestjs
-npm install
-
-# Configure environment variables (optional for development)
-cp .env.example .env
-# Edit .env with your database credentials and OAuth secrets
-
-# Start backend development server
-PORT=8081 JWT_SECRET="calendar-secret-key" npm run start:dev
-```
-
-3. **Frontend Setup**
-```bash
-cd frontend
-npm install
-
-# Start frontend development server
-npm run dev -- --port 8080
-```
-
-4. **Access the Application**
-- Frontend: http://localhost:8080
-- Backend API: http://localhost:8081/api
-- API Documentation: http://localhost:8081/api-docs
-
-### **🎯 Smart Port Configuration**
-
-Cal3 uses intelligent URL construction - **just set 3 variables**:
-
-```bash
-BASE_URL=http://localhost      # Your base domain
-FRONTEND_PORT=8080             # Frontend port (default: 8080)
-BACKEND_PORT=8081              # Backend port (default: 8081)
-```
-
-All URLs (FRONTEND_URL, API_URL, OAuth callbacks) are **automatically constructed**. No redundant configuration needed!
-
-See [CONFIGURATION_GUIDE.md](CONFIGURATION_GUIDE.md) for complete details.
-
-### **Default Credentials**
-- **Admin User**: `admin` / `enterenter`
-- **Regular User**: `user` / `enterenter`
-
-## 🎯 Feature Demonstrations
-
-### **1. Calendar Views**
-
-**Month View**
-- Clean grid layout with event cards
-- Color-coded events by calendar
-- Quick event creation and navigation
-- Reservation integration with resource information
-
-**Week View**
-- Hourly time slots with precise event positioning
-- User-configurable time format (12-hour AM/PM or 24-hour)
-- Drag-to-select time ranges for new events
-- Reservation blocks with status indicators
-- Mobile-responsive design
-
-### **2. Reservation Management System**
-
-**Organisation Setup**
-- Create and manage business organisations
-- User assignment and role management
-- Multi-tenant isolation
-
-**Resource Configuration**
-- Define resource types (meeting rooms, styling chairs, tables)
-- Set booking constraints (minimum duration, buffer time)
-- Configure capacity limits and operating hours
-
-**Booking Process**
-- Interactive time selection
-- Customer information collection
-- Availability checking and conflict resolution
-- Status workflow management
-
-**Admin Management**
-- Comprehensive reservation dashboard
-- Filtering by status, resource, date range
-- Bulk operations and status updates
-- Real-time booking statistics
-
-### **3. User Experience**
-
-**Profile Customization**
-- 16 theme colors in rainbow order
-- Timezone selection from 70+ world cities
-- Personal information management
-- Usage plan display
-
-**Theme Colors Available**
-- Red, Orange, Yellow, Lime
-- Green, Emerald, Teal, Cyan
-- Sky, Blue, Indigo, Violet
-- Purple, Pink, Rose, Slate
-
-**Calendar Integration**
-- External calendar synchronization
-- OAuth-based secure connections
-- Sync status monitoring
-- Error handling and recovery
-
-## 📊 API Documentation
-
-### **Authentication Endpoints**
-```
-POST /api/auth/login          # User login
-POST /api/auth/register       # User registration
-GET  /api/auth/profile        # Get current user profile
-GET  /api/auth/google         # Google OAuth login
-GET  /api/auth/microsoft      # Microsoft OAuth login
-```
-
-### **Calendar & Events**
-```
-GET    /api/calendars         # Get user calendars
-POST   /api/calendars         # Create calendar
-GET    /api/events           # Get events
-POST   /api/events           # Create event
-PATCH  /api/events/:id       # Update event
-DELETE /api/events/:id       # Delete event
-```
-
-### **Automation System**
-```
-GET    /api/automation/rules              # List automation rules
-POST   /api/automation/rules              # Create rule
-GET    /api/automation/rules/:id          # Get rule details
-PUT    /api/automation/rules/:id          # Update rule
-DELETE /api/automation/rules/:id          # Delete rule
-POST   /api/automation/rules/:id/execute  # Run rule retroactively
-GET    /api/automation/rules/:id/audit-logs  # Get audit logs
-GET    /api/automation/audit-logs/:logId  # Get log details
-GET    /api/automation/rules/:id/stats    # Get execution stats
-```
-
-### **Reservation System**
-```
-GET    /api/organisations     # Get accessible organisations
-POST   /api/organisations     # Create organisation (admin)
-GET    /api/resource-types    # Get resource types
-POST   /api/resource-types    # Create resource type
-GET    /api/resources         # Get resources
-POST   /api/resources         # Create resource
-GET    /api/reservations      # Get reservations
-POST   /api/reservations      # Create reservation
-PATCH  /api/reservations/:id  # Update reservation status
-```
-
-### **Organisation Admin Management**
-```
-POST   /api/organisations/:id/admins         # Assign org admin
-DELETE /api/organisations/:id/admins/:userId # Remove org admin
-GET    /api/organisations/:id/admins         # Get org admins
-POST   /api/organisations/:id/users          # Add user to org
-DELETE /api/organisations/:id/users/:userId  # Remove user from org
-GET    /api/organisations/admin-roles        # Get user's admin roles
-```
-
-### **Reservation Calendar Management**
-```
-POST   /api/organisations/:id/reservation-calendars  # Create calendar
-GET    /api/organisations/:id/reservation-calendars  # Get org calendars
-POST   /api/reservation-calendars/:id/roles          # Assign role
-DELETE /api/reservation-calendars/:id/roles/:userId  # Remove role
-GET    /api/users/reservation-calendars              # Get accessible calendars
-```
-
-### **User Permissions**
-```
-GET    /api/user-permissions                        # Get user permissions
-GET    /api/user-permissions/accessible-organizations  # Get accessible orgs
-GET    /api/user-permissions/accessible-reservation-calendars  # Get accessible calendars
-```
-
-### **Admin Operations**
-```
-GET    /api/admin/users                    # Get all users
-PATCH  /api/admin/users/:id/usage-plans    # Modify user plans
-GET    /api/admin/stats                    # Get system statistics
-GET    /api/admin/organizations            # Get all organizations
-POST   /api/admin/users/:id/organizations  # Add user to org
-GET    /api/admin/reservations             # Get all reservations
-```
-
-For complete API documentation with request/response examples, see [API_DOCUMENTATION.md](API_DOCUMENTATION.md)
-
-## 🔧 Configuration
-
-### **Environment Variables**
-```bash
-# Database
-DB_HOST=localhost
-DB_PORT=5432
-DB_USERNAME=your_username
-DB_PASSWORD=your_password
-DB_NAME=cal3_db
-
-# Authentication
-JWT_SECRET=your-super-secret-jwt-key
-
-# OAuth (Optional)
-GOOGLE_CLIENT_ID=your_google_client_id
-GOOGLE_CLIENT_SECRET=your_google_client_secret
-MICROSOFT_CLIENT_ID=your_microsoft_client_id
-MICROSOFT_CLIENT_SECRET=your_microsoft_client_secret
-```
-
-### **Port Configuration**
-⚠️ **CRITICAL**: The application requires specific ports:
-- **Frontend**: Port 8080 (hardcoded in configuration)
-- **Backend**: Port 8081 (hardcoded in configuration)
-
-These ports must not be changed as they are referenced throughout the application.
-
-## 📈 Database Schema
-
-### **Core Entities**
-- **Users**: Authentication, profiles, usage plans
-- **Calendars**: User calendars and sharing
-- **Events**: Calendar events with recurrence support
-- **Organisations**: Multi-tenant business entities
-- **OrganisationAdmins**: Organisation-level administrators
-- **ReservationCalendars**: Fine-grained calendar access control
-- **ReservationCalendarRoles**: User roles for calendars (editor/reviewer)
-- **Resources**: Bookable items with capacity
-- **Reservations**: Booking records with status workflow
-- **AutomationRules**: Automation rules with triggers and conditions
-- **AutomationConditions**: Rule conditions with operators
-- **AutomationActions**: Rule actions with configurations
-- **AutomationAuditLogs**: Execution history and debugging
-
-### **Key Relationships**
-- Users ↔ Organisations (Many-to-Many)
-- Users ↔ OrganisationAdmins (Many-to-Many through join table)
-- Organisations → ReservationCalendars (One-to-Many)
-- ReservationCalendars ↔ Users (Many-to-Many through ReservationCalendarRoles)
-- Organisations → Resource Types (One-to-Many)
-- Resource Types → Resources (One-to-Many)
-- Resources → Reservations (One-to-Many)
-- Users → Events (One-to-Many)
-- Calendars → Events (One-to-Many)
-
-## 🧪 Testing
-
-### **Backend Testing**
-```bash
-cd backend-nestjs
-npm run test          # Unit tests
-npm run test:e2e      # End-to-end tests
-npm run test:cov      # Coverage report
-```
-
-### **Frontend Testing**
-```bash
-cd frontend
-npm run test          # Component tests
-npm run test:coverage # Coverage report
-```
-
-### **API Testing**
-All REST APIs have been comprehensively tested with 100% success rate:
-- Authentication flows
-- CRUD operations for all entities
-- Error handling and validation
-- Role-based access control
-- External integrations
-
-## 🚀 Deployment
-
-### **Production Build**
-```bash
-# Backend
-cd backend-nestjs
-npm run build
-npm run start:prod
-
-# Frontend
-cd frontend
-npm run build
-# Serve the dist/ folder with your preferred web server
-```
-
-### **Docker Support** ✅
-Full Docker deployment with configurable ports:
-
-```bash
-# Quick start (development)
-cd docker && ./scripts/start-dev.sh
-
-# Production deployment
-cd docker && ./scripts/start-prod.sh
-
-# Configure ports if conflicts exist:
-# Add to Portainer environment variables or config/.env:
-FRONTEND_PORT=8080    # Default: 8080
-BACKEND_PORT=8081     # Default: 8081
-DB_PORT=5433          # Default: 5433
-```
-
-📖 **Complete Docker Guide**: See [docker/README.md](docker/README.md) for detailed setup
-📖 **Portainer Guide**: See [docker/PORTAINER_GUIDE.md](docker/PORTAINER_GUIDE.md) for UI deployment
-
-## 🎉 Key Features Highlights
-
-### **Recent Additions (v1.3.0)**
-- ✅ **Calendar Automation System**: Complete rule-based automation with 8 phases implemented
-  - Event lifecycle triggers (created, updated, deleted)
-  - Time-based triggers (starts_in, ends_in, scheduled.time)
+- **Role-Based Access Control (RBAC)**: Multi-level permission system
+  - Global administrators (full system access)
+  - Organization administrators (organization-level management)
+  - Calendar editors (create/edit reservations)
+  - Calendar reviewers (view-only access)
+- **Password Security**: Industry-standard hashing and secure reset flows
+- **API Protection**: Comprehensive authorization guards on all endpoints
+- **Input Validation**: Server-side and client-side validation throughout
+
+## 🏗️ Technology Stack
+
+### **Frontend**
+- **React 19** - Modern UI library with latest features
+- **TypeScript 5.8+** - Full type safety across the codebase
+- **Vite** - Lightning-fast build tool with HMR
+- **Tailwind CSS** - Utility-first styling with custom design system
+- **React Hooks** - Custom hooks for calendar settings, automation, and audit logs
+
+### **Backend**
+- **NestJS 11** - Enterprise-grade Node.js framework
+- **TypeORM** - Powerful ORM with PostgreSQL support
+- **Passport.js** - OAuth integration (Google, Microsoft)
+- **JWT** - Secure authentication tokens
+- **Swagger/OpenAPI** - Comprehensive API documentation
+
+### **Database**
+- **PostgreSQL** - Production-grade relational database
+- **Optimized Schema** - Indexed columns for fast queries
+- **Entity Relationships** - Complex many-to-many and one-to-many relationships
+
+### **Mobile**
+- **Capacitor** - Native Android/iOS app framework
+- **Atomic Design** - Component library (Atoms → Molecules → Organisms)
+- **Native Features** - Camera, notifications, haptic feedback
+
+## 🎯 Key Feature Highlights
+
+### **Version 1.2.7** (Latest)
+- ✅ **Expanded Icon Library**: 398 emojis across 4 categories
+  - Calendar: 40 icons (office/planning themed)
+  - Event: 118 icons (celebrations, sports, food, entertainment, awards)
+  - Resource: 129 icons (buildings, vehicles, technology, tools, packages)
+  - Common: 111 icons (status, hearts, shapes, arrows, weather, symbols)
+- ✅ **UI Refinements**: Fixed z-index layering, improved dropdown positioning
+- ✅ **Calendar Sidebar**: Collapsible with icon display (collapsed + expanded views)
+- ✅ **Icon Management**: Full save/load functionality across calendars and events
+
+### **Version 1.3.0**
+- ✅ **Calendar Automation System**: Production-ready rule-based automation
+  - 7 trigger types (event lifecycle + time-based + scheduled)
   - 15+ condition operators with boolean logic
-  - Plugin-based action system (V1: event coloring)
+  - Plugin-based action system (extensible architecture)
   - Retroactive execution with rate limiting
-  - Circular buffer audit logging (1000 entries per rule)
-  - Complete frontend UI with builder components
+  - Comprehensive audit logging (1000 entries per rule)
+  - Complete frontend UI with visual rule builder
 
-### **Previous Additions (v1.2.0)**
-- ✅ **Organisation Admin System**: Dedicated admin roles at the organisation level
-- ✅ **Reservation Calendar Roles**: Editor and reviewer roles for fine-grained access control
-- ✅ **Permission Service**: Centralized permission management system
-- ✅ **Multi-Level RBAC**: Comprehensive role-based access control hierarchy
-- ✅ **Enhanced Admin Panel**: Complete organization and user management interface
+### **Version 1.2.0**
+- ✅ **Organization Admin System**: Dedicated admin roles at organization level
+- ✅ **Reservation Calendar Roles**: Editor/Reviewer permissions for fine-grained control
+- ✅ **Permission Service**: Centralized permission management
+- ✅ **Multi-Level RBAC**: Complete role hierarchy (Global → Org → Calendar)
 
 ### **Established Features**
-- ✅ **Hour Format Settings**: 12h/24h time format across all calendar views
-- ✅ **16 Theme Colors**: Complete rainbow color palette with gradients
-- ✅ **Timezone Support**: 70+ world timezones with automatic conversion
-- ✅ **Usage Plans Management**: Flexible tier system with admin controls
-- ✅ **Recurring Events**: Full support for daily, weekly, and monthly patterns
+- ✅ **Hour Format Settings**: 12h/24h across all calendar views and modals
+- ✅ **16 Theme Colors**: Rainbow palette with gradients and hover states
+- ✅ **70+ Timezones**: Automatic timezone conversion across Americas, Europe, Asia, Pacific
+- ✅ **Usage Plans**: Flexible tier system (Child, User, Store, Enterprise)
 - ✅ **OAuth Integration**: Google and Microsoft calendar synchronization
+- ✅ **Feature Flags**: Global feature control (OAuth, Calendar Sync, Reservations, Automation)
+
+## 📊 Use Cases
+
+### **For Individuals**
+- Personal calendar management with external sync
+- Automated event organization and color coding
+- Cross-device access (web + mobile apps)
+- Recurring event management
+
+### **For Small Businesses**
+- Appointment scheduling (salons, clinics, consulting)
+- Meeting room booking
+- Equipment rental management
+- Customer booking portal
+
+### **For Enterprises**
+- Multi-location resource management
+- Department-level calendar organization
+- Complex booking workflows with approvals
+- Integration with existing calendar systems
+
+### **For Service Industries**
+- Restaurant table reservations
+- Hotel room booking
+- Fitness class scheduling
+- Event space management
+
+## 📱 Platform Availability
+
+- **Web App**: Access from any modern browser (Chrome, Firefox, Safari, Edge)
+- **Android App**: Native Android application (Google Play Store)
+- **iOS App**: Native iOS application (App Store) - Coming soon
+- **Progressive Web App**: Install directly from browser for app-like experience
+
+## 🎨 Customization Options
+
+### **Personal Themes**
+16 theme colors with consistent design language:
+- **Warm**: Red, Orange, Yellow, Lime
+- **Cool**: Green, Emerald, Teal, Cyan, Sky, Blue
+- **Deep**: Indigo, Violet, Purple
+- **Soft**: Pink, Rose
+- **Neutral**: Slate
+
+### **Calendar Appearance**
+- Color-coded calendars with gradient backgrounds
+- Custom icons from 398-emoji library
+- Configurable calendar visibility
+- Collapsible sidebar for more screen space
+
+### **Time & Locale**
+- 70+ timezone options across all continents
+- 12-hour AM/PM or 24-hour time format
+- Date format localization
+
+## 🔮 Roadmap
+
+### **Q1 2025**
+- [ ] Advanced notification system (email, SMS, push)
+- [ ] Waitlist auto-promotion on cancellations
+- [ ] Real-time updates with WebSockets
+- [ ] Operating hours management UI
+
+### **Q2 2025**
+- [ ] Customer self-service booking portal
+- [ ] Payment processing integration (Stripe, PayPal)
+- [ ] Advanced analytics dashboard
+- [ ] Staff scheduling module
+
+### **Q3 2025**
+- [ ] Multi-location management
+- [ ] White-label solutions for agencies
+- [ ] API marketplace for third-party plugins
+- [ ] Advanced automation actions (notifications, webhooks)
+
+### **Q4 2025**
+- [ ] Calendar integration marketplace
+- [ ] Team collaboration features
+- [ ] Custom branding options
+- [ ] Advanced reporting and insights
+
+## 📞 Support & Documentation
+
+- **Setup Guide**: See [setup-guide.md](setup-guide.md) for initial configuration
+- **API Documentation**: Complete endpoint reference at [API_DOCUMENTATION.md](API_DOCUMENTATION.md)
+- **Automation Guide**: Detailed automation documentation at [docs/automation.md](docs/automation.md)
+- **Feature Flags**: Configuration guide at [docs/feature-flags.md](docs/feature-flags.md)
+- **Deployment**: Server deployment guide at [DEPLOYMENT.md](DEPLOYMENT.md)
+
+For support inquiries, please contact the development team or open an issue on GitHub.
 
 ## 🤝 Contributing
 
+Contributions are welcome! Please see our contribution guidelines:
+
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+3. Follow TypeScript strict mode and existing code style
+4. Maintain test coverage
+5. Use conventional commit messages
+6. Submit a Pull Request
 
-### **Development Guidelines**
-- Follow TypeScript strict mode
-- Use conventional commit messages
-- Maintain test coverage
-- Follow the existing code style
+**Development Guidelines**:
+- Full TypeScript type coverage
+- Component-based architecture
+- Comprehensive error handling
+- Test with multiple user roles
 - Update documentation as needed
-- Test with multiple user roles (admin, org admin, user)
 
 ## 📝 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 👥 Authors
-
-- **Development Team** - *Initial work and ongoing development*
-
 ## 🙏 Acknowledgments
 
 - NestJS for the robust backend framework
-- React community for excellent frontend tools
-- Tailwind CSS for the utility-first styling approach
+- React community for excellent frontend tools and libraries
+- Tailwind CSS for utility-first styling approach
 - TypeORM for seamless database integration
-- All contributors and testers
-
-## 📞 Support
-
-For support, please open an issue on GitHub or contact the development team.
-
-## 🔮 Roadmap
-
-### **Immediate Next Steps**
-- [ ] Operating Hours Frontend UI
-- [ ] Advanced Notification System
-- [ ] Waitlist Auto-promotion
-- [ ] Real-time Updates with WebSockets
-
-### **Medium-term Goals**
-- [ ] Customer Self-service Portal
-- [ ] Payment Processing Integration
-- [ ] Advanced Analytics Dashboard
-- [ ] Mobile App (React Native)
-
-### **Long-term Vision**
-- [ ] External Calendar Integration Marketplace
-- [ ] Multi-location Management
-- [ ] Staff Scheduling Integration
-- [ ] White-label Solutions
-- [ ] API Marketplace for Third-party Plugins
+- Capacitor for native mobile app capabilities
+- All contributors, testers, and early adopters
 
 ---
 
-**Cal3** - Empowering everyone from indivials up to businesses with modern calendar and reservation management solutions. Built with ❤️ using modern technologies.
+**Cal3** - Empowering individuals and businesses with modern calendar and reservation management. Built with ❤️ using cutting-edge technologies.
+
+**Version**: 1.2.7 | **Status**: Production Ready | **License**: MIT
