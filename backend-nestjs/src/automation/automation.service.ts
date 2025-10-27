@@ -7,7 +7,8 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { AutomationRule } from '../entities/automation-rule.entity';
+import * as crypto from 'crypto';
+import { AutomationRule, TriggerType } from '../entities/automation-rule.entity';
 import { AutomationCondition } from '../entities/automation-condition.entity';
 import { AutomationAction } from '../entities/automation-action.entity';
 import { AutomationAuditLog, AuditLogStatus } from '../entities/automation-audit-log.entity';
@@ -82,6 +83,12 @@ export class AutomationService {
       isEnabled: createRuleDto.isEnabled ?? true,
       conditionLogic: createRuleDto.conditionLogic,
     });
+
+    // Generate webhook token if this is a webhook trigger
+    if (createRuleDto.triggerType === TriggerType.WEBHOOK_INCOMING) {
+      rule.webhookToken = this.generateWebhookToken();
+      rule.webhookSecret = this.generateWebhookSecret();
+    }
 
     // Save rule first to get ID
     const savedRule = await this.ruleRepository.save(rule);
@@ -320,22 +327,24 @@ export class AutomationService {
   }
 
   /**
-   * Execute a rule on a single event
+   * Execute a rule on a single event or webhook data
    * @param rule The rule to execute
-   * @param event The event to execute the rule on
+   * @param event The event to execute the rule on (optional for webhook triggers)
    * @param executedByUserId Optional user ID for manual execution
+   * @param webhookData Optional webhook payload data
    */
   async executeRuleOnEvent(
     rule: AutomationRule,
-    event: Event,
+    event: Event | null = null,
     executedByUserId?: number,
+    webhookData: Record<string, any> = null,
   ): Promise<void> {
     const startTime = Date.now();
     const executedAt = new Date();
 
     try {
       // Step 1: Evaluate conditions
-      const conditionsResult = await this.evaluatorService.evaluateConditions(rule, event);
+      const conditionsResult = await this.evaluatorService.evaluateConditions(rule, event, webhookData);
 
       // Step 2: If conditions pass, execute actions
       let actionResults: ActionResultDto[] = [];
@@ -382,9 +391,9 @@ export class AutomationService {
 
       const auditLog = this.auditLogRepository.create({
         rule: { id: rule.id } as AutomationRule,
-        event: { id: event.id } as Event,
+        event: event ? { id: event.id } as Event : null,
         triggerType: rule.triggerType,
-        triggerContext: { manual: executedByUserId ? true : false },
+        triggerContext: webhookData || { manual: executedByUserId ? true : false },
         conditionsResult: {
           passed: conditionsResult.passed,
           evaluations: conditionsResult.evaluations,
@@ -415,9 +424,9 @@ export class AutomationService {
 
       const auditLog = this.auditLogRepository.create({
         rule: { id: rule.id } as AutomationRule,
-        event: { id: event.id } as Event,
+        event: event ? { id: event.id } as Event : null,
         triggerType: rule.triggerType,
-        triggerContext: { manual: executedByUserId ? true : false },
+        triggerContext: webhookData || { manual: executedByUserId ? true : false },
         conditionsResult: { passed: false, evaluations: [] },
         actionResults: undefined,
         status: AuditLogStatus.FAILURE,
@@ -624,6 +633,7 @@ export class AutomationService {
       conditionLogic: rule.conditionLogic,
       lastExecutedAt: rule.lastExecutedAt,
       executionCount: rule.executionCount,
+      webhookToken: rule.webhookToken,
       createdAt: rule.createdAt,
       updatedAt: rule.updatedAt,
     };
@@ -701,5 +711,99 @@ export class AutomationService {
           }
         : undefined,
     };
+  }
+
+  // ========================================
+  // WEBHOOK SUPPORT METHODS
+  // ========================================
+
+  /**
+   * Execute a rule triggered by an incoming webhook
+   * @param webhookToken The webhook token from the URL
+   * @param webhookData The incoming JSON payload
+   */
+  async executeRuleFromWebhook(
+    webhookToken: string,
+    webhookData: Record<string, any>,
+  ): Promise<{ success: boolean; ruleId: number; message: string }> {
+    this.logger.log(`Webhook received for token: ${webhookToken}`);
+
+    // Find the rule by webhook token
+    const rule = await this.ruleRepository.findOne({
+      where: { webhookToken },
+      relations: ['conditions', 'actions'],
+    });
+
+    if (!rule) {
+      this.logger.warn(`Webhook token not found: ${webhookToken}`);
+      throw new NotFoundException('Invalid webhook token');
+    }
+
+    if (!rule.isEnabled) {
+      this.logger.warn(`Webhook rule ${rule.id} is disabled`);
+      throw new BadRequestException('Webhook rule is disabled');
+    }
+
+    if (rule.triggerType !== TriggerType.WEBHOOK_INCOMING) {
+      this.logger.error(`Rule ${rule.id} is not a webhook trigger`);
+      throw new BadRequestException('This rule is not configured for webhook triggers');
+    }
+
+    // Execute the rule with webhook data (no event needed)
+    await this.executeRuleOnEvent(rule, null, null, webhookData);
+
+    this.logger.log(`Webhook rule ${rule.id} executed successfully`);
+
+    return {
+      success: true,
+      ruleId: rule.id,
+      message: 'Webhook processed successfully',
+    };
+  }
+
+  /**
+   * Generate a unique webhook token (32 bytes = 64 hex chars)
+   */
+  private generateWebhookToken(): string {
+    return crypto.randomBytes(32).toString('hex');
+  }
+
+  /**
+   * Generate a webhook secret for signature validation (64 bytes = 128 hex chars)
+   */
+  private generateWebhookSecret(): string {
+    return crypto.randomBytes(64).toString('hex');
+  }
+
+  /**
+   * Regenerate webhook token for an existing rule
+   * @param userId User ID (for authorization)
+   * @param ruleId Rule ID
+   * @returns New webhook token
+   */
+  async regenerateWebhookToken(userId: number, ruleId: number): Promise<string> {
+    const rule = await this.ruleRepository.findOne({ where: { id: ruleId } });
+
+    if (!rule) {
+      throw new NotFoundException(`Rule with ID ${ruleId} not found`);
+    }
+
+    if (rule.createdById !== userId) {
+      throw new ForbiddenException('You do not have access to this rule');
+    }
+
+    if (rule.triggerType !== TriggerType.WEBHOOK_INCOMING) {
+      throw new BadRequestException('This rule is not a webhook trigger');
+    }
+
+    // Generate new tokens
+    rule.webhookToken = this.generateWebhookToken();
+    rule.webhookSecret = this.generateWebhookSecret();
+
+    await this.ruleRepository.save(rule);
+
+    this.logger.log(`Webhook token regenerated for rule ${ruleId}`);
+
+    return rule.webhookToken;
   }
 }

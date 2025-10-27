@@ -14,6 +14,8 @@ import type {
 import { TriggerSelector } from './builders/TriggerSelector';
 import { ConditionBuilder } from './builders/ConditionBuilder';
 import { ActionBuilder } from './builders/ActionBuilder';
+import { WebhookConfiguration } from './WebhookConfiguration';
+import { automationService } from '../../services/automationService';
 
 interface AutomationRuleModalProps {
   rule?: AutomationRuleDetailDto;
@@ -44,6 +46,7 @@ export function AutomationRuleModal({
   const [isEnabled, setIsEnabled] = useState(rule?.isEnabled ?? true);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [webhookToken, setWebhookToken] = useState<string | null>(rule?.webhookToken || null);
 
   // Initialize conditions and actions from rule
   useEffect(() => {
@@ -122,6 +125,22 @@ export function AutomationRuleModal({
   const requiresValue = (operator: any): boolean => {
     const noValueOperators = ['is_empty', 'is_not_empty', 'is_true', 'is_false'];
     return !noValueOperators.includes(operator);
+  };
+
+  // Handle webhook token regeneration
+  const handleRegenerateWebhookToken = async (): Promise<string> => {
+    if (!rule?.id) {
+      throw new Error('Cannot regenerate token for unsaved rule');
+    }
+
+    try {
+      const response = await automationService.regenerateWebhookToken(rule.id);
+      setWebhookToken(response.webhookToken);
+      return response.webhookToken;
+    } catch (error) {
+      console.error('Failed to regenerate webhook token:', error);
+      throw error;
+    }
   };
 
   // Handle save
@@ -265,6 +284,14 @@ export function AutomationRuleModal({
               onTriggerChange={setTriggerType}
               onConfigChange={setTriggerConfig}
               disabled={!!rule}
+            />
+
+            {/* Webhook Configuration (shows only for webhook triggers) */}
+            <WebhookConfiguration
+              ruleId={rule?.id || null}
+              triggerType={triggerType}
+              webhookToken={webhookToken}
+              onRegenerateToken={handleRegenerateWebhookToken}
             />
           </div>
 

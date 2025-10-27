@@ -59,6 +59,10 @@ export const ConditionRow: React.FC<ConditionRowProps> = ({
     if (!condition.field) return 'Select a field first...';
     if (!condition.operator) return 'Select an operator...';
 
+    if (condition.field === ConditionField.WEBHOOK_DATA) {
+      return 'e.g., webhook.data.customer_id or webhook.data.order.status';
+    }
+
     switch (selectedField?.dataType) {
       case 'number':
         return 'e.g., 60';
@@ -138,6 +142,11 @@ export const ConditionRow: React.FC<ConditionRowProps> = ({
           )}
           {condition.field === ConditionField.EVENT_DURATION && (
             <p className="mt-1 text-xs text-gray-500">Duration in minutes</p>
+          )}
+          {condition.field === ConditionField.WEBHOOK_DATA && (
+            <p className="mt-1 text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded">
+              💡 Use dot notation to access nested JSON fields (e.g., webhook.data.customer_id, webhook.data.metadata.priority)
+            </p>
           )}
           {condition.operator === ConditionOperator.IN_LIST && (
             <p className="mt-1 text-xs text-gray-500">Separate multiple values with commas</p>

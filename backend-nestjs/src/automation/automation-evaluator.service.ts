@@ -13,19 +13,21 @@ export class AutomationEvaluatorService {
   /**
    * Evaluates all conditions for a rule against an event
    * @param rule The automation rule to evaluate
-   * @param event The event to evaluate against
+   * @param event The event to evaluate against (optional for webhook triggers)
+   * @param webhookData Optional webhook payload data for webhook.incoming triggers
    * @returns Evaluation result with individual condition results
    */
   async evaluateConditions(
     rule: AutomationRule,
-    event: Event,
+    event: Event | null = null,
+    webhookData: Record<string, any> = null,
   ): Promise<ConditionsResultDto> {
     const evaluations: ConditionEvaluationDto[] = [];
     const conditions = rule.conditions || [];
 
     // Evaluate each condition
     for (const condition of conditions) {
-      const evaluation = await this.evaluateCondition(condition, event);
+      const evaluation = await this.evaluateCondition(condition, event, webhookData);
       evaluations.push(evaluation);
     }
 
@@ -46,11 +48,12 @@ export class AutomationEvaluatorService {
   }
 
   /**
-   * Evaluates a single condition against an event
+   * Evaluates a single condition against an event or webhook data
    */
   private async evaluateCondition(
     condition: AutomationCondition,
-    event: Event,
+    event: Event | null,
+    webhookData: Record<string, any> = null,
   ): Promise<ConditionEvaluationDto> {
     const evaluation: ConditionEvaluationDto = {
       conditionId: condition.id,
@@ -62,8 +65,8 @@ export class AutomationEvaluatorService {
     };
 
     try {
-      // Extract the actual value from the event
-      evaluation.actualValue = this.extractFieldValue(condition.field, event);
+      // Extract the actual value from the event or webhook data
+      evaluation.actualValue = this.extractFieldValue(condition.field, event, webhookData);
 
       // Evaluate the condition based on operator
       evaluation.passed = this.evaluateOperator(
@@ -80,10 +83,50 @@ export class AutomationEvaluatorService {
   }
 
   /**
-   * Extracts a field value from an event using dot notation
-   * Supports: event.*, calendar.*, and nested fields
+   * Extracts a field value from an event or webhook data using dot notation
+   * Supports: event.*, calendar.*, webhook.data.*, and nested fields
    */
-  private extractFieldValue(field: ConditionField | string, event: Event): any {
+  private extractFieldValue(
+    field: ConditionField | string,
+    event: Event | null,
+    webhookData: Record<string, any> = null,
+  ): any {
+    // Handle webhook.data.* fields
+    if (field.startsWith('webhook.data')) {
+      if (!webhookData) {
+        throw new Error('Webhook data not available for this trigger');
+      }
+
+      // Extract the path after 'webhook.data.'
+      // Examples: 'webhook.data.customer_id' -> 'customer_id'
+      //           'webhook.data.order.status' -> 'order.status'
+      const path = field.substring('webhook.data.'.length);
+
+      if (!path) {
+        // Return the entire webhook data object if no specific path
+        return webhookData;
+      }
+
+      // Navigate the path in webhook data
+      const parts = path.split('.');
+      let value: any = webhookData;
+
+      for (const part of parts) {
+        if (value && typeof value === 'object' && part in value) {
+          value = value[part];
+        } else {
+          throw new Error(`Webhook data path "${path}" not found in payload`);
+        }
+      }
+
+      return value;
+    }
+
+    // Handle event fields
+    if (!event) {
+      throw new Error('Event data not available for this condition');
+    }
+
     // Map of supported field paths
     const fieldMap = {
       [ConditionField.EVENT_TITLE]: event.title,

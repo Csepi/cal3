@@ -22,6 +22,9 @@ export enum ConditionField {
   // Calendar properties
   EVENT_CALENDAR_ID = 'event.calendar.id',
   EVENT_CALENDAR_NAME = 'event.calendar.name',
+
+  // Webhook properties (supports dynamic JSON path access)
+  WEBHOOK_DATA = 'webhook.data',
 }
 
 export enum ConditionOperator {

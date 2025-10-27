@@ -215,6 +215,9 @@ export class AutomationRuleDto {
   @ApiProperty()
   executionCount: number;
 
+  @ApiPropertyOptional({ description: 'Webhook token for webhook.incoming triggers' })
+  webhookToken: string | null;
+
   @ApiProperty()
   createdAt: Date;
 

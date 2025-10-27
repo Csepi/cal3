@@ -596,6 +596,7 @@ All primary documentation has been updated to reflect the current application st
 - **README.md** - Comprehensive project overview with latest features including automation system
 - **API_DOCUMENTATION.md** - Complete API reference with all endpoints including automation
 - **docs/automation.md** - Comprehensive automation system documentation (1700+ lines)
+- **docs/automation-webhooks.md** - Webhook trigger documentation with integration examples
 - **docs/feature-flags.md** - Complete feature flags system documentation with examples and best practices
 - **DEPLOYMENT.md** - Full deployment guide covering multiple platforms and configurations
 - **setup-guide.md** - Complete setup instructions from initial installation to running application
@@ -625,14 +626,16 @@ All current documentation reflects:
 The automation system is a complete rule-based automation platform integrated into Cal3:
 
 ### Key Features
-- **7 Trigger Types**: event.created, event.updated, event.deleted, event.starts_in, event.ends_in, calendar.imported, scheduled.time
-- **11 Event Fields**: title, description, location, notes, duration, is_all_day, color, status, calendar.id, calendar.name, computed duration
+- **8 Trigger Types**: event.created, event.updated, event.deleted, event.starts_in, event.ends_in, calendar.imported, scheduled.time, **webhook.incoming**
+- **12 Condition Fields**: title, description, location, notes, duration, is_all_day, color, status, calendar.id, calendar.name, computed duration, **webhook.data (smart values)**
 - **15+ Operators**: String (contains, equals, matches regex, etc.), Numeric (>, <, >=, <=), Boolean (is_true, is_false), Array (in, not_in)
 - **Boolean Logic**: AND/OR at rule level, NOT at condition level
+- **Webhook Smart Values**: Access incoming JSON data via dot notation (e.g., webhook.data.customer_id, webhook.data.order.status)
 - **Action System**: Plugin architecture with self-registration (V1: set_event_color)
 - **Audit Logging**: Circular buffer (1000 entries per rule) with detailed execution traces
 - **Retroactive Execution**: "Run Now" feature with rate limiting
 - **User Scoping**: Complete isolation between users
+- **Webhook Security**: Unique token per rule with regeneration support
 
 ### Architecture
 - **Backend**: 8 services (automation, evaluator, scheduler, audit, 4 executors)
@@ -646,4 +649,6 @@ The automation system is a complete rule-based automation platform integrated in
 - **Adding New Actions**: Create executor implementing IActionExecutor, add to AutomationModule providers
 - **Testing**: All CRUD endpoints tested, automation tab accessible at Dashboard → 🤖 Automation
 
-For complete details, see [docs/automation.md](docs/automation.md)
+For complete details, see:
+- **[docs/automation.md](docs/automation.md)** - Full automation system documentation
+- **[docs/automation-webhooks.md](docs/automation-webhooks.md)** - Webhook trigger guide with examples
