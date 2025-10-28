@@ -22,6 +22,15 @@ export const TIME_FORMAT_OPTIONS = [
   { value: '24h', label: '24-hour' }
 ] as const;
 
+// Language options for user preferences
+export const LANGUAGE_OPTIONS = [
+  { value: 'en', label: 'English', flag: '🇬🇧' },
+  { value: 'de', label: 'Deutsch (German)', flag: '🇩🇪' },
+  { value: 'fr', label: 'Français (French)', flag: '🇫🇷' },
+  { value: 'es', label: 'Español (Spanish)', flag: '🇪🇸' },
+  { value: 'hu', label: 'Magyar (Hungarian)', flag: '🇭🇺' }
+] as const;
+
 // Comprehensive timezone options organized by region
 export const TIMEZONE_OPTIONS = [
   // UTC

@@ -72,6 +72,9 @@ export class User {
   @Column({ default: '24h' }) // '12h' or '24h'
   timeFormat: string;
 
+  @Column({ default: 'en' }) // User's preferred language (e.g., 'en', 'de', 'fr', 'es', 'hu')
+  language: string;
+
   @Column({ type: 'json', default: () => "'[\"user\"]'" }) // Array of usage plans
   usagePlans: UsagePlan[];
 

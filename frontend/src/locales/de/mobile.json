@@ -1,0 +1,54 @@
+{
+  "navigation": {
+    "calendar": "Kalender",
+    "profile": "Profil",
+    "sync": "Sync",
+    "reserve": "Reserv.",
+    "auto": "Auto",
+    "admin": "Admin",
+    "more": "Mehr",
+    "calendarSync": "Kalender-Sync",
+    "reservations": "Reservierungen",
+    "automation": "Automation",
+    "adminPanel": "Admin-Bereich",
+    "features": "Funktionen",
+    "signOut": "Abmelden",
+    "exit": "Beenden",
+    "adminBadge": "🔥 Admin"
+  },
+  "calendar": {
+    "month": "Monat",
+    "week": "Woche",
+    "today": "Heute",
+    "tomorrow": "Morgen",
+    "moreEvents": "+{{count}}",
+    "noEvents": "Keine Termine",
+    "eventCount": "{{count}} Termin(e)",
+    "allDayEvents": "Ganztägige Termine",
+    "scheduledEvents": "Geplante Termine",
+    "emptyDay": "Sie haben keine Termine für diesen Tag geplant",
+    "createEvent": "Termin erstellen",
+    "allDay": "Ganztägig",
+    "tapToCreate": "Tippen, um Termin zu erstellen"
+  },
+  "actions": {
+    "newEvent": "Neuer Termin",
+    "close": "Schließen",
+    "closeDrawer": "Schublade schließen",
+    "previous": "Zurück",
+    "next": "Weiter"
+  },
+  "table": {
+    "noData": "Keine Daten verfügbar",
+    "actions": "Aktionen"
+  },
+  "form": {
+    "required": "*",
+    "requiredField": "Erforderliches Feld"
+  },
+  "general": {
+    "loading": "Lädt...",
+    "error": "Fehler",
+    "success": "Erfolgreich"
+  }
+}
