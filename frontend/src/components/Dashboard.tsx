@@ -16,6 +16,7 @@
  */
 
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Login } from './auth';
 import Calendar from './Calendar';
 import AdminPanel from './AdminPanel';
@@ -39,6 +40,11 @@ import type { TabId } from './mobile/organisms/BottomTabBar';
 type DashboardView = 'calendar' | 'admin' | 'profile' | 'sync' | 'reservations' | 'automation';
 
 const Dashboard: React.FC = () => {
+  // Hooks
+  const { i18n } = useTranslation();
+  const { flags: featureFlags, loading: featureFlagsLoading } = useFeatureFlags();
+  const { isMobile } = useScreenSize();
+
   // Authentication and user state
   const [user, setUser] = useState<string | null>(null);
   const [userRole, setUserRole] = useState<string>('user');
@@ -51,12 +57,6 @@ const Dashboard: React.FC = () => {
   // Permissions state
   const [canAccessReservations, setCanAccessReservations] = useState<boolean>(false);
   const [permissionsLoading, setPermissionsLoading] = useState<boolean>(true);
-
-  // Feature flags state
-  const { flags: featureFlags, loading: featureFlagsLoading } = useFeatureFlags();
-
-  // Screen size detection
-  const { isMobile } = useScreenSize();
 
   /**
    * Handles user login and initializes user session
@@ -132,6 +132,11 @@ const Dashboard: React.FC = () => {
       // Apply user's saved theme preference
       if (profile.themeColor) {
         setThemeColor(profile.themeColor);
+      }
+
+      // Apply user's saved language preference
+      if (profile.language) {
+        i18n.changeLanguage(profile.language);
       }
     } catch (err) {
       console.warn('Could not load user profile:', err);

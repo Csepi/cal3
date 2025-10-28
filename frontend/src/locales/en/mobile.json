@@ -1,0 +1,54 @@
+{
+  "navigation": {
+    "calendar": "Calendar",
+    "profile": "Profile",
+    "sync": "Sync",
+    "reserve": "Reserve",
+    "auto": "Auto",
+    "admin": "Admin",
+    "more": "More",
+    "calendarSync": "Calendar Sync",
+    "reservations": "Reservations",
+    "automation": "Automation",
+    "adminPanel": "Admin Panel",
+    "features": "Features",
+    "signOut": "Sign Out",
+    "exit": "Exit",
+    "adminBadge": "🔥 Admin"
+  },
+  "calendar": {
+    "month": "Month",
+    "week": "Week",
+    "today": "Today",
+    "tomorrow": "Tomorrow",
+    "moreEvents": "+{{count}}",
+    "noEvents": "No events",
+    "eventCount": "{{count}} event(s)",
+    "allDayEvents": "All-day events",
+    "scheduledEvents": "Scheduled events",
+    "emptyDay": "You don't have any events scheduled for this day",
+    "createEvent": "Create Event",
+    "allDay": "All day",
+    "tapToCreate": "Tap to create event"
+  },
+  "actions": {
+    "newEvent": "New Event",
+    "close": "Close",
+    "closeDrawer": "Close drawer",
+    "previous": "Previous",
+    "next": "Next"
+  },
+  "table": {
+    "noData": "No data available",
+    "actions": "Actions"
+  },
+  "form": {
+    "required": "*",
+    "requiredField": "Required field"
+  },
+  "general": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success"
+  }
+}

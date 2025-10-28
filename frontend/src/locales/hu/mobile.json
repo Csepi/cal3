@@ -1,0 +1,54 @@
+{
+  "navigation": {
+    "calendar": "Naptár",
+    "profile": "Profil",
+    "sync": "Szinkr.",
+    "reserve": "Foglalás",
+    "auto": "Auto",
+    "admin": "Admin",
+    "more": "Több",
+    "calendarSync": "Naptár szinkronizálás",
+    "reservations": "Foglalások",
+    "automation": "Automatizálás",
+    "adminPanel": "Admin panel",
+    "features": "Funkciók",
+    "signOut": "Kijelentkezés",
+    "exit": "Kilépés",
+    "adminBadge": "🔥 Admin"
+  },
+  "calendar": {
+    "month": "Hónap",
+    "week": "Hét",
+    "today": "Ma",
+    "tomorrow": "Holnap",
+    "moreEvents": "+{{count}}",
+    "noEvents": "Nincs esemény",
+    "eventCount": "{{count}} esemény",
+    "allDayEvents": "Egész napos események",
+    "scheduledEvents": "Ütemezett események",
+    "emptyDay": "Erre a napra nincs ütemezett eseménye",
+    "createEvent": "Esemény létrehozása",
+    "allDay": "Egész nap",
+    "tapToCreate": "Érintse meg esemény létrehozásához"
+  },
+  "actions": {
+    "newEvent": "Új esemény",
+    "close": "Bezárás",
+    "closeDrawer": "Fiók bezárása",
+    "previous": "Előző",
+    "next": "Következő"
+  },
+  "table": {
+    "noData": "Nincs elérhető adat",
+    "actions": "Műveletek"
+  },
+  "form": {
+    "required": "*",
+    "requiredField": "Kötelező mező"
+  },
+  "general": {
+    "loading": "Betöltés...",
+    "error": "Hiba",
+    "success": "Sikeres"
+  }
+}

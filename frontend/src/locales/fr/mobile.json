@@ -1,0 +1,54 @@
+{
+  "navigation": {
+    "calendar": "Calendrier",
+    "profile": "Profil",
+    "sync": "Sync",
+    "reserve": "Réserv.",
+    "auto": "Auto",
+    "admin": "Admin",
+    "more": "Plus",
+    "calendarSync": "Synchronisation",
+    "reservations": "Réservations",
+    "automation": "Automatisation",
+    "adminPanel": "Panneau d'admin",
+    "features": "Fonctionnalités",
+    "signOut": "Déconnexion",
+    "exit": "Quitter",
+    "adminBadge": "🔥 Admin"
+  },
+  "calendar": {
+    "month": "Mois",
+    "week": "Semaine",
+    "today": "Aujourd'hui",
+    "tomorrow": "Demain",
+    "moreEvents": "+{{count}}",
+    "noEvents": "Aucun événement",
+    "eventCount": "{{count}} événement(s)",
+    "allDayEvents": "Événements toute la journée",
+    "scheduledEvents": "Événements planifiés",
+    "emptyDay": "Vous n'avez aucun événement planifié pour ce jour",
+    "createEvent": "Créer un événement",
+    "allDay": "Toute la journée",
+    "tapToCreate": "Appuyer pour créer un événement"
+  },
+  "actions": {
+    "newEvent": "Nouvel événement",
+    "close": "Fermer",
+    "closeDrawer": "Fermer le tiroir",
+    "previous": "Précédent",
+    "next": "Suivant"
+  },
+  "table": {
+    "noData": "Aucune donnée disponible",
+    "actions": "Actions"
+  },
+  "form": {
+    "required": "*",
+    "requiredField": "Champ requis"
+  },
+  "general": {
+    "loading": "Chargement...",
+    "error": "Erreur",
+    "success": "Succès"
+  }
+}

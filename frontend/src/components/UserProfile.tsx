@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { apiService } from '../services/api';
 import { getSimpleThemeGradient, LOADING_MESSAGES } from '../constants';
 import { Button } from './ui';
@@ -31,7 +32,8 @@ interface UserProfileProps {
  * theme preferences, and password changes through modular subcomponents.
  */
 const UserProfile: React.FC<UserProfileProps> = ({ onThemeChange, currentTheme }) => {
-  // Mobile detection
+  // Hooks
+  const { i18n } = useTranslation();
   const { isMobile } = useScreenSize();
 
   // Core state management
@@ -48,7 +50,8 @@ const UserProfile: React.FC<UserProfileProps> = ({ onThemeChange, currentTheme }
     firstName: '',
     lastName: '',
     timezone: '',
-    timeFormat: ''
+    timeFormat: '',
+    language: 'en'
   });
 
   const [passwordForm, setPasswordForm] = useState<PasswordFormData>({
@@ -83,9 +86,15 @@ const UserProfile: React.FC<UserProfileProps> = ({ onThemeChange, currentTheme }
         firstName: userData.firstName || '',
         lastName: userData.lastName || '',
         timezone: userData.timezone || '',
-        timeFormat: userData.timeFormat || '12',
+        timeFormat: userData.timeFormat || '12h',
+        language: userData.language || 'en',
         usagePlans: userData.usagePlans || ['user']
       });
+
+      // Sync language with i18n
+      if (userData.language) {
+        i18n.changeLanguage(userData.language);
+      }
 
     } catch (err) {
       console.error('Error loading user data:', err);
@@ -143,6 +152,10 @@ const UserProfile: React.FC<UserProfileProps> = ({ onThemeChange, currentTheme }
       errors.timeFormat = 'Please select a time format';
     }
 
+    if (!profileForm.language) {
+      errors.language = 'Please select a language';
+    }
+
     setProfileErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -187,6 +200,11 @@ const UserProfile: React.FC<UserProfileProps> = ({ onThemeChange, currentTheme }
 
       const { usagePlans, ...profileData } = profileForm;
       await apiService.updateUserProfile(profileData);
+
+      // Update i18n language if changed
+      if (profileData.language) {
+        i18n.changeLanguage(profileData.language);
+      }
 
       setSuccess('Profile updated successfully!');
       setTimeout(() => setSuccess(null), 3000);

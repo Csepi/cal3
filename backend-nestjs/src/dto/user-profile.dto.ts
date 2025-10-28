@@ -48,6 +48,12 @@ export class UpdateProfileDto {
   @IsIn(['12h', '24h'])
   timeFormat?: string;
 
+  @ApiPropertyOptional({ example: 'en', description: 'User preferred language (en, de, fr, es, hu)' })
+  @IsOptional()
+  @IsString()
+  @IsIn(['en', 'de', 'fr', 'es', 'hu'])
+  language?: string;
+
   @ApiPropertyOptional({ example: false, description: 'Hide the Reservations tab in the UI' })
   @IsOptional()
   @IsBoolean()

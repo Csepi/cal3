@@ -1,5 +1,5 @@
 import React from 'react';
-import { TIMEZONE_OPTIONS, TIME_FORMAT_OPTIONS } from '../../constants';
+import { TIMEZONE_OPTIONS, TIME_FORMAT_OPTIONS, LANGUAGE_OPTIONS } from '../../constants';
 import { Card, CardHeader, Input, Button } from '../ui';
 
 /**
@@ -16,6 +16,7 @@ export interface PersonalInfoFormData {
   lastName: string;
   timezone: string;
   timeFormat: string;
+  language: string;
   hideReservationsTab?: boolean; // Optional, to hide the Reservations tab
   usagePlans?: string[]; // Optional, for display purposes only
 }
@@ -170,6 +171,31 @@ export const PersonalInfoForm: React.FC<PersonalInfoFormProps> = ({
             {errors.timeFormat && (
               <p className="mt-1 text-sm text-red-600" role="alert">
                 {errors.timeFormat}
+              </p>
+            )}
+          </div>
+
+          {/* Language Selection */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Language
+            </label>
+            <select
+              value={formData.language}
+              onChange={(e) => onFormDataChange('language', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
+              required
+            >
+              <option value="">Select a language...</option>
+              {LANGUAGE_OPTIONS.map((lang) => (
+                <option key={lang.value} value={lang.value}>
+                  {lang.flag} {lang.label}
+                </option>
+              ))}
+            </select>
+            {errors.language && (
+              <p className="mt-1 text-sm text-red-600" role="alert">
+                {errors.language}
               </p>
             )}
           </div>
