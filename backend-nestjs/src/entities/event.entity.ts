@@ -88,6 +88,18 @@ export class Event {
   @Column({ type: 'text', nullable: true })
   notes: string;
 
+  @Column({ type: 'json', nullable: true })
+  tags: string[];
+
+  @Column({ type: 'json', nullable: true })
+  automationTasks: Array<{
+    title: string;
+    description?: string;
+    dueMinutesBefore?: number;
+    createdAt: string;
+    createdByRuleId?: number;
+  }>;
+
   @CreateDateColumn()
   createdAt: Date;
 

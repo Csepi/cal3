@@ -9,17 +9,15 @@ import {
 import { AutomationRule } from './automation-rule.entity';
 
 export enum ActionType {
-  // V1 Actions
   SET_EVENT_COLOR = 'set_event_color',
-
-  // Future Actions (defined but not implemented)
+  ADD_EVENT_TAG = 'add_event_tag',
   SEND_NOTIFICATION = 'send_notification',
-  MODIFY_EVENT_TITLE = 'modify_event_title',
-  MODIFY_EVENT_DESCRIPTION = 'modify_event_description',
+  UPDATE_EVENT_TITLE = 'update_event_title',
+  UPDATE_EVENT_DESCRIPTION = 'update_event_description',
+  CANCEL_EVENT = 'cancel_event',
+  MOVE_TO_CALENDAR = 'move_to_calendar',
   CREATE_TASK = 'create_task',
   WEBHOOK = 'webhook',
-  CREATE_REMINDER = 'create_reminder',
-  MOVE_TO_CALENDAR = 'move_to_calendar',
 }
 
 @Entity('automation_actions')

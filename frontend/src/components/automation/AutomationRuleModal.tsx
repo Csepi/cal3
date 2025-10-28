@@ -16,6 +16,7 @@ import { ConditionBuilder } from './builders/ConditionBuilder';
 import { ActionBuilder } from './builders/ActionBuilder';
 import { WebhookConfiguration } from './WebhookConfiguration';
 import { automationService } from '../../services/automationService';
+import { useAutomationMetadata } from '../../hooks/useAutomationMetadata';
 
 interface AutomationRuleModalProps {
   rule?: AutomationRuleDetailDto;
@@ -47,6 +48,15 @@ export function AutomationRuleModal({
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [webhookToken, setWebhookToken] = useState<string | null>(rule?.webhookToken || null);
+  const { actionTypes } = useAutomationMetadata();
+
+  const isActionTypeAvailable = (actionTypeValue: ActionFormData['actionType']): boolean => {
+    if (!actionTypeValue) {
+      return false;
+    }
+    const metadata = actionTypes.find((action) => action.value === actionTypeValue);
+    return metadata?.available ?? false;
+  };
 
   // Initialize conditions and actions from rule
   useEffect(() => {
@@ -99,23 +109,25 @@ export function AutomationRuleModal({
       return 'Please select a trigger type';
     }
 
-    // Validate conditions (now optional)
-    const validConditions = conditions.filter(
-      (c) => c.field && c.operator && (c.value || !requiresValue(c.operator))
-    );
-
     if (conditions.length > 10) {
       return 'Maximum of 10 conditions allowed';
     }
 
     // Validate actions
-    const validActions = actions.filter((a) => a.actionType);
-    if (validActions.length === 0) {
+    if (actions.length > 5) {
+      return 'Maximum of 5 actions allowed';
+    }
+
+    const hasSelectedAction = actions.some((a) => a.actionType);
+    if (!hasSelectedAction) {
       return 'At least one action is required';
     }
 
-    if (actions.length > 5) {
-      return 'Maximum of 5 actions allowed';
+    const hasUnavailableAction = actions.some(
+      (a) => a.actionType && !isActionTypeAvailable(a.actionType)
+    );
+    if (hasUnavailableAction) {
+      return 'One or more selected actions are marked as "Coming Soon" and cannot be used yet. Please choose a supported action.';
     }
 
     return null;

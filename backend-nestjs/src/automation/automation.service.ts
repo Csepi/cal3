@@ -6,7 +6,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, DeepPartial } from 'typeorm';
 import * as crypto from 'crypto';
 import { AutomationRule, TriggerType } from '../entities/automation-rule.entity';
 import { AutomationCondition } from '../entities/automation-condition.entity';
@@ -337,7 +337,7 @@ export class AutomationService {
     rule: AutomationRule,
     event: Event | null = null,
     executedByUserId?: number,
-    webhookData: Record<string, any> = null,
+    webhookData: Record<string, any> | null = null,
   ): Promise<void> {
     const startTime = Date.now();
     const executedAt = new Date();
@@ -390,8 +390,8 @@ export class AutomationService {
       const executionTimeMs = Date.now() - startTime;
 
       const auditLog = this.auditLogRepository.create({
-        rule: { id: rule.id } as AutomationRule,
-        event: event ? { id: event.id } as Event : null,
+        ruleId: rule.id,
+        eventId: event?.id ?? undefined,
         triggerType: rule.triggerType,
         triggerContext: webhookData || { manual: executedByUserId ? true : false },
         conditionsResult: {
@@ -412,7 +412,7 @@ export class AutomationService {
         executedByUserId,
         duration_ms: executionTimeMs,
         executedAt,
-      });
+      } as DeepPartial<AutomationAuditLog>);
 
       await this.auditLogRepository.save(auditLog);
 
@@ -423,8 +423,8 @@ export class AutomationService {
       const executionTimeMs = Date.now() - startTime;
 
       const auditLog = this.auditLogRepository.create({
-        rule: { id: rule.id } as AutomationRule,
-        event: event ? { id: event.id } as Event : null,
+        ruleId: rule.id,
+        eventId: event?.id ?? undefined,
         triggerType: rule.triggerType,
         triggerContext: webhookData || { manual: executedByUserId ? true : false },
         conditionsResult: { passed: false, evaluations: [] },
@@ -434,7 +434,7 @@ export class AutomationService {
         executedByUserId,
         duration_ms: executionTimeMs,
         executedAt,
-      });
+      } as DeepPartial<AutomationAuditLog>);
 
       await this.auditLogRepository.save(auditLog);
 
@@ -763,7 +763,7 @@ export class AutomationService {
     }
 
     // Execute the rule with webhook data (no event needed)
-    await this.executeRuleOnEvent(rule, null, null, webhookData);
+    await this.executeRuleOnEvent(rule, null, undefined, webhookData);
 
     this.logger.log(`Webhook rule ${rule.id} executed successfully`);
 

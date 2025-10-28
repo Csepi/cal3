@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { SmartValuePicker } from '../SmartValuePicker';
 import { TriggerType } from '../../../types/Automation';
 
@@ -29,6 +29,12 @@ const PRESET_COLORS = [
 
 export const SetEventColorForm: React.FC<SetEventColorFormProps> = ({ config, onChange, triggerType }) => {
   const selectedColor = config.color || '#3b82f6';
+
+  useEffect(() => {
+    if (!config || typeof config.color !== 'string' || config.color.trim() === '') {
+      onChange({ ...(config || {}), color: '#3b82f6' });
+    }
+  }, [config, onChange]);
 
   const handleColorChange = (color: string) => {
     onChange({ color });

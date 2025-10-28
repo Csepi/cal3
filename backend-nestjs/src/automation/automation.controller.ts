@@ -13,6 +13,7 @@ import {
   HttpCode,
   HttpStatus,
   SetMetadata,
+  BadRequestException,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiParam } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';

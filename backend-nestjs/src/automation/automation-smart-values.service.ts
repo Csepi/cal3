@@ -37,7 +37,6 @@ export class AutomationSmartValuesService {
       values['event.description'] = event.description || '';
       values['event.location'] = event.location || '';
       values['event.notes'] = event.notes || '';
-      values['event.date'] = event.date;
       values['event.startTime'] = event.startTime || '';
       values['event.endTime'] = event.endTime || '';
       values['event.color'] = event.color || '';
@@ -61,12 +60,17 @@ export class AutomationSmartValuesService {
       }
 
       // Date components
-      const eventDate = new Date(event.date);
-      values['event.year'] = eventDate.getFullYear().toString();
-      values['event.month'] = (eventDate.getMonth() + 1).toString().padStart(2, '0');
-      values['event.day'] = eventDate.getDate().toString().padStart(2, '0');
-      values['event.dayOfWeek'] = eventDate.toLocaleDateString('en-US', { weekday: 'long' });
-      values['event.dayOfWeekShort'] = eventDate.toLocaleDateString('en-US', { weekday: 'short' });
+      const eventDateValue = event.startDate ? new Date(event.startDate) : null;
+      if (eventDateValue && !isNaN(eventDateValue.valueOf())) {
+        values['event.date'] = eventDateValue.toISOString().split('T')[0];
+        values['event.year'] = eventDateValue.getFullYear().toString();
+        values['event.month'] = (eventDateValue.getMonth() + 1).toString().padStart(2, '0');
+        values['event.day'] = eventDateValue.getDate().toString().padStart(2, '0');
+        values['event.dayOfWeek'] = eventDateValue.toLocaleDateString('en-US', { weekday: 'long' });
+        values['event.dayOfWeekShort'] = eventDateValue.toLocaleDateString('en-US', { weekday: 'short' });
+      } else {
+        values['event.date'] = '';
+      }
     }
 
     // Add webhook data smart values

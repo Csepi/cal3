@@ -7,6 +7,9 @@ FROM node:18-alpine AS builder
 
 WORKDIR /app
 
+# Install build dependencies required for native modules (e.g. sqlite3)
+RUN apk add --no-cache python3 make g++ sqlite-dev
+
 # Copy package files
 COPY backend-nestjs/package*.json ./
 
@@ -25,6 +28,9 @@ RUN npm prune --production
 
 # Stage 2: Production
 FROM node:18-alpine
+
+# Install runtime dependencies for native modules
+RUN apk add --no-cache sqlite-libs
 
 # Create non-root user for security
 RUN addgroup -g 1001 -S nodejs && \

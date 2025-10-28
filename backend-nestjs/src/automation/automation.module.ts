@@ -15,6 +15,13 @@ import { AutomationSmartValuesService } from './automation-smart-values.service'
 import { ActionExecutorRegistry } from './executors/action-executor-registry';
 import { SetEventColorExecutor } from './executors/set-event-color.executor';
 import { WebhookExecutor } from './executors/webhook.executor';
+import { AddEventTagExecutor } from './executors/add-event-tag.executor';
+import { SendNotificationExecutor } from './executors/send-notification.executor';
+import { UpdateEventTitleExecutor } from './executors/update-event-title.executor';
+import { UpdateEventDescriptionExecutor } from './executors/update-event-description.executor';
+import { MoveToCalendarExecutor } from './executors/move-to-calendar.executor';
+import { CancelEventExecutor } from './executors/cancel-event.executor';
+import { CreateTaskExecutor } from './executors/create-task.executor';
 
 @Module({
   imports: [
@@ -36,6 +43,13 @@ import { WebhookExecutor } from './executors/webhook.executor';
     AutomationSmartValuesService,
     ActionExecutorRegistry,
     SetEventColorExecutor,
+    AddEventTagExecutor,
+    SendNotificationExecutor,
+    UpdateEventTitleExecutor,
+    UpdateEventDescriptionExecutor,
+    MoveToCalendarExecutor,
+    CancelEventExecutor,
+    CreateTaskExecutor,
     WebhookExecutor,
   ],
   exports: [AutomationService, AutomationEvaluatorService, AutomationSmartValuesService],

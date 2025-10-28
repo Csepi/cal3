@@ -295,6 +295,7 @@ export interface ActionTypeMetadata {
   description: string;
   icon: string;
   configFields: ActionConfigField[];
+  available: boolean;
 }
 
 export interface ActionConfigField {

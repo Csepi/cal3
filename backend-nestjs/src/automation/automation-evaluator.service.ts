@@ -20,7 +20,7 @@ export class AutomationEvaluatorService {
   async evaluateConditions(
     rule: AutomationRule,
     event: Event | null = null,
-    webhookData: Record<string, any> = null,
+    webhookData: Record<string, any> | null = null,
   ): Promise<ConditionsResultDto> {
     const evaluations: ConditionEvaluationDto[] = [];
     const conditions = rule.conditions || [];
@@ -53,7 +53,7 @@ export class AutomationEvaluatorService {
   private async evaluateCondition(
     condition: AutomationCondition,
     event: Event | null,
-    webhookData: Record<string, any> = null,
+    webhookData: Record<string, any> | null = null,
   ): Promise<ConditionEvaluationDto> {
     const evaluation: ConditionEvaluationDto = {
       conditionId: condition.id,
@@ -89,7 +89,7 @@ export class AutomationEvaluatorService {
   private extractFieldValue(
     field: ConditionField | string,
     event: Event | null,
-    webhookData: Record<string, any> = null,
+    webhookData: Record<string, any> | null = null,
   ): any {
     // Handle webhook.data.* fields
     if (field.startsWith('webhook.data')) {

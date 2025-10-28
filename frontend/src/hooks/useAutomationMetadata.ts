@@ -373,6 +373,7 @@ export function useAutomationMetadata(): UseAutomationMetadataReturn {
         label: 'Set Event Color',
         description: 'Change the color of the event',
         icon: '🎨',
+        available: true,
         configFields: [
           {
             name: 'color',
@@ -388,6 +389,7 @@ export function useAutomationMetadata(): UseAutomationMetadataReturn {
         label: 'Add Event Tag',
         description: 'Add a tag to the event',
         icon: '🏷️',
+        available: true,
         configFields: [
           {
             name: 'tag',
@@ -403,6 +405,7 @@ export function useAutomationMetadata(): UseAutomationMetadataReturn {
         label: 'Send Notification',
         description: 'Send a notification to the user',
         icon: '🔔',
+        available: true,
         configFields: [
           {
             name: 'message',
@@ -425,6 +428,7 @@ export function useAutomationMetadata(): UseAutomationMetadataReturn {
         label: 'Update Event Title',
         description: 'Change the title of the event',
         icon: '📝',
+        available: true,
         configFields: [
           {
             name: 'newTitle',
@@ -440,6 +444,7 @@ export function useAutomationMetadata(): UseAutomationMetadataReturn {
         label: 'Update Event Description',
         description: 'Change or append to event description',
         icon: '📄',
+        available: true,
         configFields: [
           {
             name: 'newDescription',
@@ -466,6 +471,7 @@ export function useAutomationMetadata(): UseAutomationMetadataReturn {
         label: 'Move to Calendar',
         description: 'Move the event to a different calendar',
         icon: '📁',
+        available: true,
         configFields: [
           {
             name: 'targetCalendarId',
@@ -481,6 +487,7 @@ export function useAutomationMetadata(): UseAutomationMetadataReturn {
         label: 'Cancel Event',
         description: 'Mark the event as cancelled',
         icon: '❌',
+        available: true,
         configFields: [
           {
             name: 'reason',
@@ -496,6 +503,7 @@ export function useAutomationMetadata(): UseAutomationMetadataReturn {
         label: 'Create Task',
         description: 'Create a task related to the event',
         icon: '✅',
+        available: true,
         configFields: [
           {
             name: 'taskTitle',
@@ -529,6 +537,7 @@ export function useAutomationMetadata(): UseAutomationMetadataReturn {
         label: 'Call Webhook',
         description: 'Send HTTP POST request to a webhook URL',
         icon: '🔗',
+        available: true,
         configFields: [
           {
             name: 'url',
