@@ -1,7 +1,7 @@
-# Cal3 Frontend - React TypeScript Calendar Application
+﻿# PrimeCal Frontend - React TypeScript Calendar Application
 
 ## Overview
-The Cal3 frontend is a modern React 18 application built with TypeScript and Vite, providing a comprehensive calendar and reservation management interface. It features a modular architecture with clean separation of concerns and enterprise-grade theming system.
+The PrimeCal frontend is a modern React 18 application built with TypeScript and Vite, providing a comprehensive calendar and reservation management interface. It features a modular architecture with clean separation of concerns and enterprise-grade theming system.
 
 ## Technology Stack
 - **React 18** - Modern functional components with hooks
@@ -15,63 +15,63 @@ The Cal3 frontend is a modern React 18 application built with TypeScript and Vit
 ### Component Structure
 ```
 src/components/
-├── Calendar.tsx              # Main calendar wrapper component
-├── Dashboard.tsx             # Primary application layout and navigation
-├── UserProfile.tsx           # User settings and preferences
-├── AdminPanel.tsx            # Administrative interface
-├── CalendarSidebar.tsx       # Calendar navigation and management
-├── auth/                     # Authentication components
-│   └── Login.tsx
-├── calendar/                 # Calendar-specific components
-│   ├── EnhancedCalendar.tsx  # Advanced calendar with full functionality
-│   ├── CalendarEventModal.tsx  # Event creation/editing modal
-│   └── CalendarManager.tsx   # Calendar CRUD operations
-├── views/                    # Calendar view components
-│   ├── MonthView.tsx         # Monthly calendar grid
-│   └── WeekView.tsx          # Weekly calendar with time slots
-├── ui/                       # Reusable UI components
-│   ├── Button.tsx
-│   ├── Input.tsx
-│   ├── Card.tsx
-│   └── SimpleModal.tsx
-└── sync/                     # External calendar integration
-    └── CalendarSync.tsx
+ Calendar.tsx              # Main calendar wrapper component
+ Dashboard.tsx             # Primary application layout and navigation
+ UserProfile.tsx           # User settings and preferences
+ AdminPanel.tsx            # Administrative interface
+ CalendarSidebar.tsx       # Calendar navigation and management
+ auth/                     # Authentication components
+    Login.tsx
+ calendar/                 # Calendar-specific components
+    EnhancedCalendar.tsx  # Advanced calendar with full functionality
+    CalendarEventModal.tsx  # Event creation/editing modal
+    CalendarManager.tsx   # Calendar CRUD operations
+ views/                    # Calendar view components
+    MonthView.tsx         # Monthly calendar grid
+    WeekView.tsx          # Weekly calendar with time slots
+ ui/                       # Reusable UI components
+    Button.tsx
+    Input.tsx
+    Card.tsx
+    SimpleModal.tsx
+ sync/                     # External calendar integration
+     CalendarSync.tsx
 ```
 
 ### Key Features
 
-#### 🎨 **Comprehensive Theming System**
+####  **Comprehensive Theming System**
 - **16 Theme Colors**: Complete rainbow palette with consistent styling
 - **Dynamic Gradients**: Backdrop-blur effects and modern glass morphism
 - **Color Options**: Red, Orange, Yellow, Lime, Green, Emerald, Teal, Cyan, Sky, Blue, Indigo, Violet, Purple, Pink, Rose, Slate
 - **Responsive Design**: Mobile-first approach with touch-friendly interactions
 
-#### 📅 **Calendar Management**
+####  **Calendar Management**
 - **Multiple Views**: Month, Week, and Day views with seamless navigation
 - **Event Management**: Drag-and-drop event creation, editing, and deletion
 - **Recurring Events**: Support for daily, weekly, and monthly patterns
 - **All-Day Events**: Full support for multi-day events
 - **Color Coding**: Visual organization with 16 available theme colors
 
-#### ⏰ **Time Format Integration**
+####  **Time Format Integration**
 - **User Preferences**: 12-hour (AM/PM) and 24-hour format support
 - **Component Integration**: Format settings applied to WeekView and CalendarEventModal
 - **Real-time Updates**: Immediate reflection of format changes across all views
 - **Default Handling**: Graceful fallback to 12-hour format when preference unavailable
 
-#### 🌍 **Timezone Support**
+####  **Timezone Support**
 - **Global Coverage**: 70+ world timezones across all continents
 - **Regional Groups**: Americas (16), Europe/Africa (22), Asia (18), Australia/Pacific (14)
 - **User Preferences**: Personal timezone settings with automatic date/time conversion
 - **IANA Standard**: Proper timezone handling using IANA timezone identifiers
 
-#### 👤 **User Management**
+####  **User Management**
 - **Profile Customization**: Theme colors, timezone, time format, and personal information
 - **Usage Plans**: Visual display of user permissions (Child, User, Store, Enterprise)
 - **Account Security**: Password management and secure authentication
 - **Admin Controls**: Role-based access control with admin panel
 
-#### 🔗 **External Integrations**
+####  **External Integrations**
 - **Calendar Sync**: Google Calendar and Microsoft Outlook integration
 - **OAuth Authentication**: Secure connection to external calendar providers
 - **Sync Status**: Real-time monitoring of synchronization status
@@ -81,7 +81,7 @@ src/components/
 
 #### Prerequisites
 - Node.js 18+ and npm
-- Access to Cal3 backend API (running on port 8081)
+- Access to PrimeCal backend API (running on port 8081)
 
 #### Installation & Running
 ```bash
@@ -98,16 +98,16 @@ npm run build
 npm run preview
 ```
 
-#### **⚠️ CRITICAL PORT REQUIREMENT**
+#### ** CRITICAL PORT REQUIREMENT**
 The frontend **MUST** run on port 8080. This is hardcoded in the application configuration and cannot be changed.
 
 ### Component Integration
 
 #### Data Flow
 ```
-Dashboard → Calendar → EnhancedCalendar → WeekView/MonthView
-    ↓         ↓              ↓
-UserProfile → Theme → CalendarEventModal
+Dashboard  Calendar  EnhancedCalendar  WeekView/MonthView
+                           
+UserProfile  Theme  CalendarEventModal
 ```
 
 #### State Management
@@ -316,3 +316,4 @@ npm run build
 **Last Updated**: September 2025
 **React Version**: 18.3.1
 **TypeScript Version**: 5.2.2
+

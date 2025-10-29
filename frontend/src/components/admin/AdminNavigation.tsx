@@ -179,7 +179,7 @@ export const AdminNavigation: React.FC<AdminNavigationProps> = ({
             AD
           </div>
           <div>
-            <p className="text-xs uppercase tracking-wide text-gray-500">Cal3 Administration</p>
+            <p className="text-xs uppercase tracking-wide text-gray-500">PrimeCal Administration</p>
             <h1 className="text-lg font-semibold text-gray-900">Control Center</h1>
           </div>
         </div>

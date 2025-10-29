@@ -1,4 +1,4 @@
-import {
+﻿import {
   Controller,
   Get,
   Post,
@@ -229,7 +229,7 @@ export class AdminController {
   @ApiOperation({ summary: 'Get all organizations (Admin only)' })
   @ApiResponse({ status: 200, description: 'Organizations retrieved successfully' })
   getAllOrganizations() {
-    console.log('🔍 AdminController.getAllOrganizations called (this returns ALL organizations without filtering)');
+        console.log('AdminController.getAllOrganizations called (this returns all organizations without filtering)');
     return this.adminService.getAllOrganizations();
   }
 
@@ -285,3 +285,4 @@ export class AdminController {
     return this.adminService.initializePublicBooking();
   }
 }
+

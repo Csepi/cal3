@@ -520,7 +520,7 @@ const PublicBookingPage: React.FC = () => {
 
         {/* Footer */}
         <div className="text-center mt-8 text-gray-500 text-sm">
-          <p>Powered by Cal3 Booking System</p>
+          <p>Powered by PrimeCal Booking System</p>
         </div>
       </div>
     </div>

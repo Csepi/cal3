@@ -6,8 +6,7 @@
  * - Tablet (768-1023px): Compact horizontal tabs
  * - Mobile (<768px): Bottom tab bar
  *
- * Preserves ALL features, just changes layout
- * Features dropdown groups: Sync, Automation, Reservations
+ * Preserves ALL features, just changes layout.
  */
 
 import React, { useState, useRef, useEffect } from 'react';
@@ -15,6 +14,71 @@ import { createPortal } from 'react-dom';
 import { useScreenSize } from '../../../hooks/useScreenSize';
 import { BottomTabBar } from './BottomTabBar';
 import type { TabId } from './BottomTabBar';
+
+const iconProps = {
+  className: 'h-4 w-4',
+  fill: 'none',
+  stroke: 'currentColor',
+  strokeWidth: 1.8,
+  strokeLinecap: 'round',
+  strokeLinejoin: 'round',
+} as const;
+
+const CalendarIcon = (
+  <svg viewBox="0 0 24 24" {...iconProps}>
+    <rect x="3.5" y="5" width="17" height="15" rx="2" />
+    <path d="M8 3v4" />
+    <path d="M16 3v4" />
+    <path d="M3.5 11h17" />
+  </svg>
+);
+
+const ProfileIcon = (
+  <svg viewBox="0 0 24 24" {...iconProps}>
+    <circle cx="12" cy="8" r="4" />
+    <path d="M4 20c0-4 3.6-6 8-6s8 2 8 6" />
+  </svg>
+);
+
+const SyncIcon = (
+  <svg viewBox="0 0 24 24" {...iconProps}>
+    <path d="M21 12a9 9 0 0 0-15-6.7V3L3 6l3 3V6.7A7 7 0 1 1 12 19a6.9 6.9 0 0 1-4.9-2" />
+    <path d="M3 12h5" />
+  </svg>
+);
+
+const AutomationIcon = (
+  <svg viewBox="0 0 24 24" {...iconProps}>
+    <circle cx="12" cy="12" r="3" />
+    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H10a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V10a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+  </svg>
+);
+
+const ReservationsIcon = (
+  <svg viewBox="0 0 24 24" {...iconProps}>
+    <rect x="3" y="7" width="18" height="13" rx="2" />
+    <path d="M16 3v4" />
+    <path d="M8 3v4" />
+    <path d="M3 11h18" />
+    <path d="M8 15h2" />
+    <path d="M12 15h4" />
+  </svg>
+);
+
+const AdminIcon = (
+  <svg viewBox="0 0 24 24" {...iconProps}>
+    <circle cx="8" cy="13" r="4" />
+    <path d="M12 13h2a4 4 0 0 1 4 4v3" />
+    <path d="M6 18a8 8 0 0 1 12-6" />
+    <path d="m16 3 5 3-5 3V3z" />
+  </svg>
+);
+
+const FeatureIcon = (
+  <svg viewBox="0 0 24 24" {...iconProps}>
+    <path d="m12 3 2.09 6.26H20l-5.17 3.76L16.91 19 12 14.97 7.09 19l1.08-5.98L3 9.26h5.91z" />
+  </svg>
+);
 
 interface ResponsiveNavigationProps {
   activeTab: TabId;
@@ -45,7 +109,7 @@ export const ResponsiveNavigation: React.FC<ResponsiveNavigationProps> = ({
   hideReservationsTab,
   themeConfig,
 }) => {
-  const { isMobile, isTablet, isDesktop } = useScreenSize();
+  const { isMobile, isTablet } = useScreenSize();
   const [showFeaturesDropdown, setShowFeaturesDropdown] = useState(false);
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -67,21 +131,21 @@ export const ResponsiveNavigation: React.FC<ResponsiveNavigationProps> = ({
   const tabs = [
     {
       id: 'calendar' as TabId,
-      icon: '📅',
+      icon: CalendarIcon,
       label: 'Calendar',
       visible: true,
       isFeature: false,
     },
     {
       id: 'profile' as TabId,
-      icon: '👤',
+      icon: ProfileIcon,
       label: 'Profile',
       visible: true,
       isFeature: false,
     },
     {
       id: 'sync' as TabId,
-      icon: '🔄',
+      icon: SyncIcon,
       label: 'Calendar Sync',
       shortLabel: 'Sync',
       visible: featureFlags.calendarSync,
@@ -89,7 +153,7 @@ export const ResponsiveNavigation: React.FC<ResponsiveNavigationProps> = ({
     },
     {
       id: 'automation' as TabId,
-      icon: '🤖',
+      icon: AutomationIcon,
       label: 'Automation',
       shortLabel: 'Auto',
       visible: featureFlags.automation,
@@ -97,7 +161,7 @@ export const ResponsiveNavigation: React.FC<ResponsiveNavigationProps> = ({
     },
     {
       id: 'reservations' as TabId,
-      icon: '📆',
+      icon: ReservationsIcon,
       label: 'Reservations',
       shortLabel: 'Reserve',
       visible: featureFlags.reservations && canAccessReservations && !hideReservationsTab,
@@ -105,7 +169,7 @@ export const ResponsiveNavigation: React.FC<ResponsiveNavigationProps> = ({
     },
     {
       id: 'admin' as TabId,
-      icon: '⚙️',
+      icon: AdminIcon,
       label: 'Admin Panel',
       shortLabel: 'Admin',
       visible: userRole === 'admin',
@@ -138,15 +202,23 @@ export const ResponsiveNavigation: React.FC<ResponsiveNavigationProps> = ({
   return (
     <div className="bg-white/80 backdrop-blur-md border-b border-gray-200 sticky top-0 z-[100000] shadow-sm overflow-visible">
       <div className="max-w-7xl mx-auto px-4 md:px-6 py-3 md:py-4 flex justify-between items-center overflow-visible">
-        {/* User Information and Navigation */}
-        <div className="flex items-center space-x-3 md:space-x-6 flex-1 overflow-x-auto overflow-y-visible">
+        {/* Brand and Navigation */}
+        <div className="flex items-center space-x-4 md:space-x-6 flex-1 overflow-x-auto overflow-y-visible">
+          <div className="flex items-center gap-3 pr-4 md:pr-6 border-r border-gray-200 shrink-0">
+            <img src="/primecal-icon.svg" alt="PrimeCal logo" className="h-10 w-10" />
+            <div className="leading-tight">
+              <p className="text-lg font-semibold text-gray-900">PrimeCal</p>
+              <p className="text-xs uppercase tracking-[0.3em] text-gray-500">Be in sync with Reality</p>
+            </div>
+          </div>
+
           {/* User Welcome - Hide on smaller screens */}
           <div className="text-gray-800 hidden lg:block shrink-0">
             <span className="text-sm text-gray-600">Welcome,</span>
             <span className={`ml-2 text-lg font-medium text-${themeConfig.text}`}>{userName}</span>
             {userRole === 'admin' && (
               <span className="ml-3 px-3 py-1 bg-red-100 border border-red-300 text-red-700 text-xs rounded-full font-medium">
-                🔥 Admin
+                Admin
               </span>
             )}
           </div>
@@ -159,14 +231,17 @@ export const ResponsiveNavigation: React.FC<ResponsiveNavigationProps> = ({
                 key={tab.id}
                 onClick={() => onTabChange(tab.id)}
                 className={`
-                  px-3 md:px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 whitespace-nowrap
+                  px-3 md:px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 whitespace-nowrap flex items-center gap-2
                   ${activeTab === tab.id
                     ? `${themeConfig.button} text-white shadow-lg`
                     : `text-${themeConfig.text} hover:bg-white/50`
                   }
                 `}
+                aria-label={tab.label}
               >
-                <span className="mr-1">{tab.icon}</span>
+                <span className="text-gray-600" aria-hidden="true">
+                  {tab.icon}
+                </span>
                 <span className="hidden md:inline">
                   {isTablet && tab.shortLabel ? tab.shortLabel : tab.label}
                 </span>
@@ -183,20 +258,24 @@ export const ResponsiveNavigation: React.FC<ResponsiveNavigationProps> = ({
                       const rect = buttonRef.current.getBoundingClientRect();
                       setDropdownPosition({
                         top: rect.bottom + 8,
-                        left: rect.left
+                        left: rect.left,
                       });
                     }
                     setShowFeaturesDropdown(!showFeaturesDropdown);
                   }}
                   className={`
-                    px-3 md:px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 whitespace-nowrap flex items-center gap-1
+                    px-3 md:px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 whitespace-nowrap flex items-center gap-2
                     ${isFeatureActive
                       ? `${themeConfig.button} text-white shadow-lg`
                       : `text-${themeConfig.text} hover:bg-white/50`
                     }
                   `}
+                  aria-expanded={showFeaturesDropdown}
+                  aria-controls="primecal-feature-menu"
                 >
-                  <span className="mr-1">✨</span>
+                  <span className="text-gray-600" aria-hidden="true">
+                    {FeatureIcon}
+                  </span>
                   <span className="hidden md:inline">Features</span>
                   <span className="text-xs">▾</span>
                 </button>
@@ -205,10 +284,11 @@ export const ResponsiveNavigation: React.FC<ResponsiveNavigationProps> = ({
                 {showFeaturesDropdown && createPortal(
                   <div
                     ref={dropdownRef}
+                    id="primecal-feature-menu"
                     className="fixed min-w-[200px] bg-white rounded-xl shadow-2xl border-2 border-gray-200 py-2 z-[999999]"
                     style={{
                       top: `${dropdownPosition.top}px`,
-                      left: `${dropdownPosition.left}px`
+                      left: `${dropdownPosition.left}px`,
                     }}
                   >
                     {featureTabs.map((tab) => (
@@ -222,16 +302,18 @@ export const ResponsiveNavigation: React.FC<ResponsiveNavigationProps> = ({
                           w-full text-left px-4 py-2.5 text-sm font-medium transition-all duration-200 flex items-center gap-3
                           ${activeTab === tab.id
                             ? `${themeConfig.button} text-white`
-                            : `text-gray-700 hover:bg-gray-100`
+                            : 'text-gray-700 hover:bg-gray-100'
                           }
                         `}
                       >
-                        <span className="text-lg">{tab.icon}</span>
+                        <span className="text-gray-600" aria-hidden="true">
+                          {tab.icon}
+                        </span>
                         <span>{tab.label}</span>
                       </button>
                     ))}
                   </div>,
-                  document.body
+                  document.body,
                 )}
               </>
             )}
@@ -243,10 +325,11 @@ export const ResponsiveNavigation: React.FC<ResponsiveNavigationProps> = ({
           onClick={onLogout}
           className="ml-4 px-3 md:px-4 py-2 bg-red-500 border border-red-400 text-white rounded-2xl hover:bg-red-600 font-medium transition-all duration-300 hover:scale-105 shadow-md text-sm md:text-base shrink-0"
         >
-          <span className="hidden md:inline">🚀 Sign Out</span>
+          <span className="hidden md:inline">Sign Out</span>
           <span className="md:hidden">Exit</span>
         </button>
       </div>
     </div>
   );
 };
+

@@ -1,5 +1,5 @@
-/**
- * Common constants used throughout the Cal3 Calendar application
+﻿/**
+ * Common constants used throughout the PrimeCal Calendar application
  *
  * This file contains shared constants for:
  * - Usage plan definitions
@@ -24,11 +24,11 @@ export const TIME_FORMAT_OPTIONS = [
 
 // Language options for user preferences
 export const LANGUAGE_OPTIONS = [
-  { value: 'en', label: 'English', flag: '🇬🇧' },
-  { value: 'de', label: 'Deutsch (German)', flag: '🇩🇪' },
-  { value: 'fr', label: 'Français (French)', flag: '🇫🇷' },
-  { value: 'es', label: 'Español (Spanish)', flag: '🇪🇸' },
-  { value: 'hu', label: 'Magyar (Hungarian)', flag: '🇭🇺' }
+  { value: 'en', label: 'English', flag: 'EN' },
+  { value: 'de', label: 'Deutsch (German)', flag: 'DE' },
+  { value: 'fr', label: 'Francais (French)', flag: 'FR' },
+  { value: 'es', label: 'Espanol (Spanish)', flag: 'ES' },
+  { value: 'hu', label: 'Magyar (Hungarian)', flag: 'HU' }
 ] as const;
 
 // Comprehensive timezone options organized by region
@@ -46,10 +46,10 @@ export const TIMEZONE_OPTIONS = [
   { name: 'Newfoundland Time (St. Johns)', value: 'America/St_Johns' },
   { name: 'Mexico City', value: 'America/Mexico_City' },
   { name: 'Guatemala City', value: 'America/Guatemala' },
-  { name: 'Bogotá', value: 'America/Bogota' },
+  { name: 'Bogota', value: 'America/Bogota' },
   { name: 'Lima', value: 'America/Lima' },
   { name: 'Santiago', value: 'America/Santiago' },
-  { name: 'São Paulo', value: 'America/Sao_Paulo' },
+  { name: 'Sao Paulo', value: 'America/Sao_Paulo' },
   { name: 'Buenos Aires', value: 'America/Argentina/Buenos_Aires' },
   { name: 'Montevideo', value: 'America/Montevideo' },
 
@@ -153,3 +153,5 @@ export const LOADING_MESSAGES = {
   DELETING: 'Deleting...',
   READY: 'Ready!'
 } as const;
+
+

@@ -1,5 +1,5 @@
 /**
- * Theme constants and color definitions for the Cal3 Calendar application
+ * Theme constants and color definitions for the PrimeCal Calendar application
  *
  * This file contains all theme-related constants including:
  * - Color palette definitions

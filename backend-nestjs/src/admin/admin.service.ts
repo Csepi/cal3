@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+﻿import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
 import { User, UserRole, UsagePlan } from '../entities/user.entity';
@@ -397,30 +397,36 @@ export class AdminService {
     return { message: 'User removed from organization successfully' };
   }
 
-  async getOrganizationUsers(organizationId: number): Promise<any[]> {
+    async getOrganizationUsers(organizationId: number): Promise<any[]> {
     const organization = await this.organisationRepository.findOne({ where: { id: organizationId } });
     if (!organization) {
       throw new NotFoundException('Organization not found');
     }
 
-    console.log(`🔍 AdminService.getOrganizationUsers called for org #${organizationId}`);
+    console.log(`AdminService.getOrganizationUsers called for org #${organizationId}`);
 
     // Get users from organisation_users table
     const orgUsers = await this.organisationUserRepository.find({
       where: { organisationId: organizationId },
       relations: ['user'],
     });
-    console.log(`📋 Found ${orgUsers.length} users in organisation_users table:`, orgUsers.map(u => `${u.userId}:${u.role}`));
+    console.log(
+      `Found ${orgUsers.length} users in organisation_users table:`,
+      orgUsers.map((user) => `${user.userId}:${user.role}`),
+    );
 
     // Get users from organisation_admins table
     const orgAdmins = await this.organisationAdminRepository.find({
       where: { organisationId: organizationId },
       relations: ['user'],
     });
-    console.log(`👑 Found ${orgAdmins.length} admins in organisation_admins table:`, orgAdmins.map(a => a.userId));
+    console.log(
+      `Found ${orgAdmins.length} admins in organisation_admins table:`,
+      orgAdmins.map((admin) => admin.userId),
+    );
 
     // Convert OrganisationAdmin records to user format with ADMIN role
-    const adminUsers = orgAdmins.map(admin => ({
+    const adminUsers = orgAdmins.map((admin) => ({
       ...admin.user,
       organizationRole: 'admin',
       assignedAt: admin.assignedAt,
@@ -428,7 +434,7 @@ export class AdminService {
     }));
 
     // Convert OrganisationUser records to user format
-    const regularUsers = orgUsers.map(orgUser => ({
+    const regularUsers = orgUsers.map((orgUser) => ({
       ...orgUser.user,
       organizationRole: orgUser.role,
       assignedAt: orgUser.assignedAt,
@@ -439,17 +445,19 @@ export class AdminService {
     const userMap = new Map<number, any>();
 
     // First add regular org users
-    regularUsers.forEach(user => userMap.set(user.id, user));
+    regularUsers.forEach((user) => userMap.set(user.id, user));
 
     // Then add/override with org admins (ADMIN takes precedence)
-    adminUsers.forEach(user => userMap.set(user.id, user));
+    adminUsers.forEach((user) => userMap.set(user.id, user));
 
     const result = Array.from(userMap.values());
-    console.log(`📊 Final result: ${result.length} users total:`, result.map(u => `${u.id}:${u.organizationRole}`));
+    console.log(
+      `Final result: ${result.length} users total:`,
+      result.map((user) => `${user.id}:${user.organizationRole}`),
+    );
 
     return result;
   }
-
   async addUserToOrganizationWithRole(userId: number, organizationId: number, role: string): Promise<{ message: string }> {
     const user = await this.userRepository.findOne({ where: { id: userId } });
     if (!user) {
@@ -505,7 +513,7 @@ export class AdminService {
           resource.publicBookingToken = uuidv4();
           await this.resourceRepository.save(resource);
           results.resourcesUpdated++;
-          console.log(`✓ Generated token for resource: ${resource.name}`);
+                    console.log(`Generated token for resource: ${resource.name}`);
         } catch (error) {
           results.errors.push(`Failed to generate token for resource ${resource.id}: ${error.message}`);
         }
@@ -537,7 +545,7 @@ export class AdminService {
               await this.operatingHoursRepository.save(operatingHour);
             }
             results.resourceTypesWithHours++;
-            console.log(`✓ Created operating hours for: ${resourceType.name}`);
+                        console.log(`Created operating hours for: ${resourceType.name}`);
           } catch (error) {
             results.errors.push(`Failed to create operating hours for resource type ${resourceType.id}: ${error.message}`);
           }
@@ -731,3 +739,7 @@ export class AdminService {
     };
   }
 }
+
+
+
+

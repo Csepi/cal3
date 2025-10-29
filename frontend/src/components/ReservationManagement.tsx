@@ -418,7 +418,7 @@ const ReservationManagement: React.FC<ReservationManagementProps> = ({
         {/* Footer */}
         <div className="mt-16 text-center text-gray-500">
           <div className="flex items-center justify-center space-x-4 text-sm">
-            <span>Cal3 Reservation System</span>
+            <span>PrimeCal Reservation System</span>
             <span>•</span>
             <span>Modular Architecture</span>
             <span>•</span>

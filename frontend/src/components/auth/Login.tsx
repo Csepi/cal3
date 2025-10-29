@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { apiService } from '../../services/api';
 import { useFeatureFlags } from '../../hooks/useFeatureFlags';
 import { ErrorBox } from '../common/ErrorBox';
@@ -161,11 +161,14 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
       </div>
 
       <div className="relative z-10 bg-white/80 backdrop-blur-xl border border-blue-200 rounded-3xl shadow-2xl p-10 w-full max-w-md hover:bg-white/90 transition-all duration-300">
-        <div className="text-center mb-10">
-          <h1 className="text-5xl font-thin mb-4 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent">Calendar</h1>
-          <p className="text-gray-700 text-lg font-light">
-            {isRegistering ? 'Create your account to get started' : 'Sign in to access your beautiful calendar'}
-          </p>
+        <div className="primecal-hero mb-10">
+          <div className="primecal-brand">
+            <img src="/primecal-icon.svg" alt="PrimeCal logo" className="primecal-logo" />
+            <h1 className="hero-title">
+              Prime<span className="highlight">Cal</span>
+            </h1>
+          </div>
+          <p className="brand-motto">Be in sync with Reality</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -275,7 +278,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
             type="submit"
             className={`w-full text-white py-4 px-6 ${isRegistering ? 'rounded-xl' : 'rounded-2xl'} font-medium transition-all duration-300 hover:scale-105 focus:ring-2 focus:ring-blue-500 outline-none shadow-lg flex items-center justify-center gap-2 ${isRegistering ? 'bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700' : 'bg-blue-500 hover:bg-blue-600'}`}
           >
-            {isRegistering ? '🎉 Create Account' : '🚀 Sign In'}
+            {isRegistering ? 'Create Account' : 'Sign In'}
           </button>
 
           <div className="text-center">
@@ -338,3 +341,4 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
 };
 
 export default Login;
+

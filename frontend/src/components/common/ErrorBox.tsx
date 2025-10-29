@@ -60,7 +60,7 @@ export const ErrorBox: React.FC<ErrorBoxProps> = ({
     const log: string[] = [];
 
     log.push('='.repeat(60));
-    log.push('Cal3 Calendar - Error Debug Log');
+    log.push('PrimeCal Calendar - Error Debug Log');
     log.push('='.repeat(60));
     log.push('');
     log.push(`Timestamp: ${errorDetails.timestamp}`);

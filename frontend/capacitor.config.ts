@@ -1,8 +1,8 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.cal3.calendar',
-  appName: 'Cal3 Calendar',
+  appId: 'com.primecal.calendar',
+  appName: 'PrimeCal Calendar',
   webDir: 'dist',
   server: {
     // Load frontend from remote server

@@ -118,6 +118,15 @@ export const MobileLayout: React.FC<MobileLayoutProps> = ({
             : undefined,
         }}
       >
+        {isMobile && (
+          <div className="flex items-center justify-center gap-3 py-5">
+            <img src="/primecal-icon.svg" alt="PrimeCal logo" className="h-10 w-10" />
+            <div className="text-center leading-tight">
+              <p className="text-lg font-semibold text-gray-900">PrimeCal</p>
+              <p className="text-xs uppercase tracking-[0.3em] text-gray-500">Be in sync with Reality</p>
+            </div>
+          </div>
+        )}
         {children}
       </div>
     </div>

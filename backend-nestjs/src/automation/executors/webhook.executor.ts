@@ -62,7 +62,7 @@ export class WebhookExecutor implements IActionExecutor, OnModuleInit {
       // Prepare headers
       const requestHeaders: Record<string, string> = {
         'Content-Type': 'application/json',
-        'User-Agent': 'Cal3-Automation/1.0',
+        'User-Agent': 'PrimeCal-Automation/1.0',
         ...((headers || {}) as Record<string, string>),
       };
 
