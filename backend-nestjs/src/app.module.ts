@@ -40,6 +40,9 @@ import { AutomationRule } from './entities/automation-rule.entity';
 import { AutomationCondition } from './entities/automation-condition.entity';
 import { AutomationAction } from './entities/automation-action.entity';
 import { AutomationAuditLog } from './entities/automation-audit-log.entity';
+import { LogEntry } from './entities/log-entry.entity';
+import { LogSettings } from './entities/log-settings.entity';
+import { LoggingModule } from './logging/logging.module';
 
 // Create logger instance for database connection logging
 const dbLogger = new Logger('DatabaseConnection');
@@ -97,7 +100,7 @@ const dbLogger = new Logger('DatabaseConnection');
             username,
             password: process.env.DB_PASSWORD,
             database,
-            entities: [User, Calendar, CalendarShare, Event, CalendarSyncConnection, SyncedCalendar, SyncEventMapping, Organisation, OrganisationAdmin, OrganisationUser, OrganisationResourceTypePermission, OrganisationCalendarPermission, ReservationCalendar, ReservationCalendarRole, ResourceType, Resource, OperatingHours, Reservation, AutomationRule, AutomationCondition, AutomationAction, AutomationAuditLog],
+            entities: [User, Calendar, CalendarShare, Event, CalendarSyncConnection, SyncedCalendar, SyncEventMapping, Organisation, OrganisationAdmin, OrganisationUser, OrganisationResourceTypePermission, OrganisationCalendarPermission, ReservationCalendar, ReservationCalendarRole, ResourceType, Resource, OperatingHours, Reservation, AutomationRule, AutomationCondition, AutomationAction, AutomationAuditLog, LogEntry, LogSettings],
             synchronize: process.env.DB_SYNCHRONIZE === 'true' || process.env.NODE_ENV === 'development',
             ssl: sslEnabled ? { rejectUnauthorized: sslRejectUnauthorized } : false,
             logging: process.env.NODE_ENV === 'development' || process.env.DB_LOGGING === 'true',
@@ -125,7 +128,7 @@ const dbLogger = new Logger('DatabaseConnection');
           return {
             type: 'sqlite' as const,
             database: process.env.DB_DATABASE || 'cal3.db',
-            entities: [User, Calendar, CalendarShare, Event, CalendarSyncConnection, SyncedCalendar, SyncEventMapping, Organisation, OrganisationAdmin, OrganisationUser, OrganisationResourceTypePermission, OrganisationCalendarPermission, ReservationCalendar, ReservationCalendarRole, ResourceType, Resource, OperatingHours, Reservation, AutomationRule, AutomationCondition, AutomationAction, AutomationAuditLog],
+            entities: [User, Calendar, CalendarShare, Event, CalendarSyncConnection, SyncedCalendar, SyncEventMapping, Organisation, OrganisationAdmin, OrganisationUser, OrganisationResourceTypePermission, OrganisationCalendarPermission, ReservationCalendar, ReservationCalendarRole, ResourceType, Resource, OperatingHours, Reservation, AutomationRule, AutomationCondition, AutomationAction, AutomationAuditLog, LogEntry, LogSettings],
             synchronize: true,
             logging: process.env.NODE_ENV === 'development',
           };
@@ -144,6 +147,7 @@ const dbLogger = new Logger('DatabaseConnection');
     ReservationsModule,
     AutomationModule,
     CommonModule,
+    LoggingModule,
     TypeOrmModule.forFeature([User]),
   ],
   controllers: [AppController, UserProfileController, UserPermissionsController, FeatureFlagsController],

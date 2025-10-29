@@ -332,25 +332,6 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
             </div>
           )}
         </form>
-
-        <div className="mt-8 pt-6 border-t border-white/20 text-center">
-          <div className="space-y-3">
-            <div className="bg-gradient-to-r from-red-50 to-pink-50 rounded-2xl p-4 border border-red-200">
-              <p className="text-sm text-red-700 mb-2 font-medium">👑 Admin Access</p>
-              <p className="text-gray-700">Email: <span className="font-mono bg-red-100 px-2 py-1 rounded text-red-800">admin@example.com</span></p>
-              <p className="text-gray-700">Password: <span className="font-mono bg-red-100 px-2 py-1 rounded text-red-800">enterenter</span></p>
-            </div>
-            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-4 border border-blue-200">
-              <p className="text-sm text-blue-700 mb-2 font-medium">✨ Demo Mode</p>
-              <p className="text-gray-700">Any email + password: <span className="font-mono bg-blue-100 px-2 py-1 rounded text-blue-800">demo123</span></p>
-            </div>
-            <div className="bg-gradient-to-r from-green-50 to-teal-50 rounded-2xl p-4 border border-green-200">
-              <p className="text-sm text-green-700 mb-2 font-medium">📝 Test User</p>
-              <p className="text-gray-700">Email: <span className="font-mono bg-green-100 px-2 py-1 rounded text-green-800">test@example.com</span></p>
-              <p className="text-gray-700">Password: <span className="font-mono bg-green-100 px-2 py-1 rounded text-green-800">password123</span></p>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   );

@@ -19,4 +19,5 @@ export * from './AdminCalendarPanel';
 export * from './AdminEventPanel';
 export * from './AdminSharePanel';
 export * from './AdminReservationPanel';
+export * from './AdminLogsPanel';
 export * from './AdminNavigation';

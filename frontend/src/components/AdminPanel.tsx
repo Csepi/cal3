@@ -1,19 +1,4 @@
-/**
- * AdminPanel component - Refactored modular admin interface
- *
- * This component has been completely refactored from a monolithic 1695-line component
- * into a clean orchestrator that uses specialized, reusable components. It follows
- * React best practices with proper separation of concerns and "Lego-like" composition.
- *
- * Key improvements:
- * - Extracted theme colors to centralized constants
- * - Created reusable admin components (AdminStatsPanel, AdminUserPanel, etc.)
- * - Separated concerns (navigation, data management, UI)
- * - Reduced complexity from 1695 lines to ~150 lines
- * - Improved maintainability and testability
- */
-
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { LoadingScreen } from './common';
 import { useLoadingProgress } from '../hooks/useLoadingProgress';
 import { useScreenSize } from '../hooks/useScreenSize';
@@ -26,53 +11,29 @@ import {
   AdminEventPanel,
   AdminSharePanel,
   AdminReservationPanel,
-  type AdminTab
+  AdminLogsPanel,
+  type AdminTab,
 } from './admin';
 import SystemInfoPage from './admin/SystemInfoPage';
 
 interface AdminPanelProps {
-  /** Current theme color for styling */
   themeColor?: string;
 }
 
-/**
- * Refactored AdminPanel using modular components for better maintainability
- * and code reusability following React best practices.
- */
 const AdminPanel: React.FC<AdminPanelProps> = ({ themeColor = '#3b82f6' }) => {
-  // Mobile detection
   const { isMobile } = useScreenSize();
-
-  // Simplified state management - only what the orchestrator needs
-  const [activeTab, setActiveTab] = useState<AdminTab>('stats');
   const { loadingState } = useLoadingProgress();
+  const [activeTab, setActiveTab] = useState<AdminTab>('stats');
 
-  /**
-   * Handle tab navigation - clears component-specific state when switching
-   */
-  const handleTabChange = (newTab: AdminTab) => {
-    setActiveTab(newTab);
-  };
-
-  /**
-   * Render the appropriate panel component based on active tab
-   */
-  const renderActivePanel = () => {
-    const panelProps = {
-      themeColor,
-      isActive: true
-    };
-
+  const activePanel = useMemo(() => {
+    const panelProps = { themeColor, isActive: true };
     switch (activeTab) {
       case 'stats':
         return <AdminStatsPanel {...panelProps} />;
-
       case 'users':
         return <AdminUserPanel {...panelProps} />;
-
       case 'organizations':
         return <AdminOrganisationPanel {...panelProps} />;
-
       case 'calendars':
         return <AdminCalendarPanel {...panelProps} />;
       case 'events':
@@ -81,72 +42,62 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ themeColor = '#3b82f6' }) => {
         return <AdminSharePanel {...panelProps} />;
       case 'reservations':
         return <AdminReservationPanel {...panelProps} />;
+      case 'logs':
+        return <AdminLogsPanel {...panelProps} />;
       case 'system-info':
         return <SystemInfoPage />;
-
       default:
         return (
-          <div className="text-center py-12">
-            <div className="text-gray-400 text-4xl mb-4">❓</div>
+          <div className="py-12 text-center">
+            <div className="mb-4 text-4xl text-gray-400" aria-hidden="true">
+              ?
+            </div>
             <p className="text-gray-600">Unknown panel</p>
           </div>
         );
     }
-  };
+  }, [activeTab, themeColor]);
 
-  // Show loading screen during initial authentication or heavy operations
   if (loadingState.isLoading && loadingState.progress < 100) {
     return (
       <LoadingScreen
         progress={loadingState.progress}
         message={loadingState.message}
         themeColor={themeColor}
-        overlay={true}
+        overlay
       />
     );
   }
 
   return (
     <div className={`min-h-screen ${isMobile ? 'bg-gray-50' : 'bg-gradient-to-br from-blue-50 via-blue-100 to-blue-200'}`}>
-      {/* Animated Background - Desktop Only */}
       {!isMobile && (
         <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-r from-blue-300 to-indigo-300 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse"></div>
-          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-r from-indigo-300 to-purple-300 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse animation-delay-2000"></div>
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-60 h-60 bg-gradient-to-r from-purple-300 to-blue-300 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse animation-delay-4000"></div>
+          <div className="absolute -top-40 -right-40 h-80 w-80 animate-pulse rounded-full bg-gradient-to-r from-blue-300 to-indigo-300 opacity-30 blur-3xl" />
+          <div className="absolute -bottom-40 -left-40 h-80 w-80 animate-pulse rounded-full bg-gradient-to-r from-indigo-300 to-purple-300 opacity-30 blur-3xl animation-delay-2000" />
+          <div className="absolute left-1/2 top-1/2 h-60 w-60 -translate-x-1/2 -translate-y-1/2 animate-pulse rounded-full bg-gradient-to-r from-purple-300 to-blue-300 opacity-20 blur-3xl animation-delay-4000" />
         </div>
       )}
 
-      {/* Header - Hidden on mobile (Dashboard handles it) */}
       {!isMobile && (
-        <header className="relative z-10 backdrop-blur-sm bg-white/60 border-b border-blue-200 text-gray-800 py-6">
-          <div className="container mx-auto px-4 flex items-center justify-between">
+        <header className="relative z-10 border-b border-blue-200 bg-white/60 py-6 backdrop-blur-sm">
+          <div className="container mx-auto flex items-center justify-between px-6">
             <div className="flex items-center gap-4">
-              <h1 className="text-3xl font-semibold text-blue-900">
-                🔧 Admin Dashboard
-              </h1>
+              <h1 className="text-3xl font-semibold text-blue-900">Admin Control Center</h1>
+              <span className="rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700">
+                Environment: {process.env.NODE_ENV || 'development'}
+              </span>
             </div>
           </div>
         </header>
       )}
 
-      {/* Main Content */}
-      <main className={`relative z-10 max-w-7xl mx-auto ${isMobile ? 'p-0 mt-0' : 'p-6 mt-6'}`}>
-        {/* Main Layout */}
-        <div className={`grid grid-cols-1 lg:grid-cols-4 ${isMobile ? 'gap-0' : 'gap-6'}`}>
-          {/* Navigation Sidebar - Horizontal tabs on mobile */}
-          <div className="lg:col-span-1">
-            <AdminNavigation
-              activeTab={activeTab}
-              onTabChange={handleTabChange}
-              themeColor={themeColor}
-            />
+      <main className={`relative z-10 mx-auto mt-6 max-w-7xl ${isMobile ? 'p-4' : 'p-6'}`}>
+        <div className="grid grid-cols-1 gap-6 xl:grid-cols-[320px_1fr]">
+          <div className="order-2 xl:order-1">
+            <AdminNavigation activeTab={activeTab} onTabChange={setActiveTab} themeColor={themeColor} />
           </div>
-
-          {/* Main Content Panel */}
-          <div className="lg:col-span-3">
-            {renderActivePanel()}
-          </div>
+          <div className="order-1 xl:order-2">{activePanel}</div>
         </div>
       </main>
     </div>

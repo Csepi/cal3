@@ -17,6 +17,9 @@ import * as bcrypt from 'bcryptjs';
 import { v4 as uuidv4 } from 'uuid';
 import { SystemInfoDto } from './dto/system-info.dto';
 import * as os from 'os';
+import { LoggingService } from '../logging/logging.service';
+import type { LogLevel } from '../entities/log-entry.entity';
+import { LogQueryDto, UpdateLogSettingsDto } from './dto/logs.dto';
 
 @Injectable()
 export class AdminService {
@@ -46,6 +49,7 @@ export class AdminService {
     @InjectRepository(AutomationRule)
     private automationRuleRepository: Repository<AutomationRule>,
     private dataSource: DataSource,
+    private readonly loggingService: LoggingService,
   ) {}
 
   async getAllUsers(): Promise<User[]> {
@@ -560,6 +564,74 @@ export class AdminService {
    * Get comprehensive system information
    * Includes server stats, database config, environment settings, and feature flags
    */
+  async getLogs(query: LogQueryDto) {
+    const { levels, contexts, search, limit, offset, from, to } = query;
+
+    const normalizedLevels = Array.isArray(levels) ? levels.filter(Boolean) : [];
+    const normalizedContexts = Array.isArray(contexts) ? contexts.filter(Boolean) : [];
+
+    const logs = await this.loggingService.findLogs({
+      levels: normalizedLevels.length > 0 ? (normalizedLevels as LogLevel[]) : undefined,
+      contexts: normalizedContexts.length > 0 ? normalizedContexts : undefined,
+      search,
+      limit,
+      offset,
+      from: this.parseDate(from),
+      to: this.parseDate(to),
+    });
+
+    const settings = await this.loggingService.getSettings();
+
+    return {
+      items: logs,
+      count: logs.length,
+      settings,
+    };
+  }
+
+  async clearLogs(beforeRaw?: string) {
+    const before = this.parseDate(beforeRaw);
+    const deleted = await this.loggingService.clearLogs(before ? { before } : {});
+
+    return {
+      success: true,
+      deleted,
+    };
+  }
+
+  async runLogRetention() {
+    const deleted = await this.loggingService.purgeExpiredLogs();
+    return {
+      success: true,
+      deleted,
+    };
+  }
+
+  async getLogSettings() {
+    return this.loggingService.getSettings();
+  }
+
+  async updateLogSettings(dto: UpdateLogSettingsDto) {
+    const settings = await this.loggingService.updateSettings(dto);
+    return {
+      success: true,
+      settings,
+    };
+  }
+
+  private parseDate(value?: string): Date | undefined {
+    if (!value) {
+      return undefined;
+    }
+
+    const parsed = new Date(value);
+    if (Number.isNaN(parsed.getTime())) {
+      return undefined;
+    }
+
+    return parsed;
+  }
+
   async getSystemInfo(): Promise<SystemInfoDto> {
     const packageJson = require('../../package.json');
 

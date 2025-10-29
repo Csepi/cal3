@@ -5,7 +5,7 @@
  * including authentication, error handling, and common operations.
  */
 
-import type { AdminApiOptions, BulkOperationResult } from './types';
+import type { AdminApiOptions, BulkOperationResult, LogLevel } from './types';
 import { API_BASE_URL } from '../../config/apiConfig';
 
 /**
@@ -34,12 +34,12 @@ export const adminApiCall = async ({
   endpoint,
   token,
   method = 'GET',
-  data
+  data,
 }: AdminApiOptions) => {
   const options: RequestInit = {
     method,
     headers: {
-      'Authorization': `Bearer ${token}`,
+      Authorization: `Bearer ${token}`,
       'Content-Type': 'application/json',
     },
   };
@@ -48,7 +48,11 @@ export const adminApiCall = async ({
     options.body = JSON.stringify(data);
   }
 
-  const response = await fetch(`${API_BASE_URL}/api${endpoint}`, options);
+  const base = API_BASE_URL.replace(/\/+$/, '');
+  const normalizedEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+  const url = base.endsWith('/api') ? `${base}${normalizedEndpoint}` : `${base}/api${normalizedEndpoint}`;
+
+  const response = await fetch(url, options);
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
@@ -87,6 +91,87 @@ export const loadAdminData = async <T>(
 
   // Extract data from response object if it exists, otherwise return the response directly
   return response.data || response;
+};
+
+interface LogQueryParams {
+  levels?: LogLevel[];
+  contexts?: string[];
+  search?: string;
+  from?: string;
+  to?: string;
+  limit?: number;
+  offset?: number;
+}
+
+const requireAdminToken = (): string => {
+  const token = getAdminToken();
+  if (!token) {
+    throw new Error('No admin token found. Please login as admin.');
+  }
+  return token;
+};
+
+const buildQueryString = (params: Record<string, string | number | string[] | undefined>) => {
+  const searchParams = new URLSearchParams();
+  Object.entries(params).forEach(([key, value]) => {
+    if (Array.isArray(value)) {
+      value.filter((entry) => entry !== undefined && entry !== null && entry !== '').forEach((entry) => {
+        searchParams.append(key, String(entry));
+      });
+    } else if (value !== undefined && value !== null && value !== '') {
+      searchParams.append(key, String(value));
+    }
+  });
+  const queryString = searchParams.toString();
+  return queryString ? `?${queryString}` : '';
+};
+
+export const fetchAdminLogs = async (params: LogQueryParams = {}) => {
+  const token = requireAdminToken();
+  const query = buildQueryString({
+    levels: params.levels && params.levels.length > 0 ? params.levels : undefined,
+    contexts: params.contexts && params.contexts.length > 0 ? params.contexts : undefined,
+    search: params.search,
+    from: params.from,
+    to: params.to,
+    limit: params.limit,
+    offset: params.offset,
+  });
+
+  return adminApiCall({
+    endpoint: `/admin/logs${query}`,
+    token,
+  });
+};
+
+export const updateLogRetentionSettings = async (data: { retentionDays?: number; autoCleanupEnabled?: boolean }) => {
+  const token = requireAdminToken();
+  return adminApiCall({
+    endpoint: '/admin/logs/settings',
+    token,
+    method: 'PATCH',
+    data,
+  });
+};
+
+export const clearAdminLogs = async (before?: string) => {
+  const token = requireAdminToken();
+  const query = buildQueryString({ before });
+
+  return adminApiCall({
+    endpoint: `/admin/logs${query}`,
+    token,
+    method: 'DELETE',
+  });
+};
+
+export const runAdminLogRetention = async () => {
+  const token = requireAdminToken();
+  return adminApiCall({
+    endpoint: '/admin/logs/purge',
+    token,
+    method: 'POST',
+  });
 };
 
 /**
@@ -215,3 +300,4 @@ export const formatAdminError = (error: unknown): string => {
 
   return 'An unexpected error occurred. Please try again.';
 };
+

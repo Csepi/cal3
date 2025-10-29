@@ -1,213 +1,249 @@
-/**
- * AdminNavigation component for admin panel tab navigation
- *
- * This component provides a clean, accessible navigation interface for switching
- * between different admin panel sections. It includes active state indicators,
- * icons, and responsive design for mobile devices.
- */
-
 import React from 'react';
 import type { AdminTab } from './types';
 import { getThemeConfig } from '../../constants';
 
 export interface AdminNavigationProps {
-  /** Currently active tab */
   activeTab: AdminTab;
-  /** Callback when tab changes */
   onTabChange: (tab: AdminTab) => void;
-  /** Current theme color for styling */
   themeColor?: string;
-  /** Optional className for additional styling */
   className?: string;
 }
 
-/**
- * Tab configuration with icons and labels
- */
-const TAB_CONFIG: Record<AdminTab, { label: string; icon: string; description: string }> = {
-  stats: {
-    label: 'Statistics',
-    icon: '📊',
-    description: 'Database metrics and overview'
-  },
-  users: {
-    label: 'Users',
-    icon: '👥',
-    description: 'User management and profiles'
-  },
-  organizations: {
-    label: 'Organizations',
-    icon: '🏛️',
-    description: 'Organization and admin management'
-  },
-  calendars: {
-    label: 'Calendars',
-    icon: '📅',
-    description: 'Calendar management and settings'
-  },
-  events: {
-    label: 'Events',
-    icon: '📝',
-    description: 'Event management and scheduling'
-  },
-  shares: {
-    label: 'Shares',
-    icon: '🤝',
-    description: 'Calendar sharing and permissions'
-  },
-  reservations: {
-    label: 'Reservations',
-    icon: '🏢',
-    description: 'Resource reservations and bookings'
-  },
-  'system-info': {
-    label: 'System Info',
-    icon: '⚙️',
-    description: 'Runtime and configuration details'
-  }
+type TabIcon = 'KPI' | 'USR' | 'ORG' | 'CAL' | 'EVT' | 'ACL' | 'RES' | 'LOG' | 'SYS';
+
+const ICONS: Record<TabIcon, JSX.Element> = {
+  KPI: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 20h16" />
+      <rect x="6" y="11" width="3" height="7" rx="1" />
+      <rect x="11" y="7" width="3" height="11" rx="1" />
+      <rect x="16" y="4" width="3" height="14" rx="1" />
+    </svg>
+  ),
+  USR: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="8.5" cy="8" r="3" />
+      <circle cx="16.5" cy="9.5" r="2.5" />
+      <path d="M4 19c0-2.5 2-4.5 4.5-4.5S13 16.5 13 19v1H4z" />
+      <path d="M14.5 19c0-1.7 1.4-3.1 3.1-3.1 1.7 0 3.1 1.4 3.1 3.1V20h-6.2z" />
+    </svg>
+  ),
+  ORG: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 20V9l8-4 8 4v11" />
+      <path d="M9 20v-6h6v6" />
+      <path d="M9 14h6" />
+    </svg>
+  ),
+  CAL: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3.5" y="5" width="17" height="15" rx="2" />
+      <path d="M7.5 3v4" />
+      <path d="M16.5 3v4" />
+      <path d="M3.5 10h17" />
+    </svg>
+  ),
+  EVT: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round">
+      <path d="M5 5h14v14H5z" />
+      <path d="M5 11h14" />
+      <path d="M11 5v4" />
+      <path d="M13.5 16l1.8 2.4L18 15" />
+    </svg>
+  ),
+  ACL: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round">
+      <path d="M7 17l-3-3 3-3" />
+      <path d="M17 7l3 3-3 3" />
+      <path d="M5 14h14" />
+      <circle cx="9" cy="7" r="2.5" />
+      <circle cx="15" cy="17" r="2.5" />
+    </svg>
+  ),
+  RES: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round">
+      <rect x="4.5" y="4.5" width="15" height="15" rx="2" />
+      <path d="M8 8h8" />
+      <path d="M8 12h6" />
+      <path d="M8 16h4" />
+    </svg>
+  ),
+  LOG: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round">
+      <path d="M5 4h9l5 5v11a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z" />
+      <path d="M14 4v4h4" />
+      <path d="M9 12h6" />
+      <path d="M9 16h4" />
+    </svg>
+  ),
+  SYS: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="3" />
+      <path d="M4.05 7a8 8 0 0115.9 0M4.05 17a8 8 0 0015.9 0" />
+      <path d="M12 5v2" />
+      <path d="M12 17v2" />
+      <path d="M5 12h2" />
+      <path d="M17 12h2" />
+    </svg>
+  ),
 };
 
-/**
- * Navigation component with tab switching and active state management
- */
+const TAB_CONFIG: Record<AdminTab, { label: string; icon: TabIcon; description: string }> = {
+  stats: { label: 'Executive Dashboard', icon: 'KPI', description: 'High-level KPIs and adoption metrics' },
+  users: { label: 'People Directory', icon: 'USR', description: 'Manage users, roles, and usage plans' },
+  organizations: { label: 'Organizations', icon: 'ORG', description: 'Control org membership and governance' },
+  calendars: { label: 'Calendars', icon: 'CAL', description: 'Ownership, visibility, and lifecycle' },
+  events: { label: 'Events', icon: 'EVT', description: 'Audit and curate scheduled events' },
+  shares: { label: 'Sharing & Access', icon: 'ACL', description: 'Review calendar access policies' },
+  reservations: { label: 'Resource Bookings', icon: 'RES', description: 'Track reservations and capacity' },
+  logs: { label: 'Operational Logs', icon: 'LOG', description: 'Monitor backend activity and errors' },
+  'system-info': { label: 'System Health', icon: 'SYS', description: 'Runtime diagnostics and configuration' },
+};
+
+const NAV_GROUPS: Array<{
+  label: string;
+  description: string;
+  tabs: AdminTab[];
+}> = [
+  {
+    label: 'Overview',
+    description: 'Key indicators for leadership',
+    tabs: ['stats'],
+  },
+  {
+    label: 'People & Governance',
+    description: 'Who can access what',
+    tabs: ['users', 'organizations'],
+  },
+  {
+    label: 'Scheduling Operations',
+    description: 'Calendars, events, and resource usage',
+    tabs: ['calendars', 'events', 'shares', 'reservations'],
+  },
+  {
+    label: 'Platform Operations',
+    description: 'Logs and system diagnostics',
+    tabs: ['logs', 'system-info'],
+  },
+];
+
+const ICON_BACKGROUNDS: Record<TabIcon, string> = {
+  KPI: 'from-emerald-400 to-lime-500',
+  USR: 'from-sky-400 to-blue-600',
+  ORG: 'from-purple-400 to-indigo-500',
+  CAL: 'from-amber-400 to-orange-500',
+  EVT: 'from-rose-400 to-pink-500',
+  ACL: 'from-teal-400 to-emerald-500',
+  RES: 'from-cyan-400 to-blue-500',
+  LOG: 'from-slate-500 to-slate-700',
+  SYS: 'from-zinc-500 to-gray-700',
+};
+
+const IconBadge: React.FC<{ code: TabIcon; emphasize: boolean }> = ({ code, emphasize }) => (
+  <span
+    className={`inline-flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br ${ICON_BACKGROUNDS[code]} text-white transition ${
+      emphasize ? 'ring-2 ring-white shadow-lg' : 'opacity-90'
+    }`}
+    aria-hidden="true"
+  >
+    {ICONS[code]}
+  </span>
+);
+
 export const AdminNavigation: React.FC<AdminNavigationProps> = ({
   activeTab,
   onTabChange,
   themeColor = '#3b82f6',
-  className = ''
+  className = '',
 }) => {
   const themeConfig = getThemeConfig(themeColor);
 
-  /**
-   * Handle tab click with keyboard support
-   */
-  const handleTabClick = (tab: AdminTab) => {
+  const handleClick = (tab: AdminTab) => {
     onTabChange(tab);
   };
 
-  /**
-   * Handle keyboard navigation
-   */
-  const handleKeyDown = (e: React.KeyboardEvent, tab: AdminTab) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      handleTabClick(tab);
+  const handleKeyDown = (event: React.KeyboardEvent, tab: AdminTab) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      handleClick(tab);
     }
   };
 
   return (
-    <div className={`backdrop-blur-md bg-white/70 border border-blue-200 rounded-3xl shadow-xl hover:bg-white/80 transition-all duration-300 ${className}`}>
-      {/* Navigation Header */}
-      <div className="px-6 py-4 border-b border-gray-200">
-        <div className="flex items-center space-x-3">
-          <div className="flex-shrink-0">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-blue-500 to-indigo-600 flex items-center justify-center">
-              <span className="text-white font-bold text-sm">A</span>
-            </div>
+    <aside
+      className={`backdrop-blur-md bg-white/75 border border-blue-200 rounded-3xl shadow-xl hover:bg-white/85 transition-all duration-300 ${className}`}
+    >
+      <div className="px-6 py-5 border-b border-gray-200">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white font-semibold">
+            AD
           </div>
           <div>
-            <h1 className="text-xl font-bold text-gray-900">Admin Panel</h1>
-            <p className="text-sm text-gray-500">System administration and management</p>
+            <p className="text-xs uppercase tracking-wide text-gray-500">Cal3 Administration</p>
+            <h1 className="text-lg font-semibold text-gray-900">Control Center</h1>
           </div>
         </div>
       </div>
 
-      {/* Navigation Tabs */}
-      <nav className="p-2">
-        <div className="space-y-1">
-          {(Object.entries(TAB_CONFIG) as [AdminTab, typeof TAB_CONFIG[AdminTab]][]).map(([tab, config]) => {
-            const isActive = activeTab === tab;
+      <nav className="px-4 py-3 space-y-4">
+        {NAV_GROUPS.map((group) => (
+          <div key={group.label}>
+            <div className="px-2 pb-2">
+              <h2 className="text-xs font-semibold uppercase tracking-wide text-gray-500">{group.label}</h2>
+              <p className="text-xs text-gray-400">{group.description}</p>
+            </div>
+            <div className="space-y-1.5">
+              {group.tabs.map((tab) => {
+                const config = TAB_CONFIG[tab];
+                const isActive = activeTab === tab;
 
-            return (
-              <button
-                key={tab}
-                onClick={() => handleTabClick(tab)}
-                onKeyDown={(e) => handleKeyDown(e, tab)}
-                className={`
-                  w-full flex items-center px-4 py-3 text-left rounded-lg transition-all duration-200
-                  focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500
-                  ${isActive
-                    ? `bg-gradient-to-r ${themeConfig.gradientBg} text-gray-800 shadow-sm ring-1 ring-gray-200`
-                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                  }
-                `}
-                aria-label={`Switch to ${config.label} tab`}
-                role="tab"
-                aria-selected={isActive}
-              >
-                {/* Tab Icon */}
-                <span className="flex-shrink-0 text-xl mr-3">
-                  {config.icon}
-                </span>
-
-                {/* Tab Content */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between">
-                    <span className={`text-sm font-medium ${isActive ? 'text-gray-900' : 'text-gray-700'}`}>
-                      {config.label}
-                    </span>
-                    {isActive && (
-                      <div className="flex-shrink-0 ml-2">
-                        <div className={`w-2 h-2 rounded-full bg-gradient-to-r ${themeConfig.gradientFrom} ${themeConfig.gradientTo}`}></div>
+                return (
+                  <button
+                    key={tab}
+                    type="button"
+                    onClick={() => handleClick(tab)}
+                    onKeyDown={(event) => handleKeyDown(event, tab)}
+                    className={`w-full rounded-2xl px-4 py-3 text-left transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+                      isActive
+                        ? `bg-gradient-to-r ${themeConfig.gradientBg} text-gray-900 shadow-md`
+                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                    }`}
+                    role="tab"
+                    aria-selected={isActive}
+                    aria-label={config.label}
+                  >
+                    <div className="flex items-start gap-3">
+                      <IconBadge code={config.icon} emphasize={isActive} />
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between">
+                          <span className={`text-sm font-medium ${isActive ? 'text-gray-900' : 'text-gray-700'}`}>
+                            {config.label}
+                          </span>
+                          {isActive && (
+                            <span className="ml-2 inline-flex h-2 w-2 items-center justify-center rounded-full bg-white/90">
+                              <span className={`h-2 w-2 rounded-full ${themeConfig.gradientBg}`} aria-hidden="true" />
+                            </span>
+                          )}
+                        </div>
+                        <p className={`text-xs mt-1 ${isActive ? 'text-gray-700' : 'text-gray-500'}`}>
+                          {config.description}
+                        </p>
                       </div>
-                    )}
-                  </div>
-                  <p className={`text-xs mt-1 ${isActive ? 'text-gray-600' : 'text-gray-500'}`}>
-                    {config.description}
-                  </p>
-                </div>
-
-                {/* Active Indicator */}
-                {isActive && (
-                  <div className="flex-shrink-0 ml-3">
-                    <svg
-                      className={`w-4 h-4 ${themeConfig.textColor}`}
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M9 5l7 7-7 7"
-                      />
-                    </svg>
-                  </div>
-                )}
-              </button>
-            );
-          })}
-        </div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        ))}
       </nav>
 
-      {/* Quick Actions Footer */}
-      <div className="px-6 py-4 border-t border-gray-200 bg-gray-50/50 rounded-b-3xl">
-        <div className="flex items-center justify-between">
-          <div className="text-xs text-gray-500">
-            Current: <span className="font-medium text-gray-700">{TAB_CONFIG[activeTab].label}</span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <button
-              className="text-xs text-gray-500 hover:text-gray-700 transition-colors duration-200"
-              title="Refresh current tab"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-              </svg>
-            </button>
-            <button
-              className="text-xs text-gray-500 hover:text-gray-700 transition-colors duration-200"
-              title="Settings"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
-            </button>
-          </div>
-        </div>
+      <div className="px-6 py-4 border-t border-gray-200 bg-gray-50/70 rounded-b-3xl">
+        <p className="text-xs text-gray-500">
+          Current focus:{' '}
+          <span className="font-medium text-gray-700">{TAB_CONFIG[activeTab].label}</span>
+        </p>
       </div>
-    </div>
+    </aside>
   );
 };

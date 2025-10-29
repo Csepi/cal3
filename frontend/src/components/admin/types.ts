@@ -101,7 +101,7 @@ export interface BulkOperationResult {
 
 export type ModalType = 'create' | 'edit' | 'password' | 'usagePlans' | 'bulkUsagePlans';
 export type EntityType = 'user' | 'calendar' | 'event';
-export type AdminTab = 'users' | 'calendars' | 'events' | 'shares' | 'reservations' | 'organizations' | 'stats' | 'system-info';
+export type AdminTab = 'users' | 'calendars' | 'events' | 'shares' | 'reservations' | 'organizations' | 'stats' | 'system-info' | 'logs';
 
 export interface ConfirmDialogState {
   isOpen: boolean;
@@ -181,4 +181,29 @@ export interface MemberWithRole extends User {
   assignedAt?: string;
   /** Whether this is an organization admin */
   isOrgAdmin?: boolean;
+}
+
+export type LogLevel = 'log' | 'error' | 'warn' | 'debug' | 'verbose';
+
+export interface LogEntry {
+  id: number;
+  createdAt: string;
+  level: LogLevel;
+  context?: string | null;
+  message: string;
+  stack?: string | null;
+  metadata?: Record<string, unknown> | null;
+}
+
+export interface LogSettings {
+  id: number;
+  retentionDays: number;
+  autoCleanupEnabled: boolean;
+  updatedAt: string;
+}
+
+export interface LogResponse {
+  items: LogEntry[];
+  count: number;
+  settings: LogSettings;
 }

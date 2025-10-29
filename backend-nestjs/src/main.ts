@@ -10,6 +10,7 @@ import { ValidationPipe, Logger } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { DataSource } from 'typeorm';
 import { DatabaseDiagnosticsService } from './database/database-diagnostics.service';
+import { AppLoggerService } from './logging/app-logger.service';
 
 const logger = new Logger('Bootstrap');
 const dbLogger = new Logger('DatabaseConnection');
@@ -27,8 +28,11 @@ async function bootstrap() {
   try {
     dbLogger.log('🔄 Creating NestJS application...');
     const app = await NestFactory.create(AppModule, {
-      logger: ['log', 'error', 'warn', 'debug', 'verbose'],
+      bufferLogs: true,
     });
+
+    const appLogger = app.get(AppLoggerService);
+    app.useLogger(appLogger);
 
     // Get DataSource to monitor connection
     const dataSource = app.get(DataSource);

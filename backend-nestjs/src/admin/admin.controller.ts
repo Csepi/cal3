@@ -8,6 +8,7 @@ import {
   Delete,
   UseGuards,
   Request,
+  Query,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { AdminService } from './admin.service';
@@ -15,6 +16,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { AdminGuard } from '../auth/guards/admin.guard';
 import { UpdateUsagePlansDto } from '../dto/user-profile.dto';
 import { SystemInfoDto } from './dto/system-info.dto';
+import { LogQueryDto, UpdateLogSettingsDto } from './dto/logs.dto';
 
 @ApiTags('Admin')
 @Controller('admin')
@@ -71,6 +73,41 @@ export class AdminController {
   @ApiResponse({ status: 200, description: 'System information retrieved successfully', type: SystemInfoDto })
   getSystemInfo() {
     return this.adminService.getSystemInfo();
+  }
+
+  @Get('logs')
+  @ApiOperation({ summary: 'Get application logs (Admin only)' })
+  @ApiResponse({ status: 200, description: 'Logs retrieved successfully' })
+  getLogs(@Query() query: LogQueryDto) {
+    return this.adminService.getLogs(query);
+  }
+
+  @Delete('logs')
+  @ApiOperation({ summary: 'Delete application logs (Admin only)' })
+  @ApiResponse({ status: 200, description: 'Logs deleted successfully' })
+  clearLogs(@Query('before') before?: string) {
+    return this.adminService.clearLogs(before);
+  }
+
+  @Post('logs/purge')
+  @ApiOperation({ summary: 'Run retention cleanup immediately (Admin only)' })
+  @ApiResponse({ status: 200, description: 'Log retention executed successfully' })
+  runLogRetention() {
+    return this.adminService.runLogRetention();
+  }
+
+  @Get('logs/settings')
+  @ApiOperation({ summary: 'Get log retention settings (Admin only)' })
+  @ApiResponse({ status: 200, description: 'Log settings retrieved successfully' })
+  getLogSettings() {
+    return this.adminService.getLogSettings();
+  }
+
+  @Patch('logs/settings')
+  @ApiOperation({ summary: 'Update log retention settings (Admin only)' })
+  @ApiResponse({ status: 200, description: 'Log settings updated successfully' })
+  updateLogSettings(@Body() updateLogSettingsDto: UpdateLogSettingsDto) {
+    return this.adminService.updateLogSettings(updateLogSettingsDto);
   }
 
   @Patch('users/:id/role')
