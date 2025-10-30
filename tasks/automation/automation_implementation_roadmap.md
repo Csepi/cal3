@@ -896,7 +896,10 @@ async findAll(@Req() req) {
 ```typescript
 // frontend/src/config/features.ts
 export const FEATURES = {
-  automation: import.meta.env.VITE_AUTOMATION_ENABLED === 'true',
+  automation:
+    window.ENV?.AUTOMATION_ENABLED === 'true' ||
+    window.AUTOMATION_ENABLED === true ||
+    true, // default enabled
 };
 
 // In Dashboard

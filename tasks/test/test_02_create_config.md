@@ -145,7 +145,7 @@ export default defineConfig({
 Create `frontend/.env.test`:
 ```env
 # Test environment variables
-VITE_API_URL=http://localhost:8081
+BASE_URL=http://localhost:8081
 NODE_ENV=test
 ```
 

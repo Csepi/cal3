@@ -160,7 +160,7 @@ Click **+ Add an environment variable** for each of these **required** variables
 | `BACKEND_PORT` | `8081` | Backend API port |
 | `DB_PORT` | `5433` | PostgreSQL host port |
 
-✅ **All URLs auto-constructed!** Just set `BASE_URL` and ports - no need for `FRONTEND_URL`, `API_URL`, `VITE_API_URL`, or callback URLs. They're automatically generated as:
+✅ **All URLs auto-constructed!** Just set `BASE_URL` and ports - no need for duplicate overrides such as `FRONTEND_URL` or `API_URL`. They're automatically generated as:
 - Frontend URL = `BASE_URL:FRONTEND_PORT`
 - API URL = `BASE_URL:BACKEND_PORT`
 - OAuth callbacks = `BASE_URL:BACKEND_PORT/api/auth/{provider}/callback`

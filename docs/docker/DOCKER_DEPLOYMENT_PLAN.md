@@ -469,7 +469,6 @@ services:
     restart: unless-stopped
     environment:
       NODE_ENV: development
-      VITE_API_URL: http://localhost:8081
     ports:
       - "8080:8080"
     volumes:

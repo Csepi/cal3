@@ -386,8 +386,6 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
     container_name: cal3-frontend
-    environment:
-      VITE_API_URL: http://localhost:8081
     ports:
       - "8080:8080"
     depends_on:

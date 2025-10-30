@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { BASE_URL } from '../../config/apiConfig';
 import { TriggerType } from '../../types/Automation';
 
 interface WebhookConfigurationProps {
@@ -25,7 +26,7 @@ export const WebhookConfiguration: React.FC<WebhookConfigurationProps> = ({
   // Get the webhook URL
   const getWebhookUrl = () => {
     if (!webhookToken) return '';
-    const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8081';
+    const baseUrl = BASE_URL;
     return `${baseUrl}/api/automation/webhook/${webhookToken}`;
   };
 

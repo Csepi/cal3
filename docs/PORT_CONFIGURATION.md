@@ -20,9 +20,9 @@
 
 #### Frontend (`frontend/src/services/api.ts`, `automationService.ts`)
 ```typescript
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8081';
+const API_BASE_URL = import.meta.env.BASE_URL || 'http://localhost:8081';
 ```
-- Uses environment variable `VITE_API_URL`
+- Uses environment variable `BASE_URL`
 - Fallback to `localhost:8081` for local development
 - **NOT hardcoded** - configurable via `.env` file
 
@@ -53,7 +53,7 @@ DB_PORT=5433           # Change to any available port
 # URL Configuration (must match ports above)
 FRONTEND_URL=http://localhost:8080
 API_URL=http://localhost:8081
-VITE_API_URL=http://localhost:8081
+BASE_URL=http://localhost:8081
 ```
 
 **Important:** If you change ports, you MUST update the URL variables to match:
@@ -66,7 +66,7 @@ DB_PORT=5432
 # Update URLs to match
 FRONTEND_URL=http://localhost:3000
 API_URL=http://localhost:3001
-VITE_API_URL=http://localhost:3001
+BASE_URL=http://localhost:3001
 ```
 
 ### Method 2: Local Development
@@ -79,7 +79,7 @@ FRONTEND_URL=http://localhost:8080  # Frontend URL for CORS
 
 **Frontend:** `frontend/.env`
 ```bash
-VITE_API_URL=http://localhost:8081  # Backend API URL
+BASE_URL=http://localhost:8081  # Backend API URL
 ```
 
 **Running with custom ports:**
@@ -90,7 +90,7 @@ PORT=3001 JWT_SECRET="your-secret" npm run start:dev
 
 # Frontend with custom port
 cd frontend
-VITE_PORT=3000 npm run dev
+npm run dev -- --port 3000
 ```
 
 ---
@@ -106,7 +106,7 @@ VITE_PORT=3000 npm run dev
    BACKEND_PORT=443
    FRONTEND_URL=https://yourdomain.com
    API_URL=https://api.yourdomain.com
-   VITE_API_URL=https://api.yourdomain.com
+   BASE_URL=https://api.yourdomain.com
    ```
 
 2. **Update OAuth Callback URLs** (if using SSO):
@@ -133,7 +133,7 @@ VITE_PORT=3000 npm run dev
 ```bash
 grep -r "localhost:808" frontend/src/
 # Should only find environment variable fallbacks like:
-# import.meta.env.VITE_API_URL || 'http://localhost:8081'
+# import.meta.env.BASE_URL || 'http://localhost:8081'
 ```
 
 **Backend Main:**
@@ -155,7 +155,7 @@ grep -r "process.env.PORT" backend-nestjs/src/main.ts
 
 2. Create `frontend/.env.test`:
    ```bash
-   VITE_API_URL=http://localhost:3001
+   BASE_URL=http://localhost:3001
    ```
 
 3. Start services:
@@ -180,7 +180,8 @@ grep -r "process.env.PORT" backend-nestjs/src/main.ts
 # Option 1: Use different port
 FRONTEND_PORT=8090
 FRONTEND_URL=http://localhost:8090
-VITE_PORT=8090
+# When running locally:
+npm run dev -- --port 8090
 
 # Option 2: Kill process using port 8080
 # Windows
@@ -197,7 +198,7 @@ lsof -ti:8080 | xargs kill -9
 BACKEND_PORT=8082
 PORT=8082
 API_URL=http://localhost:8082
-VITE_API_URL=http://localhost:8082
+BASE_URL=http://localhost:8082
 
 # Option 2: Kill process using port 8081
 # Windows
@@ -239,7 +240,7 @@ Runtime Port Binding
 2. **Dockerfile** (build-time):
    ```dockerfile
    ARG API_URL=http://localhost:8081
-   ENV VITE_API_URL=${API_URL}
+   ENV BASE_URL=${API_URL}
    ```
 
 3. **Application Code** (runtime):

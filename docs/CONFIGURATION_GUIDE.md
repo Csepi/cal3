@@ -45,7 +45,6 @@ These are **automatically constructed** but can be explicitly set if needed:
 |----------|----------------------|------------------|
 | `FRONTEND_URL` | `BASE_URL:FRONTEND_PORT` | Using subdomains or reverse proxy |
 | `API_URL` | `BASE_URL:BACKEND_PORT` | Using subdomains or API gateway |
-| `VITE_API_URL` | `BASE_URL:BACKEND_PORT` | Frontend needs different API endpoint |
 | `GOOGLE_CALLBACK_URL` | `BASE_URL:BACKEND_PORT/api/auth/google/callback` | Custom OAuth setup |
 | `MICROSOFT_CALLBACK_URL` | `BASE_URL:BACKEND_PORT/api/auth/microsoft/callback` | Custom OAuth setup |
 
@@ -85,7 +84,6 @@ BACKEND_PORT=3001
 ```
 FRONTEND_URL   = http://localhost:3000
 API_URL        = http://localhost:3001
-VITE_API_URL   = http://localhost:3001
 CORS Origin    = http://localhost:3000
 Google OAuth   = http://localhost:3001/api/auth/google/callback
 Microsoft OAuth= http://localhost:3001/api/auth/microsoft/callback
@@ -103,12 +101,17 @@ const frontendUrl = process.env.FRONTEND_URL || `${baseUrl}:${frontendPort}`;
 // Result: http://localhost:8080 (or your custom configuration)
 ```
 
-**Frontend** (api.ts):
+**Frontend** (apiConfig.ts):
 ```typescript
-const BASE_URL = import.meta.env.VITE_BASE_URL || 'http://localhost';
-const BACKEND_PORT = import.meta.env.VITE_BACKEND_PORT || '8081';
-const API_BASE_URL = import.meta.env.VITE_API_URL || `${BASE_URL}:${BACKEND_PORT}`;
-// Result: http://localhost:8081 (or your custom configuration)
+export const BASE_URL =
+  (window.BASE_URL && window.BASE_URL.trim()) ||
+  (window.ENV?.BASE_URL && window.ENV.BASE_URL.trim()) ||
+  (window.location.hostname !== 'localhost'
+    ? `${window.location.protocol}//${window.location.hostname}:${process.env.BACKEND_PORT ?? '8081'}`
+    : 'http://localhost:8081');
+
+export const getApiUrl = (endpoint: string) =>
+  `${BASE_URL}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
 ```
 
 ---
@@ -249,12 +252,10 @@ JWT_SECRET=dev-secret-key-min-32-chars
 
 ### Frontend Configuration
 
-**`frontend/.env`:**
-```bash
-VITE_BASE_URL=http://localhost
-VITE_BACKEND_PORT=8081
-# Or explicitly: VITE_API_URL=http://localhost:8081
-```
+The frontend now derives its API base automatically from the page origin.  
+For local development (port 8080 serving assets, backend on 8081) **no `.env` file is required**.
+Only set a custom value if you must call an API hosted on a different origin; you can do this
+by defining `window.BASE_URL = 'https://api.example.com'` before loading the bundle (e.g. via a small inline script).
 
 ### Start Development Servers
 
@@ -276,7 +277,7 @@ cd backend-nestjs
 BASE_URL=http://localhost BACKEND_PORT=3001 FRONTEND_PORT=3000 PORT=3001 JWT_SECRET="dev-secret" npm run start:dev
 
 cd frontend
-VITE_BASE_URL=http://localhost VITE_BACKEND_PORT=3001 npm run dev -- --port 3000
+npm run dev -- --port 3000
 ```
 
 ---
@@ -356,7 +357,7 @@ curl http://localhost:8081/api/health
 **Check 2: Verify frontend has correct API URL**
 ```bash
 # In browser console
-console.log(import.meta.env.VITE_API_URL)
+console.log(window.BASE_URL || window.location.origin)
 # Should show: http://localhost:8081 (or your configured URL)
 ```
 

@@ -21,10 +21,6 @@ RUN npm ci
 # Copy source code
 COPY frontend/ .
 
-# Set environment variables for Vite build (constructs API_URL from BASE_URL + port)
-ENV VITE_BASE_URL=${BASE_URL}
-ENV VITE_BACKEND_PORT=${BACKEND_PORT}
-
 # Build production bundle
 RUN npm run build
 

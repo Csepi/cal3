@@ -8,7 +8,7 @@ import type {
   AuditLogQueryDto,
   AuditLogStatsDto,
 } from '../types/Automation';
-import { API_BASE_URL } from '../config/apiConfig';
+import { BASE_URL } from '../config/apiConfig';
 
 /**
  * Get authorization headers with JWT token
@@ -54,7 +54,7 @@ export async function getAutomationRules(
   }
 
   const response = await fetch(
-    `${API_BASE_URL}/api/automation/rules?${params.toString()}`,
+    `${BASE_URL}/api/automation/rules?${params.toString()}`,
     {
       method: 'GET',
       headers: getAuthHeaders(),
@@ -71,7 +71,7 @@ export async function getAutomationRule(
   ruleId: number
 ): Promise<AutomationRuleDetailDto> {
   const response = await fetch(
-    `${API_BASE_URL}/api/automation/rules/${ruleId}`,
+    `${BASE_URL}/api/automation/rules/${ruleId}`,
     {
       method: 'GET',
       headers: getAuthHeaders(),
@@ -87,7 +87,7 @@ export async function getAutomationRule(
 export async function createAutomationRule(
   ruleData: CreateAutomationRuleDto
 ): Promise<AutomationRuleDetailDto> {
-  const response = await fetch(`${API_BASE_URL}/api/automation/rules`, {
+  const response = await fetch(`${BASE_URL}/api/automation/rules`, {
     method: 'POST',
     headers: getAuthHeaders(),
     body: JSON.stringify(ruleData),
@@ -104,7 +104,7 @@ export async function updateAutomationRule(
   updateData: UpdateAutomationRuleDto
 ): Promise<AutomationRuleDetailDto> {
   const response = await fetch(
-    `${API_BASE_URL}/api/automation/rules/${ruleId}`,
+    `${BASE_URL}/api/automation/rules/${ruleId}`,
     {
       method: 'PUT',
       headers: getAuthHeaders(),
@@ -120,7 +120,7 @@ export async function updateAutomationRule(
  */
 export async function deleteAutomationRule(ruleId: number): Promise<void> {
   const response = await fetch(
-    `${API_BASE_URL}/api/automation/rules/${ruleId}`,
+    `${BASE_URL}/api/automation/rules/${ruleId}`,
     {
       method: 'DELETE',
       headers: getAuthHeaders(),
@@ -152,7 +152,7 @@ export async function regenerateWebhookToken(
   ruleId: number
 ): Promise<{ webhookToken: string }> {
   const response = await fetch(
-    `${API_BASE_URL}/api/automation/rules/${ruleId}/webhook/regenerate`,
+    `${BASE_URL}/api/automation/rules/${ruleId}/webhook/regenerate`,
     {
       method: 'POST',
       headers: getAuthHeaders(),
@@ -171,7 +171,7 @@ export async function executeRuleNow(
   ruleId: number
 ): Promise<{ message: string; executionCount: number }> {
   const response = await fetch(
-    `${API_BASE_URL}/api/automation/rules/${ruleId}/execute`,
+    `${BASE_URL}/api/automation/rules/${ruleId}/execute`,
     {
       method: 'POST',
       headers: getAuthHeaders(),
@@ -199,7 +199,7 @@ export async function getAuditLogs(
   if (query?.offset) params.append('offset', query.offset.toString());
 
   const queryString = params.toString();
-  const url = `${API_BASE_URL}/api/automation/rules/${ruleId}/audit-logs${
+  const url = `${BASE_URL}/api/automation/rules/${ruleId}/audit-logs${
     queryString ? `?${queryString}` : ''
   }`;
 
@@ -219,7 +219,7 @@ export async function getAuditLogStats(
   ruleId: number
 ): Promise<AuditLogStatsDto> {
   const response = await fetch(
-    `${API_BASE_URL}/api/automation/rules/${ruleId}/stats`,
+    `${BASE_URL}/api/automation/rules/${ruleId}/stats`,
     {
       method: 'GET',
       headers: getAuthHeaders(),
@@ -244,7 +244,7 @@ export async function getAllAuditLogs(
   if (query?.offset) params.append('offset', query.offset.toString());
 
   const queryString = params.toString();
-  const url = `${API_BASE_URL}/api/automation/audit-logs${
+  const url = `${BASE_URL}/api/automation/audit-logs${
     queryString ? `?${queryString}` : ''
   }`;
 

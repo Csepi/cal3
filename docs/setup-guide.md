@@ -151,10 +151,7 @@ NODE_ENV=production
 Create `.env` file in `frontend/` directory:
 ```bash
 # API Configuration (only needed if backend is on different host)
-VITE_API_BASE_URL=http://localhost:8081/api
-
-# Development tools
-VITE_ENABLE_DEV_TOOLS=true
+BASE_URL=http://localhost:8081/api
 ```
 
 ## 🏃‍♂️ **Running the Application**

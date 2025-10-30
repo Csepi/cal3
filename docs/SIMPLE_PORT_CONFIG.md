@@ -8,7 +8,7 @@ FRONTEND_PORT=3000
 BACKEND_PORT=3001
 FRONTEND_URL=http://localhost:3000   # Redundant!
 API_URL=http://localhost:3001         # Redundant!
-VITE_API_URL=http://localhost:3001   # Redundant!
+BASE_URL=http://localhost:3001   # Redundant!
 GOOGLE_CALLBACK_URL=http://localhost:3001/api/auth/google/callback  # Redundant!
 ```
 
@@ -46,11 +46,17 @@ const baseUrl = process.env.BASE_URL || 'http://localhost';
 const frontendUrl = process.env.FRONTEND_URL || `${baseUrl}:${frontendPort}`;
 ```
 
-**Frontend** (`frontend/src/services/api.ts`):
+**Frontend** (`frontend/src/config/apiConfig.ts`):
 ```typescript
-const BASE_URL = import.meta.env.VITE_BASE_URL || 'http://localhost';
-const BACKEND_PORT = import.meta.env.VITE_BACKEND_PORT || '8081';
-const API_BASE_URL = import.meta.env.VITE_API_URL || `${BASE_URL}:${BACKEND_PORT}`;
+export const BASE_URL =
+  (window.BASE_URL && window.BASE_URL.trim()) ||
+  (window.ENV?.BASE_URL && window.ENV.BASE_URL.trim()) ||
+  `${window.location.protocol}//${window.location.hostname}${
+    window.location.port ? `:${window.location.port}` : ':8081'
+  }`;
+
+export const getApiUrl = (endpoint: string) =>
+  `${BASE_URL}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
 ```
 
 **OAuth Strategies** (`backend-nestjs/src/auth/*.strategy.ts`):
@@ -137,9 +143,9 @@ These are **automatically constructed** but can be overridden:
 
 | Variable | Purpose |
 |----------|---------|
-| `VITE_BASE_URL` | Passes BASE_URL to frontend build |
-| `VITE_BACKEND_PORT` | Passes BACKEND_PORT to frontend build |
-| `VITE_API_URL` | Optional: Override for API URL |
+| `BASE_URL` | Passes BASE_URL to frontend build |
+| `BACKEND_PORT` | Passes BACKEND_PORT to frontend build |
+| `BASE_URL` | Optional: Override for API URL |
 
 ---
 
@@ -155,7 +161,7 @@ FRONTEND_PORT=8080
 BACKEND_PORT=8081
 FRONTEND_URL=http://localhost:8080
 API_URL=http://localhost:8081
-VITE_API_URL=http://localhost:8081
+BASE_URL=http://localhost:8081
 GOOGLE_CALLBACK_URL=http://localhost:8081/api/auth/google/callback
 MICROSOFT_CALLBACK_URL=http://localhost:8081/api/auth/microsoft/callback
 ```
@@ -178,7 +184,7 @@ MICROSOFT_CLIENT_SECRET=your-secret
 Remove these redundant variables:
 - ❌ `FRONTEND_URL` (unless using subdomains)
 - ❌ `API_URL` (unless using subdomains)
-- ❌ `VITE_API_URL` (unless custom override needed)
+- ❌ `BASE_URL` (unless custom override needed)
 - ❌ `GOOGLE_CALLBACK_URL` (auto-constructed)
 - ❌ `MICROSOFT_CALLBACK_URL` (auto-constructed)
 

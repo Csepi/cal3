@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { BASE_URL } from '../../config/apiConfig';
 import { TriggerType } from '../../types/Automation';
 
 interface SmartValue {
@@ -34,11 +35,10 @@ export const SmartValuePicker: React.FC<SmartValuePickerProps> = ({
 
     setLoading(true);
     try {
-      const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8081';
       const token = localStorage.getItem('authToken');
 
       const response = await fetch(
-        `${baseUrl}/api/automation/smart-values/${triggerType}`,
+        `${BASE_URL}/api/automation/smart-values/${triggerType}`,
         {
           headers: {
             'Authorization': `Bearer ${token}`,

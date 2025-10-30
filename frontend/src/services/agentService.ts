@@ -1,4 +1,4 @@
-import { API_BASE_URL } from '../config/apiConfig';
+import { BASE_URL } from '../config/apiConfig';
 import { secureFetch, authErrorHandler } from './authErrorHandler';
 import type {
   AgentSummary,
@@ -24,7 +24,7 @@ class AgentService {
     endpoint: string,
     options: RequestInit = {},
   ): Promise<T> {
-    const response = await secureFetch(`${API_BASE_URL}/api${endpoint}`, {
+    const response = await secureFetch(`${BASE_URL}/api${endpoint}`, {
       ...options,
       headers: {
         ...this.getAuthHeaders(),

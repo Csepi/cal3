@@ -358,7 +358,6 @@ DB_PORT=5433                   # PostgreSQL port (default: 5433)
 **All URLs automatically constructed:**
 - `FRONTEND_URL` = `BASE_URL:FRONTEND_PORT`
 - `API_URL` = `BASE_URL:BACKEND_PORT`
-- `VITE_API_URL` = `BASE_URL:BACKEND_PORT`
 - OAuth callbacks = `BASE_URL:BACKEND_PORT/api/auth/{provider}/callback`
 
 **Example with custom ports:**

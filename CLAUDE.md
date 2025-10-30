@@ -73,13 +73,13 @@ cd backend-nestjs && npm run seed
 - **Database**: Port 5433 (set via `DB_PORT` env var)
 
 **Code has NO hardcoded ports** - all use environment variables with fallback defaults:
-- Frontend: `import.meta.env.VITE_API_URL || 'http://localhost:8081'`
+- Frontend: `window.BASE_URL || window.location.origin || 'http://localhost:8081'`
 - Backend: `process.env.PORT || 8081`
 - Backend CORS: `process.env.FRONTEND_URL || 'http://localhost:8080'`
 
 **To use custom ports:**
 1. Set environment variables in `.env` files
-2. Update all URL variables to match (FRONTEND_URL, API_URL, VITE_API_URL)
+2. Update all URL variables to match (FRONTEND_URL, API_URL, BASE_URL)
 3. Update OAuth callback URLs if using SSO
 
 See [docker/README.md](docker/README.md) for complete port configuration guide.

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { API_BASE_URL } from '../config/apiConfig';
+import { BASE_URL } from '../config/apiConfig';
 
 interface ResourceInfo {
   id: number;
@@ -60,7 +60,7 @@ const PublicBookingPage: React.FC = () => {
     const fetchResource = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`${API_BASE_URL}/api/public/booking/${token}`);
+        const response = await fetch(`${BASE_URL}/api/public/booking/${token}`);
 
         if (!response.ok) {
           if (response.status === 404) {
@@ -92,7 +92,7 @@ const PublicBookingPage: React.FC = () => {
       try {
         setLoadingSlots(true);
         const response = await fetch(
-          `${API_BASE_URL}/api/public/booking/${token}/availability?date=${selectedDate}`
+          `${BASE_URL}/api/public/booking/${token}/availability?date=${selectedDate}`
         );
 
         if (!response.ok) {
@@ -145,7 +145,7 @@ const PublicBookingPage: React.FC = () => {
         quantity: 1
       };
 
-      const response = await fetch(`${API_BASE_URL}/api/public/booking/${token}/reserve`, {
+      const response = await fetch(`${BASE_URL}/api/public/booking/${token}/reserve`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -169,7 +169,7 @@ const PublicBookingPage: React.FC = () => {
 
       // Refresh availability
       const availResponse = await fetch(
-        `${API_BASE_URL}/api/public/booking/${token}/availability?date=${selectedDate}`
+        `${BASE_URL}/api/public/booking/${token}/availability?date=${selectedDate}`
       );
       if (availResponse.ok) {
         const data = await availResponse.json();

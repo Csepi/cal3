@@ -53,7 +53,7 @@ const mapRecurrenceRule = (pattern: RecurrencePattern): any => {
 };
 
 // Import centralized API configuration
-import { API_BASE_URL } from '../config/apiConfig';
+import { BASE_URL } from '../config/apiConfig';
 import { secureFetch, authErrorHandler } from './authErrorHandler';
 
 class ApiService {
@@ -88,7 +88,7 @@ class ApiService {
   }
 
   async getAllEvents(): Promise<Event[]> {
-    const response = await this.secureApiFetch(`${API_BASE_URL}/api/events`);
+    const response = await this.secureApiFetch(`${BASE_URL}/api/events`);
     if (!response.ok) {
       throw new Error('Failed to fetch events');
     }
@@ -97,7 +97,7 @@ class ApiService {
   }
 
   async createEvent(eventData: CreateEventRequest): Promise<Event> {
-    const response = await this.secureApiFetch(`${API_BASE_URL}/api/events`, {
+    const response = await this.secureApiFetch(`${BASE_URL}/api/events`, {
       method: 'POST',
       body: JSON.stringify(eventData),
     });
@@ -127,7 +127,7 @@ class ApiService {
       }
     };
 
-    const response = await fetch(`${API_BASE_URL}/api/events/recurring`, {
+    const response = await fetch(`${BASE_URL}/api/events/recurring`, {
       method: 'POST',
       headers: this.getAuthHeaders(),
       body: JSON.stringify(recurringEventData),
@@ -146,7 +146,7 @@ class ApiService {
   }
 
   async updateEvent(eventId: number, eventData: UpdateEventRequest): Promise<Event> {
-    const response = await fetch(`${API_BASE_URL}/api/events/${eventId}`, {
+    const response = await fetch(`${BASE_URL}/api/events/${eventId}`, {
       method: 'PATCH',
       headers: this.getAuthHeaders(),
       body: JSON.stringify(eventData),
@@ -164,7 +164,7 @@ class ApiService {
   }
 
   async deleteEvent(eventId: number, scope: 'this' | 'future' | 'all' = 'this'): Promise<void> {
-    const response = await fetch(`${API_BASE_URL}/api/events/${eventId}?scope=${scope}`, {
+    const response = await fetch(`${BASE_URL}/api/events/${eventId}?scope=${scope}`, {
       method: 'DELETE',
       headers: this.getAuthHeaders(),
     });
@@ -181,7 +181,7 @@ class ApiService {
   // Recurring event methods
 
   async updateRecurringEvent(eventId: number, eventData: UpdateRecurringEventRequest): Promise<Event[]> {
-    const response = await fetch(`${API_BASE_URL}/api/events/${eventId}/recurring`, {
+    const response = await fetch(`${BASE_URL}/api/events/${eventId}/recurring`, {
       method: 'PATCH',
       headers: this.getAuthHeaders(),
       body: JSON.stringify(eventData),
@@ -200,7 +200,7 @@ class ApiService {
 
   // Calendar methods
   async getAllCalendars(): Promise<Calendar[]> {
-    const response = await fetch(`${API_BASE_URL}/api/calendars`, {
+    const response = await fetch(`${BASE_URL}/api/calendars`, {
       headers: this.getAuthHeaders(),
     });
     if (!response.ok) {
@@ -213,7 +213,7 @@ class ApiService {
   }
 
   async createCalendar(calendarData: CreateCalendarRequest): Promise<Calendar> {
-    const response = await fetch(`${API_BASE_URL}/api/calendars`, {
+    const response = await fetch(`${BASE_URL}/api/calendars`, {
       method: 'POST',
       headers: this.getAuthHeaders(),
       body: JSON.stringify(calendarData),
@@ -231,7 +231,7 @@ class ApiService {
   }
 
   async updateCalendar(calendarId: number, calendarData: UpdateCalendarRequest): Promise<Calendar> {
-    const response = await fetch(`${API_BASE_URL}/api/calendars/${calendarId}`, {
+    const response = await fetch(`${BASE_URL}/api/calendars/${calendarId}`, {
       method: 'PATCH',
       headers: this.getAuthHeaders(),
       body: JSON.stringify(calendarData),
@@ -249,7 +249,7 @@ class ApiService {
   }
 
   async deleteCalendar(calendarId: number): Promise<void> {
-    const response = await fetch(`${API_BASE_URL}/api/calendars/${calendarId}`, {
+    const response = await fetch(`${BASE_URL}/api/calendars/${calendarId}`, {
       method: 'DELETE',
       headers: this.getAuthHeaders(),
     });
@@ -265,7 +265,7 @@ class ApiService {
 
   // Authentication methods
   async login(usernameOrEmail: string, password: string): Promise<{ token: string, user: any }> {
-    const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
+    const response = await fetch(`${BASE_URL}/api/auth/login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -284,7 +284,7 @@ class ApiService {
   }
 
   async register(userData: { username: string, email: string, password: string, firstName?: string, lastName?: string }): Promise<{ token: string, user: any }> {
-    const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
+    const response = await fetch(`${BASE_URL}/api/auth/register`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -316,16 +316,16 @@ class ApiService {
 
   // OAuth methods
   initiateGoogleLogin(): void {
-    window.location.href = `${API_BASE_URL}/api/auth/google`;
+    window.location.href = `${BASE_URL}/api/auth/google`;
   }
 
   initiateMicrosoftLogin(): void {
-    window.location.href = `${API_BASE_URL}/api/auth/microsoft`;
+    window.location.href = `${BASE_URL}/api/auth/microsoft`;
   }
 
   // User Profile methods
   async getUserProfile(): Promise<any> {
-    const response = await fetch(`${API_BASE_URL}/api/user/profile`, {
+    const response = await fetch(`${BASE_URL}/api/user/profile`, {
       headers: this.getAuthHeaders(),
     });
 
@@ -340,7 +340,7 @@ class ApiService {
   }
 
   async updateUserProfile(profileData: any): Promise<any> {
-    const response = await fetch(`${API_BASE_URL}/api/user/profile`, {
+    const response = await fetch(`${BASE_URL}/api/user/profile`, {
       method: 'PATCH',
       headers: this.getAuthHeaders(),
       body: JSON.stringify(profileData),
@@ -358,7 +358,7 @@ class ApiService {
   }
 
   async updateUserTheme(themeColor: string): Promise<any> {
-    const response = await fetch(`${API_BASE_URL}/api/user/theme`, {
+    const response = await fetch(`${BASE_URL}/api/user/theme`, {
       method: 'PATCH',
       headers: this.getAuthHeaders(),
       body: JSON.stringify({ themeColor }),
@@ -376,7 +376,7 @@ class ApiService {
   }
 
   async changePassword(currentPassword: string, newPassword: string): Promise<any> {
-    const response = await fetch(`${API_BASE_URL}/api/user/password`, {
+    const response = await fetch(`${BASE_URL}/api/user/password`, {
       method: 'PATCH',
       headers: this.getAuthHeaders(),
       body: JSON.stringify({ currentPassword, newPassword }),
@@ -392,7 +392,7 @@ class ApiService {
 
   // Generic HTTP methods
   async get(endpoint: string): Promise<any> {
-    const response = await fetch(`${API_BASE_URL}/api${endpoint}`, {
+    const response = await fetch(`${BASE_URL}/api${endpoint}`, {
       headers: this.getAuthHeaders(),
     });
 
@@ -408,7 +408,7 @@ class ApiService {
   }
 
   async post(endpoint: string, data?: any): Promise<any> {
-    const response = await fetch(`${API_BASE_URL}/api${endpoint}`, {
+    const response = await fetch(`${BASE_URL}/api${endpoint}`, {
       method: 'POST',
       headers: this.getAuthHeaders(),
       ...(data && { body: JSON.stringify(data) }),
@@ -426,7 +426,7 @@ class ApiService {
   }
 
   async patch(endpoint: string, data?: any): Promise<any> {
-    const response = await fetch(`${API_BASE_URL}/api${endpoint}`, {
+    const response = await fetch(`${BASE_URL}/api${endpoint}`, {
       method: 'PATCH',
       headers: this.getAuthHeaders(),
       ...(data && { body: JSON.stringify(data) }),
@@ -444,7 +444,7 @@ class ApiService {
   }
 
   async delete(endpoint: string): Promise<any> {
-    const response = await fetch(`${API_BASE_URL}/api${endpoint}`, {
+    const response = await fetch(`${BASE_URL}/api${endpoint}`, {
       method: 'DELETE',
       headers: this.getAuthHeaders(),
     });
@@ -464,7 +464,7 @@ class ApiService {
 
   // Calendar Sync methods
   async getCalendarSyncStatus(): Promise<any> {
-    const response = await fetch(`${API_BASE_URL}/api/calendar-sync/status`, {
+    const response = await fetch(`${BASE_URL}/api/calendar-sync/status`, {
       headers: this.getAuthHeaders(),
     });
 
@@ -488,7 +488,7 @@ class ApiService {
   }
 
   async getCalendarAuthUrl(provider: 'google' | 'microsoft'): Promise<string> {
-    const response = await fetch(`${API_BASE_URL}/api/calendar-sync/auth/${provider}`, {
+    const response = await fetch(`${BASE_URL}/api/calendar-sync/auth/${provider}`, {
       headers: this.getAuthHeaders(),
     });
 
@@ -513,7 +513,7 @@ class ApiService {
       selectedRuleIds?: number[]
     }>
   }): Promise<any> {
-    const response = await fetch(`${API_BASE_URL}/api/calendar-sync/sync`, {
+    const response = await fetch(`${BASE_URL}/api/calendar-sync/sync`, {
       method: 'POST',
       headers: this.getAuthHeaders(),
       body: JSON.stringify(syncData),
@@ -532,8 +532,8 @@ class ApiService {
 
   async disconnectCalendarProvider(provider?: 'google' | 'microsoft'): Promise<void> {
     const url = provider
-      ? `${API_BASE_URL}/api/calendar-sync/disconnect/${provider}`
-      : `${API_BASE_URL}/api/calendar-sync/disconnect`;
+      ? `${BASE_URL}/api/calendar-sync/disconnect/${provider}`
+      : `${BASE_URL}/api/calendar-sync/disconnect`;
 
     const response = await fetch(url, {
       method: 'POST',
@@ -550,7 +550,7 @@ class ApiService {
   }
 
   async forceCalendarSync(): Promise<any> {
-    const response = await fetch(`${API_BASE_URL}/api/calendar-sync/force`, {
+    const response = await fetch(`${BASE_URL}/api/calendar-sync/force`, {
       method: 'POST',
       headers: this.getAuthHeaders(),
     });

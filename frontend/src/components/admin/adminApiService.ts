@@ -6,7 +6,7 @@
  */
 
 import type { AdminApiOptions, BulkOperationResult, LogLevel } from './types';
-import { API_BASE_URL } from '../../config/apiConfig';
+import { BASE_URL } from '../../config/apiConfig';
 
 /**
  * Get admin authentication token with fallback logic
@@ -48,7 +48,7 @@ export const adminApiCall = async ({
     options.body = JSON.stringify(data);
   }
 
-  const base = API_BASE_URL.replace(/\/+$/, '');
+  const base = BASE_URL.replace(/\/+$/, '');
   const normalizedEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
   const url = base.endsWith('/api') ? `${base}${normalizedEndpoint}` : `${base}/api${normalizedEndpoint}`;
 

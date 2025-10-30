@@ -116,7 +116,7 @@ cd frontend
 vercel
 
 # 3. Configure environment variables
-vercel env add VITE_API_BASE_URL production
+vercel env add BASE_URL production
 # Enter: https://your-backend-url.railway.app/api
 ```
 
@@ -173,7 +173,7 @@ services:
     ports:
       - "80:80"
     environment:
-      - VITE_API_BASE_URL=http://backend:8081/api
+      - BASE_URL=http://backend:8081/api
     depends_on:
       - backend
 
@@ -272,10 +272,8 @@ PORT=8081
 ### Frontend Environment Variables
 ```bash
 # API Configuration
-VITE_API_BASE_URL=https://your-backend-domain.com/api
+BASE_URL=https://your-backend-domain.com/api
 
-# Optional: Enable development tools
-VITE_ENABLE_DEV_TOOLS=false
 ```
 
 ## 🔒 **Security Configuration**

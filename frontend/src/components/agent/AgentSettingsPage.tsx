@@ -1,6 +1,6 @@
 ﻿import { useEffect, useMemo, useState } from "react";
 import { agentService } from "../../services/agentService";
-import { API_BASE_URL } from "../../config/apiConfig";
+import { BASE_URL } from "../../config/apiConfig";
 import { AgentActionKey } from "../../types/agent";
 import type {
   AgentActionDefinition,
@@ -297,7 +297,7 @@ const AgentSettingsPage: React.FC = () => {
       mcpServers: {
         [serverKey]: {
           http: {
-            url: `${API_BASE_URL}/api/mcp`,
+            url: `${BASE_URL}/api/mcp`,
             headers: {
               Authorization: `Agent ${newKeySecret}`,
             },

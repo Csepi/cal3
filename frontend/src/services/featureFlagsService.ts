@@ -12,6 +12,8 @@
  * - MCP Agents (external agent integrations tab)
  */
 
+import { BASE_URL } from '../config/apiConfig';
+
 export interface FeatureFlags {
   oauth: boolean;
   calendarSync: boolean;
@@ -36,8 +38,7 @@ class FeatureFlagsService {
     }
 
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8081';
-      const response = await fetch(`${apiUrl}/api/feature-flags`);
+      const response = await fetch(`${BASE_URL}/api/feature-flags`);
 
       if (!response.ok) {
         throw new Error(`Failed to fetch feature flags: ${response.statusText}`);

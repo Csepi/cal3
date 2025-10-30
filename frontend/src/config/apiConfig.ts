@@ -4,28 +4,90 @@
  * This file provides a single source of truth for API URLs.
  * All components and services should import from here instead of hardcoding URLs.
  *
- * Environment variables:
- * - VITE_API_URL: Complete API URL (e.g., http://192.168.1.101:8081)
- * - VITE_BASE_URL: Base URL without port (e.g., http://192.168.1.101)
- * - VITE_BACKEND_PORT: Backend port (e.g., 8081)
+ * Runtime sources (in priority order):
+ * 1. Global overrides (`window.BASE_URL`, `window.ENV.BASE_URL`, `globalThis.BASE_URL`, `process.env.BASE_URL`)
+ * 2. Browser origin (with optional custom port override)
+ * 3. Local development fallback (`http://localhost:8081`)
  *
- * Priority: VITE_API_URL > VITE_BASE_URL:VITE_BACKEND_PORT > fallback localhost
+ * No Vite-prefixed environment variables are required.
  */
 
-// Smart URL construction from environment variables
-const BASE_URL = import.meta.env.VITE_BASE_URL || 'http://localhost';
-const BACKEND_PORT = import.meta.env.VITE_BACKEND_PORT || '8081';
-export const API_BASE_URL = import.meta.env.VITE_API_URL || `${BASE_URL}:${BACKEND_PORT}`;
+const DEFAULT_PROTOCOL = typeof window !== 'undefined' ? window.location.protocol : 'https:';
+const DEFAULT_BACKEND_PORT = '8081';
+
+const trimTrailingSlash = (value: string) => value.replace(/\/+$/, '');
+
+const isNonEmptyString = (value: unknown): value is string =>
+  typeof value === 'string' && value.trim().length > 0;
+
+const toAbsoluteUrl = (value: string): string => {
+  const trimmed = value.trim();
+
+  if (/^https?:\/\//i.test(trimmed)) {
+    return trimTrailingSlash(trimmed);
+  }
+
+  const sanitized = trimmed.replace(/^\/+/, '');
+  return trimTrailingSlash(`${DEFAULT_PROTOCOL}//${sanitized}`);
+};
+
+const applyPortIfMissing = (url: string, port: string): string => {
+  const parsedUrl = new URL(url);
+  if (!parsedUrl.port) {
+    parsedUrl.port = port;
+  }
+  return trimTrailingSlash(parsedUrl.toString());
+};
+
+const readGlobalBaseUrl = (): string | null => {
+  const globalScope = globalThis as any;
+  const candidates = [
+    globalScope?.BASE_URL,
+    globalScope?.__BASE_URL__,
+    globalScope?.ENV?.BASE_URL,
+    globalScope?.CONFIG?.BASE_URL,
+    globalScope?.process?.env?.BASE_URL,
+  ];
+
+  for (const candidate of candidates) {
+    if (isNonEmptyString(candidate)) {
+      return toAbsoluteUrl(candidate);
+    }
+  }
+
+  return null;
+};
+
+const resolveBaseUrl = (): string => {
+  const override = readGlobalBaseUrl();
+  if (override) {
+    return applyPortIfMissing(override, new URL(override).port || DEFAULT_BACKEND_PORT);
+  }
+
+  if (typeof window !== 'undefined') {
+    const { origin, protocol, hostname, port } = window.location;
+
+    if (hostname && hostname !== 'localhost' && hostname !== '127.0.0.1') {
+      if (isNonEmptyString(port)) {
+        return trimTrailingSlash(origin);
+      }
+      return `${protocol}//${hostname}:${DEFAULT_BACKEND_PORT}`;
+    }
+  }
+
+  return `http://localhost:${DEFAULT_BACKEND_PORT}`;
+};
+
+export const BASE_URL = trimTrailingSlash(resolveBaseUrl());
+export const BACKEND_PORT = new URL(BASE_URL).port || DEFAULT_BACKEND_PORT;
 
 /**
- * Get the full API endpoint URL
- * @param endpoint - The API endpoint (e.g., '/api/users', '/api/events')
- * @returns Complete URL (e.g., 'http://192.168.1.101:8081/api/users')
+ * Convenience helper for building API URLs
+ * @param endpoint - The API endpoint (e.g., '/api/users', 'api/events')
  */
 export const getApiUrl = (endpoint: string): string => {
-  // Ensure endpoint starts with /
   const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
-  return `${API_BASE_URL}${cleanEndpoint}`;
+  return `${BASE_URL}${cleanEndpoint}`;
 };
 
 /**
@@ -35,12 +97,12 @@ export const logApiConfig = () => {
   console.log('API Configuration:', {
     BASE_URL,
     BACKEND_PORT,
-    API_BASE_URL,
-    VITE_API_URL: import.meta.env.VITE_API_URL,
-    VITE_BASE_URL: import.meta.env.VITE_BASE_URL,
-    VITE_BACKEND_PORT: import.meta.env.VITE_BACKEND_PORT,
+    source:
+      readGlobalBaseUrl() !== null
+        ? 'global override'
+        : typeof window !== 'undefined' && window.location.hostname !== 'localhost'
+          ? 'window.location'
+          : 'localhost fallback',
   });
 };
 
-// Export individual parts for flexibility
-export { BASE_URL, BACKEND_PORT };
