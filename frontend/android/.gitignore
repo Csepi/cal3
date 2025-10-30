@@ -1,0 +1,17 @@
+# Gradle cache and build outputs
+.gradle/
+**/build/
+
+# Local configuration
+local.properties
+
+# Capacitor generated content that should be regenerated
+app/src/main/assets/public/
+
+# IDE files
+*.iml
+.idea/
+
+# OS files
+Thumbs.db
+Desktop.ini

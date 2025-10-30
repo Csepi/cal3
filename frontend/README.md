@@ -35,8 +35,15 @@ src/components/
     Card.tsx
     SimpleModal.tsx
  sync/                     # External calendar integration
-     CalendarSync.tsx
+    CalendarSync.tsx
 ```
+
+### Mobile Experience Overhaul
+- **ResponsiveNavigation** now adapts cleanly across desktop, tablet, and mobile breakpoints and keeps the features dropdown accessible with outside-click handling.
+- **FloatingActionButton** provides a reliable touch-friendly entry point for event creation with optional secondary shortcuts; long-press expands the action stack.
+- **MobileLayout** adds pull-to-refresh, safe-area paddings, and resilient touch cancellation so scrolling feels natural on hybrid devices.
+- **Tailwind Theming Safelist** in `tailwind.config.js` preserves all dynamic theme utilities (`text-*`, `border-*`, `focus:ring-*`, gradients) used across mobile components, preventing production builds from stripping critical classes.
+- **Touchable interactions** guarantee the required 44px minimum touch target while correctly cleaning up long-press timers to avoid ghost presses.
 
 ### Key Features
 

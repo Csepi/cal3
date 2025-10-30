@@ -106,6 +106,7 @@ export const MobileLayout: React.FC<MobileLayoutProps> = ({
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
+        onTouchCancel={handleTouchEnd}
         className={`
           ${isMobile && showBottomNav ? 'pb-16' : ''}
           ${isMobile ? 'overflow-y-auto' : ''}

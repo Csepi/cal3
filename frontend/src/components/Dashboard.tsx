@@ -284,7 +284,7 @@ const Dashboard: React.FC = () => {
       {currentView === 'calendar' && (
         <FloatingActionButton
           primaryAction={{
-            icon: '➕',
+            icon: '+',
             label: 'New Event',
             onClick: handleCreateEvent,
           }}

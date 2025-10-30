@@ -27,7 +27,7 @@ export const TouchableArea: React.FC<TouchableAreaProps> = ({
   minSize = 'md',
 }) => {
   const [isPressed, setIsPressed] = React.useState(false);
-  const longPressTimer = React.useRef<NodeJS.Timeout>();
+  const longPressTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const sizeClasses = {
     sm: 'min-w-[44px] min-h-[44px]',
@@ -52,6 +52,7 @@ export const TouchableArea: React.FC<TouchableAreaProps> = ({
     setIsPressed(false);
     if (longPressTimer.current) {
       clearTimeout(longPressTimer.current);
+      longPressTimer.current = null;
     }
   };
 
@@ -71,9 +72,16 @@ export const TouchableArea: React.FC<TouchableAreaProps> = ({
       onClick={handleClick}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
+      onTouchCancel={handleTouchEnd}
       onMouseDown={() => setIsPressed(true)}
       onMouseUp={() => setIsPressed(false)}
-      onMouseLeave={() => setIsPressed(false)}
+      onMouseLeave={() => {
+        setIsPressed(false);
+        if (longPressTimer.current) {
+          clearTimeout(longPressTimer.current);
+          longPressTimer.current = null;
+        }
+      }}
       disabled={disabled}
       aria-label={ariaLabel}
       className={`

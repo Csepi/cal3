@@ -2,11 +2,11 @@
  * ResponsiveNavigation - Adaptive Navigation System
  *
  * Renders:
- * - Desktop (≥1024px): Horizontal tab bar at top with Features dropdown
+ * - Desktop (>= 1024px): Horizontal tab bar at top with Features dropdown
  * - Tablet (768-1023px): Compact horizontal tabs
- * - Mobile (<768px): Bottom tab bar
+ * - Mobile (< 768px): Bottom tab bar
  *
- * Preserves ALL features, just changes layout.
+ * Preserves all features; only the layout changes with the breakpoint.
  */
 
 import React, { useState, useRef, useEffect } from 'react';
@@ -128,7 +128,12 @@ export const ResponsiveNavigation: React.FC<ResponsiveNavigationProps> = ({
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      const target = event.target as Node;
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(target) &&
+        (!buttonRef.current || !buttonRef.current.contains(target))
+      ) {
         setShowFeaturesDropdown(false);
       }
     };
@@ -295,7 +300,7 @@ export const ResponsiveNavigation: React.FC<ResponsiveNavigationProps> = ({
                     {FeatureIcon}
                   </span>
                   <span className="hidden md:inline">Features</span>
-                  <span className="text-xs">▾</span>
+                  <span className="text-xs">v</span>
                 </button>
 
                 {/* Dropdown Menu - Rendered via Portal */}

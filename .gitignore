@@ -72,7 +72,9 @@ docker/config/.env.dev
 docker/config/.env.prod
 .env
 # Mobile app generated files
-frontend/android/
+frontend/android/.gradle/
+frontend/android/**/build/
+frontend/android/capacitor-cordova-android-plugins/
 frontend/ios/
 app_screenshot.png
 *.apk

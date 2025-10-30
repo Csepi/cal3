@@ -1,0 +1,12 @@
+{
+	"appId": "com.primecal.calendar",
+	"appName": "PrimeCal Calendar",
+	"webDir": "dist",
+	"server": {
+		"url": "http://www.cselo.hu:8079",
+		"cleartext": true,
+		"allowNavigation": [
+			"www.cselo.hu"
+		]
+	}
+}
