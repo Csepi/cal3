@@ -80,6 +80,15 @@ const FeatureIcon = (
   </svg>
 );
 
+const AgentIcon = (
+  <svg viewBox="0 0 24 24" {...iconProps}>
+    <rect x="7" y="2" width="10" height="6" rx="3" />
+    <path d="M5 10h14a3 3 0 0 1 0 6h-1.2A3.8 3.8 0 0 1 14 21h-4a3.8 3.8 0 0 1-3.8-5H5a3 3 0 0 1 0-6z" />
+    <circle cx="10" cy="12" r="1" />
+    <circle cx="14" cy="12" r="1" />
+  </svg>
+);
+
 interface ResponsiveNavigationProps {
   activeTab: TabId;
   onTabChange: (tabId: TabId) => void;
@@ -91,6 +100,7 @@ interface ResponsiveNavigationProps {
     calendarSync: boolean;
     reservations: boolean;
     automation: boolean;
+    agents: boolean;
   };
   canAccessReservations: boolean;
   hideReservationsTab?: boolean;
@@ -157,6 +167,14 @@ export const ResponsiveNavigation: React.FC<ResponsiveNavigationProps> = ({
       label: 'Automation',
       shortLabel: 'Auto',
       visible: featureFlags.automation,
+      isFeature: true,
+    },
+    {
+      id: 'agent' as TabId,
+      icon: AgentIcon,
+      label: 'Agent settings',
+      shortLabel: 'Agents',
+      visible: featureFlags.agents,
       isFeature: true,
     },
     {
@@ -332,4 +350,3 @@ export const ResponsiveNavigation: React.FC<ResponsiveNavigationProps> = ({
     </div>
   );
 };
-

@@ -61,7 +61,9 @@ export class OrganisationAdminGuard implements CanActivate {
     });
 
     if (!orgAdmin) {
-      throw new ForbiddenException('Insufficient permissions for this organisation');
+      throw new ForbiddenException(
+        'Insufficient permissions for this organisation',
+      );
     }
 
     return true;

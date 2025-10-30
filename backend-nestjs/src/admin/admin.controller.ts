@@ -10,7 +10,12 @@
   Request,
   Query,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { AdminService } from './admin.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { AdminGuard } from '../auth/guards/admin.guard';
@@ -28,7 +33,10 @@ export class AdminController {
   @Get('users')
   @ApiOperation({ summary: 'Get all users (Admin only)' })
   @ApiResponse({ status: 200, description: 'Users retrieved successfully' })
-  @ApiResponse({ status: 403, description: 'Forbidden - Admin access required' })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - Admin access required',
+  })
   getAllUsers() {
     return this.adminService.getAllUsers();
   }
@@ -49,28 +57,43 @@ export class AdminController {
 
   @Get('calendar-shares')
   @ApiOperation({ summary: 'Get all calendar shares (Admin only)' })
-  @ApiResponse({ status: 200, description: 'Calendar shares retrieved successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Calendar shares retrieved successfully',
+  })
   getAllCalendarShares() {
     return this.adminService.getAllCalendarShares();
   }
 
   @Get('reservations')
   @ApiOperation({ summary: 'Get all reservations (Admin only)' })
-  @ApiResponse({ status: 200, description: 'Reservations retrieved successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Reservations retrieved successfully',
+  })
   getAllReservations() {
     return this.adminService.getAllReservations();
   }
 
   @Get('stats')
   @ApiOperation({ summary: 'Get database statistics (Admin only)' })
-  @ApiResponse({ status: 200, description: 'Statistics retrieved successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Statistics retrieved successfully',
+  })
   getDatabaseStats() {
     return this.adminService.getDatabaseStats();
   }
 
   @Get('system-info')
-  @ApiOperation({ summary: 'Get comprehensive system information (Admin only)' })
-  @ApiResponse({ status: 200, description: 'System information retrieved successfully', type: SystemInfoDto })
+  @ApiOperation({
+    summary: 'Get comprehensive system information (Admin only)',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'System information retrieved successfully',
+    type: SystemInfoDto,
+  })
   getSystemInfo() {
     return this.adminService.getSystemInfo();
   }
@@ -91,21 +114,30 @@ export class AdminController {
 
   @Post('logs/purge')
   @ApiOperation({ summary: 'Run retention cleanup immediately (Admin only)' })
-  @ApiResponse({ status: 200, description: 'Log retention executed successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Log retention executed successfully',
+  })
   runLogRetention() {
     return this.adminService.runLogRetention();
   }
 
   @Get('logs/settings')
   @ApiOperation({ summary: 'Get log retention settings (Admin only)' })
-  @ApiResponse({ status: 200, description: 'Log settings retrieved successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Log settings retrieved successfully',
+  })
   getLogSettings() {
     return this.adminService.getLogSettings();
   }
 
   @Patch('logs/settings')
   @ApiOperation({ summary: 'Update log retention settings (Admin only)' })
-  @ApiResponse({ status: 200, description: 'Log settings updated successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Log settings updated successfully',
+  })
   updateLogSettings(@Body() updateLogSettingsDto: UpdateLogSettingsDto) {
     return this.adminService.updateLogSettings(updateLogSettingsDto);
   }
@@ -115,19 +147,25 @@ export class AdminController {
   @ApiResponse({ status: 200, description: 'User role updated successfully' })
   updateUserRole(
     @Param('id') id: string,
-    @Body() updateRoleDto: { role: string }
+    @Body() updateRoleDto: { role: string },
   ) {
     return this.adminService.updateUserRole(+id, updateRoleDto.role);
   }
 
   @Patch('users/:id/usage-plans')
   @ApiOperation({ summary: 'Update user usage plans (Admin only)' })
-  @ApiResponse({ status: 200, description: 'User usage plans updated successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'User usage plans updated successfully',
+  })
   updateUserUsagePlans(
     @Param('id') id: string,
-    @Body() updateUsagePlansDto: UpdateUsagePlansDto
+    @Body() updateUsagePlansDto: UpdateUsagePlansDto,
   ) {
-    return this.adminService.updateUserUsagePlans(+id, updateUsagePlansDto.usagePlans);
+    return this.adminService.updateUserUsagePlans(
+      +id,
+      updateUsagePlansDto.usagePlans,
+    );
   }
 
   @Delete('users/:id')
@@ -184,8 +222,14 @@ export class AdminController {
   @Patch('users/:id/password')
   @ApiOperation({ summary: 'Update user password (Admin only)' })
   @ApiResponse({ status: 200, description: 'Password updated successfully' })
-  updateUserPassword(@Param('id') id: string, @Body() updatePasswordDto: { password: string }) {
-    return this.adminService.updateUserPassword(+id, updatePasswordDto.password);
+  updateUserPassword(
+    @Param('id') id: string,
+    @Body() updatePasswordDto: { password: string },
+  ) {
+    return this.adminService.updateUserPassword(
+      +id,
+      updatePasswordDto.password,
+    );
   }
 
   @Patch('calendars/:id')
@@ -227,62 +271,96 @@ export class AdminController {
   // ORGANIZATION MANAGEMENT OPERATIONS
   @Get('organizations')
   @ApiOperation({ summary: 'Get all organizations (Admin only)' })
-  @ApiResponse({ status: 200, description: 'Organizations retrieved successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Organizations retrieved successfully',
+  })
   getAllOrganizations() {
-        console.log('AdminController.getAllOrganizations called (this returns all organizations without filtering)');
+    console.log(
+      'AdminController.getAllOrganizations called (this returns all organizations without filtering)',
+    );
     return this.adminService.getAllOrganizations();
   }
 
   @Get('users/:id/organizations')
-  @ApiOperation({ summary: 'Get organizations for a specific user (Admin only)' })
-  @ApiResponse({ status: 200, description: 'User organizations retrieved successfully' })
+  @ApiOperation({
+    summary: 'Get organizations for a specific user (Admin only)',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'User organizations retrieved successfully',
+  })
   getUserOrganizations(@Param('id') id: string) {
     return this.adminService.getUserOrganizations(+id);
   }
 
   @Post('users/:id/organizations')
   @ApiOperation({ summary: 'Add user to organization (Admin only)' })
-  @ApiResponse({ status: 200, description: 'User added to organization successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'User added to organization successfully',
+  })
   addUserToOrganization(
     @Param('id') id: string,
-    @Body() addToOrgDto: { organizationId: number }
+    @Body() addToOrgDto: { organizationId: number },
   ) {
-    return this.adminService.addUserToOrganization(+id, addToOrgDto.organizationId);
+    return this.adminService.addUserToOrganization(
+      +id,
+      addToOrgDto.organizationId,
+    );
   }
 
   @Delete('users/:id/organizations/:orgId')
   @ApiOperation({ summary: 'Remove user from organization (Admin only)' })
-  @ApiResponse({ status: 200, description: 'User removed from organization successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'User removed from organization successfully',
+  })
   removeUserFromOrganization(
     @Param('id') id: string,
-    @Param('orgId') orgId: string
+    @Param('orgId') orgId: string,
   ) {
     return this.adminService.removeUserFromOrganization(+id, +orgId);
   }
 
   @Get('organizations/:id/users')
   @ApiOperation({ summary: 'Get organization users with roles (Admin only)' })
-  @ApiResponse({ status: 200, description: 'Organization users retrieved successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Organization users retrieved successfully',
+  })
   getOrganizationUsers(@Param('id') id: string) {
     return this.adminService.getOrganizationUsers(+id);
   }
 
   @Post('organizations/:id/users')
   @ApiOperation({ summary: 'Add user to organization with role (Admin only)' })
-  @ApiResponse({ status: 200, description: 'User added to organization successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'User added to organization successfully',
+  })
   addUserToOrganizationWithRole(
     @Param('id') id: string,
-    @Body() addUserDto: { userId: number; role: string }
+    @Body() addUserDto: { userId: number; role: string },
   ) {
-    return this.adminService.addUserToOrganizationWithRole(addUserDto.userId, +id, addUserDto.role);
+    return this.adminService.addUserToOrganizationWithRole(
+      addUserDto.userId,
+      +id,
+      addUserDto.role,
+    );
   }
 
   // PUBLIC BOOKING INITIALIZATION
   @Post('public-booking/initialize')
-  @ApiOperation({ summary: 'Initialize public booking (generate tokens and operating hours) (Admin only)' })
-  @ApiResponse({ status: 200, description: 'Public booking initialized successfully' })
+  @ApiOperation({
+    summary:
+      'Initialize public booking (generate tokens and operating hours) (Admin only)',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Public booking initialized successfully',
+  })
   initializePublicBooking() {
     return this.adminService.initializePublicBooking();
   }
 }
-

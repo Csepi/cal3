@@ -107,7 +107,9 @@ export class Event {
   updatedAt: Date;
 
   // Many events belong to one calendar
-  @ManyToOne(() => Calendar, (calendar) => calendar.events, { onDelete: 'CASCADE' })
+  @ManyToOne(() => Calendar, (calendar) => calendar.events, {
+    onDelete: 'CASCADE',
+  })
   calendar: Calendar;
 
   @Column()

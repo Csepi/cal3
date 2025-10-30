@@ -1,4 +1,8 @@
-import { Injectable, UnauthorizedException, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  UnauthorizedException,
+  ConflictException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -15,7 +19,8 @@ export class AuthService {
   ) {}
 
   async register(registerDto: RegisterDto): Promise<AuthResponseDto> {
-    const { username, email, password, firstName, lastName, role } = registerDto;
+    const { username, email, password, firstName, lastName, role } =
+      registerDto;
 
     // Check if user already exists
     const existingUser = await this.userRepository.findOne({
@@ -120,7 +125,17 @@ export class AuthService {
   async getUserProfile(userId: number): Promise<Partial<User>> {
     const user = await this.userRepository.findOne({
       where: { id: userId },
-      select: ['id', 'username', 'email', 'firstName', 'lastName', 'role', 'themeColor', 'createdAt', 'updatedAt'],
+      select: [
+        'id',
+        'username',
+        'email',
+        'firstName',
+        'lastName',
+        'role',
+        'themeColor',
+        'createdAt',
+        'updatedAt',
+      ],
     });
 
     if (!user) {
@@ -175,10 +190,13 @@ export class AuthService {
   }
 
   async validateMicrosoftUser(microsoftUser: any): Promise<AuthResponseDto> {
-    const { microsoftId, email, firstName, lastName, displayName } = microsoftUser;
+    const { microsoftId, email, firstName, lastName, displayName } =
+      microsoftUser;
 
     if (!email) {
-      throw new UnauthorizedException('Email is required for Microsoft authentication');
+      throw new UnauthorizedException(
+        'Email is required for Microsoft authentication',
+      );
     }
 
     // Check if user already exists by email

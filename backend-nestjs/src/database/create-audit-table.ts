@@ -23,7 +23,9 @@ async function createAuditTable() {
     pool = await sql.connect(azureConfig);
     console.log('✅ Connected!\n');
 
-    console.log('⏳ Creating automation_audit_logs table with corrected foreign keys...\n');
+    console.log(
+      '⏳ Creating automation_audit_logs table with corrected foreign keys...\n',
+    );
 
     const createTableSQL = `
       CREATE TABLE automation_audit_logs (
@@ -74,7 +76,9 @@ async function createAuditTable() {
     console.log(`Total Tables: ${tableResult.recordset[0].TABLE_COUNT}`);
 
     // Count all foreign keys
-    const fkResult = await pool.request().query('SELECT COUNT(*) as FK_COUNT FROM sys.foreign_keys');
+    const fkResult = await pool
+      .request()
+      .query('SELECT COUNT(*) as FK_COUNT FROM sys.foreign_keys');
     console.log(`Total Foreign Keys: ${fkResult.recordset[0].FK_COUNT}`);
 
     // Count all indexes
@@ -88,10 +92,14 @@ async function createAuditTable() {
 
     console.log('\n✅ DEPLOYMENT COMPLETE!\n');
     console.log('─'.repeat(80));
-    console.log('All 22 database tables have been successfully created on Azure SQL!');
+    console.log(
+      'All 22 database tables have been successfully created on Azure SQL!',
+    );
     console.log('─'.repeat(80));
     console.log('\nNext Steps:');
-    console.log('1. Update backend-nestjs/.env file with Azure SQL connection:');
+    console.log(
+      '1. Update backend-nestjs/.env file with Azure SQL connection:',
+    );
     console.log('   DB_TYPE=mssql');
     console.log('   DB_HOST=cal3db-server.database.windows.net');
     console.log('   DB_PORT=1433');
@@ -106,7 +114,6 @@ async function createAuditTable() {
     console.log('3. Start the application:');
     console.log('   npm run start:dev');
     console.log('─'.repeat(80));
-
   } catch (error: any) {
     console.error('❌ ERROR:', error.message);
     if (error.number) {

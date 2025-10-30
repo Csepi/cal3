@@ -1,8 +1,23 @@
-import { Controller, Get, Post, Patch, Delete, Body, Param, Query, UseGuards, Req, ForbiddenException } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Delete,
+  Body,
+  Param,
+  Query,
+  UseGuards,
+  Req,
+  ForbiddenException,
+} from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { ReservationAccessGuard } from '../auth/guards/reservation-access.guard';
 import { ReservationsService } from './reservations.service';
-import { CreateReservationDto, UpdateReservationDto } from '../dto/reservation.dto';
+import {
+  CreateReservationDto,
+  UpdateReservationDto,
+} from '../dto/reservation.dto';
 import { UserPermissionsService } from '../common/services/user-permissions.service';
 
 @Controller('reservations')
@@ -20,7 +35,9 @@ export class ReservationsController {
 
   @Get()
   async findAll(@Query('resourceId') resourceId?: string) {
-    return await this.reservationsService.findAll(resourceId ? +resourceId : undefined);
+    return await this.reservationsService.findAll(
+      resourceId ? +resourceId : undefined,
+    );
   }
 
   @Get(':id')
@@ -29,7 +46,10 @@ export class ReservationsController {
   }
 
   @Patch(':id')
-  async update(@Param('id') id: string, @Body() updateDto: UpdateReservationDto) {
+  async update(
+    @Param('id') id: string,
+    @Body() updateDto: UpdateReservationDto,
+  ) {
     return await this.reservationsService.update(+id, updateDto);
   }
 

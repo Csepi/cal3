@@ -3,7 +3,10 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Reservation } from '../entities/reservation.entity';
 import { Resource } from '../entities/resource.entity';
-import { CreateReservationDto, UpdateReservationDto } from '../dto/reservation.dto';
+import {
+  CreateReservationDto,
+  UpdateReservationDto,
+} from '../dto/reservation.dto';
 
 @Injectable()
 export class ReservationsService {
@@ -14,13 +17,18 @@ export class ReservationsService {
     private resourceRepository: Repository<Resource>,
   ) {}
 
-  async create(createDto: CreateReservationDto, userId: number): Promise<Reservation> {
+  async create(
+    createDto: CreateReservationDto,
+    userId: number,
+  ): Promise<Reservation> {
     const resource = await this.resourceRepository.findOne({
       where: { id: createDto.resourceId },
     });
 
     if (!resource) {
-      throw new NotFoundException(`Resource #${createDto.resourceId} not found`);
+      throw new NotFoundException(
+        `Resource #${createDto.resourceId} not found`,
+      );
     }
 
     const reservation = this.reservationRepository.create({
@@ -57,7 +65,10 @@ export class ReservationsService {
     return reservation;
   }
 
-  async update(id: number, updateDto: UpdateReservationDto): Promise<Reservation> {
+  async update(
+    id: number,
+    updateDto: UpdateReservationDto,
+  ): Promise<Reservation> {
     const reservation = await this.findOne(id);
     Object.assign(reservation, updateDto);
     return await this.reservationRepository.save(reservation);

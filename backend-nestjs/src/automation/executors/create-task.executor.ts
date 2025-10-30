@@ -1,7 +1,10 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { AutomationAction, ActionType } from '../../entities/automation-action.entity';
+import {
+  AutomationAction,
+  ActionType,
+} from '../../entities/automation-action.entity';
 import { Event } from '../../entities/event.entity';
 import {
   IActionExecutor,
@@ -37,15 +40,17 @@ export class CreateTaskExecutor implements IActionExecutor, OnModuleInit {
         throw new Error('No event available to attach task');
       }
 
-      const interpolatedConfig = this.smartValuesService.interpolateObjectValues(
-        action.actionConfig || {},
-        context,
-      );
+      const interpolatedConfig =
+        this.smartValuesService.interpolateObjectValues(
+          action.actionConfig || {},
+          context,
+        );
       this.validateConfig(interpolatedConfig);
 
       const title = String(interpolatedConfig.taskTitle).trim();
       const description =
-        interpolatedConfig.taskDescription !== undefined && interpolatedConfig.taskDescription !== null
+        interpolatedConfig.taskDescription !== undefined &&
+        interpolatedConfig.taskDescription !== null
           ? String(interpolatedConfig.taskDescription).trim()
           : undefined;
       const dueMinutesBefore =
@@ -60,7 +65,9 @@ export class CreateTaskExecutor implements IActionExecutor, OnModuleInit {
       }
 
       const event = context.event;
-      const existingTasks = Array.isArray(event.automationTasks) ? [...event.automationTasks] : [];
+      const existingTasks = Array.isArray(event.automationTasks)
+        ? [...event.automationTasks]
+        : [];
 
       const taskEntry = {
         title,
@@ -71,7 +78,9 @@ export class CreateTaskExecutor implements IActionExecutor, OnModuleInit {
       };
 
       existingTasks.push(taskEntry);
-      await this.eventRepository.update(event.id, { automationTasks: existingTasks });
+      await this.eventRepository.update(event.id, {
+        automationTasks: existingTasks,
+      });
       event.automationTasks = existingTasks;
 
       return {

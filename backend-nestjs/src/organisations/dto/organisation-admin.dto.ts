@@ -33,6 +33,6 @@ export class CreateOrganisationDto {
   @IsOptional()
   @IsNumber({}, { message: 'Admin user ID must be a number' })
   @IsPositive({ message: 'Admin user ID must be a positive number' })
-  @Transform(({ value }) => value ? parseInt(value) : undefined)
+  @Transform(({ value }) => (value ? parseInt(value) : undefined))
   adminUserId?: number;
 }

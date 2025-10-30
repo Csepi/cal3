@@ -19,7 +19,20 @@ import { LoggingModule } from '../logging/logging.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User, Calendar, Event, CalendarShare, Reservation, Organisation, OrganisationUser, OrganisationAdmin, ResourceType, Resource, OperatingHours, AutomationRule]),
+    TypeOrmModule.forFeature([
+      User,
+      Calendar,
+      Event,
+      CalendarShare,
+      Reservation,
+      Organisation,
+      OrganisationUser,
+      OrganisationAdmin,
+      ResourceType,
+      Resource,
+      OperatingHours,
+      AutomationRule,
+    ]),
     LoggingModule,
   ],
   controllers: [AdminController],

@@ -1,18 +1,33 @@
-import { IsString, IsOptional, IsEnum, IsArray, IsNumber } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  IsEnum,
+  IsArray,
+  IsNumber,
+} from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { CalendarVisibility, SharePermission } from '../entities/calendar.entity';
+import {
+  CalendarVisibility,
+  SharePermission,
+} from '../entities/calendar.entity';
 
 export class CreateCalendarDto {
   @ApiProperty({ example: 'Work Calendar', description: 'Calendar name' })
   @IsString()
   name: string;
 
-  @ApiPropertyOptional({ example: 'My work-related events', description: 'Calendar description' })
+  @ApiPropertyOptional({
+    example: 'My work-related events',
+    description: 'Calendar description',
+  })
   @IsOptional()
   @IsString()
   description?: string;
 
-  @ApiPropertyOptional({ example: '#3b82f6', description: 'Calendar color (hex code)' })
+  @ApiPropertyOptional({
+    example: '#3b82f6',
+    description: 'Calendar color (hex code)',
+  })
   @IsOptional()
   @IsString()
   color?: string;
@@ -25,7 +40,7 @@ export class CreateCalendarDto {
   @ApiPropertyOptional({
     enum: CalendarVisibility,
     example: CalendarVisibility.PRIVATE,
-    description: 'Calendar visibility level'
+    description: 'Calendar visibility level',
   })
   @IsOptional()
   @IsEnum(CalendarVisibility)
@@ -33,17 +48,26 @@ export class CreateCalendarDto {
 }
 
 export class UpdateCalendarDto {
-  @ApiPropertyOptional({ example: 'Updated Calendar Name', description: 'Calendar name' })
+  @ApiPropertyOptional({
+    example: 'Updated Calendar Name',
+    description: 'Calendar name',
+  })
   @IsOptional()
   @IsString()
   name?: string;
 
-  @ApiPropertyOptional({ example: 'Updated description', description: 'Calendar description' })
+  @ApiPropertyOptional({
+    example: 'Updated description',
+    description: 'Calendar description',
+  })
   @IsOptional()
   @IsString()
   description?: string;
 
-  @ApiPropertyOptional({ example: '#ef4444', description: 'Calendar color (hex code)' })
+  @ApiPropertyOptional({
+    example: '#ef4444',
+    description: 'Calendar color (hex code)',
+  })
   @IsOptional()
   @IsString()
   color?: string;
@@ -56,7 +80,7 @@ export class UpdateCalendarDto {
   @ApiPropertyOptional({
     enum: CalendarVisibility,
     example: CalendarVisibility.SHARED,
-    description: 'Calendar visibility level'
+    description: 'Calendar visibility level',
   })
   @IsOptional()
   @IsEnum(CalendarVisibility)
@@ -64,7 +88,10 @@ export class UpdateCalendarDto {
 }
 
 export class ShareCalendarDto {
-  @ApiProperty({ example: [1, 2, 3], description: 'Array of user IDs to share with' })
+  @ApiProperty({
+    example: [1, 2, 3],
+    description: 'Array of user IDs to share with',
+  })
   @IsArray()
   @IsNumber({}, { each: true })
   userIds: number[];
@@ -72,7 +99,7 @@ export class ShareCalendarDto {
   @ApiProperty({
     enum: SharePermission,
     example: SharePermission.READ,
-    description: 'Permission level for shared users'
+    description: 'Permission level for shared users',
   })
   @IsEnum(SharePermission)
   permission: SharePermission;
@@ -85,7 +112,10 @@ export class CalendarResponseDto {
   @ApiProperty({ example: 'Work Calendar', description: 'Calendar name' })
   name: string;
 
-  @ApiProperty({ example: 'My work-related events', description: 'Calendar description' })
+  @ApiProperty({
+    example: 'My work-related events',
+    description: 'Calendar description',
+  })
   description?: string;
 
   @ApiProperty({ example: '#3b82f6', description: 'Calendar color' })
@@ -114,9 +144,15 @@ export class CalendarResponseDto {
     permission: SharePermission;
   }>;
 
-  @ApiProperty({ example: '2025-09-15T10:00:00Z', description: 'Creation timestamp' })
+  @ApiProperty({
+    example: '2025-09-15T10:00:00Z',
+    description: 'Creation timestamp',
+  })
   createdAt: Date;
 
-  @ApiProperty({ example: '2025-09-15T10:00:00Z', description: 'Last update timestamp' })
+  @ApiProperty({
+    example: '2025-09-15T10:00:00Z',
+    description: 'Last update timestamp',
+  })
   updatedAt: Date;
 }

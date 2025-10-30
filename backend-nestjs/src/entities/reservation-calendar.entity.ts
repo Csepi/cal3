@@ -64,6 +64,10 @@ export class ReservationCalendar {
   @ManyToOne(() => User, { nullable: true })
   createdBy: User;
 
-  @OneToMany(() => ReservationCalendarRole, (role) => role.reservationCalendar, { cascade: true })
+  @OneToMany(
+    () => ReservationCalendarRole,
+    (role) => role.reservationCalendar,
+    { cascade: true },
+  )
   roles: ReservationCalendarRole[];
 }

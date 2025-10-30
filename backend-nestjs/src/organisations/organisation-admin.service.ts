@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { OrganisationAdmin } from '../entities/organisation-admin.entity';
@@ -44,7 +49,9 @@ export class OrganisationAdminService {
   ): Promise<OrganisationAdmin> {
     // Verify that the assigning user is a global admin
     if (assignedBy.role !== UserRole.ADMIN) {
-      throw new ForbiddenException('Only global admins can assign organisation admins');
+      throw new ForbiddenException(
+        'Only global admins can assign organisation admins',
+      );
     }
 
     // Verify organisation exists
@@ -68,7 +75,9 @@ export class OrganisationAdminService {
       where: { organisationId, userId },
     });
     if (existingAdmin) {
-      throw new BadRequestException('User is already an admin for this organisation');
+      throw new BadRequestException(
+        'User is already an admin for this organisation',
+      );
     }
 
     // Create organisation admin role
@@ -100,7 +109,9 @@ export class OrganisationAdminService {
   ): Promise<void> {
     // Verify that the removing user is a global admin
     if (removedBy.role !== UserRole.ADMIN) {
-      throw new ForbiddenException('Only global admins can remove organisation admins');
+      throw new ForbiddenException(
+        'Only global admins can remove organisation admins',
+      );
     }
 
     // Find the organisation admin role
@@ -121,7 +132,9 @@ export class OrganisationAdminService {
   /**
    * Get all organisation admins for a specific organisation
    */
-  async getOrganisationAdmins(organisationId: number): Promise<OrganisationAdmin[]> {
+  async getOrganisationAdmins(
+    organisationId: number,
+  ): Promise<OrganisationAdmin[]> {
     return this.organisationAdminRepository.find({
       where: { organisationId },
       relations: ['user', 'assignedBy'],
@@ -159,9 +172,13 @@ export class OrganisationAdminService {
     }
 
     // Check if user is already in the organisation
-    const isAlreadyMember = user.organisations.some(org => org.id === organisationId);
+    const isAlreadyMember = user.organisations.some(
+      (org) => org.id === organisationId,
+    );
     if (isAlreadyMember) {
-      throw new BadRequestException('User is already a member of this organisation');
+      throw new BadRequestException(
+        'User is already a member of this organisation',
+      );
     }
 
     // Add user to organisation
@@ -190,19 +207,27 @@ export class OrganisationAdminService {
       throw new NotFoundException('User not found');
     }
 
-    const isOrgMember = user.organisations.some(org => org.id === organisationId);
+    const isOrgMember = user.organisations.some(
+      (org) => org.id === organisationId,
+    );
     if (!isOrgMember) {
-      throw new BadRequestException('User is not a member of this organisation');
+      throw new BadRequestException(
+        'User is not a member of this organisation',
+      );
     }
 
     // Cannot remove if user is an organisation admin (must remove admin role first)
     const isOrgAdmin = await this.isOrganisationAdmin(userId, organisationId);
     if (isOrgAdmin) {
-      throw new BadRequestException('Cannot remove organisation admin from organisation. Remove admin role first.');
+      throw new BadRequestException(
+        'Cannot remove organisation admin from organisation. Remove admin role first.',
+      );
     }
 
     // Remove user from organisation
-    user.organisations = user.organisations.filter(org => org.id !== organisationId);
+    user.organisations = user.organisations.filter(
+      (org) => org.id !== organisationId,
+    );
     await this.userRepository.save(user);
 
     // TODO: Remove any reservation calendar roles for this user in this organisation
@@ -227,7 +252,10 @@ export class OrganisationAdminService {
   /**
    * Check if a user is an organisation admin for a specific organisation
    */
-  async isOrganisationAdmin(userId: number, organisationId: number): Promise<boolean> {
+  async isOrganisationAdmin(
+    userId: number,
+    organisationId: number,
+  ): Promise<boolean> {
     const orgAdmin = await this.organisationAdminRepository.findOne({
       where: { userId, organisationId },
     });
@@ -237,7 +265,9 @@ export class OrganisationAdminService {
   /**
    * Get all organisations where a user is an admin
    */
-  async getUserOrganisationAdminRoles(userId: number): Promise<OrganisationAdmin[]> {
+  async getUserOrganisationAdminRoles(
+    userId: number,
+  ): Promise<OrganisationAdmin[]> {
     return this.organisationAdminRepository.find({
       where: { userId },
       relations: ['organisation'],
@@ -248,7 +278,10 @@ export class OrganisationAdminService {
    * Verify that a user has organisation admin permission for a specific organisation
    * (Either global admin or organisation admin for this specific organisation)
    */
-  private async verifyOrganisationAdminPermission(user: User, organisationId: number): Promise<void> {
+  private async verifyOrganisationAdminPermission(
+    user: User,
+    organisationId: number,
+  ): Promise<void> {
     // Global admins have permission everywhere
     if (user.role === UserRole.ADMIN) {
       return;
@@ -257,7 +290,9 @@ export class OrganisationAdminService {
     // Check if user is organisation admin for this organisation
     const isOrgAdmin = await this.isOrganisationAdmin(user.id, organisationId);
     if (!isOrgAdmin) {
-      throw new ForbiddenException('Insufficient permissions for this organisation');
+      throw new ForbiddenException(
+        'Insufficient permissions for this organisation',
+      );
     }
   }
 

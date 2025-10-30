@@ -1,11 +1,20 @@
-import { IsEnum, IsOptional, IsNumber, IsDateString, IsArray, IsString, ValidateNested, IsObject } from 'class-validator';
+import {
+  IsEnum,
+  IsOptional,
+  IsNumber,
+  IsDateString,
+  IsArray,
+  IsString,
+  ValidateNested,
+  IsObject,
+} from 'class-validator';
 import { Type, Transform } from 'class-transformer';
 import { RecurrenceType } from '../entities/event.entity';
 
 export enum RecurrenceEndType {
   NEVER = 'never',
   COUNT = 'count',
-  DATE = 'date'
+  DATE = 'date',
 }
 
 export enum WeekDay {
@@ -15,7 +24,7 @@ export enum WeekDay {
   WEDNESDAY = 'WE',
   THURSDAY = 'TH',
   FRIDAY = 'FR',
-  SATURDAY = 'SA'
+  SATURDAY = 'SA',
 }
 
 export class RecurrencePatternDto {

@@ -47,7 +47,9 @@ async function deployToPostgres() {
       console.log('⚠️  Existing tables found:');
       console.log('─'.repeat(80));
       existingTables.rows.forEach((row: any, index: number) => {
-        console.log(`${(index + 1).toString().padStart(2, ' ')}. ${row.table_name.padEnd(40, ' ')} (${row.column_count} columns)`);
+        console.log(
+          `${(index + 1).toString().padStart(2, ' ')}. ${row.table_name.padEnd(40, ' ')} (${row.column_count} columns)`,
+        );
       });
       console.log('─'.repeat(80));
       console.log(`\nTotal Existing Tables: ${existingTables.rows.length}\n`);
@@ -57,7 +59,12 @@ async function deployToPostgres() {
     }
 
     // Read schema file
-    const schemaFilePath = path.join(__dirname, '..', '..', 'postgresql-schema.sql');
+    const schemaFilePath = path.join(
+      __dirname,
+      '..',
+      '..',
+      'postgresql-schema.sql',
+    );
     console.log(`📄 Reading schema file: ${schemaFilePath}`);
 
     if (!fs.existsSync(schemaFilePath)) {
@@ -91,7 +98,9 @@ async function deployToPostgres() {
     console.log('📊 Created Tables:');
     console.log('─'.repeat(80));
     result.rows.forEach((row: any, index: number) => {
-      console.log(`${(index + 1).toString().padStart(2, ' ')}. ${row.table_name.padEnd(40, ' ')} (${row.column_count} columns)`);
+      console.log(
+        `${(index + 1).toString().padStart(2, ' ')}. ${row.table_name.padEnd(40, ' ')} (${row.column_count} columns)`,
+      );
     });
     console.log('─'.repeat(80));
     console.log(`\nTotal Tables: ${result.rows.length}\n`);
@@ -128,7 +137,6 @@ async function deployToPostgres() {
     console.log('   DB_SSL=false');
     console.log('3. Start the application: npm run start:dev');
     console.log('─'.repeat(80));
-
   } catch (error: any) {
     console.error('\n❌ ERROR during deployment:\n');
     console.error('Error Message:', error.message);
@@ -142,7 +150,9 @@ async function deployToPostgres() {
       console.error('   - PostgreSQL server is not running');
       console.error('   - Wrong host or port (192.168.1.101:5433)');
       console.error('   - Firewall blocking connection');
-      console.error('   - PostgreSQL not configured to accept remote connections');
+      console.error(
+        '   - PostgreSQL not configured to accept remote connections',
+      );
     }
 
     if (error.code === 'ETIMEDOUT') {
@@ -162,7 +172,6 @@ async function deployToPostgres() {
     }
 
     throw error;
-
   } finally {
     await client.end();
     console.log('\n📡 Database connection closed.');

@@ -13,7 +13,7 @@ import { ReservationCalendar } from './reservation-calendar.entity';
  * Enumeration for reservation calendar roles
  */
 export enum ReservationCalendarRoleType {
-  EDITOR = 'editor',     // Can create, edit, and delete reservations
+  EDITOR = 'editor', // Can create, edit, and delete reservations
   REVIEWER = 'reviewer', // Can view and approve/reject reservations
 }
 
@@ -61,7 +61,9 @@ export class ReservationCalendarRole {
   assignedAt: Date;
 
   // Relationships
-  @ManyToOne(() => ReservationCalendar, (calendar) => calendar.roles, { onDelete: 'CASCADE' })
+  @ManyToOne(() => ReservationCalendar, (calendar) => calendar.roles, {
+    onDelete: 'CASCADE',
+  })
   reservationCalendar: ReservationCalendar;
 
   @ManyToOne(() => User, { onDelete: 'CASCADE' })

@@ -1,12 +1,18 @@
 import { Injectable } from '@nestjs/common';
-import { AutomationRule, ConditionLogic } from '../entities/automation-rule.entity';
+import {
+  AutomationRule,
+  ConditionLogic,
+} from '../entities/automation-rule.entity';
 import {
   AutomationCondition,
   ConditionField,
   ConditionOperator,
 } from '../entities/automation-condition.entity';
 import { Event } from '../entities/event.entity';
-import { ConditionEvaluationDto, ConditionsResultDto } from './dto/automation-audit-log.dto';
+import {
+  ConditionEvaluationDto,
+  ConditionsResultDto,
+} from './dto/automation-audit-log.dto';
 
 @Injectable()
 export class AutomationEvaluatorService {
@@ -27,7 +33,11 @@ export class AutomationEvaluatorService {
 
     // Evaluate each condition
     for (const condition of conditions) {
-      const evaluation = await this.evaluateCondition(condition, event, webhookData);
+      const evaluation = await this.evaluateCondition(
+        condition,
+        event,
+        webhookData,
+      );
       evaluations.push(evaluation);
     }
 
@@ -38,7 +48,10 @@ export class AutomationEvaluatorService {
     );
 
     // Build logic expression for debugging
-    const logicExpression = this.buildLogicExpression(evaluations, rule.conditionLogic);
+    const logicExpression = this.buildLogicExpression(
+      evaluations,
+      rule.conditionLogic,
+    );
 
     return {
       passed,
@@ -66,7 +79,11 @@ export class AutomationEvaluatorService {
 
     try {
       // Extract the actual value from the event or webhook data
-      evaluation.actualValue = this.extractFieldValue(condition.field, event, webhookData);
+      evaluation.actualValue = this.extractFieldValue(
+        condition.field,
+        event,
+        webhookData,
+      );
 
       // Evaluate the condition based on operator
       evaluation.passed = this.evaluateOperator(
@@ -203,10 +220,14 @@ export class AutomationEvaluatorService {
     switch (operator) {
       // String operators
       case ConditionOperator.CONTAINS:
-        return String(actual).toLowerCase().includes(String(expected).toLowerCase());
+        return String(actual)
+          .toLowerCase()
+          .includes(String(expected).toLowerCase());
 
       case ConditionOperator.NOT_CONTAINS:
-        return !String(actual).toLowerCase().includes(String(expected).toLowerCase());
+        return !String(actual)
+          .toLowerCase()
+          .includes(String(expected).toLowerCase());
 
       case ConditionOperator.EQUALS:
         return String(actual).toLowerCase() === String(expected).toLowerCase();
@@ -215,10 +236,14 @@ export class AutomationEvaluatorService {
         return String(actual).toLowerCase() !== String(expected).toLowerCase();
 
       case ConditionOperator.STARTS_WITH:
-        return String(actual).toLowerCase().startsWith(String(expected).toLowerCase());
+        return String(actual)
+          .toLowerCase()
+          .startsWith(String(expected).toLowerCase());
 
       case ConditionOperator.ENDS_WITH:
-        return String(actual).toLowerCase().endsWith(String(expected).toLowerCase());
+        return String(actual)
+          .toLowerCase()
+          .endsWith(String(expected).toLowerCase());
 
       case ConditionOperator.MATCHES:
         try {
@@ -353,7 +378,8 @@ export class AutomationEvaluatorService {
 
       // Get logic operator from first condition in group
       const firstConditionIndex = evaluations.indexOf(groupEvaluations[0]);
-      const logicOperator = conditions[firstConditionIndex]?.logicOperator || 'AND';
+      const logicOperator =
+        conditions[firstConditionIndex]?.logicOperator || 'AND';
 
       const groupPassed =
         logicOperator === 'AND'

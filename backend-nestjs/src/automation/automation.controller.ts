@@ -15,7 +15,13 @@ import {
   SetMetadata,
   BadRequestException,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiParam } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+  ApiParam,
+} from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 // Decorator to mark routes as public (bypass JWT auth)
@@ -84,7 +90,8 @@ export class AutomationController {
     @Req() req?,
   ): Promise<PaginatedAutomationRulesDto> {
     const userId = req.user.id;
-    const isEnabled = enabled === 'true' ? true : enabled === 'false' ? false : undefined;
+    const isEnabled =
+      enabled === 'true' ? true : enabled === 'false' ? false : undefined;
     return this.automationService.listRules(userId, page, limit, isEnabled);
   }
 
@@ -136,13 +143,18 @@ export class AutomationController {
   @ApiResponse({ status: 404, description: 'Rule not found' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Forbidden - not your rule' })
-  async deleteRule(@Param('id', ParseIntPipe) id: number, @Req() req): Promise<void> {
+  async deleteRule(
+    @Param('id', ParseIntPipe) id: number,
+    @Req() req,
+  ): Promise<void> {
     const userId = req.user.id;
     await this.automationService.deleteRule(userId, id);
   }
 
   @Post('rules/:id/execute')
-  @ApiOperation({ summary: 'Execute automation rule immediately ("Run Now" feature)' })
+  @ApiOperation({
+    summary: 'Execute automation rule immediately ("Run Now" feature)',
+  })
   @ApiParam({ name: 'id', description: 'Rule ID' })
   @ApiResponse({
     status: 200,
@@ -162,7 +174,10 @@ export class AutomationController {
     @Req() req,
   ): Promise<{ message: string; executionCount: number }> {
     const userId = req.user.id;
-    const executionCount = await this.automationService.executeRuleNow(userId, id);
+    const executionCount = await this.automationService.executeRuleNow(
+      userId,
+      id,
+    );
     return {
       message: 'Rule execution initiated',
       executionCount,
@@ -237,7 +252,10 @@ export class AutomationController {
 
   @Public()
   @Post('webhook/:token')
-  @ApiOperation({ summary: 'Receive incoming webhook to trigger automation rule (public endpoint)' })
+  @ApiOperation({
+    summary:
+      'Receive incoming webhook to trigger automation rule (public endpoint)',
+  })
   @ApiParam({ name: 'token', description: 'Webhook token' })
   @ApiResponse({
     status: 200,
@@ -251,7 +269,10 @@ export class AutomationController {
     },
   })
   @ApiResponse({ status: 404, description: 'Invalid webhook token' })
-  @ApiResponse({ status: 400, description: 'Webhook rule is disabled or invalid' })
+  @ApiResponse({
+    status: 400,
+    description: 'Webhook rule is disabled or invalid',
+  })
   async handleWebhook(
     @Param('token') token: string,
     @Body() payload: Record<string, any>,
@@ -280,7 +301,10 @@ export class AutomationController {
     @Req() req,
   ): Promise<{ webhookToken: string }> {
     const userId = req.user.id;
-    const webhookToken = await this.automationService.regenerateWebhookToken(userId, id);
+    const webhookToken = await this.automationService.regenerateWebhookToken(
+      userId,
+      id,
+    );
     return { webhookToken };
   }
 
@@ -290,7 +314,10 @@ export class AutomationController {
 
   @Get('smart-values/:triggerType')
   @ApiOperation({ summary: 'Get available smart values for a trigger type' })
-  @ApiParam({ name: 'triggerType', description: 'Trigger type (e.g., event.created, webhook.incoming)' })
+  @ApiParam({
+    name: 'triggerType',
+    description: 'Trigger type (e.g., event.created, webhook.incoming)',
+  })
   @ApiResponse({
     status: 200,
     description: 'Smart values retrieved successfully',
@@ -307,14 +334,21 @@ export class AutomationController {
     },
   })
   @ApiResponse({ status: 400, description: 'Invalid trigger type' })
-  async getSmartValues(
-    @Param('triggerType') triggerType: string,
-  ): Promise<Array<{ field: string; label: string; description: string; category: string }>> {
+  async getSmartValues(@Param('triggerType') triggerType: string): Promise<
+    Array<{
+      field: string;
+      label: string;
+      description: string;
+      category: string;
+    }>
+  > {
     // Validate trigger type
     if (!Object.values(TriggerType).includes(triggerType as TriggerType)) {
       throw new BadRequestException(`Invalid trigger type: ${triggerType}`);
     }
 
-    return this.smartValuesService.getAvailableSmartValues(triggerType as TriggerType);
+    return this.smartValuesService.getAvailableSmartValues(
+      triggerType as TriggerType,
+    );
   }
 }

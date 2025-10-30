@@ -23,7 +23,7 @@ export class AppController {
       memory: {
         heapUsed: Math.round(process.memoryUsage().heapUsed / 1024 / 1024),
         heapTotal: Math.round(process.memoryUsage().heapTotal / 1024 / 1024),
-      }
+      },
     };
   }
 }

@@ -1,5 +1,8 @@
 import { Event } from '../../entities/event.entity';
-import { AutomationAction, ActionType } from '../../entities/automation-action.entity';
+import {
+  AutomationAction,
+  ActionType,
+} from '../../entities/automation-action.entity';
 import { TriggerType } from '../../entities/automation-rule.entity';
 
 /**
@@ -40,7 +43,10 @@ export interface IActionExecutor {
    * @param context The execution context (event, webhook data, etc.)
    * @returns Execution result with success/failure and details
    */
-  execute(action: AutomationAction, context: ActionExecutionContext): Promise<ActionExecutionResult>;
+  execute(
+    action: AutomationAction,
+    context: ActionExecutionContext,
+  ): Promise<ActionExecutionResult>;
 
   /**
    * Validate action configuration

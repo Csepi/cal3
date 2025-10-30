@@ -1,4 +1,10 @@
-import { MigrationInterface, QueryRunner, Table, TableForeignKey, TableIndex } from 'typeorm';
+import {
+  MigrationInterface,
+  QueryRunner,
+  Table,
+  TableForeignKey,
+  TableIndex,
+} from 'typeorm';
 
 export class CreateAutomationTables1730905200000 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
@@ -31,7 +37,10 @@ export class CreateAutomationTables1730905200000 implements MigrationInterface {
           },
           {
             name: 'triggerConfig',
-            type: queryRunner.connection.driver.options.type === 'postgres' ? 'json' : 'text',
+            type:
+              queryRunner.connection.driver.options.type === 'postgres'
+                ? 'json'
+                : 'text',
             isNullable: true,
           },
           {
@@ -71,7 +80,7 @@ export class CreateAutomationTables1730905200000 implements MigrationInterface {
           },
         ],
       }),
-      true
+      true,
     );
 
     // Foreign key to users
@@ -82,7 +91,7 @@ export class CreateAutomationTables1730905200000 implements MigrationInterface {
         referencedColumnNames: ['id'],
         referencedTableName: 'users',
         onDelete: 'CASCADE',
-      })
+      }),
     );
 
     // 2. Create automation_conditions table
@@ -144,7 +153,7 @@ export class CreateAutomationTables1730905200000 implements MigrationInterface {
           },
         ],
       }),
-      true
+      true,
     );
 
     await queryRunner.createForeignKey(
@@ -154,7 +163,7 @@ export class CreateAutomationTables1730905200000 implements MigrationInterface {
         referencedColumnNames: ['id'],
         referencedTableName: 'automation_rules',
         onDelete: 'CASCADE',
-      })
+      }),
     );
 
     // 3. Create automation_actions table
@@ -180,7 +189,10 @@ export class CreateAutomationTables1730905200000 implements MigrationInterface {
           },
           {
             name: 'actionConfig',
-            type: queryRunner.connection.driver.options.type === 'postgres' ? 'json' : 'text',
+            type:
+              queryRunner.connection.driver.options.type === 'postgres'
+                ? 'json'
+                : 'text',
           },
           {
             name: 'order',
@@ -199,7 +211,7 @@ export class CreateAutomationTables1730905200000 implements MigrationInterface {
           },
         ],
       }),
-      true
+      true,
     );
 
     await queryRunner.createForeignKey(
@@ -209,7 +221,7 @@ export class CreateAutomationTables1730905200000 implements MigrationInterface {
         referencedColumnNames: ['id'],
         referencedTableName: 'automation_rules',
         onDelete: 'CASCADE',
-      })
+      }),
     );
 
     // 4. Create automation_audit_logs table
@@ -240,16 +252,25 @@ export class CreateAutomationTables1730905200000 implements MigrationInterface {
           },
           {
             name: 'triggerContext',
-            type: queryRunner.connection.driver.options.type === 'postgres' ? 'json' : 'text',
+            type:
+              queryRunner.connection.driver.options.type === 'postgres'
+                ? 'json'
+                : 'text',
             isNullable: true,
           },
           {
             name: 'conditionsResult',
-            type: queryRunner.connection.driver.options.type === 'postgres' ? 'json' : 'text',
+            type:
+              queryRunner.connection.driver.options.type === 'postgres'
+                ? 'json'
+                : 'text',
           },
           {
             name: 'actionResults',
-            type: queryRunner.connection.driver.options.type === 'postgres' ? 'json' : 'text',
+            type:
+              queryRunner.connection.driver.options.type === 'postgres'
+                ? 'json'
+                : 'text',
             isNullable: true,
           },
           {
@@ -274,7 +295,7 @@ export class CreateAutomationTables1730905200000 implements MigrationInterface {
           },
         ],
       }),
-      true
+      true,
     );
 
     await queryRunner.createForeignKey(
@@ -284,7 +305,7 @@ export class CreateAutomationTables1730905200000 implements MigrationInterface {
         referencedColumnNames: ['id'],
         referencedTableName: 'automation_rules',
         onDelete: 'CASCADE',
-      })
+      }),
     );
 
     await queryRunner.createForeignKey(
@@ -294,7 +315,7 @@ export class CreateAutomationTables1730905200000 implements MigrationInterface {
         referencedColumnNames: ['id'],
         referencedTableName: 'events',
         onDelete: 'SET NULL',
-      })
+      }),
     );
 
     // Create indexes
@@ -303,7 +324,7 @@ export class CreateAutomationTables1730905200000 implements MigrationInterface {
       new TableIndex({
         name: 'idx_automation_rules_createdById',
         columnNames: ['createdById'],
-      })
+      }),
     );
 
     await queryRunner.createIndex(
@@ -311,7 +332,7 @@ export class CreateAutomationTables1730905200000 implements MigrationInterface {
       new TableIndex({
         name: 'idx_automation_rules_isEnabled',
         columnNames: ['isEnabled'],
-      })
+      }),
     );
 
     await queryRunner.createIndex(
@@ -319,7 +340,7 @@ export class CreateAutomationTables1730905200000 implements MigrationInterface {
       new TableIndex({
         name: 'idx_automation_rules_triggerType',
         columnNames: ['triggerType'],
-      })
+      }),
     );
 
     await queryRunner.createIndex(
@@ -327,7 +348,7 @@ export class CreateAutomationTables1730905200000 implements MigrationInterface {
       new TableIndex({
         name: 'idx_automation_conditions_ruleId',
         columnNames: ['ruleId'],
-      })
+      }),
     );
 
     await queryRunner.createIndex(
@@ -335,7 +356,7 @@ export class CreateAutomationTables1730905200000 implements MigrationInterface {
       new TableIndex({
         name: 'idx_automation_actions_ruleId',
         columnNames: ['ruleId'],
-      })
+      }),
     );
 
     await queryRunner.createIndex(
@@ -343,7 +364,7 @@ export class CreateAutomationTables1730905200000 implements MigrationInterface {
       new TableIndex({
         name: 'idx_automation_audit_logs_ruleId',
         columnNames: ['ruleId'],
-      })
+      }),
     );
 
     await queryRunner.createIndex(
@@ -351,7 +372,7 @@ export class CreateAutomationTables1730905200000 implements MigrationInterface {
       new TableIndex({
         name: 'idx_automation_audit_logs_eventId',
         columnNames: ['eventId'],
-      })
+      }),
     );
 
     await queryRunner.createIndex(
@@ -359,7 +380,7 @@ export class CreateAutomationTables1730905200000 implements MigrationInterface {
       new TableIndex({
         name: 'idx_automation_audit_logs_executedAt',
         columnNames: ['executedAt'],
-      })
+      }),
     );
 
     await queryRunner.createIndex(
@@ -367,21 +388,48 @@ export class CreateAutomationTables1730905200000 implements MigrationInterface {
       new TableIndex({
         name: 'idx_audit_logs_rule_executed',
         columnNames: ['ruleId', 'executedAt'],
-      })
+      }),
     );
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
     // Drop indexes first
-    await queryRunner.dropIndex('automation_audit_logs', 'idx_audit_logs_rule_executed');
-    await queryRunner.dropIndex('automation_audit_logs', 'idx_automation_audit_logs_executedAt');
-    await queryRunner.dropIndex('automation_audit_logs', 'idx_automation_audit_logs_eventId');
-    await queryRunner.dropIndex('automation_audit_logs', 'idx_automation_audit_logs_ruleId');
-    await queryRunner.dropIndex('automation_actions', 'idx_automation_actions_ruleId');
-    await queryRunner.dropIndex('automation_conditions', 'idx_automation_conditions_ruleId');
-    await queryRunner.dropIndex('automation_rules', 'idx_automation_rules_triggerType');
-    await queryRunner.dropIndex('automation_rules', 'idx_automation_rules_isEnabled');
-    await queryRunner.dropIndex('automation_rules', 'idx_automation_rules_createdById');
+    await queryRunner.dropIndex(
+      'automation_audit_logs',
+      'idx_audit_logs_rule_executed',
+    );
+    await queryRunner.dropIndex(
+      'automation_audit_logs',
+      'idx_automation_audit_logs_executedAt',
+    );
+    await queryRunner.dropIndex(
+      'automation_audit_logs',
+      'idx_automation_audit_logs_eventId',
+    );
+    await queryRunner.dropIndex(
+      'automation_audit_logs',
+      'idx_automation_audit_logs_ruleId',
+    );
+    await queryRunner.dropIndex(
+      'automation_actions',
+      'idx_automation_actions_ruleId',
+    );
+    await queryRunner.dropIndex(
+      'automation_conditions',
+      'idx_automation_conditions_ruleId',
+    );
+    await queryRunner.dropIndex(
+      'automation_rules',
+      'idx_automation_rules_triggerType',
+    );
+    await queryRunner.dropIndex(
+      'automation_rules',
+      'idx_automation_rules_isEnabled',
+    );
+    await queryRunner.dropIndex(
+      'automation_rules',
+      'idx_automation_rules_createdById',
+    );
 
     // Drop tables in reverse order
     await queryRunner.dropTable('automation_audit_logs');

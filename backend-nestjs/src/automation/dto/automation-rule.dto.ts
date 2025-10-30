@@ -1,7 +1,26 @@
-import { IsString, IsEnum, IsOptional, IsBoolean, IsArray, ValidateNested, MaxLength, MinLength, ArrayMinSize, ArrayMaxSize, IsNumber } from 'class-validator';
+import {
+  IsString,
+  IsEnum,
+  IsOptional,
+  IsBoolean,
+  IsArray,
+  ValidateNested,
+  MaxLength,
+  MinLength,
+  ArrayMinSize,
+  ArrayMaxSize,
+  IsNumber,
+} from 'class-validator';
 import { Type } from 'class-transformer';
-import { TriggerType, ConditionLogic } from '../../entities/automation-rule.entity';
-import { ConditionField, ConditionOperator, ConditionLogicOperator } from '../../entities/automation-condition.entity';
+import {
+  TriggerType,
+  ConditionLogic,
+} from '../../entities/automation-rule.entity';
+import {
+  ConditionField,
+  ConditionOperator,
+  ConditionLogicOperator,
+} from '../../entities/automation-condition.entity';
 import { ActionType } from '../../entities/automation-action.entity';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
@@ -15,7 +34,10 @@ export class CreateConditionDto {
   @IsEnum(ConditionOperator)
   operator: ConditionOperator;
 
-  @ApiProperty({ description: 'Expected value (stored as string)', maxLength: 1000 })
+  @ApiProperty({
+    description: 'Expected value (stored as string)',
+    maxLength: 1000,
+  })
   @IsString()
   @MaxLength(1000)
   value: string;
@@ -25,7 +47,11 @@ export class CreateConditionDto {
   @IsString()
   groupId?: string;
 
-  @ApiProperty({ enum: ConditionLogicOperator, description: 'Logic operator to next condition', default: ConditionLogicOperator.AND })
+  @ApiProperty({
+    enum: ConditionLogicOperator,
+    description: 'Logic operator to next condition',
+    default: ConditionLogicOperator.AND,
+  })
   @IsEnum(ConditionLogicOperator)
   logicOperator: ConditionLogicOperator;
 
@@ -41,7 +67,10 @@ export class CreateActionDto {
   @IsEnum(ActionType)
   actionType: ActionType;
 
-  @ApiProperty({ description: 'Action-specific configuration (JSON)', example: { color: '#3b82f6' } })
+  @ApiProperty({
+    description: 'Action-specific configuration (JSON)',
+    example: { color: '#3b82f6' },
+  })
   @IsOptional()
   actionConfig: Record<string, any>;
 
@@ -53,7 +82,11 @@ export class CreateActionDto {
 
 // DTO for creating an automation rule
 export class CreateAutomationRuleDto {
-  @ApiProperty({ description: 'Rule name (1-200 characters, unique per user)', minLength: 1, maxLength: 200 })
+  @ApiProperty({
+    description: 'Rule name (1-200 characters, unique per user)',
+    minLength: 1,
+    maxLength: 200,
+  })
   @IsString()
   @MinLength(1)
   @MaxLength(200)
@@ -65,11 +98,17 @@ export class CreateAutomationRuleDto {
   @MaxLength(1000)
   description?: string;
 
-  @ApiProperty({ enum: TriggerType, description: 'Trigger that starts the rule' })
+  @ApiProperty({
+    enum: TriggerType,
+    description: 'Trigger that starts the rule',
+  })
   @IsEnum(TriggerType)
   triggerType: TriggerType;
 
-  @ApiPropertyOptional({ description: 'Trigger-specific configuration (JSON)', example: { minutes: 30 } })
+  @ApiPropertyOptional({
+    description: 'Trigger-specific configuration (JSON)',
+    example: { minutes: 30 },
+  })
   @IsOptional()
   triggerConfig?: Record<string, any>;
 
@@ -78,12 +117,19 @@ export class CreateAutomationRuleDto {
   @IsBoolean()
   isEnabled?: boolean;
 
-  @ApiProperty({ enum: ConditionLogic, description: 'Root-level logic operator', default: ConditionLogic.AND })
+  @ApiProperty({
+    enum: ConditionLogic,
+    description: 'Root-level logic operator',
+    default: ConditionLogic.AND,
+  })
   @IsOptional()
   @IsEnum(ConditionLogic)
   conditionLogic?: ConditionLogic;
 
-  @ApiPropertyOptional({ description: 'List of conditions (max 10, optional)', type: [CreateConditionDto] })
+  @ApiPropertyOptional({
+    description: 'List of conditions (max 10, optional)',
+    type: [CreateConditionDto],
+  })
   @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
@@ -91,7 +137,10 @@ export class CreateAutomationRuleDto {
   @ArrayMaxSize(10)
   conditions?: CreateConditionDto[];
 
-  @ApiProperty({ description: 'List of actions (1-5 required)', type: [CreateActionDto] })
+  @ApiProperty({
+    description: 'List of actions (1-5 required)',
+    type: [CreateActionDto],
+  })
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => CreateActionDto)
@@ -102,7 +151,11 @@ export class CreateAutomationRuleDto {
 
 // DTO for updating an automation rule
 export class UpdateAutomationRuleDto {
-  @ApiPropertyOptional({ description: 'Rule name', minLength: 1, maxLength: 200 })
+  @ApiPropertyOptional({
+    description: 'Rule name',
+    minLength: 1,
+    maxLength: 200,
+  })
   @IsOptional()
   @IsString()
   @MinLength(1)
@@ -124,12 +177,18 @@ export class UpdateAutomationRuleDto {
   @IsOptional()
   triggerConfig?: Record<string, any>;
 
-  @ApiPropertyOptional({ enum: ConditionLogic, description: 'Root-level logic operator' })
+  @ApiPropertyOptional({
+    enum: ConditionLogic,
+    description: 'Root-level logic operator',
+  })
   @IsOptional()
   @IsEnum(ConditionLogic)
   conditionLogic?: ConditionLogic;
 
-  @ApiPropertyOptional({ description: 'Replace all conditions', type: [CreateConditionDto] })
+  @ApiPropertyOptional({
+    description: 'Replace all conditions',
+    type: [CreateConditionDto],
+  })
   @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
@@ -137,7 +196,10 @@ export class UpdateAutomationRuleDto {
   @ArrayMaxSize(10)
   conditions?: CreateConditionDto[];
 
-  @ApiPropertyOptional({ description: 'Replace all actions', type: [CreateActionDto] })
+  @ApiPropertyOptional({
+    description: 'Replace all actions',
+    type: [CreateActionDto],
+  })
   @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
@@ -215,7 +277,9 @@ export class AutomationRuleDto {
   @ApiProperty()
   executionCount: number;
 
-  @ApiPropertyOptional({ description: 'Webhook token for webhook.incoming triggers' })
+  @ApiPropertyOptional({
+    description: 'Webhook token for webhook.incoming triggers',
+  })
   webhookToken: string | null;
 
   @ApiProperty()

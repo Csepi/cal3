@@ -1,5 +1,19 @@
-import { Controller, Post, Get, Body, UseGuards, Request, Res, Req } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  Controller,
+  Post,
+  Get,
+  Body,
+  UseGuards,
+  Request,
+  Res,
+  Req,
+} from '@nestjs/common';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
 import { RegisterDto, LoginDto, AuthResponseDto } from '../dto/auth.dto';
@@ -12,7 +26,11 @@ export class AuthController {
 
   @Post('register')
   @ApiOperation({ summary: 'Register a new user' })
-  @ApiResponse({ status: 201, description: 'User successfully registered', type: AuthResponseDto })
+  @ApiResponse({
+    status: 201,
+    description: 'User successfully registered',
+    type: AuthResponseDto,
+  })
   @ApiResponse({ status: 409, description: 'Username or email already exists' })
   async register(@Body() registerDto: RegisterDto): Promise<AuthResponseDto> {
     return this.authService.register(registerDto);
@@ -20,7 +38,11 @@ export class AuthController {
 
   @Post('login')
   @ApiOperation({ summary: 'Login user' })
-  @ApiResponse({ status: 200, description: 'User successfully logged in', type: AuthResponseDto })
+  @ApiResponse({
+    status: 200,
+    description: 'User successfully logged in',
+    type: AuthResponseDto,
+  })
   @ApiResponse({ status: 401, description: 'Invalid credentials' })
   async login(@Body() loginDto: LoginDto): Promise<AuthResponseDto> {
     return this.authService.login(loginDto);
@@ -30,7 +52,10 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get user profile' })
-  @ApiResponse({ status: 200, description: 'User profile retrieved successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'User profile retrieved successfully',
+  })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   async getProfile(@Request() req) {
     return this.authService.getUserProfile(req.user.id);
@@ -49,7 +74,10 @@ export class AuthController {
   @ApiOperation({ summary: 'Google OAuth callback' })
   async googleAuthRedirect(@Req() req, @Res() res) {
     const authResult = req.user;
-    console.log('Google OAuth callback - authResult:', JSON.stringify(authResult, null, 2));
+    console.log(
+      'Google OAuth callback - authResult:',
+      JSON.stringify(authResult, null, 2),
+    );
 
     // Check if this is a calendar sync request
     const state = req.query.state;
@@ -86,7 +114,10 @@ export class AuthController {
   @ApiOperation({ summary: 'Microsoft OAuth callback' })
   async microsoftAuthRedirect(@Req() req, @Res() res) {
     const authResult = req.user;
-    console.log('Microsoft OAuth callback - authResult:', JSON.stringify(authResult, null, 2));
+    console.log(
+      'Microsoft OAuth callback - authResult:',
+      JSON.stringify(authResult, null, 2),
+    );
 
     // Check if this is a calendar sync request
     const state = req.query.state;

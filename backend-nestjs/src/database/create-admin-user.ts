@@ -65,12 +65,12 @@ async function createAdminUser() {
         WHERE username = 'admin'
       `;
 
-      await pool.request()
+      await pool
+        .request()
         .input('password', sql.NVarChar, hashedPassword)
         .query(updateQuery);
 
       console.log('✅ Admin user updated successfully!\n');
-
     } else {
       console.log('➕ Creating new admin user...\n');
 
@@ -113,7 +113,8 @@ async function createAdminUser() {
         )
       `;
 
-      await pool.request()
+      await pool
+        .request()
         .input('username', sql.NVarChar, 'admin')
         .input('email', sql.NVarChar, 'admin@cal3.local')
         .input('password', sql.NVarChar, hashedPassword)
@@ -126,7 +127,11 @@ async function createAdminUser() {
         .input('defaultCalendarView', sql.NVarChar, 'month')
         .input('timezone', sql.NVarChar, 'UTC')
         .input('timeFormat', sql.NVarChar, '24h')
-        .input('usagePlans', sql.NVarChar, '["admin","enterprise","store","user","child"]')
+        .input(
+          'usagePlans',
+          sql.NVarChar,
+          '["admin","enterprise","store","user","child"]',
+        )
         .input('hideReservationsTab', sql.Bit, 0)
         .query(insertQuery);
 
@@ -179,7 +184,6 @@ async function createAdminUser() {
       console.log('  Role:     admin (full privileges)');
       console.log('\n' + '─'.repeat(80));
     }
-
   } catch (error: any) {
     console.error('\n❌ ERROR creating admin user:\n');
     console.error('Error Message:', error.message);
@@ -193,7 +197,6 @@ async function createAdminUser() {
     }
 
     throw error;
-
   } finally {
     if (pool) {
       await pool.close();

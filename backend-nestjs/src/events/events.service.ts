@@ -1,10 +1,27 @@
-import { Injectable, ForbiddenException, NotFoundException, BadRequestException, Inject, forwardRef } from '@nestjs/common';
+import {
+  Injectable,
+  ForbiddenException,
+  NotFoundException,
+  BadRequestException,
+  Inject,
+  forwardRef,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Event, RecurrenceType } from '../entities/event.entity';
-import { Calendar, SharePermission, CalendarShare } from '../entities/calendar.entity';
+import {
+  Calendar,
+  SharePermission,
+  CalendarShare,
+} from '../entities/calendar.entity';
 import { CreateEventDto, UpdateEventDto } from '../dto/event.dto';
-import { CreateRecurringEventDto, UpdateRecurringEventDto, RecurrencePatternDto, WeekDay, RecurrenceEndType } from '../dto/recurrence.dto';
+import {
+  CreateRecurringEventDto,
+  UpdateRecurringEventDto,
+  RecurrencePatternDto,
+  WeekDay,
+  RecurrenceEndType,
+} from '../dto/recurrence.dto';
 
 @Injectable()
 export class EventsService {
@@ -15,7 +32,11 @@ export class EventsService {
     private calendarRepository: Repository<Calendar>,
     @InjectRepository(CalendarShare)
     private calendarShareRepository: Repository<CalendarShare>,
-    @Inject(forwardRef(() => require('../automation/automation.service').AutomationService))
+    @Inject(
+      forwardRef(
+        () => require('../automation/automation.service').AutomationService,
+      ),
+    )
     private automationService?: any,
   ) {}
 
@@ -38,26 +59,39 @@ export class EventsService {
 
     const hasWriteAccess = await this.checkWriteAccess(calendarId, userId);
     if (!hasWriteAccess) {
-      throw new ForbiddenException('Insufficient permissions to create events in this calendar');
+      throw new ForbiddenException(
+        'Insufficient permissions to create events in this calendar',
+      );
     }
 
     const event = this.createEventEntity(eventData, calendarId, userId);
     const savedEvent = await this.eventRepository.save(event);
 
     // Trigger automation rules for event.created
-    this.triggerAutomationRules('event.created', savedEvent).catch(err =>
-      console.error('Automation trigger error:', err)
+    this.triggerAutomationRules('event.created', savedEvent).catch((err) =>
+      console.error('Automation trigger error:', err),
     );
 
     // Check if this is a recurring event and generate instances
-    if (savedEvent.recurrenceType && savedEvent.recurrenceType !== RecurrenceType.NONE && savedEvent.recurrenceRule) {
+    if (
+      savedEvent.recurrenceType &&
+      savedEvent.recurrenceType !== RecurrenceType.NONE &&
+      savedEvent.recurrenceRule
+    ) {
       try {
-        const recurrenceData = typeof savedEvent.recurrenceRule === 'string'
-          ? JSON.parse(savedEvent.recurrenceRule)
-          : savedEvent.recurrenceRule;
+        const recurrenceData =
+          typeof savedEvent.recurrenceRule === 'string'
+            ? JSON.parse(savedEvent.recurrenceRule)
+            : savedEvent.recurrenceRule;
 
-        const recurrencePattern = this.convertRuleToPattern(recurrenceData, savedEvent.recurrenceType);
-        const instances = this.generateRecurringInstances(savedEvent, recurrencePattern);
+        const recurrencePattern = this.convertRuleToPattern(
+          recurrenceData,
+          savedEvent.recurrenceType,
+        );
+        const instances = this.generateRecurringInstances(
+          savedEvent,
+          recurrencePattern,
+        );
 
         if (instances.length > 0) {
           await this.eventRepository.save(instances);
@@ -107,10 +141,14 @@ export class EventsService {
     return this.eventRepository.save(event);
   }
 
-  async findAll(userId: number, startDate?: string, endDate?: string): Promise<Event[]> {
+  async findAll(
+    userId: number,
+    startDate?: string,
+    endDate?: string,
+  ): Promise<Event[]> {
     // Get all calendars user has access to
     const accessibleCalendars = await this.getAccessibleCalendars(userId);
-    const calendarIds = accessibleCalendars.map(cal => cal.id);
+    const calendarIds = accessibleCalendars.map((cal) => cal.id);
 
     if (calendarIds.length === 0) {
       return [];
@@ -122,16 +160,22 @@ export class EventsService {
       .leftJoinAndSelect('event.createdBy', 'createdBy')
       .where('event.calendarId IN (:...calendarIds)', { calendarIds })
       // Exclude parent/template events (only show instances or non-recurring events)
-      .andWhere('(event.recurrenceType = :noneType OR event.parentEventId IS NOT NULL)', {
-        noneType: RecurrenceType.NONE
-      });
+      .andWhere(
+        '(event.recurrenceType = :noneType OR event.parentEventId IS NOT NULL)',
+        {
+          noneType: RecurrenceType.NONE,
+        },
+      );
 
     // Add date filters if provided
     if (startDate && endDate) {
-      query = query.andWhere('event.startDate BETWEEN :startDate AND :endDate', {
-        startDate: new Date(startDate),
-        endDate: new Date(endDate),
-      });
+      query = query.andWhere(
+        'event.startDate BETWEEN :startDate AND :endDate',
+        {
+          startDate: new Date(startDate),
+          endDate: new Date(endDate),
+        },
+      );
     }
 
     return query.orderBy('event.startDate', 'ASC').getMany();
@@ -145,16 +189,22 @@ export class EventsService {
       .leftJoinAndSelect('event.createdBy', 'createdBy')
       .where('calendar.visibility = :visibility', { visibility: 'public' })
       // Exclude parent/template events (only show instances or non-recurring events)
-      .andWhere('(event.recurrenceType = :noneType OR event.parentEventId IS NOT NULL)', {
-        noneType: RecurrenceType.NONE
-      });
+      .andWhere(
+        '(event.recurrenceType = :noneType OR event.parentEventId IS NOT NULL)',
+        {
+          noneType: RecurrenceType.NONE,
+        },
+      );
 
     // Add date filters if provided
     if (startDate && endDate) {
-      query = query.andWhere('event.startDate BETWEEN :startDate AND :endDate', {
-        startDate: new Date(startDate),
-        endDate: new Date(endDate),
-      });
+      query = query.andWhere(
+        'event.startDate BETWEEN :startDate AND :endDate',
+        {
+          startDate: new Date(startDate),
+          endDate: new Date(endDate),
+        },
+      );
     }
 
     return query.orderBy('event.startDate', 'ASC').getMany();
@@ -179,20 +229,37 @@ export class EventsService {
     return event;
   }
 
-  async update(id: number, updateEventDto: UpdateEventDto, userId: number): Promise<Event> {
+  async update(
+    id: number,
+    updateEventDto: UpdateEventDto,
+    userId: number,
+  ): Promise<Event> {
     const event = await this.findOne(id, userId);
 
     // Check if user has write access to the current calendar
-    const hasWriteAccess = await this.checkWriteAccess(event.calendarId, userId);
+    const hasWriteAccess = await this.checkWriteAccess(
+      event.calendarId,
+      userId,
+    );
     if (!hasWriteAccess) {
-      throw new ForbiddenException('Insufficient permissions to update this event');
+      throw new ForbiddenException(
+        'Insufficient permissions to update this event',
+      );
     }
 
     // If calendarId is being changed, check access to the new calendar
-    if (updateEventDto.calendarId && updateEventDto.calendarId !== event.calendarId) {
-      const hasNewCalendarAccess = await this.checkWriteAccess(updateEventDto.calendarId, userId);
+    if (
+      updateEventDto.calendarId &&
+      updateEventDto.calendarId !== event.calendarId
+    ) {
+      const hasNewCalendarAccess = await this.checkWriteAccess(
+        updateEventDto.calendarId,
+        userId,
+      );
       if (!hasNewCalendarAccess) {
-        throw new ForbiddenException('Insufficient permissions to move event to the specified calendar');
+        throw new ForbiddenException(
+          'Insufficient permissions to move event to the specified calendar',
+        );
       }
     }
 
@@ -206,24 +273,34 @@ export class EventsService {
 
     // Handle time fields - convert empty strings to undefined
     if ('startTime' in updateEventDto) {
-      (updateEventDto as any).startTime = updateEventDto.startTime && updateEventDto.startTime !== '' ? updateEventDto.startTime : undefined;
+      (updateEventDto as any).startTime =
+        updateEventDto.startTime && updateEventDto.startTime !== ''
+          ? updateEventDto.startTime
+          : undefined;
     }
     if ('endTime' in updateEventDto) {
-      (updateEventDto as any).endTime = updateEventDto.endTime && updateEventDto.endTime !== '' ? updateEventDto.endTime : undefined;
+      (updateEventDto as any).endTime =
+        updateEventDto.endTime && updateEventDto.endTime !== ''
+          ? updateEventDto.endTime
+          : undefined;
     }
 
     Object.assign(event, updateEventDto);
     const updatedEvent = await this.eventRepository.save(event);
 
     // Trigger automation rules for event.updated
-    this.triggerAutomationRules('event.updated', updatedEvent).catch(err =>
-      console.error('Automation trigger error:', err)
+    this.triggerAutomationRules('event.updated', updatedEvent).catch((err) =>
+      console.error('Automation trigger error:', err),
     );
 
     return updatedEvent;
   }
 
-  async remove(id: number, userId: number, scope: 'this' | 'future' | 'all' = 'this'): Promise<void> {
+  async remove(
+    id: number,
+    userId: number,
+    scope: 'this' | 'future' | 'all' = 'this',
+  ): Promise<void> {
     const event = await this.eventRepository.findOne({
       where: { id },
       relations: ['calendar', 'createdBy'],
@@ -234,14 +311,19 @@ export class EventsService {
     }
 
     // Check if user has write access to the calendar
-    const hasWriteAccess = await this.checkWriteAccess(event.calendarId, userId);
+    const hasWriteAccess = await this.checkWriteAccess(
+      event.calendarId,
+      userId,
+    );
     if (!hasWriteAccess) {
-      throw new ForbiddenException('Insufficient permissions to delete this event');
+      throw new ForbiddenException(
+        'Insufficient permissions to delete this event',
+      );
     }
 
     // Trigger automation rules for event.deleted BEFORE deletion
-    this.triggerAutomationRules('event.deleted', event).catch(err =>
-      console.error('Automation trigger error:', err)
+    this.triggerAutomationRules('event.deleted', event).catch((err) =>
+      console.error('Automation trigger error:', err),
     );
 
     if (event.recurrenceType !== RecurrenceType.NONE) {
@@ -295,11 +377,15 @@ export class EventsService {
     // Combine and remove duplicates
     const allCalendars = [...ownedCalendars, ...sharedCalendars];
     return allCalendars.filter(
-      (calendar, index, self) => index === self.findIndex(c => c.id === calendar.id)
+      (calendar, index, self) =>
+        index === self.findIndex((c) => c.id === calendar.id),
     );
   }
 
-  private async checkReadAccess(calendarId: number, userId: number): Promise<boolean> {
+  private async checkReadAccess(
+    calendarId: number,
+    userId: number,
+  ): Promise<boolean> {
     const calendar = await this.calendarRepository.findOne({
       where: { id: calendarId, isActive: true },
       relations: ['sharedWith'],
@@ -315,10 +401,13 @@ export class EventsService {
     }
 
     // Check if user is in shared users
-    return calendar.sharedWith.some(user => user.id === userId);
+    return calendar.sharedWith.some((user) => user.id === userId);
   }
 
-  private async checkWriteAccess(calendarId: number, userId: number): Promise<boolean> {
+  private async checkWriteAccess(
+    calendarId: number,
+    userId: number,
+  ): Promise<boolean> {
     const calendar = await this.calendarRepository.findOne({
       where: { id: calendarId, isActive: true },
     });
@@ -337,10 +426,17 @@ export class EventsService {
       where: { calendarId, userId },
     });
 
-    return !!share && (share.permission === SharePermission.WRITE || share.permission === SharePermission.ADMIN);
+    return (
+      !!share &&
+      (share.permission === SharePermission.WRITE ||
+        share.permission === SharePermission.ADMIN)
+    );
   }
 
-  async createRecurring(createRecurringEventDto: CreateRecurringEventDto, userId: number): Promise<Event[]> {
+  async createRecurring(
+    createRecurringEventDto: CreateRecurringEventDto,
+    userId: number,
+  ): Promise<Event[]> {
     const { recurrence, ...eventData } = createRecurringEventDto;
 
     if (!createRecurringEventDto.calendarId) {
@@ -348,26 +444,44 @@ export class EventsService {
     }
 
     // Check if user has write access to the calendar
-    const hasWriteAccess = await this.checkWriteAccess(createRecurringEventDto.calendarId, userId);
+    const hasWriteAccess = await this.checkWriteAccess(
+      createRecurringEventDto.calendarId,
+      userId,
+    );
     if (!hasWriteAccess) {
-      throw new ForbiddenException('Insufficient permissions to create events in this calendar');
+      throw new ForbiddenException(
+        'Insufficient permissions to create events in this calendar',
+      );
     }
 
     // Create the parent event
-    const parentEvent = this.createEventEntity(eventData, createRecurringEventDto.calendarId, userId);
+    const parentEvent = this.createEventEntity(
+      eventData,
+      createRecurringEventDto.calendarId,
+      userId,
+    );
     parentEvent.recurrenceType = recurrence.type;
-    parentEvent.recurrenceRule = JSON.stringify(this.buildRecurrenceRule(recurrence));
+    parentEvent.recurrenceRule = JSON.stringify(
+      this.buildRecurrenceRule(recurrence),
+    );
 
     const savedParentEvent = await this.eventRepository.save(parentEvent);
 
     // Generate recurring instances
-    const instances = this.generateRecurringInstances(savedParentEvent, recurrence);
+    const instances = this.generateRecurringInstances(
+      savedParentEvent,
+      recurrence,
+    );
     const savedInstances = await this.eventRepository.save(instances);
 
     return [savedParentEvent, ...savedInstances];
   }
 
-  async updateRecurring(id: number, updateRecurringEventDto: UpdateRecurringEventDto, userId: number): Promise<Event[]> {
+  async updateRecurring(
+    id: number,
+    updateRecurringEventDto: UpdateRecurringEventDto,
+    userId: number,
+  ): Promise<Event[]> {
     const { updateScope, recurrence, ...updateData } = updateRecurringEventDto;
 
     const event = await this.eventRepository.findOne({
@@ -380,16 +494,25 @@ export class EventsService {
     }
 
     // Check if user has write access
-    const hasWriteAccess = await this.checkWriteAccess(event.calendarId, userId);
+    const hasWriteAccess = await this.checkWriteAccess(
+      event.calendarId,
+      userId,
+    );
     if (!hasWriteAccess) {
-      throw new ForbiddenException('Insufficient permissions to update this event');
+      throw new ForbiddenException(
+        'Insufficient permissions to update this event',
+      );
     }
 
     // Handle conversion from non-recurring to recurring event
     if (event.recurrenceType === RecurrenceType.NONE) {
       if (recurrence && recurrence.type !== RecurrenceType.NONE) {
         // Convert event to recurring
-        return await this.convertToRecurringEvent(event, updateData, recurrence);
+        return await this.convertToRecurringEvent(
+          event,
+          updateData,
+          recurrence,
+        );
       } else {
         // Not converting to recurring, use regular update
         this.sanitizeAndAssignUpdateData(event, updateData);
@@ -409,7 +532,10 @@ export class EventsService {
     }
   }
 
-  private async removeRecurringEvent(event: Event, scope: 'this' | 'future' | 'all'): Promise<void> {
+  private async removeRecurringEvent(
+    event: Event,
+    scope: 'this' | 'future' | 'all',
+  ): Promise<void> {
     const parentEventId = event.parentEventId || event.id;
 
     switch (scope) {
@@ -431,10 +557,13 @@ export class EventsService {
           await this.eventRepository
             .createQueryBuilder()
             .delete()
-            .where('parentEventId = :parentEventId AND startDate >= :startDate', {
-              parentEventId,
-              startDate: eventDate,
-            })
+            .where(
+              'parentEventId = :parentEventId AND startDate >= :startDate',
+              {
+                parentEventId,
+                startDate: eventDate,
+              },
+            )
             .execute();
         } else {
           // Delete all instances and parent
@@ -448,7 +577,9 @@ export class EventsService {
         if (!event.parentEventId) {
           await this.eventRepository.remove(event);
         } else {
-          const parentEvent = await this.eventRepository.findOne({ where: { id: parentEventId } });
+          const parentEvent = await this.eventRepository.findOne({
+            where: { id: parentEventId },
+          });
           if (parentEvent) {
             await this.eventRepository.remove(parentEvent);
           }
@@ -457,14 +588,21 @@ export class EventsService {
     }
   }
 
-  private async updateSingleInstance(event: Event, updateData: any): Promise<Event[]> {
+  private async updateSingleInstance(
+    event: Event,
+    updateData: any,
+  ): Promise<Event[]> {
     if (event.parentEventId) {
       // This is already an instance, just update it
       this.sanitizeAndAssignUpdateData(event, updateData);
       return [await this.eventRepository.save(event)];
     } else {
       // This is the parent, create an exception
-      const exception = this.createEventEntity(updateData, event.calendarId, event.createdById);
+      const exception = this.createEventEntity(
+        updateData,
+        event.calendarId,
+        event.createdById,
+      );
       exception.parentEventId = event.id;
       exception.recurrenceId = `${event.id}-exception-${Date.now()}`;
       exception.originalDate = event.startDate;
@@ -475,7 +613,11 @@ export class EventsService {
     }
   }
 
-  private async updateFutureInstances(event: Event, updateData: any, newRecurrence?: RecurrencePatternDto): Promise<Event[]> {
+  private async updateFutureInstances(
+    event: Event,
+    updateData: any,
+    newRecurrence?: RecurrencePatternDto,
+  ): Promise<Event[]> {
     const parentEventId = event.parentEventId || event.id;
     const eventDate = new Date(event.startDate);
 
@@ -491,7 +633,9 @@ export class EventsService {
 
     // Update parent event if modifying recurrence
     if (!event.parentEventId && newRecurrence) {
-      event.recurrenceRule = JSON.stringify(this.buildRecurrenceRule(newRecurrence));
+      event.recurrenceRule = JSON.stringify(
+        this.buildRecurrenceRule(newRecurrence),
+      );
       await this.eventRepository.save(event);
     }
 
@@ -501,14 +645,22 @@ export class EventsService {
       : event;
 
     if (parentEvent && newRecurrence) {
-      const newInstances = this.generateRecurringInstances(parentEvent, newRecurrence, eventDate);
+      const newInstances = this.generateRecurringInstances(
+        parentEvent,
+        newRecurrence,
+        eventDate,
+      );
       return await this.eventRepository.save(newInstances);
     }
 
     return [];
   }
 
-  private async updateAllInstances(event: Event, updateData: any, newRecurrence?: RecurrencePatternDto): Promise<Event[]> {
+  private async updateAllInstances(
+    event: Event,
+    updateData: any,
+    newRecurrence?: RecurrencePatternDto,
+  ): Promise<Event[]> {
     const parentEventId = event.parentEventId || event.id;
 
     // Delete all existing instances
@@ -525,14 +677,19 @@ export class EventsService {
 
     this.sanitizeAndAssignUpdateData(parentEvent, updateData);
     if (newRecurrence) {
-      parentEvent.recurrenceRule = JSON.stringify(this.buildRecurrenceRule(newRecurrence));
+      parentEvent.recurrenceRule = JSON.stringify(
+        this.buildRecurrenceRule(newRecurrence),
+      );
     }
 
     const savedParentEvent = await this.eventRepository.save(parentEvent);
 
     // Generate new instances if there's still a recurrence pattern
     if (newRecurrence && newRecurrence.type !== RecurrenceType.NONE) {
-      const newInstances = this.generateRecurringInstances(savedParentEvent, newRecurrence);
+      const newInstances = this.generateRecurringInstances(
+        savedParentEvent,
+        newRecurrence,
+      );
       const savedInstances = await this.eventRepository.save(newInstances);
       return [savedParentEvent, ...savedInstances];
     }
@@ -540,11 +697,21 @@ export class EventsService {
     return [savedParentEvent];
   }
 
-  private generateRecurringInstances(parentEvent: Event, recurrence: RecurrencePatternDto, startFrom?: Date): Event[] {
+  private generateRecurringInstances(
+    parentEvent: Event,
+    recurrence: RecurrencePatternDto,
+    startFrom?: Date,
+  ): Event[] {
     const instances: Event[] = [];
     const startDate = startFrom || new Date(parentEvent.startDate);
-    const maxInstances = recurrence.endType === RecurrenceEndType.COUNT ? recurrence.count || 52 : 365; // Default limits
-    const endDate = recurrence.endType === RecurrenceEndType.DATE ? new Date(recurrence.endDate!) : null;
+    const maxInstances =
+      recurrence.endType === RecurrenceEndType.COUNT
+        ? recurrence.count || 52
+        : 365; // Default limits
+    const endDate =
+      recurrence.endType === RecurrenceEndType.DATE
+        ? new Date(recurrence.endDate!)
+        : null;
 
     let currentDate = new Date(startDate);
     let instanceCount = 0;
@@ -574,7 +741,11 @@ export class EventsService {
       instance.startDate = new Date(currentDate);
 
       if (parentEvent.endDate) {
-        const daysDiff = Math.floor((new Date(parentEvent.endDate).getTime() - new Date(parentEvent.startDate).getTime()) / (1000 * 60 * 60 * 24));
+        const daysDiff = Math.floor(
+          (new Date(parentEvent.endDate).getTime() -
+            new Date(parentEvent.startDate).getTime()) /
+            (1000 * 60 * 60 * 24),
+        );
         instance.endDate = new Date(currentDate);
         instance.endDate.setDate(instance.endDate.getDate() + daysDiff);
       }
@@ -585,7 +756,10 @@ export class EventsService {
       currentDate = this.getNextOccurrence(currentDate, recurrence);
       instanceCount++;
 
-      if (recurrence.endType === RecurrenceEndType.COUNT && instanceCount >= (recurrence.count || 1)) {
+      if (
+        recurrence.endType === RecurrenceEndType.COUNT &&
+        instanceCount >= (recurrence.count || 1)
+      ) {
         break;
       }
     }
@@ -593,7 +767,10 @@ export class EventsService {
     return instances;
   }
 
-  private getNextOccurrence(currentDate: Date, recurrence: RecurrencePatternDto): Date {
+  private getNextOccurrence(
+    currentDate: Date,
+    recurrence: RecurrencePatternDto,
+  ): Date {
     const nextDate = new Date(currentDate);
     const interval = recurrence.interval || 1;
 
@@ -602,7 +779,7 @@ export class EventsService {
         nextDate.setDate(nextDate.getDate() + interval);
         break;
       case RecurrenceType.WEEKLY:
-        nextDate.setDate(nextDate.getDate() + (7 * interval));
+        nextDate.setDate(nextDate.getDate() + 7 * interval);
         break;
       case RecurrenceType.MONTHLY:
         nextDate.setMonth(nextDate.getMonth() + interval);
@@ -629,7 +806,10 @@ export class EventsService {
     };
   }
 
-  private convertRuleToPattern(rule: any, recurrenceType: RecurrenceType): RecurrencePatternDto {
+  private convertRuleToPattern(
+    rule: any,
+    recurrenceType: RecurrenceType,
+  ): RecurrencePatternDto {
     const pattern = new RecurrencePatternDto();
     pattern.type = recurrenceType;
     pattern.interval = rule.interval || 1;
@@ -654,16 +834,26 @@ export class EventsService {
 
     // Handle time fields - convert empty strings to undefined
     if ('startTime' in updateData) {
-      updateData.startTime = updateData.startTime && updateData.startTime !== '' ? updateData.startTime : undefined;
+      updateData.startTime =
+        updateData.startTime && updateData.startTime !== ''
+          ? updateData.startTime
+          : undefined;
     }
     if ('endTime' in updateData) {
-      updateData.endTime = updateData.endTime && updateData.endTime !== '' ? updateData.endTime : undefined;
+      updateData.endTime =
+        updateData.endTime && updateData.endTime !== ''
+          ? updateData.endTime
+          : undefined;
     }
 
     Object.assign(event, updateData);
   }
 
-  private createEventEntity(eventData: any, calendarId: number, createdById: number): Event {
+  private createEventEntity(
+    eventData: any,
+    calendarId: number,
+    createdById: number,
+  ): Event {
     const event = new Event();
     Object.assign(event, eventData);
     event.calendarId = calendarId;
@@ -672,12 +862,22 @@ export class EventsService {
     if (eventData.endDate) {
       event.endDate = new Date(eventData.endDate);
     }
-    event.startTime = eventData.startTime && eventData.startTime !== '' ? eventData.startTime : undefined;
-    event.endTime = eventData.endTime && eventData.endTime !== '' ? eventData.endTime : undefined;
+    event.startTime =
+      eventData.startTime && eventData.startTime !== ''
+        ? eventData.startTime
+        : undefined;
+    event.endTime =
+      eventData.endTime && eventData.endTime !== ''
+        ? eventData.endTime
+        : undefined;
     return event;
   }
 
-  private async convertToRecurringEvent(event: Event, updateData: any, recurrence: RecurrencePatternDto): Promise<Event[]> {
+  private async convertToRecurringEvent(
+    event: Event,
+    updateData: any,
+    recurrence: RecurrencePatternDto,
+  ): Promise<Event[]> {
     // Apply any basic updates to the event first
     this.sanitizeAndAssignUpdateData(event, updateData);
 
@@ -697,7 +897,10 @@ export class EventsService {
         return [savedEvent, ...savedInstances];
       }
     } catch (error) {
-      console.error('Error generating recurring instances during conversion:', error);
+      console.error(
+        'Error generating recurring instances during conversion:',
+        error,
+      );
       // Return just the parent event if instance generation fails
     }
 
@@ -708,7 +911,10 @@ export class EventsService {
    * Trigger automation rules for event lifecycle hooks
    * Executes asynchronously without blocking the main flow
    */
-  private async triggerAutomationRules(triggerType: string, event: Event): Promise<void> {
+  private async triggerAutomationRules(
+    triggerType: string,
+    event: Event,
+  ): Promise<void> {
     if (!this.automationService) {
       return; // Automation service not available (optional dependency)
     }

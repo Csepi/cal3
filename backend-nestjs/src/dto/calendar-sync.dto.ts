@@ -1,4 +1,12 @@
-import { IsEnum, IsString, IsArray, IsBoolean, IsOptional, ValidateNested, IsNumber } from 'class-validator';
+import {
+  IsEnum,
+  IsString,
+  IsArray,
+  IsBoolean,
+  IsOptional,
+  ValidateNested,
+  IsNumber,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 import { SyncProvider } from '../entities/calendar-sync.entity';
 

@@ -31,7 +31,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
         message = errorObj.message || errorObj.error || exception.message;
         error = errorObj.error || exception.name;
       } else {
-        message = errorResponse as string;
+        message = errorResponse;
         error = exception.name;
       }
     } else if (exception instanceof QueryFailedError) {
@@ -40,7 +40,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
       error = 'Database Error';
 
       // Handle specific database constraint violations
-      const driverError = exception.driverError as any;
+      const driverError = exception.driverError;
       if (driverError?.code === '23505') {
         // Unique constraint violation
         message = 'A record with these details already exists';
@@ -77,7 +77,10 @@ export class AllExceptionsFilter implements ExceptionFilter {
     };
 
     // Don't expose internal details in production
-    if (process.env.NODE_ENV === 'production' && status === HttpStatus.INTERNAL_SERVER_ERROR) {
+    if (
+      process.env.NODE_ENV === 'production' &&
+      status === HttpStatus.INTERNAL_SERVER_ERROR
+    ) {
       errorResponse.message = 'Internal server error';
     }
 

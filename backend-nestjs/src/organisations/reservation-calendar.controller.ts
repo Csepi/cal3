@@ -34,7 +34,9 @@ import { CreateReservationCalendarDto, AssignRoleDto } from './dto';
 @Controller()
 @UseGuards(JwtAuthGuard)
 export class ReservationCalendarController {
-  constructor(private readonly reservationCalendarService: ReservationCalendarService) {}
+  constructor(
+    private readonly reservationCalendarService: ReservationCalendarService,
+  ) {}
 
   /**
    * Create a new reservation calendar for an organisation
@@ -42,17 +44,24 @@ export class ReservationCalendarController {
    */
   @Post('organisations/:id/reservation-calendars')
   @UseGuards(OrganisationAdminGuard)
-  @UsePipes(new ValidationPipe({ transform: true, whitelist: true, forbidNonWhitelisted: true }))
+  @UsePipes(
+    new ValidationPipe({
+      transform: true,
+      whitelist: true,
+      forbidNonWhitelisted: true,
+    }),
+  )
   async createReservationCalendar(
     @Param('id', ParseIntPipe) organisationId: number,
     @Body() createDto: CreateReservationCalendarDto,
     @GetUser() user: User,
   ) {
-    const reservationCalendar = await this.reservationCalendarService.createReservationCalendar(
-      organisationId,
-      createDto,
-      user,
-    );
+    const reservationCalendar =
+      await this.reservationCalendarService.createReservationCalendar(
+        organisationId,
+        createDto,
+        user,
+      );
 
     return {
       message: 'Reservation calendar created successfully',
@@ -66,10 +75,13 @@ export class ReservationCalendarController {
    */
   @Get('organisations/:id/reservation-calendars')
   @UseGuards(OrganisationAdminGuard)
-  async getOrganisationReservationCalendars(@Param('id', ParseIntPipe) organisationId: number) {
-    const calendars = await this.reservationCalendarService.getOrganisationReservationCalendars(
-      organisationId,
-    );
+  async getOrganisationReservationCalendars(
+    @Param('id', ParseIntPipe) organisationId: number,
+  ) {
+    const calendars =
+      await this.reservationCalendarService.getOrganisationReservationCalendars(
+        organisationId,
+      );
 
     return {
       message: 'Organisation reservation calendars retrieved successfully',
@@ -82,7 +94,13 @@ export class ReservationCalendarController {
    * Accessible by global admins and organisation admins
    */
   @Post('reservation-calendars/:id/roles')
-  @UsePipes(new ValidationPipe({ transform: true, whitelist: true, forbidNonWhitelisted: true }))
+  @UsePipes(
+    new ValidationPipe({
+      transform: true,
+      whitelist: true,
+      forbidNonWhitelisted: true,
+    }),
+  )
   async assignCalendarRole(
     @Param('id', ParseIntPipe) reservationCalendarId: number,
     @Body() assignRoleDto: AssignRoleDto,
@@ -110,7 +128,11 @@ export class ReservationCalendarController {
     @Param('userId', ParseIntPipe) userId: number,
     @GetUser() user: User,
   ) {
-    await this.reservationCalendarService.removeCalendarRole(reservationCalendarId, userId, user);
+    await this.reservationCalendarService.removeCalendarRole(
+      reservationCalendarId,
+      userId,
+      user,
+    );
 
     return {
       message: 'Calendar role removed successfully',
@@ -123,8 +145,12 @@ export class ReservationCalendarController {
    */
   @Get('reservation-calendars/:id/roles')
   @UseGuards(ReservationCalendarGuard)
-  async getCalendarRoles(@Param('id', ParseIntPipe) reservationCalendarId: number) {
-    const roles = await this.reservationCalendarService.getCalendarRoles(reservationCalendarId);
+  async getCalendarRoles(
+    @Param('id', ParseIntPipe) reservationCalendarId: number,
+  ) {
+    const roles = await this.reservationCalendarService.getCalendarRoles(
+      reservationCalendarId,
+    );
 
     return {
       message: 'Calendar roles retrieved successfully',
@@ -137,7 +163,10 @@ export class ReservationCalendarController {
    */
   @Get('users/reservation-calendars')
   async getUserReservationCalendars(@GetUser() user: User) {
-    const calendars = await this.reservationCalendarService.getUserReservationCalendars(user.id);
+    const calendars =
+      await this.reservationCalendarService.getUserReservationCalendars(
+        user.id,
+      );
 
     return {
       message: 'User reservation calendars retrieved successfully',

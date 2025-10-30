@@ -54,6 +54,14 @@ export class FeatureFlagsService {
   }
 
   /**
+   * Check if MCP agent integrations are enabled
+   * Controls visibility of Agent settings tab and API endpoints
+   */
+  isAgentIntegrationsEnabled(): boolean {
+    return process.env.ENABLE_AGENT_INTEGRATIONS === 'true';
+  }
+
+  /**
    * Get all feature flags as an object
    * Used by frontend to determine which features to display
    */
@@ -62,12 +70,14 @@ export class FeatureFlagsService {
     calendarSync: boolean;
     reservations: boolean;
     automation: boolean;
+    agents: boolean;
   } {
     return {
       oauth: this.isOAuthEnabled(),
       calendarSync: this.isCalendarSyncEnabled(),
       reservations: this.isReservationsEnabled(),
       automation: this.isAutomationEnabled(),
+      agents: this.isAgentIntegrationsEnabled(),
     };
   }
 }

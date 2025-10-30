@@ -9,7 +9,7 @@
 import React from 'react';
 import { TabBarItem } from '../molecules/TabBarItem';
 
-export type TabId = 'calendar' | 'profile' | 'sync' | 'reservations' | 'automation' | 'admin';
+export type TabId = 'calendar' | 'profile' | 'sync' | 'reservations' | 'automation' | 'agent' | 'admin';
 
 interface Tab {
   id: TabId;
@@ -29,6 +29,7 @@ interface BottomTabBarProps {
     calendarSync: boolean;
     reservations: boolean;
     automation: boolean;
+    agents: boolean;
   };
   canAccessReservations: boolean;
   hideReservationsTab?: boolean;
@@ -43,57 +44,73 @@ export const BottomTabBar: React.FC<BottomTabBarProps> = ({
   canAccessReservations,
   hideReservationsTab = false,
 }) => {
-  // Define all possible tabs
+  // Define all possible tabs with simple text icons for consistency in the CLI preview.
   const allTabs: Tab[] = [
     {
       id: 'calendar',
-      icon: '📅',
+      icon: '[CAL]',
       label: 'Calendar',
       visible: true, // Always visible
     },
     {
       id: 'profile',
-      icon: '👤',
+      icon: '[PRO]',
       label: 'Profile',
       visible: true, // Always visible
     },
     {
+      id: 'agent',
+      icon: '[AGT]',
+      label: 'Agents',
+      visible: featureFlags.agents,
+    },
+    {
       id: 'sync',
-      icon: '🔄',
+      icon: '[SYN]',
       label: 'Sync',
       visible: featureFlags.calendarSync,
     },
     {
-      id: 'reservations',
-      icon: '📆',
-      label: 'Reserve',
-      visible: featureFlags.reservations && canAccessReservations && !hideReservationsTab,
-    },
-    {
       id: 'automation',
-      icon: '🤖',
+      icon: '[AUT]',
       label: 'Auto',
       visible: featureFlags.automation,
     },
     {
+      id: 'reservations',
+      icon: '[RES]',
+      label: 'Reserve',
+      visible: featureFlags.reservations && canAccessReservations && !hideReservationsTab,
+    },
+    {
       id: 'admin',
-      icon: '⚙️',
+      icon: '[ADM]',
       label: 'Admin',
       visible: userRole === 'admin',
     },
   ];
 
-  // Filter to only visible tabs (max 5 for mobile)
-  const visibleTabs = allTabs.filter(tab => tab.visible).slice(0, 5);
+  const tabPriority: Record<TabId, number> = {
+    calendar: 0,
+    profile: 1,
+    agent: 2,
+    sync: 3,
+    automation: 4,
+    reservations: 5,
+    admin: 6,
+  };
 
-  // If we have more than 5 features, we need a "More" menu
-  // For now, we'll just show first 5
-  const hasMoreTabs = allTabs.filter(tab => tab.visible).length > 5;
+  const visibleTabs = allTabs
+    .filter((tab) => tab.visible)
+    .sort((a, b) => tabPriority[a.id] - tabPriority[b.id]);
+
+  const displayedTabs = visibleTabs.slice(0, 5);
+  const hasMoreTabs = visibleTabs.length > displayedTabs.length;
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 safe-area-bottom">
       <div className="flex items-stretch h-16">
-        {visibleTabs.map((tab) => (
+        {displayedTabs.map((tab) => (
           <TabBarItem
             key={tab.id}
             icon={tab.icon}
@@ -109,11 +126,11 @@ export const BottomTabBar: React.FC<BottomTabBarProps> = ({
         {/* "More" button if needed (future enhancement) */}
         {hasMoreTabs && (
           <TabBarItem
-            icon="⋯"
+            icon="[MORE]"
             label="More"
             isActive={false}
             onClick={() => {
-              // Show more menu
+              // Placeholder for future overflow menu.
             }}
             themeColor={themeColor}
           />
@@ -125,3 +142,4 @@ export const BottomTabBar: React.FC<BottomTabBarProps> = ({
     </div>
   );
 };
+

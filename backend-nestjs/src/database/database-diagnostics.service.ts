@@ -27,8 +27,14 @@ export class DatabaseDiagnosticsService {
       const username = this.configService.get('DB_USERNAME', 'postgres');
       const database = this.configService.get('DB_NAME', 'cal3');
       const ssl = this.configService.get('DB_SSL', 'false');
-      const sslRejectUnauthorized = this.configService.get('DB_SSL_REJECT_UNAUTHORIZED', 'true');
-      const connectionTimeout = this.configService.get('DB_CONNECTION_TIMEOUT', '10000');
+      const sslRejectUnauthorized = this.configService.get(
+        'DB_SSL_REJECT_UNAUTHORIZED',
+        'true',
+      );
+      const connectionTimeout = this.configService.get(
+        'DB_CONNECTION_TIMEOUT',
+        '10000',
+      );
       const idleTimeout = this.configService.get('DB_IDLE_TIMEOUT', '30000');
       const poolMax = this.configService.get('DB_POOL_MAX', '10');
       const poolMin = this.configService.get('DB_POOL_MIN', '2');
@@ -40,7 +46,9 @@ export class DatabaseDiagnosticsService {
       this.logger.log(`Port: ${port}`);
       this.logger.log(`Database: ${database}`);
       this.logger.log(`Username: ${username}`);
-      this.logger.log(`Password: ${this.configService.get('DB_PASSWORD') ? '[SET - ' + this.configService.get('DB_PASSWORD').length + ' chars]' : '[NOT SET]'}`);
+      this.logger.log(
+        `Password: ${this.configService.get('DB_PASSWORD') ? '[SET - ' + this.configService.get('DB_PASSWORD').length + ' chars]' : '[NOT SET]'}`,
+      );
       this.logger.log(`SSL Enabled: ${ssl}`);
       this.logger.log(`SSL Reject Unauthorized: ${sslRejectUnauthorized}`);
       this.logger.log(`Connection Timeout: ${connectionTimeout}ms`);
@@ -52,19 +60,30 @@ export class DatabaseDiagnosticsService {
 
       // Connection string (without password)
       const sslParam = ssl === 'true' ? '?ssl=true' : '';
-      this.logger.log(`Connection String: postgresql://${username}:***@${host}:${port}/${database}${sslParam}`);
+      this.logger.log(
+        `Connection String: postgresql://${username}:***@${host}:${port}/${database}${sslParam}`,
+      );
 
       // Warnings
       if (host.includes('azure.com') || host.includes('amazonaws.com')) {
-        this.logger.warn('⚠️  Detected cloud database provider - ensure firewall rules allow this IP');
+        this.logger.warn(
+          '⚠️  Detected cloud database provider - ensure firewall rules allow this IP',
+        );
       }
 
       if (parseInt(connectionTimeout) < 30000) {
-        this.logger.warn('⚠️  Connection timeout is less than 30 seconds - may be insufficient for cloud databases');
+        this.logger.warn(
+          '⚠️  Connection timeout is less than 30 seconds - may be insufficient for cloud databases',
+        );
       }
 
-      if (ssl !== 'true' && (host.includes('azure.com') || host.includes('amazonaws.com'))) {
-        this.logger.warn('⚠️  SSL is not enabled but connecting to cloud database - this may fail');
+      if (
+        ssl !== 'true' &&
+        (host.includes('azure.com') || host.includes('amazonaws.com'))
+      ) {
+        this.logger.warn(
+          '⚠️  SSL is not enabled but connecting to cloud database - this may fail',
+        );
       }
     } else {
       const database = this.configService.get('DB_DATABASE', 'cal3.db');
@@ -80,7 +99,9 @@ export class DatabaseDiagnosticsService {
    */
   logConnectionAttempt(attemptNumber: number = 1): void {
     const timestamp = new Date().toISOString();
-    this.logger.log(`[${timestamp}] 🔌 Connection Attempt #${attemptNumber} - Starting...`);
+    this.logger.log(
+      `[${timestamp}] 🔌 Connection Attempt #${attemptNumber} - Starting...`,
+    );
   }
 
   /**
@@ -88,15 +109,23 @@ export class DatabaseDiagnosticsService {
    */
   logConnectionSuccess(duration: number): void {
     const timestamp = new Date().toISOString();
-    this.logger.log(`[${timestamp}] ✅ Connection Successful! (took ${duration}ms)`);
+    this.logger.log(
+      `[${timestamp}] ✅ Connection Successful! (took ${duration}ms)`,
+    );
   }
 
   /**
    * Log connection failure with detailed error
    */
-  logConnectionFailure(error: any, attemptNumber: number, willRetry: boolean): void {
+  logConnectionFailure(
+    error: any,
+    attemptNumber: number,
+    willRetry: boolean,
+  ): void {
     const timestamp = new Date().toISOString();
-    this.logger.error(`[${timestamp}] ❌ Connection Failed - Attempt #${attemptNumber}`);
+    this.logger.error(
+      `[${timestamp}] ❌ Connection Failed - Attempt #${attemptNumber}`,
+    );
     this.logger.error(`Error Type: ${error.name || 'Unknown'}`);
     this.logger.error(`Error Message: ${error.message || 'No message'}`);
 
@@ -106,54 +135,148 @@ export class DatabaseDiagnosticsService {
 
     // Provide specific diagnostics based on error type
     if (error.message?.includes('timeout')) {
-      this.logger.error('┌─────────────────────────────────────────────────────────┐');
-      this.logger.error('│ DIAGNOSIS: CONNECTION TIMEOUT                           │');
-      this.logger.error('├─────────────────────────────────────────────────────────┤');
-      this.logger.error('│ Most common causes:                                     │');
-      this.logger.error('│ 1. Firewall blocking connection (Azure/AWS)            │');
-      this.logger.error('│ 2. Database server is down or unreachable              │');
-      this.logger.error('│ 3. Network routing issue                                │');
-      this.logger.error('│ 4. Incorrect host/port configuration                    │');
-      this.logger.error('├─────────────────────────────────────────────────────────┤');
-      this.logger.error('│ Solutions:                                              │');
-      this.logger.error('│ • Add your IP to database firewall rules               │');
-      this.logger.error('│ • Verify DB_HOST and DB_PORT are correct               │');
-      this.logger.error('│ • Test connection: nc -zv <host> <port>                │');
-      this.logger.error('│ • Check container can reach internet: ping 8.8.8.8     │');
-      this.logger.error('└─────────────────────────────────────────────────────────┘');
+      this.logger.error(
+        '┌─────────────────────────────────────────────────────────┐',
+      );
+      this.logger.error(
+        '│ DIAGNOSIS: CONNECTION TIMEOUT                           │',
+      );
+      this.logger.error(
+        '├─────────────────────────────────────────────────────────┤',
+      );
+      this.logger.error(
+        '│ Most common causes:                                     │',
+      );
+      this.logger.error(
+        '│ 1. Firewall blocking connection (Azure/AWS)            │',
+      );
+      this.logger.error(
+        '│ 2. Database server is down or unreachable              │',
+      );
+      this.logger.error(
+        '│ 3. Network routing issue                                │',
+      );
+      this.logger.error(
+        '│ 4. Incorrect host/port configuration                    │',
+      );
+      this.logger.error(
+        '├─────────────────────────────────────────────────────────┤',
+      );
+      this.logger.error(
+        '│ Solutions:                                              │',
+      );
+      this.logger.error(
+        '│ • Add your IP to database firewall rules               │',
+      );
+      this.logger.error(
+        '│ • Verify DB_HOST and DB_PORT are correct               │',
+      );
+      this.logger.error(
+        '│ • Test connection: nc -zv <host> <port>                │',
+      );
+      this.logger.error(
+        '│ • Check container can reach internet: ping 8.8.8.8     │',
+      );
+      this.logger.error(
+        '└─────────────────────────────────────────────────────────┘',
+      );
     } else if (error.message?.includes('password')) {
-      this.logger.error('┌─────────────────────────────────────────────────────────┐');
-      this.logger.error('│ DIAGNOSIS: AUTHENTICATION FAILED                        │');
-      this.logger.error('├─────────────────────────────────────────────────────────┤');
-      this.logger.error('│ • Verify DB_USERNAME is correct                         │');
-      this.logger.error('│ • Verify DB_PASSWORD is correct                         │');
-      this.logger.error('│ • Check password for special characters                 │');
-      this.logger.error('└─────────────────────────────────────────────────────────┘');
-    } else if (error.message?.includes('ENOTFOUND') || error.message?.includes('getaddrinfo')) {
-      this.logger.error('┌─────────────────────────────────────────────────────────┐');
-      this.logger.error('│ DIAGNOSIS: DNS RESOLUTION FAILED                        │');
-      this.logger.error('├─────────────────────────────────────────────────────────┤');
-      this.logger.error('│ • Cannot resolve hostname to IP address                 │');
-      this.logger.error('│ • Test DNS: nslookup <hostname>                         │');
-      this.logger.error('│ • Verify DB_HOST is spelled correctly                   │');
-      this.logger.error('│ • Check container has DNS access                        │');
-      this.logger.error('└─────────────────────────────────────────────────────────┘');
+      this.logger.error(
+        '┌─────────────────────────────────────────────────────────┐',
+      );
+      this.logger.error(
+        '│ DIAGNOSIS: AUTHENTICATION FAILED                        │',
+      );
+      this.logger.error(
+        '├─────────────────────────────────────────────────────────┤',
+      );
+      this.logger.error(
+        '│ • Verify DB_USERNAME is correct                         │',
+      );
+      this.logger.error(
+        '│ • Verify DB_PASSWORD is correct                         │',
+      );
+      this.logger.error(
+        '│ • Check password for special characters                 │',
+      );
+      this.logger.error(
+        '└─────────────────────────────────────────────────────────┘',
+      );
+    } else if (
+      error.message?.includes('ENOTFOUND') ||
+      error.message?.includes('getaddrinfo')
+    ) {
+      this.logger.error(
+        '┌─────────────────────────────────────────────────────────┐',
+      );
+      this.logger.error(
+        '│ DIAGNOSIS: DNS RESOLUTION FAILED                        │',
+      );
+      this.logger.error(
+        '├─────────────────────────────────────────────────────────┤',
+      );
+      this.logger.error(
+        '│ • Cannot resolve hostname to IP address                 │',
+      );
+      this.logger.error(
+        '│ • Test DNS: nslookup <hostname>                         │',
+      );
+      this.logger.error(
+        '│ • Verify DB_HOST is spelled correctly                   │',
+      );
+      this.logger.error(
+        '│ • Check container has DNS access                        │',
+      );
+      this.logger.error(
+        '└─────────────────────────────────────────────────────────┘',
+      );
     } else if (error.message?.includes('ECONNREFUSED')) {
-      this.logger.error('┌─────────────────────────────────────────────────────────┐');
-      this.logger.error('│ DIAGNOSIS: CONNECTION REFUSED                           │');
-      this.logger.error('├─────────────────────────────────────────────────────────┤');
-      this.logger.error('│ • Database server is not accepting connections          │');
-      this.logger.error('│ • Wrong port number                                     │');
-      this.logger.error('│ • Database service is not running                       │');
-      this.logger.error('└─────────────────────────────────────────────────────────┘');
-    } else if (error.message?.includes('SSL') || error.message?.includes('ssl')) {
-      this.logger.error('┌─────────────────────────────────────────────────────────┐');
-      this.logger.error('│ DIAGNOSIS: SSL/TLS ERROR                                │');
-      this.logger.error('├─────────────────────────────────────────────────────────┤');
-      this.logger.error('│ • SSL configuration mismatch                            │');
-      this.logger.error('│ • Try DB_SSL=true or DB_SSL=false                       │');
-      this.logger.error('│ • Try DB_SSL_REJECT_UNAUTHORIZED=false                  │');
-      this.logger.error('└─────────────────────────────────────────────────────────┘');
+      this.logger.error(
+        '┌─────────────────────────────────────────────────────────┐',
+      );
+      this.logger.error(
+        '│ DIAGNOSIS: CONNECTION REFUSED                           │',
+      );
+      this.logger.error(
+        '├─────────────────────────────────────────────────────────┤',
+      );
+      this.logger.error(
+        '│ • Database server is not accepting connections          │',
+      );
+      this.logger.error(
+        '│ • Wrong port number                                     │',
+      );
+      this.logger.error(
+        '│ • Database service is not running                       │',
+      );
+      this.logger.error(
+        '└─────────────────────────────────────────────────────────┘',
+      );
+    } else if (
+      error.message?.includes('SSL') ||
+      error.message?.includes('ssl')
+    ) {
+      this.logger.error(
+        '┌─────────────────────────────────────────────────────────┐',
+      );
+      this.logger.error(
+        '│ DIAGNOSIS: SSL/TLS ERROR                                │',
+      );
+      this.logger.error(
+        '├─────────────────────────────────────────────────────────┤',
+      );
+      this.logger.error(
+        '│ • SSL configuration mismatch                            │',
+      );
+      this.logger.error(
+        '│ • Try DB_SSL=true or DB_SSL=false                       │',
+      );
+      this.logger.error(
+        '│ • Try DB_SSL_REJECT_UNAUTHORIZED=false                  │',
+      );
+      this.logger.error(
+        '└─────────────────────────────────────────────────────────┘',
+      );
     }
 
     if (willRetry) {
@@ -162,7 +285,9 @@ export class DatabaseDiagnosticsService {
       this.logger.error('🛑 No more retries - application will fail to start');
     }
 
-    this.logger.error('────────────────────────────────────────────────────────────');
+    this.logger.error(
+      '────────────────────────────────────────────────────────────',
+    );
   }
 
   /**

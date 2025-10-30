@@ -1,7 +1,10 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { AutomationAction, ActionType } from '../../entities/automation-action.entity';
+import {
+  AutomationAction,
+  ActionType,
+} from '../../entities/automation-action.entity';
 import { Event } from '../../entities/event.entity';
 import {
   IActionExecutor,
@@ -39,14 +42,16 @@ export class UpdateEventTitleExecutor implements IActionExecutor, OnModuleInit {
         throw new Error('No event available to update');
       }
 
-      const interpolatedConfig = this.smartValuesService.interpolateObjectValues(
-        action.actionConfig || {},
-        context,
-      );
+      const interpolatedConfig =
+        this.smartValuesService.interpolateObjectValues(
+          action.actionConfig || {},
+          context,
+        );
       this.validateConfig(interpolatedConfig);
 
       const mode: TitleMode =
-        (interpolatedConfig.mode as TitleMode) && ['replace', 'append', 'prepend'].includes(interpolatedConfig.mode)
+        (interpolatedConfig.mode as TitleMode) &&
+        ['replace', 'append', 'prepend'].includes(interpolatedConfig.mode)
           ? (interpolatedConfig.mode as TitleMode)
           : 'replace';
       const newTitle = String(interpolatedConfig.newTitle).trim();
@@ -91,15 +96,22 @@ export class UpdateEventTitleExecutor implements IActionExecutor, OnModuleInit {
       throw new Error('Action configuration must be an object');
     }
 
-    if (typeof actionConfig.newTitle !== 'string' || actionConfig.newTitle.trim().length === 0) {
-      throw new Error('Action configuration must include a non-empty "newTitle" string');
+    if (
+      typeof actionConfig.newTitle !== 'string' ||
+      actionConfig.newTitle.trim().length === 0
+    ) {
+      throw new Error(
+        'Action configuration must include a non-empty "newTitle" string',
+      );
     }
 
     if (
       actionConfig.mode !== undefined &&
       !['replace', 'append', 'prepend'].includes(String(actionConfig.mode))
     ) {
-      throw new Error('Title update mode must be one of: replace, append, prepend');
+      throw new Error(
+        'Title update mode must be one of: replace, append, prepend',
+      );
     }
 
     return true;

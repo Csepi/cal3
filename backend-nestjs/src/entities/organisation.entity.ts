@@ -61,7 +61,10 @@ export class Organisation {
   organisationAdmins: OrganisationAdmin[];
 
   // Reservation calendar relationships
-  @OneToMany(() => ReservationCalendar, (reservationCalendar) => reservationCalendar.organisation)
+  @OneToMany(
+    () => ReservationCalendar,
+    (reservationCalendar) => reservationCalendar.organisation,
+  )
   reservationCalendars: ReservationCalendar[];
 
   @CreateDateColumn()

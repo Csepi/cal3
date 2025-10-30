@@ -2,8 +2,15 @@ import { Injectable, OnModuleInit } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Event } from '../../entities/event.entity';
-import { AutomationAction, ActionType } from '../../entities/automation-action.entity';
-import { IActionExecutor, ActionExecutionResult, ActionExecutionContext } from './action-executor.interface';
+import {
+  AutomationAction,
+  ActionType,
+} from '../../entities/automation-action.entity';
+import {
+  IActionExecutor,
+  ActionExecutionResult,
+  ActionExecutionContext,
+} from './action-executor.interface';
 import { ActionExecutorRegistry } from './action-executor-registry';
 import { AutomationSmartValuesService } from '../automation-smart-values.service';
 
@@ -33,7 +40,10 @@ export class SetEventColorExecutor implements IActionExecutor, OnModuleInit {
    * @param context The execution context (includes event and webhook data)
    * @returns Execution result
    */
-  async execute(action: AutomationAction, context: ActionExecutionContext): Promise<ActionExecutionResult> {
+  async execute(
+    action: AutomationAction,
+    context: ActionExecutionContext,
+  ): Promise<ActionExecutionResult> {
     const executedAt = new Date();
 
     try {
@@ -43,16 +53,18 @@ export class SetEventColorExecutor implements IActionExecutor, OnModuleInit {
           success: false,
           actionId: action.id,
           actionType: this.actionType,
-          error: 'No event available to modify (webhook triggers cannot modify events)',
+          error:
+            'No event available to modify (webhook triggers cannot modify events)',
           executedAt,
         };
       }
 
       // Interpolate smart values in action configuration
-      const interpolatedConfig = this.smartValuesService.interpolateObjectValues(
-        action.actionConfig,
-        context,
-      );
+      const interpolatedConfig =
+        this.smartValuesService.interpolateObjectValues(
+          action.actionConfig,
+          context,
+        );
 
       // Validate configuration (after interpolation)
       this.validateConfig(interpolatedConfig);

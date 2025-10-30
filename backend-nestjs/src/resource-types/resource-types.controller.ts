@@ -1,7 +1,22 @@
-import { Controller, Get, Post, Patch, Delete, Body, Param, Query, UseGuards, Req, ForbiddenException } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Delete,
+  Body,
+  Param,
+  Query,
+  UseGuards,
+  Req,
+  ForbiddenException,
+} from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { ResourceTypesService } from './resource-types.service';
-import { CreateResourceTypeDto, UpdateResourceTypeDto } from '../dto/resource-type.dto';
+import {
+  CreateResourceTypeDto,
+  UpdateResourceTypeDto,
+} from '../dto/resource-type.dto';
 import { UserPermissionsService } from '../common/services/user-permissions.service';
 import { CascadeDeletionService } from '../common/services/cascade-deletion.service';
 
@@ -20,27 +35,50 @@ export class ResourceTypesController {
   }
 
   @Get()
-  async findAll(@Query('organisationId') organisationId?: string, @Req() req?: any) {
-    console.log('🔍 ResourceTypesController.findAll called for user:', req.user.id, 'username:', req.user.username);
+  async findAll(
+    @Query('organisationId') organisationId?: string,
+    @Req() req?: any,
+  ) {
+    console.log(
+      '🔍 ResourceTypesController.findAll called for user:',
+      req.user.id,
+      'username:',
+      req.user.username,
+    );
 
     // Get user's accessible organizations
-    const organizations = await this.userPermissionsService.getUserAccessibleOrganizations(req.user.id);
-    const organizationIds = organizations.map(org => org.id);
+    const organizations =
+      await this.userPermissionsService.getUserAccessibleOrganizations(
+        req.user.id,
+      );
+    const organizationIds = organizations.map((org) => org.id);
 
-    console.log('📋 User accessible organization IDs for resource types:', organizationIds);
+    console.log(
+      '📋 User accessible organization IDs for resource types:',
+      organizationIds,
+    );
 
     if (organizationIds.length === 0) {
-      console.log('⚠️  No accessible organizations - returning empty resource types');
+      console.log(
+        '⚠️  No accessible organizations - returning empty resource types',
+      );
       return [];
     }
 
     // If a specific organisationId is requested, make sure it's in the user's accessible list
     if (organisationId && !organizationIds.includes(+organisationId)) {
-      console.log('⚠️  Requested organization ID', organisationId, 'not accessible - returning empty');
+      console.log(
+        '⚠️  Requested organization ID',
+        organisationId,
+        'not accessible - returning empty',
+      );
       return [];
     }
 
-    return await this.resourceTypesService.findAllByOrganizations(organizationIds, organisationId ? +organisationId : undefined);
+    return await this.resourceTypesService.findAllByOrganizations(
+      organizationIds,
+      organisationId ? +organisationId : undefined,
+    );
   }
 
   @Get(':id')
@@ -49,7 +87,10 @@ export class ResourceTypesController {
   }
 
   @Patch(':id')
-  async update(@Param('id') id: string, @Body() updateDto: UpdateResourceTypeDto) {
+  async update(
+    @Param('id') id: string,
+    @Body() updateDto: UpdateResourceTypeDto,
+  ) {
     return await this.resourceTypesService.update(+id, updateDto);
   }
 
@@ -70,7 +111,8 @@ export class ResourceTypesController {
     const resourceTypeId = +id;
 
     // Get the resource type to check organization access
-    const resourceType = await this.resourceTypesService.findOne(resourceTypeId);
+    const resourceType =
+      await this.resourceTypesService.findOne(resourceTypeId);
     if (!resourceType) {
       throw new ForbiddenException('Resource type not found');
     }
@@ -81,10 +123,14 @@ export class ResourceTypesController {
       resourceTypeId,
     );
     if (!canManage) {
-      throw new ForbiddenException('You do not have permission to view deletion preview for this resource type');
+      throw new ForbiddenException(
+        'You do not have permission to view deletion preview for this resource type',
+      );
     }
 
-    return await this.cascadeDeletionService.previewResourceTypeDeletion(resourceTypeId);
+    return await this.cascadeDeletionService.previewResourceTypeDeletion(
+      resourceTypeId,
+    );
   }
 
   /**
@@ -96,7 +142,8 @@ export class ResourceTypesController {
     const resourceTypeId = +id;
 
     // Get the resource type to check organization access
-    const resourceType = await this.resourceTypesService.findOne(resourceTypeId);
+    const resourceType =
+      await this.resourceTypesService.findOne(resourceTypeId);
     if (!resourceType) {
       throw new ForbiddenException('Resource type not found');
     }
@@ -107,10 +154,15 @@ export class ResourceTypesController {
       resourceTypeId,
     );
     if (!canManage) {
-      throw new ForbiddenException('You do not have permission to delete this resource type');
+      throw new ForbiddenException(
+        'You do not have permission to delete this resource type',
+      );
     }
 
-    const result = await this.cascadeDeletionService.deleteResourceType(resourceTypeId, req.user.id);
+    const result = await this.cascadeDeletionService.deleteResourceType(
+      resourceTypeId,
+      req.user.id,
+    );
     return result;
   }
 
@@ -133,9 +185,14 @@ export class ResourceTypesController {
       resourceTypeId,
     );
     if (!canManage) {
-      throw new ForbiddenException('You do not have permission to update this resource type color');
+      throw new ForbiddenException(
+        'You do not have permission to update this resource type color',
+      );
     }
 
-    return await this.resourceTypesService.updateColor(resourceTypeId, body.color);
+    return await this.resourceTypesService.updateColor(
+      resourceTypeId,
+      body.color,
+    );
   }
 }

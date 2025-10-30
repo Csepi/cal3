@@ -1,4 +1,16 @@
-import { IsString, IsOptional, IsArray, ArrayUnique, IsNumber, IsPositive, IsEnum, IsObject, MinLength, MaxLength, IsHexColor } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  IsArray,
+  ArrayUnique,
+  IsNumber,
+  IsPositive,
+  IsEnum,
+  IsObject,
+  MinLength,
+  MaxLength,
+  IsHexColor,
+} from 'class-validator';
 import { Transform, Type } from 'class-transformer';
 import { ReservationCalendarRoleType } from '../../entities/reservation-calendar-role.entity';
 
@@ -37,7 +49,10 @@ export class CreateReservationCalendarDto {
   @IsOptional()
   @IsArray({ message: 'Reviewer user IDs must be an array' })
   @ArrayUnique({ message: 'Reviewer user IDs must be unique' })
-  @IsNumber({}, { each: true, message: 'Each reviewer user ID must be a number' })
+  @IsNumber(
+    {},
+    { each: true, message: 'Each reviewer user ID must be a number' },
+  )
   @IsPositive({ each: true, message: 'Each reviewer user ID must be positive' })
   @Type(() => Number)
   reviewerUserIds?: number[];
@@ -52,7 +67,9 @@ export class AssignRoleDto {
   @Transform(({ value }) => parseInt(value))
   userId: number;
 
-  @IsEnum(ReservationCalendarRoleType, { message: 'Role must be either "editor" or "reviewer"' })
+  @IsEnum(ReservationCalendarRoleType, {
+    message: 'Role must be either "editor" or "reviewer"',
+  })
   role: ReservationCalendarRoleType;
 }
 

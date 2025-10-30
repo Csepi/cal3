@@ -4,7 +4,9 @@ import * as path from 'path';
 
 // Read all entity files
 const entitiesDir = path.join(__dirname, '..', 'entities');
-const entityFiles = fs.readdirSync(entitiesDir).filter(f => f.endsWith('.entity.ts'));
+const entityFiles = fs
+  .readdirSync(entitiesDir)
+  .filter((f) => f.endsWith('.entity.ts'));
 
 console.log('🔍 Analyzing TypeORM Entity Files...\n');
 console.log(`📂 Found ${entityFiles.length} entity files in ${entitiesDir}\n`);
@@ -48,16 +50,16 @@ for (const file of entityFiles) {
     const enumBody = enumMatch[2];
     const enumValues = enumBody
       .split(',')
-      .map(v => v.trim())
-      .filter(v => v)
-      .map(v => {
-        const [key, value] = v.split('=').map(s => s.trim());
+      .map((v) => v.trim())
+      .filter((v) => v)
+      .map((v) => {
+        const [key, value] = v.split('=').map((s) => s.trim());
         return { key, value: value?.replace(/'/g, '') };
       });
 
     tableInfo.enums.push({ name: enumName, values: enumValues });
     console.log(`\n  📌 ENUM: ${enumName}`);
-    enumValues.forEach(ev => console.log(`      ${ev.key} = ${ev.value}`));
+    enumValues.forEach((ev) => console.log(`      ${ev.key} = ${ev.value}`));
   }
 
   // Extract columns
@@ -83,8 +85,17 @@ for (const file of entityFiles) {
     const lengthMatch = config.match(/length:\s*(\d+)/);
     if (lengthMatch) length = `(${lengthMatch[1]})`;
 
-    tableInfo.columns.push({ name, type, nullable, defaultValue, length, unique });
-    console.log(`      ${name.padEnd(35)} ${(type + length).padEnd(25)} ${nullable}${defaultValue}${unique}`);
+    tableInfo.columns.push({
+      name,
+      type,
+      nullable,
+      defaultValue,
+      length,
+      unique,
+    });
+    console.log(
+      `      ${name.padEnd(35)} ${(type + length).padEnd(25)} ${nullable}${defaultValue}${unique}`,
+    );
   }
 
   // Extract primary key
@@ -92,8 +103,16 @@ for (const file of entityFiles) {
   let pkMatch;
   while ((pkMatch = primaryKeyRegex.exec(content)) !== null) {
     const name = pkMatch[1];
-    tableInfo.columns.push({ name, type: 'integer', nullable: 'NOT NULL', defaultValue: '', primary: true });
-    console.log(`      ${name.padEnd(35)} ${'integer'.padEnd(25)} NOT NULL PRIMARY KEY AUTO_INCREMENT`);
+    tableInfo.columns.push({
+      name,
+      type: 'integer',
+      nullable: 'NOT NULL',
+      defaultValue: '',
+      primary: true,
+    });
+    console.log(
+      `      ${name.padEnd(35)} ${'integer'.padEnd(25)} NOT NULL PRIMARY KEY AUTO_INCREMENT`,
+    );
   }
 
   // Extract timestamps
@@ -103,20 +122,35 @@ for (const file of entityFiles) {
   let createMatch;
   while ((createMatch = createDateRegex.exec(content)) !== null) {
     const name = createMatch[1];
-    tableInfo.columns.push({ name, type: 'timestamp', nullable: 'NOT NULL', defaultValue: ' DEFAULT CURRENT_TIMESTAMP' });
-    console.log(`      ${name.padEnd(35)} ${'timestamp'.padEnd(25)} NOT NULL DEFAULT CURRENT_TIMESTAMP`);
+    tableInfo.columns.push({
+      name,
+      type: 'timestamp',
+      nullable: 'NOT NULL',
+      defaultValue: ' DEFAULT CURRENT_TIMESTAMP',
+    });
+    console.log(
+      `      ${name.padEnd(35)} ${'timestamp'.padEnd(25)} NOT NULL DEFAULT CURRENT_TIMESTAMP`,
+    );
   }
 
   let updateMatch;
   while ((updateMatch = updateDateRegex.exec(content)) !== null) {
     const name = updateMatch[1];
-    tableInfo.columns.push({ name, type: 'timestamp', nullable: 'NOT NULL', defaultValue: ' DEFAULT CURRENT_TIMESTAMP' });
-    console.log(`      ${name.padEnd(35)} ${'timestamp'.padEnd(25)} NOT NULL DEFAULT CURRENT_TIMESTAMP`);
+    tableInfo.columns.push({
+      name,
+      type: 'timestamp',
+      nullable: 'NOT NULL',
+      defaultValue: ' DEFAULT CURRENT_TIMESTAMP',
+    });
+    console.log(
+      `      ${name.padEnd(35)} ${'timestamp'.padEnd(25)} NOT NULL DEFAULT CURRENT_TIMESTAMP`,
+    );
   }
 
   // Extract relations
   console.log('\n  RELATIONS:');
-  const relationRegex = /@(OneToMany|ManyToOne|OneToOne|ManyToMany)\(\(\) => ([^,]+),([^)]+)\)[\s\S]*?(\w+):/g;
+  const relationRegex =
+    /@(OneToMany|ManyToOne|OneToOne|ManyToMany)\(\(\) => ([^,]+),([^)]+)\)[\s\S]*?(\w+):/g;
   let relMatch;
   while ((relMatch = relationRegex.exec(content)) !== null) {
     const relationType = relMatch[1];
@@ -124,17 +158,27 @@ for (const file of entityFiles) {
     const inverseSide = relMatch[3];
     const propertyName = relMatch[4];
 
-    tableInfo.relations.push({ type: relationType, target: targetEntity, property: propertyName });
-    console.log(`      ${propertyName.padEnd(30)} ${relationType.padEnd(15)} → ${targetEntity}`);
+    tableInfo.relations.push({
+      type: relationType,
+      target: targetEntity,
+      property: propertyName,
+    });
+    console.log(
+      `      ${propertyName.padEnd(30)} ${relationType.padEnd(15)} → ${targetEntity}`,
+    );
 
     // Check for cascade options
-    const cascadeMatch = content.match(new RegExp(`${propertyName}:[\\s\\S]{0,200}cascade:\\s*true`, 'm'));
+    const cascadeMatch = content.match(
+      new RegExp(`${propertyName}:[\\s\\S]{0,200}cascade:\\s*true`, 'm'),
+    );
     if (cascadeMatch) {
       console.log(`        ${''.padEnd(28)} CASCADE: true`);
     }
 
     // Check for onDelete
-    const onDeleteMatch = content.match(new RegExp(`${propertyName}:[\\s\\S]{0,200}onDelete:\\s*'([^']+)'`, 'm'));
+    const onDeleteMatch = content.match(
+      new RegExp(`${propertyName}:[\\s\\S]{0,200}onDelete:\\s*'([^']+)'`, 'm'),
+    );
     if (onDeleteMatch) {
       console.log(`        ${''.padEnd(28)} ON DELETE: ${onDeleteMatch[1]}`);
     }
@@ -145,7 +189,9 @@ for (const file of entityFiles) {
   let uniqueMatch;
   const uniqueConstraints: string[][] = [];
   while ((uniqueMatch = uniqueRegex.exec(content)) !== null) {
-    const columns = uniqueMatch[1].split(',').map(c => c.trim().replace(/'/g, ''));
+    const columns = uniqueMatch[1]
+      .split(',')
+      .map((c) => c.trim().replace(/'/g, ''));
     uniqueConstraints.push(columns);
   }
 
@@ -181,12 +227,19 @@ console.log(`  Total Enums: ${totalEnums}`);
 
 console.log('\n📋 TABLE LIST:');
 for (const table of schemaInfo.tables) {
-  console.log(`  - ${table.tableName.padEnd(45)} (${table.columns.length} columns, ${table.relations.length} relations)`);
+  console.log(
+    `  - ${table.tableName.padEnd(45)} (${table.columns.length} columns, ${table.relations.length} relations)`,
+  );
 }
 
 console.log('\n✅ Schema extraction completed successfully!\n');
 
 // Write to JSON file for comparison
-const outputPath = path.join(__dirname, '..', '..', 'schema-extraction-output.json');
+const outputPath = path.join(
+  __dirname,
+  '..',
+  '..',
+  'schema-extraction-output.json',
+);
 fs.writeFileSync(outputPath, JSON.stringify(schemaInfo, null, 2));
 console.log(`📄 Schema data saved to: ${outputPath}\n`);

@@ -50,7 +50,9 @@ export class CascadeDeletionService {
   /**
    * Preview what will be deleted when deleting an organization
    */
-  async previewOrganizationDeletion(organisationId: number): Promise<CascadeDeletePreview> {
+  async previewOrganizationDeletion(
+    organisationId: number,
+  ): Promise<CascadeDeletePreview> {
     const organisation = await this.organisationRepository.findOne({
       where: { id: organisationId },
       relations: ['resourceTypes'],
@@ -60,7 +62,7 @@ export class CascadeDeletionService {
       throw new NotFoundException(`Organisation #${organisationId} not found`);
     }
 
-    const resourceTypeIds = organisation.resourceTypes.map(rt => rt.id);
+    const resourceTypeIds = organisation.resourceTypes.map((rt) => rt.id);
     let resourceCount = 0;
     let reservationCount = 0;
     const details: string[] = [];
@@ -74,7 +76,10 @@ export class CascadeDeletionService {
         .getMany();
 
       resourceCount = resources.length;
-      reservationCount = resources.reduce((sum, r) => sum + (r.reservations?.length || 0), 0);
+      reservationCount = resources.reduce(
+        (sum, r) => sum + (r.reservations?.length || 0),
+        0,
+      );
 
       details.push(`Organisation: ${organisation.name}`);
       details.push(`${resourceTypeIds.length} resource type(s)`);
@@ -99,7 +104,10 @@ export class CascadeDeletionService {
   /**
    * Delete an organization and all its related entities
    */
-  async deleteOrganization(organisationId: number, userId: number): Promise<CascadeDeleteResult> {
+  async deleteOrganization(
+    organisationId: number,
+    userId: number,
+  ): Promise<CascadeDeleteResult> {
     const preview = await this.previewOrganizationDeletion(organisationId);
 
     const queryRunner = this.dataSource.createQueryRunner();
@@ -113,11 +121,13 @@ export class CascadeDeletionService {
       });
 
       if (!organisation) {
-        throw new NotFoundException(`Organisation #${organisationId} not found`);
+        throw new NotFoundException(
+          `Organisation #${organisationId} not found`,
+        );
       }
 
       // Delete reservations first
-      const resourceTypeIds = organisation.resourceTypes.map(rt => rt.id);
+      const resourceTypeIds = organisation.resourceTypes.map((rt) => rt.id);
       if (resourceTypeIds.length > 0) {
         const resources = await queryRunner.manager.find(Resource, {
           where: { resourceType: { id: In(resourceTypeIds) } } as any,
@@ -125,29 +135,37 @@ export class CascadeDeletionService {
         });
 
         const reservationIds = resources
-          .flatMap(r => r.reservations || [])
-          .map(res => res.id);
+          .flatMap((r) => r.reservations || [])
+          .map((res) => res.id);
 
         if (reservationIds.length > 0) {
           await queryRunner.manager.delete(Reservation, reservationIds);
-          this.logger.log(`Deleted ${reservationIds.length} reservations for organisation ${organisationId}`);
+          this.logger.log(
+            `Deleted ${reservationIds.length} reservations for organisation ${organisationId}`,
+          );
         }
 
         // Delete resources
-        const resourceIds = resources.map(r => r.id);
+        const resourceIds = resources.map((r) => r.id);
         if (resourceIds.length > 0) {
           await queryRunner.manager.delete(Resource, resourceIds);
-          this.logger.log(`Deleted ${resourceIds.length} resources for organisation ${organisationId}`);
+          this.logger.log(
+            `Deleted ${resourceIds.length} resources for organisation ${organisationId}`,
+          );
         }
 
         // Delete resource types
         await queryRunner.manager.delete(ResourceType, resourceTypeIds);
-        this.logger.log(`Deleted ${resourceTypeIds.length} resource types for organisation ${organisationId}`);
+        this.logger.log(
+          `Deleted ${resourceTypeIds.length} resource types for organisation ${organisationId}`,
+        );
       }
 
       // Finally delete the organization
       await queryRunner.manager.delete(Organisation, organisationId);
-      this.logger.log(`Deleted organisation ${organisationId} by user ${userId}`);
+      this.logger.log(
+        `Deleted organisation ${organisationId} by user ${userId}`,
+      );
 
       await queryRunner.commitTransaction();
 
@@ -158,7 +176,10 @@ export class CascadeDeletionService {
       };
     } catch (error) {
       await queryRunner.rollbackTransaction();
-      this.logger.error(`Failed to delete organisation ${organisationId}:`, error);
+      this.logger.error(
+        `Failed to delete organisation ${organisationId}:`,
+        error,
+      );
       throw error;
     } finally {
       await queryRunner.release();
@@ -168,7 +189,9 @@ export class CascadeDeletionService {
   /**
    * Preview what will be deleted when deleting a resource type
    */
-  async previewResourceTypeDeletion(resourceTypeId: number): Promise<CascadeDeletePreview> {
+  async previewResourceTypeDeletion(
+    resourceTypeId: number,
+  ): Promise<CascadeDeletePreview> {
     const resourceType = await this.resourceTypeRepository.findOne({
       where: { id: resourceTypeId },
       relations: ['resources', 'resources.reservations'],
@@ -179,10 +202,11 @@ export class CascadeDeletionService {
     }
 
     const resourceCount = resourceType.resources?.length || 0;
-    const reservationCount = resourceType.resources?.reduce(
-      (sum, r) => sum + (r.reservations?.length || 0),
-      0,
-    ) || 0;
+    const reservationCount =
+      resourceType.resources?.reduce(
+        (sum, r) => sum + (r.reservations?.length || 0),
+        0,
+      ) || 0;
 
     const details: string[] = [
       `Resource Type: ${resourceType.name}`,
@@ -201,7 +225,10 @@ export class CascadeDeletionService {
   /**
    * Delete a resource type and all its related entities
    */
-  async deleteResourceType(resourceTypeId: number, userId: number): Promise<CascadeDeleteResult> {
+  async deleteResourceType(
+    resourceTypeId: number,
+    userId: number,
+  ): Promise<CascadeDeleteResult> {
     const preview = await this.previewResourceTypeDeletion(resourceTypeId);
 
     const queryRunner = this.dataSource.createQueryRunner();
@@ -215,29 +242,38 @@ export class CascadeDeletionService {
       });
 
       if (!resourceType) {
-        throw new NotFoundException(`ResourceType #${resourceTypeId} not found`);
+        throw new NotFoundException(
+          `ResourceType #${resourceTypeId} not found`,
+        );
       }
 
       // Delete reservations
-      const reservationIds = resourceType.resources
-        ?.flatMap(r => r.reservations || [])
-        .map(res => res.id) || [];
+      const reservationIds =
+        resourceType.resources
+          ?.flatMap((r) => r.reservations || [])
+          .map((res) => res.id) || [];
 
       if (reservationIds.length > 0) {
         await queryRunner.manager.delete(Reservation, reservationIds);
-        this.logger.log(`Deleted ${reservationIds.length} reservations for resource type ${resourceTypeId}`);
+        this.logger.log(
+          `Deleted ${reservationIds.length} reservations for resource type ${resourceTypeId}`,
+        );
       }
 
       // Delete resources
-      const resourceIds = resourceType.resources?.map(r => r.id) || [];
+      const resourceIds = resourceType.resources?.map((r) => r.id) || [];
       if (resourceIds.length > 0) {
         await queryRunner.manager.delete(Resource, resourceIds);
-        this.logger.log(`Deleted ${resourceIds.length} resources for resource type ${resourceTypeId}`);
+        this.logger.log(
+          `Deleted ${resourceIds.length} resources for resource type ${resourceTypeId}`,
+        );
       }
 
       // Delete resource type
       await queryRunner.manager.delete(ResourceType, resourceTypeId);
-      this.logger.log(`Deleted resource type ${resourceTypeId} by user ${userId}`);
+      this.logger.log(
+        `Deleted resource type ${resourceTypeId} by user ${userId}`,
+      );
 
       await queryRunner.commitTransaction();
 
@@ -248,7 +284,10 @@ export class CascadeDeletionService {
       };
     } catch (error) {
       await queryRunner.rollbackTransaction();
-      this.logger.error(`Failed to delete resource type ${resourceTypeId}:`, error);
+      this.logger.error(
+        `Failed to delete resource type ${resourceTypeId}:`,
+        error,
+      );
       throw error;
     } finally {
       await queryRunner.release();
@@ -258,7 +297,9 @@ export class CascadeDeletionService {
   /**
    * Preview what will be deleted when deleting a resource
    */
-  async previewResourceDeletion(resourceId: number): Promise<CascadeDeletePreview> {
+  async previewResourceDeletion(
+    resourceId: number,
+  ): Promise<CascadeDeletePreview> {
     const resource = await this.resourceRepository.findOne({
       where: { id: resourceId },
       relations: ['reservations', 'resourceType'],
@@ -286,7 +327,10 @@ export class CascadeDeletionService {
   /**
    * Delete a resource and all its related reservations
    */
-  async deleteResource(resourceId: number, userId: number): Promise<CascadeDeleteResult> {
+  async deleteResource(
+    resourceId: number,
+    userId: number,
+  ): Promise<CascadeDeleteResult> {
     const preview = await this.previewResourceDeletion(resourceId);
 
     const queryRunner = this.dataSource.createQueryRunner();
@@ -304,10 +348,12 @@ export class CascadeDeletionService {
       }
 
       // Delete reservations
-      const reservationIds = resource.reservations?.map(r => r.id) || [];
+      const reservationIds = resource.reservations?.map((r) => r.id) || [];
       if (reservationIds.length > 0) {
         await queryRunner.manager.delete(Reservation, reservationIds);
-        this.logger.log(`Deleted ${reservationIds.length} reservations for resource ${resourceId}`);
+        this.logger.log(
+          `Deleted ${reservationIds.length} reservations for resource ${resourceId}`,
+        );
       }
 
       // Delete resource

@@ -1,11 +1,18 @@
-import { IsString, IsOptional, IsEnum, IsNumber, IsBoolean, IsDateString } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  IsEnum,
+  IsNumber,
+  IsBoolean,
+  IsDateString,
+} from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { EventStatus, RecurrenceType } from '../entities/event.entity';
 
 export enum RecurrenceUpdateMode {
   SINGLE = 'single', // Update only this instance
   ALL = 'all', // Update all instances in the series
-  FUTURE = 'future' // Update this and all future instances
+  FUTURE = 'future', // Update this and all future instances
 }
 
 export class CreateEventDto {
@@ -13,36 +20,57 @@ export class CreateEventDto {
   @IsString()
   title: string;
 
-  @ApiPropertyOptional({ example: 'Weekly team sync meeting', description: 'Event description' })
+  @ApiPropertyOptional({
+    example: 'Weekly team sync meeting',
+    description: 'Event description',
+  })
   @IsOptional()
   @IsString()
   description?: string;
 
-  @ApiProperty({ example: '2025-09-20', description: 'Event start date (YYYY-MM-DD)' })
+  @ApiProperty({
+    example: '2025-09-20',
+    description: 'Event start date (YYYY-MM-DD)',
+  })
   @IsDateString()
   startDate: string;
 
-  @ApiPropertyOptional({ example: '10:00', description: 'Event start time (HH:MM)' })
+  @ApiPropertyOptional({
+    example: '10:00',
+    description: 'Event start time (HH:MM)',
+  })
   @IsOptional()
   @IsString()
   startTime?: string;
 
-  @ApiPropertyOptional({ example: '2025-09-20', description: 'Event end date (YYYY-MM-DD)' })
+  @ApiPropertyOptional({
+    example: '2025-09-20',
+    description: 'Event end date (YYYY-MM-DD)',
+  })
   @IsOptional()
   @IsDateString()
   endDate?: string;
 
-  @ApiPropertyOptional({ example: '11:00', description: 'Event end time (HH:MM)' })
+  @ApiPropertyOptional({
+    example: '11:00',
+    description: 'Event end time (HH:MM)',
+  })
   @IsOptional()
   @IsString()
   endTime?: string;
 
-  @ApiPropertyOptional({ example: false, description: 'Whether event is all-day' })
+  @ApiPropertyOptional({
+    example: false,
+    description: 'Whether event is all-day',
+  })
   @IsOptional()
   @IsBoolean()
   isAllDay?: boolean;
 
-  @ApiPropertyOptional({ example: 'Conference Room A', description: 'Event location' })
+  @ApiPropertyOptional({
+    example: 'Conference Room A',
+    description: 'Event location',
+  })
   @IsOptional()
   @IsString()
   location?: string;
@@ -50,7 +78,7 @@ export class CreateEventDto {
   @ApiPropertyOptional({
     enum: EventStatus,
     example: EventStatus.CONFIRMED,
-    description: 'Event status'
+    description: 'Event status',
   })
   @IsOptional()
   @IsEnum(EventStatus)
@@ -59,7 +87,7 @@ export class CreateEventDto {
   @ApiPropertyOptional({
     enum: RecurrenceType,
     example: RecurrenceType.WEEKLY,
-    description: 'Event recurrence type'
+    description: 'Event recurrence type',
   })
   @IsOptional()
   @IsEnum(RecurrenceType)
@@ -67,12 +95,15 @@ export class CreateEventDto {
 
   @ApiPropertyOptional({
     example: { interval: 1, until: '2024-12-31' },
-    description: 'Recurrence rule configuration (JSON)'
+    description: 'Recurrence rule configuration (JSON)',
   })
   @IsOptional()
   recurrenceRule?: any;
 
-  @ApiPropertyOptional({ example: '#ef4444', description: 'Event color (hex code)' })
+  @ApiPropertyOptional({
+    example: '#ef4444',
+    description: 'Event color (hex code)',
+  })
   @IsOptional()
   @IsString()
   color?: string;
@@ -82,54 +113,85 @@ export class CreateEventDto {
   @IsString()
   icon?: string;
 
-  @ApiPropertyOptional({ example: 'Additional notes for the event', description: 'Event notes' })
+  @ApiPropertyOptional({
+    example: 'Additional notes for the event',
+    description: 'Event notes',
+  })
   @IsOptional()
   @IsString()
   notes?: string;
 
-  @ApiPropertyOptional({ example: 1, description: 'Calendar ID where event will be created (optional for public events)' })
+  @ApiPropertyOptional({
+    example: 1,
+    description:
+      'Calendar ID where event will be created (optional for public events)',
+  })
   @IsOptional()
   @IsNumber()
   calendarId?: number;
 }
 
 export class UpdateEventDto {
-  @ApiPropertyOptional({ example: 'Updated Meeting Title', description: 'Event title' })
+  @ApiPropertyOptional({
+    example: 'Updated Meeting Title',
+    description: 'Event title',
+  })
   @IsOptional()
   @IsString()
   title?: string;
 
-  @ApiPropertyOptional({ example: 'Updated description', description: 'Event description' })
+  @ApiPropertyOptional({
+    example: 'Updated description',
+    description: 'Event description',
+  })
   @IsOptional()
   @IsString()
   description?: string;
 
-  @ApiPropertyOptional({ example: '2025-09-21', description: 'Event start date (YYYY-MM-DD)' })
+  @ApiPropertyOptional({
+    example: '2025-09-21',
+    description: 'Event start date (YYYY-MM-DD)',
+  })
   @IsOptional()
   @IsDateString()
   startDate?: string;
 
-  @ApiPropertyOptional({ example: '14:00', description: 'Event start time (HH:MM)' })
+  @ApiPropertyOptional({
+    example: '14:00',
+    description: 'Event start time (HH:MM)',
+  })
   @IsOptional()
   @IsString()
   startTime?: string;
 
-  @ApiPropertyOptional({ example: '2025-09-21', description: 'Event end date (YYYY-MM-DD)' })
+  @ApiPropertyOptional({
+    example: '2025-09-21',
+    description: 'Event end date (YYYY-MM-DD)',
+  })
   @IsOptional()
   @IsDateString()
   endDate?: string;
 
-  @ApiPropertyOptional({ example: '15:00', description: 'Event end time (HH:MM)' })
+  @ApiPropertyOptional({
+    example: '15:00',
+    description: 'Event end time (HH:MM)',
+  })
   @IsOptional()
   @IsString()
   endTime?: string;
 
-  @ApiPropertyOptional({ example: true, description: 'Whether event is all-day' })
+  @ApiPropertyOptional({
+    example: true,
+    description: 'Whether event is all-day',
+  })
   @IsOptional()
   @IsBoolean()
   isAllDay?: boolean;
 
-  @ApiPropertyOptional({ example: 'Conference Room B', description: 'Event location' })
+  @ApiPropertyOptional({
+    example: 'Conference Room B',
+    description: 'Event location',
+  })
   @IsOptional()
   @IsString()
   location?: string;
@@ -137,7 +199,7 @@ export class UpdateEventDto {
   @ApiPropertyOptional({
     enum: EventStatus,
     example: EventStatus.TENTATIVE,
-    description: 'Event status'
+    description: 'Event status',
   })
   @IsOptional()
   @IsEnum(EventStatus)
@@ -146,7 +208,7 @@ export class UpdateEventDto {
   @ApiPropertyOptional({
     enum: RecurrenceType,
     example: RecurrenceType.MONTHLY,
-    description: 'Event recurrence type'
+    description: 'Event recurrence type',
   })
   @IsOptional()
   @IsEnum(RecurrenceType)
@@ -154,12 +216,15 @@ export class UpdateEventDto {
 
   @ApiPropertyOptional({
     example: { interval: 1, until: '2024-12-31' },
-    description: 'Recurrence rule configuration (JSON)'
+    description: 'Recurrence rule configuration (JSON)',
   })
   @IsOptional()
   recurrenceRule?: any;
 
-  @ApiPropertyOptional({ example: '#10b981', description: 'Event color (hex code)' })
+  @ApiPropertyOptional({
+    example: '#10b981',
+    description: 'Event color (hex code)',
+  })
   @IsOptional()
   @IsString()
   color?: string;
@@ -174,7 +239,10 @@ export class UpdateEventDto {
   @IsString()
   notes?: string;
 
-  @ApiPropertyOptional({ example: 1, description: 'Calendar ID to move event to (optional)' })
+  @ApiPropertyOptional({
+    example: 1,
+    description: 'Calendar ID to move event to (optional)',
+  })
   @IsOptional()
   @IsNumber()
   calendarId?: number;
@@ -182,7 +250,8 @@ export class UpdateEventDto {
   @ApiPropertyOptional({
     enum: RecurrenceUpdateMode,
     example: RecurrenceUpdateMode.SINGLE,
-    description: 'How to update recurring events: single instance, all instances, or future instances'
+    description:
+      'How to update recurring events: single instance, all instances, or future instances',
   })
   @IsOptional()
   @IsEnum(RecurrenceUpdateMode)
@@ -196,7 +265,10 @@ export class EventResponseDto {
   @ApiProperty({ example: 'Team Meeting', description: 'Event title' })
   title: string;
 
-  @ApiProperty({ example: 'Weekly team sync meeting', description: 'Event description' })
+  @ApiProperty({
+    example: 'Weekly team sync meeting',
+    description: 'Event description',
+  })
   description?: string;
 
   @ApiProperty({ example: '2025-09-20', description: 'Event start date' })
@@ -242,9 +314,15 @@ export class EventResponseDto {
     username: string;
   };
 
-  @ApiProperty({ example: '2025-09-15T10:00:00Z', description: 'Creation timestamp' })
+  @ApiProperty({
+    example: '2025-09-15T10:00:00Z',
+    description: 'Creation timestamp',
+  })
   createdAt: Date;
 
-  @ApiProperty({ example: '2025-09-15T10:00:00Z', description: 'Last update timestamp' })
+  @ApiProperty({
+    example: '2025-09-15T10:00:00Z',
+    description: 'Last update timestamp',
+  })
   updatedAt: Date;
 }

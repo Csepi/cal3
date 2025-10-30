@@ -12,6 +12,7 @@ import { Event } from './event.entity';
 import { Organisation } from './organisation.entity';
 import { OrganisationAdmin } from './organisation-admin.entity';
 import { ReservationCalendarRole } from './reservation-calendar-role.entity';
+import { AgentProfile } from './agent-profile.entity';
 import { Exclude } from 'class-transformer';
 
 export enum UserRole {
@@ -75,7 +76,7 @@ export class User {
   @Column({ default: 'en' }) // User's preferred language (e.g., 'en', 'de', 'fr', 'es', 'hu')
   language: string;
 
-  @Column({ type: 'json', default: () => "'[\"user\"]'" }) // Array of usage plans
+  @Column({ type: 'json', default: () => '\'["user"]\'' }) // Array of usage plans
   usagePlans: UsagePlan[];
 
   @Column({ default: false }) // Hide the Reservations tab in the UI
@@ -125,4 +126,7 @@ export class User {
 
   @OneToMany(() => ReservationCalendarRole, (role) => role.assignedBy)
   assignedReservationCalendarRoles: ReservationCalendarRole[];
+
+  @OneToMany(() => AgentProfile, (agent) => agent.user)
+  agentProfiles: AgentProfile[];
 }

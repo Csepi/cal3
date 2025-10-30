@@ -13,9 +13,9 @@ import { Organisation } from './organisation.entity';
  * Enumeration for organization user roles
  */
 export enum OrganisationRoleType {
-  ADMIN = 'admin',     // Full organization control
-  EDITOR = 'editor',   // Edit resources and reservations
-  USER = 'user',       // View access only
+  ADMIN = 'admin', // Full organization control
+  EDITOR = 'editor', // Edit resources and reservations
+  USER = 'user', // View access only
 }
 
 /**
@@ -65,7 +65,9 @@ export class OrganisationUser {
   assignedAt: Date;
 
   // Relationships
-  @ManyToOne(() => Organisation, (organisation) => organisation.users, { onDelete: 'CASCADE' })
+  @ManyToOne(() => Organisation, (organisation) => organisation.users, {
+    onDelete: 'CASCADE',
+  })
   organisation: Organisation;
 
   @ManyToOne(() => User, { onDelete: 'CASCADE' })

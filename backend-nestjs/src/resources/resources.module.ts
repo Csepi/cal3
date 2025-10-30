@@ -19,20 +19,22 @@ import { PublicBookingService } from './public-booking.service';
 import { UserPermissionsService } from '../common/services/user-permissions.service';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([
-    Resource,
-    ResourceType,
-    Reservation,
-    OperatingHours,
-    User,
-    Organisation,
-    OrganisationAdmin,
-    OrganisationUser,
-    OrganisationResourceTypePermission,
-    OrganisationCalendarPermission,
-    ReservationCalendarRole,
-    ReservationCalendar
-  ])],
+  imports: [
+    TypeOrmModule.forFeature([
+      Resource,
+      ResourceType,
+      Reservation,
+      OperatingHours,
+      User,
+      Organisation,
+      OrganisationAdmin,
+      OrganisationUser,
+      OrganisationResourceTypePermission,
+      OrganisationCalendarPermission,
+      ReservationCalendarRole,
+      ReservationCalendar,
+    ]),
+  ],
   controllers: [ResourcesController, PublicBookingController],
   providers: [ResourcesService, PublicBookingService, UserPermissionsService],
   exports: [ResourcesService, PublicBookingService],

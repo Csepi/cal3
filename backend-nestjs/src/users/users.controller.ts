@@ -1,5 +1,11 @@
 import { Controller, Get, UseGuards, Request, Query } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { UsersService } from './users.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
@@ -12,7 +18,11 @@ export class UsersController {
 
   @Get()
   @ApiOperation({ summary: 'Search users for calendar sharing' })
-  @ApiQuery({ name: 'search', required: false, description: 'Search by username or email' })
+  @ApiQuery({
+    name: 'search',
+    required: false,
+    description: 'Search by username or email',
+  })
   @ApiResponse({ status: 200, description: 'Users retrieved successfully' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   findAll(@Query('search') search?: string) {
@@ -21,7 +31,10 @@ export class UsersController {
 
   @Get('me')
   @ApiOperation({ summary: 'Get current user profile' })
-  @ApiResponse({ status: 200, description: 'User profile retrieved successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'User profile retrieved successfully',
+  })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   getProfile(@Request() req) {
     return this.usersService.findOne(req.user.id);

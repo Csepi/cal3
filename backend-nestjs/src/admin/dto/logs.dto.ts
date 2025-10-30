@@ -1,8 +1,23 @@
 import { Transform, Type } from 'class-transformer';
-import { IsArray, IsBoolean, IsEnum, IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
+import {
+  IsArray,
+  IsBoolean,
+  IsEnum,
+  IsInt,
+  IsOptional,
+  IsString,
+  Max,
+  Min,
+} from 'class-validator';
 import type { LogLevel } from '../../entities/log-entry.entity';
 
-const LOG_LEVEL_VALUES: LogLevel[] = ['log', 'error', 'warn', 'debug', 'verbose'];
+const LOG_LEVEL_VALUES: LogLevel[] = [
+  'log',
+  'error',
+  'warn',
+  'debug',
+  'verbose',
+];
 
 const normalizeToArray = (value: unknown): string[] | undefined => {
   if (value === undefined || value === null || value === '') {
@@ -37,7 +52,9 @@ export class LogQueryDto {
     const normalized = normalizeToArray(value);
     return normalized
       ?.map((entry) => entry.toLowerCase())
-      .filter((entry): entry is LogLevel => LOG_LEVEL_VALUES.includes(entry as LogLevel));
+      .filter((entry): entry is LogLevel =>
+        LOG_LEVEL_VALUES.includes(entry as LogLevel),
+      );
   })
   levels?: LogLevel[];
 

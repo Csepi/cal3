@@ -33,13 +33,22 @@ export class AppLoggerService extends ConsoleLogger {
     this.persist('verbose', message, context);
   }
 
-  private persist(level: LogLevel, message: any, context?: string, stack?: string) {
+  private persist(
+    level: LogLevel,
+    message: any,
+    context?: string,
+    stack?: string,
+  ) {
     const normalizedMessage = this.normalizeMessage(message);
 
     void this.loggingService
       .persistLog(level, normalizedMessage, context, stack ?? null, null)
       .catch((error) => {
-        super.error(`Failed to persist log entry: ${error.message}`, error.stack, 'AppLoggerService');
+        super.error(
+          `Failed to persist log entry: ${error.message}`,
+          error.stack,
+          'AppLoggerService',
+        );
       });
   }
 

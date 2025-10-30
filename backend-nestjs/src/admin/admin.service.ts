@@ -54,7 +54,18 @@ export class AdminService {
 
   async getAllUsers(): Promise<User[]> {
     return this.userRepository.find({
-      select: ['id', 'username', 'email', 'firstName', 'lastName', 'role', 'usagePlans', 'isActive', 'createdAt', 'updatedAt'],
+      select: [
+        'id',
+        'username',
+        'email',
+        'firstName',
+        'lastName',
+        'role',
+        'usagePlans',
+        'isActive',
+        'createdAt',
+        'updatedAt',
+      ],
       order: { createdAt: 'DESC' },
     });
   }
@@ -88,15 +99,20 @@ export class AdminService {
   }
 
   async getDatabaseStats(): Promise<any> {
-    const [userCount, calendarCount, eventCount, shareCount] = await Promise.all([
-      this.userRepository.count(),
-      this.calendarRepository.count(),
-      this.eventRepository.count(),
-      this.calendarShareRepository.count(),
-    ]);
+    const [userCount, calendarCount, eventCount, shareCount] =
+      await Promise.all([
+        this.userRepository.count(),
+        this.calendarRepository.count(),
+        this.eventRepository.count(),
+        this.calendarShareRepository.count(),
+      ]);
 
-    const activeUsers = await this.userRepository.count({ where: { isActive: true } });
-    const adminUsers = await this.userRepository.count({ where: { role: UserRole.ADMIN } });
+    const activeUsers = await this.userRepository.count({
+      where: { isActive: true },
+    });
+    const adminUsers = await this.userRepository.count({
+      where: { role: UserRole.ADMIN },
+    });
 
     return {
       users: {
@@ -127,7 +143,10 @@ export class AdminService {
     return this.userRepository.save(user);
   }
 
-  async updateUserUsagePlans(userId: number, usagePlans: UsagePlan[]): Promise<User> {
+  async updateUserUsagePlans(
+    userId: number,
+    usagePlans: UsagePlan[],
+  ): Promise<User> {
     const user = await this.userRepository.findOne({ where: { id: userId } });
     if (!user) {
       throw new NotFoundException('User not found');
@@ -163,7 +182,9 @@ export class AdminService {
   }
 
   async deleteCalendar(calendarId: number): Promise<{ message: string }> {
-    const calendar = await this.calendarRepository.findOne({ where: { id: calendarId } });
+    const calendar = await this.calendarRepository.findOne({
+      where: { id: calendarId },
+    });
     if (!calendar) {
       throw new NotFoundException('Calendar not found');
     }
@@ -173,7 +194,9 @@ export class AdminService {
   }
 
   async deleteEvent(eventId: number): Promise<{ message: string }> {
-    const event = await this.eventRepository.findOne({ where: { id: eventId } });
+    const event = await this.eventRepository.findOne({
+      where: { id: eventId },
+    });
     if (!event) {
       throw new NotFoundException('Event not found');
     }
@@ -191,12 +214,14 @@ export class AdminService {
       password: hashedPassword,
     });
 
-    return await this.userRepository.save(user) as unknown as User;
+    return (await this.userRepository.save(user)) as unknown as User;
   }
 
   async createCalendar(createCalendarDto: any): Promise<Calendar> {
     const calendar = this.calendarRepository.create(createCalendarDto);
-    return await this.calendarRepository.save(calendar) as unknown as Calendar;
+    return (await this.calendarRepository.save(
+      calendar,
+    )) as unknown as Calendar;
   }
 
   async createEvent(createEventDto: any): Promise<Event> {
@@ -205,7 +230,7 @@ export class AdminService {
       startDate: new Date(createEventDto.startDate),
       endDate: createEventDto.endDate ? new Date(createEventDto.endDate) : null,
     });
-    return await this.eventRepository.save(event) as unknown as Event;
+    return (await this.eventRepository.save(event)) as unknown as Event;
   }
 
   // UPDATE OPERATIONS
@@ -232,10 +257,13 @@ export class AdminService {
     return await this.userRepository.save(user);
   }
 
-  async updateCalendar(calendarId: number, updateCalendarDto: any): Promise<Calendar> {
+  async updateCalendar(
+    calendarId: number,
+    updateCalendarDto: any,
+  ): Promise<Calendar> {
     const calendar = await this.calendarRepository.findOne({
       where: { id: calendarId },
-      relations: ['owner']
+      relations: ['owner'],
     });
     if (!calendar) {
       throw new NotFoundException('Calendar not found');
@@ -248,7 +276,7 @@ export class AdminService {
   async updateEvent(eventId: number, updateEventDto: any): Promise<Event> {
     const event = await this.eventRepository.findOne({
       where: { id: eventId },
-      relations: ['calendar', 'createdBy']
+      relations: ['calendar', 'createdBy'],
     });
     if (!event) {
       throw new NotFoundException('Event not found');
@@ -270,7 +298,17 @@ export class AdminService {
   async getUser(userId: number): Promise<User> {
     const user = await this.userRepository.findOne({
       where: { id: userId },
-      select: ['id', 'username', 'email', 'firstName', 'lastName', 'role', 'isActive', 'createdAt', 'updatedAt']
+      select: [
+        'id',
+        'username',
+        'email',
+        'firstName',
+        'lastName',
+        'role',
+        'isActive',
+        'createdAt',
+        'updatedAt',
+      ],
     });
     if (!user) {
       throw new NotFoundException('User not found');
@@ -281,7 +319,7 @@ export class AdminService {
   async getCalendar(calendarId: number): Promise<Calendar> {
     const calendar = await this.calendarRepository.findOne({
       where: { id: calendarId },
-      relations: ['owner']
+      relations: ['owner'],
     });
     if (!calendar) {
       throw new NotFoundException('Calendar not found');
@@ -292,7 +330,7 @@ export class AdminService {
   async getEvent(eventId: number): Promise<Event> {
     const event = await this.eventRepository.findOne({
       where: { id: eventId },
-      relations: ['calendar', 'createdBy']
+      relations: ['calendar', 'createdBy'],
     });
     if (!event) {
       throw new NotFoundException('Event not found');
@@ -314,8 +352,8 @@ export class AdminService {
           where: { organisationId: org.id },
         });
 
-        const adminCount = orgUsers.filter(ou => ou.role === 'admin').length;
-        const userCount = orgUsers.filter(ou => ou.role !== 'admin').length;
+        const adminCount = orgUsers.filter((ou) => ou.role === 'admin').length;
+        const userCount = orgUsers.filter((ou) => ou.role !== 'admin').length;
 
         // Get calendar count for this organization
         // Calendars are linked through resource_types and resources
@@ -334,7 +372,7 @@ export class AdminService {
           userCount,
           calendarCount,
         };
-      })
+      }),
     );
 
     return enhancedOrgs;
@@ -351,16 +389,21 @@ export class AdminService {
       relations: ['organisation'],
     });
 
-    return orgUsers.map(orgUser => orgUser.organisation);
+    return orgUsers.map((orgUser) => orgUser.organisation);
   }
 
-  async addUserToOrganization(userId: number, organizationId: number): Promise<{ message: string }> {
+  async addUserToOrganization(
+    userId: number,
+    organizationId: number,
+  ): Promise<{ message: string }> {
     const user = await this.userRepository.findOne({ where: { id: userId } });
     if (!user) {
       throw new NotFoundException('User not found');
     }
 
-    const organization = await this.organisationRepository.findOne({ where: { id: organizationId } });
+    const organization = await this.organisationRepository.findOne({
+      where: { id: organizationId },
+    });
     if (!organization) {
       throw new NotFoundException('Organization not found');
     }
@@ -384,7 +427,10 @@ export class AdminService {
     return { message: 'User added to organization successfully' };
   }
 
-  async removeUserFromOrganization(userId: number, organizationId: number): Promise<{ message: string }> {
+  async removeUserFromOrganization(
+    userId: number,
+    organizationId: number,
+  ): Promise<{ message: string }> {
     const orgUser = await this.organisationUserRepository.findOne({
       where: { userId, organisationId: organizationId },
     });
@@ -397,13 +443,17 @@ export class AdminService {
     return { message: 'User removed from organization successfully' };
   }
 
-    async getOrganizationUsers(organizationId: number): Promise<any[]> {
-    const organization = await this.organisationRepository.findOne({ where: { id: organizationId } });
+  async getOrganizationUsers(organizationId: number): Promise<any[]> {
+    const organization = await this.organisationRepository.findOne({
+      where: { id: organizationId },
+    });
     if (!organization) {
       throw new NotFoundException('Organization not found');
     }
 
-    console.log(`AdminService.getOrganizationUsers called for org #${organizationId}`);
+    console.log(
+      `AdminService.getOrganizationUsers called for org #${organizationId}`,
+    );
 
     // Get users from organisation_users table
     const orgUsers = await this.organisationUserRepository.find({
@@ -458,13 +508,19 @@ export class AdminService {
 
     return result;
   }
-  async addUserToOrganizationWithRole(userId: number, organizationId: number, role: string): Promise<{ message: string }> {
+  async addUserToOrganizationWithRole(
+    userId: number,
+    organizationId: number,
+    role: string,
+  ): Promise<{ message: string }> {
     const user = await this.userRepository.findOne({ where: { id: userId } });
     if (!user) {
       throw new NotFoundException('User not found');
     }
 
-    const organization = await this.organisationRepository.findOne({ where: { id: organizationId } });
+    const organization = await this.organisationRepository.findOne({
+      where: { id: organizationId },
+    });
     if (!organization) {
       throw new NotFoundException('Organization not found');
     }
@@ -506,16 +562,20 @@ export class AdminService {
         where: { publicBookingToken: null as any },
       });
 
-      console.log(`Found ${resources.length} resources without public booking tokens`);
+      console.log(
+        `Found ${resources.length} resources without public booking tokens`,
+      );
 
       for (const resource of resources) {
         try {
           resource.publicBookingToken = uuidv4();
           await this.resourceRepository.save(resource);
           results.resourcesUpdated++;
-                    console.log(`Generated token for resource: ${resource.name}`);
+          console.log(`Generated token for resource: ${resource.name}`);
         } catch (error) {
-          results.errors.push(`Failed to generate token for resource ${resource.id}: ${error.message}`);
+          results.errors.push(
+            `Failed to generate token for resource ${resource.id}: ${error.message}`,
+          );
         }
       }
 
@@ -531,11 +591,19 @@ export class AdminService {
         { dayOfWeek: 4, openTime: '09:00', closeTime: '17:00', isActive: true }, // Thursday
         { dayOfWeek: 5, openTime: '09:00', closeTime: '17:00', isActive: true }, // Friday
         { dayOfWeek: 6, openTime: '10:00', closeTime: '14:00', isActive: true }, // Saturday
-        { dayOfWeek: 0, openTime: '10:00', closeTime: '14:00', isActive: false }, // Sunday (closed)
+        {
+          dayOfWeek: 0,
+          openTime: '10:00',
+          closeTime: '14:00',
+          isActive: false,
+        }, // Sunday (closed)
       ];
 
       for (const resourceType of resourceTypes) {
-        if (!resourceType.operatingHours || resourceType.operatingHours.length === 0) {
+        if (
+          !resourceType.operatingHours ||
+          resourceType.operatingHours.length === 0
+        ) {
           try {
             for (const hours of defaultHours) {
               const operatingHour = this.operatingHoursRepository.create({
@@ -545,9 +613,11 @@ export class AdminService {
               await this.operatingHoursRepository.save(operatingHour);
             }
             results.resourceTypesWithHours++;
-                        console.log(`Created operating hours for: ${resourceType.name}`);
+            console.log(`Created operating hours for: ${resourceType.name}`);
           } catch (error) {
-            results.errors.push(`Failed to create operating hours for resource type ${resourceType.id}: ${error.message}`);
+            results.errors.push(
+              `Failed to create operating hours for resource type ${resourceType.id}: ${error.message}`,
+            );
           }
         }
       }
@@ -575,11 +645,15 @@ export class AdminService {
   async getLogs(query: LogQueryDto) {
     const { levels, contexts, search, limit, offset, from, to } = query;
 
-    const normalizedLevels = Array.isArray(levels) ? levels.filter(Boolean) : [];
-    const normalizedContexts = Array.isArray(contexts) ? contexts.filter(Boolean) : [];
+    const normalizedLevels = Array.isArray(levels)
+      ? levels.filter(Boolean)
+      : [];
+    const normalizedContexts = Array.isArray(contexts)
+      ? contexts.filter(Boolean)
+      : [];
 
     const logs = await this.loggingService.findLogs({
-      levels: normalizedLevels.length > 0 ? (normalizedLevels as LogLevel[]) : undefined,
+      levels: normalizedLevels.length > 0 ? normalizedLevels : undefined,
       contexts: normalizedContexts.length > 0 ? normalizedContexts : undefined,
       search,
       limit,
@@ -599,7 +673,9 @@ export class AdminService {
 
   async clearLogs(beforeRaw?: string) {
     const before = this.parseDate(beforeRaw);
-    const deleted = await this.loggingService.clearLogs(before ? { before } : {});
+    const deleted = await this.loggingService.clearLogs(
+      before ? { before } : {},
+    );
 
     return {
       success: true,
@@ -694,8 +770,12 @@ export class AdminService {
 
     // Feature Flags
     const featureFlags = {
-      googleOAuthEnabled: !!(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET),
-      microsoftOAuthEnabled: !!(process.env.MICROSOFT_CLIENT_ID && process.env.MICROSOFT_CLIENT_SECRET),
+      googleOAuthEnabled: !!(
+        process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
+      ),
+      microsoftOAuthEnabled: !!(
+        process.env.MICROSOFT_CLIENT_ID && process.env.MICROSOFT_CLIENT_SECRET
+      ),
       calendarSyncEnabled: true, // Always enabled
       automationEnabled: true, // Always enabled
       reservationsEnabled: true, // Always enabled
@@ -709,7 +789,7 @@ export class AdminService {
       eventCount,
       reservationCount,
       automationRuleCount,
-      organisationCount
+      organisationCount,
     ] = await Promise.all([
       this.userRepository.count(),
       this.calendarRepository.count(),
@@ -739,7 +819,3 @@ export class AdminService {
     };
   }
 }
-
-
-
-

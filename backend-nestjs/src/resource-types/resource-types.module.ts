@@ -14,17 +14,19 @@ import { ResourceTypesService } from './resource-types.service';
 import { UserPermissionsService } from '../common/services/user-permissions.service';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([
-    ResourceType,
-    Organisation,
-    User,
-    OrganisationAdmin,
-    OrganisationUser,
-    OrganisationResourceTypePermission,
-    OrganisationCalendarPermission,
-    ReservationCalendarRole,
-    ReservationCalendar
-  ])],
+  imports: [
+    TypeOrmModule.forFeature([
+      ResourceType,
+      Organisation,
+      User,
+      OrganisationAdmin,
+      OrganisationUser,
+      OrganisationResourceTypePermission,
+      OrganisationCalendarPermission,
+      ReservationCalendarRole,
+      ReservationCalendar,
+    ]),
+  ],
   controllers: [ResourceTypesController],
   providers: [ResourceTypesService, UserPermissionsService],
   exports: [ResourceTypesService],

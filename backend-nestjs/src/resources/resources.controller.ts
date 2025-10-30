@@ -1,4 +1,16 @@
-import { Controller, Get, Post, Patch, Delete, Body, Param, Query, UseGuards, Req, ForbiddenException } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Delete,
+  Body,
+  Param,
+  Query,
+  UseGuards,
+  Req,
+  ForbiddenException,
+} from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { ResourcesService } from './resources.service';
 import { CreateResourceDto, UpdateResourceDto } from '../dto/resource.dto';
@@ -22,21 +34,40 @@ export class ResourcesController {
   }
 
   @Get()
-  async findAll(@Query('resourceTypeId') resourceTypeId?: string, @Req() req?: any) {
-    console.log('🔍 ResourcesController.findAll called for user:', req.user.id, 'username:', req.user.username);
+  async findAll(
+    @Query('resourceTypeId') resourceTypeId?: string,
+    @Req() req?: any,
+  ) {
+    console.log(
+      '🔍 ResourcesController.findAll called for user:',
+      req.user.id,
+      'username:',
+      req.user.username,
+    );
 
     // Get user's accessible organizations
-    const organizations = await this.userPermissionsService.getUserAccessibleOrganizations(req.user.id);
-    const organizationIds = organizations.map(org => org.id);
+    const organizations =
+      await this.userPermissionsService.getUserAccessibleOrganizations(
+        req.user.id,
+      );
+    const organizationIds = organizations.map((org) => org.id);
 
-    console.log('📋 User accessible organization IDs for resources:', organizationIds);
+    console.log(
+      '📋 User accessible organization IDs for resources:',
+      organizationIds,
+    );
 
     if (organizationIds.length === 0) {
-      console.log('⚠️  No accessible organizations - returning empty resources');
+      console.log(
+        '⚠️  No accessible organizations - returning empty resources',
+      );
       return [];
     }
 
-    return await this.resourcesService.findAllByOrganizations(organizationIds, resourceTypeId ? +resourceTypeId : undefined);
+    return await this.resourcesService.findAllByOrganizations(
+      organizationIds,
+      resourceTypeId ? +resourceTypeId : undefined,
+    );
   }
 
   @Get(':id')
@@ -77,10 +108,14 @@ export class ResourcesController {
       resource.resourceType.id,
     );
     if (!canManage) {
-      throw new ForbiddenException('You do not have permission to view deletion preview for this resource');
+      throw new ForbiddenException(
+        'You do not have permission to view deletion preview for this resource',
+      );
     }
 
-    return await this.cascadeDeletionService.previewResourceDeletion(resourceId);
+    return await this.cascadeDeletionService.previewResourceDeletion(
+      resourceId,
+    );
   }
 
   /**
@@ -103,10 +138,15 @@ export class ResourcesController {
       resource.resourceType.id,
     );
     if (!canManage) {
-      throw new ForbiddenException('You do not have permission to delete this resource');
+      throw new ForbiddenException(
+        'You do not have permission to delete this resource',
+      );
     }
 
-    const result = await this.cascadeDeletionService.deleteResource(resourceId, req.user.id);
+    const result = await this.cascadeDeletionService.deleteResource(
+      resourceId,
+      req.user.id,
+    );
     return result;
   }
 
@@ -125,12 +165,15 @@ export class ResourcesController {
     }
 
     // Check if user can access the organization (basic view permission)
-    const canAccess = await this.userPermissionsService.canUserAccessOrganization(
-      req.user.id,
-      resource.resourceType.organisationId,
-    );
+    const canAccess =
+      await this.userPermissionsService.canUserAccessOrganization(
+        req.user.id,
+        resource.resourceType.organisationId,
+      );
     if (!canAccess) {
-      throw new ForbiddenException('You do not have permission to view this resource');
+      throw new ForbiddenException(
+        'You do not have permission to view this resource',
+      );
     }
 
     return {
@@ -163,10 +206,13 @@ export class ResourcesController {
       resource.resourceType.id,
     );
     if (!canManage) {
-      throw new ForbiddenException('You do not have permission to regenerate token for this resource');
+      throw new ForbiddenException(
+        'You do not have permission to regenerate token for this resource',
+      );
     }
 
-    const newToken = await this.publicBookingService.regenerateToken(resourceId);
+    const newToken =
+      await this.publicBookingService.regenerateToken(resourceId);
     return {
       resourceId: resource.id,
       resourceName: resource.name,

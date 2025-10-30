@@ -31,7 +31,9 @@ async function fixMissingIndex() {
     `);
 
     if (tableCheck.recordset.length === 0) {
-      console.log('⚠️  automation_audit_logs table does not exist. Creating it first...\n');
+      console.log(
+        '⚠️  automation_audit_logs table does not exist. Creating it first...\n',
+      );
 
       const createTable = `
         CREATE TABLE automation_audit_logs (
@@ -122,7 +124,9 @@ async function fixMissingIndex() {
     console.log('─'.repeat(80));
     console.log(`Total Tables: ${finalCheck.recordset.length}`);
 
-    const fkResult = await pool.request().query('SELECT COUNT(*) as FK_COUNT FROM sys.foreign_keys');
+    const fkResult = await pool
+      .request()
+      .query('SELECT COUNT(*) as FK_COUNT FROM sys.foreign_keys');
     console.log(`Total Foreign Keys: ${fkResult.recordset[0].FK_COUNT}`);
 
     const indexResult = await pool.request().query(`
@@ -133,7 +137,6 @@ async function fixMissingIndex() {
     `);
     console.log(`Total Indexes: ${indexResult.recordset[0].INDEX_COUNT}`);
     console.log('─'.repeat(80));
-
   } catch (error: any) {
     console.error('❌ ERROR:', error.message);
     throw error;

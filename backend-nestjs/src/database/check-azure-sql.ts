@@ -37,7 +37,9 @@ async function checkDatabase() {
     console.log('📊 Existing Tables:');
     console.log('─'.repeat(80));
     result.recordset.forEach((row: any, index: number) => {
-      console.log(`${(index + 1).toString().padStart(2, ' ')}. ${row.TABLE_NAME.padEnd(40, ' ')} (${row.COLUMN_COUNT} columns)`);
+      console.log(
+        `${(index + 1).toString().padStart(2, ' ')}. ${row.TABLE_NAME.padEnd(40, ' ')} (${row.COLUMN_COUNT} columns)`,
+      );
     });
     console.log('─'.repeat(80));
     console.log(`\nTotal Tables: ${result.recordset.length}\n`);
@@ -82,7 +84,6 @@ async function checkDatabase() {
 
     const constraintResult = await pool.request().query(constraintQuery);
     console.log(`🔗 Total Constraints: ${constraintResult.recordset.length}\n`);
-
   } catch (error: any) {
     console.error('❌ ERROR:', error.message);
     if (error.number) {

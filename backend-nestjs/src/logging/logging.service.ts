@@ -20,7 +20,10 @@ export interface ClearLogsOptions {
 
 @Injectable()
 export class LoggingService {
-  private readonly defaultRetentionDays = parseInt(process.env.LOG_RETENTION_DAYS_DEFAULT || '30', 10);
+  private readonly defaultRetentionDays = parseInt(
+    process.env.LOG_RETENTION_DAYS_DEFAULT || '30',
+    10,
+  );
 
   constructor(
     @InjectRepository(LogEntry)
@@ -48,9 +51,19 @@ export class LoggingService {
   }
 
   async findLogs(options: LogQueryOptions = {}): Promise<LogEntry[]> {
-    const { levels, contexts, search, from, to, limit = 200, offset = 0 } = options;
+    const {
+      levels,
+      contexts,
+      search,
+      from,
+      to,
+      limit = 200,
+      offset = 0,
+    } = options;
 
-    const qb = this.logRepository.createQueryBuilder('log').orderBy('log.createdAt', 'DESC');
+    const qb = this.logRepository
+      .createQueryBuilder('log')
+      .orderBy('log.createdAt', 'DESC');
 
     if (levels && levels.length > 0) {
       qb.andWhere('log.level IN (:...levels)', { levels });
@@ -91,7 +104,10 @@ export class LoggingService {
       return result.affected || 0;
     }
 
-    const result = await this.logRepository.createQueryBuilder().delete().execute();
+    const result = await this.logRepository
+      .createQueryBuilder()
+      .delete()
+      .execute();
     return result.affected || 0;
   }
 
@@ -110,10 +126,15 @@ export class LoggingService {
     return settings;
   }
 
-  async updateSettings(partial: Partial<Pick<LogSettings, 'retentionDays' | 'autoCleanupEnabled'>>): Promise<LogSettings> {
+  async updateSettings(
+    partial: Partial<Pick<LogSettings, 'retentionDays' | 'autoCleanupEnabled'>>,
+  ): Promise<LogSettings> {
     const settings = await this.getSettings();
 
-    if (typeof partial.retentionDays === 'number' && partial.retentionDays >= 0) {
+    if (
+      typeof partial.retentionDays === 'number' &&
+      partial.retentionDays >= 0
+    ) {
       settings.retentionDays = partial.retentionDays;
     }
 
@@ -131,7 +152,9 @@ export class LoggingService {
       return 0;
     }
 
-    const threshold = new Date(reference.getTime() - settings.retentionDays * 24 * 60 * 60 * 1000);
+    const threshold = new Date(
+      reference.getTime() - settings.retentionDays * 24 * 60 * 60 * 1000,
+    );
     const deleteResult = await this.logRepository.delete({
       createdAt: LessThan(threshold),
     });

@@ -2,7 +2,10 @@ import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { AutomationRule, TriggerType } from '../entities/automation-rule.entity';
+import {
+  AutomationRule,
+  TriggerType,
+} from '../entities/automation-rule.entity';
 import { Event } from '../entities/event.entity';
 import { AutomationService } from './automation.service';
 
@@ -55,7 +58,9 @@ export class AutomationSchedulerService implements OnModuleInit {
             throw dbError; // Rethrow after max retries
           }
           // Wait before retry (exponential backoff)
-          await new Promise(resolve => setTimeout(resolve, 1000 * retryCount));
+          await new Promise((resolve) =>
+            setTimeout(resolve, 1000 * retryCount),
+          );
           this.logger.warn(`Database query retry ${retryCount}/${maxRetries}`);
         }
       }
@@ -71,11 +76,19 @@ export class AutomationSchedulerService implements OnModuleInit {
       }
     } catch (error) {
       // Only log error if it's not a connection termination during idle time
-      if (error.message && !error.message.includes('Connection terminated unexpectedly')) {
-        this.logger.error(`Error in time-based trigger check: ${error.message}`, error.stack);
+      if (
+        error.message &&
+        !error.message.includes('Connection terminated unexpectedly')
+      ) {
+        this.logger.error(
+          `Error in time-based trigger check: ${error.message}`,
+          error.stack,
+        );
       } else {
         // Silent fail for connection termination - will reconnect on next run
-        this.logger.debug('Database connection temporarily unavailable, will retry on next cycle');
+        this.logger.debug(
+          'Database connection temporarily unavailable, will retry on next cycle',
+        );
       }
     }
   }
@@ -124,7 +137,9 @@ export class AutomationSchedulerService implements OnModuleInit {
         .createQueryBuilder('event')
         .innerJoin('event.calendar', 'calendar')
         .where('calendar.userId = :userId', { userId: rule.createdById })
-        .andWhere('event.startDate = :date', { date: windowStart.toISOString().split('T')[0] })
+        .andWhere('event.startDate = :date', {
+          date: windowStart.toISOString().split('T')[0],
+        })
         .getMany();
 
       // Filter events by time window
@@ -168,7 +183,9 @@ export class AutomationSchedulerService implements OnModuleInit {
         .createQueryBuilder('event')
         .innerJoin('event.calendar', 'calendar')
         .where('calendar.userId = :userId', { userId: rule.createdById })
-        .andWhere('event.endDate = :date', { date: windowStart.toISOString().split('T')[0] })
+        .andWhere('event.endDate = :date', {
+          date: windowStart.toISOString().split('T')[0],
+        })
         .getMany();
 
       const matchingEvents = events.filter((event) => {
@@ -224,7 +241,10 @@ export class AutomationSchedulerService implements OnModuleInit {
   /**
    * Execute a rule for a specific event (non-blocking)
    */
-  private async executeRuleForEvent(rule: AutomationRule, event: Event): Promise<void> {
+  private async executeRuleForEvent(
+    rule: AutomationRule,
+    event: Event,
+  ): Promise<void> {
     try {
       // Load full event with calendar relationship
       const fullEvent = await this.eventRepository.findOne({

@@ -45,7 +45,9 @@ export class AutomationAuditService {
         totalDeleted += deleted;
       }
 
-      this.logger.log(`Audit log cleanup completed. Deleted ${totalDeleted} old logs.`);
+      this.logger.log(
+        `Audit log cleanup completed. Deleted ${totalDeleted} old logs.`,
+      );
     } catch (error) {
       this.logger.error('Error during audit log cleanup:', error);
     }
@@ -93,7 +95,10 @@ export class AutomationAuditService {
 
       return result.affected || 0;
     } catch (error) {
-      this.logger.error(`Error enforcing circular buffer for rule ${ruleId}:`, error);
+      this.logger.error(
+        `Error enforcing circular buffer for rule ${ruleId}:`,
+        error,
+      );
       return 0;
     }
   }

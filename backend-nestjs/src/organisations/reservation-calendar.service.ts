@@ -1,8 +1,16 @@
-import { Injectable, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
 import { ReservationCalendar } from '../entities/reservation-calendar.entity';
-import { ReservationCalendarRole, ReservationCalendarRoleType } from '../entities/reservation-calendar-role.entity';
+import {
+  ReservationCalendarRole,
+  ReservationCalendarRoleType,
+} from '../entities/reservation-calendar-role.entity';
 import { Calendar, CalendarVisibility } from '../entities/calendar.entity';
 import { Organisation } from '../entities/organisation.entity';
 import { User, UserRole, UsagePlan } from '../entities/user.entity';
@@ -73,13 +81,16 @@ export class ReservationCalendarService {
       calendarId: savedCalendar.id,
       organisationId,
       createdById: createdBy.id,
-      reservationRules: createDto.reservationRules ? JSON.stringify(createDto.reservationRules) : undefined,
+      reservationRules: createDto.reservationRules
+        ? JSON.stringify(createDto.reservationRules)
+        : undefined,
       calendar: savedCalendar,
       organisation,
       createdBy,
     });
 
-    const savedReservationCalendar = await this.reservationCalendarRepository.save(reservationCalendar);
+    const savedReservationCalendar =
+      await this.reservationCalendarRepository.save(reservationCalendar);
 
     // Assign roles to specified users
     if (createDto.editorUserIds && createDto.editorUserIds.length > 0) {
@@ -101,7 +112,10 @@ export class ReservationCalendarService {
     }
 
     // Auto-assign editor role to all organisation admins
-    await this.autoAssignOrganisationAdmins(organisationId, savedReservationCalendar.id);
+    await this.autoAssignOrganisationAdmins(
+      organisationId,
+      savedReservationCalendar.id,
+    );
 
     return savedReservationCalendar;
   }
@@ -115,16 +129,20 @@ export class ReservationCalendarService {
     assignedBy: User,
   ): Promise<ReservationCalendarRole> {
     // Get reservation calendar with organisation info
-    const reservationCalendar = await this.reservationCalendarRepository.findOne({
-      where: { id: reservationCalendarId },
-      relations: ['organisation'],
-    });
+    const reservationCalendar =
+      await this.reservationCalendarRepository.findOne({
+        where: { id: reservationCalendarId },
+        relations: ['organisation'],
+      });
     if (!reservationCalendar) {
       throw new NotFoundException('Reservation calendar not found');
     }
 
     // Verify permission
-    await this.verifyOrganisationAdminPermission(assignedBy, reservationCalendar.organisationId);
+    await this.verifyOrganisationAdminPermission(
+      assignedBy,
+      reservationCalendar.organisationId,
+    );
 
     // Verify user exists and is in the organisation
     const user = await this.userRepository.findOne({
@@ -135,9 +153,13 @@ export class ReservationCalendarService {
       throw new NotFoundException('User not found');
     }
 
-    const isOrgMember = user.organisations.some(org => org.id === reservationCalendar.organisationId);
+    const isOrgMember = user.organisations.some(
+      (org) => org.id === reservationCalendar.organisationId,
+    );
     if (!isOrgMember) {
-      throw new BadRequestException('User must be a member of the organisation');
+      throw new BadRequestException(
+        'User must be a member of the organisation',
+      );
     }
 
     // Check if role already exists
@@ -178,16 +200,20 @@ export class ReservationCalendarService {
     removedBy: User,
   ): Promise<void> {
     // Get reservation calendar with organisation info
-    const reservationCalendar = await this.reservationCalendarRepository.findOne({
-      where: { id: reservationCalendarId },
-      relations: ['organisation'],
-    });
+    const reservationCalendar =
+      await this.reservationCalendarRepository.findOne({
+        where: { id: reservationCalendarId },
+        relations: ['organisation'],
+      });
     if (!reservationCalendar) {
       throw new NotFoundException('Reservation calendar not found');
     }
 
     // Verify permission
-    await this.verifyOrganisationAdminPermission(removedBy, reservationCalendar.organisationId);
+    await this.verifyOrganisationAdminPermission(
+      removedBy,
+      reservationCalendar.organisationId,
+    );
 
     // Find the role
     const role = await this.reservationCalendarRoleRepository.findOne({
@@ -202,7 +228,9 @@ export class ReservationCalendarService {
 
     // Cannot remove auto-assigned organisation admin roles
     if (role.isOrganisationAdmin) {
-      throw new BadRequestException('Cannot remove auto-assigned organisation admin role');
+      throw new BadRequestException(
+        'Cannot remove auto-assigned organisation admin role',
+      );
     }
 
     await this.reservationCalendarRoleRepository.remove(role);
@@ -212,13 +240,15 @@ export class ReservationCalendarService {
    * Get all reservation calendars that a user has access to
    * Uses both explicit roles and organization-based permissions
    */
-  async getUserReservationCalendars(userId: number): Promise<ReservationCalendar[]> {
+  async getUserReservationCalendars(
+    userId: number,
+  ): Promise<ReservationCalendar[]> {
     console.log('🔍 getUserReservationCalendars called for user:', userId);
 
     // Get user to check permissions
     const user = await this.userRepository.findOne({
       where: { id: userId },
-      relations: ['organisations', 'organisationAdminRoles']
+      relations: ['organisations', 'organisationAdminRoles'],
     });
 
     if (!user) {
@@ -229,16 +259,18 @@ export class ReservationCalendarService {
     console.log('👤 User details:', {
       id: user.id,
       role: user.role,
-      usagePlans: user.usagePlans
+      usagePlans: user.usagePlans,
     });
 
     // Check if user has reservation access (needs Store or Enterprise plan)
-    const hasReservationAccess = user.usagePlans?.some(plan =>
-      plan === UsagePlan.STORE || plan === UsagePlan.ENTERPRISE
+    const hasReservationAccess = user.usagePlans?.some(
+      (plan) => plan === UsagePlan.STORE || plan === UsagePlan.ENTERPRISE,
     );
 
     if (!hasReservationAccess) {
-      console.log('⚠️  User does not have reservation access (needs Store or Enterprise plan)');
+      console.log(
+        '⚠️  User does not have reservation access (needs Store or Enterprise plan)',
+      );
       return [];
     }
 
@@ -254,13 +286,18 @@ export class ReservationCalendarService {
       // Get calendars through explicit roles
       const explicitRoles = await this.reservationCalendarRoleRepository.find({
         where: { userId },
-        relations: ['reservationCalendar', 'reservationCalendar.calendar', 'reservationCalendar.organisation'],
+        relations: [
+          'reservationCalendar',
+          'reservationCalendar.calendar',
+          'reservationCalendar.organisation',
+        ],
       });
       console.log('📋 Explicit roles found:', explicitRoles.length);
 
       // Get accessible organization IDs
-      const memberOrgIds = user.organisations?.map(org => org.id) || [];
-      const adminOrgIds = user.organisationAdminRoles?.map(role => role.organisationId) || [];
+      const memberOrgIds = user.organisations?.map((org) => org.id) || [];
+      const adminOrgIds =
+        user.organisationAdminRoles?.map((role) => role.organisationId) || [];
       const accessibleOrgIds = [...new Set([...memberOrgIds, ...adminOrgIds])];
 
       console.log('📋 User accessible organization IDs:', accessibleOrgIds);
@@ -272,27 +309,40 @@ export class ReservationCalendarService {
           where: { organisationId: In(accessibleOrgIds) },
           relations: ['calendar', 'organisation', 'createdBy'],
         });
-        console.log('📋 Organization-based calendars found:', orgBasedCalendars.length);
+        console.log(
+          '📋 Organization-based calendars found:',
+          orgBasedCalendars.length,
+        );
       }
 
       // Combine and deduplicate
-      const explicitCalendars = explicitRoles.map(role => role.reservationCalendar);
+      const explicitCalendars = explicitRoles.map(
+        (role) => role.reservationCalendar,
+      );
       const allCalendars = [...explicitCalendars, ...orgBasedCalendars];
 
       // Remove duplicates based on calendar ID
       accessibleCalendars = allCalendars.filter(
-        (calendar, index, self) => index === self.findIndex(c => c.id === calendar.id)
+        (calendar, index, self) =>
+          index === self.findIndex((c) => c.id === calendar.id),
       );
     }
 
-    console.log('📋 Final accessible reservation calendars:', accessibleCalendars.map(c => `${c.id}:${c.calendar.name} (org: ${c.organisationId})`));
+    console.log(
+      '📋 Final accessible reservation calendars:',
+      accessibleCalendars.map(
+        (c) => `${c.id}:${c.calendar.name} (org: ${c.organisationId})`,
+      ),
+    );
     return accessibleCalendars;
   }
 
   /**
    * Get all roles for a specific reservation calendar
    */
-  async getCalendarRoles(reservationCalendarId: number): Promise<ReservationCalendarRole[]> {
+  async getCalendarRoles(
+    reservationCalendarId: number,
+  ): Promise<ReservationCalendarRole[]> {
     return this.reservationCalendarRoleRepository.find({
       where: { reservationCalendarId },
       relations: ['user', 'assignedBy'],
@@ -302,7 +352,9 @@ export class ReservationCalendarService {
   /**
    * Get all reservation calendars for an organisation
    */
-  async getOrganisationReservationCalendars(organisationId: number): Promise<ReservationCalendar[]> {
+  async getOrganisationReservationCalendars(
+    organisationId: number,
+  ): Promise<ReservationCalendar[]> {
     return this.reservationCalendarRepository.find({
       where: { organisationId },
       relations: ['calendar', 'createdBy'],
@@ -347,16 +399,19 @@ export class ReservationCalendarService {
     organisationId: number,
     reservationCalendarId: number,
   ): Promise<void> {
-    const orgAdmins = await this.organisationAdminService.getOrganisationAdmins(organisationId);
+    const orgAdmins =
+      await this.organisationAdminService.getOrganisationAdmins(organisationId);
 
     for (const orgAdmin of orgAdmins) {
       // Check if role already exists
-      const existingRole = await this.reservationCalendarRoleRepository.findOne({
-        where: {
-          reservationCalendarId,
-          userId: orgAdmin.userId,
+      const existingRole = await this.reservationCalendarRoleRepository.findOne(
+        {
+          where: {
+            reservationCalendarId,
+            userId: orgAdmin.userId,
+          },
         },
-      });
+      );
 
       if (!existingRole) {
         const role = this.reservationCalendarRoleRepository.create({
@@ -396,16 +451,24 @@ export class ReservationCalendarService {
   /**
    * Verify that a user has organisation admin permission for a specific organisation
    */
-  private async verifyOrganisationAdminPermission(user: User, organisationId: number): Promise<void> {
+  private async verifyOrganisationAdminPermission(
+    user: User,
+    organisationId: number,
+  ): Promise<void> {
     // Global admins have permission everywhere
     if (user.role === UserRole.ADMIN) {
       return;
     }
 
     // Check if user is organisation admin for this organisation
-    const isOrgAdmin = await this.organisationAdminService.isOrganisationAdmin(user.id, organisationId);
+    const isOrgAdmin = await this.organisationAdminService.isOrganisationAdmin(
+      user.id,
+      organisationId,
+    );
     if (!isOrgAdmin) {
-      throw new ForbiddenException('Insufficient permissions for this organisation');
+      throw new ForbiddenException(
+        'Insufficient permissions for this organisation',
+      );
     }
   }
 }

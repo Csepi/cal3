@@ -1,10 +1,14 @@
-import { registerDecorator, ValidationOptions, ValidationArguments } from 'class-validator';
+import {
+  registerDecorator,
+  ValidationOptions,
+  ValidationArguments,
+} from 'class-validator';
 
 /**
  * Validates that a user ID exists in the database
  */
 export function IsUserExists(validationOptions?: ValidationOptions) {
-  return function (object: Object, propertyName: string) {
+  return function (object: object, propertyName: string) {
     registerDecorator({
       name: 'isUserExists',
       target: object.constructor,
@@ -28,7 +32,7 @@ export function IsUserExists(validationOptions?: ValidationOptions) {
  * Validates that an organisation ID exists in the database
  */
 export function IsOrganisationExists(validationOptions?: ValidationOptions) {
-  return function (object: Object, propertyName: string) {
+  return function (object: object, propertyName: string) {
     registerDecorator({
       name: 'isOrganisationExists',
       target: object.constructor,
@@ -52,7 +56,7 @@ export function IsOrganisationExists(validationOptions?: ValidationOptions) {
  * Validates that an array contains unique values
  */
 export function IsUniqueArray(validationOptions?: ValidationOptions) {
-  return function (object: Object, propertyName: string) {
+  return function (object: object, propertyName: string) {
     registerDecorator({
       name: 'isUniqueArray',
       target: object.constructor,
@@ -74,8 +78,10 @@ export function IsUniqueArray(validationOptions?: ValidationOptions) {
 /**
  * Validates that a reservation calendar ID exists in the database
  */
-export function IsReservationCalendarExists(validationOptions?: ValidationOptions) {
-  return function (object: Object, propertyName: string) {
+export function IsReservationCalendarExists(
+  validationOptions?: ValidationOptions,
+) {
+  return function (object: object, propertyName: string) {
     registerDecorator({
       name: 'isReservationCalendarExists',
       target: object.constructor,

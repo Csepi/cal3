@@ -45,7 +45,9 @@ async function bootstrap() {
 
       if (dataSource.options.type === 'postgres') {
         const pgOptions = dataSource.options as any;
-        dbLogger.log(`Connected to ${pgOptions.host}:${pgOptions.port}/${pgOptions.database}`);
+        dbLogger.log(
+          `Connected to ${pgOptions.host}:${pgOptions.port}/${pgOptions.database}`,
+        );
       }
 
       // Test query to verify connection
@@ -54,10 +56,14 @@ async function bootstrap() {
         const queryStart = Date.now();
 
         if (dataSource.options.type === 'postgres') {
-          const result = await dataSource.query('SELECT version(), current_database(), current_user');
+          const result = await dataSource.query(
+            'SELECT version(), current_database(), current_user',
+          );
           const queryDuration = Date.now() - queryStart;
           dbLogger.log(`Test query successful (${queryDuration}ms)`);
-          dbLogger.log(`PostgreSQL version: ${result[0].version.split(',')[0]}`);
+          dbLogger.log(
+            `PostgreSQL version: ${result[0].version.split(',')[0]}`,
+          );
           dbLogger.log(`Database: ${result[0].current_database}`);
           dbLogger.log(`User: ${result[0].current_user}`);
         } else {
@@ -66,7 +72,10 @@ async function bootstrap() {
           dbLogger.log(`Test query successful (${queryDuration}ms)`);
         }
       } catch (queryError: any) {
-        dbLogger.error('Test query failed', queryError?.message ?? 'Unknown error');
+        dbLogger.error(
+          'Test query failed',
+          queryError?.message ?? 'Unknown error',
+        );
       }
 
       // Run network diagnostics if enabled
@@ -84,7 +93,8 @@ async function bootstrap() {
     const baseUrl = process.env.BASE_URL || 'http://localhost';
 
     // Construct frontend URL from base + port (or use explicit FRONTEND_URL if provided)
-    const frontendUrl = process.env.FRONTEND_URL || `${baseUrl}:${frontendPort}`;
+    const frontendUrl =
+      process.env.FRONTEND_URL || `${baseUrl}:${frontendPort}`;
 
     // Enable CORS
     app.enableCors({
@@ -94,11 +104,13 @@ async function bootstrap() {
     });
 
     // Global validation pipe
-    app.useGlobalPipes(new ValidationPipe({
-      whitelist: true,
-      transform: true,
-      forbidNonWhitelisted: true,
-    }));
+    app.useGlobalPipes(
+      new ValidationPipe({
+        whitelist: true,
+        transform: true,
+        forbidNonWhitelisted: true,
+      }),
+    );
 
     // API global prefix
     app.setGlobalPrefix('api');
@@ -106,7 +118,9 @@ async function bootstrap() {
     // Swagger documentation
     const config = new DocumentBuilder()
       .setTitle('Calendar Sharing API')
-      .setDescription('A comprehensive calendar sharing application with multi-user support')
+      .setDescription(
+        'A comprehensive calendar sharing application with multi-user support',
+      )
       .setVersion('1.0')
       .addBearerAuth()
       .build();

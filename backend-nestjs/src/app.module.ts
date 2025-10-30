@@ -24,7 +24,11 @@ import { DatabaseDiagnosticsService } from './database/database-diagnostics.serv
 import { User } from './entities/user.entity';
 import { Calendar, CalendarShare } from './entities/calendar.entity';
 import { Event } from './entities/event.entity';
-import { CalendarSyncConnection, SyncedCalendar, SyncEventMapping } from './entities/calendar-sync.entity';
+import {
+  CalendarSyncConnection,
+  SyncedCalendar,
+  SyncEventMapping,
+} from './entities/calendar-sync.entity';
 import { Organisation } from './entities/organisation.entity';
 import { OrganisationAdmin } from './entities/organisation-admin.entity';
 import { OrganisationUser } from './entities/organisation-user.entity';
@@ -43,6 +47,10 @@ import { AutomationAuditLog } from './entities/automation-audit-log.entity';
 import { LogEntry } from './entities/log-entry.entity';
 import { LogSettings } from './entities/log-settings.entity';
 import { LoggingModule } from './logging/logging.module';
+import { AgentsModule } from './agents/agents.module';
+import { AgentProfile } from './entities/agent-profile.entity';
+import { AgentPermission } from './entities/agent-permission.entity';
+import { AgentApiKey } from './entities/agent-api-key.entity';
 
 // Create logger instance for database connection logging
 const dbLogger = new Logger('DatabaseConnection');
@@ -63,8 +71,12 @@ const dbLogger = new Logger('DatabaseConnection');
           const username = process.env.DB_USERNAME || 'postgres';
           const database = process.env.DB_NAME || 'cal3';
           const sslEnabled = process.env.DB_SSL === 'true';
-          const sslRejectUnauthorized = process.env.DB_SSL_REJECT_UNAUTHORIZED !== 'false';
-          const connectionTimeout = parseInt(process.env.DB_CONNECTION_TIMEOUT || '10000', 10);
+          const sslRejectUnauthorized =
+            process.env.DB_SSL_REJECT_UNAUTHORIZED !== 'false';
+          const connectionTimeout = parseInt(
+            process.env.DB_CONNECTION_TIMEOUT || '10000',
+            10,
+          );
 
           // Log database configuration at startup
           dbLogger.log('========================================');
@@ -74,23 +86,33 @@ const dbLogger = new Logger('DatabaseConnection');
           dbLogger.log(`Port: ${port}`);
           dbLogger.log(`Database: ${database}`);
           dbLogger.log(`Username: ${username}`);
-          dbLogger.log(`Password: ${process.env.DB_PASSWORD ? '[SET - ' + process.env.DB_PASSWORD.length + ' chars]' : '[NOT SET]'}`);
+          dbLogger.log(
+            `Password: ${process.env.DB_PASSWORD ? '[SET - ' + process.env.DB_PASSWORD.length + ' chars]' : '[NOT SET]'}`,
+          );
           dbLogger.log(`SSL Enabled: ${sslEnabled}`);
           dbLogger.log(`SSL Reject Unauthorized: ${sslRejectUnauthorized}`);
           dbLogger.log(`Connection Timeout: ${connectionTimeout}ms`);
           dbLogger.log(`Pool Max: ${process.env.DB_POOL_MAX || '10'}`);
           dbLogger.log(`Pool Min: ${process.env.DB_POOL_MIN || '2'}`);
-          dbLogger.log(`Connection String: postgresql://${username}:***@${host}:${port}/${database}`);
+          dbLogger.log(
+            `Connection String: postgresql://${username}:***@${host}:${port}/${database}`,
+          );
           dbLogger.log('========================================');
 
           // Warnings for common issues
           if (host.includes('azure.com') || host.includes('amazonaws.com')) {
             dbLogger.warn('⚠️  Detected cloud database provider');
-            dbLogger.warn('⚠️  Ensure firewall rules allow connections from this IP');
+            dbLogger.warn(
+              '⚠️  Ensure firewall rules allow connections from this IP',
+            );
           }
           if (connectionTimeout < 30000) {
-            dbLogger.warn(`⚠️  Connection timeout (${connectionTimeout}ms) may be too short for cloud databases`);
-            dbLogger.warn('⚠️  Recommended: 60000ms (60 seconds) for Azure/AWS');
+            dbLogger.warn(
+              `⚠️  Connection timeout (${connectionTimeout}ms) may be too short for cloud databases`,
+            );
+            dbLogger.warn(
+              '⚠️  Recommended: 60000ms (60 seconds) for Azure/AWS',
+            );
           }
 
           const config = {
@@ -100,15 +122,52 @@ const dbLogger = new Logger('DatabaseConnection');
             username,
             password: process.env.DB_PASSWORD,
             database,
-            entities: [User, Calendar, CalendarShare, Event, CalendarSyncConnection, SyncedCalendar, SyncEventMapping, Organisation, OrganisationAdmin, OrganisationUser, OrganisationResourceTypePermission, OrganisationCalendarPermission, ReservationCalendar, ReservationCalendarRole, ResourceType, Resource, OperatingHours, Reservation, AutomationRule, AutomationCondition, AutomationAction, AutomationAuditLog, LogEntry, LogSettings],
-            synchronize: process.env.DB_SYNCHRONIZE === 'true' || process.env.NODE_ENV === 'development',
-            ssl: sslEnabled ? { rejectUnauthorized: sslRejectUnauthorized } : false,
-            logging: process.env.NODE_ENV === 'development' || process.env.DB_LOGGING === 'true',
+            entities: [
+              User,
+              Calendar,
+              CalendarShare,
+              Event,
+              CalendarSyncConnection,
+              SyncedCalendar,
+              SyncEventMapping,
+              Organisation,
+              OrganisationAdmin,
+              OrganisationUser,
+              OrganisationResourceTypePermission,
+              OrganisationCalendarPermission,
+              ReservationCalendar,
+              ReservationCalendarRole,
+              ResourceType,
+              Resource,
+              OperatingHours,
+              Reservation,
+              AutomationRule,
+              AutomationCondition,
+              AutomationAction,
+              AutomationAuditLog,
+              LogEntry,
+              LogSettings,
+              AgentProfile,
+              AgentPermission,
+              AgentApiKey,
+            ],
+            synchronize:
+              process.env.DB_SYNCHRONIZE === 'true' ||
+              process.env.NODE_ENV === 'development',
+            ssl: sslEnabled
+              ? { rejectUnauthorized: sslRejectUnauthorized }
+              : false,
+            logging:
+              process.env.NODE_ENV === 'development' ||
+              process.env.DB_LOGGING === 'true',
             logger: 'advanced-console' as const,
             extra: {
               max: parseInt(process.env.DB_POOL_MAX || '10', 10),
               min: parseInt(process.env.DB_POOL_MIN || '2', 10),
-              idleTimeoutMillis: parseInt(process.env.DB_IDLE_TIMEOUT || '30000', 10),
+              idleTimeoutMillis: parseInt(
+                process.env.DB_IDLE_TIMEOUT || '30000',
+                10,
+              ),
               connectionTimeoutMillis: connectionTimeout,
             },
           };
@@ -119,7 +178,9 @@ const dbLogger = new Logger('DatabaseConnection');
           // Note: We can't use async/await here, but we can add event listeners
           // These will be triggered by TypeORM's internal connection logic
           process.nextTick(() => {
-            dbLogger.log(`⏱️  Connection attempt started at ${new Date().toISOString()}`);
+            dbLogger.log(
+              `⏱️  Connection attempt started at ${new Date().toISOString()}`,
+            );
           });
 
           return config;
@@ -128,12 +189,40 @@ const dbLogger = new Logger('DatabaseConnection');
           return {
             type: 'sqlite' as const,
             database: process.env.DB_DATABASE || 'cal3.db',
-            entities: [User, Calendar, CalendarShare, Event, CalendarSyncConnection, SyncedCalendar, SyncEventMapping, Organisation, OrganisationAdmin, OrganisationUser, OrganisationResourceTypePermission, OrganisationCalendarPermission, ReservationCalendar, ReservationCalendarRole, ResourceType, Resource, OperatingHours, Reservation, AutomationRule, AutomationCondition, AutomationAction, AutomationAuditLog, LogEntry, LogSettings],
+            entities: [
+              User,
+              Calendar,
+              CalendarShare,
+              Event,
+              CalendarSyncConnection,
+              SyncedCalendar,
+              SyncEventMapping,
+              Organisation,
+              OrganisationAdmin,
+              OrganisationUser,
+              OrganisationResourceTypePermission,
+              OrganisationCalendarPermission,
+              ReservationCalendar,
+              ReservationCalendarRole,
+              ResourceType,
+              Resource,
+              OperatingHours,
+              Reservation,
+              AutomationRule,
+              AutomationCondition,
+              AutomationAction,
+              AutomationAuditLog,
+              LogEntry,
+              LogSettings,
+              AgentProfile,
+              AgentPermission,
+              AgentApiKey,
+            ],
             synchronize: true,
             logging: process.env.NODE_ENV === 'development',
           };
         }
-      })()
+      })(),
     ),
     AuthModule,
     UsersModule,
@@ -148,9 +237,15 @@ const dbLogger = new Logger('DatabaseConnection');
     AutomationModule,
     CommonModule,
     LoggingModule,
+    AgentsModule,
     TypeOrmModule.forFeature([User]),
   ],
-  controllers: [AppController, UserProfileController, UserPermissionsController, FeatureFlagsController],
+  controllers: [
+    AppController,
+    UserProfileController,
+    UserPermissionsController,
+    FeatureFlagsController,
+  ],
   providers: [AppService, DatabaseDiagnosticsService, FeatureFlagsService],
 })
 export class AppModule {}

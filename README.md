@@ -39,6 +39,12 @@ Intelligent automation that responds to your calendar events automatically:
 - **Audit Logging**: Complete execution history with 1000-entry buffer per rule
 - **User Privacy**: All automations are private and isolated per user
 
+### 🤖 **MCP Agent Integrations**
+- Per-user agent profiles with granular action permissions (calendar access, automation triggers, profile data).
+- One-click API key issuance with secure hashing and revocation controls.
+- HTTP gateway for external MCP-compatible tools (`/api/mcp/metadata`, `/api/mcp/actions`, `/api/mcp/execute`).
+- [Setup guide](docs/agents/setup.md) · [Usage guide](docs/agents/usage.md)
+
 **Example Use Cases**:
 - Auto-color work meetings blue and personal events green
 - Flag high-priority events when title contains "urgent"

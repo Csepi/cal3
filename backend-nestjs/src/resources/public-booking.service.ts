@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException, BadRequestException, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+  Logger,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Between } from 'typeorm';
 import { Resource } from '../entities/resource.entity';
@@ -60,7 +65,9 @@ export class PublicBookingService {
     });
 
     if (!resource) {
-      throw new NotFoundException('Resource not found or booking link is invalid');
+      throw new NotFoundException(
+        'Resource not found or booking link is invalid',
+      );
     }
 
     // Return only public-safe information
@@ -81,14 +88,23 @@ export class PublicBookingService {
   /**
    * Get available time slots for a specific date
    */
-  async getAvailability(token: string, dateStr: string): Promise<ResourceAvailability> {
+  async getAvailability(
+    token: string,
+    dateStr: string,
+  ): Promise<ResourceAvailability> {
     const resource = await this.resourceRepository.findOne({
       where: { publicBookingToken: token, isActive: true },
-      relations: ['resourceType', 'resourceType.operatingHours', 'reservations'],
+      relations: [
+        'resourceType',
+        'resourceType.operatingHours',
+        'reservations',
+      ],
     });
 
     if (!resource) {
-      throw new NotFoundException('Resource not found or booking link is invalid');
+      throw new NotFoundException(
+        'Resource not found or booking link is invalid',
+      );
     }
 
     const date = new Date(dateStr);
@@ -153,14 +169,19 @@ export class PublicBookingService {
   /**
    * Create a public booking (auto-confirmed)
    */
-  async createPublicBooking(token: string, bookingDto: CreatePublicBookingDto): Promise<any> {
+  async createPublicBooking(
+    token: string,
+    bookingDto: CreatePublicBookingDto,
+  ): Promise<any> {
     const resource = await this.resourceRepository.findOne({
       where: { publicBookingToken: token, isActive: true },
       relations: ['resourceType'],
     });
 
     if (!resource) {
-      throw new NotFoundException('Resource not found or booking link is invalid');
+      throw new NotFoundException(
+        'Resource not found or booking link is invalid',
+      );
     }
 
     // Validate booking times
@@ -174,13 +195,15 @@ export class PublicBookingService {
     // Check if time slot is available
     const conflictingReservations = await this.reservationRepository
       .createQueryBuilder('reservation')
-      .where('reservation.resourceId = :resourceId', { resourceId: resource.id })
+      .where('reservation.resourceId = :resourceId', {
+        resourceId: resource.id,
+      })
       .andWhere('reservation.status IN (:...statuses)', {
-        statuses: [ReservationStatus.CONFIRMED, ReservationStatus.PENDING]
+        statuses: [ReservationStatus.CONFIRMED, ReservationStatus.PENDING],
       })
       .andWhere(
         '(reservation.startTime < :endTime AND reservation.endTime > :startTime)',
-        { startTime, endTime }
+        { startTime, endTime },
       )
       .getCount();
 
@@ -219,7 +242,8 @@ export class PublicBookingService {
       startTime: savedReservation.startTime,
       endTime: savedReservation.endTime,
       status: savedReservation.status,
-      confirmationMessage: 'Your booking has been confirmed! You will receive a confirmation email shortly.',
+      confirmationMessage:
+        'Your booking has been confirmed! You will receive a confirmation email shortly.',
     };
   }
 
@@ -290,7 +314,9 @@ export class PublicBookingService {
 
     await this.resourceRepository.save(resource);
 
-    this.logger.log(`Regenerated public booking token for resource #${resourceId}`);
+    this.logger.log(
+      `Regenerated public booking token for resource #${resourceId}`,
+    );
 
     return resource.publicBookingToken;
   }

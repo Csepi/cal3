@@ -8,10 +8,16 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DeepPartial } from 'typeorm';
 import * as crypto from 'crypto';
-import { AutomationRule, TriggerType } from '../entities/automation-rule.entity';
+import {
+  AutomationRule,
+  TriggerType,
+} from '../entities/automation-rule.entity';
 import { AutomationCondition } from '../entities/automation-condition.entity';
 import { AutomationAction } from '../entities/automation-action.entity';
-import { AutomationAuditLog, AuditLogStatus } from '../entities/automation-audit-log.entity';
+import {
+  AutomationAuditLog,
+  AuditLogStatus,
+} from '../entities/automation-audit-log.entity';
 import { Event } from '../entities/event.entity';
 import { AutomationEvaluatorService } from './automation-evaluator.service';
 import { ActionExecutorRegistry } from './executors/action-executor-registry';
@@ -70,7 +76,9 @@ export class AutomationService {
     });
 
     if (existingRule) {
-      throw new BadRequestException(`Rule with name "${createRuleDto.name}" already exists`);
+      throw new BadRequestException(
+        `Rule with name "${createRuleDto.name}" already exists`,
+      );
     }
 
     // Create rule entity
@@ -143,7 +151,9 @@ export class AutomationService {
 
     const [rules, total] = await queryBuilder.getManyAndCount();
 
-    const data: AutomationRuleDto[] = rules.map((rule) => this.mapToRuleDto(rule));
+    const data: AutomationRuleDto[] = rules.map((rule) =>
+      this.mapToRuleDto(rule),
+    );
 
     return {
       data,
@@ -156,7 +166,10 @@ export class AutomationService {
     };
   }
 
-  async getRule(userId: number, ruleId: number): Promise<AutomationRuleDetailDto> {
+  async getRule(
+    userId: number,
+    ruleId: number,
+  ): Promise<AutomationRuleDetailDto> {
     const rule = await this.ruleRepository.findOne({
       where: { id: ruleId },
       relations: ['conditions', 'actions'],
@@ -197,15 +210,20 @@ export class AutomationService {
         where: { createdById: userId, name: updateRuleDto.name },
       });
       if (existingRule) {
-        throw new BadRequestException(`Rule with name "${updateRuleDto.name}" already exists`);
+        throw new BadRequestException(
+          `Rule with name "${updateRuleDto.name}" already exists`,
+        );
       }
     }
 
     // Update scalar fields
     if (updateRuleDto.name) rule.name = updateRuleDto.name;
-    if (updateRuleDto.description !== undefined) rule.description = updateRuleDto.description;
-    if (updateRuleDto.isEnabled !== undefined) rule.isEnabled = updateRuleDto.isEnabled;
-    if (updateRuleDto.triggerConfig !== undefined) rule.triggerConfig = updateRuleDto.triggerConfig;
+    if (updateRuleDto.description !== undefined)
+      rule.description = updateRuleDto.description;
+    if (updateRuleDto.isEnabled !== undefined)
+      rule.isEnabled = updateRuleDto.isEnabled;
+    if (updateRuleDto.triggerConfig !== undefined)
+      rule.triggerConfig = updateRuleDto.triggerConfig;
     if (updateRuleDto.conditionLogic !== undefined)
       rule.conditionLogic = updateRuleDto.conditionLogic;
 
@@ -286,16 +304,20 @@ export class AutomationService {
     const lastExecution = this.executionTimestamps.get(ruleId);
 
     if (lastExecution && now - lastExecution < this.RATE_LIMIT_MS) {
-      const remainingSeconds = Math.ceil((this.RATE_LIMIT_MS - (now - lastExecution)) / 1000);
+      const remainingSeconds = Math.ceil(
+        (this.RATE_LIMIT_MS - (now - lastExecution)) / 1000,
+      );
       throw new BadRequestException(
-        `Rate limit exceeded. Please wait ${remainingSeconds} seconds before running this rule again.`
+        `Rate limit exceeded. Please wait ${remainingSeconds} seconds before running this rule again.`,
       );
     }
 
     // Update execution timestamp
     this.executionTimestamps.set(ruleId, now);
 
-    this.logger.log(`Executing rule ${ruleId} retroactively for user ${userId}`);
+    this.logger.log(
+      `Executing rule ${ruleId} retroactively for user ${userId}`,
+    );
 
     // Get all user's events for retroactive execution
     const events = await this.eventRepository
@@ -344,7 +366,11 @@ export class AutomationService {
 
     try {
       // Step 1: Evaluate conditions
-      const conditionsResult = await this.evaluatorService.evaluateConditions(rule, event, webhookData);
+      const conditionsResult = await this.evaluatorService.evaluateConditions(
+        rule,
+        event,
+        webhookData,
+      );
 
       // Step 2: If conditions pass, execute actions
       let actionResults: ActionResultDto[] = [];
@@ -393,7 +419,9 @@ export class AutomationService {
         ruleId: rule.id,
         eventId: event?.id ?? undefined,
         triggerType: rule.triggerType,
-        triggerContext: webhookData || { manual: executedByUserId ? true : false },
+        triggerContext: webhookData || {
+          manual: executedByUserId ? true : false,
+        },
         conditionsResult: {
           passed: conditionsResult.passed,
           evaluations: conditionsResult.evaluations,
@@ -426,7 +454,9 @@ export class AutomationService {
         ruleId: rule.id,
         eventId: event?.id ?? undefined,
         triggerType: rule.triggerType,
-        triggerContext: webhookData || { manual: executedByUserId ? true : false },
+        triggerContext: webhookData || {
+          manual: executedByUserId ? true : false,
+        },
         conditionsResult: { passed: false, evaluations: [] },
         actionResults: undefined,
         status: AuditLogStatus.FAILURE,
@@ -448,7 +478,10 @@ export class AutomationService {
    */
   private async updateRuleExecutionMetadata(ruleId: number): Promise<void> {
     await this.ruleRepository.increment({ id: ruleId }, 'executionCount', 1);
-    await this.ruleRepository.update({ id: ruleId }, { lastExecutedAt: new Date() });
+    await this.ruleRepository.update(
+      { id: ruleId },
+      { lastExecutedAt: new Date() },
+    );
   }
 
   /**
@@ -505,7 +538,10 @@ export class AutomationService {
    * Find all enabled rules for a specific trigger type and user
    * Used by event lifecycle hooks and other trigger sources
    */
-  async findRulesByTrigger(triggerType: string, userId: number): Promise<AutomationRule[]> {
+  async findRulesByTrigger(
+    triggerType: string,
+    userId: number,
+  ): Promise<AutomationRule[]> {
     return this.ruleRepository.find({
       where: {
         createdById: userId,
@@ -552,16 +588,22 @@ export class AutomationService {
     }
 
     if (query.fromDate) {
-      queryBuilder.andWhere('log.executedAt >= :fromDate', { fromDate: new Date(query.fromDate) });
+      queryBuilder.andWhere('log.executedAt >= :fromDate', {
+        fromDate: new Date(query.fromDate),
+      });
     }
 
     if (query.toDate) {
-      queryBuilder.andWhere('log.executedAt <= :toDate', { toDate: new Date(query.toDate) });
+      queryBuilder.andWhere('log.executedAt <= :toDate', {
+        toDate: new Date(query.toDate),
+      });
     }
 
     const [logs, total] = await queryBuilder.getManyAndCount();
 
-    const data: AuditLogDto[] = logs.map((log) => this.mapToAuditLogDto(log, true));
+    const data: AuditLogDto[] = logs.map((log) =>
+      this.mapToAuditLogDto(log, true),
+    );
 
     return {
       data,
@@ -592,7 +634,10 @@ export class AutomationService {
     return this.mapToAuditLogDetailDto(log);
   }
 
-  async getRuleStats(userId: number, ruleId: number): Promise<AuditLogStatsDto> {
+  async getRuleStats(
+    userId: number,
+    ruleId: number,
+  ): Promise<AuditLogStatsDto> {
     // Verify rule ownership
     const rule = await this.ruleRepository.findOne({ where: { id: ruleId } });
     if (!rule) {
@@ -605,10 +650,22 @@ export class AutomationService {
     const stats = await this.auditLogRepository
       .createQueryBuilder('log')
       .select('COUNT(*)', 'totalExecutions')
-      .addSelect('SUM(CASE WHEN status = :success THEN 1 ELSE 0 END)', 'successCount')
-      .addSelect('SUM(CASE WHEN status = :failure THEN 1 ELSE 0 END)', 'failureCount')
-      .addSelect('SUM(CASE WHEN status = :skipped THEN 1 ELSE 0 END)', 'skippedCount')
-      .addSelect('SUM(CASE WHEN status = :partial THEN 1 ELSE 0 END)', 'partialSuccessCount')
+      .addSelect(
+        'SUM(CASE WHEN status = :success THEN 1 ELSE 0 END)',
+        'successCount',
+      )
+      .addSelect(
+        'SUM(CASE WHEN status = :failure THEN 1 ELSE 0 END)',
+        'failureCount',
+      )
+      .addSelect(
+        'SUM(CASE WHEN status = :skipped THEN 1 ELSE 0 END)',
+        'skippedCount',
+      )
+      .addSelect(
+        'SUM(CASE WHEN status = :partial THEN 1 ELSE 0 END)',
+        'partialSuccessCount',
+      )
       .addSelect('AVG(duration_ms)', 'avgExecutionTimeMs')
       .addSelect('MAX(log.executedAt)', 'lastExecutedAt')
       .where('log.ruleId = :ruleId', { ruleId })
@@ -627,7 +684,9 @@ export class AutomationService {
       skippedCount: parseInt(stats.skippedCount) || 0,
       partialSuccessCount: parseInt(stats.partialSuccessCount) || 0,
       avgExecutionTimeMs: parseFloat(stats.avgExecutionTimeMs) || 0,
-      lastExecutedAt: stats.lastExecutedAt ? new Date(stats.lastExecutedAt) : null,
+      lastExecutedAt: stats.lastExecutedAt
+        ? new Date(stats.lastExecutedAt)
+        : null,
     };
   }
 
@@ -673,7 +732,10 @@ export class AutomationService {
     };
   }
 
-  private mapToAuditLogDto(log: AutomationAuditLog, includeRelationNames = false): AuditLogDto {
+  private mapToAuditLogDto(
+    log: AutomationAuditLog,
+    includeRelationNames = false,
+  ): AuditLogDto {
     const dto: any = {
       id: log.id,
       ruleId: log.ruleId,
@@ -759,7 +821,9 @@ export class AutomationService {
 
     if (rule.triggerType !== TriggerType.WEBHOOK_INCOMING) {
       this.logger.error(`Rule ${rule.id} is not a webhook trigger`);
-      throw new BadRequestException('This rule is not configured for webhook triggers');
+      throw new BadRequestException(
+        'This rule is not configured for webhook triggers',
+      );
     }
 
     // Execute the rule with webhook data (no event needed)
@@ -794,7 +858,10 @@ export class AutomationService {
    * @param ruleId Rule ID
    * @returns New webhook token
    */
-  async regenerateWebhookToken(userId: number, ruleId: number): Promise<string> {
+  async regenerateWebhookToken(
+    userId: number,
+    ruleId: number,
+  ): Promise<string> {
     const rule = await this.ruleRepository.findOne({ where: { id: ruleId } });
 
     if (!rule) {

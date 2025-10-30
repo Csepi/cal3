@@ -13,26 +13,12 @@ import { AdminGuard } from '../auth/guards/admin.guard';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([
-      Organisation,
-      OrganisationAdmin,
-      User
-    ]),
+    TypeOrmModule.forFeature([Organisation, OrganisationAdmin, User]),
     CalendarsModule,
-    CommonModule // This imports UserPermissionsService
+    CommonModule, // This imports UserPermissionsService
   ],
-  controllers: [
-    OrganisationsController,
-    OrganisationAdminController
-  ],
-  providers: [
-    OrganisationsService,
-    OrganisationAdminService,
-    AdminGuard
-  ],
-  exports: [
-    OrganisationsService,
-    OrganisationAdminService
-  ],
+  controllers: [OrganisationsController, OrganisationAdminController],
+  providers: [OrganisationsService, OrganisationAdminService, AdminGuard],
+  exports: [OrganisationsService, OrganisationAdminService],
 })
 export class OrganisationsModule {}

@@ -3,7 +3,10 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ResourceType } from '../entities/resource-type.entity';
 import { Organisation } from '../entities/organisation.entity';
-import { CreateResourceTypeDto, UpdateResourceTypeDto } from '../dto/resource-type.dto';
+import {
+  CreateResourceTypeDto,
+  UpdateResourceTypeDto,
+} from '../dto/resource-type.dto';
 
 @Injectable()
 export class ResourceTypesService {
@@ -20,7 +23,9 @@ export class ResourceTypesService {
     });
 
     if (!organisation) {
-      throw new NotFoundException(`Organisation #${createDto.organisationId} not found`);
+      throw new NotFoundException(
+        `Organisation #${createDto.organisationId} not found`,
+      );
     }
 
     const resourceType = this.resourceTypeRepository.create({
@@ -43,22 +48,39 @@ export class ResourceTypesService {
     });
   }
 
-  async findAllByOrganizations(organizationIds: number[], organisationId?: number): Promise<ResourceType[]> {
-    console.log('🔍 ResourceTypesService.findAllByOrganizations called with orgIds:', organizationIds, 'organisationId:', organisationId);
+  async findAllByOrganizations(
+    organizationIds: number[],
+    organisationId?: number,
+  ): Promise<ResourceType[]> {
+    console.log(
+      '🔍 ResourceTypesService.findAllByOrganizations called with orgIds:',
+      organizationIds,
+      'organisationId:',
+      organisationId,
+    );
 
     const queryBuilder = this.resourceTypeRepository
       .createQueryBuilder('resourceType')
       .leftJoinAndSelect('resourceType.organisation', 'organisation')
       .leftJoinAndSelect('resourceType.resources', 'resources')
       .leftJoinAndSelect('resourceType.operatingHours', 'operatingHours')
-      .where('resourceType.organisationId IN (:...organizationIds)', { organizationIds });
+      .where('resourceType.organisationId IN (:...organizationIds)', {
+        organizationIds,
+      });
 
     if (organisationId) {
-      queryBuilder.andWhere('resourceType.organisationId = :organisationId', { organisationId });
+      queryBuilder.andWhere('resourceType.organisationId = :organisationId', {
+        organisationId,
+      });
     }
 
     const resourceTypes = await queryBuilder.getMany();
-    console.log('📋 Found resource types:', resourceTypes.map(rt => `${rt.id}:${rt.name} (org: ${rt.organisationId})`));
+    console.log(
+      '📋 Found resource types:',
+      resourceTypes.map(
+        (rt) => `${rt.id}:${rt.name} (org: ${rt.organisationId})`,
+      ),
+    );
 
     return resourceTypes;
   }
@@ -76,7 +98,10 @@ export class ResourceTypesService {
     return resourceType;
   }
 
-  async update(id: number, updateDto: UpdateResourceTypeDto): Promise<ResourceType> {
+  async update(
+    id: number,
+    updateDto: UpdateResourceTypeDto,
+  ): Promise<ResourceType> {
     const resourceType = await this.findOne(id);
     Object.assign(resourceType, updateDto);
     return await this.resourceTypeRepository.save(resourceType);

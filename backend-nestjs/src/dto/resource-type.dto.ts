@@ -1,4 +1,11 @@
-import { IsString, IsOptional, IsBoolean, IsInt, IsArray, Min } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  IsBoolean,
+  IsInt,
+  IsArray,
+  Min,
+} from 'class-validator';
 
 export class CreateResourceTypeDto {
   @IsString()

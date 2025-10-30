@@ -23,11 +23,15 @@ export class ActionExecutorRegistry implements OnModuleInit {
    */
   register(executor: IActionExecutor): void {
     if (this.executors.has(executor.actionType)) {
-      throw new Error(`Executor for action type "${executor.actionType}" is already registered`);
+      throw new Error(
+        `Executor for action type "${executor.actionType}" is already registered`,
+      );
     }
 
     this.executors.set(executor.actionType, executor);
-    console.log(`[ActionExecutorRegistry] Registered executor for: ${executor.actionType}`);
+    console.log(
+      `[ActionExecutorRegistry] Registered executor for: ${executor.actionType}`,
+    );
   }
 
   /**

@@ -1,11 +1,22 @@
-import { Injectable, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Organisation } from '../entities/organisation.entity';
 import { User, UsagePlan } from '../entities/user.entity';
-import { OrganisationUser, OrganisationRoleType } from '../entities/organisation-user.entity';
+import {
+  OrganisationUser,
+  OrganisationRoleType,
+} from '../entities/organisation-user.entity';
 import { OrganisationAdmin } from '../entities/organisation-admin.entity';
-import { CreateOrganisationDto, UpdateOrganisationDto } from '../dto/organisation.dto';
+import {
+  CreateOrganisationDto,
+  UpdateOrganisationDto,
+} from '../dto/organisation.dto';
 import { AssignOrganisationUserDto } from '../dto/organisation-user.dto';
 import { CascadeDeletionService } from '../common/services/cascade-deletion.service';
 
@@ -31,13 +42,18 @@ export class OrganisationsService {
   /**
    * Create organization and automatically add creator as ORG_ADMIN
    */
-  async createWithCreator(createDto: CreateOrganisationDto, creatorId: number): Promise<Organisation> {
+  async createWithCreator(
+    createDto: CreateOrganisationDto,
+    creatorId: number,
+  ): Promise<Organisation> {
     // Create the organization
     const organisation = this.organisationRepository.create(createDto);
     const savedOrg = await this.organisationRepository.save(organisation);
 
     // Get the creator user
-    const creator = await this.userRepository.findOne({ where: { id: creatorId } });
+    const creator = await this.userRepository.findOne({
+      where: { id: creatorId },
+    });
     if (!creator) {
       throw new NotFoundException(`Creator user #${creatorId} not found`);
     }
@@ -51,7 +67,9 @@ export class OrganisationsService {
     });
     await this.organisationUserRepository.save(orgUser);
 
-    console.log(`✅ Created organization #${savedOrg.id} and automatically added creator #${creatorId} as ORG_ADMIN`);
+    console.log(
+      `✅ Created organization #${savedOrg.id} and automatically added creator #${creatorId} as ORG_ADMIN`,
+    );
 
     return savedOrg;
   }
@@ -73,7 +91,10 @@ export class OrganisationsService {
     return organisation;
   }
 
-  async update(id: number, updateDto: UpdateOrganisationDto): Promise<Organisation> {
+  async update(
+    id: number,
+    updateDto: UpdateOrganisationDto,
+  ): Promise<Organisation> {
     const organisation = await this.findOne(id);
     Object.assign(organisation, updateDto);
     return await this.organisationRepository.save(organisation);
@@ -84,7 +105,10 @@ export class OrganisationsService {
     await this.organisationRepository.remove(organisation);
   }
 
-  async assignUser(organisationId: number, userId: number): Promise<Organisation> {
+  async assignUser(
+    organisationId: number,
+    userId: number,
+  ): Promise<Organisation> {
     const organisation = await this.findOne(organisationId);
     const user = await this.userRepository.findOne({ where: { id: userId } });
 
@@ -96,7 +120,7 @@ export class OrganisationsService {
       organisation.users = [];
     }
 
-    if (!organisation.users.find(u => u.id === userId)) {
+    if (!organisation.users.find((u) => u.id === userId)) {
       organisation.users.push(user);
       await this.organisationRepository.save(organisation);
     }
@@ -104,11 +128,14 @@ export class OrganisationsService {
     return organisation;
   }
 
-  async removeUser(organisationId: number, userId: number): Promise<Organisation> {
+  async removeUser(
+    organisationId: number,
+    userId: number,
+  ): Promise<Organisation> {
     const organisation = await this.findOne(organisationId);
 
     if (organisation.users) {
-      organisation.users = organisation.users.filter(u => u.id !== userId);
+      organisation.users = organisation.users.filter((u) => u.id !== userId);
       await this.organisationRepository.save(organisation);
     }
 
@@ -136,14 +163,18 @@ export class OrganisationsService {
     const organisation = await this.findOne(organisationId);
 
     // Verify user exists and has required plans
-    const user = await this.userRepository.findOne({ where: { id: assignDto.userId } });
+    const user = await this.userRepository.findOne({
+      where: { id: assignDto.userId },
+    });
     if (!user) {
       throw new NotFoundException(`User #${assignDto.userId} not found`);
     }
 
     // Check user has Store or Enterprise plan
     if (!user.usagePlans || !Array.isArray(user.usagePlans)) {
-      throw new BadRequestException('User does not have required usage plans for organization access');
+      throw new BadRequestException(
+        'User does not have required usage plans for organization access',
+      );
     }
 
     const hasRequiredPlan = user.usagePlans.some(
@@ -183,7 +214,10 @@ export class OrganisationsService {
    * Remove a user from an organization
    * Cleans up all related permissions
    */
-  async removeUserFromOrganization(organisationId: number, userId: number): Promise<void> {
+  async removeUserFromOrganization(
+    organisationId: number,
+    userId: number,
+  ): Promise<void> {
     // Verify organization exists
     await this.findOne(organisationId);
 
@@ -198,21 +232,28 @@ export class OrganisationsService {
    * Delete organization with cascade (all resource types, resources, reservations)
    */
   async deleteOrganizationCascade(organisationId: number, userId: number) {
-    return await this.cascadeDeletionService.deleteOrganization(organisationId, userId);
+    return await this.cascadeDeletionService.deleteOrganization(
+      organisationId,
+      userId,
+    );
   }
 
   /**
    * Preview what will be deleted when deleting an organization
    */
   async previewOrganizationDeletion(organisationId: number) {
-    return await this.cascadeDeletionService.previewOrganizationDeletion(organisationId);
+    return await this.cascadeDeletionService.previewOrganizationDeletion(
+      organisationId,
+    );
   }
 
   /**
    * Get all users assigned to an organization with their roles
    * IMPORTANT: This includes BOTH organisation_users and organisation_admins
    */
-  async getOrganizationUsers(organisationId: number): Promise<OrganisationUser[]> {
+  async getOrganizationUsers(
+    organisationId: number,
+  ): Promise<OrganisationUser[]> {
     console.log(`🔍 getOrganizationUsers called for org #${organisationId}`);
 
     // Get users from organisation_users table
@@ -220,17 +261,23 @@ export class OrganisationsService {
       where: { organisationId },
       relations: ['user'],
     });
-    console.log(`📋 Found ${orgUsers.length} users in organisation_users table:`, orgUsers.map(u => `${u.userId}:${u.role}`));
+    console.log(
+      `📋 Found ${orgUsers.length} users in organisation_users table:`,
+      orgUsers.map((u) => `${u.userId}:${u.role}`),
+    );
 
     // Get users from organisation_admins table
     const orgAdmins = await this.organisationAdminRepository.find({
       where: { organisationId },
       relations: ['user'],
     });
-    console.log(`👑 Found ${orgAdmins.length} admins in organisation_admins table:`, orgAdmins.map(a => a.userId));
+    console.log(
+      `👑 Found ${orgAdmins.length} admins in organisation_admins table:`,
+      orgAdmins.map((a) => a.userId),
+    );
 
     // Convert OrganisationAdmin records to OrganisationUser format with ADMIN role
-    const adminUsersAsOrgUsers: OrganisationUser[] = orgAdmins.map(admin => {
+    const adminUsersAsOrgUsers: OrganisationUser[] = orgAdmins.map((admin) => {
       const orgUser = new OrganisationUser();
       orgUser.id = admin.id;
       orgUser.organisationId = admin.organisationId;
@@ -238,7 +285,9 @@ export class OrganisationsService {
       orgUser.user = admin.user;
       orgUser.role = OrganisationRoleType.ADMIN; // Mark as ADMIN
       orgUser.assignedAt = admin.assignedAt;
-      console.log(`✨ Converting admin user #${admin.userId} to OrganisationUser with ADMIN role`);
+      console.log(
+        `✨ Converting admin user #${admin.userId} to OrganisationUser with ADMIN role`,
+      );
       return orgUser;
     });
 
@@ -246,13 +295,16 @@ export class OrganisationsService {
     const userMap = new Map<number, OrganisationUser>();
 
     // First add regular org users
-    orgUsers.forEach(ou => userMap.set(ou.userId, ou));
+    orgUsers.forEach((ou) => userMap.set(ou.userId, ou));
 
     // Then add/override with org admins (ADMIN takes precedence)
-    adminUsersAsOrgUsers.forEach(ou => userMap.set(ou.userId, ou));
+    adminUsersAsOrgUsers.forEach((ou) => userMap.set(ou.userId, ou));
 
     const result = Array.from(userMap.values());
-    console.log(`📊 Final result: ${result.length} users total:`, result.map(u => `${u.userId}:${u.role}`));
+    console.log(
+      `📊 Final result: ${result.length} users total:`,
+      result.map((u) => `${u.userId}:${u.role}`),
+    );
 
     return result;
   }
@@ -270,7 +322,9 @@ export class OrganisationsService {
     });
 
     if (!orgUser) {
-      throw new NotFoundException(`User #${userId} not found in organisation #${organisationId}`);
+      throw new NotFoundException(
+        `User #${userId} not found in organisation #${organisationId}`,
+      );
     }
 
     orgUser.role = newRole;
@@ -304,7 +358,9 @@ export class OrganisationsService {
         resourceType.color = color;
       }
       // Save all resource types with the new color
-      await this.organisationRepository.manager.save(organisation.resourceTypes);
+      await this.organisationRepository.manager.save(
+        organisation.resourceTypes,
+      );
     }
 
     return updated;

@@ -1,4 +1,12 @@
-import { IsString, IsOptional, IsBoolean, IsInt, Min, Max, Matches } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  IsBoolean,
+  IsInt,
+  Min,
+  Max,
+  Matches,
+} from 'class-validator';
 
 export class CreateOperatingHoursDto {
   @IsInt()
@@ -8,13 +16,13 @@ export class CreateOperatingHoursDto {
 
   @IsString()
   @Matches(/^([01]\d|2[0-3]):([0-5]\d)$/, {
-    message: 'openTime must be in HH:MM format'
+    message: 'openTime must be in HH:MM format',
   })
   openTime: string;
 
   @IsString()
   @Matches(/^([01]\d|2[0-3]):([0-5]\d)$/, {
-    message: 'closeTime must be in HH:MM format'
+    message: 'closeTime must be in HH:MM format',
   })
   closeTime: string;
 
@@ -32,14 +40,14 @@ export class UpdateOperatingHoursDto {
   @IsOptional()
   @IsString()
   @Matches(/^([01]\d|2[0-3]):([0-5]\d)$/, {
-    message: 'openTime must be in HH:MM format'
+    message: 'openTime must be in HH:MM format',
   })
   openTime?: string;
 
   @IsOptional()
   @IsString()
   @Matches(/^([01]\d|2[0-3]):([0-5]\d)$/, {
-    message: 'closeTime must be in HH:MM format'
+    message: 'closeTime must be in HH:MM format',
   })
   closeTime?: string;
 

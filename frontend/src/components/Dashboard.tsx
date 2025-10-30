@@ -20,6 +20,7 @@ import { useTranslation } from 'react-i18next';
 import { Login } from './auth';
 import Calendar from './Calendar';
 import AdminPanel from './AdminPanel';
+import AgentSettingsPage from './agent/AgentSettingsPage';
 import UserProfile from './UserProfile';
 import CalendarSync from './sync/CalendarSync';
 import ReservationsPanel from './ReservationsPanel';
@@ -37,7 +38,7 @@ import type { TabId } from './mobile/organisms/BottomTabBar';
 /**
  * View types for the main navigation
  */
-type DashboardView = 'calendar' | 'admin' | 'profile' | 'sync' | 'reservations' | 'automation';
+type DashboardView = 'calendar' | 'admin' | 'profile' | 'sync' | 'reservations' | 'automation' | 'agent';
 
 const Dashboard: React.FC = () => {
   // Hooks
@@ -266,6 +267,9 @@ const Dashboard: React.FC = () => {
           {currentView === 'automation' && featureFlags.automation && (
             <AutomationPanel themeColor={themeColor} />
           )}
+          {currentView === 'agent' && featureFlags.agents && (
+            <AgentSettingsPage />
+          )}
           {currentView === 'reservations' && featureFlags.reservations && canAccessReservations && !userProfile?.hideReservationsTab && (
             <ReservationsPanel themeColor={themeColor} />
           )}
@@ -292,3 +296,6 @@ const Dashboard: React.FC = () => {
 };
 
 export default Dashboard;
+
+
+

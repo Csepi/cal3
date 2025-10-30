@@ -28,7 +28,7 @@ export class ResourceType {
   @Column({ type: 'int', default: 0 })
   bufferTime: number;
 
-  @Column({ type: 'json', default: () => "'[\"name\", \"phone\", \"email\"]'" })
+  @Column({ type: 'json', default: () => '\'["name", "phone", "email"]\'' })
   customerInfoFields: string[];
 
   @Column({ default: false })

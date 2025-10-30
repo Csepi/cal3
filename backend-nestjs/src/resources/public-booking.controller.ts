@@ -1,6 +1,9 @@
 import { Controller, Get, Post, Body, Param, Query } from '@nestjs/common';
 import { PublicBookingService } from './public-booking.service';
-import { CreatePublicBookingDto, AvailabilityQueryDto } from '../dto/public-booking.dto';
+import {
+  CreatePublicBookingDto,
+  AvailabilityQueryDto,
+} from '../dto/public-booking.dto';
 
 /**
  * PublicBookingController
@@ -52,6 +55,9 @@ export class PublicBookingController {
     @Param('token') token: string,
     @Body() bookingDto: CreatePublicBookingDto,
   ) {
-    return await this.publicBookingService.createPublicBooking(token, bookingDto);
+    return await this.publicBookingService.createPublicBooking(
+      token,
+      bookingDto,
+    );
   }
 }

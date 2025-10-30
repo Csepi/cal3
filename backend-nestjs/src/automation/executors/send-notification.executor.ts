@@ -1,5 +1,8 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
-import { AutomationAction, ActionType } from '../../entities/automation-action.entity';
+import {
+  AutomationAction,
+  ActionType,
+} from '../../entities/automation-action.entity';
 import {
   IActionExecutor,
   ActionExecutionContext,
@@ -29,13 +32,16 @@ export class SendNotificationExecutor implements IActionExecutor, OnModuleInit {
     const executedAt = new Date();
 
     try {
-      const interpolatedConfig = this.smartValuesService.interpolateObjectValues(
-        action.actionConfig || {},
-        context,
-      );
+      const interpolatedConfig =
+        this.smartValuesService.interpolateObjectValues(
+          action.actionConfig || {},
+          context,
+        );
       this.validateConfig(interpolatedConfig);
 
-      const title = interpolatedConfig.title ? String(interpolatedConfig.title).trim() : null;
+      const title = interpolatedConfig.title
+        ? String(interpolatedConfig.title).trim()
+        : null;
       const message = String(interpolatedConfig.message).trim();
       const priority =
         typeof interpolatedConfig.priority === 'string'
@@ -73,18 +79,26 @@ export class SendNotificationExecutor implements IActionExecutor, OnModuleInit {
       throw new Error('Action configuration must be an object');
     }
 
-    if (typeof actionConfig.message !== 'string' || actionConfig.message.trim().length === 0) {
+    if (
+      typeof actionConfig.message !== 'string' ||
+      actionConfig.message.trim().length === 0
+    ) {
       throw new Error('Notification message is required');
     }
 
     if (actionConfig.priority !== undefined) {
       const value = String(actionConfig.priority).toLowerCase();
       if (!['low', 'normal', 'high'].includes(value)) {
-        throw new Error('Notification priority must be one of: low, normal, high');
+        throw new Error(
+          'Notification priority must be one of: low, normal, high',
+        );
       }
     }
 
-    if (actionConfig.title !== undefined && typeof actionConfig.title !== 'string') {
+    if (
+      actionConfig.title !== undefined &&
+      typeof actionConfig.title !== 'string'
+    ) {
       throw new Error('Notification title must be a string');
     }
 

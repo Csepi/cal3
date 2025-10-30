@@ -86,7 +86,10 @@ export class Calendar {
   events: Event[];
 
   // Reservation calendar configuration (one-to-one relationship)
-  @OneToMany(() => ReservationCalendar, (reservationCalendar) => reservationCalendar.calendar)
+  @OneToMany(
+    () => ReservationCalendar,
+    (reservationCalendar) => reservationCalendar.calendar,
+  )
   reservationCalendarConfig: ReservationCalendar[];
 }
 

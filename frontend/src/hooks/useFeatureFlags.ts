@@ -22,6 +22,7 @@ export function useFeatureFlags() {
     calendarSync: true,
     reservations: true,
     automation: true,
+    agents: true,
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -49,6 +50,7 @@ export function useFeatureFlags() {
             calendarSync: true,
             reservations: true,
             automation: true,
+            agents: true,
           });
         }
       } finally {

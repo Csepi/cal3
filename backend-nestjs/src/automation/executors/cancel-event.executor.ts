@@ -1,7 +1,10 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { AutomationAction, ActionType } from '../../entities/automation-action.entity';
+import {
+  AutomationAction,
+  ActionType,
+} from '../../entities/automation-action.entity';
 import { Event, EventStatus } from '../../entities/event.entity';
 import {
   IActionExecutor,
@@ -37,14 +40,16 @@ export class CancelEventExecutor implements IActionExecutor, OnModuleInit {
         throw new Error('No event available to cancel');
       }
 
-      const interpolatedConfig = this.smartValuesService.interpolateObjectValues(
-        action.actionConfig || {},
-        context,
-      );
+      const interpolatedConfig =
+        this.smartValuesService.interpolateObjectValues(
+          action.actionConfig || {},
+          context,
+        );
       this.validateConfig(interpolatedConfig);
 
       const reason =
-        interpolatedConfig.reason !== undefined && interpolatedConfig.reason !== null
+        interpolatedConfig.reason !== undefined &&
+        interpolatedConfig.reason !== null
           ? String(interpolatedConfig.reason).trim()
           : undefined;
 
@@ -60,7 +65,11 @@ export class CancelEventExecutor implements IActionExecutor, OnModuleInit {
 
       event.status = EventStatus.CANCELLED;
       if (reason) {
-        event.notes = this.appendCancellationReason(event.notes, reason, executedAt);
+        event.notes = this.appendCancellationReason(
+          event.notes,
+          reason,
+          executedAt,
+        );
       }
 
       return {

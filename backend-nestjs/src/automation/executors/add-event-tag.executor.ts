@@ -1,7 +1,10 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { AutomationAction, ActionType } from '../../entities/automation-action.entity';
+import {
+  AutomationAction,
+  ActionType,
+} from '../../entities/automation-action.entity';
 import { Event } from '../../entities/event.entity';
 import {
   IActionExecutor,
@@ -37,13 +40,16 @@ export class AddEventTagExecutor implements IActionExecutor, OnModuleInit {
         throw new Error('No event available to tag');
       }
 
-      const interpolatedConfig = this.smartValuesService.interpolateObjectValues(
-        action.actionConfig || {},
-        context,
-      );
+      const interpolatedConfig =
+        this.smartValuesService.interpolateObjectValues(
+          action.actionConfig || {},
+          context,
+        );
       this.validateConfig(interpolatedConfig);
 
-      const rawTags = (interpolatedConfig.tag as string).split(',').map((tag) => tag.trim());
+      const rawTags = (interpolatedConfig.tag as string)
+        .split(',')
+        .map((tag) => tag.trim());
       const tagsToAdd = rawTags.filter((tag) => tag.length > 0);
 
       if (tagsToAdd.length === 0) {
@@ -90,8 +96,13 @@ export class AddEventTagExecutor implements IActionExecutor, OnModuleInit {
       throw new Error('Action configuration must be an object');
     }
 
-    if (typeof actionConfig.tag !== 'string' || actionConfig.tag.trim().length === 0) {
-      throw new Error('Action configuration must include a non-empty "tag" string');
+    if (
+      typeof actionConfig.tag !== 'string' ||
+      actionConfig.tag.trim().length === 0
+    ) {
+      throw new Error(
+        'Action configuration must include a non-empty "tag" string',
+      );
     }
 
     return true;

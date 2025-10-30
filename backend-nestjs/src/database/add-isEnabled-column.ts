@@ -32,7 +32,9 @@ async function addIsEnabledColumn() {
     const result = await dataSource.query(checkQuery);
 
     if (result.length > 0) {
-      console.log('✅ Column "isEnabled" already exists in automation_rules table');
+      console.log(
+        '✅ Column "isEnabled" already exists in automation_rules table',
+      );
     } else {
       console.log('➕ Adding "isEnabled" column to automation_rules table...');
 

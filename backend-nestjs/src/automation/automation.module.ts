@@ -52,6 +52,10 @@ import { CreateTaskExecutor } from './executors/create-task.executor';
     CreateTaskExecutor,
     WebhookExecutor,
   ],
-  exports: [AutomationService, AutomationEvaluatorService, AutomationSmartValuesService],
+  exports: [
+    AutomationService,
+    AutomationEvaluatorService,
+    AutomationSmartValuesService,
+  ],
 })
 export class AutomationModule {}

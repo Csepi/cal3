@@ -1,7 +1,14 @@
 import { Injectable, OnModuleInit, Logger } from '@nestjs/common';
 import { Event } from '../../entities/event.entity';
-import { AutomationAction, ActionType } from '../../entities/automation-action.entity';
-import { IActionExecutor, ActionExecutionResult, ActionExecutionContext } from './action-executor.interface';
+import {
+  AutomationAction,
+  ActionType,
+} from '../../entities/automation-action.entity';
+import {
+  IActionExecutor,
+  ActionExecutionResult,
+  ActionExecutionContext,
+} from './action-executor.interface';
 import { ActionExecutorRegistry } from './action-executor-registry';
 import { AutomationSmartValuesService } from '../automation-smart-values.service';
 
@@ -31,26 +38,34 @@ export class WebhookExecutor implements IActionExecutor, OnModuleInit {
    * @param context The execution context (includes event and webhook data)
    * @returns Execution result
    */
-  async execute(action: AutomationAction, context: ActionExecutionContext): Promise<ActionExecutionResult> {
+  async execute(
+    action: AutomationAction,
+    context: ActionExecutionContext,
+  ): Promise<ActionExecutionResult> {
     const executedAt = new Date();
 
     try {
       // Interpolate smart values in action configuration
-      const interpolatedConfig = this.smartValuesService.interpolateObjectValues(
-        action.actionConfig,
-        context,
-      );
+      const interpolatedConfig =
+        this.smartValuesService.interpolateObjectValues(
+          action.actionConfig,
+          context,
+        );
 
       // Validate configuration (after interpolation)
       this.validateConfig(interpolatedConfig);
 
-      const { url, includeEventData, headers, customPayload } = interpolatedConfig;
+      const { url, includeEventData, headers, customPayload } =
+        interpolatedConfig;
 
       // Prepare payload (support custom payload with smart values)
       let payload: Record<string, any>;
       if (customPayload) {
         // Use custom payload if provided (already interpolated)
-        payload = typeof customPayload === 'string' ? JSON.parse(customPayload) : customPayload;
+        payload =
+          typeof customPayload === 'string'
+            ? JSON.parse(customPayload)
+            : customPayload;
       } else if (includeEventData && context.event) {
         // Build event payload
         payload = this.buildEventPayload(context.event);

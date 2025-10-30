@@ -2,7 +2,11 @@ import { Module, forwardRef } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CalendarSyncController } from './calendar-sync.controller';
 import { CalendarSyncService } from './calendar-sync.service';
-import { CalendarSyncConnection, SyncedCalendar, SyncEventMapping } from '../entities/calendar-sync.entity';
+import {
+  CalendarSyncConnection,
+  SyncedCalendar,
+  SyncEventMapping,
+} from '../entities/calendar-sync.entity';
 import { Calendar } from '../entities/calendar.entity';
 import { Event } from '../entities/event.entity';
 import { User } from '../entities/user.entity';

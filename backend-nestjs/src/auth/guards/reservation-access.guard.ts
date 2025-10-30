@@ -1,4 +1,9 @@
-import { Injectable, CanActivate, ExecutionContext, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  CanActivate,
+  ExecutionContext,
+  ForbiddenException,
+} from '@nestjs/common';
 import { UserPermissionsService } from '../../common/services/user-permissions.service';
 
 /**
@@ -21,7 +26,7 @@ export class ReservationAccessGuard implements CanActivate {
 
     if (!hasAccess) {
       throw new ForbiddenException(
-        'Reservation features require Store or Enterprise plan. Please upgrade your plan to access these features.'
+        'Reservation features require Store or Enterprise plan. Please upgrade your plan to access these features.',
       );
     }
 

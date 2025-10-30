@@ -1,5 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { AutomationRule, TriggerType } from '../entities/automation-rule.entity';
+import {
+  AutomationRule,
+  TriggerType,
+} from '../entities/automation-rule.entity';
 import { Event } from '../entities/event.entity';
 
 export interface SmartValueContext {
@@ -64,10 +67,20 @@ export class AutomationSmartValuesService {
       if (eventDateValue && !isNaN(eventDateValue.valueOf())) {
         values['event.date'] = eventDateValue.toISOString().split('T')[0];
         values['event.year'] = eventDateValue.getFullYear().toString();
-        values['event.month'] = (eventDateValue.getMonth() + 1).toString().padStart(2, '0');
-        values['event.day'] = eventDateValue.getDate().toString().padStart(2, '0');
-        values['event.dayOfWeek'] = eventDateValue.toLocaleDateString('en-US', { weekday: 'long' });
-        values['event.dayOfWeekShort'] = eventDateValue.toLocaleDateString('en-US', { weekday: 'short' });
+        values['event.month'] = (eventDateValue.getMonth() + 1)
+          .toString()
+          .padStart(2, '0');
+        values['event.day'] = eventDateValue
+          .getDate()
+          .toString()
+          .padStart(2, '0');
+        values['event.dayOfWeek'] = eventDateValue.toLocaleDateString('en-US', {
+          weekday: 'long',
+        });
+        values['event.dayOfWeekShort'] = eventDateValue.toLocaleDateString(
+          'en-US',
+          { weekday: 'short' },
+        );
       } else {
         values['event.date'] = '';
       }
@@ -129,8 +142,8 @@ export class AutomationSmartValuesService {
           typeof item === 'string'
             ? this.interpolateSmartValues(item, context)
             : typeof item === 'object'
-            ? this.interpolateObjectValues(item, context)
-            : item,
+              ? this.interpolateObjectValues(item, context)
+              : item,
         );
       } else if (typeof value === 'object' && value !== null) {
         result[key] = this.interpolateObjectValues(value, context);
@@ -161,53 +174,191 @@ export class AutomationSmartValuesService {
 
     // Trigger fields (always available)
     fields.push(
-      { field: 'trigger.timestamp', label: 'Trigger Timestamp', description: 'ISO timestamp when rule was triggered', category: 'Trigger' },
-      { field: 'trigger.date', label: 'Trigger Date', description: 'Date when rule was triggered (YYYY-MM-DD)', category: 'Trigger' },
-      { field: 'trigger.time', label: 'Trigger Time', description: 'Time when rule was triggered (HH:MM:SS)', category: 'Trigger' },
-      { field: 'trigger.type', label: 'Trigger Type', description: 'Type of trigger that fired the rule', category: 'Trigger' },
+      {
+        field: 'trigger.timestamp',
+        label: 'Trigger Timestamp',
+        description: 'ISO timestamp when rule was triggered',
+        category: 'Trigger',
+      },
+      {
+        field: 'trigger.date',
+        label: 'Trigger Date',
+        description: 'Date when rule was triggered (YYYY-MM-DD)',
+        category: 'Trigger',
+      },
+      {
+        field: 'trigger.time',
+        label: 'Trigger Time',
+        description: 'Time when rule was triggered (HH:MM:SS)',
+        category: 'Trigger',
+      },
+      {
+        field: 'trigger.type',
+        label: 'Trigger Type',
+        description: 'Type of trigger that fired the rule',
+        category: 'Trigger',
+      },
     );
 
     // Event fields (for event-based triggers)
     if (this.isEventBasedTrigger(triggerType)) {
       fields.push(
         // Basic fields
-        { field: 'event.id', label: 'Event ID', description: 'Unique event identifier', category: 'Event' },
-        { field: 'event.title', label: 'Event Title', description: 'Event title/name', category: 'Event' },
-        { field: 'event.description', label: 'Event Description', description: 'Event description text', category: 'Event' },
-        { field: 'event.location', label: 'Event Location', description: 'Event location', category: 'Event' },
-        { field: 'event.notes', label: 'Event Notes', description: 'Event notes/additional info', category: 'Event' },
-        { field: 'event.date', label: 'Event Date', description: 'Event date (YYYY-MM-DD)', category: 'Event' },
-        { field: 'event.startTime', label: 'Event Start Time', description: 'Event start time (HH:MM)', category: 'Event' },
-        { field: 'event.endTime', label: 'Event End Time', description: 'Event end time (HH:MM)', category: 'Event' },
-        { field: 'event.color', label: 'Event Color', description: 'Event color code', category: 'Event' },
-        { field: 'event.status', label: 'Event Status', description: 'Event status', category: 'Event' },
-        { field: 'event.isAllDay', label: 'Is All Day', description: 'Whether event is all-day (true/false)', category: 'Event' },
+        {
+          field: 'event.id',
+          label: 'Event ID',
+          description: 'Unique event identifier',
+          category: 'Event',
+        },
+        {
+          field: 'event.title',
+          label: 'Event Title',
+          description: 'Event title/name',
+          category: 'Event',
+        },
+        {
+          field: 'event.description',
+          label: 'Event Description',
+          description: 'Event description text',
+          category: 'Event',
+        },
+        {
+          field: 'event.location',
+          label: 'Event Location',
+          description: 'Event location',
+          category: 'Event',
+        },
+        {
+          field: 'event.notes',
+          label: 'Event Notes',
+          description: 'Event notes/additional info',
+          category: 'Event',
+        },
+        {
+          field: 'event.date',
+          label: 'Event Date',
+          description: 'Event date (YYYY-MM-DD)',
+          category: 'Event',
+        },
+        {
+          field: 'event.startTime',
+          label: 'Event Start Time',
+          description: 'Event start time (HH:MM)',
+          category: 'Event',
+        },
+        {
+          field: 'event.endTime',
+          label: 'Event End Time',
+          description: 'Event end time (HH:MM)',
+          category: 'Event',
+        },
+        {
+          field: 'event.color',
+          label: 'Event Color',
+          description: 'Event color code',
+          category: 'Event',
+        },
+        {
+          field: 'event.status',
+          label: 'Event Status',
+          description: 'Event status',
+          category: 'Event',
+        },
+        {
+          field: 'event.isAllDay',
+          label: 'Is All Day',
+          description: 'Whether event is all-day (true/false)',
+          category: 'Event',
+        },
 
         // Computed fields
-        { field: 'event.duration', label: 'Duration (minutes)', description: 'Event duration in minutes', category: 'Event' },
-        { field: 'event.durationHours', label: 'Duration (hours)', description: 'Event duration in hours', category: 'Event' },
-        { field: 'event.durationMinutes', label: 'Duration (remaining minutes)', description: 'Remaining minutes after hours', category: 'Event' },
+        {
+          field: 'event.duration',
+          label: 'Duration (minutes)',
+          description: 'Event duration in minutes',
+          category: 'Event',
+        },
+        {
+          field: 'event.durationHours',
+          label: 'Duration (hours)',
+          description: 'Event duration in hours',
+          category: 'Event',
+        },
+        {
+          field: 'event.durationMinutes',
+          label: 'Duration (remaining minutes)',
+          description: 'Remaining minutes after hours',
+          category: 'Event',
+        },
 
         // Date components
-        { field: 'event.year', label: 'Year', description: 'Event year (YYYY)', category: 'Event Date' },
-        { field: 'event.month', label: 'Month', description: 'Event month (MM)', category: 'Event Date' },
-        { field: 'event.day', label: 'Day', description: 'Event day (DD)', category: 'Event Date' },
-        { field: 'event.dayOfWeek', label: 'Day of Week', description: 'Event day name (Monday, Tuesday, etc.)', category: 'Event Date' },
-        { field: 'event.dayOfWeekShort', label: 'Day of Week (short)', description: 'Event day abbreviation (Mon, Tue, etc.)', category: 'Event Date' },
+        {
+          field: 'event.year',
+          label: 'Year',
+          description: 'Event year (YYYY)',
+          category: 'Event Date',
+        },
+        {
+          field: 'event.month',
+          label: 'Month',
+          description: 'Event month (MM)',
+          category: 'Event Date',
+        },
+        {
+          field: 'event.day',
+          label: 'Day',
+          description: 'Event day (DD)',
+          category: 'Event Date',
+        },
+        {
+          field: 'event.dayOfWeek',
+          label: 'Day of Week',
+          description: 'Event day name (Monday, Tuesday, etc.)',
+          category: 'Event Date',
+        },
+        {
+          field: 'event.dayOfWeekShort',
+          label: 'Day of Week (short)',
+          description: 'Event day abbreviation (Mon, Tue, etc.)',
+          category: 'Event Date',
+        },
 
         // Calendar fields
-        { field: 'calendar.id', label: 'Calendar ID', description: 'Calendar identifier', category: 'Calendar' },
-        { field: 'calendar.name', label: 'Calendar Name', description: 'Calendar name', category: 'Calendar' },
-        { field: 'calendar.color', label: 'Calendar Color', description: 'Calendar color code', category: 'Calendar' },
-        { field: 'calendar.description', label: 'Calendar Description', description: 'Calendar description', category: 'Calendar' },
+        {
+          field: 'calendar.id',
+          label: 'Calendar ID',
+          description: 'Calendar identifier',
+          category: 'Calendar',
+        },
+        {
+          field: 'calendar.name',
+          label: 'Calendar Name',
+          description: 'Calendar name',
+          category: 'Calendar',
+        },
+        {
+          field: 'calendar.color',
+          label: 'Calendar Color',
+          description: 'Calendar color code',
+          category: 'Calendar',
+        },
+        {
+          field: 'calendar.description',
+          label: 'Calendar Description',
+          description: 'Calendar description',
+          category: 'Calendar',
+        },
       );
     }
 
     // Webhook fields
     if (triggerType === TriggerType.WEBHOOK_INCOMING) {
-      fields.push(
-        { field: 'webhook.data.*', label: 'Webhook Data (any field)', description: 'Access any field from webhook JSON using dot notation', category: 'Webhook' },
-      );
+      fields.push({
+        field: 'webhook.data.*',
+        label: 'Webhook Data (any field)',
+        description: 'Access any field from webhook JSON using dot notation',
+        category: 'Webhook',
+      });
     }
 
     return fields;

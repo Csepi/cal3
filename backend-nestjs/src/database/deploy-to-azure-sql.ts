@@ -38,7 +38,12 @@ async function deploySchema() {
     console.log('✅ Connected successfully!\n');
 
     // Read SQL schema file
-    const schemaFilePath = path.join(__dirname, '..', '..', 'azure-sql-schema.sql');
+    const schemaFilePath = path.join(
+      __dirname,
+      '..',
+      '..',
+      'azure-sql-schema.sql',
+    );
     console.log(`📄 Reading schema file: ${schemaFilePath}`);
 
     if (!fs.existsSync(schemaFilePath)) {
@@ -51,8 +56,8 @@ async function deploySchema() {
     // Split script by GO statements (Azure SQL batch separator)
     const batches = sqlScript
       .split(/^\s*GO\s*$/gim)
-      .map(batch => batch.trim())
-      .filter(batch => batch.length > 0 && !batch.startsWith('--'));
+      .map((batch) => batch.trim())
+      .filter((batch) => batch.length > 0 && !batch.startsWith('--'));
 
     console.log(`📦 Executing schema in 1 batch...\n`);
     console.log('─'.repeat(80));
@@ -79,7 +84,9 @@ async function deploySchema() {
     console.log('📊 Created Tables:');
     console.log('─'.repeat(80));
     result.recordset.forEach((row: any, index: number) => {
-      console.log(`${(index + 1).toString().padStart(2, ' ')}. ${row.TABLE_NAME.padEnd(40, ' ')} (${row.COLUMN_COUNT} columns)`);
+      console.log(
+        `${(index + 1).toString().padStart(2, ' ')}. ${row.TABLE_NAME.padEnd(40, ' ')} (${row.COLUMN_COUNT} columns)`,
+      );
     });
     console.log('─'.repeat(80));
     console.log(`\nTotal Tables: ${result.recordset.length}\n`);
@@ -93,7 +100,9 @@ async function deploySchema() {
     `;
 
     const indexResult = await pool.request().query(indexCheckQuery);
-    console.log(`📈 Total Indexes Created: ${indexResult.recordset[0].INDEX_COUNT}\n`);
+    console.log(
+      `📈 Total Indexes Created: ${indexResult.recordset[0].INDEX_COUNT}\n`,
+    );
 
     // Check foreign keys
     const fkCheckQuery = `
@@ -125,7 +134,6 @@ async function deploySchema() {
     console.log('4. Start the application:');
     console.log('   npm run start:dev');
     console.log('─'.repeat(80));
-
   } catch (error: any) {
     console.error('\n❌ ERROR during deployment:\n');
     console.error('Error Message:', error.message);
@@ -147,13 +155,16 @@ async function deploySchema() {
     }
 
     console.error('\nCommon Issues:');
-    console.error('1. Firewall: Ensure your IP is whitelisted in Azure SQL firewall rules');
+    console.error(
+      '1. Firewall: Ensure your IP is whitelisted in Azure SQL firewall rules',
+    );
     console.error('2. Credentials: Verify username and password are correct');
     console.error('3. Database: Ensure database "cal3db" exists on the server');
-    console.error('4. Network: Check internet connection and Azure service availability');
+    console.error(
+      '4. Network: Check internet connection and Azure service availability',
+    );
 
     throw error;
-
   } finally {
     // Close connection
     if (pool) {

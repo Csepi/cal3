@@ -1,7 +1,10 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { AutomationAction, ActionType } from '../../entities/automation-action.entity';
+import {
+  AutomationAction,
+  ActionType,
+} from '../../entities/automation-action.entity';
 import { Event } from '../../entities/event.entity';
 import {
   IActionExecutor,
@@ -14,7 +17,9 @@ import { AutomationSmartValuesService } from '../automation-smart-values.service
 type DescriptionMode = 'replace' | 'append' | 'prepend';
 
 @Injectable()
-export class UpdateEventDescriptionExecutor implements IActionExecutor, OnModuleInit {
+export class UpdateEventDescriptionExecutor
+  implements IActionExecutor, OnModuleInit
+{
   readonly actionType = ActionType.UPDATE_EVENT_DESCRIPTION;
 
   constructor(
@@ -39,10 +44,11 @@ export class UpdateEventDescriptionExecutor implements IActionExecutor, OnModule
         throw new Error('No event available to update');
       }
 
-      const interpolatedConfig = this.smartValuesService.interpolateObjectValues(
-        action.actionConfig || {},
-        context,
-      );
+      const interpolatedConfig =
+        this.smartValuesService.interpolateObjectValues(
+          action.actionConfig || {},
+          context,
+        );
       this.validateConfig(interpolatedConfig);
 
       const mode: DescriptionMode =
@@ -66,7 +72,9 @@ export class UpdateEventDescriptionExecutor implements IActionExecutor, OnModule
           : newDescription;
       }
 
-      await this.eventRepository.update(event.id, { description: updatedDescription });
+      await this.eventRepository.update(event.id, {
+        description: updatedDescription,
+      });
       event.description = updatedDescription;
 
       return {
@@ -100,14 +108,18 @@ export class UpdateEventDescriptionExecutor implements IActionExecutor, OnModule
       typeof actionConfig.newDescription !== 'string' ||
       actionConfig.newDescription.trim().length === 0
     ) {
-      throw new Error('Action configuration must include a non-empty "newDescription" string');
+      throw new Error(
+        'Action configuration must include a non-empty "newDescription" string',
+      );
     }
 
     if (
       actionConfig.mode !== undefined &&
       !['replace', 'append', 'prepend'].includes(String(actionConfig.mode))
     ) {
-      throw new Error('Description update mode must be one of: replace, append, prepend');
+      throw new Error(
+        'Description update mode must be one of: replace, append, prepend',
+      );
     }
 
     return true;

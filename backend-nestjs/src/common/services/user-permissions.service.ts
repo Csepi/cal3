@@ -4,10 +4,16 @@ import { Repository, In } from 'typeorm';
 import { User, UserRole, UsagePlan } from '../../entities/user.entity';
 import { Organisation } from '../../entities/organisation.entity';
 import { OrganisationAdmin } from '../../entities/organisation-admin.entity';
-import { OrganisationUser, OrganisationRoleType } from '../../entities/organisation-user.entity';
+import {
+  OrganisationUser,
+  OrganisationRoleType,
+} from '../../entities/organisation-user.entity';
 import { OrganisationResourceTypePermission } from '../../entities/organisation-resource-type-permission.entity';
 import { OrganisationCalendarPermission } from '../../entities/organisation-calendar-permission.entity';
-import { ReservationCalendarRole, ReservationCalendarRoleType } from '../../entities/reservation-calendar-role.entity';
+import {
+  ReservationCalendarRole,
+  ReservationCalendarRoleType,
+} from '../../entities/reservation-calendar-role.entity';
 import { ReservationCalendar } from '../../entities/reservation-calendar.entity';
 import { ResourceType } from '../../entities/resource-type.entity';
 
@@ -54,8 +60,8 @@ export class UserPermissionsService {
       return false;
     }
 
-    return user.usagePlans.some(plan =>
-      plan === UsagePlan.STORE || plan === UsagePlan.ENTERPRISE
+    return user.usagePlans.some(
+      (plan) => plan === UsagePlan.STORE || plan === UsagePlan.ENTERPRISE,
     );
   }
 
@@ -72,7 +78,11 @@ export class UserPermissionsService {
   async getUserPermissions(userId: number): Promise<UserPermissions> {
     const user = await this.userRepository.findOne({
       where: { id: userId },
-      relations: ['organisations', 'organisationAdminRoles', 'reservationCalendarRoles']
+      relations: [
+        'organisations',
+        'organisationAdminRoles',
+        'reservationCalendarRoles',
+      ],
     });
 
     if (!user) {
@@ -83,7 +93,7 @@ export class UserPermissionsService {
       id: user.id,
       username: user.username,
       role: user.role,
-      usagePlans: user.usagePlans
+      usagePlans: user.usagePlans,
     });
 
     const canAccessReservations = this.hasReservationAccess(user);
@@ -92,7 +102,7 @@ export class UserPermissionsService {
     console.log('🔍 User access checks:', {
       canAccessReservations,
       isSuperAdmin,
-      userRole: user.role
+      userRole: user.role,
     });
 
     // Get organization access
@@ -100,26 +110,38 @@ export class UserPermissionsService {
     let adminOrganizationIds: number[] = [];
 
     // Check BOTH organisation_users table AND organisation_admins table
-    console.log('👤 Checking explicit organization roles via organisation_users table');
+    console.log(
+      '👤 Checking explicit organization roles via organisation_users table',
+    );
 
     const organisationUserRoles = await this.organisationUserRepository.find({
       where: { userId },
     });
 
-    console.log('📋 Organisation user roles found:', organisationUserRoles.map(r => `Org ${r.organisationId}: ${r.role}`));
+    console.log(
+      '📋 Organisation user roles found:',
+      organisationUserRoles.map((r) => `Org ${r.organisationId}: ${r.role}`),
+    );
 
     // Check organisation_admins table for admin assignments
-    console.log('👤 Checking organization admin assignments via organisation_admins table');
+    console.log(
+      '👤 Checking organization admin assignments via organisation_admins table',
+    );
 
     const organisationAdminRoles = await this.organisationAdminRepository.find({
       where: { userId },
     });
 
-    console.log('📋 Organisation admin assignments found:', organisationAdminRoles.map(r => `Org ${r.organisationId}`));
+    console.log(
+      '📋 Organisation admin assignments found:',
+      organisationAdminRoles.map((r) => `Org ${r.organisationId}`),
+    );
 
     // Combine accessible organizations from both tables
-    const userOrgIds = organisationUserRoles.map(role => role.organisationId);
-    const adminOrgIds = organisationAdminRoles.map(role => role.organisationId);
+    const userOrgIds = organisationUserRoles.map((role) => role.organisationId);
+    const adminOrgIds = organisationAdminRoles.map(
+      (role) => role.organisationId,
+    );
 
     accessibleOrganizationIds = [...new Set([...userOrgIds, ...adminOrgIds])];
 
@@ -127,12 +149,15 @@ export class UserPermissionsService {
     // 1. Those where user has 'admin' role in organisation_users
     // 2. Those where user is in organisation_admins table
     const userAdminOrgIds = organisationUserRoles
-      .filter(role => role.role === 'admin')
-      .map(role => role.organisationId);
+      .filter((role) => role.role === 'admin')
+      .map((role) => role.organisationId);
 
     adminOrganizationIds = [...new Set([...userAdminOrgIds, ...adminOrgIds])];
 
-    console.log('📋 Final accessible organization IDs:', accessibleOrganizationIds);
+    console.log(
+      '📋 Final accessible organization IDs:',
+      accessibleOrganizationIds,
+    );
     console.log('📋 Final admin organization IDs:', adminOrganizationIds);
 
     // Get reservation calendar access
@@ -142,63 +167,91 @@ export class UserPermissionsService {
     if (canAccessReservations) {
       if (isSuperAdmin) {
         // Super admin can access all reservation calendars
-        const allReservationCalendars = await this.reservationCalendarRepository.find();
-        editableReservationCalendarIds = allReservationCalendars.map(cal => cal.id);
+        const allReservationCalendars =
+          await this.reservationCalendarRepository.find();
+        editableReservationCalendarIds = allReservationCalendars.map(
+          (cal) => cal.id,
+        );
         viewableReservationCalendarIds = editableReservationCalendarIds;
       } else {
         // Get reservation calendars from admin organizations (auto-editor access)
-        console.log('🔍 Checking reservation calendars for admin org IDs:', adminOrganizationIds);
+        console.log(
+          '🔍 Checking reservation calendars for admin org IDs:',
+          adminOrganizationIds,
+        );
 
         if (adminOrganizationIds.length > 0) {
-          const adminOrgReservationCalendars = await this.reservationCalendarRepository.find({
-            where: { organisationId: In(adminOrganizationIds) }
-          });
-          console.log('📋 Found reservation calendars in admin orgs:', adminOrgReservationCalendars.map(cal => `${cal.id}`));
+          const adminOrgReservationCalendars =
+            await this.reservationCalendarRepository.find({
+              where: { organisationId: In(adminOrganizationIds) },
+            });
+          console.log(
+            '📋 Found reservation calendars in admin orgs:',
+            adminOrgReservationCalendars.map((cal) => `${cal.id}`),
+          );
 
           // Get explicitly assigned reservation calendar roles
           const explicitRoles = user.reservationCalendarRoles || [];
           const explicitEditableIds = explicitRoles
-            .filter(role => role.role === ReservationCalendarRoleType.EDITOR)
-            .map(role => role.reservationCalendarId);
-          const explicitViewableIds = explicitRoles
-            .map(role => role.reservationCalendarId);
+            .filter((role) => role.role === ReservationCalendarRoleType.EDITOR)
+            .map((role) => role.reservationCalendarId);
+          const explicitViewableIds = explicitRoles.map(
+            (role) => role.reservationCalendarId,
+          );
 
           // Combine access
           editableReservationCalendarIds = [
-            ...adminOrgReservationCalendars.map(cal => cal.id),
-            ...explicitEditableIds
+            ...adminOrgReservationCalendars.map((cal) => cal.id),
+            ...explicitEditableIds,
           ];
           viewableReservationCalendarIds = [
             ...editableReservationCalendarIds,
-            ...explicitViewableIds
+            ...explicitViewableIds,
           ];
 
           // Remove duplicates
-          editableReservationCalendarIds = [...new Set(editableReservationCalendarIds)];
-          viewableReservationCalendarIds = [...new Set(viewableReservationCalendarIds)];
+          editableReservationCalendarIds = [
+            ...new Set(editableReservationCalendarIds),
+          ];
+          viewableReservationCalendarIds = [
+            ...new Set(viewableReservationCalendarIds),
+          ];
         } else {
-          console.log('⚠️  No admin organizations, checking explicit roles only');
+          console.log(
+            '⚠️  No admin organizations, checking explicit roles only',
+          );
 
           // Get explicitly assigned reservation calendar roles
           const explicitRoles = user.reservationCalendarRoles || [];
           editableReservationCalendarIds = explicitRoles
-            .filter(role => role.role === ReservationCalendarRoleType.EDITOR)
-            .map(role => role.reservationCalendarId);
-          viewableReservationCalendarIds = explicitRoles
-            .map(role => role.reservationCalendarId);
+            .filter((role) => role.role === ReservationCalendarRoleType.EDITOR)
+            .map((role) => role.reservationCalendarId);
+          viewableReservationCalendarIds = explicitRoles.map(
+            (role) => role.reservationCalendarId,
+          );
         }
 
-        console.log('📋 Final editable reservation calendar IDs:', editableReservationCalendarIds);
-        console.log('📋 Final viewable reservation calendar IDs:', viewableReservationCalendarIds);
+        console.log(
+          '📋 Final editable reservation calendar IDs:',
+          editableReservationCalendarIds,
+        );
+        console.log(
+          '📋 Final viewable reservation calendar IDs:',
+          viewableReservationCalendarIds,
+        );
       }
     }
 
     return {
       canAccessReservations,
-      canViewOrganization: (orgId: number) => isSuperAdmin || accessibleOrganizationIds.includes(orgId),
-      canAdminOrganization: (orgId: number) => isSuperAdmin || adminOrganizationIds.includes(orgId),
-      canEditReservationCalendar: (calId: number) => canAccessReservations && editableReservationCalendarIds.includes(calId),
-      canViewReservationCalendar: (calId: number) => canAccessReservations && viewableReservationCalendarIds.includes(calId),
+      canViewOrganization: (orgId: number) =>
+        isSuperAdmin || accessibleOrganizationIds.includes(orgId),
+      canAdminOrganization: (orgId: number) =>
+        isSuperAdmin || adminOrganizationIds.includes(orgId),
+      canEditReservationCalendar: (calId: number) =>
+        canAccessReservations && editableReservationCalendarIds.includes(calId),
+      canViewReservationCalendar: (calId: number) =>
+        canAccessReservations && viewableReservationCalendarIds.includes(calId),
       accessibleOrganizationIds,
       adminOrganizationIds,
       editableReservationCalendarIds,
@@ -209,13 +262,15 @@ export class UserPermissionsService {
   /**
    * Get organizations that a user can access
    */
-  async getUserAccessibleOrganizations(userId: number): Promise<Organisation[]> {
+  async getUserAccessibleOrganizations(
+    userId: number,
+  ): Promise<Organisation[]> {
     console.log('🔍 getUserAccessibleOrganizations called for user:', userId);
     const permissions = await this.getUserPermissions(userId);
     console.log('📋 User permissions:', {
       accessibleOrganizationIds: permissions.accessibleOrganizationIds,
       adminOrganizationIds: permissions.adminOrganizationIds,
-      canAccessReservations: permissions.canAccessReservations
+      canAccessReservations: permissions.canAccessReservations,
     });
 
     if (permissions.accessibleOrganizationIds.length === 0) {
@@ -225,33 +280,44 @@ export class UserPermissionsService {
 
     const organizations = await this.organisationRepository.find({
       where: { id: In(permissions.accessibleOrganizationIds) },
-      relations: ['users', 'organisationAdmins', 'reservationCalendars']
+      relations: ['users', 'organisationAdmins', 'reservationCalendars'],
     });
 
-    console.log('📋 Found organizations:', organizations.map(org => `${org.id}:${org.name}`));
+    console.log(
+      '📋 Found organizations:',
+      organizations.map((org) => `${org.id}:${org.name}`),
+    );
     return organizations;
   }
 
   /**
    * Get reservation calendars that a user can access
    */
-  async getUserAccessibleReservationCalendars(userId: number): Promise<ReservationCalendar[]> {
+  async getUserAccessibleReservationCalendars(
+    userId: number,
+  ): Promise<ReservationCalendar[]> {
     const permissions = await this.getUserPermissions(userId);
 
-    if (!permissions.canAccessReservations || permissions.viewableReservationCalendarIds.length === 0) {
+    if (
+      !permissions.canAccessReservations ||
+      permissions.viewableReservationCalendarIds.length === 0
+    ) {
       return [];
     }
 
     return await this.reservationCalendarRepository.find({
       where: { id: In(permissions.viewableReservationCalendarIds) },
-      relations: ['calendar', 'organisation', 'createdBy', 'roles']
+      relations: ['calendar', 'organisation', 'createdBy', 'roles'],
     });
   }
 
   /**
    * Check if user can access a specific organization
    */
-  async canUserAccessOrganization(userId: number, organizationId: number): Promise<boolean> {
+  async canUserAccessOrganization(
+    userId: number,
+    organizationId: number,
+  ): Promise<boolean> {
     const permissions = await this.getUserPermissions(userId);
     return permissions.canViewOrganization(organizationId);
   }
@@ -259,7 +325,10 @@ export class UserPermissionsService {
   /**
    * Check if user can admin a specific organization
    */
-  async canUserAdminOrganization(userId: number, organizationId: number): Promise<boolean> {
+  async canUserAdminOrganization(
+    userId: number,
+    organizationId: number,
+  ): Promise<boolean> {
     const permissions = await this.getUserPermissions(userId);
     return permissions.canAdminOrganization(organizationId);
   }
@@ -267,7 +336,10 @@ export class UserPermissionsService {
   /**
    * Check if user can access a specific reservation calendar
    */
-  async canUserAccessReservationCalendar(userId: number, reservationCalendarId: number): Promise<boolean> {
+  async canUserAccessReservationCalendar(
+    userId: number,
+    reservationCalendarId: number,
+  ): Promise<boolean> {
     const permissions = await this.getUserPermissions(userId);
     return permissions.canViewReservationCalendar(reservationCalendarId);
   }
@@ -275,7 +347,10 @@ export class UserPermissionsService {
   /**
    * Check if user can edit a specific reservation calendar
    */
-  async canUserEditReservationCalendar(userId: number, reservationCalendarId: number): Promise<boolean> {
+  async canUserEditReservationCalendar(
+    userId: number,
+    reservationCalendarId: number,
+  ): Promise<boolean> {
     const permissions = await this.getUserPermissions(userId);
     return permissions.canEditReservationCalendar(reservationCalendarId);
   }
@@ -283,10 +358,13 @@ export class UserPermissionsService {
   /**
    * Get user's role in a specific organization
    */
-  async getUserOrganizationRole(userId: number, organizationId: number): Promise<'admin' | 'member' | 'none'> {
+  async getUserOrganizationRole(
+    userId: number,
+    organizationId: number,
+  ): Promise<'admin' | 'member' | 'none'> {
     const user = await this.userRepository.findOne({
       where: { id: userId },
-      relations: ['organisations', 'organisationAdminRoles']
+      relations: ['organisations', 'organisationAdminRoles'],
     });
 
     if (!user) {
@@ -299,13 +377,17 @@ export class UserPermissionsService {
     }
 
     // Check if organization admin
-    const isOrgAdmin = user.organisationAdminRoles?.some(role => role.organisationId === organizationId);
+    const isOrgAdmin = user.organisationAdminRoles?.some(
+      (role) => role.organisationId === organizationId,
+    );
     if (isOrgAdmin) {
       return 'admin';
     }
 
     // Check if organization member
-    const isMember = user.organisations?.some(org => org.id === organizationId);
+    const isMember = user.organisations?.some(
+      (org) => org.id === organizationId,
+    );
     if (isMember) {
       return 'member';
     }
@@ -316,10 +398,13 @@ export class UserPermissionsService {
   /**
    * Get user's role in a specific reservation calendar
    */
-  async getUserReservationCalendarRole(userId: number, reservationCalendarId: number): Promise<'editor' | 'reviewer' | 'none'> {
+  async getUserReservationCalendarRole(
+    userId: number,
+    reservationCalendarId: number,
+  ): Promise<'editor' | 'reviewer' | 'none'> {
     const user = await this.userRepository.findOne({
       where: { id: userId },
-      relations: ['reservationCalendarRoles', 'organisationAdminRoles']
+      relations: ['reservationCalendarRoles', 'organisationAdminRoles'],
     });
 
     if (!user) {
@@ -332,22 +417,27 @@ export class UserPermissionsService {
     }
 
     // Get the reservation calendar to check organization
-    const reservationCalendar = await this.reservationCalendarRepository.findOne({
-      where: { id: reservationCalendarId }
-    });
+    const reservationCalendar =
+      await this.reservationCalendarRepository.findOne({
+        where: { id: reservationCalendarId },
+      });
 
     if (!reservationCalendar) {
       return 'none';
     }
 
     // Check if organization admin (auto-editor)
-    const isOrgAdmin = user.organisationAdminRoles?.some(role => role.organisationId === reservationCalendar.organisationId);
+    const isOrgAdmin = user.organisationAdminRoles?.some(
+      (role) => role.organisationId === reservationCalendar.organisationId,
+    );
     if (isOrgAdmin) {
       return 'editor';
     }
 
     // Check explicit role assignment
-    const explicitRole = user.reservationCalendarRoles?.find(role => role.reservationCalendarId === reservationCalendarId);
+    const explicitRole = user.reservationCalendarRoles?.find(
+      (role) => role.reservationCalendarId === reservationCalendarId,
+    );
     if (explicitRole) {
       return explicitRole.role as 'editor' | 'reviewer';
     }
@@ -363,17 +453,20 @@ export class UserPermissionsService {
       return false;
     }
 
-    return user.usagePlans.some(plan =>
-      plan === UsagePlan.STORE || plan === UsagePlan.ENTERPRISE
+    return user.usagePlans.some(
+      (plan) => plan === UsagePlan.STORE || plan === UsagePlan.ENTERPRISE,
     );
   }
 
   /**
    * Get user's organization role (Admin/Editor/User)
    */
-  async getUserOrganizationUserRole(userId: number, organizationId: number): Promise<OrganisationRoleType | null> {
+  async getUserOrganizationUserRole(
+    userId: number,
+    organizationId: number,
+  ): Promise<OrganisationRoleType | null> {
     const orgUser = await this.organisationUserRepository.findOne({
-      where: { userId, organisationId: organizationId }
+      where: { userId, organisationId: organizationId },
     });
 
     return orgUser?.role || null;
@@ -382,7 +475,10 @@ export class UserPermissionsService {
   /**
    * Check if user can edit a specific resource type
    */
-  async canUserEditResourceType(userId: number, resourceTypeId: number): Promise<boolean> {
+  async canUserEditResourceType(
+    userId: number,
+    resourceTypeId: number,
+  ): Promise<boolean> {
     const user = await this.userRepository.findOne({ where: { id: userId } });
     if (!user) return false;
 
@@ -395,7 +491,7 @@ export class UserPermissionsService {
     // Get resource type to find organization
     const resourceType = await this.resourceTypeRepository.findOne({
       where: { id: resourceTypeId },
-      relations: ['organisation']
+      relations: ['organisation'],
     });
 
     if (!resourceType) return false;
@@ -404,36 +500,48 @@ export class UserPermissionsService {
 
     // Check if organization admin
     const isOrgAdmin = await this.organisationAdminRepository.findOne({
-      where: { userId, organisationId: organizationId }
+      where: { userId, organisationId: organizationId },
     });
     if (isOrgAdmin) return true;
 
     // Get organization settings
     const organization = await this.organisationRepository.findOne({
-      where: { id: organizationId }
+      where: { id: organizationId },
     });
 
     if (!organization) return false;
 
     if (organization.useGranularResourcePermissions) {
       // Check granular permission
-      const permission = await this.organisationResourceTypePermissionRepository.findOne({
-        where: { userId, organisationId: organizationId, resourceTypeId, canEdit: true }
-      });
+      const permission =
+        await this.organisationResourceTypePermissionRepository.findOne({
+          where: {
+            userId,
+            organisationId: organizationId,
+            resourceTypeId,
+            canEdit: true,
+          },
+        });
       return !!permission;
     } else {
       // Check organization role
       const orgUser = await this.organisationUserRepository.findOne({
-        where: { userId, organisationId: organizationId }
+        where: { userId, organisationId: organizationId },
       });
-      return orgUser?.role === OrganisationRoleType.ADMIN || orgUser?.role === OrganisationRoleType.EDITOR;
+      return (
+        orgUser?.role === OrganisationRoleType.ADMIN ||
+        orgUser?.role === OrganisationRoleType.EDITOR
+      );
     }
   }
 
   /**
    * Check if user can view a specific reservation calendar
    */
-  async canUserViewReservationCalendarGranular(userId: number, reservationCalendarId: number): Promise<boolean> {
+  async canUserViewReservationCalendarGranular(
+    userId: number,
+    reservationCalendarId: number,
+  ): Promise<boolean> {
     const user = await this.userRepository.findOne({ where: { id: userId } });
     if (!user) return false;
 
@@ -446,7 +554,7 @@ export class UserPermissionsService {
     // Get calendar to find organization
     const calendar = await this.reservationCalendarRepository.findOne({
       where: { id: reservationCalendarId },
-      relations: ['organisation']
+      relations: ['organisation'],
     });
 
     if (!calendar) return false;
@@ -455,27 +563,33 @@ export class UserPermissionsService {
 
     // Check if organization admin
     const isOrgAdmin = await this.organisationAdminRepository.findOne({
-      where: { userId, organisationId: organizationId }
+      where: { userId, organisationId: organizationId },
     });
     if (isOrgAdmin) return true;
 
     // Get organization settings
     const organization = await this.organisationRepository.findOne({
-      where: { id: organizationId }
+      where: { id: organizationId },
     });
 
     if (!organization) return false;
 
     if (organization.useGranularCalendarPermissions) {
       // Check granular permission
-      const permission = await this.organisationCalendarPermissionRepository.findOne({
-        where: { userId, organisationId: organizationId, reservationCalendarId, canView: true }
-      });
+      const permission =
+        await this.organisationCalendarPermissionRepository.findOne({
+          where: {
+            userId,
+            organisationId: organizationId,
+            reservationCalendarId,
+            canView: true,
+          },
+        });
       return !!permission;
     } else {
       // Check organization membership
       const orgUser = await this.organisationUserRepository.findOne({
-        where: { userId, organisationId: organizationId }
+        where: { userId, organisationId: organizationId },
       });
       return !!orgUser; // Any organization member can view when granular is disabled
     }
@@ -484,7 +598,10 @@ export class UserPermissionsService {
   /**
    * Check if user can edit a specific reservation calendar
    */
-  async canUserEditReservationCalendarGranular(userId: number, reservationCalendarId: number): Promise<boolean> {
+  async canUserEditReservationCalendarGranular(
+    userId: number,
+    reservationCalendarId: number,
+  ): Promise<boolean> {
     const user = await this.userRepository.findOne({ where: { id: userId } });
     if (!user) return false;
 
@@ -497,7 +614,7 @@ export class UserPermissionsService {
     // Get calendar to find organization
     const calendar = await this.reservationCalendarRepository.findOne({
       where: { id: reservationCalendarId },
-      relations: ['organisation']
+      relations: ['organisation'],
     });
 
     if (!calendar) return false;
@@ -506,29 +623,38 @@ export class UserPermissionsService {
 
     // Check if organization admin
     const isOrgAdmin = await this.organisationAdminRepository.findOne({
-      where: { userId, organisationId: organizationId }
+      where: { userId, organisationId: organizationId },
     });
     if (isOrgAdmin) return true;
 
     // Get organization settings
     const organization = await this.organisationRepository.findOne({
-      where: { id: organizationId }
+      where: { id: organizationId },
     });
 
     if (!organization) return false;
 
     if (organization.useGranularCalendarPermissions) {
       // Check granular permission
-      const permission = await this.organisationCalendarPermissionRepository.findOne({
-        where: { userId, organisationId: organizationId, reservationCalendarId, canEdit: true }
-      });
+      const permission =
+        await this.organisationCalendarPermissionRepository.findOne({
+          where: {
+            userId,
+            organisationId: organizationId,
+            reservationCalendarId,
+            canEdit: true,
+          },
+        });
       return !!permission;
     } else {
       // Check organization role
       const orgUser = await this.organisationUserRepository.findOne({
-        where: { userId, organisationId: organizationId }
+        where: { userId, organisationId: organizationId },
       });
-      return orgUser?.role === OrganisationRoleType.ADMIN || orgUser?.role === OrganisationRoleType.EDITOR;
+      return (
+        orgUser?.role === OrganisationRoleType.ADMIN ||
+        orgUser?.role === OrganisationRoleType.EDITOR
+      );
     }
   }
 
@@ -548,7 +674,9 @@ export class UserPermissionsService {
       await this.organisationAdminRepository.delete({ userId });
 
       // Remove all granular permissions
-      await this.organisationResourceTypePermissionRepository.delete({ userId });
+      await this.organisationResourceTypePermissionRepository.delete({
+        userId,
+      });
       await this.organisationCalendarPermissionRepository.delete({ userId });
 
       // Remove all reservation calendar roles
@@ -561,13 +689,18 @@ export class UserPermissionsService {
    */
   async getUsersWithRequiredPlans(): Promise<User[]> {
     const users = await this.userRepository.find();
-    return users.filter(user => this.hasRequiredPlansForOrganizationRole(user));
+    return users.filter((user) =>
+      this.hasRequiredPlansForOrganizationRole(user),
+    );
   }
 
   /**
    * Check if user can modify organization settings (granular permission toggles)
    */
-  async canUserModifyOrganizationSettings(userId: number, organizationId: number): Promise<boolean> {
+  async canUserModifyOrganizationSettings(
+    userId: number,
+    organizationId: number,
+  ): Promise<boolean> {
     const user = await this.userRepository.findOne({ where: { id: userId } });
     if (!user) return false;
 
@@ -576,7 +709,7 @@ export class UserPermissionsService {
 
     // Check if organization admin
     const isOrgAdmin = await this.organisationAdminRepository.findOne({
-      where: { userId, organisationId: organizationId }
+      where: { userId, organisationId: organizationId },
     });
 
     return !!isOrgAdmin;
@@ -585,16 +718,19 @@ export class UserPermissionsService {
   /**
    * Get all resource types user can edit in an organization
    */
-  async getUserEditableResourceTypes(userId: number, organizationId: number): Promise<number[]> {
+  async getUserEditableResourceTypes(
+    userId: number,
+    organizationId: number,
+  ): Promise<number[]> {
     const user = await this.userRepository.findOne({ where: { id: userId } });
     if (!user) return [];
 
     // Super admin can edit everything
     if (user.role === UserRole.ADMIN) {
       const resourceTypes = await this.resourceTypeRepository.find({
-        where: { organisationId: organizationId }
+        where: { organisationId: organizationId },
       });
-      return resourceTypes.map(rt => rt.id);
+      return resourceTypes.map((rt) => rt.id);
     }
 
     // Check if user has reservation access
@@ -602,40 +738,44 @@ export class UserPermissionsService {
 
     // Check if organization admin
     const isOrgAdmin = await this.organisationAdminRepository.findOne({
-      where: { userId, organisationId: organizationId }
+      where: { userId, organisationId: organizationId },
     });
 
     if (isOrgAdmin) {
       const resourceTypes = await this.resourceTypeRepository.find({
-        where: { organisationId: organizationId }
+        where: { organisationId: organizationId },
       });
-      return resourceTypes.map(rt => rt.id);
+      return resourceTypes.map((rt) => rt.id);
     }
 
     // Get organization settings
     const organization = await this.organisationRepository.findOne({
-      where: { id: organizationId }
+      where: { id: organizationId },
     });
 
     if (!organization) return [];
 
     if (organization.useGranularResourcePermissions) {
       // Get granular permissions
-      const permissions = await this.organisationResourceTypePermissionRepository.find({
-        where: { userId, organisationId: organizationId, canEdit: true }
-      });
-      return permissions.map(p => p.resourceTypeId);
+      const permissions =
+        await this.organisationResourceTypePermissionRepository.find({
+          where: { userId, organisationId: organizationId, canEdit: true },
+        });
+      return permissions.map((p) => p.resourceTypeId);
     } else {
       // Check organization role
       const orgUser = await this.organisationUserRepository.findOne({
-        where: { userId, organisationId: organizationId }
+        where: { userId, organisationId: organizationId },
       });
 
-      if (orgUser?.role === OrganisationRoleType.ADMIN || orgUser?.role === OrganisationRoleType.EDITOR) {
+      if (
+        orgUser?.role === OrganisationRoleType.ADMIN ||
+        orgUser?.role === OrganisationRoleType.EDITOR
+      ) {
         const resourceTypes = await this.resourceTypeRepository.find({
-          where: { organisationId: organizationId }
+          where: { organisationId: organizationId },
         });
-        return resourceTypes.map(rt => rt.id);
+        return resourceTypes.map((rt) => rt.id);
       }
     }
 
@@ -645,16 +785,19 @@ export class UserPermissionsService {
   /**
    * Get all reservation calendars user can access in an organization
    */
-  async getUserAccessibleCalendarsInOrganization(userId: number, organizationId: number): Promise<{ viewable: number[], editable: number[] }> {
+  async getUserAccessibleCalendarsInOrganization(
+    userId: number,
+    organizationId: number,
+  ): Promise<{ viewable: number[]; editable: number[] }> {
     const user = await this.userRepository.findOne({ where: { id: userId } });
     if (!user) return { viewable: [], editable: [] };
 
     // Super admin can access everything
     if (user.role === UserRole.ADMIN) {
       const calendars = await this.reservationCalendarRepository.find({
-        where: { organisationId: organizationId }
+        where: { organisationId: organizationId },
       });
-      const calendarIds = calendars.map(c => c.id);
+      const calendarIds = calendars.map((c) => c.id);
       return { viewable: calendarIds, editable: calendarIds };
     }
 
@@ -663,47 +806,55 @@ export class UserPermissionsService {
 
     // Check if organization admin
     const isOrgAdmin = await this.organisationAdminRepository.findOne({
-      where: { userId, organisationId: organizationId }
+      where: { userId, organisationId: organizationId },
     });
 
     if (isOrgAdmin) {
       const calendars = await this.reservationCalendarRepository.find({
-        where: { organisationId: organizationId }
+        where: { organisationId: organizationId },
       });
-      const calendarIds = calendars.map(c => c.id);
+      const calendarIds = calendars.map((c) => c.id);
       return { viewable: calendarIds, editable: calendarIds };
     }
 
     // Get organization settings
     const organization = await this.organisationRepository.findOne({
-      where: { id: organizationId }
+      where: { id: organizationId },
     });
 
     if (!organization) return { viewable: [], editable: [] };
 
     if (organization.useGranularCalendarPermissions) {
       // Get granular permissions
-      const permissions = await this.organisationCalendarPermissionRepository.find({
-        where: { userId, organisationId: organizationId }
-      });
+      const permissions =
+        await this.organisationCalendarPermissionRepository.find({
+          where: { userId, organisationId: organizationId },
+        });
 
-      const viewable = permissions.filter(p => p.canView).map(p => p.reservationCalendarId);
-      const editable = permissions.filter(p => p.canEdit).map(p => p.reservationCalendarId);
+      const viewable = permissions
+        .filter((p) => p.canView)
+        .map((p) => p.reservationCalendarId);
+      const editable = permissions
+        .filter((p) => p.canEdit)
+        .map((p) => p.reservationCalendarId);
 
       return { viewable, editable };
     } else {
       // Check organization membership
       const orgUser = await this.organisationUserRepository.findOne({
-        where: { userId, organisationId: organizationId }
+        where: { userId, organisationId: organizationId },
       });
 
       if (orgUser) {
         const calendars = await this.reservationCalendarRepository.find({
-          where: { organisationId: organizationId }
+          where: { organisationId: organizationId },
         });
-        const calendarIds = calendars.map(c => c.id);
+        const calendarIds = calendars.map((c) => c.id);
 
-        if (orgUser.role === OrganisationRoleType.ADMIN || orgUser.role === OrganisationRoleType.EDITOR) {
+        if (
+          orgUser.role === OrganisationRoleType.ADMIN ||
+          orgUser.role === OrganisationRoleType.EDITOR
+        ) {
           return { viewable: calendarIds, editable: calendarIds };
         } else {
           return { viewable: calendarIds, editable: [] };

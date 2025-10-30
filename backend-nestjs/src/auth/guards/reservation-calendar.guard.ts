@@ -8,7 +8,10 @@ import {
 import { Reflector } from '@nestjs/core';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { ReservationCalendarRole, ReservationCalendarRoleType } from '../../entities/reservation-calendar-role.entity';
+import {
+  ReservationCalendarRole,
+  ReservationCalendarRoleType,
+} from '../../entities/reservation-calendar-role.entity';
 import { ReservationCalendar } from '../../entities/reservation-calendar.entity';
 import { OrganisationAdmin } from '../../entities/organisation-admin.entity';
 import { User, UserRole } from '../../entities/user.entity';
@@ -17,8 +20,9 @@ import { User, UserRole } from '../../entities/user.entity';
 export const RESERVATION_CALENDAR_ROLES_KEY = 'reservationCalendarRoles';
 
 // Decorator to specify required roles
-export const RequireReservationCalendarRole = (...roles: ReservationCalendarRoleType[]) =>
-  SetMetadata(RESERVATION_CALENDAR_ROLES_KEY, roles);
+export const RequireReservationCalendarRole = (
+  ...roles: ReservationCalendarRoleType[]
+) => SetMetadata(RESERVATION_CALENDAR_ROLES_KEY, roles);
 
 /**
  * Reservation Calendar Guard
@@ -64,15 +68,19 @@ export class ReservationCalendarGuard implements CanActivate {
     }
 
     // Get reservation calendar ID from request parameters
-    const reservationCalendarId = this.getReservationCalendarIdFromRequest(request);
+    const reservationCalendarId =
+      this.getReservationCalendarIdFromRequest(request);
     if (!reservationCalendarId) {
-      throw new ForbiddenException('Reservation calendar ID not found in request');
+      throw new ForbiddenException(
+        'Reservation calendar ID not found in request',
+      );
     }
 
     // Get the reservation calendar to check organisation
-    const reservationCalendar = await this.reservationCalendarRepository.findOne({
-      where: { id: parseInt(reservationCalendarId, 10) },
-    });
+    const reservationCalendar =
+      await this.reservationCalendarRepository.findOne({
+        where: { id: parseInt(reservationCalendarId, 10) },
+      });
 
     if (!reservationCalendar) {
       throw new ForbiddenException('Reservation calendar not found');
@@ -91,10 +99,12 @@ export class ReservationCalendarGuard implements CanActivate {
     }
 
     // Get required roles from metadata
-    const requiredRoles = this.reflector.getAllAndOverride<ReservationCalendarRoleType[]>(
-      RESERVATION_CALENDAR_ROLES_KEY,
-      [context.getHandler(), context.getClass()],
-    );
+    const requiredRoles = this.reflector.getAllAndOverride<
+      ReservationCalendarRoleType[]
+    >(RESERVATION_CALENDAR_ROLES_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
 
     // Check user's role for this reservation calendar
     const userRole = await this.reservationCalendarRoleRepository.findOne({
@@ -112,7 +122,9 @@ export class ReservationCalendarGuard implements CanActivate {
     if (requiredRoles && requiredRoles.length > 0) {
       const hasRequiredRole = requiredRoles.includes(userRole.role);
       if (!hasRequiredRole) {
-        throw new ForbiddenException(`Required role: ${requiredRoles.join(' or ')}, User has: ${userRole.role}`);
+        throw new ForbiddenException(
+          `Required role: ${requiredRoles.join(' or ')}, User has: ${userRole.role}`,
+        );
       }
     }
 
@@ -128,6 +140,8 @@ export class ReservationCalendarGuard implements CanActivate {
     const params = request.params;
 
     // Try different parameter names
-    return params.id || params.reservationCalendarId || params.calendarId || null;
+    return (
+      params.id || params.reservationCalendarId || params.calendarId || null
+    );
   }
 }

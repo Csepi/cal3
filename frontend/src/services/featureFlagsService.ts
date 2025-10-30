@@ -9,6 +9,7 @@
  * - Calendar Sync (external calendar import tab)
  * - Reservations (reservations system tab)
  * - Automation (automation rules tab)
+ * - MCP Agents (external agent integrations tab)
  */
 
 export interface FeatureFlags {
@@ -16,6 +17,7 @@ export interface FeatureFlags {
   calendarSync: boolean;
   reservations: boolean;
   automation: boolean;
+  agents: boolean;
 }
 
 class FeatureFlagsService {
@@ -41,13 +43,22 @@ class FeatureFlagsService {
         throw new Error(`Failed to fetch feature flags: ${response.statusText}`);
       }
 
-      const flags = await response.json();
+      const responsePayload = await response.json();
+      const normalizedFlags: FeatureFlags = {
+        oauth: Boolean(responsePayload.oauth),
+        calendarSync: Boolean(responsePayload.calendarSync),
+        reservations: Boolean(responsePayload.reservations),
+        automation: Boolean(responsePayload.automation),
+        agents: Boolean(
+          responsePayload.agents !== undefined ? responsePayload.agents : true,
+        ),
+      };
 
       // Update cache
-      this.cache = flags;
+      this.cache = normalizedFlags;
       this.cacheTimestamp = Date.now();
 
-      return flags;
+      return normalizedFlags;
     } catch (error) {
       console.error('Error fetching feature flags:', error);
 
@@ -58,6 +69,7 @@ class FeatureFlagsService {
         calendarSync: true,
         reservations: true,
         automation: true,
+        agents: true,
       };
 
       return defaultFlags;

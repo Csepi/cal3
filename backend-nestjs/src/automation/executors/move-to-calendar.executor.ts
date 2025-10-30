@@ -1,7 +1,10 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { AutomationAction, ActionType } from '../../entities/automation-action.entity';
+import {
+  AutomationAction,
+  ActionType,
+} from '../../entities/automation-action.entity';
 import { Event } from '../../entities/event.entity';
 import { Calendar } from '../../entities/calendar.entity';
 import {
@@ -40,10 +43,11 @@ export class MoveToCalendarExecutor implements IActionExecutor, OnModuleInit {
         throw new Error('No event available to move');
       }
 
-      const interpolatedConfig = this.smartValuesService.interpolateObjectValues(
-        action.actionConfig || {},
-        context,
-      );
+      const interpolatedConfig =
+        this.smartValuesService.interpolateObjectValues(
+          action.actionConfig || {},
+          context,
+        );
       this.validateConfig(interpolatedConfig);
 
       const targetId = Number(interpolatedConfig.targetCalendarId);
@@ -76,7 +80,9 @@ export class MoveToCalendarExecutor implements IActionExecutor, OnModuleInit {
         };
       }
 
-      await this.eventRepository.update(event.id, { calendarId: targetCalendar.id });
+      await this.eventRepository.update(event.id, {
+        calendarId: targetCalendar.id,
+      });
       event.calendarId = targetCalendar.id;
       event.calendar = targetCalendar;
 

@@ -12,7 +12,8 @@ export class MicrosoftStrategy extends PassportStrategy(Strategy, 'microsoft') {
 
     super({
       clientID: process.env.MICROSOFT_CLIENT_ID || 'your-microsoft-client-id',
-      clientSecret: process.env.MICROSOFT_CLIENT_SECRET || 'your-microsoft-client-secret',
+      clientSecret:
+        process.env.MICROSOFT_CLIENT_SECRET || 'your-microsoft-client-secret',
       callbackURL: process.env.MICROSOFT_CALLBACK_URL || defaultCallbackUrl,
       scope: ['openid', 'profile', 'email'],
       tenant: 'common',
@@ -32,7 +33,10 @@ export class MicrosoftStrategy extends PassportStrategy(Strategy, 'microsoft') {
       microsoftId: id,
       email: email,
       firstName: profile.name?.givenName || displayName?.split(' ')[0] || '',
-      lastName: profile.name?.familyName || displayName?.split(' ').slice(1).join(' ') || '',
+      lastName:
+        profile.name?.familyName ||
+        displayName?.split(' ').slice(1).join(' ') ||
+        '',
       displayName: displayName,
       accessToken,
     };

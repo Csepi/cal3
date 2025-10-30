@@ -1,33 +1,58 @@
-import { IsEnum, IsOptional, IsNumber, Min, Max, IsDateString } from 'class-validator';
+import {
+  IsEnum,
+  IsOptional,
+  IsNumber,
+  Min,
+  Max,
+  IsDateString,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { AuditLogStatus } from '../../entities/automation-audit-log.entity';
 
 // Query DTO for filtering audit logs
 export class AuditLogQueryDto {
-  @ApiPropertyOptional({ description: 'Filter by execution status', enum: AuditLogStatus })
+  @ApiPropertyOptional({
+    description: 'Filter by execution status',
+    enum: AuditLogStatus,
+  })
   @IsOptional()
   @IsEnum(AuditLogStatus)
   status?: AuditLogStatus;
 
-  @ApiPropertyOptional({ description: 'Filter logs from this date (ISO 8601)', example: '2024-01-01T00:00:00Z' })
+  @ApiPropertyOptional({
+    description: 'Filter logs from this date (ISO 8601)',
+    example: '2024-01-01T00:00:00Z',
+  })
   @IsOptional()
   @IsDateString()
   fromDate?: string;
 
-  @ApiPropertyOptional({ description: 'Filter logs until this date (ISO 8601)', example: '2024-12-31T23:59:59Z' })
+  @ApiPropertyOptional({
+    description: 'Filter logs until this date (ISO 8601)',
+    example: '2024-12-31T23:59:59Z',
+  })
   @IsOptional()
   @IsDateString()
   toDate?: string;
 
-  @ApiPropertyOptional({ description: 'Page number (1-based)', minimum: 1, default: 1 })
+  @ApiPropertyOptional({
+    description: 'Page number (1-based)',
+    minimum: 1,
+    default: 1,
+  })
   @IsOptional()
   @Type(() => Number)
   @IsNumber()
   @Min(1)
   page?: number = 1;
 
-  @ApiPropertyOptional({ description: 'Results per page', minimum: 1, maximum: 100, default: 50 })
+  @ApiPropertyOptional({
+    description: 'Results per page',
+    minimum: 1,
+    maximum: 100,
+    default: 50,
+  })
   @IsOptional()
   @Type(() => Number)
   @IsNumber()
@@ -65,7 +90,10 @@ export class ConditionsResultDto {
   @ApiProperty({ description: 'Overall conditions passed' })
   passed: boolean;
 
-  @ApiProperty({ description: 'Individual condition evaluations', type: [ConditionEvaluationDto] })
+  @ApiProperty({
+    description: 'Individual condition evaluations',
+    type: [ConditionEvaluationDto],
+  })
   evaluations: ConditionEvaluationDto[];
 
   @ApiPropertyOptional({ description: 'Logic expression evaluated' })
@@ -101,13 +129,17 @@ export class AuditLogDto {
   @ApiProperty({ description: 'Rule ID that was executed' })
   ruleId: number;
 
-  @ApiPropertyOptional({ description: 'Rule name (included when loading list)' })
+  @ApiPropertyOptional({
+    description: 'Rule name (included when loading list)',
+  })
   ruleName?: string;
 
   @ApiProperty({ description: 'Event ID that triggered the rule' })
   eventId: number;
 
-  @ApiPropertyOptional({ description: 'Event title (included when loading list)' })
+  @ApiPropertyOptional({
+    description: 'Event title (included when loading list)',
+  })
   eventTitle?: string;
 
   @ApiProperty({ description: 'Execution status', enum: AuditLogStatus })
@@ -116,13 +148,18 @@ export class AuditLogDto {
   @ApiProperty({ description: 'Conditions evaluation result' })
   conditionsResult: ConditionsResultDto;
 
-  @ApiPropertyOptional({ description: 'Action execution results', type: [ActionResultDto] })
+  @ApiPropertyOptional({
+    description: 'Action execution results',
+    type: [ActionResultDto],
+  })
   actionResults?: ActionResultDto[];
 
   @ApiPropertyOptional({ description: 'Trigger type that started execution' })
   triggerType?: string;
 
-  @ApiPropertyOptional({ description: 'User ID who executed (for manual runs)' })
+  @ApiPropertyOptional({
+    description: 'User ID who executed (for manual runs)',
+  })
   executedByUserId?: number;
 
   @ApiProperty({ description: 'Execution timestamp' })

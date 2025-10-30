@@ -13,7 +13,9 @@ export class LogCleanupService {
     try {
       const deleted = await this.loggingService.purgeExpiredLogs();
       if (deleted > 0) {
-        this.logger.log(`Log retention job removed ${deleted} expired entries.`);
+        this.logger.log(
+          `Log retention job removed ${deleted} expired entries.`,
+        );
       }
     } catch (error) {
       this.logger.error('Log retention job failed', error?.stack);

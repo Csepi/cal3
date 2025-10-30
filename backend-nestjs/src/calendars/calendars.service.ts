@@ -1,9 +1,21 @@
-import { Injectable, ForbiddenException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  ForbiddenException,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
-import { Calendar, CalendarShare, SharePermission } from '../entities/calendar.entity';
+import {
+  Calendar,
+  CalendarShare,
+  SharePermission,
+} from '../entities/calendar.entity';
 import { User } from '../entities/user.entity';
-import { CreateCalendarDto, UpdateCalendarDto, ShareCalendarDto } from '../dto/calendar.dto';
+import {
+  CreateCalendarDto,
+  UpdateCalendarDto,
+  ShareCalendarDto,
+} from '../dto/calendar.dto';
 
 @Injectable()
 export class CalendarsService {
@@ -16,7 +28,10 @@ export class CalendarsService {
     private userRepository: Repository<User>,
   ) {}
 
-  async create(createCalendarDto: CreateCalendarDto, userId: number): Promise<Calendar> {
+  async create(
+    createCalendarDto: CreateCalendarDto,
+    userId: number,
+  ): Promise<Calendar> {
     const calendar = this.calendarRepository.create({
       ...createCalendarDto,
       ownerId: userId,
@@ -33,7 +48,10 @@ export class CalendarsService {
       where: { ownerId: userId, isActive: true, isReservationCalendar: false },
       relations: ['owner', 'sharedWith'],
     });
-    console.log('📋 Found owned calendars:', ownedCalendars.map(c => `${c.id}:${c.name}`));
+    console.log(
+      '📋 Found owned calendars:',
+      ownedCalendars.map((c) => `${c.id}:${c.name}`),
+    );
 
     const sharedCalendars = await this.calendarRepository
       .createQueryBuilder('calendar')
@@ -44,7 +62,10 @@ export class CalendarsService {
       .leftJoinAndSelect('calendar.owner', 'owner')
       .leftJoinAndSelect('calendar.sharedWith', 'sharedUsers')
       .getMany();
-    console.log('📋 Found shared calendars:', sharedCalendars.map(c => `${c.id}:${c.name}`));
+    console.log(
+      '📋 Found shared calendars:',
+      sharedCalendars.map((c) => `${c.id}:${c.name}`),
+    );
 
     // Reservation calendars are handled separately through the ReservationCalendarService
     // to avoid circular dependencies
@@ -52,10 +73,16 @@ export class CalendarsService {
     // Combine regular calendars only (reservation calendars will be handled separately)
     const allRegularCalendars = [...ownedCalendars, ...sharedCalendars];
     const uniqueCalendars = allRegularCalendars.filter(
-      (calendar, index, self) => index === self.findIndex(c => c.id === calendar.id)
+      (calendar, index, self) =>
+        index === self.findIndex((c) => c.id === calendar.id),
     );
 
-    console.log('📋 Final filtered calendars:', uniqueCalendars.map(c => `${c.id}:${c.name} (reservation: ${c.isReservationCalendar})`));
+    console.log(
+      '📋 Final filtered calendars:',
+      uniqueCalendars.map(
+        (c) => `${c.id}:${c.name} (reservation: ${c.isReservationCalendar})`,
+      ),
+    );
     return uniqueCalendars;
   }
 
@@ -70,8 +97,9 @@ export class CalendarsService {
     }
 
     // Check if user has access (owner or shared)
-    const hasAccess = calendar.ownerId === userId ||
-      calendar.sharedWith.some(user => user.id === userId);
+    const hasAccess =
+      calendar.ownerId === userId ||
+      calendar.sharedWith.some((user) => user.id === userId);
 
     if (!hasAccess) {
       throw new ForbiddenException('Access denied to this calendar');
@@ -80,14 +108,23 @@ export class CalendarsService {
     return calendar;
   }
 
-  async update(id: number, updateCalendarDto: UpdateCalendarDto, userId: number): Promise<Calendar> {
+  async update(
+    id: number,
+    updateCalendarDto: UpdateCalendarDto,
+    userId: number,
+  ): Promise<Calendar> {
     const calendar = await this.findOne(id, userId);
 
     // Check if user has write permission
     if (calendar.ownerId !== userId) {
       const sharePermission = await this.getSharePermission(id, userId);
-      if (sharePermission !== SharePermission.WRITE && sharePermission !== SharePermission.ADMIN) {
-        throw new ForbiddenException('Insufficient permissions to update this calendar');
+      if (
+        sharePermission !== SharePermission.WRITE &&
+        sharePermission !== SharePermission.ADMIN
+      ) {
+        throw new ForbiddenException(
+          'Insufficient permissions to update this calendar',
+        );
       }
     }
 
@@ -107,14 +144,20 @@ export class CalendarsService {
     await this.calendarRepository.save(calendar);
   }
 
-  async shareCalendar(id: number, shareCalendarDto: ShareCalendarDto, userId: number): Promise<Calendar> {
+  async shareCalendar(
+    id: number,
+    shareCalendarDto: ShareCalendarDto,
+    userId: number,
+  ): Promise<Calendar> {
     const calendar = await this.findOne(id, userId);
 
     // Only owner or admin can share calendar
     if (calendar.ownerId !== userId) {
       const sharePermission = await this.getSharePermission(id, userId);
       if (sharePermission !== SharePermission.ADMIN) {
-        throw new ForbiddenException('Insufficient permissions to share this calendar');
+        throw new ForbiddenException(
+          'Insufficient permissions to share this calendar',
+        );
       }
     }
 
@@ -127,7 +170,7 @@ export class CalendarsService {
     });
 
     // Create new shares
-    const shares = userIds.map(userId => ({
+    const shares = userIds.map((userId) => ({
       calendarId: id,
       userId,
       permission,
@@ -142,14 +185,20 @@ export class CalendarsService {
     return this.calendarRepository.save(calendar);
   }
 
-  async unshareCalendar(id: number, userIds: number[], userId: number): Promise<void> {
+  async unshareCalendar(
+    id: number,
+    userIds: number[],
+    userId: number,
+  ): Promise<void> {
     const calendar = await this.findOne(id, userId);
 
     // Only owner or admin can unshare calendar
     if (calendar.ownerId !== userId) {
       const sharePermission = await this.getSharePermission(id, userId);
       if (sharePermission !== SharePermission.ADMIN) {
-        throw new ForbiddenException('Insufficient permissions to unshare this calendar');
+        throw new ForbiddenException(
+          'Insufficient permissions to unshare this calendar',
+        );
       }
     }
 
@@ -159,7 +208,10 @@ export class CalendarsService {
     });
   }
 
-  async getSharedUsers(id: number, userId: number): Promise<Array<{ user: User, permission: SharePermission }>> {
+  async getSharedUsers(
+    id: number,
+    userId: number,
+  ): Promise<Array<{ user: User; permission: SharePermission }>> {
     const calendar = await this.findOne(id, userId);
 
     const shares = await this.calendarShareRepository.find({
@@ -167,13 +219,16 @@ export class CalendarsService {
       relations: ['user'],
     });
 
-    return shares.map(share => ({
+    return shares.map((share) => ({
       user: share.user,
       permission: share.permission,
     }));
   }
 
-  private async getSharePermission(calendarId: number, userId: number): Promise<SharePermission | null> {
+  private async getSharePermission(
+    calendarId: number,
+    userId: number,
+  ): Promise<SharePermission | null> {
     const share = await this.calendarShareRepository.findOne({
       where: { calendarId, userId },
     });

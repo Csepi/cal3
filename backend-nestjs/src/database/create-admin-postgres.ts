@@ -69,7 +69,6 @@ async function createAdminUser() {
 
       const user = result.rows[0];
       printUserDetails(user);
-
     } else {
       console.log('➕ Creating new admin user...\n');
 
@@ -122,7 +121,6 @@ async function createAdminUser() {
       const user = result.rows[0];
       printUserDetails(user);
     }
-
   } catch (error: any) {
     console.error('\n❌ ERROR creating admin user:\n');
     console.error('Error Message:', error.message);
@@ -132,7 +130,6 @@ async function createAdminUser() {
     }
 
     throw error;
-
   } finally {
     await client.end();
     console.log('\n📡 Database connection closed.');

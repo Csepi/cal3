@@ -10,7 +10,7 @@ import { ReservationAccessGuard } from '../auth/guards/reservation-access.guard'
 @Module({
   imports: [
     TypeOrmModule.forFeature([Reservation, Resource]),
-    CommonModule // This imports UserPermissionsService for ReservationAccessGuard
+    CommonModule, // This imports UserPermissionsService for ReservationAccessGuard
   ],
   controllers: [ReservationsController],
   providers: [ReservationsService, ReservationAccessGuard],

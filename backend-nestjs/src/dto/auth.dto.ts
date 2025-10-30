@@ -1,4 +1,10 @@
-import { IsEmail, IsString, MinLength, IsOptional, IsEnum } from 'class-validator';
+import {
+  IsEmail,
+  IsString,
+  MinLength,
+  IsOptional,
+  IsEnum,
+} from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { UserRole } from '../entities/user.entity';
 
@@ -8,11 +14,17 @@ export class RegisterDto {
   @MinLength(3)
   username: string;
 
-  @ApiProperty({ example: 'john@example.com', description: 'User email address' })
+  @ApiProperty({
+    example: 'john@example.com',
+    description: 'User email address',
+  })
   @IsEmail()
   email: string;
 
-  @ApiProperty({ example: 'password123', description: 'User password (min 6 characters)' })
+  @ApiProperty({
+    example: 'password123',
+    description: 'User password (min 6 characters)',
+  })
   @IsString()
   @MinLength(6)
   password: string;
@@ -30,7 +42,7 @@ export class RegisterDto {
   @ApiPropertyOptional({
     enum: UserRole,
     example: UserRole.USER,
-    description: 'User role (admin only)'
+    description: 'User role (admin only)',
   })
   @IsOptional()
   @IsEnum(UserRole)
@@ -38,7 +50,10 @@ export class RegisterDto {
 }
 
 export class LoginDto {
-  @ApiProperty({ example: 'john_doe or john@example.com', description: 'Username or email' })
+  @ApiProperty({
+    example: 'john_doe or john@example.com',
+    description: 'Username or email',
+  })
   @IsString()
   username: string;
 
@@ -48,13 +63,19 @@ export class LoginDto {
 }
 
 export class AuthResponseDto {
-  @ApiProperty({ example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...', description: 'JWT access token' })
+  @ApiProperty({
+    example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+    description: 'JWT access token',
+  })
   access_token: string;
 
   @ApiProperty({ example: 'Bearer', description: 'Token type' })
   token_type: string;
 
-  @ApiProperty({ example: 3600, description: 'Token expiration time in seconds' })
+  @ApiProperty({
+    example: 3600,
+    description: 'Token expiration time in seconds',
+  })
   expires_in: number;
 
   @ApiProperty({ description: 'User information' })

@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Resource } from '../entities/resource.entity';
@@ -20,7 +24,9 @@ export class ResourcesService {
     });
 
     if (!resourceType) {
-      throw new NotFoundException(`ResourceType #${createDto.resourceTypeId} not found`);
+      throw new NotFoundException(
+        `ResourceType #${createDto.resourceTypeId} not found`,
+      );
     }
 
     const resource = this.resourceRepository.create({
@@ -43,21 +49,38 @@ export class ResourcesService {
     });
   }
 
-  async findAllByOrganizations(organizationIds: number[], resourceTypeId?: number): Promise<Resource[]> {
-    console.log('🔍 ResourcesService.findAllByOrganizations called with orgIds:', organizationIds, 'resourceTypeId:', resourceTypeId);
+  async findAllByOrganizations(
+    organizationIds: number[],
+    resourceTypeId?: number,
+  ): Promise<Resource[]> {
+    console.log(
+      '🔍 ResourcesService.findAllByOrganizations called with orgIds:',
+      organizationIds,
+      'resourceTypeId:',
+      resourceTypeId,
+    );
 
     const queryBuilder = this.resourceRepository
       .createQueryBuilder('resource')
       .leftJoinAndSelect('resource.resourceType', 'resourceType')
       .leftJoinAndSelect('resource.managedBy', 'managedBy')
-      .where('resourceType.organisationId IN (:...organizationIds)', { organizationIds });
+      .where('resourceType.organisationId IN (:...organizationIds)', {
+        organizationIds,
+      });
 
     if (resourceTypeId) {
-      queryBuilder.andWhere('resourceType.id = :resourceTypeId', { resourceTypeId });
+      queryBuilder.andWhere('resourceType.id = :resourceTypeId', {
+        resourceTypeId,
+      });
     }
 
     const resources = await queryBuilder.getMany();
-    console.log('📋 Found resources:', resources.map(r => `${r.id}:${r.name} (org: ${r.resourceType?.organisationId})`));
+    console.log(
+      '📋 Found resources:',
+      resources.map(
+        (r) => `${r.id}:${r.name} (org: ${r.resourceType?.organisationId})`,
+      ),
+    );
 
     return resources;
   }
@@ -107,11 +130,13 @@ export class ResourcesService {
     // Check if there are any reservations for this resource
     if (resource.reservations && resource.reservations.length > 0) {
       const activeReservations = resource.reservations.filter(
-        r => r.status !== 'cancelled' && r.status !== 'completed'
+        (r) => r.status !== 'cancelled' && r.status !== 'completed',
       );
 
       if (activeReservations.length > 0) {
-        throw new BadRequestException(`Cannot delete resource with active reservations. Cancel or complete ${activeReservations.length} reservation(s) first.`);
+        throw new BadRequestException(
+          `Cannot delete resource with active reservations. Cancel or complete ${activeReservations.length} reservation(s) first.`,
+        );
       }
     }
 
