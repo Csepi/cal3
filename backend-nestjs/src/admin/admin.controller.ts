@@ -22,13 +22,18 @@ import { AdminGuard } from '../auth/guards/admin.guard';
 import { UpdateUsagePlansDto } from '../dto/user-profile.dto';
 import { SystemInfoDto } from './dto/system-info.dto';
 import { LogQueryDto, UpdateLogSettingsDto } from './dto/logs.dto';
+import { ConfigurationService } from '../configuration/configuration.service';
+import { UpdateConfigurationValueDto } from './dto/configuration.dto';
 
 @ApiTags('Admin')
 @Controller('admin')
 @UseGuards(JwtAuthGuard, AdminGuard)
 @ApiBearerAuth()
 export class AdminController {
-  constructor(private readonly adminService: AdminService) {}
+  constructor(
+    private readonly adminService: AdminService,
+    private readonly configurationService: ConfigurationService,
+  ) {}
 
   @Get('users')
   @ApiOperation({ summary: 'Get all users (Admin only)' })
@@ -96,6 +101,36 @@ export class AdminController {
   })
   getSystemInfo() {
     return this.adminService.getSystemInfo();
+  }
+
+  @Get('configuration')
+  @ApiOperation({
+    summary: 'Get runtime configuration (Admin only)',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Configuration settings retrieved successfully',
+  })
+  getConfigurationOverview() {
+    return this.configurationService.getOverview();
+  }
+
+  @Patch('configuration/:key')
+  @ApiOperation({
+    summary: 'Update configuration entry (Admin only)',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Configuration updated successfully',
+  })
+  updateConfigurationEntry(
+    @Param('key') key: string,
+    @Body() updateDto: UpdateConfigurationValueDto,
+  ) {
+    const normalizedKey = key.toUpperCase();
+    const value =
+      updateDto.value === undefined ? null : (updateDto.value as any);
+    return this.configurationService.updateSetting(normalizedKey, value);
   }
 
   @Get('logs')
