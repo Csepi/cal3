@@ -16,6 +16,8 @@ import { Resource } from '../entities/resource.entity';
 import { OperatingHours } from '../entities/operating-hours.entity';
 import { AutomationRule } from '../entities/automation-rule.entity';
 import { LoggingModule } from '../logging/logging.module';
+import { ConfigurationModule } from '../configuration/configuration.module';
+import { AdminConfigurationController } from './admin.configuration.controller';
 
 @Module({
   imports: [
@@ -34,8 +36,9 @@ import { LoggingModule } from '../logging/logging.module';
       AutomationRule,
     ]),
     LoggingModule,
+    ConfigurationModule,
   ],
-  controllers: [AdminController],
+  controllers: [AdminController, AdminConfigurationController],
   providers: [AdminService, AdminGuard],
   exports: [AdminService, AdminGuard],
 })

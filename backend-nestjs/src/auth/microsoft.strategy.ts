@@ -2,21 +2,34 @@ import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { Strategy, VerifyCallback } from 'passport-microsoft';
 import { AuthService } from './auth.service';
+import { ConfigurationService } from '../configuration/configuration.service';
 
 @Injectable()
 export class MicrosoftStrategy extends PassportStrategy(Strategy, 'microsoft') {
-  constructor(private authService: AuthService) {
-    const baseUrl = process.env.BASE_URL || 'http://localhost';
-    const backendPort = process.env.PORT || process.env.BACKEND_PORT || '8081';
-    const defaultCallbackUrl = `${baseUrl}:${backendPort}/api/auth/microsoft/callback`;
+  constructor(
+    private readonly authService: AuthService,
+    private readonly configurationService: ConfigurationService,
+  ) {
+    const backendBaseUrl =
+      configurationService.getBackendBaseUrl() || 'http://localhost:8081';
+    const callbackUrl =
+      configurationService.getValue('MICROSOFT_CALLBACK_URL') ||
+      `${backendBaseUrl}/api/auth/microsoft/callback`;
+    const clientId =
+      configurationService.getValue('MICROSOFT_CLIENT_ID') ||
+      'your-microsoft-client-id';
+    const clientSecret =
+      configurationService.getValue('MICROSOFT_CLIENT_SECRET') ||
+      'your-microsoft-client-secret';
+    const tenantId =
+      configurationService.getValue('MICROSOFT_TENANT_ID') || 'common';
 
     super({
-      clientID: process.env.MICROSOFT_CLIENT_ID || 'your-microsoft-client-id',
-      clientSecret:
-        process.env.MICROSOFT_CLIENT_SECRET || 'your-microsoft-client-secret',
-      callbackURL: process.env.MICROSOFT_CALLBACK_URL || defaultCallbackUrl,
+      clientID: clientId,
+      clientSecret,
+      callbackURL: callbackUrl,
       scope: ['openid', 'profile', 'email'],
-      tenant: 'common',
+      tenant: tenantId,
     });
   }
 

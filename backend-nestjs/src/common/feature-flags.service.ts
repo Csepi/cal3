@@ -1,11 +1,12 @@
 import { Injectable } from '@nestjs/common';
+import { ConfigurationService } from '../configuration/configuration.service';
 
 /**
  * Feature Flags Service
  *
  * Centralized service for managing application feature flags.
  * Feature flags control the availability of features across the application,
- * allowing features to be enabled or disabled via environment variables.
+ * allowing features to be toggled via administrator-managed configuration.
  *
  * Available Feature Flags:
  * - ENABLE_OAUTH: Enable/disable OAuth authentication (Google, Microsoft)
@@ -21,12 +22,14 @@ import { Injectable } from '@nestjs/common';
  */
 @Injectable()
 export class FeatureFlagsService {
+  constructor(private readonly configurationService: ConfigurationService) {}
+
   /**
    * Check if OAuth authentication is enabled
    * Controls visibility of SSO login buttons (Google, Microsoft)
    */
   isOAuthEnabled(): boolean {
-    return process.env.ENABLE_OAUTH === 'true';
+    return this.configurationService.getBoolean('ENABLE_OAUTH', true);
   }
 
   /**
@@ -34,7 +37,7 @@ export class FeatureFlagsService {
    * Controls visibility of Calendar Sync tab and external calendar import features
    */
   isCalendarSyncEnabled(): boolean {
-    return process.env.ENABLE_CALENDAR_SYNC === 'true';
+    return this.configurationService.getBoolean('ENABLE_CALENDAR_SYNC', true);
   }
 
   /**
@@ -42,7 +45,7 @@ export class FeatureFlagsService {
    * Controls visibility of Reservations tab (in addition to user permissions)
    */
   isReservationsEnabled(): boolean {
-    return process.env.ENABLE_RESERVATIONS === 'true';
+    return this.configurationService.getBoolean('ENABLE_RESERVATIONS', true);
   }
 
   /**
@@ -50,7 +53,7 @@ export class FeatureFlagsService {
    * Controls visibility of Automation tab and rule management features
    */
   isAutomationEnabled(): boolean {
-    return process.env.ENABLE_AUTOMATION === 'true';
+    return this.configurationService.getBoolean('ENABLE_AUTOMATION', true);
   }
 
   /**
@@ -58,7 +61,10 @@ export class FeatureFlagsService {
    * Controls visibility of Agent settings tab and API endpoints
    */
   isAgentIntegrationsEnabled(): boolean {
-    return process.env.ENABLE_AGENT_INTEGRATIONS === 'true';
+    return this.configurationService.getBoolean(
+      'ENABLE_AGENT_INTEGRATIONS',
+      false,
+    );
   }
 
   /**

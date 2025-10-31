@@ -1,361 +1,167 @@
-# Cal3 Docker Documentation
+# Cal3 Docker Handbook
 
-Complete Docker deployment and CI/CD documentation for the Cal3 Calendar Application.
-
----
-
-## 📚 Documentation Index
-
-### Getting Started
-
-**[Deployment Guide](DEPLOYMENT_GUIDE.md)** - Start here!
-- Quick start instructions
-- Prerequisites and system requirements
-- Configuration guide
-- Production deployment steps
-- Azure, Synology, and generic Docker deployments
-- Troubleshooting and maintenance
-
-**[Implementation Summary](IMPLEMENTATION_SUMMARY.md)** - Overview
-- What was built and why
-- Architecture diagram
-- File structure
-- Key features
-- Quick reference
-
-### CI/CD & Automation
-
-**[CI/CD Setup Guide](CI_CD_SETUP.md)** - Automatic deployments
-- Complete pipeline setup (GitHub Actions → Webhooks → Auto Deploy)
-- Step-by-step configuration
-- Webhook receiver installation
-- Security best practices
-- Monitoring and troubleshooting
-- Advanced configurations
-
-### Reference
-
-**[Docker Deployment Plan](DOCKER_DEPLOYMENT_PLAN.md)** - Technical details
-- Complete implementation plan
-- Detailed architecture
-- All Docker configurations
-- Scripts and utilities
-- Production checklist
+This handbook consolidates the practical information you need to run Cal3 with
+Docker—whether you deploy manually, through Portainer, or via the CI/CD
+pipeline.
 
 ---
 
-## 🚀 Quick Start
+## Document index
 
-### For Development
+- **Deployment Guide** (`DEPLOYMENT_GUIDE.md`)  
+  Opinionated walkthrough for first-time installations.
+- **Portainer Guide** (`PORTAINER_GUIDE.md`)  
+  UI-driven deployment that pulls the compose stack directly from Git.
+- **CI/CD Setup** (`CI_CD_SETUP.md`)  
+  GitHub Actions, webhook receiver, and automated rollouts.
+- **Runtime Configuration** (`RUNTIME_CONFIGURATION.md`)  
+  How environment variables map to the new Admin → Runtime Configuration panel.
+- **Implementation Summary** (`IMPLEMENTATION_SUMMARY.md`)  
+  Architecture overview, file layout, and feature inventory.
+
+---
+
+## Quick start
+
+### Development stack
 
 ```bash
-# From project root
+# From repository root
 cd docker
+cp .env.example .env
 ./scripts/start-dev.sh
-
-# Access application
-# Frontend: http://localhost:8080
-# Backend:  http://localhost:8081
-# API Docs: http://localhost:8081/api/docs
 ```
 
-### For Production
+Services:
+
+- Frontend: http://localhost:8080
+- Backend / API docs: http://localhost:8081
+
+### Production stack (manual)
 
 ```bash
-# 1. Configure environment
-cp docker/.env.example .env
-nano .env  # Update with production values
-
-# 2. Generate secrets
-openssl rand -base64 32  # For JWT_SECRET
-
-# 3. Deploy
-cd docker
-./scripts/start-prod.sh
+cp docker/.env.example .env          # Adjust values
+openssl rand -base64 32              # Generate JWT_SECRET
+docker compose up -d                 # Uses docker/docker-compose.yml
 ```
 
-### For CI/CD (Automatic Deployment)
+### Production stack (Portainer)
 
-See **[CI/CD Setup Guide](CI_CD_SETUP.md)** for complete instructions.
-
-**Quick overview:**
-1. Configure GitHub secrets (webhook URL + secret)
-2. Install webhook receiver on server
-3. Push code to GitHub
-4. Containers update automatically! 🎉
+1. Install Portainer and add your Docker environment.
+2. Create a new stack named `cal3`.
+3. Choose **Repository** and point to this Git repository, directory `docker`.
+4. Provide a `.env` file in the stack editor or use Portainer's environment UI.
+5. Deploy the stack. Refer to `PORTAINER_GUIDE.md` for screenshots and
+   troubleshooting.
 
 ---
 
-## 📁 What's in the Docker Directory
+## Directory tour
 
 ```
 docker/
-├── Dockerfile.backend           # Production backend
-├── Dockerfile.backend.dev       # Development backend
-├── Dockerfile.frontend          # Production frontend
-├── Dockerfile.frontend.dev      # Development frontend
-├── docker-compose.yml           # Production compose
-├── docker-compose.dev.yml       # Development compose
-├── .env.example                 # Environment template
-├── nginx/
-│   ├── nginx.conf              # Main nginx config
-│   └── default.conf            # Server config
-└── scripts/
-    ├── start-dev.sh            # Start development
-    ├── start-prod.sh           # Start production
-    ├── stop.sh                 # Stop containers
-    ├── db-backup.sh            # Backup database
-    ├── db-restore.sh           # Restore database
-    ├── auto-deploy.sh          # Auto-deployment
-    ├── webhook-receiver.js     # Webhook server
-    └── setup-webhook.sh        # Webhook setup
+├── Dockerfile.backend            # NestJS production image
+├── Dockerfile.backend.dev        # Hot-reload backend
+├── Dockerfile.frontend           # React + Nginx production image
+├── Dockerfile.frontend.dev       # Hot-reload frontend
+├── docker-compose.yml            # Production stack
+├── docker-compose.dev.yml        # Development stack
+├── docker-compose.portainer*.yml # Portainer presets
+├── .env.example                  # Bootstrap configuration
+├── config/                       # Default env templates per scenario
+├── scripts/                      # Start, stop, backup, webhook utilities
+└── nginx/                        # Container nginx configuration
 ```
 
 ---
 
-## 🎯 Common Tasks
+## Runtime configuration overview
 
-### View Logs
-```bash
-# All services
-docker-compose logs -f
+The most frequently tuned variables now live in the database and can be managed
+from **Admin → Runtime Configuration**. Highlights:
 
-# Specific service
-docker-compose logs -f backend
-docker-compose logs -f frontend
-docker-compose logs -f postgres
-```
+| Group            | Keys controlled in the UI                                   |
+|------------------|--------------------------------------------------------------|
+| OAuth providers  | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `MICROSOFT_*`    |
+| Feature flags    | `ENABLE_OAUTH`, `ENABLE_CALENDAR_SYNC`, `ENABLE_AUTOMATION`, `ENABLE_RESERVATIONS`, `ENABLE_AGENT_INTEGRATIONS` |
+| Environment tag  | `NODE_ENV` (restart after changing)                          |
 
-### Restart Services
-```bash
-# Restart all
-docker-compose restart
+The UI also displays read-only Google and Microsoft callback URLs built from
+the backend base URL. See `RUNTIME_CONFIGURATION.md` for the full change
+workflow and safe/unsafe settings.
 
-# Restart specific service
-docker-compose restart backend
-```
-
-### Database Backup
-```bash
-cd docker
-./scripts/db-backup.sh
-```
-
-### Update Application
-```bash
-# Pull latest code
-git pull
-
-# Rebuild and restart
-cd docker
-docker-compose up --build -d
-```
-
-### Health Checks
-```bash
-# Backend
-curl http://localhost:8081/api/health
-
-# Frontend
-curl http://localhost:8080/health
-
-# Database
-docker exec cal3-postgres pg_isready -U cal3_user
-```
+Bootstrap-only values (**database host, passwords, JWT_SECRET, SMTP, etc.**)
+remain in `.env` or your secret manager and still require a container restart
+when changed.
 
 ---
 
-## 🏗️ Architecture
+## Common Docker tasks
 
-### Container Structure
+### Inspect container health
 
-```
-┌─────────────────────────────────────────────────────────┐
-│              Docker Network (cal3-network)              │
-│                                                          │
-│  ┌──────────────┐      ┌──────────────┐      ┌────────┐│
-│  │   Frontend   │─────►│   Backend    │─────►│ PostgreSQL
-│  │ React+Nginx  │      │   NestJS     │      │    15    │
-│  │   Port: 80   │      │  Port: 8081  │      │Port: 5432│
-│  └──────────────┘      └──────────────┘      └────────┘│
-│         │                     │                     │   │
-└─────────┼─────────────────────┼─────────────────────┼───┘
-          │                     │                     │
-          ▼                     ▼                     ▼
-    Host: 8080            Host: 8081            Host: 5432
-```
-
-### CI/CD Pipeline (Option B)
-
-```
-Push Code → GitHub Actions → Build Images → Push to Registry
-                                                    │
-                                                    ▼
-Server Updates ← Restart Containers ← Pull Images ← Webhook
-```
-
----
-
-## 🔒 Security Features
-
-- ✅ Non-root users in containers
-- ✅ Resource limits configured
-- ✅ Health checks for all services
-- ✅ Security headers in Nginx
-- ✅ Webhook signature verification
-- ✅ Environment variable validation
-- ✅ Firewall configuration guides
-- ✅ HTTPS support ready
-
----
-
-## 🆘 Need Help?
-
-### Documentation
-- **General questions**: Start with [Deployment Guide](DEPLOYMENT_GUIDE.md)
-- **Auto-deployment**: See [CI/CD Setup](CI_CD_SETUP.md)
-- **Technical details**: Check [Deployment Plan](DOCKER_DEPLOYMENT_PLAN.md)
-
-### Troubleshooting
-Each guide has a dedicated troubleshooting section:
-- Deployment issues → [Deployment Guide](DEPLOYMENT_GUIDE.md#troubleshooting)
-- CI/CD issues → [CI/CD Setup](CI_CD_SETUP.md#troubleshooting)
-
-### Common Issues
-
-**Containers won't start:**
 ```bash
-docker-compose logs
-docker-compose down -v
-docker-compose up -d --build
+docker compose ps
+docker compose logs -f backend
 ```
 
-**Database connection failed:**
+### Rebuild after code changes
+
 ```bash
-docker-compose ps postgres
-docker-compose logs postgres
+docker compose build backend frontend
+docker compose up -d backend frontend
 ```
 
-**Webhook not working:**
-```bash
-# Check webhook receiver
-curl http://localhost:3001/health
+### Database backup & restore
 
-# Check logs
-sudo journalctl -u cal3-webhook -f  # systemd
-pm2 logs cal3-webhook              # PM2
+```bash
+# Backup (see scripts/db-backup.sh for automation)
+docker compose exec postgres pg_dump -U "$DB_USERNAME" "$DB_NAME" > backup.sql
+
+# Restore
+cat backup.sql | docker compose exec -T postgres psql -U "$DB_USERNAME" "$DB_NAME"
 ```
 
----
+### Clean up unused resources
 
-## 📊 Monitoring
-
-### Container Status
 ```bash
-docker-compose ps
-docker stats
-```
-
-### Resource Usage
-```bash
-docker system df
-```
-
-### Logs
-```bash
-# Follow all logs
-docker-compose logs -f
-
-# Specific service
-docker-compose logs -f backend
-
-# Last 100 lines
-docker-compose logs --tail=100
-```
-
----
-
-## 🔄 Updates & Maintenance
-
-### Manual Update
-```bash
-git pull
-cd docker
-docker-compose up --build -d
-```
-
-### Automatic Update (with CI/CD)
-```bash
-# Just push code!
-git push origin main
-
-# Everything updates automatically
-```
-
-### Cleanup
-```bash
-# Remove unused images
 docker image prune -a
-
-# Full cleanup (careful!)
-docker system prune -a --volumes
+docker volume ls
+docker volume rm <volume>
 ```
 
 ---
 
-## 📝 Environment Variables
+## Maintenance checklist
 
-### Required
-- `DB_USERNAME` - Database user
-- `DB_PASSWORD` - Database password (16+ chars)
-- `DB_NAME` - Database name
-- `JWT_SECRET` - JWT signing key (32+ chars)
-
-### Optional
-- `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` - Google OAuth
-- `MICROSOFT_CLIENT_ID` / `MICROSOFT_CLIENT_SECRET` - Microsoft OAuth
-- `FRONTEND_PORT` - Frontend port (default: 8080)
-- `GITHUB_USERNAME` / `GITHUB_TOKEN` - For auto-deployment
-
-See `.env.example` for complete list.
+- [ ] `.env` kept in sync with required secrets (DB, JWT, SMTP).
+- [ ] Admin → Runtime Configuration values reviewed after deployments.
+- [ ] Automated backups verified (database + configuration table).
+- [ ] TLS certificates renewed (if terminating SSL).
+- [ ] Monitoring / alerts wired to `docker stats` or external tools.
+- [ ] CI/CD pipeline tested on a feature branch.
 
 ---
 
-## 🎓 Learn More
+## Troubleshooting essentials
 
-### External Resources
-- [Docker Documentation](https://docs.docker.com/)
-- [Docker Compose Reference](https://docs.docker.com/compose/)
-- [GitHub Actions](https://docs.github.com/en/actions)
-- [Nginx Documentation](https://nginx.org/en/docs/)
-
-### Cal3 Documentation
-- [Main README](../../README.md)
-- [API Documentation](../../API_DOCUMENTATION.md)
-- [Setup Guide](../../setup-guide.md)
+| Symptom | Quick checks |
+|---------|--------------|
+| Containers crash-looping | `docker compose logs <service>` for stack traces; verify environment variables. |
+| Frontend works, backend 502 | Confirm backend container listens on `BACKEND_PORT`; check Nginx proxy logs. |
+| OAuth redirect errors | Copy callback URLs from Admin → Runtime Configuration and update provider configuration. |
+| Portainer stack fails to deploy | Refresh Git credentials / token, verify `.env` formatting, review Portainer stack logs. |
+| CI/CD webhook no-ops | `curl http://localhost:3001/health`, inspect systemd/PM2 logs, confirm GitHub secret. |
 
 ---
 
-## ✅ Production Checklist
+## Additional resources
 
-Before going live:
+- Docker documentation: https://docs.docker.com/
+- Compose reference: https://docs.docker.com/compose/compose-file/
+- Cal3 project README: `../../README.md`
+- API documentation: `../../API_DOCUMENTATION.md`
 
-- [ ] `.env` configured with production values
-- [ ] JWT_SECRET is strong (32+ chars)
-- [ ] Database credentials are secure (16+ chars)
-- [ ] OAuth credentials configured (if using)
-- [ ] Firewall rules configured
-- [ ] Backup script tested
-- [ ] SSL/TLS certificates configured
-- [ ] Monitoring setup
-- [ ] CI/CD pipeline tested (optional)
-- [ ] Resource limits reviewed
-- [ ] Log rotation configured
+For questions or regressions, please open an issue with the compose file in use,
+the relevant logs, and the steps taken so far.
 
----
-
-**Version:** 1.1
-**Last Updated:** 2025-10-10
-**Status:** Production Ready 🚀
-
-For questions or issues, please check the documentation or open a GitHub issue.

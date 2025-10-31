@@ -9,7 +9,7 @@ export interface AdminNavigationProps {
   className?: string;
 }
 
-type TabIcon = 'KPI' | 'USR' | 'ORG' | 'CAL' | 'EVT' | 'ACL' | 'RES' | 'LOG' | 'SYS';
+type TabIcon = 'KPI' | 'USR' | 'ORG' | 'CAL' | 'EVT' | 'ACL' | 'RES' | 'LOG' | 'CFG' | 'SYS';
 
 const ICONS: Record<TabIcon, JSX.Element> = {
   KPI: (
@@ -76,6 +76,19 @@ const ICONS: Record<TabIcon, JSX.Element> = {
       <path d="M9 16h4" />
     </svg>
   ),
+  CFG: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 3v3" />
+      <path d="M12 18v3" />
+      <path d="M3 12h3" />
+      <path d="M18 12h3" />
+      <circle cx="12" cy="12" r="3" />
+      <path d="M6.22 6.22l2.12 2.12" />
+      <path d="M15.66 15.66l2.12 2.12" />
+      <path d="M17.78 6.22l-2.12 2.12" />
+      <path d="M8.34 15.66l-2.12 2.12" />
+    </svg>
+  ),
   SYS: (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round">
       <circle cx="12" cy="12" r="3" />
@@ -97,6 +110,7 @@ const TAB_CONFIG: Record<AdminTab, { label: string; icon: TabIcon; description: 
   shares: { label: 'Sharing & Access', icon: 'ACL', description: 'Review calendar access policies' },
   reservations: { label: 'Resource Bookings', icon: 'RES', description: 'Track reservations and capacity' },
   logs: { label: 'Operational Logs', icon: 'LOG', description: 'Monitor backend activity and errors' },
+  configuration: { label: 'Runtime Configuration', icon: 'CFG', description: 'Manage OAuth credentials and feature flags' },
   'system-info': { label: 'System Health', icon: 'SYS', description: 'Runtime diagnostics and configuration' },
 };
 
@@ -123,7 +137,7 @@ const NAV_GROUPS: Array<{
   {
     label: 'Platform Operations',
     description: 'Logs and system diagnostics',
-    tabs: ['logs', 'system-info'],
+    tabs: ['logs', 'configuration', 'system-info'],
   },
 ];
 
@@ -136,6 +150,7 @@ const ICON_BACKGROUNDS: Record<TabIcon, string> = {
   ACL: 'from-teal-400 to-emerald-500',
   RES: 'from-cyan-400 to-blue-500',
   LOG: 'from-slate-500 to-slate-700',
+  CFG: 'from-amber-500 to-orange-600',
   SYS: 'from-zinc-500 to-gray-700',
 };
 

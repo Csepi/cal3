@@ -5,7 +5,13 @@
  * including authentication, error handling, and common operations.
  */
 
-import type { AdminApiOptions, BulkOperationResult, LogLevel } from './types';
+import type {
+  AdminApiOptions,
+  BulkOperationResult,
+  LogLevel,
+  ConfigurationOverview,
+  ConfigurationSettingSummary,
+} from './types';
 import { BASE_URL } from '../../config/apiConfig';
 
 /**
@@ -299,5 +305,34 @@ export const formatAdminError = (error: unknown): string => {
   }
 
   return 'An unexpected error occurred. Please try again.';
+};
+
+/**
+ * Fetch runtime configuration overview for admin console
+ */
+export const fetchConfigurationOverview = async (
+  updateProgress?: (progress: number, message: string) => void
+): Promise<ConfigurationOverview> => {
+  return loadAdminData<ConfigurationOverview>('/admin/configuration', updateProgress);
+};
+
+/**
+ * Update a single configuration setting
+ */
+export const updateConfigurationSetting = async (
+  key: string,
+  value: string | boolean | null
+): Promise<ConfigurationSettingSummary> => {
+  const token = requireAdminToken();
+  const normalizedKey = key.toUpperCase();
+
+  const response = await adminApiCall({
+    endpoint: `/admin/configuration/${encodeURIComponent(normalizedKey)}`,
+    token,
+    method: 'PATCH',
+    data: { value },
+  });
+
+  return response as ConfigurationSettingSummary;
 };
 

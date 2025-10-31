@@ -1,801 +1,128 @@
-# 🎯 Complete Portainer Deployment Guide for Cal3
 
-**Step-by-step guide with screenshots and troubleshooting**
+## Portainer Stack Deployment (Git-backed)
 
-This guide will walk you through deploying Cal3 using Portainer's web interface, avoiding common pitfalls.
-
----
-
-## 📋 Table of Contents
-
-1. [Prerequisites](#prerequisites)
-2. [Install Portainer](#install-portainer)
-3. [Deploy Cal3 Stack](#deploy-cal3-stack)
-4. [Verify Deployment](#verify-deployment)
-5. [Common Errors and Solutions](#common-errors-and-solutions)
-6. [Management Tasks](#management-tasks)
+This guide walks through deploying the Cal3 stack with Portainer using the
+Git repository as the source of truth. Following these steps keeps your Docker
+configuration in sync with the codebase and unlocks click-to-update workflows.
 
 ---
 
-## ✅ Prerequisites
+### 1. Prerequisites
 
-Before starting, ensure you have:
+- Docker Engine ≥ 24 on the target host.
+- Portainer CE or Business Edition with access to the Docker environment.
+- Outbound network access to reach your Git provider.
+- A personal access token if the repository is private.
 
-- [ ] Docker installed and running
-- [ ] At least 8GB RAM available
-- [ ] 20GB free disk space
-- [ ] Ports available: 9443 (Portainer), 8080 (Cal3 Frontend), 8081 (Cal3 Backend), 5433 (PostgreSQL)
-- [ ] **Note:** ✅ All Cal3 ports are **fully configurable** via environment variables if you have conflicts (see Step 3 below)
+Double-check Docker connectivity first:
 
-**Verify Docker is running:**
 ```bash
 docker ps
 ```
-If you see a list (even empty), Docker is running. If you get an error, start Docker first.
+
+If the command returns an empty list, Docker is running. Address any errors
+before continuing.
 
 ---
 
-## 🚀 Install Portainer
+### 2. Add the Git repository
 
-### Step 1: Install Portainer Container
+1. Sign in to Portainer and open **Stacks → Add stack → Web editor**.
+2. Switch to the **Repository** tab.
+3. Fill in the form:
+   - **Name**: `cal3`
+   - **Repository URL**: `https://github.com/<org-or-user>/cal3.git`
+   - **Repository reference**: branch or tag to deploy (e.g. `main`).
+   - **Compose path**: `docker/docker-compose.portainer-local.yml` (or an
+     alternative compose file from the `docker/` directory).
+   - **Repository authentication**: enable and supply credentials or token if
+     the repository is private.
+4. Optionally enable **Automatic updates** so Portainer polls for changes.
 
-**On Windows (PowerShell):**
-```powershell
-# Create volume for Portainer data
-docker volume create portainer_data
-
-# Run Portainer
-docker run -d `
-  -p 9443:9443 `
-  -p 9000:9000 `
-  --name portainer `
-  --restart=always `
-  -v //var/run/docker.sock:/var/run/docker.sock `
-  -v portainer_data:/data `
-  portainer/portainer-ce:latest
-
-# Verify it's running
-docker ps | Select-String portainer
-```
-
-**On Linux/Mac:**
-```bash
-# Create volume for Portainer data
-docker volume create portainer_data
-
-# Run Portainer
-docker run -d \
-  -p 9443:9443 \
-  -p 9000:9000 \
-  --name portainer \
-  --restart=always \
-  -v /var/run/docker.sock:/var/run/docker.sock \
-  -v portainer_data:/data \
-  portainer/portainer-ce:latest
-
-# Verify it's running
-docker ps | grep portainer
-```
-
-**Expected output:**
-```
-CONTAINER ID   IMAGE                          COMMAND        STATUS          PORTS
-abc123def456   portainer/portainer-ce:latest  "/portainer"   Up 10 seconds   0.0.0.0:9000->9000/tcp, 0.0.0.0:9443->9443/tcp
-```
-
-### Step 2: Access Portainer
-
-1. Open your browser
-2. Navigate to: **https://localhost:9443**
-3. You'll see a security warning (this is normal for self-signed certificates)
-   - Click **Advanced** → **Proceed to localhost (unsafe)**
-
-### Step 3: Initial Setup
-
-**First-time setup screen:**
-
-1. **Create admin account:**
-   - Username: `admin` (or your choice)
-   - Password: Create a strong password (12+ characters)
-   - Confirm password
-
-2. Click **Create user**
-
-3. **Select environment:**
-   - Click **Get Started**
-   - You'll see "Docker" environment
-   - Click on **local** environment to manage it
-
-✅ **Portainer is now ready!**
+Portainer displays the latest commit hash once the connection succeeds.
 
 ---
 
-## 📦 Deploy Cal3 Stack
+### 3. Seed environment variables
 
-### Method 1: Repository Deployment (Recommended)
+Click **Advanced mode → Environment variables**. Copy the contents of
+`docker/.env.example` and configure the required values:
 
-This method uses the Git repository directly and is the easiest.
+| Variable               | Purpose                                 |
+|------------------------|-----------------------------------------|
+| `DB_USERNAME`/`DB_PASSWORD` | Database credentials (PostgreSQL)      |
+| `DB_NAME`              | Database name                           |
+| `JWT_SECRET`           | 32+ character signing key               |
+| `BASE_URL`             | Public base URL (e.g. `https://app.foo`)|
+| Optional OAuth keys    | Google / Microsoft client credentials   |
 
-#### Step 1: Create Stack
-
-1. In Portainer, click **Stacks** in the left menu
-2. Click **+ Add stack** button (top right)
-
-#### Step 2: Configure Stack
-
-**Fill in the form:**
-
-1. **Name:** `cal3`
-
-2. **Build method:** Select **Repository** (radio button)
-
-3. **Repository configuration:**
-   - **Repository URL:** `https://github.com/Csepi/cal3.git`
-   - **Repository reference:** `refs/heads/main` ⭐ **Use full ref to avoid errors!**
-     - Alternative: `Docker` (if main doesn't work)
-   - **Compose path:** `docker/docker-compose.portainer-local.yml` ⭐ **CRITICAL - Don't use the other file!**
-
-4. **Authentication:** Leave unchecked (public repo)
-
-5. **Enable automatic updates:** Optional (check if you want auto-updates)
-
-#### Step 3: Add Environment Variables
-
-**Scroll down to "Environment variables" section**
-
-Click **+ Add an environment variable** for each of these **required** variables:
-
-| Name | Value | Notes |
-|------|-------|-------|
-| `DB_USERNAME` | `cal3_user` | Database username |
-| `DB_PASSWORD` | `YOUR_SECURE_PASSWORD` | ⚠️ Use strong password! |
-| `DB_NAME` | `cal3_production` | Database name |
-| `JWT_SECRET` | `YOUR_32_CHAR_SECRET` | ⚠️ Generate with openssl! |
-
-**🎯 Smart Port Configuration (Optional - uses defaults if not set):**
-| Name | Default | Notes |
-|------|---------|-------|
-| `BASE_URL` | `http://localhost` | Base domain for all services |
-| `FRONTEND_PORT` | `8080` | Frontend web interface port |
-| `BACKEND_PORT` | `8081` | Backend API port |
-| `DB_PORT` | `5433` | PostgreSQL host port |
-
-✅ **All URLs auto-constructed!** Just set `BASE_URL` and ports - no need for duplicate overrides such as `FRONTEND_URL` or `API_URL`. They're automatically generated as:
-- Frontend URL = `BASE_URL:FRONTEND_PORT`
-- API URL = `BASE_URL:BACKEND_PORT`
-- OAuth callbacks = `BASE_URL:BACKEND_PORT/api/auth/{provider}/callback`
-
-Need to call an API hosted elsewhere? Edit `frontend/public/runtime-config.js` (sets `window.ENV.BASE_URL`) or add meta tags to the deployed `index.html`. No rebuild required.
-
-**Example with custom ports:**
-```
-BASE_URL=http://localhost
-FRONTEND_PORT=9000
-BACKEND_PORT=9001
-```
-Result: Frontend at :9000, Backend at :9001, all URLs auto-updated!
-
-**Optional (OAuth integration - only if you need Google/Microsoft login):**
-| Name | Value | Notes |
-|------|-------|-------|
-| `GOOGLE_CLIENT_ID` | Your Google Client ID | For Google login |
-| `GOOGLE_CLIENT_SECRET` | Your Google Secret | For Google login |
-| `MICROSOFT_CLIENT_ID` | Your Microsoft Client ID | For Microsoft login |
-| `MICROSOFT_CLIENT_SECRET` | Your Microsoft Secret | For Microsoft login |
-
-📝 **Note:** OAuth callback URLs are auto-constructed from `BASE_URL:BACKEND_PORT`. No need to set them manually!
-
-**🔐 Generate Secure Secrets:**
-
-Run these commands in your terminal to generate secure values:
-
-```bash
-# For JWT_SECRET (32 characters)
-openssl rand -base64 32
-
-# For DB_PASSWORD (24 characters)
-openssl rand -base64 24
-```
-
-Copy the output and paste into Portainer.
-
-#### Step 4: Deploy
-
-1. **Scroll to bottom**
-2. **Don't change any other options**
-3. Click **Deploy the stack** button
-4. **Wait patiently** - First deployment takes 10-15 minutes
-
-**What happens during deployment:**
-```
-[1/5] Cloning repository...           ✓ (30 seconds)
-[2/5] Building backend image...       ✓ (5-7 minutes)
-[3/5] Building frontend image...      ✓ (5-7 minutes)
-[4/5] Creating network...             ✓ (5 seconds)
-[5/5] Starting containers...          ✓ (30 seconds)
-```
-
-#### Step 5: Monitor Progress
-
-1. After clicking "Deploy", you'll see the stack page
-2. Click **Logs** tab to see build progress
-3. Look for these success indicators:
-   - `Pulling postgres (postgres:15-alpine)...`
-   - `Building backend`
-   - `Building frontend`
-   - `Creating cal3-postgres...`
-   - `Creating cal3-backend...`
-   - `Creating cal3-frontend...`
+Leave values blank for settings you intend to manage through the Admin UI.
+They will fall back to the database-managed configuration described in
+`RUNTIME_CONFIGURATION.md`.
 
 ---
 
-### Method 2: Web Editor (Manual Configuration)
+### 4. Deploy the stack
 
-Use this if you can't access GitHub or prefer manual control.
+1. Review the parsed compose file in the preview panel.
+2. Click **Deploy the stack**.
+3. Watch the **Stack status** page until all services report **Running**.
 
-#### Step 1: Create Stack
-
-1. **Stacks** → **+ Add stack**
-2. **Name:** `cal3`
-3. **Build method:** Select **Web editor**
-
-#### Step 2: Paste Compose Configuration
-
-Copy and paste this **entire** configuration into the editor:
-
-```yaml
-version: '3.9'
-
-services:
-  postgres:
-    image: postgres:15-alpine
-    container_name: cal3-postgres
-    restart: unless-stopped
-    environment:
-      POSTGRES_USER: ${DB_USERNAME}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: ${DB_NAME}
-      PGDATA: /var/lib/postgresql/data/pgdata
-    ports:
-      - "127.0.0.1:5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    networks:
-      - cal3-network
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME}"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 60s
-    deploy:
-      resources:
-        limits:
-          cpus: '2'
-          memory: 2G
-        reservations:
-          cpus: '1'
-          memory: 512M
-
-  backend:
-    build:
-      context: https://github.com/Csepi/cal3.git#main
-      dockerfile: docker/Dockerfile.backend
-      args:
-        NODE_ENV: production
-    image: cal3-backend:local
-    container_name: cal3-backend
-    restart: unless-stopped
-    environment:
-      NODE_ENV: production
-      PORT: 8081
-      DB_TYPE: postgres
-      DB_HOST: postgres
-      DB_PORT: 5432
-      DB_USERNAME: ${DB_USERNAME}
-      DB_PASSWORD: ${DB_PASSWORD}
-      DB_NAME: ${DB_NAME}
-      JWT_SECRET: ${JWT_SECRET}
-      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:8080}
-      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
-      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
-      GOOGLE_CALLBACK_URL: ${GOOGLE_CALLBACK_URL}
-      MICROSOFT_CLIENT_ID: ${MICROSOFT_CLIENT_ID}
-      MICROSOFT_CLIENT_SECRET: ${MICROSOFT_CLIENT_SECRET}
-      MICROSOFT_CALLBACK_URL: ${MICROSOFT_CALLBACK_URL}
-      MICROSOFT_TENANT_ID: ${MICROSOFT_TENANT_ID:-common}
-    ports:
-      - "127.0.0.1:8081:8081"
-    networks:
-      - cal3-network
-    depends_on:
-      postgres:
-        condition: service_healthy
-    deploy:
-      resources:
-        limits:
-          cpus: '2'
-          memory: 1G
-        reservations:
-          cpus: '0.5'
-          memory: 256M
-
-  frontend:
-    build:
-      context: https://github.com/Csepi/cal3.git#main
-      dockerfile: docker/Dockerfile.frontend
-      args:
-        API_URL: ${API_URL:-http://localhost:8081}
-    image: cal3-frontend:local
-    container_name: cal3-frontend
-    restart: unless-stopped
-    environment:
-      API_URL: http://backend:8081
-      NODE_ENV: production
-    ports:
-      - "${FRONTEND_PORT:-8080}:80"
-    networks:
-      - cal3-network
-    depends_on:
-      - backend
-    deploy:
-      resources:
-        limits:
-          cpus: '1'
-          memory: 512M
-        reservations:
-          cpus: '0.25'
-          memory: 128M
-
-networks:
-  cal3-network:
-    driver: bridge
-    ipam:
-      config:
-        - subnet: 172.28.0.0/16
-
-volumes:
-  postgres_data:
-    name: cal3_postgres_data
-```
-
-#### Step 3: Add Environment Variables
-
-Same as Method 1 - Add all required environment variables (see table above).
-
-#### Step 4: Deploy
-
-Click **Deploy the stack** and wait for build to complete.
+The compose file provisions three containers by default: PostgreSQL, the NestJS
+backend, and the React frontend. Additional variants point to external
+databases—choose the compose file that matches your topology.
 
 ---
 
-## ✓ Verify Deployment
+### 5. Verify the deployment
 
-### Check Container Status
+| Checkpoint                  | Command or URL                                  |
+|-----------------------------|-------------------------------------------------| 
+| Containers running          | `docker ps` on the target host                  |
+| Backend health              | `http://<backend-host>:8081/api/health`         |
+| Admin panel                 | `http://<frontend-host>:8080/admin`             |
+| Runtime configuration panel | **Admin → Runtime Configuration**               |
+| OAuth callback preview      | Copy URLs from the runtime configuration panel  |
 
-1. In Portainer: **Containers** → You should see 3 running containers:
-   - `cal3-postgres` (green/running)
-   - `cal3-backend` (green/running)
-   - `cal3-frontend` (green/running)
-
-2. All should show status: **running**
-
-### Access Application
-
-1. **Frontend:** Open browser to http://localhost:8080 (or your `FRONTEND_PORT`)
-   - You should see the Cal3 login page
-
-2. **Backend API:** http://localhost:8081/api/health (or your `BACKEND_PORT`)
-   - Should show: `{"status":"ok"}`
-
-3. **API Documentation:** http://localhost:8081/api/docs (or your `BACKEND_PORT`)
-   - Should show Swagger UI
-
-**If you configured custom ports**, replace `8080` and `8081` with your custom values.
-
-### Check Logs
-
-If something isn't working:
-
-1. **Containers** → Click container name → **Logs** tab
-2. Look for errors in:
-   - `cal3-backend` - Database connection, API startup
-   - `cal3-frontend` - Nginx errors
-   - `cal3-postgres` - Database initialization
+Use the admin panel to toggle feature flags or paste OAuth secrets. Changes
+take effect immediately and are persisted in the Cal3 database.
 
 ---
 
-## 🔧 Common Errors and Solutions
+### 6. Roll out updates
 
-### Error 1: "denied: access to image ghcr.io/csepi/cal3-backend"
+Because the stack is Git-backed, updates are single-click:
 
-**Cause:** Using wrong compose file (docker-compose.portainer.yml instead of portainer-local.yml)
+1. Commit and push your changes to the branch referenced by the stack.
+2. In Portainer, open **Stacks → cal3 → Pull and redeploy**.
+3. Portainer fetches the new compose definition and recreates the services.
 
-**Solution:**
-1. Delete the stack: **Stacks** → `cal3` → **Remove**
-2. Create new stack
-3. **Critical:** Use compose path `docker/docker-compose.portainer-local.yml`
-4. Redeploy
-
-### Error 2: "env file /data/compose/.../config/.env not found"
-
-**Cause:** Trying to use env file that doesn't exist in repository
-
-**Solution:**
-- Don't use compose path with `env_file` references
-- Use `docker-compose.portainer-local.yml` which doesn't need env files
-- Or add all variables in Portainer UI (recommended)
-
-### Error 3: "Unable to fetch git repository" or "could not find ref 'main'"
-
-**Cause:** Portainer having issues accessing the Git repository or the branch reference
-
-**This is a COMMON error! Here are multiple solutions:**
-
-**Solution A - Use Full Branch Reference (EASIEST):**
-1. Delete the failed stack: **Stacks** → Select → **Remove**
-2. Create new stack again
-3. **Change Repository reference from:** `main`
-4. **To:** `refs/heads/main` ⭐ (This is the fix!)
-5. Keep everything else the same
-6. Deploy
-
-**Solution B - Try Docker Branch:**
-The Docker branch has the same files:
-1. Repository reference: `Docker` (instead of `main`)
-2. Everything else stays the same
-
-**Solution C - Use Web Editor Method (RECOMMENDED if A & B fail):**
-1. **Skip Repository method entirely**
-2. Use **Method 2: Web Editor** from above
-3. Copy/paste the complete docker-compose configuration
-4. This completely bypasses Git repository access
-5. **This works 100% of the time!**
-
-**Solution D - Use Commit SHA:**
-1. Go to: https://github.com/Csepi/cal3/commits/main
-2. Copy the latest commit SHA (e.g., `2c40f5f`)
-3. Use that as Repository reference instead of `main`
-
-**Why this happens:**
-- Portainer sometimes has issues with Git branch detection
-- Different Git servers use different ref formats
-- Network/firewall may interfere with Git operations
-
-### Error 4: "failed to solve: failed to fetch oauth token"
-
-**Cause:** Docker can't access GitHub to build from repository context
-
-**Solution:**
-1. Check your internet connection
-2. **Use Web Editor method instead** (Method 2 above)
-3. The Web Editor method doesn't need Git access during build
-
-### Error 5: Port already in use (8080, 8081, or 5432)
-
-**Cause:** Another service is using these ports
-
-**Solution - Find what's using the port:**
-```bash
-# Windows
-netstat -ano | findstr :8080
-
-# Linux/Mac
-lsof -i :8080
-```
-
-Then either:
-- Stop the conflicting service
-- Or change ports in environment variables:
-  - `FRONTEND_PORT=8090`
-  - Backend port is harder to change (requires code modification)
-
-### Error 5: "unhealthy" status on containers
-
-**Cause:** Database or backend not starting properly
-
-**Solution:**
-1. Check backend logs: **Containers** → `cal3-backend` → **Logs**
-2. Common issues:
-   - Database not ready: Wait 30-60 seconds
-   - Wrong JWT_SECRET: Must be set
-   - Database connection error: Check DB_* variables match
-
-### Error 6: Frontend shows but backend API doesn't work
-
-**Cause:** Backend crashed or can't connect to database
-
-**Solution:**
-1. Check backend logs for errors
-2. Verify environment variables are correct
-3. Check database is running: `docker exec -it cal3-postgres pg_isready -U cal3_user`
-4. Restart backend: **Containers** → `cal3-backend` → **Restart**
-
-### Error 7: "Cannot connect to Docker daemon"
-
-**Cause:** Portainer can't access Docker
-
-**Solution:**
-```bash
-# Check Docker socket is accessible
-docker ps
-
-# Restart Portainer
-docker restart portainer
-
-# Verify socket mount (Linux)
-docker inspect portainer | grep docker.sock
-```
-
-### Error 8: "executor failed running [/bin/sh -c npm run build]: exit code: 127"
-
-**Cause:** Build command not found - usually missing dependencies or wrong paths
-
-**This was FIXED in commit e3bdc49 (2024-10-11)**
-
-If you still see this error:
-
-**Solution:**
-1. **Update your stack** to get the latest Dockerfiles:
-   - **Stacks** → `cal3` → **Editor**
-   - Check **Pull and redeploy**
-   - Click **Update the stack**
-
-2. **Or delete and recreate** the stack:
-   - Delete existing stack
-   - Create new one (it will pull latest code with fixes)
-
-3. **What was fixed:**
-   - Backend now installs all dependencies (including TypeScript)
-   - Correct file paths for repository builds
-   - nginx configuration paths corrected
-
-**If error persists after update:**
-- Check Portainer logs for specific error
-- Ensure you're using the latest code from GitHub
-- Try Web Editor method with updated compose file
-
-### Error 9: Build takes too long or times out
-
-**Cause:** Large images, slow internet, or insufficient resources
-
-**Solution:**
-1. Wait patiently (first build can take 15-20 minutes)
-2. Check system resources in Portainer Dashboard
-3. Close other applications to free up RAM
-4. If timeout, try again - Docker will use cached layers
+For fully automated rollouts enable **Auto update → Webhook** and connect it to
+your CI/CD pipeline or Git provider.
 
 ---
 
-## 📊 Management Tasks
+### 7. Maintenance and troubleshooting
 
-### View Logs
+- **Secrets rotation**: update the value in the Admin panel or `.env`, then
+  use **Pull and redeploy**.
+- **External databases**: swap to `docker-compose.portainer-external-db.yml`
+  and supply the remote connection variables (`DB_HOST`, `DB_SSL`, etc.).
+- **Logs**: open the stack and click **Containers → Logs**, or use
+  `docker logs <container>` on the host.
+- **Rollback**: redeploy a previous Git tag or commit reference.
 
-1. **Containers** → Click container name
-2. **Logs** tab
-3. Toggle **Auto-refresh logs** for real-time view
-4. Use search box to filter logs
-
-### Restart Container
-
-1. **Containers** → Select checkbox next to container
-2. Click **Restart** button
-3. Or click container name → **Restart** button
-
-### Update Application
-
-When new code is pushed to GitHub:
-
-1. **Stacks** → `cal3`
-2. Click **Editor**
-3. Click **Pull and redeploy** checkbox
-4. Click **Update the stack**
-5. Portainer will:
-   - Pull latest code from GitHub
-   - Rebuild images
-   - Restart containers
-
-### Stop/Start Stack
-
-**Stop all Cal3 services:**
-1. **Stacks** → `cal3`
-2. Click **Stop** button
-
-**Start again:**
-1. **Stacks** → `cal3`
-2. Click **Start** button
-
-### Execute Commands in Container
-
-**Access backend shell:**
-1. **Containers** → `cal3-backend`
-2. **Console** tab
-3. Select `/bin/sh`
-4. Click **Connect**
-5. You now have shell access
-
-**Useful commands:**
-```bash
-# Check backend status
-node -v
-npm list
-
-# Check environment variables
-env | grep DB_
-
-# Test database connection
-nc -zv postgres 5432
-```
-
-### Database Backup
-
-**From Portainer:**
-1. **Containers** → `cal3-postgres`
-2. **Console** → `/bin/sh`
-3. Run:
-```bash
-pg_dump -U cal3_user cal3_production > /var/lib/postgresql/data/backup_$(date +%Y%m%d).sql
-```
-
-**Or from host:**
-```bash
-docker exec cal3-postgres pg_dump -U cal3_user cal3_production > backup.sql
-```
-
-### View Resource Usage
-
-1. **Containers** → Click container name
-2. **Stats** tab
-3. View:
-   - CPU usage
-   - Memory usage
-   - Network I/O
-   - Block I/O
-
-### Remove Everything (Clean Slate)
-
-**Warning: This deletes all data!**
-
-1. **Stacks** → `cal3` → **Remove**
-2. Check "Remove associated volumes" if you want to delete database data
-3. Confirm
-
-To start fresh, follow deployment steps again.
+If deployment fails, inspect the stack deployment logs in Portainer. Typical
+causes include invalid `.env` formatting, wrong compose path, or missing Git
+credentials.
 
 ---
 
-## 🎓 Best Practices
+### 8. Related references
 
-### Security
+- `RUNTIME_CONFIGURATION.md` — how to manage runtime settings via the Admin UI.
+- `docker/README.md` — general Docker workflow, common commands, and backups.
+- `DEPLOYMENT_GUIDE.md` — end-to-end installation outside of Portainer.
 
-- ✅ Use strong passwords (generated with openssl)
-- ✅ Keep JWT_SECRET secret (never commit to git)
-- ✅ Use HTTPS for Portainer (port 9443)
-- ✅ Enable 2FA in Portainer settings
-- ✅ Regularly update Portainer: `docker pull portainer/portainer-ce:latest`
-
-### Maintenance
-
-- 📅 Backup database weekly
-- 📅 Check logs for errors weekly
-- 📅 Update application monthly
-- 📅 Clean up old images: **Images** → **Unused** → **Remove**
-
-### Performance
-
-- 💾 Monitor disk space: **Dashboard**
-- 💾 Monitor memory usage: Container **Stats**
-- 💾 Increase resources if needed in compose file
-
----
-
-## 🆘 Still Having Issues?
-
-### Troubleshooting Checklist
-
-- [ ] Docker is running: `docker ps`
-- [ ] Portainer is accessible: https://localhost:9443
-- [ ] Using correct compose file: `docker-compose.portainer-local.yml`
-- [ ] All environment variables are set
-- [ ] Secrets are generated and strong
-- [ ] No port conflicts
-- [ ] Enough disk space (20GB+)
-- [ ] Enough RAM (8GB+)
-
-### Get Help
-
-1. **Check logs in Portainer:**
-   - Stack deployment logs
-   - Individual container logs
-
-2. **Check Docker logs:**
-   ```bash
-   docker logs cal3-backend
-   docker logs cal3-frontend
-   docker logs cal3-postgres
-   ```
-
-3. **Check stack status:**
-   ```bash
-   docker ps -a
-   ```
-
-4. **Create GitHub issue:**
-   - Include error messages
-   - Include relevant logs
-   - Describe what you tried
-
----
-
-## 📚 Additional Resources
-
-- **Main Docker Documentation:** [docker/README.md](README.md)
-- **Quick Start Guide:** [docs/docker/QUICK_START.md](../docs/docker/QUICK_START.md)
-- **Deployment Fix Guide:** [DEPLOYMENT_FIX.md](DEPLOYMENT_FIX.md)
-- **Portainer Documentation:** https://docs.portainer.io/
-
----
-
-**✨ Success!** Once deployed, you can access Cal3 at http://localhost:8080
-
-Need to make changes? Use the Portainer interface - no command line needed!
-
----
-
-## 🗄️ Using External Database
-
-Cal3 supports external PostgreSQL databases (Azure, AWS RDS, self-hosted) instead of the built-in container.
-
-### Configuration in Portainer
-
-Add these additional environment variables when deploying:
-
-| Variable | Example | Description |
-|----------|---------|-------------|
-| `DB_HOST` | `myserver.postgres.database.azure.com` | Database hostname |
-| `DB_PORT` | `5432` | Database port |
-| `DB_SSL` | `true` | Enable SSL (required for cloud) |
-| `DB_SSL_REJECT_UNAUTHORIZED` | `false` | Accept self-signed certs |
-| `DB_SYNCHRONIZE` | `false` | ⚠️ Must be false in production |
-| `DB_POOL_MAX` | `20` | Max connections (optional) |
-| `DB_POOL_MIN` | `5` | Min connections (optional) |
-
-### Provider Examples
-
-**Azure PostgreSQL:**
-```
-DB_HOST=myserver.postgres.database.azure.com
-DB_SSL=true
-DB_SSL_REJECT_UNAUTHORIZED=false
-DB_SYNCHRONIZE=false
-```
-
-**AWS RDS:**
-```
-DB_HOST=mydb.abc123.us-east-1.rds.amazonaws.com
-DB_SSL=true
-DB_SSL_REJECT_UNAUTHORIZED=false
-```
-
-**Self-Hosted:**
-```
-DB_HOST=192.168.1.100
-DB_SSL=false
-```
-
-### Deployment Steps with External Database
-
-1. Add all standard environment variables (DB_USERNAME, DB_PASSWORD, etc.)
-2. Add external database variables listed above
-3. In the docker-compose.yml editor, comment out the postgres service:
-   ```yaml
-   services:
-     # postgres:
-     #   image: postgres:15-alpine
-     #   ...
-   ```
-4. Deploy the stack (only backend and frontend will start)
-
-📖 **Complete External Database Guide:** [../external-database/README.md](../external-database/README.md)
-
----
+Once the stack is healthy, bookmark the admin panel. Most operational tweaks
+can now be handled directly inside Cal3 without editing compose files.

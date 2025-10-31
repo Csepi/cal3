@@ -17,6 +17,7 @@ import { CreateResourceDto, UpdateResourceDto } from '../dto/resource.dto';
 import { UserPermissionsService } from '../common/services/user-permissions.service';
 import { CascadeDeletionService } from '../common/services/cascade-deletion.service';
 import { PublicBookingService } from './public-booking.service';
+import { ConfigurationService } from '../configuration/configuration.service';
 
 @Controller('resources')
 @UseGuards(JwtAuthGuard)
@@ -26,6 +27,7 @@ export class ResourcesController {
     private readonly userPermissionsService: UserPermissionsService,
     private readonly cascadeDeletionService: CascadeDeletionService,
     private readonly publicBookingService: PublicBookingService,
+    private readonly configurationService: ConfigurationService,
   ) {}
 
   @Post()
@@ -181,7 +183,7 @@ export class ResourcesController {
       resourceName: resource.name,
       publicBookingToken: resource.publicBookingToken,
       publicBookingUrl: resource.publicBookingToken
-        ? `${process.env.FRONTEND_URL || 'http://localhost:8080'}/public-booking/${resource.publicBookingToken}`
+        ? `${this.configurationService.getFrontendBaseUrl()}/public-booking/${resource.publicBookingToken}`
         : null,
     };
   }
@@ -217,7 +219,7 @@ export class ResourcesController {
       resourceId: resource.id,
       resourceName: resource.name,
       publicBookingToken: newToken,
-      publicBookingUrl: `${process.env.FRONTEND_URL || 'http://localhost:8080'}/public-booking/${newToken}`,
+      publicBookingUrl: `${this.configurationService.getFrontendBaseUrl()}/public-booking/${newToken}`,
       message: 'Public booking token regenerated successfully',
     };
   }

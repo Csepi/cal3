@@ -20,6 +20,7 @@ import * as os from 'os';
 import { LoggingService } from '../logging/logging.service';
 import type { LogLevel } from '../entities/log-entry.entity';
 import { LogQueryDto, UpdateLogSettingsDto } from './dto/logs.dto';
+import { ConfigurationService } from '../configuration/configuration.service';
 
 @Injectable()
 export class AdminService {
@@ -50,6 +51,7 @@ export class AdminService {
     private automationRuleRepository: Repository<AutomationRule>,
     private dataSource: DataSource,
     private readonly loggingService: LoggingService,
+    private readonly configurationService: ConfigurationService,
   ) {}
 
   async getAllUsers(): Promise<User[]> {
@@ -754,32 +756,64 @@ export class AdminService {
     };
 
     // Environment Information
-    const baseUrl = process.env.BASE_URL || 'http://localhost';
-    const frontendPort = process.env.FRONTEND_PORT || '8080';
-    const backendPort = process.env.PORT || process.env.BACKEND_PORT || '8081';
+    const baseUrl =
+      this.configurationService.getValue('BASE_URL') ||
+      process.env.BASE_URL ||
+      'http://localhost';
+
+    const backendPortValue =
+      this.configurationService.getValue('BACKEND_PORT') ??
+      this.configurationService.getValue('PORT') ??
+      process.env.BACKEND_PORT ??
+      process.env.PORT ??
+      '8081';
+    const parsedBackendPort = parseInt(backendPortValue, 10);
+    const backendPort = Number.isNaN(parsedBackendPort)
+      ? 8081
+      : parsedBackendPort;
 
     const environmentInfo = {
-      nodeEnv: process.env.NODE_ENV || 'development',
-      port: parseInt(backendPort, 10),
-      baseUrl: baseUrl,
-      // Smart URL construction: use explicit FRONTEND_URL or construct from BASE_URL + FRONTEND_PORT
-      frontendUrl: process.env.FRONTEND_URL || `${baseUrl}:${frontendPort}`,
-      // Smart URL construction: use explicit BACKEND_URL or construct from BASE_URL + BACKEND_PORT
-      backendUrl: process.env.BACKEND_URL || `${baseUrl}:${backendPort}`,
+      nodeEnv:
+        this.configurationService.getValue('NODE_ENV') ||
+        process.env.NODE_ENV ||
+        'development',
+      port: backendPort,
+      baseUrl,
+      frontendUrl: this.configurationService.getFrontendBaseUrl(),
+      backendUrl: this.configurationService.getBackendBaseUrl(),
     };
 
     // Feature Flags
+    const enableOAuth = this.configurationService.getBoolean(
+      'ENABLE_OAUTH',
+      true,
+    );
     const featureFlags = {
-      googleOAuthEnabled: !!(
-        process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
+      googleOAuthEnabled:
+        enableOAuth &&
+        !!(
+          this.configurationService.getValue('GOOGLE_CLIENT_ID') &&
+          this.configurationService.getValue('GOOGLE_CLIENT_SECRET')
+        ),
+      microsoftOAuthEnabled:
+        enableOAuth &&
+        !!(
+          this.configurationService.getValue('MICROSOFT_CLIENT_ID') &&
+          this.configurationService.getValue('MICROSOFT_CLIENT_SECRET')
+        ),
+      calendarSyncEnabled: this.configurationService.getBoolean(
+        'ENABLE_CALENDAR_SYNC',
+        true,
       ),
-      microsoftOAuthEnabled: !!(
-        process.env.MICROSOFT_CLIENT_ID && process.env.MICROSOFT_CLIENT_SECRET
+      automationEnabled: this.configurationService.getBoolean(
+        'ENABLE_AUTOMATION',
+        true,
       ),
-      calendarSyncEnabled: true, // Always enabled
-      automationEnabled: true, // Always enabled
-      reservationsEnabled: true, // Always enabled
-      organisationsEnabled: true, // Always enabled
+      reservationsEnabled: this.configurationService.getBoolean(
+        'ENABLE_RESERVATIONS',
+        true,
+      ),
+      organisationsEnabled: true,
     };
 
     // Database Statistics

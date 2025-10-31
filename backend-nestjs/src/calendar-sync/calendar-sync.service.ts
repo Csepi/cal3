@@ -26,6 +26,7 @@ import {
   SyncedCalendarInfoDto,
   ProviderSyncStatusDto,
 } from '../dto/calendar-sync.dto';
+import { ConfigurationService } from '../configuration/configuration.service';
 
 @Injectable()
 export class CalendarSyncService {
@@ -44,6 +45,7 @@ export class CalendarSyncService {
     private eventRepository: Repository<Event>,
     @InjectRepository(User)
     private userRepository: Repository<User>,
+    private readonly configurationService: ConfigurationService,
     @Inject(
       forwardRef(
         () => require('../automation/automation.service').AutomationService,
@@ -109,10 +111,13 @@ export class CalendarSyncService {
     const state = `calendar-sync-${userId}-${Math.random().toString(36).substring(2, 15)}`;
 
     if (provider === SyncProvider.GOOGLE) {
-      const clientId = process.env.GOOGLE_CLIENT_ID;
+      const clientId =
+        this.configurationService.getValue('GOOGLE_CLIENT_ID') || '';
       const redirectUri =
-        process.env.GOOGLE_CALENDAR_SYNC_CALLBACK_URL ||
-        `${process.env.BACKEND_URL || 'http://localhost:8081'}/api/calendar-sync/callback/google`;
+        this.configurationService.getValue(
+          'GOOGLE_CALENDAR_SYNC_CALLBACK_URL',
+        ) ||
+        `${this.configurationService.getBackendBaseUrl()}/api/calendar-sync/callback/google`;
       const scope =
         'https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/userinfo.profile';
 
@@ -127,10 +132,13 @@ export class CalendarSyncService {
         `state=${state}`
       );
     } else if (provider === SyncProvider.MICROSOFT) {
-      const clientId = process.env.MICROSOFT_CLIENT_ID;
+      const clientId =
+        this.configurationService.getValue('MICROSOFT_CLIENT_ID') || '';
       const redirectUri =
-        process.env.MICROSOFT_CALENDAR_SYNC_CALLBACK_URL ||
-        `${process.env.BACKEND_URL || 'http://localhost:8081'}/api/calendar-sync/callback/microsoft`;
+        this.configurationService.getValue(
+          'MICROSOFT_CALENDAR_SYNC_CALLBACK_URL',
+        ) ||
+        `${this.configurationService.getBackendBaseUrl()}/api/calendar-sync/callback/microsoft`;
       const scope =
         'https://graph.microsoft.com/calendars.readwrite offline_access';
 
@@ -384,20 +392,26 @@ export class CalendarSyncService {
     if (provider === SyncProvider.GOOGLE) {
       const tokenUrl = 'https://oauth2.googleapis.com/token';
       const redirectUri =
-        process.env.GOOGLE_CALENDAR_SYNC_CALLBACK_URL ||
-        `${process.env.BACKEND_URL || 'http://localhost:8081'}/api/calendar-sync/callback/google`;
+        this.configurationService.getValue(
+          'GOOGLE_CALENDAR_SYNC_CALLBACK_URL',
+        ) ||
+        `${this.configurationService.getBackendBaseUrl()}/api/calendar-sync/callback/google`;
+      const clientId =
+        this.configurationService.getValue('GOOGLE_CLIENT_ID') || '';
+      const clientSecret =
+        this.configurationService.getValue('GOOGLE_CLIENT_SECRET') || '';
 
       this.logger.log(
         `[exchangeCodeForTokens] Google - Using redirect URI: ${redirectUri}`,
       );
       this.logger.log(
-        `[exchangeCodeForTokens] Google - Client ID: ${process.env.GOOGLE_CLIENT_ID?.substring(0, 10)}...`,
+        `[exchangeCodeForTokens] Google - Client ID: ${clientId.substring(0, 10)}...`,
       );
 
       const tokenRequestParams = {
         code,
-        client_id: process.env.GOOGLE_CLIENT_ID || '',
-        client_secret: process.env.GOOGLE_CLIENT_SECRET || '',
+        client_id: clientId,
+        client_secret: clientSecret,
         redirect_uri: redirectUri,
         grant_type: 'authorization_code',
       };
@@ -468,20 +482,26 @@ export class CalendarSyncService {
       const tokenUrl =
         'https://login.microsoftonline.com/common/oauth2/v2.0/token';
       const redirectUri =
-        process.env.MICROSOFT_CALENDAR_SYNC_CALLBACK_URL ||
-        `${process.env.BACKEND_URL || 'http://localhost:8081'}/api/calendar-sync/callback/microsoft`;
+        this.configurationService.getValue(
+          'MICROSOFT_CALENDAR_SYNC_CALLBACK_URL',
+        ) ||
+        `${this.configurationService.getBackendBaseUrl()}/api/calendar-sync/callback/microsoft`;
+      const clientId =
+        this.configurationService.getValue('MICROSOFT_CLIENT_ID') || '';
+      const clientSecret =
+        this.configurationService.getValue('MICROSOFT_CLIENT_SECRET') || '';
 
       this.logger.log(
         `[exchangeCodeForTokens] Microsoft - Using redirect URI: ${redirectUri}`,
       );
       this.logger.log(
-        `[exchangeCodeForTokens] Microsoft - Client ID: ${process.env.MICROSOFT_CLIENT_ID?.substring(0, 10)}...`,
+        `[exchangeCodeForTokens] Microsoft - Client ID: ${clientId.substring(0, 10)}...`,
       );
 
       const tokenRequestParams = {
         code,
-        client_id: process.env.MICROSOFT_CLIENT_ID || '',
-        client_secret: process.env.MICROSOFT_CLIENT_SECRET || '',
+        client_id: clientId,
+        client_secret: clientSecret,
         redirect_uri: redirectUri,
         grant_type: 'authorization_code',
       };

@@ -101,7 +101,17 @@ export interface BulkOperationResult {
 
 export type ModalType = 'create' | 'edit' | 'password' | 'usagePlans' | 'bulkUsagePlans';
 export type EntityType = 'user' | 'calendar' | 'event';
-export type AdminTab = 'users' | 'calendars' | 'events' | 'shares' | 'reservations' | 'organizations' | 'stats' | 'system-info' | 'logs';
+export type AdminTab =
+  | 'users'
+  | 'calendars'
+  | 'events'
+  | 'shares'
+  | 'reservations'
+  | 'organizations'
+  | 'stats'
+  | 'configuration'
+  | 'system-info'
+  | 'logs';
 
 export interface ConfirmDialogState {
   isOpen: boolean;
@@ -206,4 +216,48 @@ export interface LogResponse {
   items: LogEntry[];
   count: number;
   settings: LogSettings;
+}
+
+export type ConfigurationValueType =
+  | 'string'
+  | 'boolean'
+  | 'enum'
+  | 'secret'
+  | 'json';
+
+export interface ConfigurationSettingSummary {
+  key: string;
+  label: string;
+  description?: string;
+  valueType: ConfigurationValueType;
+  value: string | boolean | null;
+  hasValue: boolean;
+  isSensitive: boolean;
+  isEditable: boolean;
+  isReadOnly: boolean;
+  options?: string[] | null;
+  metadata?: Record<string, unknown> | null;
+  updatedAt?: string | null;
+}
+
+export interface ConfigurationCategorySummary {
+  key: 'environment' | 'oauth' | 'feature-flags';
+  label: string;
+  description?: string;
+  settings: ConfigurationSettingSummary[];
+}
+
+export interface OAuthCallbackSummary {
+  provider: 'google' | 'microsoft';
+  authCallback: string;
+  calendarSyncCallback: string;
+}
+
+export interface ConfigurationOverview {
+  categories: ConfigurationCategorySummary[];
+  derived: {
+    oauthCallbacks: OAuthCallbackSummary[];
+    backendBaseUrl: string;
+    frontendBaseUrl: string;
+  };
 }

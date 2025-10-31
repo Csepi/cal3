@@ -51,6 +51,8 @@ import { AgentsModule } from './agents/agents.module';
 import { AgentProfile } from './entities/agent-profile.entity';
 import { AgentPermission } from './entities/agent-permission.entity';
 import { AgentApiKey } from './entities/agent-api-key.entity';
+import { ConfigurationModule } from './configuration/configuration.module';
+import { ConfigurationSetting } from './entities/configuration-setting.entity';
 
 // Create logger instance for database connection logging
 const dbLogger = new Logger('DatabaseConnection');
@@ -150,6 +152,7 @@ const dbLogger = new Logger('DatabaseConnection');
               AgentProfile,
               AgentPermission,
               AgentApiKey,
+              ConfigurationSetting,
             ],
             synchronize:
               process.env.DB_SYNCHRONIZE === 'true' ||
@@ -217,6 +220,7 @@ const dbLogger = new Logger('DatabaseConnection');
               AgentProfile,
               AgentPermission,
               AgentApiKey,
+              ConfigurationSetting,
             ],
             synchronize: true,
             logging: process.env.NODE_ENV === 'development',
@@ -238,6 +242,7 @@ const dbLogger = new Logger('DatabaseConnection');
     CommonModule,
     LoggingModule,
     AgentsModule,
+    ConfigurationModule,
     TypeOrmModule.forFeature([User]),
   ],
   controllers: [

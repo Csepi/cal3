@@ -18,11 +18,15 @@ import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
 import { RegisterDto, LoginDto, AuthResponseDto } from '../dto/auth.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { ConfigurationService } from '../configuration/configuration.service';
 
 @ApiTags('Authentication')
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly configurationService: ConfigurationService,
+  ) {}
 
   @Post('register')
   @ApiOperation({ summary: 'Register a new user' })
@@ -88,13 +92,13 @@ export class AuthController {
 
       if (code && userId) {
         // This is a calendar sync request, redirect to calendar sync controller
-        const redirectUrl = `http://localhost:8081/api/calendar-sync/callback/google?code=${code}&state=${state}&userId=${userId}`;
+        const redirectUrl = `${this.configurationService.getBackendBaseUrl()}/api/calendar-sync/callback/google?code=${code}&state=${state}&userId=${userId}`;
         return res.redirect(redirectUrl);
       }
     }
 
     // Regular auth flow
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:8080';
+    const frontendUrl = this.configurationService.getFrontendBaseUrl();
     const token = authResult.access_token;
     const redirectUrl = `${frontendUrl}/auth/callback?token=${token}&provider=google`;
     console.log('Google OAuth callback - redirectUrl:', redirectUrl);
@@ -128,13 +132,13 @@ export class AuthController {
 
       if (code && userId) {
         // This is a calendar sync request, redirect to calendar sync controller
-        const redirectUrl = `http://localhost:8081/api/calendar-sync/callback/microsoft?code=${code}&state=${state}&userId=${userId}`;
+        const redirectUrl = `${this.configurationService.getBackendBaseUrl()}/api/calendar-sync/callback/microsoft?code=${code}&state=${state}&userId=${userId}`;
         return res.redirect(redirectUrl);
       }
     }
 
     // Regular auth flow
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:8080';
+    const frontendUrl = this.configurationService.getFrontendBaseUrl();
     const token = authResult.access_token;
     const redirectUrl = `${frontendUrl}/auth/callback?token=${token}&provider=microsoft`;
     console.log('Microsoft OAuth callback - redirectUrl:', redirectUrl);
