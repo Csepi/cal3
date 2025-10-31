@@ -486,6 +486,11 @@ services:
       - backend
     command: npm run dev
 
+    # To point the SPA at a remote API, update frontend/public/runtime-config.js
+    # or serve a custom version that sets:
+    # window.ENV.BASE_URL = 'https://api.yourdomain.com';
+    # window.ENV.BACKEND_PORT = '8081';
+
 networks:
   cal3-network:
     driver: bridge

@@ -78,6 +78,8 @@ cd backend-nestjs && npm run seed
 - Backend CORS: `process.env.FRONTEND_URL || 'http://localhost:8080'`
 
 **To use custom ports:**
+
+- Runtime override: configure `frontend/public/runtime-config.js` to set `window.ENV.BASE_URL` (and optional `window.ENV.BACKEND_PORT`) when the API lives on a different origin.
 1. Set environment variables in `.env` files
 2. Update all URL variables to match (FRONTEND_URL, API_URL, BASE_URL)
 3. Update OAuth callback URLs if using SSO

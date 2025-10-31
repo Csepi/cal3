@@ -82,6 +82,20 @@ FRONTEND_URL=http://localhost:8080  # Frontend URL for CORS
 BASE_URL=http://localhost:8081  # Backend API URL
 ```
 
+If the frontend and backend run on different hosts, override the backend origin at runtime:
+```js
+window.ENV = window.ENV || {};
+window.ENV.BASE_URL = 'https://api.yourdomain.com';
+window.ENV.BACKEND_PORT = '8081'; // optional
+```
+
+Or add meta tags to `index.html`:
+```html
+<meta name="primecal-backend-url" content="https://api.yourdomain.com" />
+<meta name="primecal-backend-port" content="8081" />
+```
+
+
 **Running with custom ports:**
 ```bash
 # Backend with custom port

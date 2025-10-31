@@ -165,6 +165,8 @@ Click **+ Add an environment variable** for each of these **required** variables
 - API URL = `BASE_URL:BACKEND_PORT`
 - OAuth callbacks = `BASE_URL:BACKEND_PORT/api/auth/{provider}/callback`
 
+Need to call an API hosted elsewhere? Edit `frontend/public/runtime-config.js` (sets `window.ENV.BASE_URL`) or add meta tags to the deployed `index.html`. No rebuild required.
+
 **Example with custom ports:**
 ```
 BASE_URL=http://localhost

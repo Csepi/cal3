@@ -360,6 +360,20 @@ DB_PORT=5433                   # PostgreSQL port (default: 5433)
 - `API_URL` = `BASE_URL:BACKEND_PORT`
 - OAuth callbacks = `BASE_URL:BACKEND_PORT/api/auth/{provider}/callback`
 
+Need to point the SPA at a different API origin? Update `frontend/public/runtime-config.js` before deploying:
+```js
+window.ENV = window.ENV || {};
+window.ENV.BASE_URL = 'https://api.yourdomain.com';
+window.ENV.BACKEND_PORT = '8081'; // optional
+```
+
+Alternatively add meta tags to the generated index.html:
+```html
+<meta name="primecal-backend-url" content="https://api.yourdomain.com" />
+<meta name="primecal-backend-port" content="8081" />
+```
+
+
 **Example with custom ports:**
 ```bash
 BASE_URL=http://localhost

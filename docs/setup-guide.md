@@ -154,6 +154,14 @@ Create `.env` file in `frontend/` directory:
 BASE_URL=http://localhost:8081/api
 ```
 
+Or override at runtime (recommended for static/CDN deployments) by editing `frontend/public/runtime-config.js`:
+```js
+window.ENV = window.ENV || {};
+window.ENV.BASE_URL = 'https://api.yourdomain.com';
+window.ENV.BACKEND_PORT = '8081'; // optional
+```
+
+
 ## 🏃‍♂️ **Running the Application**
 
 ### **⚠️ CRITICAL PORT REQUIREMENTS**

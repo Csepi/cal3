@@ -59,6 +59,20 @@ export const getApiUrl = (endpoint: string) =>
   `${BASE_URL}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
 ```
 
+Need to call the API from a different origin? Override it without rebuilding:
+```js
+window.ENV = window.ENV || {};
+window.ENV.BASE_URL = 'https://api.yourdomain.com';
+window.ENV.BACKEND_PORT = '8081'; // optional
+```
+
+Or add meta tags to the deployed `index.html`:
+```html
+<meta name="primecal-backend-url" content="https://api.yourdomain.com" />
+<meta name="primecal-backend-port" content="8081" />
+```
+
+
 **OAuth Strategies** (`backend-nestjs/src/auth/*.strategy.ts`):
 ```typescript
 const baseUrl = process.env.BASE_URL || 'http://localhost';

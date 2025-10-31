@@ -114,6 +114,24 @@ export const getApiUrl = (endpoint: string) =>
   `${BASE_URL}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
 ```
 
+### Runtime Overrides
+
+You can override the backend origin **without rebuilding**:
+
+1. Edit `frontend/public/runtime-config.js` and set:
+   ```js
+   window.ENV = window.ENV || {};
+   window.ENV.BASE_URL = 'https://api.yourdomain.com';
+   window.ENV.BACKEND_PORT = '8081'; // optional when only the port differs
+   ```
+2. Or add a meta tag to the deployed `index.html`:
+   ```html
+   <meta name="primecal-backend-url" content="https://api.yourdomain.com" />
+   <meta name="primecal-backend-port" content="8081" />
+   ```
+
+Both options are read at runtime (before React mounts), which is ideal for CDN/static deployments where the API lives on another host.
+
 ---
 
 ## Configuration Examples

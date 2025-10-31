@@ -74,6 +74,14 @@ az webapp deployment source config \
   --manual-integration
 ```
 
+Or override at runtime by editing `frontend/public/runtime-config.js`:
+```js
+window.ENV = window.ENV || {};
+window.ENV.BASE_URL = 'https://your-backend-domain.com/api';
+window.ENV.BACKEND_PORT = '8081'; // optional
+```
+
+
 #### Frontend Deployment (Azure Static Web Apps)
 ```bash
 # 1. Create Static Web App
@@ -275,6 +283,14 @@ PORT=8081
 BASE_URL=https://your-backend-domain.com/api
 
 ```
+
+Or override at runtime by editing `frontend/public/runtime-config.js`:
+```js
+window.ENV = window.ENV || {};
+window.ENV.BASE_URL = 'https://your-backend-domain.com/api';
+window.ENV.BACKEND_PORT = '8081'; // optional
+```
+
 
 ## 🔒 **Security Configuration**
 
@@ -545,3 +561,4 @@ jobs:
 **Last Updated**: September 2025
 **Tested Platforms**: Azure, Vercel, Railway, AWS, Docker
 **Application Version**: Cal3 v1.2.0
+
