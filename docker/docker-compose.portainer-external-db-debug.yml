@@ -56,11 +56,11 @@ services:
       # Security
       JWT_SECRET: ${JWT_SECRET}
 
-      # OAuth (Optional)
-            GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
-            GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
-            MICROSOFT_CLIENT_ID: ${MICROSOFT_CLIENT_ID:-}
-            MICROSOFT_CLIENT_SECRET: ${MICROSOFT_CLIENT_SECRET:-}
+      # Optional bootstrap overrides (runtime managed in Admin -> Runtime Configuration)
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+      MICROSOFT_CLIENT_ID: ${MICROSOFT_CLIENT_ID:-}
+      MICROSOFT_CLIENT_SECRET: ${MICROSOFT_CLIENT_SECRET:-}
       MICROSOFT_TENANT_ID: ${MICROSOFT_TENANT_ID:-common}
     ports:
       - "${BACKEND_PORT:-8081}:${BACKEND_PORT:-8081}"
