@@ -9,10 +9,12 @@ import { JwtStrategy } from './jwt.strategy';
 import { GoogleStrategy } from './google.strategy';
 import { MicrosoftStrategy } from './microsoft.strategy';
 import { User } from '../entities/user.entity';
+import { ConfigurationModule } from '../configuration/configuration.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([User]),
+    ConfigurationModule,
     PassportModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
