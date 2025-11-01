@@ -48,13 +48,16 @@ Portainer displays the latest commit hash once the connection succeeds.
 Click **Advanced mode â†’ Environment variables**. Copy the contents of
 `docker/.env.example` and configure the required values:
 
-| Variable               | Purpose                                 |
-|------------------------|-----------------------------------------|
-| `DB_USERNAME`/`DB_PASSWORD` | Database credentials (PostgreSQL)      |
-| `DB_NAME`              | Database name                           |
-| `JWT_SECRET`           | 32+ character signing key               |
-| `BASE_URL`             | Public base URL (e.g. `https://app.foo`)|
-| Optional OAuth keys    | Google / Microsoft client credentials   |
+| Variable                    | Purpose                                                          |
+|-----------------------------|------------------------------------------------------------------|
+| `DB_USERNAME` / `DB_PASSWORD` | Database credentials (PostgreSQL)                               |
+| `DB_NAME`                   | Database name                                                    |
+| `JWT_SECRET`                | 32+ character signing key                                        |
+| `BASE_URL`                  | Public base URL (e.g. `https://app.foo`)                         |
+| `FRONTEND_PORT` *(optional)*| Published HTTP port for the React UI (defaults to `8080`)        |
+| `BACKEND_PORT` *(optional)* | Published HTTP port for the NestJS API (defaults to `8081`)      |
+| `DB_PORT` *(optional)*      | Published TCP port for PostgreSQL (defaults to `5433`)           |
+| Optional OAuth keys         | Google / Microsoft client credentials (hand over via Admin UI)   |
 
 Leave values blank for settings you intend to manage through the Admin UI.
 They will fall back to the database-managed configuration described in
@@ -97,6 +100,12 @@ Because the stack is Git-backed, updates are single-click:
 2. In Portainer, open **Stacks â†’ cal3 â†’ Pull and redeploy**.
 3. Portainer fetches the new compose definition and recreates the services.
 
+Need to change published ports later?
+
+1. Open **Stacks › cal3 › Editor**.
+2. Switch to **Environment variables** and adjust `FRONTEND_PORT`, `BACKEND_PORT`, or `DB_PORT`.
+3. Click **Update the stack** › Portainer redeploys the containers with the new port mappings.
+
 For fully automated rollouts enable **Auto update â†’ Webhook** and connect it to
 your CI/CD pipeline or Git provider.
 
@@ -126,3 +135,5 @@ credentials.
 
 Once the stack is healthy, bookmark the admin panel. Most operational tweaks
 can now be handled directly inside Cal3 without editing compose files.
+
+
