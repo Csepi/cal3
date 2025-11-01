@@ -17,7 +17,6 @@ import { ResourcesService } from './resources.service';
 import { PublicBookingController } from './public-booking.controller';
 import { PublicBookingService } from './public-booking.service';
 import { UserPermissionsService } from '../common/services/user-permissions.service';
-import { ConfigurationModule } from '../configuration/configuration.module';
 
 @Module({
   imports: [
@@ -35,7 +34,6 @@ import { ConfigurationModule } from '../configuration/configuration.module';
       ReservationCalendarRole,
       ReservationCalendar,
     ]),
-    ConfigurationModule,
   ],
   controllers: [ResourcesController, PublicBookingController],
   providers: [ResourcesService, PublicBookingService, UserPermissionsService],

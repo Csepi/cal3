@@ -11,7 +11,6 @@ import { Calendar } from '../entities/calendar.entity';
 import { Event } from '../entities/event.entity';
 import { User } from '../entities/user.entity';
 import { AutomationModule } from '../automation/automation.module';
-import { ConfigurationModule } from '../configuration/configuration.module';
 
 @Module({
   imports: [
@@ -24,7 +23,6 @@ import { ConfigurationModule } from '../configuration/configuration.module';
       User,
     ]),
     forwardRef(() => AutomationModule),
-    ConfigurationModule,
   ],
   controllers: [CalendarSyncController],
   providers: [CalendarSyncService],
