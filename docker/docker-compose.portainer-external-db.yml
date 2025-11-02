@@ -26,22 +26,22 @@ services:
       NODE_ENV: production
       
       # Smart port/URL configuration
-      BASE_URL: ${BASE_URL:-http://localhost}
-      PORT: ${BACKEND_CONTAINER_PORT:-8081}
-      BACKEND_PORT: ${BACKEND_CONTAINER_PORT:-8081}
-      BACKEND_HOST_PORT: ${BACKEND_HOST_PORT:-${BACKEND_CONTAINER_PORT:-8081}}
-      FRONTEND_PORT: ${FRONTEND_PORT:-8080}
+      BASE_URL: ${BASE_URL:-http://www.cselo.hu}
+      PORT: ${BACKEND_CONTAINER_PORT:-8082}
+      BACKEND_PORT: ${BACKEND_CONTAINER_PORT:-8082}
+      BACKEND_HOST_PORT: ${BACKEND_HOST_PORT:-${BACKEND_CONTAINER_PORT:-8082}}
+      FRONTEND_PORT: ${FRONTEND_PORT:-8079}
       
       # External Database Configuration (SET THESE IN PORTAINER!)
       DB_TYPE: postgres
-      DB_HOST: ${DB_HOST}
-      DB_PORT: ${DB_PORT:-5432}
-      DB_USERNAME: ${DB_USERNAME}
-      DB_PASSWORD: ${DB_PASSWORD}
+      DB_HOST: ${DB_HOST:-192.168.1.101}
+      DB_PORT: ${DB_PORT:-5433}
+      DB_USERNAME: ${DB_USERNAME:-db_admin}
+      DB_PASSWORD: ${DB_PASSWORD:-Enter.Enter}
       DB_NAME: ${DB_NAME:-cal3}
       
       # SSL Settings (required for cloud databases)
-      DB_SSL: ${DB_SSL:-true}
+      DB_SSL: ${DB_SSL:-false}
       DB_SSL_REJECT_UNAUTHORIZED: ${DB_SSL_REJECT_UNAUTHORIZED:-false}
       
       # Production Safety
@@ -55,7 +55,7 @@ services:
       DB_CONNECTION_TIMEOUT: ${DB_CONNECTION_TIMEOUT:-10000}
       
       # Security (REQUIRED)
-      JWT_SECRET: ${JWT_SECRET}
+      JWT_SECRET: ${JWT_SECRET:-calendar-secret-key}
       # Optional bootstrap overrides (runtime managed in Admin -> Runtime Configuration)
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
@@ -65,11 +65,11 @@ services:
       MICROSOFT_CALLBACK_URL: ${MICROSOFT_CALLBACK_URL:-}
       MICROSOFT_TENANT_ID: ${MICROSOFT_TENANT_ID:-common}
     ports:
-      - "127.0.0.1:${BACKEND_HOST_PORT:-${BACKEND_CONTAINER_PORT:-8081}}:${BACKEND_CONTAINER_PORT:-8081}"
+      - "127.0.0.1:${BACKEND_HOST_PORT:-${BACKEND_CONTAINER_PORT:-8082}}:${BACKEND_CONTAINER_PORT:-8082}"
     networks:
       - cal3-network
     healthcheck:
-      test: ["CMD", "sh", "-c", "node -e \"require('http').get('http://localhost:' + (process.env.BACKEND_PORT || process.env.PORT || '8081') + '/api/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})\""]
+      test: ["CMD", "sh", "-c", "node -e \"require('http').get('http://localhost:' + (process.env.BACKEND_PORT || process.env.PORT || '8082') + '/api/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})\""]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -92,16 +92,16 @@ services:
       context: ..
       dockerfile: docker/Dockerfile.frontend
       args:
-        BASE_URL: ${BASE_URL:-http://localhost}
-        BACKEND_PORT: ${BACKEND_CONTAINER_PORT:-8081}
+        BASE_URL: ${BASE_URL:-http://www.cselo.hu}
+        BACKEND_PORT: ${BACKEND_CONTAINER_PORT:-8082}
     container_name: cal3-frontend
     restart: unless-stopped
     environment:
-      BASE_URL: ${BASE_URL:-http://localhost}
-      BACKEND_PORT: ${BACKEND_CONTAINER_PORT:-8081}
+      BASE_URL: ${BASE_URL:-http://www.cselo.hu}
+      BACKEND_PORT: ${BACKEND_CONTAINER_PORT:-8082}
       NODE_ENV: production
     ports:
-      - "${FRONTEND_PORT:-8080}:80"
+      - "${FRONTEND_PORT:-8079}:80"
     networks:
       - cal3-network
     healthcheck:
