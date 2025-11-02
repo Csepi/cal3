@@ -148,7 +148,7 @@ docker volume rm <volume>
 | Symptom | Quick checks |
 |---------|--------------|
 | Containers crash-looping | `docker compose logs <service>` for stack traces; verify environment variables. |
-| Frontend works, backend 502 | Confirm backend container listens on `BACKEND_PORT`; check Nginx proxy logs. |
+| Frontend works, backend 502 | Confirm backend container listens on `BACKEND_HOST_PORT`; check Nginx proxy logs. |
 | OAuth redirect errors | Copy callback URLs from Admin → Runtime Configuration and update provider configuration. |
 | Portainer stack fails to deploy | Refresh Git credentials / token, verify `.env` formatting, review Portainer stack logs. |
 | CI/CD webhook no-ops | `curl http://localhost:3001/health`, inspect systemd/PM2 logs, confirm GitHub secret. |

@@ -23,8 +23,9 @@ services:
 
       # Smart port/URL configuration
       BASE_URL: ${BASE_URL:-http://localhost}
-      PORT: ${BACKEND_PORT:-8081}
-      BACKEND_PORT: ${BACKEND_PORT:-8081}
+      PORT: ${BACKEND_CONTAINER_PORT:-8081}
+      BACKEND_PORT: ${BACKEND_CONTAINER_PORT:-8081}
+      BACKEND_HOST_PORT: ${BACKEND_HOST_PORT:-${BACKEND_CONTAINER_PORT:-8081}}
       FRONTEND_PORT: ${FRONTEND_PORT:-8080}
 
       # External Database Configuration
@@ -63,7 +64,7 @@ services:
       MICROSOFT_CLIENT_SECRET: ${MICROSOFT_CLIENT_SECRET:-}
       MICROSOFT_TENANT_ID: ${MICROSOFT_TENANT_ID:-common}
     ports:
-      - "${BACKEND_PORT:-8081}:${BACKEND_PORT:-8081}"
+      - "${BACKEND_HOST_PORT:-${BACKEND_CONTAINER_PORT:-8081}}:${BACKEND_CONTAINER_PORT:-8081}"
     networks:
       - cal3-network
     # Use extra_hosts to ensure proper DNS resolution
@@ -87,12 +88,12 @@ services:
       dockerfile: docker/Dockerfile.frontend
       args:
         BASE_URL: ${BASE_URL:-http://localhost}
-        BACKEND_PORT: ${BACKEND_PORT:-8081}
+        BACKEND_PORT: ${BACKEND_CONTAINER_PORT:-8081}
     container_name: cal3-frontend
     restart: "no"
     environment:
       BASE_URL: ${BASE_URL:-http://localhost}
-      BACKEND_PORT: ${BACKEND_PORT:-8081}
+      BACKEND_PORT: ${BACKEND_CONTAINER_PORT:-8081}
     ports:
       - "${FRONTEND_PORT:-8080}:80"
     networks:

@@ -57,7 +57,9 @@ services:
     restart: unless-stopped
     environment:
       NODE_ENV: production
-      PORT: 8081
+      PORT: ${BACKEND_CONTAINER_PORT:-8081}
+      BACKEND_PORT: ${BACKEND_CONTAINER_PORT:-8081}
+      BACKEND_HOST_PORT: ${BACKEND_HOST_PORT:-${BACKEND_CONTAINER_PORT:-8081}}
       DB_TYPE: postgres
       DB_HOST: postgres
       DB_PORT: 5432
@@ -75,7 +77,7 @@ services:
       MICROSOFT_CALLBACK_URL: ${MICROSOFT_CALLBACK_URL:-}
       MICROSOFT_TENANT_ID: ${MICROSOFT_TENANT_ID:-common}
     ports:
-      - "127.0.0.1:${BACKEND_PORT:-8081}:8081"
+      - "127.0.0.1:${BACKEND_HOST_PORT:-${BACKEND_CONTAINER_PORT:-8081}}:${BACKEND_CONTAINER_PORT:-8081}"
     networks:
       - cal3-network
     depends_on:
@@ -105,7 +107,7 @@ services:
     container_name: cal3-frontend
     restart: unless-stopped
     environment:
-      API_URL: http://backend:8081
+      API_URL: http://backend:${BACKEND_CONTAINER_PORT:-8081}
       NODE_ENV: production
     ports:
       - "${FRONTEND_PORT:-8080}:80"
@@ -153,7 +155,7 @@ volumes:
 #
 # Port Configuration (Optional - use different ports if conflicts):
 # FRONTEND_PORT=8080     # Default: 8080, change if port in use
-# BACKEND_PORT=8081      # Default: 8081, change if port in use
+# BACKEND_HOST_PORT=8081    # Host port (defaults 8081). Set BACKEND_CONTAINER_PORT if you also change the internal port
 # DB_PORT=5433           # Default: 5433, change if port in use
 #
 # Optional (for OAuth):

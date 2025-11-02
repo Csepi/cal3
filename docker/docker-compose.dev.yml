@@ -54,7 +54,9 @@ services:
       - backend_node_modules:/app/node_modules
     environment:
       NODE_ENV: development
-      PORT: 8081
+      PORT: ${BACKEND_CONTAINER_PORT:-8081}
+      BACKEND_PORT: ${BACKEND_CONTAINER_PORT:-8081}
+      BACKEND_HOST_PORT: ${BACKEND_HOST_PORT:-${BACKEND_PORT:-8081}}
       DB_TYPE: postgres
       DB_HOST: postgres
       DB_PORT: 5432
@@ -72,7 +74,7 @@ services:
             MICROSOFT_CALLBACK_URL: ${MICROSOFT_CALLBACK_URL:-}
       MICROSOFT_TENANT_ID: ${MICROSOFT_TENANT_ID:-common}
     ports:
-      - "8081:8081"
+      - "${BACKEND_HOST_PORT:-${BACKEND_PORT:-8081}}:${BACKEND_CONTAINER_PORT:-8081}"
     networks:
       - cal3-network
     depends_on:

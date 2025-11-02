@@ -1,4 +1,4 @@
-﻿
+
 ## Portainer Stack Deployment (Git-backed)
 
 This guide walks through deploying the Cal3 stack with Portainer using the
@@ -9,7 +9,7 @@ configuration in sync with the codebase and unlocks click-to-update workflows.
 
 ### 1. Prerequisites
 
-- Docker Engine â‰Ą 24 on the target host.
+- Docker Engine ≥ 24 on the target host.
 - Portainer CE or Business Edition with access to the Docker environment.
 - Outbound network access to reach your Git provider.
 - A personal access token if the repository is private.
@@ -27,7 +27,7 @@ before continuing.
 
 ### 2. Add the Git repository
 
-1. Sign in to Portainer and open **Stacks â†’ Add stack â†’ Web editor**.
+1. Sign in to Portainer and open **Stacks → Add stack → Web editor**.
 2. Switch to the **Repository** tab.
 3. Fill in the form:
    - **Name**: `cal3`
@@ -45,7 +45,7 @@ Portainer displays the latest commit hash once the connection succeeds.
 
 ### 3. Seed environment variables
 
-Click **Advanced mode â†’ Environment variables**. Copy the contents of
+Click **Advanced mode → Environment variables**. Copy the contents of
 `docker/.env.example` and configure the required values:
 
 | Variable                    | Purpose                                                          |
@@ -55,7 +55,8 @@ Click **Advanced mode â†’ Environment variables**. Copy the contents of
 | `JWT_SECRET`                | 32+ character signing key                                        |
 | `BASE_URL`                  | Public base URL (e.g. `https://app.foo`)                         |
 | `FRONTEND_PORT` *(optional)*| Published HTTP port for the React UI (defaults to `8080`)        |
-| `BACKEND_PORT` *(optional)* | Published HTTP port for the NestJS API (defaults to `8081`)      |
+| `BACKEND_HOST_PORT` *(optional)* | Host port exposed by the backend container (defaults to `8081`)      |
+| `BACKEND_CONTAINER_PORT` *(optional)* | Internal port the backend process listens on (defaults to `8081`) |
 | `DB_PORT` *(optional)*      | Published TCP port for PostgreSQL (defaults to `5433`)           |
 | Optional OAuth keys         | Google / Microsoft client credentials (hand over via Admin UI)   |
 
@@ -68,7 +69,7 @@ They will fall back to the database-managed configuration described in
 | Variable        | Example                | Notes                                       |
 |-----------------|------------------------|---------------------------------------------|
 | `DB_HOST`       | `10.0.5.12`            | Use the raw IP or hostname (no protocol)    |
-| `DB_PORT`       | `5440`                 | Match your provider’s exposed port          |
+| `DB_PORT`       | `5440`                 | Match your provider�s exposed port          |
 | `DB_USERNAME`   | `calendar_admin`       | Service account with required permissions   |
 | `DB_PASSWORD`   | `V3ry-Strong-P@ss`     | Store securely; rotate regularly            |
 | `DB_NAME`       | `calendar_prod`        | Target database/schema name                 |
@@ -85,7 +86,7 @@ They will fall back to the database-managed configuration described in
 
 The compose file provisions three containers by default: PostgreSQL, the NestJS
 backend, and the React frontend. Additional variants point to external
-databasesâ€”choose the compose file that matches your topology.
+databases—choose the compose file that matches your topology.
 
 ---
 
@@ -96,7 +97,7 @@ databasesâ€”choose the compose file that matches your topology.
 | Containers running          | `docker ps` on the target host                  |
 | Backend health              | `http://<backend-host>:8081/api/health`         |
 | Admin panel                 | `http://<frontend-host>:8080/admin`             |
-| Runtime configuration panel | **Admin â†’ Runtime Configuration**               |
+| Runtime configuration panel | **Admin → Runtime Configuration**               |
 | OAuth callback preview      | Copy URLs from the runtime configuration panel  |
 
 Use the admin panel to toggle feature flags or paste OAuth secrets. Changes
@@ -109,16 +110,16 @@ take effect immediately and are persisted in the Cal3 database.
 Because the stack is Git-backed, updates are single-click:
 
 1. Commit and push your changes to the branch referenced by the stack.
-2. In Portainer, open **Stacks â†’ cal3 â†’ Pull and redeploy**.
+2. In Portainer, open **Stacks → cal3 → Pull and redeploy**.
 3. Portainer fetches the new compose definition and recreates the services.
 
 Need to change published ports later?
 
-1. Open **Stacks › cal3 › Editor**.
-2. Switch to **Environment variables** and adjust `FRONTEND_PORT`, `BACKEND_PORT`, or `DB_PORT`.
-3. Click **Update the stack** › Portainer redeploys the containers with the new port mappings.
+1. Open **Stacks � cal3 � Editor**.
+2. Switch to **Environment variables** and adjust `FRONTEND_PORT`, `BACKEND_HOST_PORT`, or `DB_PORT`.
+3. Click **Update the stack** � Portainer redeploys the containers with the new port mappings.
 
-For fully automated rollouts enable **Auto update â†’ Webhook** and connect it to
+For fully automated rollouts enable **Auto update → Webhook** and connect it to
 your CI/CD pipeline or Git provider.
 
 ---
@@ -129,7 +130,7 @@ your CI/CD pipeline or Git provider.
   use **Pull and redeploy**.
 - **External databases**: swap to `docker-compose.portainer-external-db.yml`
   and supply the remote connection variables (`DB_HOST`, `DB_SSL`, etc.).
-- **Logs**: open the stack and click **Containers â†’ Logs**, or use
+- **Logs**: open the stack and click **Containers → Logs**, or use
   `docker logs <container>` on the host.
 - **Rollback**: redeploy a previous Git tag or commit reference.
 
@@ -141,12 +142,13 @@ credentials.
 
 ### 8. Related references
 
-- `RUNTIME_CONFIGURATION.md` â€” how to manage runtime settings via the Admin UI.
-- `docker/README.md` â€” general Docker workflow, common commands, and backups.
-- `DEPLOYMENT_GUIDE.md` â€” end-to-end installation outside of Portainer.
+- `RUNTIME_CONFIGURATION.md` — how to manage runtime settings via the Admin UI.
+- `docker/README.md` — general Docker workflow, common commands, and backups.
+- `DEPLOYMENT_GUIDE.md` — end-to-end installation outside of Portainer.
 
 Once the stack is healthy, bookmark the admin panel. Most operational tweaks
 can now be handled directly inside Cal3 without editing compose files.
+
 
 
 

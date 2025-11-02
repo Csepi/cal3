@@ -22,8 +22,9 @@ services:
       NODE_ENV: production
       # Smart port/URL configuration
       BASE_URL: ${BASE_URL:-http://localhost}
-      PORT: ${BACKEND_PORT:-8081}
-      BACKEND_PORT: ${BACKEND_PORT:-8081}
+      PORT: ${BACKEND_CONTAINER_PORT:-8081}
+      BACKEND_PORT: ${BACKEND_CONTAINER_PORT:-8081}
+      BACKEND_HOST_PORT: ${BACKEND_HOST_PORT:-${BACKEND_CONTAINER_PORT:-8081}}
       FRONTEND_PORT: ${FRONTEND_PORT:-8080}
       # External Database Configuration
       DB_TYPE: postgres
@@ -53,7 +54,7 @@ services:
       MICROSOFT_CALLBACK_URL: ${MICROSOFT_CALLBACK_URL:-}
       MICROSOFT_TENANT_ID: ${MICROSOFT_TENANT_ID:-common}
     ports:
-      - "127.0.0.1:${BACKEND_PORT:-8081}:${BACKEND_PORT:-8081}"
+      - "127.0.0.1:${BACKEND_HOST_PORT:-${BACKEND_CONTAINER_PORT:-8081}}:${BACKEND_CONTAINER_PORT:-8081}"
     networks:
       - cal3-network
     healthcheck:
@@ -81,14 +82,14 @@ services:
       dockerfile: docker/Dockerfile.frontend
       args:
         BASE_URL: ${BASE_URL:-http://localhost}
-        BACKEND_PORT: ${BACKEND_PORT:-8081}
+        BACKEND_PORT: ${BACKEND_CONTAINER_PORT:-8081}
     container_name: cal3-frontend
     restart: unless-stopped
     env_file:
       - ./config/.env
     environment:
       BASE_URL: ${BASE_URL:-http://localhost}
-      BACKEND_PORT: ${BACKEND_PORT:-8081}
+      BACKEND_PORT: ${BACKEND_CONTAINER_PORT:-8081}
       NODE_ENV: production
     ports:
       - "${FRONTEND_PORT:-8080}:80"
