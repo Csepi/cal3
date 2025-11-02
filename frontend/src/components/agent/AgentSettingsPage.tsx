@@ -202,6 +202,8 @@ function getMcpServerKey(name: string | undefined) {
 }
 
 const AgentSettingsPage: React.FC = () => {
+  // Windows needs a shell wrapper so paths with spaces (e.g. Program Files) resolve correctly.
+  const isWindows = typeof navigator !== 'undefined' && /windows/i.test(navigator.userAgent);
   const [loading, setLoading] = useState(true);
   const [agents, setAgents] = useState<AgentSummary[]>([]);
   const [selectedAgentId, setSelectedAgentId] = useState<number | null>(null);
@@ -293,19 +295,32 @@ const AgentSettingsPage: React.FC = () => {
     }
 
     const serverKey = getMcpServerKey(selectedAgent?.name);
-    const args = [
-      '--yes',
-      '@modelcontextprotocol/client-http',
-      '--url',
-      `${BASE_URL}/api/mcp`,
-      '--header',
-      `Authorization: Agent ${newKeySecret}`,
-    ];
+    const args = isWindows
+      ? [
+          '/C',
+          [
+            'npx',
+            '--yes',
+            '@modelcontextprotocol/client-http',
+            '--url',
+            `${BASE_URL}/api/mcp`,
+            '--header',
+            `"Authorization: Agent ${newKeySecret}"`,
+          ].join(' '),
+        ]
+      : [
+          '--yes',
+          '@modelcontextprotocol/client-http',
+          '--url',
+          `${BASE_URL}/api/mcp`,
+          '--header',
+          `Authorization: Agent ${newKeySecret}`,
+        ];
 
     const config = {
       mcpServers: {
         [serverKey]: {
-          command: 'npx',
+          command: isWindows ? 'cmd.exe' : 'npx',
           args,
         },
       },
