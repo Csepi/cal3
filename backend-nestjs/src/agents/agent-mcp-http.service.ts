@@ -31,7 +31,7 @@ export class AgentMcpHttpService {
   ): Promise<void> {
     const server = this.createServer(context);
     const transport = new StreamableHTTPServerTransport({
-      sessionIdGenerator: () => randomUUID(),
+      sessionIdGenerator: undefined,
       enableJsonResponse: false,
     });
 

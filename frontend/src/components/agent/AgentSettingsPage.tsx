@@ -309,7 +309,8 @@ const AgentSettingsPage: React.FC = () => {
       '--header',
       authHeaderPlaceholder,
     ];
-    const args = isWindows ? ['/C', baseArgs.join(' ')] : baseArgs;
+    const fullCommand = ['npx', ...baseArgs];
+    const args = isWindows ? ['/C', fullCommand.join(' ')] : baseArgs;
 
     const config = {
       mcpServers: {
