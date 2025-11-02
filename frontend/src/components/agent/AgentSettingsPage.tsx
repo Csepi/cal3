@@ -289,6 +289,8 @@ const AgentSettingsPage: React.FC = () => {
       .map(([key]) => key as AgentActionKey);
   }, [permissionsDraft]);
 
+  const windowsCmdPath = 'C:\\\\Windows\\\\System32\\\\cmd.exe';
+
   const mcpConfigSnippet = useMemo(() => {
     if (!newKeySecret) {
       return '';
@@ -320,7 +322,7 @@ const AgentSettingsPage: React.FC = () => {
     const config = {
       mcpServers: {
         [serverKey]: {
-          command: isWindows ? 'cmd.exe' : 'npx',
+          command: isWindows ? windowsCmdPath : 'npx',
           args,
         },
       },
