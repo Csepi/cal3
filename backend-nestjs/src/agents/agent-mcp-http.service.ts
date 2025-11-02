@@ -15,11 +15,15 @@ import type { ExecuteAgentActionDto } from './dto/agent.dto';
 import type { AuthInfo } from '@modelcontextprotocol/sdk/server/auth/types.js';
 import type { ContentBlock } from '@modelcontextprotocol/sdk/types.js';
 
+const TOOL_NAME_MAX_LENGTH = 64;
+
 type ToolHandler = (parameters: Record<string, any>) => Promise<unknown>;
 
 @Injectable()
 export class AgentMcpHttpService {
   private readonly logger = new Logger(AgentMcpHttpService.name);
+
+  private readonly usedToolNames = new Set<string>();
 
   constructor(private readonly agentMcpService: AgentMcpService) {}
 
@@ -83,8 +87,10 @@ export class AgentMcpHttpService {
         config.inputSchema = inputSchema;
       }
 
+      const toolName = this.createToolName(action);
+
       server.registerTool(
-        action,
+        toolName,
         config,
         async (parameters, extraInfo) => {
           try {
@@ -277,5 +283,30 @@ export class AgentMcpHttpService {
       type: 'text',
       text,
     } as ContentBlock;
+  }
+
+  private createToolName(action: string): string {
+    const normalized = action.toLowerCase().replace(/[^a-z0-9_-]/g, '-');
+    let candidate = normalized.replace(/-+/g, '-').replace(/^-+|-+$/g, '');
+
+    if (!candidate) {
+      candidate = 'tool';
+    }
+
+    if (candidate.length > TOOL_NAME_MAX_LENGTH) {
+      candidate = candidate.slice(0, TOOL_NAME_MAX_LENGTH);
+    }
+
+    let uniqueName = candidate;
+    let counter = 1;
+    while (this.usedToolNames.has(uniqueName)) {
+      const suffix = `-${counter}`;
+      const baseLength = TOOL_NAME_MAX_LENGTH - suffix.length;
+      uniqueName = `${candidate.slice(0, Math.max(1, baseLength))}${suffix}`;
+      counter += 1;
+    }
+
+    this.usedToolNames.add(uniqueName);
+    return uniqueName;
   }
 }
