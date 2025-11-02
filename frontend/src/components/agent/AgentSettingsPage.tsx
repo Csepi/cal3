@@ -293,15 +293,20 @@ const AgentSettingsPage: React.FC = () => {
     }
 
     const serverKey = getMcpServerKey(selectedAgent?.name);
+    const args = [
+      '--yes',
+      '@modelcontextprotocol/client-http',
+      '--url',
+      `${BASE_URL}/api/mcp`,
+      '--header',
+      `Authorization: Agent ${newKeySecret}`,
+    ];
+
     const config = {
       mcpServers: {
         [serverKey]: {
-          http: {
-            url: `${BASE_URL}/api/mcp`,
-            headers: {
-              Authorization: `Agent ${newKeySecret}`,
-            },
-          },
+          command: 'npx',
+          args,
         },
       },
     };
