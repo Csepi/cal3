@@ -5,10 +5,12 @@ import { AgentPermission } from '../entities/agent-permission.entity';
 import { AgentApiKey } from '../entities/agent-api-key.entity';
 import { AgentsController } from './agents.controller';
 import { AgentMcpController } from './agent-mcp.controller';
+import { AgentMcpStreamController } from './agent-mcp-stream.controller';
 import { AgentsService } from './agents.service';
 import { AgentKeysService } from './agent-keys.service';
 import { AgentAuthorizationService } from './agent-authorization.service';
 import { AgentMcpService } from './agent-mcp.service';
+import { AgentMcpHttpService } from './agent-mcp-http.service';
 import { CalendarsModule } from '../calendars/calendars.module';
 import { EventsModule } from '../events/events.module';
 import { AutomationModule } from '../automation/automation.module';
@@ -29,12 +31,13 @@ import { ConfigurationModule } from '../configuration/configuration.module';
     forwardRef(() => AutomationModule),
     ConfigurationModule,
   ],
-  controllers: [AgentsController, AgentMcpController],
+  controllers: [AgentsController, AgentMcpController, AgentMcpStreamController],
   providers: [
     AgentsService,
     AgentKeysService,
     AgentAuthorizationService,
     AgentMcpService,
+    AgentMcpHttpService,
     FeatureFlagsService,
   ],
   exports: [AgentsService, AgentAuthorizationService],

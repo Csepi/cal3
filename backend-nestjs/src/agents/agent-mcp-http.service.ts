@@ -1,0 +1,281 @@
+import { Injectable, Logger } from '@nestjs/common';
+import { randomUUID } from 'node:crypto';
+import type { Request, Response } from 'express';
+import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
+import { z } from 'zod';
+import type { ZodRawShape } from 'zod';
+import {
+  AgentActionKey,
+  getAgentActionDefinition,
+} from './agent-actions.registry';
+import { AgentMcpService } from './agent-mcp.service';
+import type { AgentContext } from './interfaces/agent-context.interface';
+import type { ExecuteAgentActionDto } from './dto/agent.dto';
+import type { AuthInfo } from '@modelcontextprotocol/sdk/server/auth/types.js';
+import type { ContentBlock } from '@modelcontextprotocol/sdk/types.js';
+
+type ToolHandler = (parameters: Record<string, any>) => Promise<unknown>;
+
+@Injectable()
+export class AgentMcpHttpService {
+  private readonly logger = new Logger(AgentMcpHttpService.name);
+
+  constructor(private readonly agentMcpService: AgentMcpService) {}
+
+  async handleStreamRequest(
+    context: AgentContext,
+    req: Request,
+    res: Response,
+    body: unknown,
+  ): Promise<void> {
+    const server = this.createServer(context);
+    const transport = new StreamableHTTPServerTransport({
+      sessionIdGenerator: () => randomUUID(),
+      enableJsonResponse: false,
+    });
+
+    res.on('close', () => {
+      transport.close().catch((error) => {
+        this.logger.warn(
+          `Failed to close MCP transport for agent ${context.agent.id}: ${error instanceof Error ? error.message : error}`,
+        );
+      });
+    });
+
+    await server.connect(transport);
+    await transport.handleRequest(
+      req as unknown as Request & { auth?: AuthInfo },
+      res,
+      body,
+    );
+  }
+
+  private createServer(context: AgentContext): McpServer {
+    const server = new McpServer({
+      name: 'primecal-mcp',
+      version: '1.0.0',
+      capabilities: {
+        tools: {},
+      },
+    });
+
+    const registerTool = (
+      action: AgentActionKey,
+      inputSchema: ZodRawShape | undefined,
+      handler: ToolHandler,
+    ) => {
+      if (!this.hasPermission(context, action)) {
+        return;
+      }
+
+      const definition = getAgentActionDefinition(action);
+      const config: {
+        title?: string;
+        description?: string;
+        inputSchema?: ZodRawShape;
+      } = {
+        title: definition?.label ?? action,
+        description: definition?.description ?? `Execute ${action}`,
+      };
+
+      if (inputSchema) {
+        config.inputSchema = inputSchema;
+      }
+
+      server.registerTool(
+        action,
+        config,
+        async (parameters, extraInfo) => {
+          try {
+            const result = await handler(parameters);
+            return this.wrapToolResult(result);
+          } catch (error) {
+            this.logger.warn(
+              `Tool execution failed for ${action}: ${
+                error instanceof Error ? error.message : error
+              }`,
+            );
+            return {
+              isError: true,
+              content: [
+                this.toTextContent(
+                  error instanceof Error ? error.message : String(error),
+                ),
+              ],
+            };
+          } finally {
+            // Silence unused parameter warning
+            void extraInfo;
+          }
+        },
+      );
+    };
+
+    registerTool(
+      AgentActionKey.USER_PROFILE_READ,
+      undefined,
+      (params) => this.execute(context, AgentActionKey.USER_PROFILE_READ, params),
+    );
+
+    const calendarListSchema: ZodRawShape = {
+      calendarIds: z.array(z.number().int().positive()).optional(),
+    };
+
+    registerTool(
+      AgentActionKey.CALENDAR_LIST,
+      calendarListSchema,
+      (params) => this.execute(context, AgentActionKey.CALENDAR_LIST, params),
+    );
+
+    const readEventsSchema: ZodRawShape = {
+      calendarId: z.number().int().positive(),
+      start: z.string().optional(),
+      end: z.string().optional(),
+    };
+
+    registerTool(
+      AgentActionKey.CALENDAR_EVENTS_READ,
+      readEventsSchema,
+      (params) =>
+        this.execute(context, AgentActionKey.CALENDAR_EVENTS_READ, params),
+    );
+
+    const eventPayloadSchema = z
+      .object({
+        id: z.number().int().positive().optional(),
+        calendarId: z.number().int().positive().optional(),
+        title: z.string().optional(),
+        description: z.string().nullable().optional(),
+        startDate: z.string().optional(),
+        endDate: z.string().optional(),
+        location: z.string().nullable().optional(),
+        allDay: z.boolean().optional(),
+        recurrenceType: z.string().nullable().optional(),
+        recurrenceRule: z.string().nullable().optional(),
+      })
+      .passthrough();
+
+    const createEventSchema: ZodRawShape = {
+      calendarId: z.number().int().positive().optional(),
+      event: eventPayloadSchema,
+    };
+
+    registerTool(
+      AgentActionKey.CALENDAR_EVENTS_CREATE,
+      createEventSchema,
+      (params) =>
+        this.execute(context, AgentActionKey.CALENDAR_EVENTS_CREATE, params),
+    );
+
+    const updateEventSchema: ZodRawShape = {
+      eventId: z.number().int().positive().optional(),
+      id: z.number().int().positive().optional(),
+      event: eventPayloadSchema.optional(),
+    };
+
+    registerTool(
+      AgentActionKey.CALENDAR_EVENTS_UPDATE,
+      updateEventSchema,
+      (params) =>
+        this.execute(context, AgentActionKey.CALENDAR_EVENTS_UPDATE, params),
+    );
+
+    const deleteEventSchema: ZodRawShape = {
+      eventId: z.number().int().positive().optional(),
+      id: z.number().int().positive().optional(),
+    };
+
+    registerTool(
+      AgentActionKey.CALENDAR_EVENTS_DELETE,
+      deleteEventSchema,
+      (params) =>
+        this.execute(context, AgentActionKey.CALENDAR_EVENTS_DELETE, params),
+    );
+
+    const listAutomationRulesSchema: ZodRawShape = {
+      ruleIds: z.array(z.number().int().positive()).optional(),
+      isEnabled: z.boolean().optional(),
+      limit: z.number().int().positive().max(100).optional(),
+    };
+
+    registerTool(
+      AgentActionKey.AUTOMATION_RULES_LIST,
+      listAutomationRulesSchema,
+      (params) =>
+        this.execute(context, AgentActionKey.AUTOMATION_RULES_LIST, params),
+    );
+
+    const triggerAutomationSchema: ZodRawShape = {
+      ruleId: z.number().int().positive(),
+    };
+
+    registerTool(
+      AgentActionKey.AUTOMATION_RULES_TRIGGER,
+      triggerAutomationSchema,
+      (params) =>
+        this.execute(context, AgentActionKey.AUTOMATION_RULES_TRIGGER, params),
+    );
+
+    return server;
+  }
+
+  private hasPermission(context: AgentContext, key: AgentActionKey): boolean {
+    return (context.permissions ?? []).some(
+      (permission) => permission.actionKey === key,
+    );
+  }
+
+  private async execute(
+    context: AgentContext,
+    action: AgentActionKey,
+    parameters: Record<string, any>,
+  ): Promise<unknown> {
+    const dto: ExecuteAgentActionDto = {
+      action,
+      parameters,
+    };
+    return this.agentMcpService.executeAction(context, dto);
+  }
+
+  private wrapToolResult(result: unknown): {
+    content: ContentBlock[];
+    structuredContent?: Record<string, unknown>;
+  } {
+    if (typeof result === 'string') {
+      return {
+        content: [this.toTextContent(result)],
+      };
+    }
+
+    if (result === undefined || result === null) {
+      return {
+        content: [this.toTextContent('Success')],
+      };
+    }
+
+    const text =
+      typeof result === 'object'
+        ? JSON.stringify(result, null, 2)
+        : String(result);
+
+    const structured =
+      result &&
+      typeof result === 'object' &&
+      !Array.isArray(result)
+        ? (result as Record<string, unknown>)
+        : undefined;
+
+    return {
+      content: [this.toTextContent(text)],
+      ...(structured ? { structuredContent: structured } : {}),
+    };
+  }
+
+  private toTextContent(text: string): ContentBlock {
+    return {
+      type: 'text',
+      text,
+    } as ContentBlock;
+  }
+}

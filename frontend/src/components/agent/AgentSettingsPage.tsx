@@ -297,39 +297,34 @@ const AgentSettingsPage: React.FC = () => {
     }
 
     const serverKey = getMcpServerKey(selectedAgent?.name);
-    const args = isWindows
-      ? [
-          '/C',
-          [
-            'npx',
-            '--yes',
-            '@modelcontextprotocol/client-http',
-            '--url',
-            `${BASE_URL}/api/mcp`,
-            '--header',
-            `"Authorization: Agent ${newKeySecret}"`,
-          ].join(' '),
-        ]
-      : [
-          '--yes',
-          '@modelcontextprotocol/client-http',
-          '--url',
-          `${BASE_URL}/api/mcp`,
-          '--header',
-          `Authorization: Agent ${newKeySecret}`,
-        ];
+    const authEnvKey = 'PRIMECAL_MCP_AUTH_HEADER';
+    const authHeaderPlaceholder = 'Authorization:${' + authEnvKey + '}';
+    const remoteUri = `${BASE_URL}/api/mcp/stream`;
+    const allowHttpArgs = remoteUri.startsWith('http://') ? ['--allow-http'] : [];
+    const baseArgs = [
+      '-y',
+      'mcp-remote',
+      remoteUri,
+      ...allowHttpArgs,
+      '--header',
+      authHeaderPlaceholder,
+    ];
+    const args = isWindows ? ['/C', baseArgs.join(' ')] : baseArgs;
 
     const config = {
       mcpServers: {
         [serverKey]: {
           command: isWindows ? windowsCmdPath : 'npx',
           args,
+          env: {
+            [authEnvKey]: `Agent ${newKeySecret}`,
+          },
         },
       },
     };
 
     return JSON.stringify(config, null, 2);
-  }, [newKeySecret, selectedAgent?.name]);
+  }, [isWindows, newKeySecret, selectedAgent?.name]);
 
   const selectAgent = async (agentId: number, cachedCatalog?: AgentCatalogResponse) => {
     setSelectedAgentId(agentId);
