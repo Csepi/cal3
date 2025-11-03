@@ -49,13 +49,18 @@ export class ReservationsController {
   async update(
     @Param('id') id: string,
     @Body() updateDto: UpdateReservationDto,
+    @Req() req,
   ) {
-    return await this.reservationsService.update(+id, updateDto);
+    return await this.reservationsService.update(
+      +id,
+      updateDto,
+      req.user.id,
+    );
   }
 
   @Delete(':id')
-  async remove(@Param('id') id: string) {
-    await this.reservationsService.remove(+id);
+  async remove(@Param('id') id: string, @Req() req) {
+    await this.reservationsService.remove(+id, req.user.id);
     return { message: 'Reservation deleted successfully' };
   }
 }

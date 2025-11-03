@@ -6,11 +6,13 @@ import { ReservationsController } from './reservations.controller';
 import { ReservationsService } from './reservations.service';
 import { CommonModule } from '../common/common.module';
 import { ReservationAccessGuard } from '../auth/guards/reservation-access.guard';
+import { NotificationsModule } from '../notifications/notifications.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Reservation, Resource]),
     CommonModule, // This imports UserPermissionsService for ReservationAccessGuard
+    NotificationsModule,
   ],
   controllers: [ReservationsController],
   providers: [ReservationsService, ReservationAccessGuard],

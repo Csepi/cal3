@@ -22,6 +22,7 @@ import { UpdateEventDescriptionExecutor } from './executors/update-event-descrip
 import { MoveToCalendarExecutor } from './executors/move-to-calendar.executor';
 import { CancelEventExecutor } from './executors/cancel-event.executor';
 import { CreateTaskExecutor } from './executors/create-task.executor';
+import { NotificationsModule } from '../notifications/notifications.module';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { CreateTaskExecutor } from './executors/create-task.executor';
       Event,
       Calendar,
     ]),
+    NotificationsModule,
   ],
   controllers: [AutomationController],
   providers: [

@@ -3,6 +3,7 @@ import {
   NotFoundException,
   ForbiddenException,
   BadRequestException,
+  Logger,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -19,9 +20,12 @@ import {
 } from '../dto/organisation.dto';
 import { AssignOrganisationUserDto } from '../dto/organisation-user.dto';
 import { CascadeDeletionService } from '../common/services/cascade-deletion.service';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class OrganisationsService {
+  private readonly logger = new Logger(OrganisationsService.name);
+
   constructor(
     @InjectRepository(Organisation)
     private organisationRepository: Repository<Organisation>,
@@ -32,6 +36,7 @@ export class OrganisationsService {
     @InjectRepository(OrganisationAdmin)
     private organisationAdminRepository: Repository<OrganisationAdmin>,
     private cascadeDeletionService: CascadeDeletionService,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   async create(createDto: CreateOrganisationDto): Promise<Organisation> {
@@ -108,6 +113,7 @@ export class OrganisationsService {
   async assignUser(
     organisationId: number,
     userId: number,
+    assignedById?: number,
   ): Promise<Organisation> {
     const organisation = await this.findOne(organisationId);
     const user = await this.userRepository.findOne({ where: { id: userId } });
@@ -122,7 +128,19 @@ export class OrganisationsService {
 
     if (!organisation.users.find((u) => u.id === userId)) {
       organisation.users.push(user);
-      await this.organisationRepository.save(organisation);
+      const savedOrganisation = await this.organisationRepository.save(
+        organisation,
+      );
+
+      await this.notifyOrganisationMembershipChange(
+        savedOrganisation,
+        user,
+        userId,
+        assignedById,
+        'assigned',
+      );
+
+      return savedOrganisation;
     }
 
     return organisation;
@@ -131,12 +149,26 @@ export class OrganisationsService {
   async removeUser(
     organisationId: number,
     userId: number,
+    removedById?: number,
   ): Promise<Organisation> {
     const organisation = await this.findOne(organisationId);
+    const user = await this.userRepository.findOne({ where: { id: userId } });
 
     if (organisation.users) {
       organisation.users = organisation.users.filter((u) => u.id !== userId);
-      await this.organisationRepository.save(organisation);
+      const updatedOrganisation = await this.organisationRepository.save(
+        organisation,
+      );
+
+      await this.notifyOrganisationMembershipChange(
+        updatedOrganisation,
+        user ?? null,
+        userId,
+        removedById,
+        'removed',
+      );
+
+      return updatedOrganisation;
     }
 
     return organisation;
@@ -192,22 +224,37 @@ export class OrganisationsService {
       where: { organisationId, userId: assignDto.userId },
     });
 
+    let savedAssignment: OrganisationUser;
+    let action: 'assigned' | 'role-updated';
+
     if (existing) {
       // Update role if already exists
       existing.role = assignDto.role;
       existing.assignedById = assignedById;
-      return await this.organisationUserRepository.save(existing);
+      savedAssignment = await this.organisationUserRepository.save(existing);
+      action = 'role-updated';
+    } else {
+      // Create new assignment
+      const orgUser = this.organisationUserRepository.create({
+        organisationId,
+        userId: assignDto.userId,
+        role: assignDto.role,
+        assignedById,
+      });
+      savedAssignment = await this.organisationUserRepository.save(orgUser);
+      action = 'assigned';
     }
 
-    // Create new assignment
-    const orgUser = this.organisationUserRepository.create({
-      organisationId,
-      userId: assignDto.userId,
-      role: assignDto.role,
+    await this.notifyOrganisationMembershipChange(
+      organisation,
+      user,
+      assignDto.userId,
       assignedById,
-    });
+      action,
+      assignDto.role,
+    );
 
-    return await this.organisationUserRepository.save(orgUser);
+    return savedAssignment;
   }
 
   /**
@@ -217,15 +264,121 @@ export class OrganisationsService {
   async removeUserFromOrganization(
     organisationId: number,
     userId: number,
+    removedById?: number,
   ): Promise<void> {
     // Verify organization exists
-    await this.findOne(organisationId);
+    const organisation = await this.findOne(organisationId);
+    const user = await this.userRepository.findOne({ where: { id: userId } });
 
     // Remove from OrganisationUser table
     await this.organisationUserRepository.delete({ organisationId, userId });
 
     // Note: OrganisationAdmin entries are handled separately
     // Granular permissions are CASCADE deleted via entity relationships
+
+    await this.notifyOrganisationMembershipChange(
+      organisation,
+      user ?? null,
+      userId,
+      removedById,
+      'removed',
+    );
+  }
+
+  private async getOrganisationAdminUserIds(
+    organisationId: number,
+  ): Promise<number[]> {
+    const adminIds = new Set<number>();
+
+    const orgAdmins = await this.organisationAdminRepository.find({
+      where: { organisationId },
+    });
+    orgAdmins.forEach((admin) => adminIds.add(admin.userId));
+
+    const roleAdmins = await this.organisationUserRepository.find({
+      where: { organisationId, role: OrganisationRoleType.ADMIN },
+    });
+    roleAdmins.forEach((admin) => adminIds.add(admin.userId));
+
+    return Array.from(adminIds);
+  }
+
+  private async notifyOrganisationMembershipChange(
+    organisation: Organisation,
+    user: User | null,
+    targetUserId: number,
+    actorId: number | undefined,
+    action: 'assigned' | 'removed' | 'role-updated',
+    role?: OrganisationRoleType,
+  ): Promise<void> {
+    try {
+      const recipients = new Set<number>();
+      recipients.add(targetUserId);
+      const adminIds = await this.getOrganisationAdminUserIds(organisation.id);
+      adminIds.forEach((adminId) => recipients.add(adminId));
+
+      if (actorId) {
+        recipients.delete(actorId);
+      }
+
+      const recipientIds = Array.from(recipients);
+      if (recipientIds.length === 0) {
+        return;
+      }
+
+      const userDisplay = user
+        ? [user.firstName, user.lastName].filter(Boolean).join(' ').trim() ||
+          user.username ||
+          user.email ||
+          `User #${targetUserId}`
+        : `User #${targetUserId}`;
+
+      let title: string;
+      let body: string;
+      let eventType: string;
+
+      switch (action) {
+        case 'assigned':
+          eventType = 'organisation.member.assigned';
+          title = `${organisation.name}: Member Added`;
+          body = `${userDisplay} was added to organisation "${organisation.name}"${role ? ` as ${role}` : ''}.`;
+          break;
+        case 'removed':
+          eventType = 'organisation.member.removed';
+          title = `${organisation.name}: Member Removed`;
+          body = `${userDisplay} no longer has access to organisation "${organisation.name}".`;
+          break;
+        case 'role-updated':
+        default:
+          eventType = 'organisation.member.role-updated';
+          title = `${organisation.name}: Role Updated`;
+          body = `${userDisplay}'s role is now ${role ?? 'updated'}.`;
+          break;
+      }
+
+      await this.notificationsService.publish({
+        eventType,
+        actorId: actorId ?? null,
+        recipients: recipientIds,
+        title,
+        body,
+        data: {
+          organisationId: organisation.id,
+          userId: targetUserId,
+          role,
+        },
+        context: {
+          threadKey: `organisation:${organisation.id}`,
+          contextType: 'organisation',
+          contextId: String(organisation.id),
+        },
+      });
+    } catch (error) {
+      this.logger.error(
+        `Failed to send organisation membership notification for organisation ${organisation.id}`,
+        error instanceof Error ? error.stack : String(error),
+      );
+    }
   }
 
   /**
@@ -316,6 +469,7 @@ export class OrganisationsService {
     organisationId: number,
     userId: number,
     newRole: OrganisationRoleType,
+    updatedById?: number,
   ): Promise<OrganisationUser> {
     const orgUser = await this.organisationUserRepository.findOne({
       where: { organisationId, userId },
@@ -327,8 +481,22 @@ export class OrganisationsService {
       );
     }
 
+    const organisation = await this.findOne(organisationId);
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+
     orgUser.role = newRole;
-    return await this.organisationUserRepository.save(orgUser);
+    const saved = await this.organisationUserRepository.save(orgUser);
+
+    await this.notifyOrganisationMembershipChange(
+      organisation,
+      user ?? null,
+      userId,
+      updatedById,
+      'role-updated',
+      newRole,
+    );
+
+    return saved;
   }
 
   /**

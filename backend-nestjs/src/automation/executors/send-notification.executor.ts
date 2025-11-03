@@ -10,6 +10,7 @@ import {
 } from './action-executor.interface';
 import { ActionExecutorRegistry } from './action-executor-registry';
 import { AutomationSmartValuesService } from '../automation-smart-values.service';
+import { NotificationsService } from '../../notifications/notifications.service';
 
 @Injectable()
 export class SendNotificationExecutor implements IActionExecutor, OnModuleInit {
@@ -19,6 +20,7 @@ export class SendNotificationExecutor implements IActionExecutor, OnModuleInit {
   constructor(
     private readonly registry: ActionExecutorRegistry,
     private readonly smartValuesService: AutomationSmartValuesService,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   onModuleInit() {
@@ -48,9 +50,35 @@ export class SendNotificationExecutor implements IActionExecutor, OnModuleInit {
           ? interpolatedConfig.priority.toLowerCase()
           : 'normal';
 
-      this.logger.log(
-        `Automation notification: [${priority.toUpperCase()}] ${title ? `${title} - ` : ''}${message}`,
-      );
+      const recipients = this.resolveRecipients(interpolatedConfig, context);
+      if (recipients.length === 0) {
+        throw new Error('No recipients resolved for automation notification');
+      }
+
+      const channels = Array.isArray(interpolatedConfig.channels)
+        ? (interpolatedConfig.channels as string[]).filter((channel) =>
+            typeof channel === 'string' && channel.length > 0,
+          )
+        : undefined;
+
+      await this.notificationsService.publish({
+        eventType: interpolatedConfig.eventType || 'automation.notification',
+        actorId: context.event?.createdById ?? null,
+        recipients,
+        title: title ?? `Automation Notification`,
+        body: message,
+        preferredChannels: channels as any,
+        data: {
+          automationActionId: action.id,
+          ruleId: action.ruleId,
+          priority,
+        },
+        context: {
+          threadKey: `automation:rule:${action.ruleId}`,
+          contextType: 'automation',
+          contextId: String(action.ruleId),
+        },
+      });
 
       return {
         success: true,
@@ -60,6 +88,7 @@ export class SendNotificationExecutor implements IActionExecutor, OnModuleInit {
           title,
           message,
           priority,
+          recipients,
         },
         executedAt,
       };
@@ -72,6 +101,36 @@ export class SendNotificationExecutor implements IActionExecutor, OnModuleInit {
         executedAt,
       };
     }
+  }
+
+  private resolveRecipients(
+    config: Record<string, any>,
+    context: ActionExecutionContext,
+  ): number[] {
+    const recipients = new Set<number>();
+
+    const explicitRecipients = Array.isArray(config.recipientUserIds)
+      ? config.recipientUserIds
+      : Array.isArray(config.recipients)
+        ? config.recipients
+        : [];
+
+    explicitRecipients.forEach((candidate: any) => {
+      const numericId = Number(candidate);
+      if (!Number.isNaN(numericId) && numericId > 0) {
+        recipients.add(numericId);
+      }
+    });
+
+    if (config.includeEventCreator !== false && context.event?.createdById) {
+      recipients.add(context.event.createdById);
+    }
+
+    if (config.includeCalendarOwner && context.event?.calendar?.ownerId) {
+      recipients.add(context.event.calendar.ownerId);
+    }
+
+    return Array.from(recipients);
   }
 
   validateConfig(actionConfig: Record<string, any>): boolean {
