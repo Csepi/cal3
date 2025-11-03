@@ -35,8 +35,8 @@ export class AgentMcpHttpService {
   ): Promise<void> {
     const server = this.createServer(context);
     const transport = new StreamableHTTPServerTransport({
-      sessionIdGenerator: undefined,
       enableJsonResponse: false,
+      sessionIdGenerator: () => req.get('mcp-session-id') ?? randomUUID(),
     });
 
     res.on('close', () => {
