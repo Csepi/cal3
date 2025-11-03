@@ -45,6 +45,18 @@ export class AgentMcpHttpService {
     let session: McpSession | undefined = undefined;
 
     try {
+      this.logger.verbose?.(
+        `[${context.agent.id}] -> ${req.method} ${req.originalUrl} (session=${
+          sessionId ?? 'new'
+        })`,
+      );
+
+      if (body !== undefined) {
+        this.logger.debug(
+          `[${context.agent.id}] Request body: ${this.safeStringify(body)}`,
+        );
+      }
+
       if (!sessionId) {
         sessionId = randomUUID();
         session = await this.createSession(sessionId, context);
@@ -67,9 +79,16 @@ export class AgentMcpHttpService {
         throw new Error('Failed to establish MCP session');
       }
 
+      this.logger.debug(
+        `[${context.agent.id}] Using session ${sessionId}. Active sessions=${this.sessions.size}`,
+      );
+
       const enhancedRequest = req as Request & { auth?: AuthInfo };
 
       res.on('close', () => {
+        this.logger.debug(
+          `[${context.agent.id}] Response closed for session ${sessionId} (${req.method})`,
+        );
         if (req.method === 'DELETE') {
           this.cleanupSession(sessionId as string);
         }
@@ -79,6 +98,10 @@ export class AgentMcpHttpService {
 
       if (req.method === 'DELETE') {
         this.cleanupSession(sessionId);
+      } else {
+        this.logger.debug(
+          `[${context.agent.id}] Completed ${req.method} for session ${sessionId}`,
+        );
       }
     } catch (error) {
       this.logger.error(
@@ -97,6 +120,10 @@ export class AgentMcpHttpService {
             id: null,
           });
       }
+    } finally {
+      this.logger.verbose?.(
+        `[${context.agent.id}] <- ${req.method} (session=${sessionId ?? 'n/a'})`,
+      );
     }
   }
 
@@ -289,13 +316,27 @@ export class AgentMcpHttpService {
     sessionId: string,
     context: AgentContext,
   ): Promise<McpSession> {
+    this.logger.debug(
+      `[${context.agent.id}] Creating MCP session ${sessionId}`,
+    );
+
     const server = this.createServer(context);
     const transport = new StreamableHTTPServerTransport({
       enableJsonResponse: false,
       sessionIdGenerator: () => sessionId,
     });
 
-    await server.connect(transport);
+    await server
+      .connect(transport)
+      .catch((error) => {
+        this.logger.error(
+          `[${context.agent.id}] Failed to connect MCP server for session ${sessionId}: ${
+            error instanceof Error ? error.message : error
+          }`,
+          error instanceof Error ? error.stack : undefined,
+        );
+        throw error;
+      });
 
     const session: McpSession = {
       context,
@@ -305,7 +346,7 @@ export class AgentMcpHttpService {
 
     this.sessions.set(sessionId, session);
     this.logger.debug(
-      `Created MCP session ${sessionId} for agent ${context.agent.id}`,
+      `Created MCP session ${sessionId} for agent ${context.agent.id}. Active sessions=${this.sessions.size}`,
     );
 
     return session;
@@ -326,7 +367,9 @@ export class AgentMcpHttpService {
     });
 
     this.sessions.delete(sessionId);
-    this.logger.debug(`Closed MCP session ${sessionId}`);
+    this.logger.debug(
+      `Closed MCP session ${sessionId}. Active sessions=${this.sessions.size}`,
+    );
   }
 
   private hasPermission(context: AgentContext, key: AgentActionKey): boolean {
@@ -386,6 +429,14 @@ export class AgentMcpHttpService {
       type: 'text',
       text,
     } as ContentBlock;
+  }
+
+  private safeStringify(value: unknown): string {
+    try {
+      return JSON.stringify(value);
+    } catch (error) {
+      return `[unserializable:${error instanceof Error ? error.message : 'unknown'}]`;
+    }
   }
 
   private createToolName(action: string): string {
