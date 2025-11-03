@@ -297,6 +297,11 @@ export class AgentMcpHttpService {
         this.execute(context, AgentActionKey.AUTOMATION_RULES_TRIGGER, params),
     );
 
+    server.server.registerCapabilities({
+      resources: {
+        listChanged: false,
+      },
+    });
     server.server.setRequestHandler(
       ListResourcesRequestSchema,
       async () => ({
@@ -304,6 +309,11 @@ export class AgentMcpHttpService {
       }),
     );
 
+    server.server.registerCapabilities({
+      prompts: {
+        listChanged: false,
+      },
+    });
     server.server.setRequestHandler(
       ListPromptsRequestSchema,
       async () => ({
