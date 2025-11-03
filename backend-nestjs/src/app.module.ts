@@ -53,6 +53,15 @@ import { AgentPermission } from './entities/agent-permission.entity';
 import { AgentApiKey } from './entities/agent-api-key.entity';
 import { ConfigurationModule } from './configuration/configuration.module';
 import { ConfigurationSetting } from './entities/configuration-setting.entity';
+import { NotificationMessage } from './entities/notification-message.entity';
+import { NotificationDelivery } from './entities/notification-delivery.entity';
+import { UserNotificationPreference } from './entities/user-notification-preference.entity';
+import { PushDeviceToken } from './entities/push-device-token.entity';
+import { NotificationThread } from './entities/notification-thread.entity';
+import { NotificationThreadState } from './entities/notification-thread-state.entity';
+import { NotificationInboxRule } from './entities/notification-inbox-rule.entity';
+import { NotificationScopeMute } from './entities/notification-scope-mute.entity';
+import { NotificationsModule } from './notifications/notifications.module';
 
 // Create logger instance for database connection logging
 const dbLogger = new Logger('DatabaseConnection');
@@ -153,6 +162,14 @@ const dbLogger = new Logger('DatabaseConnection');
               AgentPermission,
               AgentApiKey,
               ConfigurationSetting,
+              NotificationMessage,
+              NotificationDelivery,
+              UserNotificationPreference,
+              PushDeviceToken,
+              NotificationThread,
+              NotificationThreadState,
+              NotificationInboxRule,
+              NotificationScopeMute,
             ],
             synchronize:
               process.env.DB_SYNCHRONIZE === 'true' ||
@@ -221,6 +238,14 @@ const dbLogger = new Logger('DatabaseConnection');
               AgentPermission,
               AgentApiKey,
               ConfigurationSetting,
+              NotificationMessage,
+              NotificationDelivery,
+              UserNotificationPreference,
+              PushDeviceToken,
+              NotificationThread,
+              NotificationThreadState,
+              NotificationInboxRule,
+              NotificationScopeMute,
             ],
             synchronize: true,
             logging: process.env.NODE_ENV === 'development',
@@ -242,6 +267,7 @@ const dbLogger = new Logger('DatabaseConnection');
     CommonModule,
     LoggingModule,
     AgentsModule,
+    NotificationsModule,
     ConfigurationModule,
     TypeOrmModule.forFeature([User]),
   ],
