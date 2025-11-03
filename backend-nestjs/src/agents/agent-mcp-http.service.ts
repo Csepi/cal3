@@ -133,6 +133,8 @@ export class AgentMcpHttpService {
       version: '1.0.0',
       capabilities: {
         tools: {},
+        resources: {},
+        prompts: {},
       },
     });
 
