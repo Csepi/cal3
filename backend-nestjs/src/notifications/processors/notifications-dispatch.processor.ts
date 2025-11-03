@@ -9,6 +9,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { NotificationDelivery } from '../../entities/notification-delivery.entity';
 import { NotificationMessage } from '../../entities/notification-message.entity';
+import { NotificationChannelRegistry } from '../channels/notification-channel.registry';
+import { NotificationChannelSkipError } from '../channels/notification-channel.interface';
 
 interface DispatchJobPayload {
   messageId: number;
@@ -25,6 +27,7 @@ export class NotificationsDispatchProcessor {
     private readonly deliveryRepository: Repository<NotificationDelivery>,
     @InjectRepository(NotificationMessage)
     private readonly messageRepository: Repository<NotificationMessage>,
+    private readonly channelRegistry: NotificationChannelRegistry,
   ) {}
 
   @Process()
@@ -47,6 +50,7 @@ export class NotificationsDispatchProcessor {
 
     const message = await this.messageRepository.findOne({
       where: { id: messageId },
+      relations: ['user'],
     });
 
     if (!message) {
@@ -58,11 +62,54 @@ export class NotificationsDispatchProcessor {
       return;
     }
 
-    // TODO: route to concrete channel provider. For now, mark as sent.
+    const attemptCount = (delivery.attemptCount ?? 0) + 1;
     await this.deliveryRepository.update(delivery.id, {
-      status: 'sent',
-      sentAt: new Date(),
-      attemptCount: (delivery.attemptCount ?? 0) + 1,
+      attemptCount,
     });
+
+    try {
+      const canSend = await this.channelRegistry.canSend(channel);
+      if (!canSend) {
+        await this.deliveryRepository.update(delivery.id, {
+          status: 'skipped',
+          lastError: 'Channel not configured',
+        });
+        return;
+      }
+
+      await this.channelRegistry.send(channel, { message, delivery });
+
+      await this.deliveryRepository.update(delivery.id, {
+        status: 'sent',
+        sentAt: new Date(),
+        lastError: null,
+      });
+    } catch (error) {
+      if (error instanceof NotificationChannelSkipError) {
+        this.logger.debug(
+          `Channel ${channel} skipped for message ${messageId}: ${error.message}`,
+        );
+        await this.deliveryRepository.update(delivery.id, {
+          status: 'skipped',
+          lastError: error.message,
+        });
+        return;
+      }
+
+      this.logger.error(
+        `Channel ${channel} failed for message ${messageId}: ${error instanceof Error ? error.message : String(error)}`,
+      );
+
+      const shouldFail = job.attemptsMade + 1 >= (job.opts.attempts ?? 1);
+
+      await this.deliveryRepository.update(delivery.id, {
+        status: shouldFail ? 'failed' : 'pending',
+        lastError: error instanceof Error ? error.message : String(error),
+      });
+
+      if (!shouldFail) {
+        throw error;
+      }
+    }
   }
 }

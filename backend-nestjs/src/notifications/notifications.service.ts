@@ -5,7 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { NotificationRulesService } from './notification-rules.service';
 import { NotificationThreadsService } from './notification-threads.service';
 import {
@@ -17,7 +17,6 @@ import { NotificationMessage } from '../entities/notification-message.entity';
 import { NotificationDelivery } from '../entities/notification-delivery.entity';
 import { PushDeviceToken } from '../entities/push-device-token.entity';
 import { NotificationThread } from '../entities/notification-thread.entity';
-import { NotificationThreadState } from '../entities/notification-thread-state.entity';
 import { InjectQueue } from '@nestjs/bull';
 import type { Queue } from 'bull';
 
@@ -50,8 +49,6 @@ export class NotificationsService {
     private readonly pushDeviceRepository: Repository<PushDeviceToken>,
     @InjectRepository(NotificationThread)
     private readonly threadRepository: Repository<NotificationThread>,
-    @InjectRepository(NotificationThreadState)
-    private readonly threadStateRepository: Repository<NotificationThreadState>,
     @InjectQueue(NOTIFICATIONS_DISPATCH_QUEUE)
     private readonly dispatchQueue: Queue,
     private readonly rulesService: NotificationRulesService,

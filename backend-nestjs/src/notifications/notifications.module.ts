@@ -27,6 +27,15 @@ import {
   NOTIFICATIONS_DISPATCH_QUEUE,
 } from './notifications.constants';
 import { User } from '../entities/user.entity';
+import { EmailChannelProvider } from './channels/email-channel.provider';
+import { WebPushChannelProvider } from './channels/webpush-channel.provider';
+import { MobilePushChannelProvider } from './channels/mobile-push-channel.provider';
+import { SlackChannelProvider } from './channels/slack-channel.provider';
+import { TeamsChannelProvider } from './channels/teams-channel.provider';
+import {
+  NotificationChannelRegistry,
+  NOTIFICATION_CHANNEL_PROVIDERS,
+} from './channels/notification-channel.registry';
 
 @Module({
   imports: [
@@ -84,11 +93,35 @@ import { User } from '../entities/user.entity';
     NotificationsGateway,
     NotificationsDispatchProcessor,
     NotificationsDigestProcessor,
+    EmailChannelProvider,
+    WebPushChannelProvider,
+    MobilePushChannelProvider,
+    SlackChannelProvider,
+    TeamsChannelProvider,
+    {
+      provide: NOTIFICATION_CHANNEL_PROVIDERS,
+      useFactory: (
+        email: EmailChannelProvider,
+        webpush: WebPushChannelProvider,
+        mobile: MobilePushChannelProvider,
+        slack: SlackChannelProvider,
+        teams: TeamsChannelProvider,
+      ) => [email, webpush, mobile, slack, teams],
+      inject: [
+        EmailChannelProvider,
+        WebPushChannelProvider,
+        MobilePushChannelProvider,
+        SlackChannelProvider,
+        TeamsChannelProvider,
+      ],
+    },
+    NotificationChannelRegistry,
   ],
   exports: [
     NotificationsService,
     NotificationRulesService,
     NotificationThreadsService,
+    NotificationChannelRegistry,
   ],
 })
 export class NotificationsModule {}
