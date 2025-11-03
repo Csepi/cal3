@@ -23,37 +23,29 @@ export class NotificationThreadsController {
 
   @Patch(':id/mute')
   mute(@Request() req, @Param('id') id: string) {
-    return this.notificationThreadsService.setThreadMuted(
-      req.user.id,
-      +id,
-      true,
-    );
+    return this.notificationThreadsService
+      .setThreadMuted(req.user.id, +id, true)
+      .then(() => ({ success: true }));
   }
 
   @Patch(':id/unmute')
   unmute(@Request() req, @Param('id') id: string) {
-    return this.notificationThreadsService.setThreadMuted(
-      req.user.id,
-      +id,
-      false,
-    );
+    return this.notificationThreadsService
+      .setThreadMuted(req.user.id, +id, false)
+      .then(() => ({ success: true }));
   }
 
   @Patch(':id/archive')
   archive(@Request() req, @Param('id') id: string) {
-    return this.notificationThreadsService.setThreadArchived(
-      req.user.id,
-      +id,
-      true,
-    );
+    return this.notificationThreadsService
+      .setThreadArchived(req.user.id, +id, true)
+      .then(() => ({ success: true }));
   }
 
   @Patch(':id/unarchive')
   unarchive(@Request() req, @Param('id') id: string) {
-    return this.notificationThreadsService.setThreadArchived(
-      req.user.id,
-      +id,
-      false,
-    );
+    return this.notificationThreadsService
+      .setThreadArchived(req.user.id, +id, false)
+      .then(() => ({ success: true }));
   }
 }

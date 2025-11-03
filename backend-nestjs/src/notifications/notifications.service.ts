@@ -1,8 +1,18 @@
-import { Injectable, Logger } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { NotificationRulesService } from './notification-rules.service';
 import { NotificationThreadsService } from './notification-threads.service';
 import { NotificationChannelType } from './notifications.constants';
 import { ListNotificationsQueryDto } from './dto/list-notifications.query';
+import { NotificationMessage } from '../entities/notification-message.entity';
+import { NotificationDelivery } from '../entities/notification-delivery.entity';
+import { PushDeviceToken } from '../entities/push-device-token.entity';
 
 export interface PublishNotificationOptions {
   eventType: string;
@@ -25,6 +35,12 @@ export class NotificationsService {
   private readonly activeSockets = new Map<number, Set<string>>();
 
   constructor(
+    @InjectRepository(NotificationMessage)
+    private readonly messageRepository: Repository<NotificationMessage>,
+    @InjectRepository(NotificationDelivery)
+    private readonly deliveryRepository: Repository<NotificationDelivery>,
+    @InjectRepository(PushDeviceToken)
+    private readonly pushDeviceRepository: Repository<PushDeviceToken>,
     private readonly rulesService: NotificationRulesService,
     private readonly threadsService: NotificationThreadsService,
   ) {}
@@ -58,26 +74,66 @@ export class NotificationsService {
 
   async listMessages(
     userId: number,
-    _query?: ListNotificationsQueryDto,
-  ): Promise<any[]> {
-    this.logger.debug(`listMessages placeholder invoked for user ${userId}`);
-    return [];
+    query?: ListNotificationsQueryDto,
+  ): Promise<NotificationMessage[]> {
+    const qb = this.messageRepository
+      .createQueryBuilder('message')
+      .where('message.userId = :userId', { userId })
+      .orderBy('message.createdAt', 'DESC')
+      .take(50);
+
+    if (query?.unreadOnly) {
+      qb.andWhere('message.isRead = false');
+    }
+
+    if (query?.archived !== undefined) {
+      qb.andWhere('message.archived = :archived', {
+        archived: query.archived,
+      });
+    }
+
+    if (query?.threadId) {
+      qb.andWhere('message.threadId = :threadId', {
+        threadId: query.threadId,
+      });
+    }
+
+    if (query?.afterCursor) {
+      const cursorDate = new Date(query.afterCursor);
+      if (!Number.isNaN(cursorDate.getTime())) {
+        qb.andWhere('message.createdAt < :cursor', { cursor: cursorDate });
+      }
+    }
+
+    return qb.getMany();
   }
 
   async markMessageRead(userId: number, messageId: number): Promise<void> {
-    this.logger.debug(
-      `markMessageRead placeholder invoked for user ${userId}, message ${messageId}`,
-    );
+    const message = await this.ensureUserMessage(userId, messageId);
+    if (!message.isRead) {
+      message.isRead = true;
+      message.readAt = new Date();
+      await this.messageRepository.save(message);
+    }
   }
 
   async markMessageUnread(userId: number, messageId: number): Promise<void> {
-    this.logger.debug(
-      `markMessageUnread placeholder invoked for user ${userId}, message ${messageId}`,
-    );
+    const message = await this.ensureUserMessage(userId, messageId);
+    if (message.isRead) {
+      message.isRead = false;
+      message.readAt = null;
+      await this.messageRepository.save(message);
+    }
   }
 
   async markAllRead(userId: number): Promise<void> {
-    this.logger.debug(`markAllRead placeholder invoked for user ${userId}`);
+    await this.messageRepository
+      .createQueryBuilder()
+      .update()
+      .set({ isRead: true, readAt: () => 'CURRENT_TIMESTAMP' })
+      .where('userId = :userId', { userId })
+      .andWhere('isRead = false')
+      .execute();
   }
 
   async registerDevice(
@@ -86,15 +142,57 @@ export class NotificationsService {
     token: string,
     userAgent?: string,
   ): Promise<{ id: number }> {
-    this.logger.debug(
-      `registerDevice placeholder invoked for user ${userId} on platform ${platform}`,
-    );
-    return { id: 0 };
+    let device = await this.pushDeviceRepository.findOne({
+      where: { token },
+    });
+
+    if (device && device.userId !== userId) {
+      device.userId = userId;
+    }
+
+    if (!device) {
+      device = this.pushDeviceRepository.create({
+        userId,
+        platform,
+        token,
+      });
+    }
+
+    device.userAgent = userAgent ?? null;
+    device.lastSeenAt = new Date();
+
+    const saved = await this.pushDeviceRepository.save(device);
+    return { id: saved.id };
   }
 
   async removeDevice(userId: number, deviceId: number): Promise<void> {
-    this.logger.debug(
-      `removeDevice placeholder invoked for user ${userId}, device ${deviceId}`,
-    );
+    const device = await this.pushDeviceRepository.findOne({
+      where: { id: deviceId },
+    });
+
+    if (!device) {
+      throw new NotFoundException('Device not found');
+    }
+
+    if (device.userId !== userId) {
+      throw new ForbiddenException('Cannot remove device for another user');
+    }
+
+    await this.pushDeviceRepository.remove(device);
+  }
+
+  private async ensureUserMessage(
+    userId: number,
+    messageId: number,
+  ): Promise<NotificationMessage> {
+    const message = await this.messageRepository.findOne({
+      where: { id: messageId, userId },
+    });
+
+    if (!message) {
+      throw new NotFoundException('Notification not found');
+    }
+
+    return message;
   }
 }

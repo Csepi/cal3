@@ -33,17 +33,23 @@ export class NotificationsController {
 
   @Patch(':id/read')
   markRead(@Request() req, @Param('id') id: string) {
-    return this.notificationsService.markMessageRead(req.user.id, +id);
+    return this.notificationsService
+      .markMessageRead(req.user.id, +id)
+      .then(() => ({ success: true }));
   }
 
   @Patch(':id/unread')
   markUnread(@Request() req, @Param('id') id: string) {
-    return this.notificationsService.markMessageUnread(req.user.id, +id);
+    return this.notificationsService
+      .markMessageUnread(req.user.id, +id)
+      .then(() => ({ success: true }));
   }
 
   @Post('read-all')
   markAllRead(@Request() req) {
-    return this.notificationsService.markAllRead(req.user.id);
+    return this.notificationsService
+      .markAllRead(req.user.id)
+      .then(() => ({ success: true }));
   }
 
   @Get('preferences')
@@ -74,6 +80,8 @@ export class NotificationsController {
 
   @Delete('devices/:deviceId')
   deleteDevice(@Request() req, @Param('deviceId') deviceId: string) {
-    return this.notificationsService.removeDevice(req.user.id, +deviceId);
+    return this.notificationsService
+      .removeDevice(req.user.id, +deviceId)
+      .then(() => ({ success: true }));
   }
 }

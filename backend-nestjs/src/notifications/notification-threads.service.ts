@@ -1,4 +1,9 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { NotificationThread } from '../entities/notification-thread.entity';
+import { NotificationThreadState } from '../entities/notification-thread-state.entity';
+import { NotificationMessage } from '../entities/notification-message.entity';
 
 export interface NotificationThreadSummary {
   id: number;
@@ -15,30 +20,94 @@ export interface NotificationThreadSummary {
 export class NotificationThreadsService {
   private readonly logger = new Logger(NotificationThreadsService.name);
 
+  constructor(
+    @InjectRepository(NotificationThread)
+    private readonly threadRepository: Repository<NotificationThread>,
+    @InjectRepository(NotificationThreadState)
+    private readonly threadStateRepository: Repository<NotificationThreadState>,
+    @InjectRepository(NotificationMessage)
+    private readonly messageRepository: Repository<NotificationMessage>,
+  ) {}
+
   async registerThread(
     userId: number,
     threadKey: string,
     contextType?: string | null,
     contextId?: string | null,
   ): Promise<NotificationThreadSummary> {
-    this.logger.debug(
-      `registerThread placeholder invoked for user ${userId} and thread ${threadKey}`,
-    );
+    let thread = await this.threadRepository.findOne({
+      where: { threadKey },
+    });
+
+    if (!thread) {
+      thread = this.threadRepository.create({
+        threadKey,
+        contextType: contextType ?? null,
+        contextId: contextId ? String(contextId) : null,
+        lastMessageAt: new Date(),
+      });
+      thread = await this.threadRepository.save(thread);
+    }
+
+    let threadState = await this.threadStateRepository.findOne({
+      where: { threadId: thread.id, userId },
+    });
+
+    if (!threadState) {
+      threadState = this.threadStateRepository.create({
+        threadId: thread.id,
+        userId,
+      });
+      threadState = await this.threadStateRepository.save(threadState);
+    }
+
+    const unreadCount = await this.messageRepository.count({
+      where: { threadId: thread.id, userId, isRead: false, archived: false },
+    });
+
     return {
-      id: 0,
-      threadKey,
-      contextType: contextType ?? null,
-      contextId: contextId ?? null,
-      lastMessageAt: null,
-      isMuted: false,
-      isArchived: false,
-      unreadCount: 0,
+      id: thread.id,
+      threadKey: thread.threadKey,
+      contextType: thread.contextType,
+      contextId: thread.contextId,
+      lastMessageAt: thread.lastMessageAt,
+      isMuted: threadState.isMuted,
+      isArchived: threadState.isArchived,
+      unreadCount,
     };
   }
 
   async listThreads(userId: number): Promise<NotificationThreadSummary[]> {
-    this.logger.debug(`listThreads placeholder invoked for user ${userId}`);
-    return [];
+    const threadStates = await this.threadStateRepository.find({
+      where: { userId },
+      relations: ['thread'],
+      order: { updatedAt: 'DESC' },
+    });
+
+    const result: NotificationThreadSummary[] = [];
+    for (const state of threadStates) {
+      const unreadCount = await this.messageRepository.count({
+        where: {
+          threadId: state.threadId,
+          userId,
+          isRead: false,
+          archived: false,
+        },
+      });
+
+      result.push({
+        id: state.threadId,
+        threadKey: state.thread.threadKey,
+        contextType: state.thread.contextType,
+        contextId: state.thread.contextId,
+        lastMessageAt: state.thread.lastMessageAt,
+        isMuted: state.isMuted,
+        isArchived: state.isArchived,
+        unreadCount,
+      });
+    }
+
+    return result;
   }
 
   async setThreadMuted(
@@ -46,9 +115,9 @@ export class NotificationThreadsService {
     threadId: number,
     mute: boolean,
   ): Promise<void> {
-    this.logger.debug(
-      `setThreadMuted placeholder invoked for user ${userId}, thread ${threadId}, mute=${mute}`,
-    );
+    const state = await this.ensureThreadState(userId, threadId);
+    state.isMuted = mute;
+    await this.threadStateRepository.save(state);
   }
 
   async setThreadArchived(
@@ -56,8 +125,29 @@ export class NotificationThreadsService {
     threadId: number,
     archived: boolean,
   ): Promise<void> {
-    this.logger.debug(
-      `setThreadArchived placeholder invoked for user ${userId}, thread ${threadId}, archived=${archived}`,
-    );
+    const state = await this.ensureThreadState(userId, threadId);
+    state.isArchived = archived;
+    await this.threadStateRepository.save(state);
+  }
+
+  private async ensureThreadState(
+    userId: number,
+    threadId: number,
+  ): Promise<NotificationThreadState> {
+    const state = await this.threadStateRepository.findOne({
+      where: { userId, threadId },
+    });
+
+    if (!state) {
+      const thread = await this.threadRepository.findOne({ where: { id: threadId } });
+      if (!thread) {
+        throw new NotFoundException('Notification thread not found');
+      }
+      return this.threadStateRepository.save(
+        this.threadStateRepository.create({ userId, threadId }),
+      );
+    }
+
+    return state;
   }
 }

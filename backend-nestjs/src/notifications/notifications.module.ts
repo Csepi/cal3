@@ -11,6 +11,7 @@ import { NotificationThread } from '../entities/notification-thread.entity';
 import { NotificationThreadState } from '../entities/notification-thread-state.entity';
 import { NotificationInboxRule } from '../entities/notification-inbox-rule.entity';
 import { NotificationScopeMute } from '../entities/notification-scope-mute.entity';
+import { ConfigurationModule } from '../configuration/configuration.module';
 import { NotificationsService } from './notifications.service';
 import { NotificationRulesService } from './notification-rules.service';
 import { NotificationThreadsService } from './notification-threads.service';
@@ -30,6 +31,7 @@ import { User } from '../entities/user.entity';
 @Module({
   imports: [
     ConfigModule,
+    ConfigurationModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
