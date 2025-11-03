@@ -1,6 +1,6 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import {
   InboxRuleDto,
   InboxRuleScope,
@@ -10,6 +10,7 @@ import { NotificationInboxRule } from '../entities/notification-inbox-rule.entit
 import { NotificationScopeMute } from '../entities/notification-scope-mute.entity';
 
 export interface NotificationPreferenceSummary {
+  userId?: number;
   eventType: string;
   channels: Record<string, boolean>;
   digest?: string;
@@ -37,6 +38,7 @@ export class NotificationRulesService {
     });
 
     return preferences.map((preference) => ({
+      userId,
       eventType: preference.eventType,
       channels: preference.channels || {},
       digest: preference.digest,
@@ -185,5 +187,32 @@ export class NotificationRulesService {
 
   async getScopeMutes(userId: number): Promise<NotificationScopeMute[]> {
     return this.scopeMuteRepository.find({ where: { userId } });
+  }
+
+  async getUserPreferencesForEvent(
+    userIds: number[],
+    eventType: string,
+  ): Promise<Array<NotificationPreferenceSummary & { userId: number }>> {
+    if (userIds.length === 0) {
+      return [];
+    }
+
+    const uniqueIds = Array.from(new Set(userIds));
+
+    const entities = await this.preferenceRepository.find({
+      where: {
+        userId: In(uniqueIds),
+        eventType,
+      },
+    });
+
+    return entities.map((entity) => ({
+      userId: entity.userId,
+      eventType: entity.eventType,
+      channels: entity.channels || {},
+      digest: entity.digest,
+      fallbackOrder: entity.fallbackOrder ?? undefined,
+      quietHours: entity.quietHours ?? undefined,
+    }));
   }
 }

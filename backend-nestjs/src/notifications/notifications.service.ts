@@ -5,14 +5,21 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { NotificationRulesService } from './notification-rules.service';
 import { NotificationThreadsService } from './notification-threads.service';
-import { NotificationChannelType } from './notifications.constants';
+import {
+  NOTIFICATIONS_DISPATCH_QUEUE,
+  NotificationChannelType,
+} from './notifications.constants';
 import { ListNotificationsQueryDto } from './dto/list-notifications.query';
 import { NotificationMessage } from '../entities/notification-message.entity';
 import { NotificationDelivery } from '../entities/notification-delivery.entity';
 import { PushDeviceToken } from '../entities/push-device-token.entity';
+import { NotificationThread } from '../entities/notification-thread.entity';
+import { NotificationThreadState } from '../entities/notification-thread-state.entity';
+import { InjectQueue } from '@nestjs/bull';
+import type { Queue } from 'bull';
 
 export interface PublishNotificationOptions {
   eventType: string;
@@ -41,14 +48,64 @@ export class NotificationsService {
     private readonly deliveryRepository: Repository<NotificationDelivery>,
     @InjectRepository(PushDeviceToken)
     private readonly pushDeviceRepository: Repository<PushDeviceToken>,
+    @InjectRepository(NotificationThread)
+    private readonly threadRepository: Repository<NotificationThread>,
+    @InjectRepository(NotificationThreadState)
+    private readonly threadStateRepository: Repository<NotificationThreadState>,
+    @InjectQueue(NOTIFICATIONS_DISPATCH_QUEUE)
+    private readonly dispatchQueue: Queue,
     private readonly rulesService: NotificationRulesService,
     private readonly threadsService: NotificationThreadsService,
   ) {}
 
   async publish(options: PublishNotificationOptions): Promise<void> {
-    this.logger.debug(
-      `publish placeholder invoked for event ${options.eventType} to recipients ${options.recipients.join(',')}`,
+    const createdMessages: NotificationMessage[] = [];
+
+    const preferenceMap = await this.loadEffectivePreferences(
+      options.recipients,
+      options.eventType,
     );
+
+    for (const recipientId of options.recipients) {
+      const threadSummary = options.context?.threadKey
+        ? await this.threadsService.registerThread(
+            recipientId,
+            options.context.threadKey,
+            options.context.contextType,
+            options.context.contextId,
+          )
+        : null;
+
+      const message = this.messageRepository.create({
+        userId: recipientId,
+        eventType: options.eventType,
+        title: options.title ?? null,
+        body: options.body,
+        data: options.data ?? null,
+        isRead: false,
+        archived: false,
+        threadId: threadSummary?.id ?? null,
+        threadKey: options.context?.threadKey ?? null,
+      });
+
+      const saved = await this.messageRepository.save(message);
+      createdMessages.push(saved);
+
+      if (threadSummary) {
+        await this.threadRepository.update(threadSummary.id, {
+          lastMessageAt: saved.createdAt,
+        });
+      }
+
+      const preferredChannels =
+        preferenceMap.get(recipientId)?.channels ?? options.preferredChannels;
+
+      await this.enqueueDeliveries(saved, preferredChannels);
+    }
+
+    if (createdMessages.length > 0) {
+      this.notifyRealtime(createdMessages);
+    }
   }
 
   trackConnection(userId: number, socketId: string): void {
@@ -194,5 +251,76 @@ export class NotificationsService {
     }
 
     return message;
+  }
+
+  private async enqueueDeliveries(
+    message: NotificationMessage,
+    preferredChannels?: NotificationChannelType[],
+  ): Promise<void> {
+    const channels = preferredChannels && preferredChannels.length > 0
+      ? preferredChannels
+      : ['inapp'];
+    for (const channel of channels) {
+      const delivery = await this.deliveryRepository.save(
+        this.deliveryRepository.create({
+          notificationId: message.id,
+          channel,
+          status: channel === 'inapp' ? 'sent' : 'pending',
+          sentAt: channel === 'inapp' ? new Date() : null,
+        }),
+      );
+
+      if (channel !== 'inapp') {
+        await this.dispatchQueue.add(
+          {
+            messageId: message.id,
+            channel,
+            attempt: 1,
+          },
+          {
+            attempts: 3,
+            backoff: { type: 'exponential', delay: 10_000 },
+          },
+        );
+      }
+    }
+  }
+
+  private notifyRealtime(messages: NotificationMessage[]): void {
+    for (const message of messages) {
+      const sockets = this.getActiveSocketIds(message.userId);
+      if (sockets.length === 0) {
+        continue;
+      }
+      // Actual implementation will emit events via gateway/server integration.
+      this.logger.debug(
+        `Would emit realtime notification to user ${message.userId} sockets=${sockets.join(',')}`,
+      );
+    }
+  }
+
+  private async loadEffectivePreferences(
+    userIds: number[],
+    eventType: string,
+  ): Promise<Map<number, { channels: NotificationChannelType[] }>> {
+    const map = new Map<number, { channels: NotificationChannelType[] }>();
+
+    if (userIds.length === 0) {
+      return map;
+    }
+
+    const prefs = await this.rulesService.getUserPreferencesForEvent(
+      userIds,
+      eventType,
+    );
+
+    prefs.forEach((pref) => {
+      const enabledChannels = Object.entries(pref.channels)
+        .filter(([, enabled]) => !!enabled)
+        .map(([channel]) => channel as NotificationChannelType);
+      map.set(pref.userId, { channels: enabledChannels });
+    });
+
+    return map;
   }
 }
