@@ -14,16 +14,16 @@ import type { AgentContext } from './interfaces/agent-context.interface';
 import type { ExecuteAgentActionDto } from './dto/agent.dto';
 import type { AuthInfo } from '@modelcontextprotocol/sdk/server/auth/types.js';
 import type { ContentBlock } from '@modelcontextprotocol/sdk/types.js';
-
-const TOOL_NAME_MAX_LENGTH = 64;
+import {
+  ListPromptsRequestSchema,
+  ListResourcesRequestSchema,
+} from '@modelcontextprotocol/sdk/types.js';
 
 type ToolHandler = (parameters: Record<string, any>) => Promise<unknown>;
 
 @Injectable()
 export class AgentMcpHttpService {
   private readonly logger = new Logger(AgentMcpHttpService.name);
-
-  private readonly usedToolNames = new Set<string>();
 
   constructor(private readonly agentMcpService: AgentMcpService) {}
 
@@ -223,6 +223,20 @@ export class AgentMcpHttpService {
         this.execute(context, AgentActionKey.AUTOMATION_RULES_TRIGGER, params),
     );
 
+    server.server.setRequestHandler(
+      ListResourcesRequestSchema,
+      async () => ({
+        resources: [],
+      }),
+    );
+
+    server.server.setRequestHandler(
+      ListPromptsRequestSchema,
+      async () => ({
+        prompts: [],
+      }),
+    );
+
     return server;
   }
 
@@ -287,26 +301,10 @@ export class AgentMcpHttpService {
 
   private createToolName(action: string): string {
     const normalized = action.toLowerCase().replace(/[^a-z0-9_-]/g, '-');
-    let candidate = normalized.replace(/-+/g, '-').replace(/^-+|-+$/g, '');
-
-    if (!candidate) {
-      candidate = 'tool';
+    const cleaned = normalized.replace(/-+/g, '-').replace(/^-+|-+$/g, '');
+    if (!cleaned) {
+      return 'tool';
     }
-
-    if (candidate.length > TOOL_NAME_MAX_LENGTH) {
-      candidate = candidate.slice(0, TOOL_NAME_MAX_LENGTH);
-    }
-
-    let uniqueName = candidate;
-    let counter = 1;
-    while (this.usedToolNames.has(uniqueName)) {
-      const suffix = `-${counter}`;
-      const baseLength = TOOL_NAME_MAX_LENGTH - suffix.length;
-      uniqueName = `${candidate.slice(0, Math.max(1, baseLength))}${suffix}`;
-      counter += 1;
-    }
-
-    this.usedToolNames.add(uniqueName);
-    return uniqueName;
+    return cleaned.slice(0, 64);
   }
 }
