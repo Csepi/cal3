@@ -21,9 +21,16 @@ import {
 
 type ToolHandler = (parameters: Record<string, any>) => Promise<unknown>;
 
+interface McpSession {
+  context: AgentContext;
+  server: McpServer;
+  transport: StreamableHTTPServerTransport;
+}
+
 @Injectable()
 export class AgentMcpHttpService {
   private readonly logger = new Logger(AgentMcpHttpService.name);
+  private readonly sessions = new Map<string, McpSession>();
 
   constructor(private readonly agentMcpService: AgentMcpService) {}
 
@@ -33,26 +40,64 @@ export class AgentMcpHttpService {
     res: Response,
     body: unknown,
   ): Promise<void> {
-    const server = this.createServer(context);
-    const transport = new StreamableHTTPServerTransport({
-      enableJsonResponse: false,
-      sessionIdGenerator: () => req.get('mcp-session-id') ?? randomUUID(),
-    });
+    const incomingSessionId = req.get('mcp-session-id')?.trim();
+    let sessionId = incomingSessionId;
+    let session: McpSession | undefined = undefined;
 
-    res.on('close', () => {
-      transport.close().catch((error) => {
-        this.logger.warn(
-          `Failed to close MCP transport for agent ${context.agent.id}: ${error instanceof Error ? error.message : error}`,
-        );
+    try {
+      if (!sessionId) {
+        sessionId = randomUUID();
+        session = await this.createSession(sessionId, context);
+      } else {
+        session = this.sessions.get(sessionId);
+        if (!session) {
+          this.logger.warn(
+            `MCP session ${sessionId} not found. Creating new session for agent ${context.agent.id}.`,
+          );
+          session = await this.createSession(sessionId, context);
+        } else if (session.context.agent.id !== context.agent.id) {
+          this.logger.warn(
+            `MCP session ${sessionId} belongs to agent ${session.context.agent.id}, but agent ${context.agent.id} attempted access. Regenerating session.`,
+          );
+          session = await this.createSession(sessionId, context);
+        }
+      }
+
+      if (!session || !sessionId) {
+        throw new Error('Failed to establish MCP session');
+      }
+
+      const enhancedRequest = req as Request & { auth?: AuthInfo };
+
+      res.on('close', () => {
+        if (req.method === 'DELETE') {
+          this.cleanupSession(sessionId as string);
+        }
       });
-    });
 
-    await server.connect(transport);
-    await transport.handleRequest(
-      req as unknown as Request & { auth?: AuthInfo },
-      res,
-      body,
-    );
+      await session.transport.handleRequest(enhancedRequest, res, body);
+
+      if (req.method === 'DELETE') {
+        this.cleanupSession(sessionId);
+      }
+    } catch (error) {
+      this.logger.error(
+        `MCP stream handling error for agent ${context.agent.id}: ${
+          error instanceof Error ? error.message : error
+        }`,
+        error instanceof Error ? error.stack : undefined,
+      );
+
+      if (!res.headersSent) {
+        res
+          .status(500)
+          .json({
+            jsonrpc: '2.0',
+            error: { code: -32000, message: 'Internal server error' },
+            id: null,
+          });
+      }
+    }
   }
 
   private createServer(context: AgentContext): McpServer {
@@ -238,6 +283,50 @@ export class AgentMcpHttpService {
     );
 
     return server;
+  }
+
+  private async createSession(
+    sessionId: string,
+    context: AgentContext,
+  ): Promise<McpSession> {
+    const server = this.createServer(context);
+    const transport = new StreamableHTTPServerTransport({
+      enableJsonResponse: false,
+      sessionIdGenerator: () => sessionId,
+    });
+
+    await server.connect(transport);
+
+    const session: McpSession = {
+      context,
+      server,
+      transport,
+    };
+
+    this.sessions.set(sessionId, session);
+    this.logger.debug(
+      `Created MCP session ${sessionId} for agent ${context.agent.id}`,
+    );
+
+    return session;
+  }
+
+  private cleanupSession(sessionId: string): void {
+    const session = this.sessions.get(sessionId);
+    if (!session) {
+      return;
+    }
+
+    session.transport.close().catch((error) => {
+      this.logger.warn(
+        `Failed to close MCP transport for session ${sessionId}: ${
+          error instanceof Error ? error.message : error
+        }`,
+      );
+    });
+
+    this.sessions.delete(sessionId);
+    this.logger.debug(`Closed MCP session ${sessionId}`);
   }
 
   private hasPermission(context: AgentContext, key: AgentActionKey): boolean {
