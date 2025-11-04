@@ -2,6 +2,7 @@ import {
   Injectable,
   ForbiddenException,
   NotFoundException,
+  Logger,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
@@ -16,9 +17,12 @@ import {
   UpdateCalendarDto,
   ShareCalendarDto,
 } from '../dto/calendar.dto';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class CalendarsService {
+  private readonly logger = new Logger(CalendarsService.name);
+
   constructor(
     @InjectRepository(Calendar)
     private calendarRepository: Repository<Calendar>,
@@ -26,6 +30,7 @@ export class CalendarsService {
     private calendarShareRepository: Repository<CalendarShare>,
     @InjectRepository(User)
     private userRepository: Repository<User>,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   async create(
@@ -182,7 +187,11 @@ export class CalendarsService {
     const users = await this.userRepository.findByIds(userIds);
     calendar.sharedWith = [...(calendar.sharedWith || []), ...users];
 
-    return this.calendarRepository.save(calendar);
+    const updatedCalendar = await this.calendarRepository.save(calendar);
+
+    await this.notifyCalendarShareChange(updatedCalendar, userIds, userId, 'shared');
+
+    return updatedCalendar;
   }
 
   async unshareCalendar(
@@ -206,6 +215,57 @@ export class CalendarsService {
       calendarId: id,
       userId: In(userIds),
     });
+
+    if (calendar.sharedWith && calendar.sharedWith.length > 0) {
+      calendar.sharedWith = calendar.sharedWith.filter(
+        (sharedUser) => !userIds.includes(sharedUser.id),
+      );
+      await this.calendarRepository.save(calendar);
+    }
+
+    await this.notifyCalendarShareChange(calendar, userIds, userId, 'unshared');
+  }
+
+  private async notifyCalendarShareChange(
+    calendar: Calendar,
+    userIds: number[],
+    actorId: number,
+    action: 'shared' | 'unshared',
+  ): Promise<void> {
+    try {
+      const recipients = Array.from(new Set(userIds)).filter(
+        (id) => id && id !== actorId,
+      );
+
+      if (recipients.length === 0) {
+        return;
+      }
+
+      const granted = action === 'shared';
+
+      await this.notificationsService.publish({
+        eventType: granted ? 'calendar.shared' : 'calendar.unshared',
+        actorId,
+        recipients,
+        title: `${calendar.name}: Access ${granted ? 'Granted' : 'Revoked'}`,
+        body: granted
+          ? `You now have access to calendar "${calendar.name}".`
+          : `Your access to calendar "${calendar.name}" has been revoked.`,
+        data: {
+          calendarId: calendar.id,
+        },
+        context: {
+          threadKey: `calendar:${calendar.id}`,
+          contextType: 'calendar',
+          contextId: String(calendar.id),
+        },
+      });
+    } catch (error) {
+      this.logger.error(
+        `Failed to send calendar ${action} notification for calendar ${calendar.id}`,
+        error instanceof Error ? error.stack : String(error),
+      );
+    }
   }
 
   async getSharedUsers(

@@ -12,6 +12,7 @@ import {
   AdminSharePanel,
   AdminReservationPanel,
   AdminLogsPanel,
+  AdminNotificationsPanel,
   type AdminTab,
 } from './admin';
 import SystemInfoPage from './admin/SystemInfoPage';
@@ -45,6 +46,8 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ themeColor = '#3b82f6' }) => {
         return <AdminReservationPanel {...panelProps} />;
       case 'logs':
         return <AdminLogsPanel {...panelProps} />;
+      case 'notifications':
+        return <AdminNotificationsPanel {...panelProps} />;
       case 'configuration':
         return <AdminConfigurationPanel {...panelProps} />;
       case 'system-info':

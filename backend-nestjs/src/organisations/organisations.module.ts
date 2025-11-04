@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Organisation } from '../entities/organisation.entity';
 import { OrganisationAdmin } from '../entities/organisation-admin.entity';
+import { OrganisationUser } from '../entities/organisation-user.entity';
 import { User } from '../entities/user.entity';
 import { OrganisationsController } from './organisations.controller';
 import { OrganisationsService } from './organisations.service';
@@ -10,12 +11,14 @@ import { OrganisationAdminService } from './organisation-admin.service';
 import { CalendarsModule } from '../calendars/calendars.module';
 import { CommonModule } from '../common/common.module';
 import { AdminGuard } from '../auth/guards/admin.guard';
+import { NotificationsModule } from '../notifications/notifications.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Organisation, OrganisationAdmin, User]),
+    TypeOrmModule.forFeature([Organisation, OrganisationAdmin, OrganisationUser, User]),
     CalendarsModule,
     CommonModule, // This imports UserPermissionsService
+    NotificationsModule,
   ],
   controllers: [OrganisationsController, OrganisationAdminController],
   providers: [OrganisationsService, OrganisationAdminService, AdminGuard],

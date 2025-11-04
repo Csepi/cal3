@@ -9,7 +9,15 @@
 import React from 'react';
 import { TabBarItem } from '../molecules/TabBarItem';
 
-export type TabId = 'calendar' | 'profile' | 'sync' | 'reservations' | 'automation' | 'agent' | 'admin';
+export type TabId =
+  | 'calendar'
+  | 'profile'
+  | 'sync'
+  | 'reservations'
+  | 'automation'
+  | 'agent'
+  | 'admin'
+  | 'notifications';
 
 interface Tab {
   id: TabId;
@@ -33,6 +41,7 @@ interface BottomTabBarProps {
   };
   canAccessReservations: boolean;
   hideReservationsTab?: boolean;
+  notificationsBadge?: number;
 }
 
 export const BottomTabBar: React.FC<BottomTabBarProps> = ({
@@ -43,6 +52,7 @@ export const BottomTabBar: React.FC<BottomTabBarProps> = ({
   featureFlags,
   canAccessReservations,
   hideReservationsTab = false,
+  notificationsBadge = 0,
 }) => {
   // Define all possible tabs with simple text icons for consistency in the CLI preview.
   const allTabs: Tab[] = [
@@ -83,6 +93,13 @@ export const BottomTabBar: React.FC<BottomTabBarProps> = ({
       visible: featureFlags.reservations && canAccessReservations && !hideReservationsTab,
     },
     {
+      id: 'notifications',
+      icon: '[NOT]',
+      label: 'Alerts',
+      visible: true,
+      badge: notificationsBadge,
+    },
+    {
       id: 'admin',
       icon: '[ADM]',
       label: 'Admin',
@@ -92,12 +109,13 @@ export const BottomTabBar: React.FC<BottomTabBarProps> = ({
 
   const tabPriority: Record<TabId, number> = {
     calendar: 0,
-    profile: 1,
-    agent: 2,
-    sync: 3,
-    automation: 4,
-    reservations: 5,
-    admin: 6,
+    notifications: 1,
+    profile: 2,
+    agent: 3,
+    sync: 4,
+    automation: 5,
+    reservations: 6,
+    admin: 7,
   };
 
   const visibleTabs = allTabs
@@ -142,4 +160,3 @@ export const BottomTabBar: React.FC<BottomTabBarProps> = ({
     </div>
   );
 };
-

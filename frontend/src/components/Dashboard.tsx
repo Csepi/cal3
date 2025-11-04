@@ -34,11 +34,22 @@ import { FloatingActionButton } from './mobile/organisms/FloatingActionButton';
 import { MobileLayout } from './mobile/templates/MobileLayout';
 import { useScreenSize } from '../hooks/useScreenSize';
 import type { TabId } from './mobile/organisms/BottomTabBar';
+import { useNotifications } from '../hooks/useNotifications';
+import { NotificationCenter, NotificationSettingsPanel } from './notifications';
 
 /**
  * View types for the main navigation
  */
-type DashboardView = 'calendar' | 'admin' | 'profile' | 'sync' | 'reservations' | 'automation' | 'agent';
+type DashboardView =
+  | 'calendar'
+  | 'admin'
+  | 'profile'
+  | 'sync'
+  | 'reservations'
+  | 'automation'
+  | 'agent'
+  | 'notifications'
+  | 'notification-settings';
 
 const Dashboard: React.FC = () => {
   // Hooks
@@ -58,6 +69,8 @@ const Dashboard: React.FC = () => {
   // Permissions state
   const [canAccessReservations, setCanAccessReservations] = useState<boolean>(false);
   const [permissionsLoading, setPermissionsLoading] = useState<boolean>(true);
+
+  const { unreadCount } = useNotifications();
 
   /**
    * Handles user login and initializes user session
@@ -229,21 +242,26 @@ const Dashboard: React.FC = () => {
     await loadUserPermissions();
   };
 
+  const activeNavigationView: TabId = (currentView === 'notification-settings'
+    ? 'notifications'
+    : currentView) as TabId;
+
   return (
     <div className={`min-h-screen ${isMobile ? 'bg-white' : `bg-gradient-to-br ${themeConfig.gradient.background}`}`}>
       {/* Responsive Navigation - Adapts to screen size */}
       <ResponsiveNavigation
-        activeTab={currentView as TabId}
+        activeTab={activeNavigationView}
         onTabChange={handleTabChange}
-        themeColor={themeColor}
-        userRole={userRole}
-        userName={user || ''}
-        onLogout={handleLogout}
-        featureFlags={featureFlags}
-        canAccessReservations={canAccessReservations}
-        hideReservationsTab={userProfile?.hideReservationsTab}
-        themeConfig={themeConfig}
-      />
+          themeColor={themeColor}
+          userRole={userRole}
+          userName={user || ''}
+          onLogout={handleLogout}
+          featureFlags={featureFlags}
+          canAccessReservations={canAccessReservations}
+          hideReservationsTab={userProfile?.hideReservationsTab}
+          themeConfig={themeConfig}
+          notificationsBadge={unreadCount}
+        />
 
       {/* Main Content Area with Mobile Layout Wrapper */}
       <MobileLayout
@@ -272,6 +290,12 @@ const Dashboard: React.FC = () => {
           )}
           {currentView === 'reservations' && featureFlags.reservations && canAccessReservations && !userProfile?.hideReservationsTab && (
             <ReservationsPanel themeColor={themeColor} />
+          )}
+          {currentView === 'notifications' && (
+            <NotificationCenter onOpenSettings={() => setCurrentView('notification-settings')} />
+          )}
+          {currentView === 'notification-settings' && (
+            <NotificationSettingsPanel onBack={() => setCurrentView('notifications')} />
           )}
           {/* Admin Panel - Only accessible to admin users */}
           {currentView === 'admin' && userRole === 'admin' && (

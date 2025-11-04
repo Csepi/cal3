@@ -22,3 +22,4 @@ export * from './AdminReservationPanel';
 export * from './AdminLogsPanel';
 export * from './AdminNavigation';
 export { default as AdminConfigurationPanel } from './AdminConfigurationPanel';
+export { default as AdminNotificationsPanel } from './AdminNotificationsPanel';

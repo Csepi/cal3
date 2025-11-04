@@ -9,7 +9,7 @@ export interface AdminNavigationProps {
   className?: string;
 }
 
-type TabIcon = 'KPI' | 'USR' | 'ORG' | 'CAL' | 'EVT' | 'ACL' | 'RES' | 'LOG' | 'CFG' | 'SYS';
+type TabIcon = 'KPI' | 'USR' | 'ORG' | 'CAL' | 'EVT' | 'ACL' | 'RES' | 'LOG' | 'CFG' | 'SYS' | 'NOT';
 
 const ICONS: Record<TabIcon, JSX.Element> = {
   KPI: (
@@ -99,6 +99,12 @@ const ICONS: Record<TabIcon, JSX.Element> = {
       <path d="M17 12h2" />
     </svg>
   ),
+  NOT: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round">
+      <path d="M18 13.8V11a6 6 0 0 0-12 0v2.8a2 2 0 0 1-.6 1.4L4 17h16l-1.4-1.8a2 2 0 0 1-.6-1.4z" />
+      <path d="M9 21a3 3 0 0 0 6 0" />
+    </svg>
+  ),
 };
 
 const TAB_CONFIG: Record<AdminTab, { label: string; icon: TabIcon; description: string }> = {
@@ -109,6 +115,7 @@ const TAB_CONFIG: Record<AdminTab, { label: string; icon: TabIcon; description: 
   events: { label: 'Events', icon: 'EVT', description: 'Audit and curate scheduled events' },
   shares: { label: 'Sharing & Access', icon: 'ACL', description: 'Review calendar access policies' },
   reservations: { label: 'Resource Bookings', icon: 'RES', description: 'Track reservations and capacity' },
+  notifications: { label: 'Notification Platform', icon: 'NOT', description: 'Channel providers, batching, and digests' },
   logs: { label: 'Operational Logs', icon: 'LOG', description: 'Monitor backend activity and errors' },
   configuration: { label: 'Runtime Configuration', icon: 'CFG', description: 'Manage OAuth credentials and feature flags' },
   'system-info': { label: 'System Health', icon: 'SYS', description: 'Runtime diagnostics and configuration' },
@@ -137,7 +144,7 @@ const NAV_GROUPS: Array<{
   {
     label: 'Platform Operations',
     description: 'Logs and system diagnostics',
-    tabs: ['logs', 'configuration', 'system-info'],
+    tabs: ['logs', 'notifications', 'configuration', 'system-info'],
   },
 ];
 

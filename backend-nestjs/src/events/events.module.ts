@@ -5,11 +5,13 @@ import { EventsController } from './events.controller';
 import { Event } from '../entities/event.entity';
 import { Calendar, CalendarShare } from '../entities/calendar.entity';
 import { AutomationModule } from '../automation/automation.module';
+import { NotificationsModule } from '../notifications/notifications.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Event, Calendar, CalendarShare]),
     forwardRef(() => AutomationModule),
+    NotificationsModule,
   ],
   providers: [EventsService],
   controllers: [EventsController],

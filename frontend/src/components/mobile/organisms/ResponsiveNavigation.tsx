@@ -89,6 +89,13 @@ const AgentIcon = (
   </svg>
 );
 
+const BellIcon = (
+  <svg viewBox="0 0 24 24" {...iconProps}>
+    <path d="M15 17h5l-1.4-1.4A2 2 0 0 1 18 13.8V11a6 6 0 0 0-12 0v2.8a2 2 0 0 1-.6 1.4L4 17h5" />
+    <path d="M9 21a3 3 0 0 0 6 0" />
+  </svg>
+);
+
 interface ResponsiveNavigationProps {
   activeTab: TabId;
   onTabChange: (tabId: TabId) => void;
@@ -105,6 +112,7 @@ interface ResponsiveNavigationProps {
   canAccessReservations: boolean;
   hideReservationsTab?: boolean;
   themeConfig: any;
+  notificationsBadge?: number;
 }
 
 export const ResponsiveNavigation: React.FC<ResponsiveNavigationProps> = ({
@@ -118,6 +126,7 @@ export const ResponsiveNavigation: React.FC<ResponsiveNavigationProps> = ({
   canAccessReservations,
   hideReservationsTab,
   themeConfig,
+  notificationsBadge = 0,
 }) => {
   const { isMobile, isTablet } = useScreenSize();
   const [showFeaturesDropdown, setShowFeaturesDropdown] = useState(false);
@@ -150,6 +159,15 @@ export const ResponsiveNavigation: React.FC<ResponsiveNavigationProps> = ({
       label: 'Calendar',
       visible: true,
       isFeature: false,
+    },
+    {
+      id: 'notifications' as TabId,
+      icon: BellIcon,
+      label: 'Notifications',
+      shortLabel: 'Alerts',
+      visible: true,
+      isFeature: false,
+      badge: notificationsBadge,
     },
     {
       id: 'profile' as TabId,
@@ -217,6 +235,7 @@ export const ResponsiveNavigation: React.FC<ResponsiveNavigationProps> = ({
         featureFlags={featureFlags}
         canAccessReservations={canAccessReservations}
         hideReservationsTab={hideReservationsTab}
+        notificationsBadge={notificationsBadge}
       />
     );
   }
@@ -262,8 +281,13 @@ export const ResponsiveNavigation: React.FC<ResponsiveNavigationProps> = ({
                 `}
                 aria-label={tab.label}
               >
-                <span className="text-gray-600" aria-hidden="true">
+                <span className="relative text-gray-600" aria-hidden="true">
                   {tab.icon}
+                  {!!tab.badge && tab.badge > 0 && (
+                    <span className="absolute -top-2 -right-2 min-w-[1.1rem] px-1 py-0.5 rounded-full bg-red-500 text-white text-[0.65rem] leading-none text-center">
+                      {tab.badge > 99 ? '99+' : tab.badge}
+                    </span>
+                  )}
                 </span>
                 <span className="hidden md:inline">
                   {isTablet && tab.shortLabel ? tab.shortLabel : tab.label}

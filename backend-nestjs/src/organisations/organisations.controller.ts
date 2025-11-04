@@ -145,6 +145,7 @@ export class OrganisationsController {
     return await this.organisationsService.assignUser(
       organizationId,
       assignDto.userId,
+      req.user.id,
     );
   }
 
@@ -167,7 +168,11 @@ export class OrganisationsController {
       );
     }
 
-    return await this.organisationsService.removeUser(organizationId, +userId);
+    return await this.organisationsService.removeUser(
+      organizationId,
+      +userId,
+      req.user.id,
+    );
   }
 
   // === New endpoints for Phase 2 ===
@@ -253,6 +258,7 @@ export class OrganisationsController {
       organizationId,
       +userId,
       updateDto.role,
+      req.user.id,
     );
   }
 
@@ -282,6 +288,7 @@ export class OrganisationsController {
     await this.organisationsService.removeUserFromOrganization(
       organizationId,
       +userId,
+      req.user.id,
     );
     return { message: 'User removed from organisation successfully' };
   }

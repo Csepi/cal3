@@ -3,6 +3,7 @@ import Dashboard from './components/Dashboard'
 import { AuthCallback } from './components/auth'
 import PublicBookingPage from './components/PublicBookingPage'
 import { useState } from 'react'
+import { NotificationsProvider } from './hooks/useNotifications'
 
 function App() {
   const [user, setUser] = useState<string | null>(null);
@@ -17,11 +18,13 @@ function App() {
 
   return (
     <BrowserRouter>
-      <Routes>
-        <Route path="/auth/callback" element={<AuthCallback onLogin={handleLogin} />} />
-        <Route path="/public-booking/:token" element={<PublicBookingPage />} />
-        <Route path="/*" element={<Dashboard />} />
-      </Routes>
+      <NotificationsProvider>
+        <Routes>
+          <Route path="/auth/callback" element={<AuthCallback onLogin={handleLogin} />} />
+          <Route path="/public-booking/:token" element={<PublicBookingPage />} />
+          <Route path="/*" element={<Dashboard />} />
+        </Routes>
+      </NotificationsProvider>
     </BrowserRouter>
   )
 }

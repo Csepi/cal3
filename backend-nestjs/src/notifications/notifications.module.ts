@@ -1,0 +1,138 @@
+import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { JwtModule } from '@nestjs/jwt';
+import { BullModule } from '@nestjs/bull';
+import { NotificationMessage } from '../entities/notification-message.entity';
+import { NotificationDelivery } from '../entities/notification-delivery.entity';
+import { UserNotificationPreference } from '../entities/user-notification-preference.entity';
+import { PushDeviceToken } from '../entities/push-device-token.entity';
+import { NotificationThread } from '../entities/notification-thread.entity';
+import { NotificationThreadState } from '../entities/notification-thread-state.entity';
+import { NotificationInboxRule } from '../entities/notification-inbox-rule.entity';
+import { NotificationScopeMute } from '../entities/notification-scope-mute.entity';
+import { Calendar, CalendarShare } from '../entities/calendar.entity';
+import { ReservationCalendar } from '../entities/reservation-calendar.entity';
+import { Organisation } from '../entities/organisation.entity';
+import { Reservation } from '../entities/reservation.entity';
+import { ConfigurationModule } from '../configuration/configuration.module';
+import { CommonModule } from '../common/common.module';
+import { NotificationsService } from './notifications.service';
+import { NotificationRulesService } from './notification-rules.service';
+import { NotificationThreadsService } from './notification-threads.service';
+import { NotificationsController } from './notifications.controller';
+import { NotificationThreadsController } from './notification-threads.controller';
+import { NotificationsGateway } from './notifications.gateway';
+import { NotificationsAdminController } from './notifications-admin.controller';
+import { NotificationsDispatchProcessor } from './processors/notifications-dispatch.processor';
+import { NotificationsDigestProcessor } from './processors/notifications-digest.processor';
+import {
+  NOTIFICATIONS_DIGEST_QUEUE,
+  NOTIFICATIONS_DISPATCH_QUEUE,
+} from './notifications.constants';
+import { User } from '../entities/user.entity';
+import { EmailChannelProvider } from './channels/email-channel.provider';
+import { WebPushChannelProvider } from './channels/webpush-channel.provider';
+import { MobilePushChannelProvider } from './channels/mobile-push-channel.provider';
+import { SlackChannelProvider } from './channels/slack-channel.provider';
+import { TeamsChannelProvider } from './channels/teams-channel.provider';
+import {
+  NotificationChannelRegistry,
+  NOTIFICATION_CHANNEL_PROVIDERS,
+} from './channels/notification-channel.registry';
+import { NotificationMutesController } from './notification-mutes.controller';
+
+@Module({
+  imports: [
+    ConfigModule,
+    ConfigurationModule,
+    CommonModule,
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: async (configService: ConfigService) => ({
+        secret: configService.get<string>('JWT_SECRET') || 'default-secret-key',
+        signOptions: { expiresIn: '24h' },
+      }),
+    }),
+    BullModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: async (configService: ConfigService) => {
+        const redisUrl =
+          configService.get<string>('REDIS_URL') || 'redis://localhost:6379/0';
+        return {
+          url: redisUrl,
+        };
+      },
+    }),
+    BullModule.registerQueue(
+      {
+        name: NOTIFICATIONS_DISPATCH_QUEUE,
+      },
+      {
+        name: NOTIFICATIONS_DIGEST_QUEUE,
+      },
+    ),
+    TypeOrmModule.forFeature([
+      NotificationMessage,
+      NotificationDelivery,
+      UserNotificationPreference,
+      PushDeviceToken,
+      NotificationThread,
+      NotificationThreadState,
+      NotificationInboxRule,
+      NotificationScopeMute,
+      Calendar,
+      CalendarShare,
+      ReservationCalendar,
+      Organisation,
+      Reservation,
+      User,
+    ]),
+  ],
+  controllers: [
+    NotificationsController,
+    NotificationThreadsController,
+    NotificationMutesController,
+    NotificationsAdminController,
+  ],
+  providers: [
+    NotificationsService,
+    NotificationRulesService,
+    NotificationThreadsService,
+    NotificationsGateway,
+    NotificationsDispatchProcessor,
+    NotificationsDigestProcessor,
+    EmailChannelProvider,
+    WebPushChannelProvider,
+    MobilePushChannelProvider,
+    SlackChannelProvider,
+    TeamsChannelProvider,
+    {
+      provide: NOTIFICATION_CHANNEL_PROVIDERS,
+      useFactory: (
+        email: EmailChannelProvider,
+        webpush: WebPushChannelProvider,
+        mobile: MobilePushChannelProvider,
+        slack: SlackChannelProvider,
+        teams: TeamsChannelProvider,
+      ) => [email, webpush, mobile, slack, teams],
+      inject: [
+        EmailChannelProvider,
+        WebPushChannelProvider,
+        MobilePushChannelProvider,
+        SlackChannelProvider,
+        TeamsChannelProvider,
+      ],
+    },
+    NotificationChannelRegistry,
+  ],
+  exports: [
+    NotificationsService,
+    NotificationRulesService,
+    NotificationThreadsService,
+    NotificationChannelRegistry,
+  ],
+})
+export class NotificationsModule {}
