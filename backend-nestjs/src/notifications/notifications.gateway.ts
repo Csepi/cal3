@@ -7,12 +7,20 @@ import {
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
-import { Logger, UnauthorizedException } from '@nestjs/common';
+import {
+  Inject,
+  Logger,
+  UnauthorizedException,
+  forwardRef,
+} from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { NotificationsService } from './notifications.service';
-import { NOTIFICATION_WS_NAMESPACE } from './notifications.constants';
+import {
+  NOTIFICATION_WS_NAMESPACE,
+  NOTIFICATION_WS_PATH,
+} from './notifications.constants';
 
 interface AuthenticatedSocket extends Socket {
   userId?: number;
@@ -20,6 +28,7 @@ interface AuthenticatedSocket extends Socket {
 
 @WebSocketGateway({
   namespace: NOTIFICATION_WS_NAMESPACE,
+  path: NOTIFICATION_WS_PATH,
   cors: {
     origin: '*',
   },
@@ -36,6 +45,7 @@ export class NotificationsGateway
   constructor(
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
+    @Inject(forwardRef(() => NotificationsService))
     private readonly notificationsService: NotificationsService,
   ) {
     this.jwtSecret =

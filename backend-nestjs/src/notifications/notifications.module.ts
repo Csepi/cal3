@@ -11,12 +11,16 @@ import { NotificationThread } from '../entities/notification-thread.entity';
 import { NotificationThreadState } from '../entities/notification-thread-state.entity';
 import { NotificationInboxRule } from '../entities/notification-inbox-rule.entity';
 import { NotificationScopeMute } from '../entities/notification-scope-mute.entity';
+import { Calendar, CalendarShare } from '../entities/calendar.entity';
+import { ReservationCalendar } from '../entities/reservation-calendar.entity';
+import { Organisation } from '../entities/organisation.entity';
+import { Reservation } from '../entities/reservation.entity';
 import { ConfigurationModule } from '../configuration/configuration.module';
+import { CommonModule } from '../common/common.module';
 import { NotificationsService } from './notifications.service';
 import { NotificationRulesService } from './notification-rules.service';
 import { NotificationThreadsService } from './notification-threads.service';
 import { NotificationsController } from './notifications.controller';
-import { NotificationRulesController } from './notification-rules.controller';
 import { NotificationThreadsController } from './notification-threads.controller';
 import { NotificationsGateway } from './notifications.gateway';
 import { NotificationsAdminController } from './notifications-admin.controller';
@@ -36,11 +40,13 @@ import {
   NotificationChannelRegistry,
   NOTIFICATION_CHANNEL_PROVIDERS,
 } from './channels/notification-channel.registry';
+import { NotificationMutesController } from './notification-mutes.controller';
 
 @Module({
   imports: [
     ConfigModule,
     ConfigurationModule,
+    CommonModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -77,13 +83,18 @@ import {
       NotificationThreadState,
       NotificationInboxRule,
       NotificationScopeMute,
+      Calendar,
+      CalendarShare,
+      ReservationCalendar,
+      Organisation,
+      Reservation,
       User,
     ]),
   ],
   controllers: [
     NotificationsController,
-    NotificationRulesController,
     NotificationThreadsController,
+    NotificationMutesController,
     NotificationsAdminController,
   ],
   providers: [

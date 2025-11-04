@@ -1,6 +1,6 @@
 # Notification System — Architecture and Implementation Plan (No Testing)
 
-This document defines the full architecture and step-by-step plan to design and implement a robust, Atlassian‑style notification system for cal3. It follows the current stack and code organization, aims for Lego‑block modularity, and avoids testing/validation phases per request.
+This document defines the full architecture and step-by-step plan to design and implement a robust notification system for primecal project. It follows the current stack and code organization, aims for Lego‑block modularity, and avoids testing/validation phases per request.
 
 Scope decisions from stakeholder
 - Branch name: `notification-system`
@@ -10,13 +10,12 @@ Scope decisions from stakeholder
 - Email provider: selectable in Admin (SMTP, SendGrid, Postmark, SES)
 - WebPush: VAPID keys, browser permission UX (best practices)
 - Defaults and preferences: user-configurable per event and per channel; quiet hours; digest options (default immediate)
-- Events: use cal3 domain events (events, reservations, shares, organisations, automation)
+- Events: use primecal domain events (events, reservations, shares, organisations, automation)
 - Admin: new “Notifications” menu to configure providers, templates, defaults, features
 - Multi-tenant style needs: user preferences may include org-scope rules; admins cannot override user prefs for critical events
 - Compliance: store all preference changes in audit log; ignore broader compliance for now
 - Third-party: include Slack and MS Teams as optional channels (start with incoming webhooks; OAuth later)
-- Escalation/fallback: user-configurable; allow multiple channels concurrently (Atlassian-style)
-- Inbox rules and muting: include user inbox rules (auto‑archive/mute) and per‑calendar/reservation advanced rules with muting hierarchies
+- Escalation/fallback: user-configurable; allow multiple channels concurrently
 
 
 ## 1) Current Architecture Snapshot (as‑is)
@@ -31,17 +30,17 @@ Scope decisions from stakeholder
   - No current notification bell/center UI
 
 
-## 2) Target Vision (Atlassian‑style)
+## 2) Target Vision
 - Per‑event, per‑channel preferences with quiet hours, digests, and fallback/escalation
 - Channels: In‑App feed with bell icon, Email, WebPush, Mobile Push; optional Slack/Teams
-- Batching: immediate + digest (hourly/daily) per user/event/channel
+- Batching: immediate + digest (minutely/hourly/daily) per user/event/channel
 - Templates: event‑driven templates with variables; per-channel variants
 - Realtime: WebSocket updates for unread count and new items
 - Admin control: provider keys, global defaults, feature flags, template management
 - Observability: delivery logs, provider errors, queue status; audit preference changes
 
 
-## 3) Domain Events to Notify (cal3‑specific)
+## 3) Domain Events to Notify (primecal‑specific)
 - Calendar Events
   - Event created/updated/canceled
   - Event reminder (N minutes before start) based on user preference
@@ -72,10 +71,6 @@ New entities (tables) — minimal, modular, and relational:
    - data (json; payload for deep links, metadata)
    - isRead (boolean; default false)
    - readAt (datetime, nullable)
-   - archived (boolean; default false)
-   - archivedAt (datetime, nullable)
-   - threadId (FK notification_threads.id, nullable)
-   - threadKey (string, nullable; deterministic key per thread context)
    - createdAt, updatedAt
 
 2) notification_deliveries
@@ -108,50 +103,6 @@ New entities (tables) — minimal, modular, and relational:
    - lastSeenAt (datetime)
    - createdAt, updatedAt
 
-5) notification_threads
-   - id (PK)
-   - threadKey (string, unique; e.g., `event:{eventId}` or `reservation:{reservationId}`)
-   - contextType (enum: event | reservation | calendar | organisation | custom)
-   - contextId (int or string)
-   - title (string, nullable)
-   - lastMessageAt (datetime)
-   - createdAt, updatedAt
-
-6) notification_thread_states (per‑user thread metadata)
-   - id (PK)
-   - threadId (FK notification_threads.id)
-   - userId (FK users.id)
-   - isMuted (boolean; default false)
-   - isArchived (boolean; default false)
-   - lastReadAt (datetime, nullable)
-   - createdAt, updatedAt
-
-7) notification_inbox_rules
-   - id (PK)
-   - userId (FK users.id)
-   - scopeType (enum: global | organisation | calendar | reservation)
-   - scopeId (nullable; FK to corresponding scope)
-   - name (string)
-   - order (int; evaluation order)
-   - isEnabled (boolean; default true)
-   - conditions (json; DSL: eventType, actorId, orgId, calendarId, reservationId, keywords in title/body, channel, time)
-   - actions (json; e.g., `{ archive: true, muteThread: true, setChannels: {...}, markRead: true }`)
-   - createdAt, updatedAt
-
-8) notification_scope_mutes (hierarchical muting)
-   - id (PK)
-   - userId (FK users.id)
-   - scopeType (enum: organisation | calendar | reservation)
-   - scopeId (FK)
-   - isMuted (boolean; default true)
-   - createdAt, updatedAt
-
-Indexes (performance)
-- notification_messages: (userId, isRead, archived, createdAt DESC), (threadId, createdAt DESC)
-- notification_thread_states: (userId, threadId), (userId, isMuted)
-- notification_inbox_rules: (userId, order, isEnabled)
-- notification_scope_mutes: (userId, scopeType, scopeId)
-
 Template storage options
 - Start with file‑based or code‑based templates for speed; optionally store in DB later as `notification_templates` (id, eventType, channel, subject, body, variables) and add Admin editor.
 
@@ -176,8 +127,7 @@ Add new category `notifications` and keys in `CONFIGURATION_DEFINITIONS`:
 Core modules and services (new):
 1) NotificationsModule
    - NotificationsService (compose notifications, persist messages, enqueue deliveries)
-   - NotificationRulesService (resolve per‑user effective prefs across defaults/org/user and evaluate inbox rules + muting hierarchy)
-   - NotificationThreadsService (create/find threads, manage per‑user thread state, compute threadKey)
+   - NotificationRulesService (resolve per‑user effective prefs across defaults/org/user)
    - Channel providers (pluggable):
      - EmailChannelProvider (SMTP/SendGrid/Postmark/SES via strategy)
      - InAppChannelProvider (persist + WebSocket emit)
@@ -191,11 +141,10 @@ Core modules and services (new):
    - Queue: `notifications:dispatch` — jobs created per (notificationId, channel)
    - Processor: executes provider, retries with backoff, updates delivery status
    - Queue for digests: `notifications:digest` — cron based aggregator
-   - Rule evaluation: evaluate inbox rules synchronously during message creation; only enqueue allowed deliveries; archive/mute as actions
 
 3) WebSocket Gateway
    - `NotificationsGateway` authenticates via JWT, joins `user:{id}` room
-   - Emits `notification:new`, `notification:unreadCount`, `thread:state` on message creation, read/archive, and mute/archival changes
+   - Emits `notification:new`, `notification:unreadCount` on message creation and read status changes
 
 4) Controllers (REST)
    - `/notifications` (user scoped)
@@ -204,15 +153,6 @@ Core modules and services (new):
      - POST `/read-all`
      - GET `/preferences` and PUT `/preferences` (bulk upsert of `user_notification_preferences`)
      - POST `/devices` register push token; DELETE `/devices/:id`
-   - `/notifications/threads` (user scoped)
-     - GET list (filters: muted/archived/unread)
-     - GET `/:threadId` (messages, state)
-     - PATCH `/:threadId/mute` or `/unmute`
-     - PATCH `/:threadId/archive` or `/unarchive`
-     - PATCH `/:threadId/read` or `/unread`
-   - `/notifications/rules` (user scoped)
-     - GET list (ordered), POST create, PUT `/:id`, PATCH reorder, DELETE `/:id`
-     - Support scoped rules with `scopeType` + `scopeId`
    - `/admin/notifications` (admin only)
      - GET `/config` from ConfigurationService overview subset
      - PUT `/config/:key` to update
@@ -231,7 +171,7 @@ Core modules and services (new):
 ## 7) Realtime Best Practices (initial basics)
 - JWT‑secured `@WebSocketGateway({ cors: true })` with middleware validating token
 - Namespace `/ws/notifications` (or default) with per‑user room `user:{id}`
-- On connection, send current unread count and thread states; on new message, emit to room
+- On connection, send current unread count; on new message, emit to room
 - Expose minimal payloads over WS; deep details fetched via REST to keep sockets light
 
 
@@ -246,16 +186,6 @@ Core modules and services (new):
   - If preferred delivery fails (e.g., WebPush blocked), try next channel in user’s `fallbackOrder`
   - Allow concurrent channels (send webpush + email) per preferences
 
-Inbox Rules & Muting Hierarchies
-- Inbox Rules Evaluation
-  - Evaluate ordered rules for the user and applicable scope (global → organisation → calendar → reservation), with nearest scope taking precedence
-  - Actions supported: archive message, mute thread, mark read, override channels (enable/disable), suppress external deliveries
-  - Rule short‑circuit: stop on first match unless `continue` flag set in rule
-- Muting Hierarchies
-  - Hierarchical mutes stored in `notification_scope_mutes`
-  - Effective mute resolution: direct thread mute > reservation mute > calendar mute > organisation mute > none
-  - When muted, skip external channels; still create in‑app message (archived by default if configured)
-
 
 ## 9) Frontend UX
 1) Bell Icon (global)
@@ -264,23 +194,19 @@ Inbox Rules & Muting Hierarchies
    - Live updates via WebSocket
 
 2) Notification Center
-   - Threaded view by default; toggle to flat view
-   - List with grouping (Today, Yesterday, Earlier), filters (type/unread/muted/archived)
-   - Per‑thread quick actions: mute/unmute, archive/unarchive, mark read/unread, open target (deep link)
+   - List with grouping (Today, Yesterday, Earlier), filters (type/unread)
+   - Quick actions: mark read/unread, mark all read, open target (deep link)
 
 3) Settings Page
    - Per‑event type matrix of channels (toggle)
    - Quiet hours (start/end, timezone)
    - Digest (immediate/hourly/daily)
    - Fallback order (drag to reorder)
-   - Inbox Rules builder: conditions (event type, calendar/reservation/org, keywords) and actions (archive, mute, mark read, override channels); reorder via drag‑and‑drop
-   - Scope pickers to create scoped rules (calendar/reservation)
 
 4) Admin Panel
    - New “Notifications” tab under Platform Operations
    - Provider config editor (select provider, keys), feature toggles, VAPID key viewer, FCM keys
    - Optional basic template editor (subject/body, variables guide)
-   - Feature toggle visibility for inbox rules
 
 5) WebPush integration
    - Service worker registration; push subscription UI flow
@@ -296,7 +222,6 @@ Inbox Rules & Muting Hierarchies
 ## 11) Feature Flags and Env
 - Feature flags in ConfigurationService:
   - ENABLE_NOTIFICATIONS, ENABLE_WEBPUSH, ENABLE_MOBILE_PUSH, ENABLE_SLACK, ENABLE_TEAMS
-  - ENABLE_NOTIFICATION_RULES (boolean), MAX_INBOX_RULES_PER_USER (number)
 - Env additions in `backend-nestjs/.env` (documented; not implementing now)
   - REDIS_URL or REDIS_HOST/PORT for Bull
   - Provider keys (SMTP, SendGrid, Postmark, SES, WebPush VAPID, FCM)
@@ -311,8 +236,8 @@ Phase A — Foundations
 5) Add WebSocket `NotificationsGateway` with JWT auth and per‑user rooms
 
 Phase B — Data + APIs
-6) Add entities: `notification_messages`, `notification_deliveries`, `user_notification_preferences`, `push_device_tokens`, `notification_threads`, `notification_thread_states`, `notification_inbox_rules`, `notification_scope_mutes` with migrations
-7) Add user endpoints: list messages, mark read/unread/all, get/update preferences, manage devices, manage threads (mute/archive/read), manage inbox rules (CRUD, reorder)
+6) Add entities: `notification_messages`, `notification_deliveries`, `user_notification_preferences`, `push_device_tokens` with migrations
+7) Add user endpoints: list messages, mark read/unread/all, get/update preferences, manage devices
 8) Add admin endpoints and expose config via existing `ConfigurationService`
 
 Phase C — Channels
@@ -346,14 +271,6 @@ Phase G — Observability & Admin Quality of Life
 23) Audit logs: preference changes; admin config changes (use existing logging module)
 24) Feature flags to toggle channels at runtime
 
-Phase H — Threads, Inbox Rules, and Muting Hierarchies
-25) Implement `notification_threads` + `notification_thread_states`; generate `threadKey` per message context
-26) Implement inbox rules evaluator in `NotificationRulesService` with ordered evaluation and actions
-27) Implement hierarchical scope mutes resolution (organisation/calendar/reservation)
-28) Extend dispatch flow to respect inbox rules and mutes (archive/suppress deliveries)
-29) Extend WS gateway to emit thread state changes; extend REST for threads and rules
-30) Frontend: threaded Notification Center, rule builder UI, per‑calendar/reservation mute controls
-
 
 ## 13) Event → Template/Channel Matrix (initial defaults)
 - event.created: channels inapp, webpush, mobilepush; email optional; digest immediate
@@ -376,13 +293,12 @@ Phase H — Threads, Inbox Rules, and Muting Hierarchies
 ## 15) Open Items (for later iterations)
 - DB templates & Admin template editor (rich text, variables)
 - OAuth‑based Slack/Teams installations per workspace
-- Advanced template editor and variables inspector
-
 
 ## 16) Deliverables Summary
 - New backend module, entities, queue processors, WS gateway
 - New user and admin endpoints
 - Frontend bell, notification center, settings, and admin configuration UI
 - Channel providers and provider selection
-- Wiring to cal3 domain events and automation
+- Wiring to primecal domain events and automation
 - Documentation updates in README/admin config (later)
+

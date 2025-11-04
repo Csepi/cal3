@@ -110,6 +110,7 @@ export type AdminTab =
   | 'organizations'
   | 'stats'
   | 'configuration'
+  | 'notifications'
   | 'system-info'
   | 'logs';
 

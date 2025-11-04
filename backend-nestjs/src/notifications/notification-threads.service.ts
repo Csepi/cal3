@@ -1,9 +1,16 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import {
+  Inject,
+  Injectable,
+  Logger,
+  NotFoundException,
+  forwardRef,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { NotificationThread } from '../entities/notification-thread.entity';
 import { NotificationThreadState } from '../entities/notification-thread-state.entity';
 import { NotificationMessage } from '../entities/notification-message.entity';
+import { NotificationsGateway } from './notifications.gateway';
 
 export interface NotificationThreadSummary {
   id: number;
@@ -27,6 +34,8 @@ export class NotificationThreadsService {
     private readonly threadStateRepository: Repository<NotificationThreadState>,
     @InjectRepository(NotificationMessage)
     private readonly messageRepository: Repository<NotificationMessage>,
+    @Inject(forwardRef(() => NotificationsGateway))
+    private readonly notificationsGateway: NotificationsGateway,
   ) {}
 
   async registerThread(
@@ -118,6 +127,7 @@ export class NotificationThreadsService {
     const state = await this.ensureThreadState(userId, threadId);
     state.isMuted = mute;
     await this.threadStateRepository.save(state);
+    this.emitThreadState(userId, threadId);
   }
 
   async setThreadArchived(
@@ -128,6 +138,7 @@ export class NotificationThreadsService {
     const state = await this.ensureThreadState(userId, threadId);
     state.isArchived = archived;
     await this.threadStateRepository.save(state);
+    this.emitThreadState(userId, threadId);
   }
 
   private async ensureThreadState(
@@ -149,5 +160,19 @@ export class NotificationThreadsService {
     }
 
     return state;
+  }
+
+  private emitThreadState(userId: number, threadId: number): void {
+    try {
+      this.notificationsGateway.server
+        ?.to(`user:${userId}`)
+        .emit('thread:state', { threadId });
+    } catch (error) {
+      this.logger.debug(
+        `Failed to emit thread state for user ${userId}, thread ${threadId}: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
+    }
   }
 }

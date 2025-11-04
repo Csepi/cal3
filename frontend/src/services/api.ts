@@ -2,6 +2,16 @@ import type { Event, CreateEventRequest, UpdateEventRequest, RecurrencePattern }
 import { RecurrenceType, RecurrenceEndType } from '../types/Event';
 import type { Calendar, CreateCalendarRequest, UpdateCalendarRequest } from '../types/Calendar';
 import type { WeekDay } from '../components/RecurrenceSelector';
+import type {
+  NotificationMessage,
+  NotificationThreadSummary,
+  NotificationPreference,
+  NotificationFilter,
+  NotificationCatalog,
+  NotificationChannel,
+  NotificationScopeMute,
+  NotificationScopeOption,
+} from '../types/Notification';
 
 export interface CreateRecurringEventRequest extends CreateEventRequest {
   recurrence: RecurrencePattern;
@@ -563,6 +573,369 @@ class ApiService {
       throw new Error(errorData.message || 'Failed to force sync');
     }
 
+    return await response.json();
+  }
+
+  // ---------------------- Notifications APIs ----------------------
+
+  async getNotifications(params?: {
+    unreadOnly?: boolean;
+    archived?: boolean;
+    threadId?: number;
+    afterCursor?: string;
+  }): Promise<NotificationMessage[]> {
+    const query = new URLSearchParams();
+    if (params?.unreadOnly) query.append('unreadOnly', 'true');
+    if (params?.archived !== undefined)
+      query.append('archived', params.archived ? 'true' : 'false');
+    if (params?.threadId) query.append('threadId', String(params.threadId));
+    if (params?.afterCursor) query.append('afterCursor', params.afterCursor);
+
+    const response = await this.secureApiFetch(
+      `${BASE_URL}/api/notifications${query.toString() ? `?${query.toString()}` : ''}`,
+    );
+    if (!response.ok) {
+      throw new Error('Unable to load notifications');
+    }
+    return (await response.json()) as NotificationMessage[];
+  }
+
+  async markNotificationRead(id: number): Promise<void> {
+    const response = await this.secureApiFetch(
+      `${BASE_URL}/api/notifications/${id}/read`,
+      { method: 'PATCH' },
+    );
+    if (!response.ok) {
+      throw new Error('Failed to mark notification as read');
+    }
+  }
+
+  async markNotificationUnread(id: number): Promise<void> {
+    const response = await this.secureApiFetch(
+      `${BASE_URL}/api/notifications/${id}/unread`,
+      { method: 'PATCH' },
+    );
+    if (!response.ok) {
+      throw new Error('Failed to mark notification as unread');
+    }
+  }
+
+  async markAllNotificationsRead(): Promise<void> {
+    const response = await this.secureApiFetch(
+      `${BASE_URL}/api/notifications/read-all`,
+      { method: 'POST' },
+    );
+    if (!response.ok) {
+      throw new Error('Failed to mark all notifications read');
+    }
+  }
+
+  async getNotificationThreads(): Promise<NotificationThreadSummary[]> {
+    const response = await this.secureApiFetch(
+      `${BASE_URL}/api/notifications/threads`,
+    );
+    if (!response.ok) {
+      throw new Error('Unable to load notification threads');
+    }
+    return (await response.json()) as NotificationThreadSummary[];
+  }
+
+  async toggleThreadMute(id: number, mute: boolean): Promise<void> {
+    const response = await this.secureApiFetch(
+      `${BASE_URL}/api/notifications/threads/${id}/${mute ? 'mute' : 'unmute'}`,
+      { method: 'PATCH' },
+    );
+    if (!response.ok) {
+      throw new Error('Failed to update thread mute state');
+    }
+  }
+
+  async toggleThreadArchive(id: number, archive: boolean): Promise<void> {
+    const response = await this.secureApiFetch(
+      `${BASE_URL}/api/notifications/threads/${id}/${archive ? 'archive' : 'unarchive'}`,
+      { method: 'PATCH' },
+    );
+    if (!response.ok) {
+      throw new Error('Failed to update thread archive state');
+    }
+  }
+
+  async getOrganisations(): Promise<Array<{ id: number; name?: string }>> {
+    const response = await this.secureApiFetch(
+      `${BASE_URL}/api/organisations`,
+    );
+    if (!response.ok) {
+      throw new Error('Unable to load organisations');
+    }
+    return (await response.json()) as Array<{ id: number; name?: string }>;
+  }
+
+  async getReservations(resourceId?: string | number): Promise<any[]> {
+    const query = resourceId !== undefined
+      ? `?resourceId=${encodeURIComponent(String(resourceId))}`
+      : '';
+    const response = await this.secureApiFetch(
+      `${BASE_URL}/api/reservations${query}`,
+    );
+    if (!response.ok) {
+      throw new Error('Unable to load reservations');
+    }
+    return await response.json();
+  }
+
+  async getNotificationPreferences(): Promise<NotificationPreference[]> {
+    const response = await this.secureApiFetch(
+      `${BASE_URL}/api/notifications/preferences`,
+    );
+    if (!response.ok) {
+      throw new Error('Unable to load notification preferences');
+    }
+    return (await response.json()) as NotificationPreference[];
+  }
+
+  async updateNotificationPreferences(preferences: NotificationPreference[]): Promise<NotificationPreference[]> {
+    const response = await this.secureApiFetch(
+      `${BASE_URL}/api/notifications/preferences`,
+      {
+        method: 'PUT',
+        body: JSON.stringify({ preferences }),
+      },
+    );
+    if (!response.ok) {
+      throw new Error('Failed to update notification preferences');
+    }
+    return (await response.json()) as NotificationPreference[];
+  }
+
+  async registerNotificationDevice(platform: 'web' | 'ios' | 'android', token: string, userAgent?: string): Promise<number> {
+    const response = await this.secureApiFetch(`${BASE_URL}/api/notifications/devices`, {
+      method: 'POST',
+      body: JSON.stringify({ platform, token, userAgent }),
+    });
+    if (!response.ok) {
+      throw new Error('Failed to register device');
+    }
+    const body = await response.json();
+    return body.id as number;
+  }
+
+  async removeNotificationDevice(deviceId: number): Promise<void> {
+    const response = await this.secureApiFetch(
+      `${BASE_URL}/api/notifications/devices/${deviceId}`,
+      { method: 'DELETE' },
+    );
+    if (!response.ok) {
+      throw new Error('Failed to remove device');
+    }
+  }
+
+  async getNotificationCatalog(): Promise<NotificationCatalog> {
+    const response = await this.secureApiFetch(
+      `${BASE_URL}/api/notifications/catalog`,
+    );
+    if (!response.ok) {
+      throw new Error('Unable to load notification catalog');
+    }
+    return (await response.json()) as NotificationCatalog;
+  }
+
+  async getNotificationFilters(): Promise<NotificationFilter[]> {
+    const response = await this.secureApiFetch(
+      `${BASE_URL}/api/notifications/filters`,
+    );
+    if (!response.ok) {
+      throw new Error('Unable to load notification filters');
+    }
+    return (await response.json()) as NotificationFilter[];
+  }
+
+  async saveNotificationFilter(filter: NotificationFilter): Promise<NotificationFilter> {
+    const response = await this.secureApiFetch(
+      `${BASE_URL}/api/notifications/filters`,
+      {
+        method: 'POST',
+        body: JSON.stringify(filter),
+      },
+    );
+    if (!response.ok) {
+      throw new Error('Failed to save notification filter');
+    }
+    return (await response.json()) as NotificationFilter;
+  }
+
+  async reorderNotificationFilters(filters: NotificationFilter[]): Promise<NotificationFilter[]> {
+    const response = await this.secureApiFetch(
+      `${BASE_URL}/api/notifications/filters`,
+      {
+        method: 'PATCH',
+        body: JSON.stringify({ rules: filters }),
+      },
+    );
+    if (!response.ok) {
+      throw new Error('Failed to reorder notification filters');
+    }
+    return (await response.json()) as NotificationFilter[];
+  }
+
+  async deleteNotificationFilter(filterId: number): Promise<void> {
+    const response = await this.secureApiFetch(
+      `${BASE_URL}/api/notifications/filters/${filterId}`,
+      {
+        method: 'DELETE',
+      },
+    );
+    if (!response.ok) {
+      throw new Error('Failed to delete notification filter');
+    }
+  }
+
+  /**
+   * Legacy aliases for backward compatibility with existing components
+   * still referencing the older "rules" terminology.
+   */
+  async getNotificationRules(): Promise<NotificationFilter[]> {
+    return this.getNotificationFilters();
+  }
+
+  async saveNotificationRule(rule: NotificationFilter): Promise<NotificationFilter> {
+    return this.saveNotificationFilter(rule);
+  }
+
+  async reorderNotificationRules(rules: NotificationFilter[]): Promise<NotificationFilter[]> {
+    return this.reorderNotificationFilters(rules);
+  }
+
+  async deleteNotificationRule(ruleId: number): Promise<void> {
+    return this.deleteNotificationFilter(ruleId);
+  }
+
+  async getNotificationScopeOptions(
+    types?: string | string[],
+  ): Promise<Record<string, NotificationScopeOption[]>> {
+    let query = '';
+    if (typeof types === 'string' && types.trim().length > 0) {
+      query = `?type=${encodeURIComponent(types.trim())}`;
+    } else if (Array.isArray(types) && types.length > 0) {
+      const filtered = types
+        .map((value) => value.trim())
+        .filter((value) => value.length > 0);
+      if (filtered.length > 0) {
+        query = `?type=${encodeURIComponent(filtered.join(','))}`;
+      }
+    }
+
+    const response = await this.secureApiFetch(
+      `${BASE_URL}/api/notifications/scopes${query}`,
+    );
+    if (!response.ok) {
+      throw new Error('Unable to load notification scope options');
+    }
+    const result = await response.json();
+    return result as Record<string, NotificationScopeOption[]>;
+  }
+
+  async getNotificationScopeMutes(): Promise<NotificationScopeMute[]> {
+    const response = await this.secureApiFetch(
+      `${BASE_URL}/api/notifications/mutes`,
+    );
+    if (!response.ok) {
+      throw new Error('Unable to load notification mutes');
+    }
+    return (await response.json())?.map((mute: any) => ({
+      scopeType: mute.scopeType,
+      scopeId: String(mute.scopeId),
+      isMuted: Boolean(mute.isMuted),
+      createdAt: mute.createdAt,
+      updatedAt: mute.updatedAt,
+    })) as NotificationScopeMute[];
+  }
+
+  async setNotificationScopeMute(
+    scopeType: string,
+    scopeId: string,
+    isMuted: boolean,
+  ): Promise<NotificationScopeMute | null> {
+    const response = await this.secureApiFetch(
+      `${BASE_URL}/api/notifications/mutes`,
+      {
+        method: 'POST',
+        body: JSON.stringify({ scopeType, scopeId, isMuted }),
+      },
+    );
+    if (!response.ok) {
+      throw new Error('Failed to update notification mute');
+    }
+    const body = await response.json();
+    if (!body?.mute) {
+      return null;
+    }
+    return {
+      scopeType: body.mute.scopeType,
+      scopeId: String(body.mute.scopeId),
+      isMuted: Boolean(body.mute.isMuted),
+      createdAt: body.mute.createdAt,
+      updatedAt: body.mute.updatedAt,
+    };
+  }
+
+  async removeNotificationScopeMute(
+    scopeType: string,
+    scopeId: string,
+  ): Promise<void> {
+    const response = await this.secureApiFetch(
+      `${BASE_URL}/api/notifications/mutes/${scopeType}/${encodeURIComponent(scopeId)}`,
+      { method: 'DELETE' },
+    );
+    if (!response.ok) {
+      throw new Error('Failed to remove notification mute');
+    }
+  }
+
+  async getNotificationChannelsEnabled(): Promise<Record<NotificationChannel, boolean>> {
+    const prefs = await this.getNotificationPreferences();
+    const channels = new Set<NotificationChannel>();
+    prefs.forEach((pref) => {
+      Object.entries(pref.channels).forEach(([channel, enabled]) => {
+        if (enabled) {
+          channels.add(channel as NotificationChannel);
+        }
+      });
+    });
+    const enabled: Record<NotificationChannel, boolean> = {
+      inapp: false,
+      email: false,
+      webpush: false,
+      mobilepush: false,
+      slack: false,
+      teams: false,
+    };
+    channels.forEach((channel) => {
+      if (enabled[channel] !== undefined) {
+        enabled[channel] = true;
+      }
+    });
+    return enabled;
+  }
+
+  async getAdminNotificationConfig(): Promise<any> {
+    const response = await this.secureApiFetch(`${BASE_URL}/api/admin/notifications/config`);
+    if (!response.ok) {
+      throw new Error('Unable to load notification admin config');
+    }
+    return await response.json();
+  }
+
+  async updateAdminNotificationConfig(key: string, value: string | boolean | null): Promise<any> {
+    const response = await this.secureApiFetch(
+      `${BASE_URL}/api/admin/notifications/config/${key}`,
+      {
+        method: 'PATCH',
+        body: JSON.stringify({ value }),
+      },
+    );
+    if (!response.ok) {
+      throw new Error('Failed to update notification admin config');
+    }
     return await response.json();
   }
 }

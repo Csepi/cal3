@@ -1,15 +1,25 @@
 import {
   ForbiddenException,
+  Inject,
   Injectable,
   Logger,
   NotFoundException,
+  OnModuleInit,
+  forwardRef,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { NotificationRulesService } from './notification-rules.service';
+import {
+  NotificationEvaluationInput,
+  NotificationPreferenceSummary,
+  NotificationRuleContext,
+  NotificationRuleEvaluationResult,
+  NotificationRulesService,
+} from './notification-rules.service';
 import { NotificationThreadsService } from './notification-threads.service';
 import {
   NOTIFICATIONS_DISPATCH_QUEUE,
+  NOTIFICATIONS_DIGEST_QUEUE,
   NotificationChannelType,
 } from './notifications.constants';
 import { ListNotificationsQueryDto } from './dto/list-notifications.query';
@@ -19,6 +29,10 @@ import { PushDeviceToken } from '../entities/push-device-token.entity';
 import { NotificationThread } from '../entities/notification-thread.entity';
 import { InjectQueue } from '@nestjs/bull';
 import type { Queue } from 'bull';
+import {
+  NOTIFICATION_EVENT_DEFINITIONS,
+  NotificationEventDefinition,
+} from './notification-definitions';
 
 export interface PublishNotificationOptions {
   eventType: string;
@@ -35,8 +49,28 @@ export interface PublishNotificationOptions {
   preferredChannels?: NotificationChannelType[];
 }
 
+export interface NotificationCatalogChannel {
+  id: NotificationChannelType;
+  label: string;
+  description: string;
+  supportsFallback: boolean;
+  realtime: boolean;
+}
+
+export interface NotificationCatalogScope {
+  id: 'global' | 'organisation' | 'calendar' | 'reservation';
+  label: string;
+  description: string;
+}
+
+export interface NotificationCatalog {
+  eventTypes: NotificationEventDefinition[];
+  channels: NotificationCatalogChannel[];
+  scopes: NotificationCatalogScope[];
+}
+
 @Injectable()
-export class NotificationsService {
+export class NotificationsService implements OnModuleInit {
   private readonly logger = new Logger(NotificationsService.name);
   private readonly activeSockets = new Map<number, Set<string>>();
 
@@ -51,9 +85,30 @@ export class NotificationsService {
     private readonly threadRepository: Repository<NotificationThread>,
     @InjectQueue(NOTIFICATIONS_DISPATCH_QUEUE)
     private readonly dispatchQueue: Queue,
+    @InjectQueue(NOTIFICATIONS_DIGEST_QUEUE)
+    private readonly digestQueue: Queue,
     private readonly rulesService: NotificationRulesService,
+    @Inject(forwardRef(() => NotificationThreadsService))
     private readonly threadsService: NotificationThreadsService,
   ) {}
+
+  async onModuleInit(): Promise<void> {
+    try {
+      await this.digestQueue.add(
+        'notifications-scheduler',
+        {},
+        {
+          jobId: 'notifications-scheduler',
+          repeat: { cron: '*/5 * * * *' },
+        },
+      );
+    } catch (error) {
+      this.logger.debug(
+        'Digest scheduler initialisation skipped',
+        error instanceof Error ? error.message : error,
+      );
+    }
+  }
 
   async publish(options: PublishNotificationOptions): Promise<void> {
     const createdMessages: NotificationMessage[] = [];
@@ -63,15 +118,52 @@ export class NotificationsService {
       options.eventType,
     );
 
+    const ruleContextMap = await this.rulesService.buildRuleContext(
+      options.recipients,
+    );
+
+    const evaluationInput: NotificationEvaluationInput = {
+      eventType: options.eventType,
+      actorId: options.actorId ?? null,
+      contextType: options.context?.contextType ?? null,
+      contextId: options.context?.contextId ?? null,
+      threadKey: options.context?.threadKey ?? null,
+      data: options.data ?? null,
+    };
+
     for (const recipientId of options.recipients) {
-      const threadSummary = options.context?.threadKey
-        ? await this.threadsService.registerThread(
-            recipientId,
-            options.context.threadKey,
-            options.context.contextType,
-            options.context.contextId,
-          )
-        : null;
+      const preference = preferenceMap.get(recipientId);
+      const ruleContext: NotificationRuleContext | undefined =
+        ruleContextMap.get(recipientId);
+      const evaluation: NotificationRuleEvaluationResult =
+        this.rulesService.evaluateNotification(ruleContext, evaluationInput);
+
+      if (evaluation.suppressed) {
+        this.logger.debug(
+          `Notification for user ${recipientId} suppressed by rules ${evaluation.appliedRuleIds.join(', ')}`,
+        );
+        continue;
+      }
+
+      const threadSummary =
+        options.context?.threadKey && options.context.threadKey.length > 0
+          ? await this.threadsService.registerThread(
+              recipientId,
+              options.context.threadKey,
+              options.context.contextType,
+              options.context.contextId,
+            )
+          : null;
+
+      const now = new Date();
+      const messageMetadata =
+        evaluation.appliedRuleIds.length > 0 ||
+        Object.keys(evaluation.metadata ?? {}).length > 0
+          ? {
+              appliedRules: evaluation.appliedRuleIds,
+              evaluation: evaluation.metadata,
+            }
+          : null;
 
       const message = this.messageRepository.create({
         userId: recipientId,
@@ -79,25 +171,63 @@ export class NotificationsService {
         title: options.title ?? null,
         body: options.body,
         data: options.data ?? null,
-        isRead: false,
-        archived: false,
+        isRead: evaluation.markRead,
+        readAt: evaluation.markRead ? now : null,
+        archived: evaluation.archive,
+        archivedAt: evaluation.archive ? now : null,
         threadId: threadSummary?.id ?? null,
         threadKey: options.context?.threadKey ?? null,
+        metadata: messageMetadata,
       });
 
       const saved = await this.messageRepository.save(message);
-      createdMessages.push(saved);
 
       if (threadSummary) {
         await this.threadRepository.update(threadSummary.id, {
           lastMessageAt: saved.createdAt,
         });
+
+        if (evaluation.muteThread) {
+          await this.threadsService.setThreadMuted(
+            recipientId,
+            threadSummary.id,
+            true,
+          );
+        }
+
+        if (evaluation.archive) {
+          await this.threadsService.setThreadArchived(
+            recipientId,
+            threadSummary.id,
+            true,
+          );
+        }
       }
 
-      const preferredChannels =
-        preferenceMap.get(recipientId)?.channels ?? options.preferredChannels;
+      const suppressedSet = new Set<NotificationChannelType>(
+        evaluation.suppressChannels ?? [],
+      );
 
-      await this.enqueueDeliveries(saved, preferredChannels);
+      const enabledChannelsFromPreference = preference
+        ? (Object.entries(preference.channels || {})
+            .filter(([, enabled]) => Boolean(enabled))
+            .map(([channel]) => channel as NotificationChannelType))
+        : undefined;
+
+      const baseChannels =
+        options.preferredChannels && options.preferredChannels.length > 0
+          ? options.preferredChannels
+          : enabledChannelsFromPreference ?? [];
+
+      const filteredChannels = baseChannels.filter(
+        (channel) => !suppressedSet.has(channel),
+      );
+
+      await this.enqueueDeliveries(saved, filteredChannels, preference);
+
+      if (!evaluation.metadata?.silent) {
+        createdMessages.push(saved);
+      }
     }
 
     if (createdMessages.length > 0) {
@@ -190,6 +320,84 @@ export class NotificationsService {
       .execute();
   }
 
+  getCatalog(userId: number): NotificationCatalog {
+    void userId; // currently unused but reserved for personalised catalog view
+
+    const channels: NotificationCatalogChannel[] = [
+      {
+        id: 'inapp',
+        label: 'In-app',
+        description: 'Appears in the bell icon and notification center.',
+        supportsFallback: false,
+        realtime: true,
+      },
+      {
+        id: 'email',
+        label: 'Email',
+        description: 'Delivers via the configured email provider.',
+        supportsFallback: true,
+        realtime: false,
+      },
+      {
+        id: 'webpush',
+        label: 'Web Push',
+        description: 'Browser push notifications for subscribed devices.',
+        supportsFallback: true,
+        realtime: true,
+      },
+      {
+        id: 'mobilepush',
+        label: 'Mobile Push',
+        description: 'Mobile push notifications via the mobile app.',
+        supportsFallback: true,
+        realtime: true,
+      },
+      {
+        id: 'slack',
+        label: 'Slack',
+        description: 'Posts to configured Slack channels or webhooks.',
+        supportsFallback: true,
+        realtime: true,
+      },
+      {
+        id: 'teams',
+        label: 'Microsoft Teams',
+        description: 'Posts to configured Teams channels or webhooks.',
+        supportsFallback: true,
+        realtime: true,
+      },
+    ];
+
+    const scopes: NotificationCatalogScope[] = [
+      {
+        id: 'global',
+        label: 'All notifications',
+        description: 'Applies across every calendar, reservation, and organisation.',
+      },
+      {
+        id: 'organisation',
+        label: 'Organisation',
+        description: 'Targets activity within a specific organisation.',
+      },
+      {
+        id: 'calendar',
+        label: 'Calendar',
+        description: 'Targets a specific calendar and its events.',
+      },
+      {
+        id: 'reservation',
+        label: 'Reservation',
+        description: 'Targets reservations for a specific resource.',
+      },
+    ];
+
+    return {
+      eventTypes: NOTIFICATION_EVENT_DEFINITIONS,
+      channels,
+      scopes,
+    };
+  }
+
   async registerDevice(
     userId: number,
     platform: string,
@@ -252,22 +460,71 @@ export class NotificationsService {
 
   private async enqueueDeliveries(
     message: NotificationMessage,
-    preferredChannels?: NotificationChannelType[],
+    preferredChannels: NotificationChannelType[],
+    preference?: NotificationPreferenceSummary,
   ): Promise<void> {
-    const channels = preferredChannels && preferredChannels.length > 0
-      ? preferredChannels
-      : ['inapp'];
-    for (const channel of channels) {
+    const channelSet = new Set<NotificationChannelType>(['inapp']);
+    (preferredChannels ?? []).forEach((channel) => channelSet.add(channel));
+    const channels = Array.from(channelSet);
+
+    const fallbackCandidates = (preference?.fallbackOrder ?? []) as NotificationChannelType[];
+    let fallbackChain = fallbackCandidates
+      .map((channel) => channel as NotificationChannelType)
+      .filter((channel) => channel !== 'inapp' && channelSet.has(channel));
+    if (fallbackChain.length === 0) {
+      fallbackChain = channels.filter((channel) => channel !== 'inapp');
+    }
+
+    for (const [index, channel] of channels.entries()) {
+      const isInApp = channel === 'inapp';
+      const digestDelay = isInApp ? 0 : this.computeDigestDelay(preference);
+      const quietDelay = isInApp ? 0 : this.calculateQuietHoursDelay(preference?.quietHours);
+      const releaseDelay = Math.max(digestDelay, quietDelay);
+
+      const metadata: Record<string, any> = {
+        fallbackChain,
+        position: index,
+      };
+
+      if (!isInApp && releaseDelay > 0) {
+        metadata.releaseAt = new Date(Date.now() + releaseDelay).toISOString();
+      }
+      if (!isInApp && preference?.digest && preference.digest !== 'immediate') {
+        metadata.digest = preference.digest;
+      }
+      if (!isInApp && quietDelay > 0) {
+        metadata.quietUntil = new Date(Date.now() + quietDelay).toISOString();
+      }
+
       const delivery = await this.deliveryRepository.save(
         this.deliveryRepository.create({
           notificationId: message.id,
           channel,
-          status: channel === 'inapp' ? 'sent' : 'pending',
-          sentAt: channel === 'inapp' ? new Date() : null,
+          status: isInApp
+            ? 'sent'
+            : releaseDelay > 0
+              ? 'scheduled'
+              : 'pending',
+          sentAt: isInApp && releaseDelay === 0 ? new Date() : null,
+          metadata,
         }),
       );
 
-      if (channel !== 'inapp') {
+      if (isInApp) {
+        continue;
+      }
+
+      if (releaseDelay > 0) {
+        await this.digestQueue.add(
+          'delivery-release',
+          { deliveryId: delivery.id },
+          {
+            jobId: `delivery-${delivery.id}`,
+            delay: releaseDelay,
+            attempts: 3,
+          },
+        );
+      } else {
         await this.dispatchQueue.add(
           {
             messageId: message.id,
@@ -280,6 +537,80 @@ export class NotificationsService {
           },
         );
       }
+    }
+  }
+
+  private computeDigestDelay(preference?: NotificationPreferenceSummary): number {
+    if (!preference?.digest || preference.digest === 'immediate') {
+      return 0;
+    }
+    if (preference.digest === 'hourly') {
+      return 60 * 60 * 1000;
+    }
+    if (preference.digest === 'daily') {
+      return 24 * 60 * 60 * 1000;
+    }
+    return 0;
+  }
+
+  private calculateQuietHoursDelay(quietHours?: Record<string, any> | null): number {
+    if (!quietHours || quietHours.suppressImmediate === false) {
+      return 0;
+    }
+
+    const { start, end, timezone } = quietHours;
+    if (!start || !end) {
+      return 0;
+    }
+
+    const startMinutes = this.parseTimeToMinutes(start);
+    const endMinutes = this.parseTimeToMinutes(end);
+    if (startMinutes === endMinutes) {
+      return 0;
+    }
+
+    const currentMinutes = this.getLocalMinutes(timezone || 'UTC');
+
+    const isWithinQuietHours = startMinutes < endMinutes
+      ? currentMinutes >= startMinutes && currentMinutes < endMinutes
+      : currentMinutes >= startMinutes || currentMinutes < endMinutes;
+
+    if (!isWithinQuietHours) {
+      return 0;
+    }
+
+    if (startMinutes < endMinutes) {
+      return (endMinutes - currentMinutes) * 60 * 1000;
+    }
+
+    const minutesUntilMidnight = (24 * 60) - currentMinutes;
+    return (minutesUntilMidnight + endMinutes) * 60 * 1000;
+  }
+
+  private parseTimeToMinutes(time: string): number {
+    const match = /^([01]?\d|2[0-3]):([0-5]\d)$/.exec(time);
+    if (!match) {
+      return 0;
+    }
+    const hours = Number(match[1]);
+    const minutes = Number(match[2]);
+    return hours * 60 + minutes;
+  }
+
+  private getLocalMinutes(timezone: string): number {
+    try {
+      const formatter = new Intl.DateTimeFormat('en-GB', {
+        timeZone: timezone,
+        hour12: false,
+        hour: '2-digit',
+        minute: '2-digit',
+      });
+      const formatted = formatter.format(new Date());
+      const [hourStr, minuteStr] = formatted.split(':');
+      return Number(hourStr) * 60 + Number(minuteStr);
+    } catch (error) {
+      const now = new Date();
+      return now.getUTCHours() * 60 + now.getUTCMinutes();
     }
   }
 
@@ -299,8 +630,8 @@ export class NotificationsService {
   private async loadEffectivePreferences(
     userIds: number[],
     eventType: string,
-  ): Promise<Map<number, { channels: NotificationChannelType[] }>> {
-    const map = new Map<number, { channels: NotificationChannelType[] }>();
+  ): Promise<Map<number, NotificationPreferenceSummary & { userId: number }>> {
+    const map = new Map<number, NotificationPreferenceSummary & { userId: number }>();
 
     if (userIds.length === 0) {
       return map;
@@ -312,10 +643,7 @@ export class NotificationsService {
     );
 
     prefs.forEach((pref) => {
-      const enabledChannels = Object.entries(pref.channels)
-        .filter(([, enabled]) => !!enabled)
-        .map(([channel]) => channel as NotificationChannelType);
-      map.set(pref.userId, { channels: enabledChannels });
+      map.set(pref.userId, pref);
     });
 
     return map;

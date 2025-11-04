@@ -65,6 +65,7 @@ export class NotificationsDispatchProcessor {
     const attemptCount = (delivery.attemptCount ?? 0) + 1;
     await this.deliveryRepository.update(delivery.id, {
       attemptCount,
+      status: 'pending',
     });
 
     try {
@@ -107,9 +108,75 @@ export class NotificationsDispatchProcessor {
         lastError: error instanceof Error ? error.message : String(error),
       });
 
+      if (shouldFail) {
+        const fallbackHandled = await this.tryScheduleFallback(delivery, message, job);
+        if (fallbackHandled) {
+          return;
+        }
+      }
+
       if (!shouldFail) {
         throw error;
       }
     }
+  }
+
+  private async tryScheduleFallback(
+    delivery: NotificationDelivery,
+    message: NotificationMessage,
+    job: Job<DispatchJobPayload>,
+  ): Promise<boolean> {
+    const metadata = delivery.metadata || {};
+    const fallbackChain: NotificationChannelType[] = Array.isArray(metadata.fallbackChain)
+      ? metadata.fallbackChain
+      : [];
+    if (fallbackChain.length === 0) {
+      return false;
+    }
+
+    const currentIndex = typeof metadata.position === 'number'
+      ? metadata.position
+      : fallbackChain.indexOf(delivery.channel as NotificationChannelType);
+
+    const nextChannel = fallbackChain.find((channel, index) => index > currentIndex);
+    if (!nextChannel) {
+      return false;
+    }
+
+    const existing = await this.deliveryRepository.findOne({
+      where: { notificationId: delivery.notificationId, channel: nextChannel },
+    });
+    if (existing) {
+      return false;
+    }
+
+    const nextDelivery = await this.deliveryRepository.save(
+      this.deliveryRepository.create({
+        notificationId: delivery.notificationId,
+        channel: nextChannel,
+        status: 'pending',
+        metadata: {
+          fallbackChain,
+          position: fallbackChain.indexOf(nextChannel),
+        },
+      }),
+    );
+
+    await job.queue.add(
+      {
+        messageId: message.id,
+        channel: nextChannel,
+        attempt: 1,
+      },
+      {
+        attempts: job.opts.attempts ?? 3,
+        backoff: job.opts.backoff ?? { type: 'exponential', delay: 10_000 },
+      },
+    );
+
+    this.logger.debug(
+      `Scheduled fallback channel ${nextChannel} for notification ${delivery.notificationId} (delivery ${nextDelivery.id})`,
+    );
+    return true;
   }
 }
