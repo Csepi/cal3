@@ -17,15 +17,36 @@ import {
 } from './admin';
 import SystemInfoPage from './admin/SystemInfoPage';
 import AdminConfigurationPanel from './admin/AdminConfigurationPanel';
+import { getThemeConfig } from '../constants/theme';
 
 interface AdminPanelProps {
   themeColor?: string;
 }
 
+const hexToRgba = (hex: string, alpha: number): string => {
+  const sanitized = hex.replace('#', '');
+  const normalized =
+    sanitized.length === 3
+      ? sanitized
+          .split('')
+          .map((char) => `${char}${char}`)
+          .join('')
+      : sanitized.padEnd(6, '0').slice(0, 6);
+  const bigint = parseInt(normalized, 16);
+  const r = (bigint >> 16) & 255;
+  const g = (bigint >> 8) & 255;
+  const b = bigint & 255;
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+};
+
 const AdminPanel: React.FC<AdminPanelProps> = ({ themeColor = '#3b82f6' }) => {
   const { isMobile } = useScreenSize();
   const { loadingState } = useLoadingProgress();
   const [activeTab, setActiveTab] = useState<AdminTab>('stats');
+  const theme = useMemo(() => getThemeConfig(themeColor), [themeColor]);
+  const gradientBackground = `bg-gradient-to-br ${theme.gradient.background}`;
+  const borderTint = hexToRgba(themeColor, 0.25);
+  const accentTint = hexToRgba(themeColor, 0.12);
 
   const activePanel = useMemo(() => {
     const panelProps = { themeColor, isActive: true };
@@ -76,21 +97,42 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ themeColor = '#3b82f6' }) => {
   }
 
   return (
-    <div className={`min-h-screen ${isMobile ? 'bg-gray-50' : 'bg-gradient-to-br from-blue-50 via-blue-100 to-blue-200'}`}>
+    <div className={`min-h-screen ${isMobile ? 'bg-gray-50' : gradientBackground}`}>
       {!isMobile && (
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute -top-40 -right-40 h-80 w-80 animate-pulse rounded-full bg-gradient-to-r from-blue-300 to-indigo-300 opacity-30 blur-3xl" />
-          <div className="absolute -bottom-40 -left-40 h-80 w-80 animate-pulse rounded-full bg-gradient-to-r from-indigo-300 to-purple-300 opacity-30 blur-3xl animation-delay-2000" />
-          <div className="absolute left-1/2 top-1/2 h-60 w-60 -translate-x-1/2 -translate-y-1/2 animate-pulse rounded-full bg-gradient-to-r from-purple-300 to-blue-300 opacity-20 blur-3xl animation-delay-4000" />
+        <div className="pointer-events-none absolute inset-0 overflow-hidden">
+          <div
+            className="absolute -top-40 -right-40 h-80 w-80 animate-pulse rounded-full blur-3xl opacity-30"
+            style={{ background: `radial-gradient(circle, ${hexToRgba(themeColor, 0.4)} 0%, transparent 70%)` }}
+          />
+          <div
+            className="absolute -bottom-44 -left-32 h-80 w-80 animate-pulse rounded-full blur-3xl opacity-25 animation-delay-2000"
+            style={{ background: `radial-gradient(circle, ${hexToRgba(themeColor, 0.35)} 0%, transparent 70%)` }}
+          />
+          <div
+            className="absolute left-1/2 top-1/2 h-64 w-64 -translate-x-1/2 -translate-y-1/2 animate-pulse rounded-full blur-3xl opacity-20 animation-delay-4000"
+            style={{ background: `radial-gradient(circle, ${hexToRgba(themeColor, 0.25)} 0%, transparent 75%)` }}
+          />
         </div>
       )}
 
       {!isMobile && (
-        <header className="relative z-10 border-b border-blue-200 bg-white/60 py-6 backdrop-blur-sm">
-          <div className="container mx-auto flex items-center justify-between px-6">
+        <header
+          className="relative z-10 border-b bg-white/70 py-6 backdrop-blur-sm"
+          style={{ borderColor: borderTint }}
+        >
+          <div className="mx-auto flex max-w-7xl items-center justify-between px-6">
             <div className="flex items-center gap-4">
-              <h1 className="text-3xl font-semibold text-blue-900">Admin Control Center</h1>
-              <span className="rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700">
+              <h1 className="text-3xl font-semibold" style={{ color: themeColor }}>
+                Admin Control Center
+              </h1>
+              <span
+                className="rounded-full px-3 py-1 text-xs font-medium"
+                style={{
+                  color: themeColor,
+                  backgroundColor: accentTint,
+                  border: `1px solid ${borderTint}`,
+                }}
+              >
                 Environment: {process.env.NODE_ENV || 'development'}
               </span>
             </div>

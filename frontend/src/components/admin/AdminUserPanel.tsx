@@ -1,965 +1,852 @@
-/**
- * AdminUserPanel component for user management operations
- *
- * This component provides comprehensive user management functionality including
- * user listing, creation, editing, deletion, and bulk operations. It supports
- * advanced selection patterns, filtering, and usage plan management.
- */
-
-import React, { useState, useEffect } from 'react';
-import { Card, CardHeader, Button, Input } from '../ui';
-import { loadAdminData, formatAdminError, bulkDelete, bulkUpdateUsagePlans, adminApiCall, getAdminToken } from './adminApiService';
-import type { User, SelectionState } from './types';
-import { USAGE_PLAN_OPTIONS } from '../../constants';
+﻿
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { Card, CardHeader, Button, Input, Modal, Badge } from "../ui";
+import {
+  loadAdminData,
+  formatAdminError,
+  bulkUpdateUsagePlans,
+  bulkDelete,
+  adminApiCall,
+  getAdminToken,
+} from "./adminApiService";
+import type { User, Organisation } from "./types";
+import { USAGE_PLAN_OPTIONS } from "../../constants";
 
 export interface AdminUserPanelProps {
-  /** Current theme color for styling */
   themeColor?: string;
-  /** Whether the panel is currently active/visible */
   isActive?: boolean;
-  /** Callback when user data changes (for parent refresh) */
   onDataChange?: () => void;
 }
 
-/**
- * Comprehensive user management panel with CRUD operations and bulk actions
- */
+type Filters = {
+  search: string;
+  role: "all" | string;
+  status: "all" | "active" | "inactive";
+  plan: "all" | string;
+};
+
+type Feedback = { type: "success" | "error"; message: string } | null;
+
+type UsagePlanOperation = "set" | "add" | "remove";
+
+const normalizePlan = (plan: string) => plan.toLowerCase();
+
+const hasRequiredOrgPlan = (plans: string[]) =>
+  plans.some((plan) => ["store", "enterprise"].includes(normalizePlan(plan)));
+
+const resolvePlanLabel = (value: string) =>
+  USAGE_PLAN_OPTIONS.find((option) => normalizePlan(option.value) === normalizePlan(value))?.label ?? value;
+
+const toPayloadPlans = (plans: string[]) =>
+  plans.map((plan) => normalizePlan(plan));
+
+const getDisplayName = (user: User) => {
+  const fullName = `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim();
+  return fullName || user.username || user.email || `User #${user.id}`;
+};
 export const AdminUserPanel: React.FC<AdminUserPanelProps> = ({
-  themeColor,
+  themeColor = "#3b82f6",
   isActive = false,
-  onDataChange
+  onDataChange,
 }) => {
-  // Data state
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string>('');
+  const [savingProfile, setSavingProfile] = useState(false);
+  const [savingPlans, setSavingPlans] = useState(false);
+  const [bulkProcessing, setBulkProcessing] = useState(false);
+  const [resettingPassword, setResettingPassword] = useState(false);
+  const [feedback, setFeedback] = useState<Feedback>(null);
 
-  // Selection state for bulk operations
-  const [selectedUsers, setSelectedUsers] = useState<number[]>([]);
-  const [lastSelectedIndex, setLastSelectedIndex] = useState<number>(-1);
+  const [filters, setFilters] = useState<Filters>({
+    search: "",
+    role: "all",
+    status: "all",
+    plan: "all",
+  });
 
-  // Filter state
-  const [searchTerm, setSearchTerm] = useState<string>('');
-  const [roleFilter, setRoleFilter] = useState<string>('all');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [selectedIds, setSelectedIds] = useState<number[]>([]);
+  const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
+  const [profileDraft, setProfileDraft] = useState<User | null>(null);
+  const [plansDraft, setPlansDraft] = useState<string[]>([]);
 
-  // Organization management state
-  const [showOrgManagementModal, setShowOrgManagementModal] = useState(false);
-  const [selectedUserForOrgs, setSelectedUserForOrgs] = useState<User | null>(null);
-  const [userOrganizations, setUserOrganizations] = useState<any[]>([]);
-  const [availableOrganizations, setAvailableOrganizations] = useState<any[]>([]);
+  const [bulkModalOpen, setBulkModalOpen] = useState(false);
+  const [bulkPlans, setBulkPlans] = useState<string[]>([]);
+  const [bulkOperation, setBulkOperation] = useState<UsagePlanOperation>("set");
 
-  // Bulk usage plans modal state
-  const [showBulkUsagePlansModal, setShowBulkUsagePlansModal] = useState(false);
-  const [bulkPlansToUpdate, setBulkPlansToUpdate] = useState<string[]>([]);
-  const [bulkUpdateOperation, setBulkUpdateOperation] = useState<'set' | 'add' | 'remove'>('set');
+  const [orgModalOpen, setOrgModalOpen] = useState(false);
+  const [orgAssignments, setOrgAssignments] = useState<Array<Organisation & { role?: string }>>([]);
+  const [orgOptions, setOrgOptions] = useState<Organisation[]>([]);
+  const [orgLoading, setOrgLoading] = useState(false);
 
-  /**
-   * Load users from the API with progress tracking
-   */
-  const loadUsers = async () => {
-    try {
-      setLoading(true);
-      setError('');
+  const selectedUser = useMemo(
+    () => (selectedUserId ? users.find((user) => user.id === selectedUserId) ?? null : null),
+    [users, selectedUserId],
+  );
 
-      const userData = await loadAdminData<User[]>('/admin/users');
-      setUsers(userData);
-      setSelectedUsers([]); // Clear selection on reload
-      onDataChange?.();
-
-    } catch (err) {
-      console.error('Error loading users:', err);
-      setError(formatAdminError(err));
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  /**
-   * Auto-load users when component becomes active
-   */
-  useEffect(() => {
-    if (isActive) {
-      loadUsers();
-    }
-  }, [isActive]);
-
-  /**
-   * Handle user selection with shift+click support for range selection
-   */
-  const handleUserSelection = (
-    userId: number,
-    isChecked: boolean,
-    shiftKey: boolean = false
-  ) => {
-    if (shiftKey && lastSelectedIndex !== -1) {
-      // Range selection with shift+click
-      const currentIndex = users.findIndex(user => user.id === userId);
-      const startIndex = Math.min(currentIndex, lastSelectedIndex);
-      const endIndex = Math.max(currentIndex, lastSelectedIndex);
-
-      const rangeIds = users.slice(startIndex, endIndex + 1).map(user => user.id);
-      const newSelected = [...new Set([...selectedUsers, ...rangeIds])];
-      setSelectedUsers(newSelected);
-    } else {
-      // Regular selection
-      if (isChecked) {
-        setSelectedUsers([...selectedUsers, userId]);
-      } else {
-        setSelectedUsers(selectedUsers.filter(id => id !== userId));
+  const filteredUsers = useMemo(() => {
+    const query = filters.search.trim().toLowerCase();
+    return users.filter((user) => {
+      if (query) {
+        const matches =
+          user.username?.toLowerCase().includes(query) ||
+          user.email?.toLowerCase().includes(query) ||
+          user.firstName?.toLowerCase().includes(query) ||
+          user.lastName?.toLowerCase().includes(query);
+        if (!matches) return false;
       }
-
-      const currentIndex = users.findIndex(user => user.id === userId);
-      setLastSelectedIndex(currentIndex);
-    }
-  };
-
-  /**
-   * Select all visible users (respecting current filters)
-   */
-  const selectAllVisible = () => {
-    const visibleUsers = getFilteredUsers();
-    const visibleIds = visibleUsers.map(user => user.id);
-    const allSelected = visibleIds.every(id => selectedUsers.includes(id));
-
-    if (allSelected) {
-      // Deselect all visible
-      setSelectedUsers(selectedUsers.filter(id => !visibleIds.includes(id)));
-    } else {
-      // Select all visible
-      const newSelected = [...new Set([...selectedUsers, ...visibleIds])];
-      setSelectedUsers(newSelected);
-    }
-  };
-
-  /**
-   * Get filtered users based on search and filter criteria
-   */
-  const getFilteredUsers = (): User[] => {
-    return users.filter(user => {
-      // Text search
-      if (searchTerm) {
-        const searchLower = searchTerm.toLowerCase();
-        const matchesSearch =
-          user.username.toLowerCase().includes(searchLower) ||
-          user.email.toLowerCase().includes(searchLower) ||
-          (user.firstName?.toLowerCase().includes(searchLower)) ||
-          (user.lastName?.toLowerCase().includes(searchLower));
-
-        if (!matchesSearch) return false;
-      }
-
-      // Role filter
-      if (roleFilter !== 'all' && user.role !== roleFilter) {
+      if (filters.role !== "all" && user.role !== filters.role) return false;
+      if (filters.status === "active" && !user.isActive) return false;
+      if (filters.status === "inactive" && user.isActive) return false;
+      if (
+        filters.plan !== "all" &&
+        !(user.usagePlans ?? []).some((plan) => normalizePlan(plan) === filters.plan)
+      ) {
         return false;
       }
-
-      // Status filter
-      if (statusFilter !== 'all') {
-        const isActive = statusFilter === 'active';
-        if (user.isActive !== isActive) return false;
-      }
-
       return true;
     });
-  };
+  }, [users, filters]);
 
-  /**
-   * Handle bulk user deletion
-   */
-  const handleBulkDelete = async () => {
-    if (selectedUsers.length === 0) return;
+  const stats = useMemo(() => {
+    const total = users.length;
+    const active = users.filter((user) => user.isActive).length;
+    const admins = users.filter((user) => user.role === "admin").length;
+    return { total, active, admins };
+  }, [users]);
 
-    const confirmMessage = `Are you sure you want to delete ${selectedUsers.length} user(s)? This action cannot be undone.`;
-    if (!window.confirm(confirmMessage)) return;
+  const setError = (error: unknown) => setFeedback({ type: "error", message: formatAdminError(error) });
+  const setSuccess = (message: string) => setFeedback({ type: "success", message });
 
+  const loadUsers = useCallback(async () => {
     try {
       setLoading(true);
-      const result = await bulkDelete('/admin/users', selectedUsers);
-
-      if (result.failed > 0) {
-        setError(`Deleted ${result.success} users, failed to delete ${result.failed} users.`);
-      } else {
-        setError(''); // Clear any previous errors
-      }
-
-      // Reload users to reflect changes
-      await loadUsers();
-
-    } catch (err) {
-      console.error('Error in bulk delete:', err);
-      setError(formatAdminError(err));
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  /**
-   * Delete a single user
-   */
-  const handleDeleteUser = async (userId: number, username: string) => {
-    const confirmMessage = `Are you sure you want to delete user "${username}"? This action cannot be undone.`;
-    if (!window.confirm(confirmMessage)) return;
-
-    try {
-      setLoading(true);
-      const token = getAdminToken();
-      if (!token) {
-        throw new Error('No admin token found. Please login as admin.');
-      }
-
-      await adminApiCall({
-        endpoint: `/admin/users/${userId}`,
-        token,
-        method: 'DELETE'
-      });
-
-      // Reload users to reflect changes
-      await loadUsers();
-    } catch (err) {
-      console.error('Error deleting user:', err);
-      setError(formatAdminError(err));
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  /**
-   * Handle user edit (placeholder for future modal implementation)
-   */
-  const handleEditUser = async (user: User) => {
-    // For now, we'll implement a simple prompt-based edit
-    // In a real application, this would open a modal with a proper form
-
-    const newUsername = window.prompt('Enter new username:', user.username);
-    if (!newUsername || newUsername === user.username) return;
-
-    const newEmail = window.prompt('Enter new email:', user.email);
-    if (!newEmail || newEmail === user.email) return;
-
-    try {
-      setLoading(true);
-      const token = getAdminToken();
-      if (!token) {
-        throw new Error('No admin token found. Please login as admin.');
-      }
-
-      await adminApiCall({
-        endpoint: `/admin/users/${user.id}`,
-        token,
-        method: 'PATCH',
-        data: {
-          username: newUsername,
-          email: newEmail
+      const data = await loadAdminData<User[]>("/admin/users");
+      setUsers(data);
+      onDataChange?.();
+      setSelectedUserId((current) => {
+        if (current !== null && data.some((user) => user.id === current)) {
+          return current;
         }
+        return data.length > 0 ? data[0].id : null;
       });
-
-      // Reload users to reflect changes
-      await loadUsers();
-    } catch (err) {
-      console.error('Error updating user:', err);
-      setError(formatAdminError(err));
+    } catch (error) {
+      setError(error);
     } finally {
       setLoading(false);
     }
+  }, [onDataChange]);
+
+  useEffect(() => {
+    if (isActive) void loadUsers();
+  }, [isActive, loadUsers]);
+
+  useEffect(() => {
+    if (selectedUser) {
+      setProfileDraft({
+        ...selectedUser,
+        usagePlans: selectedUser.usagePlans ?? [],
+      });
+      setPlansDraft(selectedUser.usagePlans ?? []);
+    } else {
+      setProfileDraft(null);
+      setPlansDraft([]);
+    }
+  }, [selectedUser]);
+  const handleFilterChange = (field: keyof Filters, value: string) => {
+    setFilters((prev) => ({ ...prev, [field]: value }));
   };
 
-  /**
-   * Handle organization management for a user
-   */
-  const handleManageOrganizations = async (user: User) => {
-    setSelectedUserForOrgs(user);
-    setShowOrgManagementModal(true);
+  const toggleSelection = (userId: number, checked: boolean) => {
+    setSelectedIds((prev) =>
+      checked ? Array.from(new Set([...prev, userId])) : prev.filter((id) => id !== userId),
+    );
+  };
 
+  const toggleSelectAll = () => {
+    if (filteredUsers.every((user) => selectedIds.includes(user.id))) {
+      const ids = new Set(filteredUsers.map((user) => user.id));
+      setSelectedIds((prev) => prev.filter((id) => !ids.has(id)));
+    } else {
+      setSelectedIds((prev) => Array.from(new Set([...prev, ...filteredUsers.map((user) => user.id)])));
+    }
+  };
+
+  const handleSaveProfile = async () => {
+    if (!profileDraft) return;
     try {
-      setLoading(true);
+      setSavingProfile(true);
       const token = getAdminToken();
-      if (!token) {
-        throw new Error('No admin token found. Please login as admin.');
-      }
-
-      // Load user's current organizations
-      const userOrgsResponse = await adminApiCall({
-        endpoint: `/admin/users/${user.id}/organizations`,
+      if (!token) throw new Error("No admin token found. Please login as admin.");
+      await adminApiCall({
+        endpoint: `/admin/users/${profileDraft.id}`,
         token,
-        method: 'GET'
+        method: "PATCH",
+        data: {
+          username: profileDraft.username,
+          email: profileDraft.email,
+          firstName: profileDraft.firstName,
+          lastName: profileDraft.lastName,
+          role: profileDraft.role,
+          isActive: profileDraft.isActive,
+        },
       });
-      setUserOrganizations(userOrgsResponse);
-
-      // Load all available organizations
-      const allOrgsResponse = await adminApiCall({
-        endpoint: '/admin/organizations',
-        token,
-        method: 'GET'
-      });
-      setAvailableOrganizations(allOrgsResponse);
-
-    } catch (err) {
-      console.error('Error loading organizations for user:', err);
-      setError(formatAdminError(err));
+      setSuccess("Profile updated.");
+      await loadUsers();
+    } catch (error) {
+      setError(error);
     } finally {
-      setLoading(false);
+      setSavingProfile(false);
     }
   };
 
-  /**
-   * Add user to organization with a specific role
-   */
-  const handleAddUserToOrganization = async (organizationId: number, role: 'admin' | 'editor' | 'user') => {
-    if (!selectedUserForOrgs) return;
+  const handleSavePlans = async () => {
+    if (!selectedUser) return;
+    try {
+      setSavingPlans(true);
+      const token = getAdminToken();
+      if (!token) throw new Error("No admin token found. Please login as admin.");
+      const updatedUser = await adminApiCall({
+        endpoint: `/admin/users/${selectedUser.id}/usage-plans`,
+        token,
+        method: "PATCH",
+        data: {
+          usagePlans: toPayloadPlans(plansDraft),
+        },
+      });
+      if (!updatedUser || typeof updatedUser.id !== "number") {
+        throw new Error("Plan update failed");
+      }
+      setSuccess("Plans updated.");
+      await loadUsers();
+    } catch (error) {
+      setError(error);
+    } finally {
+      setSavingPlans(false);
+    }
+  };
 
-    // Validate that user has Store or Enterprise plan for organization roles
-    const hasRequiredPlan = selectedUserForOrgs.usagePlans?.includes('STORE') || selectedUserForOrgs.usagePlans?.includes('ENTERPRISE');
-    if (!hasRequiredPlan) {
-      setError('User must have Store or Enterprise plan to be assigned to organization roles. Please update their usage plans first.');
+  const handleBulkPlans = async () => {
+    if (selectedIds.length === 0 || bulkPlans.length === 0) return;
+    try {
+      setBulkProcessing(true);
+      const result = await bulkUpdateUsagePlans(selectedIds, toPayloadPlans(bulkPlans), bulkOperation);
+      if (result.failed > 0) {
+        setError(`Updated ${result.success} user(s); ${result.failed} failed.`);
+      } else {
+        setSuccess(`Updated ${result.success} user(s).`);
+      }
+      setBulkPlans([]);
+      setBulkModalOpen(false);
+      await loadUsers();
+    } catch (error) {
+      setError(error);
+    } finally {
+      setBulkProcessing(false);
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedIds.length === 0) return;
+    if (!window.confirm(`Delete ${selectedIds.length} selected user(s)?`)) return;
+    try {
+      setBulkProcessing(true);
+      const result = await bulkDelete("/admin/users", selectedIds);
+      if (result.failed > 0) {
+        setError(`Deleted ${result.success} user(s); ${result.failed} failed.`);
+      } else {
+        setSuccess(`Deleted ${result.success} user(s).`);
+      }
+      setSelectedIds([]);
+      await loadUsers();
+    } catch (error) {
+      setError(error);
+    } finally {
+      setBulkProcessing(false);
+    }
+  };
+
+  const handleDeleteUser = async (userId: number) => {
+    const user = users.find((u) => u.id === userId);
+    if (!user) return;
+    if (!window.confirm(`Delete ${getDisplayName(user)}? This cannot be undone.`)) return;
+    try {
+      const token = getAdminToken();
+      if (!token) throw new Error("No admin token found. Please login as admin.");
+      await adminApiCall({ endpoint: `/admin/users/${userId}`, token, method: "DELETE" });
+      setSuccess("User deleted.");
+      await loadUsers();
+    } catch (error) {
+      setError(error);
+    }
+  };
+
+  const handleResetPassword = async () => {
+    if (!selectedUser) return;
+    try {
+      setResettingPassword(true);
+      const token = getAdminToken();
+      if (!token) throw new Error("No admin token found. Please login as admin.");
+      await adminApiCall({
+        endpoint: `/admin/users/${selectedUser.id}/reset-password`,
+        token,
+        method: "POST",
+      });
+      setSuccess("Password reset email sent.");
+    } catch (error) {
+      setError(error);
+    } finally {
+      setResettingPassword(false);
+    }
+  };
+
+  const loadOrganisations = async (contextUser?: User) => {
+    const targetUser = contextUser ?? selectedUser;
+    if (!targetUser) return;
+    try {
+      setOrgLoading(true);
+      const token = getAdminToken();
+      if (!token) throw new Error("No admin token found. Please login as admin.");
+      const [assigned, available] = await Promise.all([
+        adminApiCall({ endpoint: `/admin/users/${targetUser.id}/organizations`, token }),
+        adminApiCall({ endpoint: "/admin/organizations", token }),
+      ]);
+      setOrgAssignments(assigned as Array<Organisation & { role?: string }>);
+      setOrgOptions(available as Organisation[]);
+      setOrgModalOpen(true);
+    } catch (error) {
+      setError(error);
+    } finally {
+      setOrgLoading(false);
+    }
+  };
+
+  const handleAddToOrganisation = async (organisationId: number, role: "admin" | "editor" | "user") => {
+    if (!selectedUser) return;
+    if (!hasRequiredOrgPlan(plansDraft)) {
+      setError("Assign Store or Enterprise plan before giving organisation roles.");
       return;
     }
-
     try {
-      setLoading(true);
+      setOrgLoading(true);
       const token = getAdminToken();
-      if (!token) {
-        throw new Error('No admin token found. Please login as admin.');
-      }
-
+      if (!token) throw new Error("No admin token found. Please login as admin.");
       await adminApiCall({
-        endpoint: `/organisations/${organizationId}/users`,
+        endpoint: `/admin/organizations/${organisationId}/users`,
         token,
-        method: 'POST',
-        data: {
-          userId: selectedUserForOrgs.id,
-          role: role
-        }
+        method: "POST",
+        data: { userId: selectedUser.id, role },
       });
-
-      // Reload user organizations
-      await handleManageOrganizations(selectedUserForOrgs);
-
-    } catch (err) {
-      console.error('Error adding user to organization:', err);
-      setError(formatAdminError(err));
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  /**
-   * Remove user from organization
-   */
-  const handleRemoveUserFromOrganization = async (organizationId: number) => {
-    if (!selectedUserForOrgs) return;
-
-    const confirmMessage = `Are you sure you want to remove ${getUserDisplayName(selectedUserForOrgs)} from this organization?`;
-    if (!window.confirm(confirmMessage)) return;
-
-    try {
-      setLoading(true);
-      const token = getAdminToken();
-      if (!token) {
-        throw new Error('No admin token found. Please login as admin.');
-      }
-
-      await adminApiCall({
-        endpoint: `/organisations/${organizationId}/users/${selectedUserForOrgs.id}`,
-        token,
-        method: 'DELETE'
-      });
-
-      // Reload user organizations
-      await handleManageOrganizations(selectedUserForOrgs);
-
-    } catch (err) {
-      console.error('Error removing user from organization:', err);
-      setError(formatAdminError(err));
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  /**
-   * Handle bulk usage plan updates
-   */
-  const handleBulkUsagePlanUpdate = async (
-    plans: string[],
-    operation: 'set' | 'add' | 'remove'
-  ) => {
-    if (selectedUsers.length === 0 || plans.length === 0) return;
-
-    try {
-      setLoading(true);
-      const result = await bulkUpdateUsagePlans(selectedUsers, plans, operation);
-
-      if (result.failed > 0) {
-        setError(`Updated ${result.success} users, failed to update ${result.failed} users.`);
-      } else {
-        setError(''); // Clear any previous errors
-      }
-
-      // Reload users to reflect changes
+      await loadOrganisations();
       await loadUsers();
-
-    } catch (err) {
-      console.error('Error in bulk usage plan update:', err);
-      setError(formatAdminError(err));
-    } finally {
-      setLoading(false);
+      setSuccess("Organisation membership updated.");
+    } catch (error) {
+      setError(error);
+      setOrgLoading(false);
     }
   };
 
-  /**
-   * Open bulk usage plans modal
-   */
-  const setModalType = (modalType: string) => {
-    if (modalType === 'bulkUsagePlans') {
-      setShowBulkUsagePlansModal(true);
-      setBulkPlansToUpdate([]);
-      setBulkUpdateOperation('set');
+  const handleRemoveFromOrganisation = async (organisationId: number) => {
+    if (!selectedUser) return;
+    if (!window.confirm("Remove user from this organisation?")) return;
+    try {
+      setOrgLoading(true);
+      const token = getAdminToken();
+      if (!token) throw new Error("No admin token found. Please login as admin.");
+      await adminApiCall({
+        endpoint: `/admin/organizations/${organisationId}/users/${selectedUser.id}`,
+        token,
+        method: "DELETE",
+      });
+      await loadOrganisations();
+      await loadUsers();
+      setSuccess("Organisation membership removed.");
+    } catch (error) {
+      setError(error);
+      setOrgLoading(false);
     }
   };
-
-  /**
-   * Handle bulk usage plans modal submission
-   */
-  const handleBulkUsagePlansSubmit = async () => {
-    await handleBulkUsagePlanUpdate(bulkPlansToUpdate, bulkUpdateOperation);
-    setShowBulkUsagePlansModal(false);
-    setBulkPlansToUpdate([]);
-  };
-
-  /**
-   * Format user display name
-   */
-  const getUserDisplayName = (user: User): string => {
-    if (user.firstName && user.lastName) {
-      return `${user.firstName} ${user.lastName}`;
-    }
-    return user.username;
-  };
-
-  /**
-   * Format usage plans for display
-   */
-  const formatUsagePlans = (plans: string[] | undefined): string => {
-    if (!plans || plans.length === 0) return 'None';
-    return plans.map(plan =>
-      plan.charAt(0).toUpperCase() + plan.slice(1)
-    ).join(', ');
-  };
-
-  const filteredUsers = getFilteredUsers();
-  const visibleIds = filteredUsers.map(user => user.id);
-  const allVisibleSelected = visibleIds.length > 0 && visibleIds.every(id => selectedUsers.includes(id));
-  const someVisibleSelected = visibleIds.some(id => selectedUsers.includes(id));
-
   return (
     <div className="space-y-6">
-      {/* Header with Actions */}
+      {feedback && (
+        <div
+          className={`rounded-2xl border px-4 py-3 text-sm ${
+            feedback.type === "error"
+              ? "border-red-200 bg-red-50 text-red-700"
+              : "border-emerald-200 bg-emerald-50 text-emerald-700"
+          }`}
+          role="alert"
+        >
+          {feedback.message}
+        </div>
+      )}
+
       <Card
         themeColor={themeColor}
         padding="lg"
         header={
           <CardHeader>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <span>👥</span>
-                <h2 className="text-xl font-bold text-gray-800">User Management</h2>
-                <span className="bg-gray-100 text-gray-600 px-2 py-1 rounded-full text-sm">
-                  {filteredUsers.length} users
-                </span>
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div>
+                <p className="text-sm uppercase tracking-wide text-gray-500">People directory</p>
+                <h2 className="text-2xl font-semibold text-gray-800">Admin workspace</h2>
               </div>
-              <div className="flex items-center space-x-3">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={loadUsers}
-                  loading={loading}
-                  themeColor={themeColor}
-                >
-                  Refresh
-                </Button>
-                <Button
-                  variant="primary"
-                  size="sm"
-                  themeColor={themeColor}
-                >
-                  Add User
-                </Button>
+              <div className="flex gap-2">
+                <Badge variant="info">Total {stats.total}</Badge>
+                <Badge variant="success">Active {stats.active}</Badge>
+                <Badge variant="primary">Admins {stats.admins}</Badge>
               </div>
             </div>
           </CardHeader>
         }
+        footer={
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="text-sm text-gray-500">
+              {selectedIds.length ? `${selectedIds.length} user(s) selected` : "No selection"}
+            </div>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => void loadUsers()} disabled={loading}>
+                {loading ? "Refreshing…" : "Refresh"}
+              </Button>
+              <Button
+                variant="outline"
+                themeColor={themeColor}
+                onClick={() => setBulkModalOpen(true)}
+                disabled={selectedIds.length === 0}
+              >
+                Update plans
+              </Button>
+              <Button
+                variant="outline"
+                className="border-red-300 text-red-600 hover:bg-red-50"
+                onClick={() => void handleBulkDelete()}
+                disabled={selectedIds.length === 0 || bulkProcessing}
+              >
+                {bulkProcessing ? "Working…" : "Delete selected"}
+              </Button>
+            </div>
+          </div>
+        }
       >
-        {/* Filters */}
-        <div className="mb-6 grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <Input
-            placeholder="Search users..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Search by name or email"
+            value={filters.search}
+            onChange={(event) => handleFilterChange("search", event.target.value)}
             themeColor={themeColor}
-            icon={
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-            }
           />
-
           <select
-            value={roleFilter}
-            onChange={(e) => setRoleFilter(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="rounded-xl border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            value={filters.role}
+            onChange={(event) => handleFilterChange("role", event.target.value)}
           >
-            <option value="all">All Roles</option>
-            <option value="admin">Admin</option>
-            <option value="user">User</option>
+            <option value="all">All roles</option>
+            <option value="user">Users</option>
+            <option value="admin">Admins</option>
           </select>
-
           <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="rounded-xl border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            value={filters.status}
+            onChange={(event) => handleFilterChange("status", event.target.value)}
           >
-            <option value="all">All Status</option>
+            <option value="all">All statuses</option>
             <option value="active">Active</option>
             <option value="inactive">Inactive</option>
           </select>
-
-          <div className="flex items-center space-x-2">
-            {selectedUsers.length > 0 && (
-              <span className="text-sm text-gray-600">
-                {selectedUsers.length} selected
-              </span>
-            )}
-          </div>
+          <select
+            className="rounded-xl border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            value={filters.plan}
+            onChange={(event) => handleFilterChange("plan", event.target.value)}
+          >
+            <option value="all">All plans</option>
+            {USAGE_PLAN_OPTIONS.map((option) => (
+              <option key={option.value} value={normalizePlan(option.value)}>
+                {option.label}
+              </option>
+            ))}
+          </select>
         </div>
-
-        {/* Bulk Actions */}
-        {selectedUsers.length > 0 && (
-          <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <div className="flex items-center justify-between">
-              <span className="font-medium text-blue-800">
-                {selectedUsers.length} user(s) selected
-              </span>
-              <div className="flex items-center space-x-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleBulkDelete}
-                  className="text-red-600 border-red-600 hover:bg-red-50"
-                >
-                  Delete Selected
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  themeColor={themeColor}
-                  onClick={() => setModalType('bulkUsagePlans')}
-                >
-                  Bulk Edit Plans
-                </Button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Error Message */}
-        {error && (
-          <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
-            <div className="flex items-center">
-              <svg className="w-5 h-5 text-red-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <p className="text-red-700">{error}</p>
-            </div>
-          </div>
-        )}
-
-        {/* User Table */}
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  <input
-                    type="checkbox"
-                    checked={allVisibleSelected}
-                    ref={(input) => {
-                      if (input) input.indeterminate = someVisibleSelected && !allVisibleSelected;
-                    }}
-                    onChange={selectAllVisible}
-                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                  />
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  User
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Role
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Usage Plans
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Created
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {filteredUsers.map((user) => (
-                <tr key={user.id} className={selectedUsers.includes(user.id) ? 'bg-blue-50' : 'hover:bg-gray-50'}>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <input
-                      type="checkbox"
-                      checked={selectedUsers.includes(user.id)}
-                      onChange={(e) => handleUserSelection(user.id, e.target.checked, e.shiftKey)}
-                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                    />
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <div className="flex-shrink-0 h-10 w-10">
-                        <div className="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
-                          <span className="text-sm font-medium text-gray-700">
-                            {getUserDisplayName(user).charAt(0).toUpperCase()}
-                          </span>
-                        </div>
-                      </div>
-                      <div className="ml-4">
-                        <div className="text-sm font-medium text-gray-900">{getUserDisplayName(user)}</div>
-                        <div className="text-sm text-gray-500">{user.email}</div>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                      user.role === 'admin'
-                        ? 'bg-red-100 text-red-800'
-                        : 'bg-gray-100 text-gray-800'
-                    }`}>
-                      {user.role}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                      user.isActive
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-red-100 text-red-800'
-                    }`}>
-                      {user.isActive ? 'Active' : 'Inactive'}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {formatUsagePlans(user.usagePlans)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {new Date(user.createdAt).toLocaleDateString()}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <div className="flex items-center space-x-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        themeColor={themeColor}
-                        onClick={() => handleEditUser(user)}
-                        disabled={loading}
-                      >
-                        Edit
-                      </Button>
-                      {/* Organization Management Button - Available for all users */}
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="text-blue-600 border-blue-600 hover:bg-blue-50"
-                        onClick={() => handleManageOrganizations(user)}
-                        disabled={loading}
-                        title="Manage organization membership (requires Store/Enterprise plan for roles)"
-                      >
-                        Organizations
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="text-red-600 border-red-600 hover:bg-red-50"
-                        onClick={() => handleDeleteUser(user.id, user.username)}
-                        disabled={loading}
-                      >
-                        Delete
-                      </Button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Empty State */}
-        {!loading && filteredUsers.length === 0 && (
-          <div className="text-center py-12">
-            <div className="text-gray-400 text-4xl mb-4">👥</div>
-            <p className="text-gray-600 mb-4">No users found</p>
-            {(searchTerm || roleFilter !== 'all' || statusFilter !== 'all') && (
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setSearchTerm('');
-                  setRoleFilter('all');
-                  setStatusFilter('all');
-                }}
-                themeColor={themeColor}
-              >
-                Clear Filters
-              </Button>
-            )}
-          </div>
-        )}
-
-        {/* Loading State */}
-        {loading && (
-          <div className="text-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading users...</p>
-          </div>
-        )}
       </Card>
 
-      {/* Organization Management Modal */}
-      {showOrgManagementModal && selectedUserForOrgs && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-4xl mx-4 max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold text-gray-800">
-                Organization Management - {getUserDisplayName(selectedUserForOrgs)}
-              </h2>
-              <button
-                onClick={() => setShowOrgManagementModal(false)}
-                className="text-gray-400 hover:text-gray-600"
-              >
-                ✕
-              </button>
-            </div>
-
-            {/* User Plan Information */}
-            <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h4 className="font-medium text-gray-800">Current Usage Plans</h4>
-                  <div className="flex space-x-2 mt-2">
-                    {selectedUserForOrgs.usagePlans?.map((plan) => (
-                      <span
-                        key={plan}
-                        className={`px-3 py-1 rounded-full text-xs font-medium ${
-                          plan === 'STORE' || plan === 'ENTERPRISE'
-                            ? 'bg-green-100 text-green-700 border border-green-300'
-                            : 'bg-gray-100 text-gray-700 border border-gray-300'
-                        }`}
-                      >
-                        {plan}
-                      </span>
-                    )) || <span className="text-gray-500 text-sm">No plans assigned</span>}
-                  </div>
-                </div>
-                <div className="text-right">
-                  {(selectedUserForOrgs.usagePlans?.includes('STORE') || selectedUserForOrgs.usagePlans?.includes('ENTERPRISE')) ? (
-                    <div className="text-green-600 text-sm font-medium">✓ Eligible for organization roles</div>
-                  ) : (
-                    <div className="text-red-600 text-sm font-medium">⚠ Requires Store or Enterprise plan</div>
-                  )}
-                </div>
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
+        <Card themeColor={themeColor} padding="lg" className="border border-blue-200 bg-white/85">
+          <div className="mb-3 flex items-center justify-between text-sm text-gray-500">
+            <span>{filteredUsers.length} result(s)</span>
+            <label className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                checked={
+                  filteredUsers.length > 0 && filteredUsers.every((user) => selectedIds.includes(user.id))
+                }
+                onChange={toggleSelectAll}
+              />
+              Select all visible
+            </label>
+          </div>
+          <div className="max-h-[60vh] overflow-y-auto pr-2">
+            {loading ? (
+              <div className="flex items-center justify-center py-12 text-gray-500">Loading users…</div>
+            ) : filteredUsers.length === 0 ? (
+              <div className="flex flex-col items-center justify-center gap-2 py-12 text-gray-500">
+                <span className="text-3xl">??</span>
+                <p>No users match your filters.</p>
               </div>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Current Organizations */}
-              <div>
-                <h3 className="text-lg font-semibold text-gray-800 mb-4">Current Organizations</h3>
-                <div className="space-y-3">
-                  {userOrganizations.map((org) => (
-                    <div key={org.id} className="bg-gray-50 rounded-lg p-4 flex justify-between items-center">
-                      <div>
-                        <div className="font-medium text-gray-900">{org.name}</div>
-                        <div className="text-sm text-gray-600">Role: {org.role}</div>
-                        {org.description && (
-                          <div className="text-sm text-gray-500 mt-1">{org.description}</div>
-                        )}
-                      </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="text-red-600 border-red-600 hover:bg-red-50"
-                        onClick={() => handleRemoveUserFromOrganization(org.id)}
-                        disabled={loading}
-                      >
-                        Remove
-                      </Button>
-                    </div>
-                  ))}
-                  {userOrganizations.length === 0 && (
-                    <div className="text-center py-8 text-gray-500">
-                      User is not a member of any organizations
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Available Organizations */}
-              <div>
-                <h3 className="text-lg font-semibold text-gray-800 mb-4">Add to Organization</h3>
-                <div className="space-y-3">
-                  {availableOrganizations
-                    .filter(org => !userOrganizations.some(userOrg => userOrg.id === org.id))
-                    .map((org) => (
-                      <div key={org.id} className="bg-blue-50 rounded-lg p-4">
-                        <div className="font-medium text-gray-900 mb-2">{org.name}</div>
-                        {org.description && (
-                          <div className="text-sm text-gray-600 mb-3">{org.description}</div>
-                        )}
-                        <div className="flex space-x-2">
-                          {(() => {
-                            const hasRequiredPlan = selectedUserForOrgs.usagePlans?.includes('STORE') || selectedUserForOrgs.usagePlans?.includes('ENTERPRISE');
-                            return (
-                              <>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  className={`${hasRequiredPlan ? 'text-blue-600 border-blue-600 hover:bg-blue-100' : 'text-gray-400 border-gray-300 cursor-not-allowed'}`}
-                                  onClick={() => handleAddUserToOrganization(org.id, 'user')}
-                                  disabled={loading || !hasRequiredPlan}
-                                  title={hasRequiredPlan ? 'Add as organization user' : 'Requires Store or Enterprise plan'}
-                                >
-                                  Add as User
-                                </Button>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  className={`${hasRequiredPlan ? 'text-green-600 border-green-600 hover:bg-green-100' : 'text-gray-400 border-gray-300 cursor-not-allowed'}`}
-                                  onClick={() => handleAddUserToOrganization(org.id, 'editor')}
-                                  disabled={loading || !hasRequiredPlan}
-                                  title={hasRequiredPlan ? 'Add as organization editor' : 'Requires Store or Enterprise plan'}
-                                >
-                                  Add as Editor
-                                </Button>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  className={`${hasRequiredPlan ? 'text-red-600 border-red-600 hover:bg-red-100' : 'text-gray-400 border-gray-300 cursor-not-allowed'}`}
-                                  onClick={() => handleAddUserToOrganization(org.id, 'admin')}
-                                  disabled={loading || !hasRequiredPlan}
-                                  title={hasRequiredPlan ? 'Add as organization admin' : 'Requires Store or Enterprise plan'}
-                                >
-                                  Add as Admin
-                                </Button>
-                              </>
-                            );
-                          })()}
+            ) : (
+              <ul className="space-y-3">
+                {filteredUsers.map((user) => {
+                  const checked = selectedIds.includes(user.id);
+                  const active = selectedUserId === user.id;
+                  return (
+                    <li
+                      key={user.id}
+                      className={`rounded-2xl border border-gray-200 bg-white px-4 py-3 transition hover:shadow-md ${
+                        active ? "ring-2 ring-blue-400 ring-offset-2" : ""
+                      }`}
+                    >
+                      <div className="flex items-start gap-3">
+                        <input
+                          type="checkbox"
+                          className="mt-1 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                          checked={checked}
+                          onChange={(event) => toggleSelection(user.id, event.target.checked)}
+                        />
+                        <div className="flex-1">
+                          <button
+                            type="button"
+                            onClick={() => setSelectedUserId(user.id)}
+                            className="text-left text-base font-semibold text-gray-800 hover:text-blue-600"
+                          >
+                            {getDisplayName(user)}
+                          </button>
+                          <div className="text-sm text-gray-500">{user.email}</div>
+                          <div className="mt-2 flex flex-wrap gap-2 text-xs">
+                            <Badge variant={user.role === "admin" ? "primary" : "default"}>{user.role}</Badge>
+                            <Badge variant={user.isActive ? "success" : "danger"}>
+                              {user.isActive ? "Active" : "Inactive"}
+                            </Badge>
+                            {(user.usagePlans ?? []).length === 0 ? (
+                              <Badge variant="default">No plan</Badge>
+                            ) : (
+                              user.usagePlans?.map((plan) => (
+                                <Badge key={`${user.id}-${plan}`} variant="info">
+                                  {resolvePlanLabel(plan)}
+                                </Badge>
+                              ))
+                            )}
+                          </div>
+                          <div className="mt-3 flex flex-wrap gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              themeColor={themeColor}
+                              onClick={() => {
+                                setSelectedUserId(user.id);
+                                void loadOrganisations(user);
+                              }}
+                            >
+                              Manage organisations
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="border-red-300 text-red-600 hover:bg-red-50"
+                              onClick={() => void handleDeleteUser(user.id)}
+                            >
+                              Delete
+                            </Button>
+                          </div>
                         </div>
                       </div>
-                    ))}
-                  {availableOrganizations.filter(org => !userOrganizations.some(userOrg => userOrg.id === org.id)).length === 0 && (
-                    <div className="text-center py-8 text-gray-500">
-                      No additional organizations available
-                    </div>
-                  )}
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </div>
+        </Card>
+        <Card themeColor={themeColor} padding="lg" className="border border-blue-200 bg-white/85">
+          {!profileDraft ? (
+            <div className="flex h-full flex-col items-center justify-center gap-3 py-24 text-gray-500">
+              <span className="text-4xl">??</span>
+              <p>Select a user to view profile details.</p>
+            </div>
+          ) : (
+            <div className="space-y-6">
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-gray-800">Profile</h3>
+                <div className="grid gap-3 md:grid-cols-2">
+                  <Input
+                    label="Username"
+                    value={profileDraft.username ?? ""}
+                    onChange={(event) =>
+                      setProfileDraft((prev) => prev && { ...prev, username: event.target.value })
+                    }
+                    themeColor={themeColor}
+                  />
+                  <Input
+                    label="Email"
+                    type="email"
+                    value={profileDraft.email ?? ""}
+                    onChange={(event) =>
+                      setProfileDraft((prev) => prev && { ...prev, email: event.target.value })
+                    }
+                    themeColor={themeColor}
+                  />
+                  <Input
+                    label="First name"
+                    value={profileDraft.firstName ?? ""}
+                    onChange={(event) =>
+                      setProfileDraft((prev) => prev && { ...prev, firstName: event.target.value })
+                    }
+                    themeColor={themeColor}
+                  />
+                  <Input
+                    label="Last name"
+                    value={profileDraft.lastName ?? ""}
+                    onChange={(event) =>
+                      setProfileDraft((prev) => prev && { ...prev, lastName: event.target.value })
+                    }
+                    themeColor={themeColor}
+                  />
+                </div>
+                <div className="grid gap-3 md:grid-cols-2">
+                  <div>
+                    <label className="mb-2 block text-sm font-medium text-gray-700">Role</label>
+                    <select
+                      className="w-full rounded-xl border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      value={profileDraft.role}
+                      onChange={(event) =>
+                        setProfileDraft((prev) => prev && { ...prev, role: event.target.value })
+                      }
+                    >
+                      <option value="user">User</option>
+                      <option value="admin">Admin</option>
+                    </select>
+                  </div>
+                  <div className="flex items-end">
+                    <Button
+                      variant="outline"
+                      themeColor={themeColor}
+                      onClick={() =>
+                        setProfileDraft((prev) => prev && { ...prev, isActive: !prev.isActive })
+                      }
+                    >
+                      {profileDraft.isActive ? "Deactivate" : "Activate"}
+                    </Button>
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <Button themeColor={themeColor} onClick={() => void handleSaveProfile()} disabled={savingProfile}>
+                    {savingProfile ? "Saving…" : "Save profile"}
+                  </Button>
                 </div>
               </div>
-            </div>
 
-            <div className="flex justify-end mt-6">
-              <Button
-                variant="outline"
-                onClick={() => setShowOrgManagementModal(false)}
-                className="px-6"
-              >
-                Close
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Bulk Usage Plans Modal */}
-      {showBulkUsagePlansModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
-              Bulk Update Usage Plans
-            </h3>
-
-            <div className="mb-4">
-              <p className="text-sm text-gray-600 mb-3">
-                Update usage plans for {selectedUsers.length} selected user(s)
-              </p>
-
-              {/* Operation Selection */}
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Operation
-                </label>
-                <select
-                  value={bulkUpdateOperation}
-                  onChange={(e) => setBulkUpdateOperation(e.target.value as 'set' | 'add' | 'remove')}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2"
-                >
-                  <option value="set">Set (Replace current plans)</option>
-                  <option value="add">Add (Add to existing plans)</option>
-                  <option value="remove">Remove (Remove from existing plans)</option>
-                </select>
-              </div>
-
-              {/* Plans Selection */}
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Select Plans
-                </label>
-                <div className="space-y-2 max-h-48 overflow-y-auto">
-                  {USAGE_PLAN_OPTIONS.map((plan) => (
-                    <label key={plan} className="flex items-center">
-                      <input
-                        type="checkbox"
-                        checked={bulkPlansToUpdate.includes(plan)}
-                        onChange={(e) => {
-                          if (e.target.checked) {
-                            setBulkPlansToUpdate([...bulkPlansToUpdate, plan]);
-                          } else {
-                            setBulkPlansToUpdate(bulkPlansToUpdate.filter(p => p !== plan));
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-gray-800">Usage plans</h3>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {USAGE_PLAN_OPTIONS.map((option) => {
+                    const checked = plansDraft.some(
+                      (plan) => normalizePlan(plan) === normalizePlan(option.value),
+                    );
+                    return (
+                      <label
+                        key={option.value}
+                        className={`flex cursor-pointer items-start gap-2 rounded-2xl border px-3 py-3 text-sm transition ${
+                          checked
+                            ? "border-blue-300 bg-blue-50"
+                            : "border-gray-200 bg-white hover:border-blue-200 hover:bg-blue-50/50"
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          className="mt-0.5 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                          checked={checked}
+                          onChange={(event) =>
+                            setPlansDraft((prev) =>
+                              event.target.checked
+                                ? Array.from(new Set([...prev, option.value]))
+                                : prev.filter((plan) => normalizePlan(plan) !== normalizePlan(option.value)),
+                            )
                           }
-                        }}
-                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                      />
-                      <span className="ml-2 text-sm text-gray-700">{plan}</span>
-                    </label>
-                  ))}
+                        />
+                        <div>
+                          <div className="font-semibold text-gray-800">{option.label}</div>
+                          <div className="text-xs text-gray-500">{option.description}</div>
+                        </div>
+                      </label>
+                    );
+                  })}
+                </div>
+                <Button themeColor={themeColor} onClick={() => void handleSavePlans()} disabled={savingPlans}>
+                  {savingPlans ? "Saving…" : "Save plans"}
+                </Button>
+              </div>
+
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-gray-800">Account tools</h3>
+                <div className="rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div className="text-sm text-gray-600">
+                      Store or Enterprise plans unlock organisation administration.
+                    </div>
+                    <Button variant="outline" themeColor={themeColor} onClick={() => void loadOrganisations()}>
+                      Manage organisations
+                    </Button>
+                  </div>
+                </div>
+                <div className="rounded-2xl border border-gray-200 bg-white px-4 py-3">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div className="text-sm text-gray-600">Send password reset email to this user.</div>
+                    <Button variant="outline" onClick={() => void handleResetPassword()} disabled={resettingPassword}>
+                      {resettingPassword ? "Sending…" : "Send reset"}
+                    </Button>
+                  </div>
                 </div>
               </div>
             </div>
+          )}
+        </Card>
+      </div>
 
-            <div className="flex justify-end space-x-3">
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setShowBulkUsagePlansModal(false);
-                  setBulkPlansToUpdate([]);
-                }}
-                disabled={loading}
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={handleBulkUsagePlansSubmit}
-                disabled={loading || bulkPlansToUpdate.length === 0}
-                themeColor={themeColor}
-              >
-                {loading ? 'Updating...' : 'Update Plans'}
-              </Button>
-            </div>
+      <Modal
+        isOpen={bulkModalOpen}
+        onClose={() => setBulkModalOpen(false)}
+        title={`Bulk update plans (${selectedIds.length})`}
+        themeColor={themeColor}
+        size="md"
+        footer={
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setBulkModalOpen(false)} disabled={bulkProcessing}>
+              Cancel
+            </Button>
+            <Button
+              themeColor={themeColor}
+              onClick={() => void handleBulkPlans()}
+              disabled={bulkPlans.length === 0 || bulkProcessing}
+            >
+              {bulkProcessing ? "Updating…" : "Apply"}
+            </Button>
+          </div>
+        }
+      >
+        <div className="space-y-4">
+          <div>
+            <label className="mb-2 block text-sm font-medium text-gray-700">Operation</label>
+            <select
+              className="w-full rounded-xl border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              value={bulkOperation}
+              onChange={(event) => setBulkOperation(event.target.value as UsagePlanOperation)}
+            >
+              <option value="set">Set (replace existing)</option>
+              <option value="add">Add</option>
+              <option value="remove">Remove</option>
+            </select>
+          </div>
+          <div className="space-y-2 rounded-2xl border border-gray-200 bg-white p-3">
+            {USAGE_PLAN_OPTIONS.map((option) => {
+              const checked = bulkPlans.some((plan) => normalizePlan(plan) === normalizePlan(option.value));
+              return (
+                <label key={option.value} className="flex items-center gap-2 text-sm text-gray-700">
+                  <input
+                    type="checkbox"
+                    className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    checked={checked}
+                    onChange={(event) =>
+                      setBulkPlans((prev) =>
+                        event.target.checked
+                          ? Array.from(new Set([...prev, option.value]))
+                          : prev.filter((plan) => normalizePlan(plan) !== normalizePlan(option.value)),
+                      )
+                    }
+                  />
+                  {option.label}
+                </label>
+              );
+            })}
           </div>
         </div>
-      )}
+      </Modal>
+
+      <Modal
+        isOpen={orgModalOpen}
+        onClose={() => setOrgModalOpen(false)}
+        title="Organisation membership"
+        themeColor={themeColor}
+        size="lg"
+      >
+        {orgLoading ? (
+          <div className="flex items-center justify-center py-12 text-gray-500">Loading…</div>
+        ) : (
+          <div className="grid gap-4 lg:grid-cols-2">
+            <div className="space-y-3 rounded-2xl border border-gray-200 bg-gray-50 p-4">
+              <h4 className="text-sm font-semibold uppercase tracking-wide text-gray-500">Assigned</h4>
+              {orgAssignments.length === 0 ? (
+                <div className="rounded-xl border border-dashed border-gray-300 bg-white px-4 py-6 text-center text-sm text-gray-500">
+                  No organisations yet.
+                </div>
+              ) : (
+                orgAssignments.map((assignment) => (
+                  <div
+                    key={assignment.id}
+                    className="flex items-center justify-between gap-3 rounded-xl border border-gray-200 bg-white px-3 py-2"
+                  >
+                    <div>
+                      <div className="font-semibold text-gray-800">{assignment.name}</div>
+                      {assignment.role && <div className="text-xs text-gray-500">Role: {assignment.role}</div>}
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="border-red-300 text-red-600 hover:bg-red-50"
+                      onClick={() => void handleRemoveFromOrganisation(assignment.id)}
+                    >
+                      Remove
+                    </Button>
+                  </div>
+                ))
+              )}
+            </div>
+            <div className="space-y-3 rounded-2xl border border-gray-200 bg-white p-4">
+              <h4 className="text-sm font-semibold uppercase tracking-wide text-gray-500">Available</h4>
+              {orgOptions
+                .filter((option) => !orgAssignments.some((assignment) => assignment.id === option.id))
+                .map((option) => (
+                  <div
+                    key={option.id}
+                    className="space-y-2 rounded-xl border border-gray-200 bg-gray-50 px-3 py-2"
+                  >
+                    <div className="font-semibold text-gray-800">{option.name}</div>
+                    <div className="flex flex-wrap gap-2 text-xs">
+                      {(["user", "editor", "admin"] as Array<"user" | "editor" | "admin">).map((role) => (
+                        <Button
+                          key={role}
+                          variant="outline"
+                          size="sm"
+                          className={
+                            hasRequiredOrgPlan(plansDraft)
+                              ? "border-blue-300 text-blue-600 hover:bg-blue-50"
+                              : "border-gray-300 text-gray-400"
+                          }
+                          disabled={!hasRequiredOrgPlan(plansDraft)}
+                          onClick={() => void handleAddToOrganisation(option.id, role)}
+                        >
+                          Add as {role}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              {orgOptions.length === 0 && (
+                <div className="rounded-xl border border-dashed border-gray-300 px-4 py-6 text-center text-sm text-gray-500">
+                  No available organisations.
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </Modal>
     </div>
   );
 };
+

@@ -112,13 +112,11 @@ export class AgentMcpHttpService {
       );
 
       if (!res.headersSent) {
-        res
-          .status(500)
-          .json({
-            jsonrpc: '2.0',
-            error: { code: -32000, message: 'Internal server error' },
-            id: null,
-          });
+        res.status(500).json({
+          jsonrpc: '2.0',
+          error: { code: -32000, message: 'Internal server error' },
+          id: null,
+        });
       }
     } finally {
       this.logger.verbose?.(
@@ -163,49 +161,41 @@ export class AgentMcpHttpService {
 
       const toolName = this.createToolName(action);
 
-      server.registerTool(
-        toolName,
-        config,
-        async (parameters, extraInfo) => {
-          try {
-            const result = await handler(parameters);
-            return this.wrapToolResult(result);
-          } catch (error) {
-            this.logger.warn(
-              `Tool execution failed for ${action}: ${
-                error instanceof Error ? error.message : error
-              }`,
-            );
-            return {
-              isError: true,
-              content: [
-                this.toTextContent(
-                  error instanceof Error ? error.message : String(error),
-                ),
-              ],
-            };
-          } finally {
-            // Silence unused parameter warning
-            void extraInfo;
-          }
-        },
-      );
+      server.registerTool(toolName, config, async (parameters, extraInfo) => {
+        try {
+          const result = await handler(parameters);
+          return this.wrapToolResult(result);
+        } catch (error) {
+          this.logger.warn(
+            `Tool execution failed for ${action}: ${
+              error instanceof Error ? error.message : error
+            }`,
+          );
+          return {
+            isError: true,
+            content: [
+              this.toTextContent(
+                error instanceof Error ? error.message : String(error),
+              ),
+            ],
+          };
+        } finally {
+          // Silence unused parameter warning
+          void extraInfo;
+        }
+      });
     };
 
-    registerTool(
-      AgentActionKey.USER_PROFILE_READ,
-      undefined,
-      (params) => this.execute(context, AgentActionKey.USER_PROFILE_READ, params),
+    registerTool(AgentActionKey.USER_PROFILE_READ, undefined, (params) =>
+      this.execute(context, AgentActionKey.USER_PROFILE_READ, params),
     );
 
     const calendarListSchema: ZodRawShape = {
       calendarIds: z.array(z.number().int().positive()).optional(),
     };
 
-    registerTool(
-      AgentActionKey.CALENDAR_LIST,
-      calendarListSchema,
-      (params) => this.execute(context, AgentActionKey.CALENDAR_LIST, params),
+    registerTool(AgentActionKey.CALENDAR_LIST, calendarListSchema, (params) =>
+      this.execute(context, AgentActionKey.CALENDAR_LIST, params),
     );
 
     const readEventsSchema: ZodRawShape = {
@@ -302,24 +292,18 @@ export class AgentMcpHttpService {
         listChanged: false,
       },
     });
-    server.server.setRequestHandler(
-      ListResourcesRequestSchema,
-      async () => ({
-        resources: [],
-      }),
-    );
+    server.server.setRequestHandler(ListResourcesRequestSchema, async () => ({
+      resources: [],
+    }));
 
     server.server.registerCapabilities({
       prompts: {
         listChanged: false,
       },
     });
-    server.server.setRequestHandler(
-      ListPromptsRequestSchema,
-      async () => ({
-        prompts: [],
-      }),
-    );
+    server.server.setRequestHandler(ListPromptsRequestSchema, async () => ({
+      prompts: [],
+    }));
 
     return server;
   }
@@ -338,17 +322,15 @@ export class AgentMcpHttpService {
       sessionIdGenerator: () => sessionId,
     });
 
-    await server
-      .connect(transport)
-      .catch((error) => {
-        this.logger.error(
-          `[${context.agent.id}] Failed to connect MCP server for session ${sessionId}: ${
-            error instanceof Error ? error.message : error
-          }`,
-          error instanceof Error ? error.stack : undefined,
-        );
-        throw error;
-      });
+    await server.connect(transport).catch((error) => {
+      this.logger.error(
+        `[${context.agent.id}] Failed to connect MCP server for session ${sessionId}: ${
+          error instanceof Error ? error.message : error
+        }`,
+        error instanceof Error ? error.stack : undefined,
+      );
+      throw error;
+    });
 
     const session: McpSession = {
       context,
@@ -424,9 +406,7 @@ export class AgentMcpHttpService {
         : String(result);
 
     const structured =
-      result &&
-      typeof result === 'object' &&
-      !Array.isArray(result)
+      result && typeof result === 'object' && !Array.isArray(result)
         ? (result as Record<string, unknown>)
         : undefined;
 

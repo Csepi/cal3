@@ -26,6 +26,7 @@ interface TimeSlot {
   startTime: string;
   endTime: string;
   available: boolean;
+  availableQuantity?: number;
 }
 
 interface CustomerInfo {
@@ -45,6 +46,7 @@ const PublicBookingPage: React.FC = () => {
   const [availableSlots, setAvailableSlots] = useState<TimeSlot[]>([]);
   const [loadingSlots, setLoadingSlots] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState<TimeSlot | null>(null);
+  const [quantity, setQuantity] = useState(1);
 
   // Booking form state
   const [customerName, setCustomerName] = useState('');
@@ -114,6 +116,7 @@ const PublicBookingPage: React.FC = () => {
 
   const handleSlotSelect = (slot: TimeSlot) => {
     setSelectedSlot(slot);
+    setQuantity(1);
     setBookingSuccess(false);
   };
 
@@ -133,6 +136,14 @@ const PublicBookingPage: React.FC = () => {
       setSubmitting(true);
       setError(null);
 
+      const maxQuantity =
+        selectedSlot.availableQuantity ?? resource?.capacity ?? 1;
+      const safeQuantity = Math.min(Math.max(1, quantity), maxQuantity);
+
+      if (safeQuantity !== quantity) {
+        setQuantity(safeQuantity);
+      }
+
       // The backend expects startTime and endTime as full ISO date strings, not just time
       // selectedSlot.startTime and endTime are already ISO strings from the backend
       const bookingData = {
@@ -142,7 +153,7 @@ const PublicBookingPage: React.FC = () => {
         customerEmail,
         customerPhone,
         notes: bookingNotes || undefined,
-        quantity: 1
+        quantity: safeQuantity
       };
 
       const response = await fetch(`${BASE_URL}/api/public/booking/${token}/reserve`, {
@@ -166,6 +177,7 @@ const PublicBookingPage: React.FC = () => {
       setCustomerPhone('');
       setCustomerInfo({});
       setBookingNotes('');
+      setQuantity(1);
 
       // Refresh availability
       const availResponse = await fetch(
@@ -205,6 +217,10 @@ const PublicBookingPage: React.FC = () => {
     const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
     return days[dayNum];
   };
+
+  const maxQuantityForSlot = selectedSlot
+    ? Math.max(1, selectedSlot.availableQuantity ?? resource?.capacity ?? 1)
+    : Math.max(1, resource?.capacity ?? 1);
 
   if (loading) {
     return (
@@ -335,6 +351,7 @@ const PublicBookingPage: React.FC = () => {
                 onChange={(e) => {
                   setSelectedDate(e.target.value);
                   setSelectedSlot(null);
+                  setQuantity(1);
                 }}
                 min={new Date().toISOString().split('T')[0]}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -374,7 +391,21 @@ const PublicBookingPage: React.FC = () => {
                           : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                       }`}
                     >
-                      {formatTime(slot.startTime)} - {formatTime(slot.endTime)}
+                      <span className="block">
+                        {formatTime(slot.startTime)} - {formatTime(slot.endTime)}
+                      </span>
+                      {typeof slot.availableQuantity === 'number' && (
+                        <span
+                          className={`block text-xs mt-1 ${
+                            selectedSlot?.startTime === slot.startTime &&
+                            selectedSlot?.endTime === slot.endTime
+                              ? 'text-blue-100'
+                              : 'text-gray-500'
+                          }`}
+                        >
+                          {slot.availableQuantity} {slot.availableQuantity === 1 ? 'spot' : 'spots'} left
+                        </span>
+                      )}
                     </button>
                   ))}
                 </div>
@@ -410,6 +441,12 @@ const PublicBookingPage: React.FC = () => {
                   <p className="text-md text-blue-800">
                     {formatTime(selectedSlot.startTime)} - {formatTime(selectedSlot.endTime)}
                   </p>
+                  {typeof selectedSlot.availableQuantity === 'number' && (
+                    <p className="text-sm text-blue-600 mt-1">
+                      {selectedSlot.availableQuantity}{' '}
+                      {selectedSlot.availableQuantity === 1 ? 'spot' : 'spots'} remaining
+                    </p>
+                  )}
                 </div>
 
                 {/* Customer Name */}
@@ -476,6 +513,37 @@ const PublicBookingPage: React.FC = () => {
                     ))}
                   </>
                 )}
+
+                {/* Quantity */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Number of Spots <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="number"
+                    min={1}
+                    max={maxQuantityForSlot}
+                    value={quantity}
+                    onChange={(e) => {
+                      const value = parseInt(e.target.value, 10);
+                      if (Number.isNaN(value)) {
+                        setQuantity(1);
+                        return;
+                      }
+                      const clamped = Math.min(
+                        Math.max(1, value),
+                        maxQuantityForSlot,
+                      );
+                      setQuantity(clamped);
+                    }}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Up to {maxQuantityForSlot}{' '}
+                    {maxQuantityForSlot === 1 ? 'spot' : 'spots'} available for
+                    this time.
+                  </p>
+                </div>
 
                 {/* Booking Notes */}
                 <div>

@@ -5,12 +5,17 @@ import {
 } from './notification-channel.interface';
 import { NotificationChannelType } from '../notifications.constants';
 
-export const NOTIFICATION_CHANNEL_PROVIDERS = Symbol('NOTIFICATION_CHANNEL_PROVIDERS');
+export const NOTIFICATION_CHANNEL_PROVIDERS = Symbol(
+  'NOTIFICATION_CHANNEL_PROVIDERS',
+);
 
 @Injectable()
 export class NotificationChannelRegistry {
   private readonly logger = new Logger(NotificationChannelRegistry.name);
-  private readonly providerMap = new Map<NotificationChannelType, NotificationChannelProvider>();
+  private readonly providerMap = new Map<
+    NotificationChannelType,
+    NotificationChannelProvider
+  >();
 
   constructor(
     @Inject(NOTIFICATION_CHANNEL_PROVIDERS)
@@ -21,7 +26,9 @@ export class NotificationChannelRegistry {
     });
   }
 
-  get(channel: NotificationChannelType): NotificationChannelProvider | undefined {
+  get(
+    channel: NotificationChannelType,
+  ): NotificationChannelProvider | undefined {
     return this.providerMap.get(channel);
   }
 

@@ -56,8 +56,8 @@ export class SendNotificationExecutor implements IActionExecutor, OnModuleInit {
       }
 
       const channels = Array.isArray(interpolatedConfig.channels)
-        ? (interpolatedConfig.channels as string[]).filter((channel) =>
-            typeof channel === 'string' && channel.length > 0,
+        ? (interpolatedConfig.channels as string[]).filter(
+            (channel) => typeof channel === 'string' && channel.length > 0,
           )
         : undefined;
 

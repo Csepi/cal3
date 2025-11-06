@@ -34,7 +34,9 @@ interface AuthenticatedSocket extends Socket {
   },
 })
 export class NotificationsGateway
-  implements OnGatewayConnection<AuthenticatedSocket>, OnGatewayDisconnect<AuthenticatedSocket>
+  implements
+    OnGatewayConnection<AuthenticatedSocket>,
+    OnGatewayDisconnect<AuthenticatedSocket>
 {
   @WebSocketServer()
   server!: Server;

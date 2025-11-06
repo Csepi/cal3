@@ -13,6 +13,7 @@ import { Resource } from '../entities/resource.entity';
 import { Reservation } from '../entities/reservation.entity';
 import { UserPermissionsService } from './services/user-permissions.service';
 import { CascadeDeletionService } from './services/cascade-deletion.service';
+import { ReservationAvailabilityService } from './services/reservation-availability.service';
 
 @Global() // Make this module global so its exports are available everywhere
 @Module({
@@ -31,7 +32,16 @@ import { CascadeDeletionService } from './services/cascade-deletion.service';
       Reservation,
     ]),
   ],
-  providers: [UserPermissionsService, CascadeDeletionService],
-  exports: [UserPermissionsService, CascadeDeletionService, TypeOrmModule],
+  providers: [
+    UserPermissionsService,
+    CascadeDeletionService,
+    ReservationAvailabilityService,
+  ],
+  exports: [
+    UserPermissionsService,
+    CascadeDeletionService,
+    ReservationAvailabilityService,
+    TypeOrmModule,
+  ],
 })
 export class CommonModule {}

@@ -379,7 +379,8 @@ export const CONFIGURATION_DEFINITIONS: ConfigurationDefinition[] = [
   {
     key: 'SLACK_WEBHOOK_URL',
     label: 'Slack Incoming Webhook URL',
-    description: 'Global webhook URL for Slack notifications (per-org overrides later).',
+    description:
+      'Global webhook URL for Slack notifications (per-org overrides later).',
     category: 'notifications',
     valueType: 'secret',
     defaultValue: process.env.SLACK_WEBHOOK_URL ?? '',

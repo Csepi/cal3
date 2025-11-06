@@ -11,10 +11,32 @@ import type {
   AgentSummary,
   AgentStatus,
 } from "../../types/agent";
+import { useScreenSize } from "../../hooks/useScreenSize";
+import { getThemeConfig } from "../../constants/theme";
 
 type PermissionDraft = {
   enabled: boolean;
   scope: number[];
+};
+
+interface AgentSettingsPageProps {
+  themeColor?: string;
+}
+
+const hexToRgba = (hex: string, alpha: number): string => {
+  const sanitized = hex.replace('#', '');
+  const normalized =
+    sanitized.length === 3
+      ? sanitized
+          .split('')
+          .map((char) => `${char}${char}`)
+          .join('')
+      : sanitized.padEnd(6, '0').slice(0, 6);
+  const bigint = parseInt(normalized, 16);
+  const r = (bigint >> 16) & 255;
+  const g = (bigint >> 8) & 255;
+  const b = bigint & 255;
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 };
 
 const CATEGORY_ORDER: AgentActionDefinition['category'][] = ['calendars', 'automation', 'profile'];
@@ -201,9 +223,10 @@ function getMcpServerKey(name: string | undefined) {
   return sanitized || 'primecal-agent';
 }
 
-const AgentSettingsPage: React.FC = () => {
+const AgentSettingsPage: React.FC<AgentSettingsPageProps> = ({ themeColor = "#3b82f6" }) => {
   // Windows needs a shell wrapper so paths with spaces (e.g. Program Files) resolve correctly.
   const isWindows = typeof navigator !== 'undefined' && /windows/i.test(navigator.userAgent);
+  const { isMobile } = useScreenSize();
   const [loading, setLoading] = useState(true);
   const [agents, setAgents] = useState<AgentSummary[]>([]);
   const [selectedAgentId, setSelectedAgentId] = useState<number | null>(null);
@@ -218,6 +241,38 @@ const AgentSettingsPage: React.FC = () => {
 
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const theme = useMemo(() => getThemeConfig(themeColor), [themeColor]);
+  const gradientBackground = `bg-gradient-to-br ${theme.gradient.background}`;
+  const borderTint = hexToRgba(themeColor, 0.2);
+  const accentTint = hexToRgba(themeColor, 0.12);
+  const glassCardClass = 'rounded-3xl border bg-white/80 shadow-xl backdrop-blur-md';
+  const panelCardClass = 'rounded-2xl border bg-white/70 shadow-sm backdrop-blur-md';
+  const subtleBorderStyle = { borderColor: borderTint };
+  const inputClass = `mt-1 w-full rounded-lg border bg-white/90 px-3 py-2 text-sm text-slate-700 shadow-inner focus:outline-none focus:ring-2 ${theme.focus}`;
+  const textareaClass = `mt-1 w-full rounded-lg border bg-white/90 px-3 py-2 text-sm text-slate-700 shadow-inner focus:outline-none focus:ring-2 ${theme.focus}`;
+  const primaryButtonClass = `inline-flex w-full items-center justify-center rounded-xl px-3 py-2 text-sm font-semibold text-white shadow-md transition-transform duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white ${theme.button} ${theme.focus}`;
+  const accentChipStyle = {
+    color: themeColor,
+    backgroundColor: accentTint,
+    border: `1px solid ${borderTint}`,
+  };
+  const checkboxAccentStyle = { accentColor: themeColor };
+  const backgroundLayers = !isMobile ? (
+    <div className="pointer-events-none absolute inset-0 overflow-hidden">
+      <div
+        className="absolute -top-44 -right-40 h-80 w-80 animate-pulse rounded-full blur-3xl opacity-30"
+        style={{ background: `radial-gradient(circle, ${hexToRgba(themeColor, 0.35)} 0%, transparent 70%)` }}
+      />
+      <div
+        className="absolute -bottom-48 -left-36 h-80 w-80 animate-pulse rounded-full blur-3xl opacity-25 animation-delay-2000"
+        style={{ background: `radial-gradient(circle, ${hexToRgba(themeColor, 0.3)} 0%, transparent 70%)` }}
+      />
+      <div
+        className="absolute left-1/2 top-1/2 h-64 w-64 -translate-x-1/2 -translate-y-1/2 animate-pulse rounded-full blur-3xl opacity-20 animation-delay-4000"
+        style={{ background: `radial-gradient(circle, ${hexToRgba(themeColor, 0.25)} 0%, transparent 75%)` }}
+      />
+    </div>
+  ) : null;
 
   const [creatingAgent, setCreatingAgent] = useState(false);
   const [savingPermissions, setSavingPermissions] = useState(false);
@@ -607,29 +662,33 @@ const AgentSettingsPage: React.FC = () => {
       <div className="mt-3 space-y-2">
         <p className="text-sm font-medium text-slate-600">{scopeConfig.label}</p>
         <div className="flex flex-wrap gap-2">
-          {options.map((option) => (
-            <label
+          {options.map((option) => {
+            const isSelected = draft.scope.includes(option.id);
+            const isInteractive = draft.enabled && !isAgentDisabled;
+            return (
+              <label
               key={`scope-${action.key}-${option.id}`}
-              className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-sm shadow-sm transition ${
-                draft.scope.includes(option.id)
-                  ? 'border-indigo-500/60 bg-indigo-50 text-indigo-700'
-                  : 'border-slate-200 bg-white text-slate-600'
-              } ${
-                draft.enabled && !isAgentDisabled
-                  ? 'cursor-pointer hover:border-indigo-400'
-                  : 'cursor-not-allowed opacity-60'
-              }`}
+              className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-sm shadow-sm transition-all duration-200 ${
+                isInteractive ? 'cursor-pointer hover:-translate-y-0.5' : 'cursor-not-allowed opacity-60'
+              } ${isSelected ? 'text-slate-900' : 'text-slate-600'}`}
+              style={
+                isSelected
+                  ? { borderColor: themeColor, backgroundColor: hexToRgba(themeColor, 0.18) }
+                  : { borderColor: borderTint, backgroundColor: 'rgba(255,255,255,0.95)' }
+              }
             >
               <input
                 type={scopeConfig.allowsMultiple ? 'checkbox' : 'radio'}
-                className="h-4 w-4 accent-indigo-500"
+                className="h-4 w-4"
+                style={checkboxAccentStyle}
                 disabled={!draft.enabled || isAgentDisabled}
-                checked={draft.scope.includes(option.id)}
+                checked={isSelected}
                 onChange={() => handleScopeToggle(action.key, option.id, scopeConfig.allowsMultiple)}
               />
               <span>{option.name}</span>
             </label>
-          ))}
+            );
+          })}
         </div>
         {scopeConfig.required && draft.enabled && draft.scope.length === 0 && (
           <p className="text-sm text-amber-600">Select at least one option to enable this action.</p>
@@ -639,433 +698,498 @@ const AgentSettingsPage: React.FC = () => {
   };
   if (loading) {
     return (
-      <div className="rounded-xl bg-white p-8 shadow-lg">
-        <div className="animate-pulse space-y-4">
-          <div className="h-6 w-1/3 rounded bg-slate-200" />
-          <div className="h-4 w-full rounded bg-slate-200" />
-          <div className="h-4 w-5/6 rounded bg-slate-200" />
-          <div className="h-64 rounded-xl bg-slate-100" />
+      <div className={`relative min-h-screen ${isMobile ? 'bg-gray-50' : gradientBackground} flex items-center justify-center p-6`}>
+        {backgroundLayers}
+        <div className="relative z-10 w-full max-w-3xl rounded-3xl border border-white/50 bg-white/80 p-10 shadow-xl backdrop-blur-md">
+          <div className="space-y-4 animate-pulse">
+            <div className="h-6 w-1/3 rounded bg-slate-200" />
+            <div className="h-4 w-full rounded bg-slate-200" />
+            <div className="h-4 w-5/6 rounded bg-slate-200" />
+            <div className="h-64 rounded-xl bg-slate-100" />
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold text-slate-900">Agent settings</h1>
-          <p className="text-sm text-slate-600">
-            Decide which MCP agents can act for you and control their capabilities.
-          </p>
-        </div>
-        <span className="self-start rounded-full bg-indigo-100 px-4 py-1 text-sm font-medium text-indigo-700">
-          External LLM access
-        </span>
-      </div>
-      {statusMessage && (
-        <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
-          {statusMessage}
-        </div>
-      )}
+    <div className={`relative min-h-screen ${isMobile ? 'bg-gray-50' : gradientBackground}`}>
+      {backgroundLayers}
 
-      {errorMessage && (
-        <div className="rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
-          {errorMessage}
-        </div>
-      )}
-
-      <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
-        <aside className="space-y-4">
-          <div className="rounded-xl bg-white p-4 shadow">
-            <h2 className="text-lg font-semibold text-slate-900">Agents</h2>
-            <p className="text-sm text-slate-600">
-              Create a dedicated agent profile for each tool or collaborator.
+      <header
+        className={`relative z-10 border-b bg-white/70 backdrop-blur-sm ${isMobile ? 'py-4' : 'py-6'}`}
+        style={{ borderColor: borderTint }}
+      >
+        <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="space-y-2">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Agent command center</p>
+            <h1 className="text-3xl font-semibold" style={{ color: themeColor }}>
+              Agent settings
+            </h1>
+            <p className="max-w-2xl text-sm text-slate-600">
+              Decide which MCP agents can act on behalf of your team, what they can access, and how they authenticate.
             </p>
-
-            <form onSubmit={handleCreateAgent} className="mt-4 space-y-3">
-              <div>
-                <label className="block text-xs font-medium uppercase tracking-wide text-slate-500">
-                  Name
-                </label>
-                <input
-                  type="text"
-                  className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm shadow-inner focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
-                  value={agentForm.name}
-                  onChange={(event) => setAgentForm((previous) => ({ ...previous, name: event.target.value }))}
-                  placeholder="e.g. VS Code Agent"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium uppercase tracking-wide text-slate-500">
-                  Description
-                </label>
-                <textarea
-                  className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm shadow-inner focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
-                  rows={2}
-                  value={agentForm.description}
-                  onChange={(event) => setAgentForm((previous) => ({ ...previous, description: event.target.value }))}
-                  placeholder="How will this agent be used?"
-                />
-              </div>
-
-              <button
-                type="submit"
-                disabled={creatingAgent || !agentForm.name.trim()}
-                className="inline-flex w-full items-center justify-center rounded-lg bg-indigo-600 px-3 py-2 text-sm font-medium text-white shadow hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-300 disabled:cursor-not-allowed disabled:bg-indigo-300"
-              >
-                {creatingAgent ? 'Creating...' : 'Create agent'}
-              </button>
-            </form>
           </div>
-          <div className="rounded-xl bg-white p-2 shadow">
-            <ul className="space-y-2">
-              {agents.map((agent) => {
-                const isActive = agent.id === selectedAgentId;
-                const actionCount = Array.isArray(agent.actionKeys) ? agent.actionKeys.length : 0;
-                const apiKeyCount = typeof agent.apiKeyCount === 'number' ? agent.apiKeyCount : 0;
-                return (
-                  <li key={agent.id}>
-                    <button
-                      type="button"
-                      onClick={() => selectAgent(agent.id)}
-                      className={`w-full rounded-lg border px-3 py-3 text-left transition ${
-                        isActive
-                          ? 'border-indigo-500 bg-indigo-50 shadow'
-                          : 'border-transparent bg-slate-50 hover:border-indigo-200'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="text-sm font-semibold text-slate-900">{agent.name}</span>
-                        <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_BADGE[agent.status]}`}>
-                          {agent.status === 'active' ? 'Active' : 'Disabled'}
-                        </span>
-                      </div>
-                      {agent.description && (
-                        <p className="mt-1 line-clamp-2 text-xs text-slate-600">{agent.description}</p>
-                      )}
-                      <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-slate-500">
-                        <span>{actionCount} actions</span>
-                        <span>|</span>
-                        <span>{apiKeyCount} API keys</span>
-                      </div>
-                    </button>
-                  </li>
-                );
-              })}
+          <span
+            className="inline-flex items-center gap-2 rounded-full px-4 py-1 text-xs font-semibold uppercase tracking-wide sm:self-start"
+            style={accentChipStyle}
+          >
+            External LLM access
+          </span>
+        </div>
+      </header>
 
-              {agents.length === 0 && (
-                <li className="rounded-lg border border-dashed border-slate-200 px-3 py-4 text-center text-sm text-slate-600">
-                  No agents yet. Create one to begin.
-                </li>
-              )}
-            </ul>
-          </div>
-        </aside>
-
-        <main className="space-y-6">
-          {selectedAgent ? (
-            <div className="space-y-6">
-              <section className="rounded-xl bg-white p-6 shadow">
-                <header className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                  <div>
-                    <h2 className="text-xl font-semibold text-slate-900">{selectedAgent.name}</h2>
-                    <p className="text-sm text-slate-600">
-                      Manage permissions and API credentials for this agent.
-                    </p>
-                    <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-slate-500">
-                      <span>Created {formatDate(selectedAgent.createdAt)}</span>
-                      <span>|</span>
-                      <span>Last used {formatDate(selectedAgent.lastUsedAt)}</span>
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={handleToggleAgentStatus}
-                    className={`inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium shadow focus:outline-none focus:ring-2 focus:ring-indigo-300 ${
-                      selectedAgent.status === 'active'
-                        ? 'bg-rose-50 text-rose-600 hover:bg-rose-100'
-                        : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100'
-                    }`}
-                  >
-                    {selectedAgent.status === 'active' ? 'Disable agent' : 'Enable agent'}
-                  </button>
-                </header>
-
-                <form onSubmit={handleSaveProfile} className="mt-6 space-y-4">
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <div>
-                      <label className="block text-xs font-medium uppercase tracking-wide text-slate-500">
-                        Agent name
-                      </label>
-                      <input
-                        type="text"
-                        value={agentForm.name}
-                        onChange={(event) => setAgentForm((previous) => ({ ...previous, name: event.target.value }))}
-                        className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm shadow-inner focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
-                        disabled={isAgentDisabled}
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium uppercase tracking-wide text-slate-500">
-                        Description
-                      </label>
-                      <input
-                        type="text"
-                        value={agentForm.description}
-                        onChange={(event) => setAgentForm((previous) => ({ ...previous, description: event.target.value }))}
-                        className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm shadow-inner focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
-                        disabled={isAgentDisabled}
-                      />
-                    </div>
-                  </div>
-                  <div className="flex justify-end">
-                    <button
-                      type="submit"
-                      disabled={savingProfile || isAgentDisabled}
-                      className="inline-flex items-center justify-center rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white shadow hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-400 disabled:cursor-not-allowed disabled:bg-slate-400"
-                    >
-                      {savingProfile ? 'Saving…' : 'Save profile'}
-                    </button>
-                  </div>
-                </form>
-              </section>
-              <section className="rounded-xl bg-white p-6 shadow">
-                <header className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-                  <div>
-                    <h3 className="text-lg font-semibold text-slate-900">Capabilities</h3>
-                    <p className="text-sm text-slate-600">
-                      Choose what this agent may do and limit it to specific calendars or automations.
-                    </p>
-                  </div>
-                  <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600">
-                    {enabledActionKeys.length} active actions
-                  </span>
-                </header>
-
-                <div className="mt-6 space-y-8">
-                  {groupedActions.map(({ category, actions }) => (
-                    <div key={category} className="space-y-4">
-                      <div className="flex items-center gap-2">
-                        <h4 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
-                          {category === 'calendars'
-                            ? 'Calendars'
-                            : category === 'automation'
-                            ? 'Automation'
-                            : 'Profile'}
-                        </h4>
-                        <div className="h-px flex-1 bg-slate-200" />
-                      </div>
-
-                      <div className="space-y-4">
-                        {actions.map((action) => {
-                          const draft = permissionsDraft[action.key] ?? { enabled: false, scope: [] };
-                          return (
-                            <div
-                              key={action.key}
-                              className="rounded-xl border border-slate-200 bg-slate-50 p-4 shadow-inner"
-                            >
-                              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                                <div>
-                                  <div className="flex flex-wrap items-center gap-2">
-                                    <label className="inline-flex items-center gap-2 text-sm font-medium text-slate-900">
-                                      <input
-                                        type="checkbox"
-                                        className="h-4 w-4 accent-indigo-500"
-                                        checked={draft.enabled}
-                                        disabled={isAgentDisabled}
-                                        onChange={() => handleTogglePermission(action.key)}
-                                      />
-                                      {action.label}
-                                    </label>
-                                    <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${RISK_BADGE[action.risk]}`}>
-                                      {action.risk === 'read'
-                                        ? 'Read'
-                                        : action.risk === 'write'
-                                        ? 'Write'
-                                        : 'Execute'}
-                                    </span>
-                                  </div>
-                                  <p className="mt-1 text-sm text-slate-600">{action.description}</p>
-                                </div>
-                                {!draft.enabled && (
-                                  <span className="rounded-full bg-slate-200 px-2 py-0.5 text-xs text-slate-600">
-                                    Disabled
-                                  </span>
-                                )}
-                              </div>
-                              {action.scopeConfig && renderScopeControls(action, draft)}
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="mt-6 flex justify-end">
-                  <button
-                    type="button"
-                    onClick={handleSavePermissions}
-                    disabled={savingPermissions || isAgentDisabled}
-                    className="inline-flex items-center justify-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-300 disabled:cursor-not-allowed disabled:bg-indigo-300"
-                  >
-                    {savingPermissions ? 'Saving permissions…' : 'Save permissions'}
-                  </button>
-                </div>
-              </section>
-              <section className="rounded-xl bg-white p-6 shadow">
-                <header className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-                  <div>
-                    <h3 className="text-lg font-semibold text-slate-900">API keys</h3>
-                    <p className="text-sm text-slate-600">
-                      Issue a unique key for each external tool. Revoke keys immediately if they are compromised.
-                    </p>
-                  </div>
-                  <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600">
-                    {keys.length} keys
-                  </span>
-                </header>
-
-                {newKeySecret && (
-                  <div className="mt-4 rounded-lg border border-amber-300 bg-amber-50 p-4 text-sm text-amber-800">
-                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                      <div>
-                        <p className="font-semibold">New API key created</p>
-                        <p>Copy this token now. For security reasons it will not be shown again.</p>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={handleCopySecret}
-                        className="inline-flex items-center justify-center rounded-md border border-amber-400 px-3 py-1.5 text-sm font-medium text-amber-800 hover:bg-amber-100 focus:outline-none focus:ring-2 focus:ring-amber-300"
-                      >
-                        Copy API key
-                      </button>
-                    </div>
-                  <code className="mt-3 block overflow-x-auto rounded-md bg-white px-3 py-2 text-sm text-slate-700 shadow-inner">
-                    {newKeySecret}
-                  </code>
-                  {mcpConfigSnippet && (
-                    <div className="mt-4">
-                      <label className="block text-xs font-medium uppercase tracking-wide text-slate-500">
-                        MCP configuration
-                      </label>
-                      <textarea
-                        className="mt-1 w-full rounded-lg border border-indigo-200 bg-white px-3 py-2 text-sm font-mono text-slate-700 shadow-inner focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
-                        rows={Math.min(12, mcpConfigSnippet.split('\n').length + 1)}
-                        value={mcpConfigSnippet}
-                        readOnly
-                      />
-                    </div>
-                  )}
-                </div>
-              )}
-
-                <form
-                  onSubmit={handleCreateKey}
-                  className="mt-4 grid gap-3 rounded-lg border border-slate-200 bg-slate-50 p-4 shadow-inner md:grid-cols-[1fr_auto]"
-                >
-                  <div>
-                    <label className="block text-xs font-medium uppercase tracking-wide text-slate-500">
-                      Key label
-                    </label>
-                    <input
-                      type="text"
-                      value={newKeyLabel}
-                      onChange={(event) => setNewKeyLabel(event.target.value)}
-                      className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm shadow-inner focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
-                      placeholder="e.g. Claude Desktop"
-                      disabled={isAgentDisabled}
-                    />
-                  </div>
-                  <div className="flex items-end">
-                    <button
-                      type="submit"
-                      disabled={isAgentDisabled}
-                      className="inline-flex w-full items-center justify-center rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white shadow hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-400 disabled:cursor-not-allowed disabled:bg-slate-400 md:w-auto"
-                    >
-                      Generate API key
-                    </button>
-                  </div>
-                </form>
-
-                <div className="mt-6 overflow-x-auto">
-                  <table className="min-w-full divide-y divide-slate-200 text-sm">
-                    <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
-                      <tr>
-                        <th className="px-4 py-2 text-left">Label</th>
-                        <th className="px-4 py-2 text-left">Last digits</th>
-                        <th className="px-4 py-2 text-left">Status</th>
-                        <th className="px-4 py-2 text-left">Last used</th>
-                        <th className="px-4 py-2 text-left">Created</th>
-                        <th className="px-4 py-2 text-right">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100">
-                      {keys.map((key) => (
-                        <tr key={key.id} className="bg-white">
-                          <td className="px-4 py-3 text-slate-800">{key.name}</td>
-                          <td className="px-4 py-3 font-mono text-slate-600">...{key.lastFour}</td>
-                          <td className="px-4 py-3">
-                            <span
-                              className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-                                key.isActive ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-600'
-                              }`}
-                            >
-                              {key.isActive ? 'Active' : 'Revoked'}
-                            </span>
-                          </td>
-                          <td className="px-4 py-3 text-slate-600">
-                            {key.isActive ? formatDate(key.lastUsedAt) : '—'}
-                          </td>
-                          <td className="px-4 py-3 text-slate-600">{formatDate(key.createdAt)}</td>
-                          <td className="px-4 py-3 text-right">
-                            {key.isActive ? (
-                              <button
-                                type="button"
-                                onClick={() => handleRevokeKey(key.id)}
-                                className="inline-flex items-center rounded-md border border-rose-300 px-3 py-1.5 text-xs font-medium text-rose-600 hover:bg-rose-50 focus:outline-none focus:ring-2 focus:ring-rose-200"
-                              >
-                                Revoke
-                              </button>
-                            ) : (
-                              <span className="text-xs text-slate-400">Revoked {formatDate(key.revokedAt)}</span>
-                            )}
-                          </td>
-                        </tr>
-                      ))}
-                      {keys.length === 0 && (
-                        <tr>
-                          <td className="px-4 py-6 text-center text-sm text-slate-500" colSpan={6}>
-                            {keysLoading ? 'Loading keys...' : 'No API keys issued yet.'}
-                          </td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              </section>
-            </div>
-          ) : (
-            <div className="flex h-full min-h-[320px] flex-col items-center justify-center rounded-xl border border-dashed border-slate-200 bg-slate-50 text-center text-slate-500">
-              <p className="text-lg font-semibold text-slate-600">Select or create an agent</p>
-              <p className="mt-2 max-w-md text-sm text-slate-500">
-                Once you create an agent it will appear here so you can assign permissions and generate credentials.
-              </p>
+      <main className={`relative z-10 mx-auto max-w-7xl ${isMobile ? 'p-4 pt-6' : 'p-6 mt-6'}`}>
+        <div className="space-y-6">
+          {statusMessage && (
+            <div className="rounded-2xl border border-emerald-200/70 bg-emerald-50/80 px-4 py-3 text-sm text-emerald-700 shadow-sm">
+              {statusMessage}
             </div>
           )}
-        </main>
-      </div>
+
+          {errorMessage && (
+            <div className="rounded-2xl border border-rose-200/70 bg-rose-50/85 px-4 py-3 text-sm text-rose-700 shadow-sm">
+              {errorMessage}
+            </div>
+          )}
+
+          <div className={`${glassCardClass} p-6`} style={subtleBorderStyle}>
+            <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
+              <aside className="space-y-4">
+                <div className={`${panelCardClass} p-6`} style={subtleBorderStyle}>
+                  <h2 className="text-lg font-semibold text-slate-900">Agents</h2>
+                  <p className="text-sm text-slate-600">
+                    Create a dedicated agent profile for each tool or collaborator.
+                  </p>
+
+                  <form onSubmit={handleCreateAgent} className="mt-4 space-y-4">
+                    <div>
+                      <label className="block text-xs font-semibold uppercase tracking-wide text-slate-500">
+                        Name
+                      </label>
+                      <input
+                        type="text"
+                        className={inputClass}
+                        style={{ borderColor: borderTint }}
+                        value={agentForm.name}
+                        onChange={(event) =>
+                          setAgentForm((previous) => ({ ...previous, name: event.target.value }))
+                        }
+                        placeholder="e.g. VS Code Agent"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold uppercase tracking-wide text-slate-500">
+                        Description
+                      </label>
+                      <textarea
+                        className={textareaClass}
+                        style={{ borderColor: borderTint }}
+                        rows={2}
+                        value={agentForm.description}
+                        onChange={(event) =>
+                          setAgentForm((previous) => ({ ...previous, description: event.target.value }))
+                        }
+                        placeholder="How will this agent be used?"
+                      />
+                    </div>
+
+                    <button
+                      type="submit"
+                      disabled={creatingAgent || !agentForm.name.trim()}
+                      className={`${primaryButtonClass} disabled:cursor-not-allowed disabled:opacity-60`}
+                    >
+                      {creatingAgent ? 'Creating...' : 'Create agent'}
+                    </button>
+                  </form>
+                </div>
+
+                <div className={`${panelCardClass} p-3`} style={subtleBorderStyle}>
+                  <ul className="space-y-2">
+                    {agents.map((agent) => {
+                      const isActive = agent.id === selectedAgentId;
+                      const actionCount = Array.isArray(agent.actionKeys) ? agent.actionKeys.length : 0;
+                      const apiKeyCount = typeof agent.apiKeyCount === 'number' ? agent.apiKeyCount : 0;
+                      return (
+                        <li key={agent.id}>
+                          <button
+                            type="button"
+                            onClick={() => selectAgent(agent.id)}
+                            className={`w-full rounded-2xl border px-4 py-3 text-left transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white ${theme.focus} ${
+                              isActive ? 'text-white shadow-lg' : 'text-slate-700 hover:-translate-y-0.5'
+                            }`}
+                            style={
+                              isActive
+                                ? {
+                                    background: `linear-gradient(135deg, ${hexToRgba(themeColor, 0.85)}, ${themeColor})`,
+                                    borderColor: themeColor,
+                                  }
+                                : {
+                                    borderColor: borderTint,
+                                    backgroundColor: 'rgba(255,255,255,0.9)',
+                                  }
+                            }
+                          >
+                            <div className="flex items-center justify-between gap-2">
+                              <span className={`text-sm font-semibold ${isActive ? 'text-white' : 'text-slate-900'}`}>
+                                {agent.name}
+                              </span>
+                              <span
+                                className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_BADGE[agent.status]} ${
+                                  isActive ? 'bg-white/20 text-white' : ''
+                                }`}
+                              >
+                                {agent.status === 'active' ? 'Active' : 'Disabled'}
+                              </span>
+                            </div>
+                            {agent.description && (
+                              <p className={`mt-1 line-clamp-2 text-xs ${isActive ? 'text-white/80' : 'text-slate-600'}`}>
+                                {agent.description}
+                              </p>
+                            )}
+                            <div
+                              className={`mt-2 flex flex-wrap items-center gap-2 text-xs ${
+                                isActive ? 'text-white/80' : 'text-slate-500'
+                              }`}
+                            >
+                              <span>{actionCount} actions</span>
+                              <span>|</span>
+                              <span>{apiKeyCount} API keys</span>
+                            </div>
+                          </button>
+                        </li>
+                      );
+                    })}
+
+                    {agents.length === 0 && (
+                      <li className="rounded-2xl border border-dashed border-slate-200/70 bg-white/70 px-3 py-4 text-center text-sm text-slate-600">
+                        No agents yet. Create one to begin.
+                      </li>
+                    )}
+                  </ul>
+                </div>
+              </aside>
+
+              <section className="space-y-6">
+                {selectedAgent ? (
+                  <div className="space-y-6">
+                    <section className={`${panelCardClass} p-6`} style={subtleBorderStyle}>
+                      <header className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                        <div>
+                          <h2 className="text-xl font-semibold text-slate-900">{selectedAgent.name}</h2>
+                          <p className="text-sm text-slate-600">
+                            Manage permissions and API credentials for this agent.
+                          </p>
+                          <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-slate-500">
+                            <span>Created {formatDate(selectedAgent.createdAt)}</span>
+                            <span>|</span>
+                            <span>Last used {formatDate(selectedAgent.lastUsedAt)}</span>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={handleToggleAgentStatus}
+                          className={`inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium shadow focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white ${theme.focus} ${
+                            selectedAgent.status === 'active'
+                              ? 'bg-rose-50 text-rose-600 hover:bg-rose-100'
+                              : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100'
+                          }`}
+                        >
+                          {selectedAgent.status === 'active' ? 'Disable agent' : 'Enable agent'}
+                        </button>
+                      </header>
+
+                      <form onSubmit={handleSaveProfile} className="mt-6 space-y-4">
+                        <div className="grid gap-4 md:grid-cols-2">
+                          <div>
+                            <label className="block text-xs font-medium uppercase tracking-wide text-slate-500">
+                              Agent name
+                            </label>
+                            <input
+                              type="text"
+                              value={agentForm.name}
+                              onChange={(event) =>
+                                setAgentForm((previous) => ({ ...previous, name: event.target.value }))
+                              }
+                              className={inputClass}
+                              style={{ borderColor: borderTint }}
+                              disabled={isAgentDisabled}
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-medium uppercase tracking-wide text-slate-500">
+                              Description
+                            </label>
+                            <input
+                              type="text"
+                              value={agentForm.description}
+                              onChange={(event) =>
+                                setAgentForm((previous) => ({ ...previous, description: event.target.value }))
+                              }
+                              className={inputClass}
+                              style={{ borderColor: borderTint }}
+                              disabled={isAgentDisabled}
+                            />
+                          </div>
+                        </div>
+                        <div className="flex justify-end">
+                          <button
+                            type="submit"
+                            disabled={savingProfile || isAgentDisabled}
+                            className={`inline-flex items-center justify-center rounded-xl px-4 py-2 text-sm font-semibold text-white shadow-md transition-transform duration-200 hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white ${theme.button} ${theme.focus} disabled:cursor-not-allowed disabled:opacity-60`}
+                          >
+                            {savingProfile ? 'Saving...' : 'Save profile'}
+                          </button>
+                        </div>
+                      </form>
+                    </section>
+
+                    <section className={`${panelCardClass} p-6`} style={subtleBorderStyle}>
+                      <header className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                        <div>
+                          <h3 className="text-lg font-semibold text-slate-900">Capabilities</h3>
+                          <p className="text-sm text-slate-600">
+                            Choose what this agent may do and limit it to specific calendars or automations.
+                          </p>
+                        </div>
+                        <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600">
+                          {enabledActionKeys.length} active actions
+                        </span>
+                      </header>
+
+                      <div className="mt-6 space-y-8">
+                        {groupedActions.map(({ category, actions }) => (
+                          <div key={category} className="space-y-4">
+                            <div className="flex items-center gap-2">
+                              <h4 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+                                {category === 'calendars'
+                                  ? 'Calendars'
+                                  : category === 'automation'
+                                  ? 'Automation'
+                                  : 'Profile'}
+                              </h4>
+                              <div className="h-px flex-1 bg-slate-200" />
+                            </div>
+                            <div className="space-y-4">
+                              {actions.map((action) => {
+                                const draft = permissionsDraft[action.key] ?? { enabled: false, scope: [] };
+                                return (
+                                  <div
+                                    key={action.key}
+                                    className="rounded-2xl border bg-white/85 p-4 shadow-inner transition-all duration-200 hover:-translate-y-0.5"
+                                    style={{ borderColor: borderTint, backgroundColor: hexToRgba(themeColor, 0.08) }}
+                                  >
+                                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                                      <div>
+                                        <div className="flex flex-wrap items-center gap-2">
+                                          <label className="inline-flex items-center gap-2 text-sm font-medium text-slate-900">
+                                            <input
+                                              type="checkbox"
+                                              className="h-4 w-4"
+                                              style={checkboxAccentStyle}
+                                              checked={draft.enabled}
+                                              disabled={isAgentDisabled}
+                                              onChange={() => handleTogglePermission(action.key)}
+                                            />
+                                            {action.label}
+                                          </label>
+                                          <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${RISK_BADGE[action.risk]}`}>
+                                            {action.risk === 'read'
+                                              ? 'Read'
+                                              : action.risk === 'write'
+                                              ? 'Write'
+                                              : 'Execute'}
+                                          </span>
+                                        </div>
+                                        <p className="mt-1 text-sm text-slate-600">{action.description}</p>
+                                      </div>
+                                      {!draft.enabled && (
+                                        <span className="rounded-full bg-slate-200 px-2 py-0.5 text-xs text-slate-600">
+                                          Disabled
+                                        </span>
+                                      )}
+                                    </div>
+                                    {action.scopeConfig && renderScopeControls(action, draft)}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="mt-6 flex justify-end">
+                        <button
+                          type="button"
+                          onClick={handleSavePermissions}
+                          disabled={savingPermissions || isAgentDisabled}
+                          className={`inline-flex items-center justify-center rounded-xl px-4 py-2 text-sm font-semibold text-white shadow-md transition-transform duration-200 hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white ${theme.button} ${theme.focus} disabled:cursor-not-allowed disabled:opacity-60`}
+                        >
+                          {savingPermissions ? 'Saving permissions...' : 'Save permissions'}
+                        </button>
+                      </div>
+                    </section>
+
+                    <section className={`${panelCardClass} p-6`} style={subtleBorderStyle}>
+                      <header className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                        <div>
+                          <h3 className="text-lg font-semibold text-slate-900">API keys</h3>
+                          <p className="text-sm text-slate-600">
+                            Issue a unique key for each external tool. Revoke keys immediately if they are compromised.
+                          </p>
+                        </div>
+                        <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600">
+                          {keys.length} keys
+                        </span>
+                      </header>
+
+                      {newKeySecret && (
+                        <div className="mt-4 rounded-lg border border-amber-300 bg-amber-50 p-4 text-sm text-amber-800">
+                          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                            <div>
+                              <p className="font-semibold">New API key created</p>
+                              <p>Copy this token now. For security reasons it will not be shown again.</p>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={handleCopySecret}
+                              className="inline-flex items-center justify-center rounded-md border border-amber-400 px-3 py-1.5 text-sm font-medium text-amber-800 hover:bg-amber-100 focus:outline-none focus:ring-2 focus:ring-amber-300"
+                            >
+                              Copy API key
+                            </button>
+                          </div>
+                          <code className="mt-3 block overflow-x-auto rounded-md bg-white px-3 py-2 text-sm text-slate-700 shadow-inner">
+                            {newKeySecret}
+                          </code>
+                          {mcpConfigSnippet && (
+                            <div className="mt-4">
+                              <label className="block text-xs font-medium uppercase tracking-wide text-slate-500">
+                                MCP configuration
+                              </label>
+                              <textarea
+                                className={`${textareaClass} font-mono`}
+                                style={{ borderColor: borderTint, backgroundColor: 'rgba(255,255,255,0.95)' }}
+                                rows={Math.min(12, mcpConfigSnippet.split('\n').length + 1)}
+                                value={mcpConfigSnippet}
+                                readOnly
+                              />
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      <form
+                        onSubmit={handleCreateKey}
+                        className="mt-4 grid gap-3 rounded-2xl border bg-white/85 p-4 shadow-inner md:grid-cols-[1fr_auto]"
+                        style={{ borderColor: borderTint, backgroundColor: hexToRgba(themeColor, 0.08) }}
+                      >
+                        <div>
+                          <label className="block text-xs font-medium uppercase tracking-wide text-slate-500">
+                            Key label
+                          </label>
+                          <input
+                            type="text"
+                            value={newKeyLabel}
+                            onChange={(event) => setNewKeyLabel(event.target.value)}
+                            className={inputClass}
+                            style={{ borderColor: borderTint }}
+                            placeholder="e.g. Claude Desktop"
+                            disabled={isAgentDisabled}
+                          />
+                        </div>
+                        <div className="flex items-end">
+                          <button
+                            type="submit"
+                            disabled={isAgentDisabled}
+                            className={`inline-flex w-full items-center justify-center rounded-xl px-4 py-2 text-sm font-semibold text-white shadow-md transition-transform duration-200 hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white ${theme.button} ${theme.focus} disabled:cursor-not-allowed disabled:opacity-60 md:w-auto`}
+                          >
+                            Generate API key
+                          </button>
+                        </div>
+                      </form>
+
+                      <div className="mt-6 overflow-x-auto">
+                        <table className="min-w-full divide-y divide-slate-200 text-sm">
+                          <thead
+                            className="text-xs uppercase tracking-wide text-slate-500"
+                            style={{ backgroundColor: hexToRgba(themeColor, 0.1) }}
+                          >
+                            <tr>
+                              <th className="px-4 py-2 text-left">Label</th>
+                              <th className="px-4 py-2 text-left">Last digits</th>
+                              <th className="px-4 py-2 text-left">Status</th>
+                              <th className="px-4 py-2 text-left">Last used</th>
+                              <th className="px-4 py-2 text-left">Created</th>
+                              <th className="px-4 py-2 text-right">Actions</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-slate-100">
+                            {keys.map((key) => (
+                              <tr key={key.id} className="bg-white">
+                                <td className="px-4 py-3 text-slate-800">{key.name}</td>
+                                <td className="px-4 py-3 font-mono text-slate-600">...{key.lastFour}</td>
+                                <td className="px-4 py-3">
+                                  <span
+                                    className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                                      key.isActive ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-600'
+                                    }`}
+                                  >
+                                    {key.isActive ? 'Active' : 'Revoked'}
+                                  </span>
+                                </td>
+                                <td className="px-4 py-3 text-slate-600">
+                                  {key.isActive ? formatDate(key.lastUsedAt) : '-'}
+                                </td>
+                                <td className="px-4 py-3 text-slate-600">{formatDate(key.createdAt)}</td>
+                                <td className="px-4 py-3 text-right">
+                                  {key.isActive ? (
+                                    <button
+                                      type="button"
+                                      onClick={() => handleRevokeKey(key.id)}
+                                      className="inline-flex items-center rounded-md border border-rose-300 px-3 py-1.5 text-xs font-medium text-rose-600 hover:bg-rose-50 focus:outline-none focus:ring-2 focus:ring-rose-200"
+                                    >
+                                      Revoke
+                                    </button>
+                                  ) : (
+                                    <span className="text-xs text-slate-400">Revoked {formatDate(key.revokedAt)}</span>
+                                  )}
+                                </td>
+                              </tr>
+                            ))}
+                            {keys.length === 0 && (
+                              <tr>
+                                <td className="px-4 py-6 text-center text-sm text-slate-500" colSpan={6}>
+                                  {keysLoading ? 'Loading keys...' : 'No API keys issued yet.'}
+                                </td>
+                              </tr>
+                            )}
+                          </tbody>
+                        </table>
+                      </div>
+                    </section>
+                  </div>
+                ) : (
+                  <div
+                    className="flex h-full min-h-[320px] flex-col items-center justify-center rounded-3xl border border-dashed text-center text-slate-500 backdrop-blur-md"
+                    style={{ borderColor: borderTint, backgroundColor: hexToRgba(themeColor, 0.08) }}
+                  >
+                    <p className="text-lg font-semibold text-slate-600">Select or create an agent</p>
+                    <p className="mt-2 max-w-md text-sm text-slate-500">
+                      Once you create an agent it will appear here so you can assign permissions and generate credentials.
+                    </p>
+                  </div>
+                )}
+              </section>
+            </div>
+          </div>
+        </div>
+      </main>
     </div>
   );
 };
 
 export default AgentSettingsPage;
-
-
-
-
 
 
 

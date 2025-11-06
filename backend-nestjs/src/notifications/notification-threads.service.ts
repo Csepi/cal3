@@ -150,7 +150,9 @@ export class NotificationThreadsService {
     });
 
     if (!state) {
-      const thread = await this.threadRepository.findOne({ where: { id: threadId } });
+      const thread = await this.threadRepository.findOne({
+        where: { id: threadId },
+      });
       if (!thread) {
         throw new NotFoundException('Notification thread not found');
       }

@@ -34,10 +34,7 @@ export class NotificationThread {
   @OneToMany(() => NotificationMessage, (message) => message.thread)
   messages?: NotificationMessage[];
 
-  @OneToMany(
-    () => NotificationThreadState,
-    (threadState) => threadState.thread,
-  )
+  @OneToMany(() => NotificationThreadState, (threadState) => threadState.thread)
   threadStates?: NotificationThreadState[];
 
   @CreateDateColumn()

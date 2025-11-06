@@ -24,6 +24,14 @@ import { SystemInfoDto } from './dto/system-info.dto';
 import { LogQueryDto, UpdateLogSettingsDto } from './dto/logs.dto';
 import { ConfigurationService } from '../configuration/configuration.service';
 import { UpdateConfigurationValueDto } from './dto/configuration.dto';
+import {
+  AdminCreateUserDto,
+  AdminUpdateUserDto,
+  AddUserToOrganisationRoleDto,
+  UpdateUserRoleDto,
+} from './dto/admin-user.dto';
+import { CreateCalendarDto, UpdateCalendarDto } from '../dto/calendar.dto';
+import { CreateEventDto, UpdateEventDto } from '../dto/event.dto';
 
 @ApiTags('Admin')
 @Controller('admin')
@@ -128,8 +136,7 @@ export class AdminController {
     @Body() updateDto: UpdateConfigurationValueDto,
   ) {
     const normalizedKey = key.toUpperCase();
-    const value =
-      updateDto.value === undefined ? null : (updateDto.value as any);
+    const value = updateDto.value === undefined ? null : updateDto.value;
     return this.configurationService.updateSetting(normalizedKey, value);
   }
 
@@ -182,7 +189,7 @@ export class AdminController {
   @ApiResponse({ status: 200, description: 'User role updated successfully' })
   updateUserRole(
     @Param('id') id: string,
-    @Body() updateRoleDto: { role: string },
+    @Body() updateRoleDto: UpdateUserRoleDto,
   ) {
     return this.adminService.updateUserRole(+id, updateRoleDto.role);
   }
@@ -228,21 +235,21 @@ export class AdminController {
   @Post('users')
   @ApiOperation({ summary: 'Create new user (Admin only)' })
   @ApiResponse({ status: 201, description: 'User created successfully' })
-  createUser(@Body() createUserDto: any) {
+  createUser(@Body() createUserDto: AdminCreateUserDto) {
     return this.adminService.createUser(createUserDto);
   }
 
   @Post('calendars')
   @ApiOperation({ summary: 'Create new calendar (Admin only)' })
   @ApiResponse({ status: 201, description: 'Calendar created successfully' })
-  createCalendar(@Body() createCalendarDto: any) {
+  createCalendar(@Body() createCalendarDto: CreateCalendarDto) {
     return this.adminService.createCalendar(createCalendarDto);
   }
 
   @Post('events')
   @ApiOperation({ summary: 'Create new event (Admin only)' })
   @ApiResponse({ status: 201, description: 'Event created successfully' })
-  createEvent(@Body() createEventDto: any) {
+  createEvent(@Body() createEventDto: CreateEventDto) {
     return this.adminService.createEvent(createEventDto);
   }
 
@@ -250,7 +257,10 @@ export class AdminController {
   @Patch('users/:id')
   @ApiOperation({ summary: 'Update user (Admin only)' })
   @ApiResponse({ status: 200, description: 'User updated successfully' })
-  updateUser(@Param('id') id: string, @Body() updateUserDto: any) {
+  updateUser(
+    @Param('id') id: string,
+    @Body() updateUserDto: AdminUpdateUserDto,
+  ) {
     return this.adminService.updateUser(+id, updateUserDto);
   }
 
@@ -270,14 +280,17 @@ export class AdminController {
   @Patch('calendars/:id')
   @ApiOperation({ summary: 'Update calendar (Admin only)' })
   @ApiResponse({ status: 200, description: 'Calendar updated successfully' })
-  updateCalendar(@Param('id') id: string, @Body() updateCalendarDto: any) {
+  updateCalendar(
+    @Param('id') id: string,
+    @Body() updateCalendarDto: UpdateCalendarDto,
+  ) {
     return this.adminService.updateCalendar(+id, updateCalendarDto);
   }
 
   @Patch('events/:id')
   @ApiOperation({ summary: 'Update event (Admin only)' })
   @ApiResponse({ status: 200, description: 'Event updated successfully' })
-  updateEvent(@Param('id') id: string, @Body() updateEventDto: any) {
+  updateEvent(@Param('id') id: string, @Body() updateEventDto: UpdateEventDto) {
     return this.adminService.updateEvent(+id, updateEventDto);
   }
 
@@ -376,7 +389,7 @@ export class AdminController {
   })
   addUserToOrganizationWithRole(
     @Param('id') id: string,
-    @Body() addUserDto: { userId: number; role: string },
+    @Body() addUserDto: AddUserToOrganisationRoleDto,
   ) {
     return this.adminService.addUserToOrganizationWithRole(
       addUserDto.userId,

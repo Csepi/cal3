@@ -43,4 +43,3 @@ import { ConfigurationModule } from '../configuration/configuration.module';
   exports: [AgentsService, AgentAuthorizationService],
 })
 export class AgentsModule {}
-

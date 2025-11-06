@@ -44,7 +44,9 @@ export class MobilePushChannelProvider implements NotificationChannelProvider {
     });
 
     if (tokens.length === 0) {
-      throw new NotificationChannelSkipError('No mobile push tokens registered');
+      throw new NotificationChannelSkipError(
+        'No mobile push tokens registered',
+      );
     }
 
     const registrationTokens = tokens.map((token) => token.token);
@@ -63,7 +65,10 @@ export class MobilePushChannelProvider implements NotificationChannelProvider {
         },
       });
 
-      if (response.failureCount === response.successCount && response.successCount === 0) {
+      if (
+        response.failureCount === response.successCount &&
+        response.successCount === 0
+      ) {
         throw new Error('All FCM sends failed');
       }
 
@@ -103,7 +108,10 @@ export class MobilePushChannelProvider implements NotificationChannelProvider {
       if (!admin.apps.length) {
         admin.initializeApp({
           credential: admin.credential.cert(credential),
-          projectId: credential.project_id || this.configService.get<string>('FCM_PROJECT_ID') || undefined,
+          projectId:
+            credential.project_id ||
+            this.configService.get<string>('FCM_PROJECT_ID') ||
+            undefined,
         });
       }
       this.available = true;

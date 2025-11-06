@@ -1,10 +1,7 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
-import {
-  InboxRuleDto,
-  InboxRuleScope,
-} from './dto/inbox-rule.dto';
+import { InboxRuleDto, InboxRuleScope } from './dto/inbox-rule.dto';
 import { UserNotificationPreference } from '../entities/user-notification-preference.entity';
 import { NotificationInboxRule } from '../entities/notification-inbox-rule.entity';
 import { NotificationScopeMute } from '../entities/notification-scope-mute.entity';
@@ -123,7 +120,9 @@ export class NotificationRulesService {
     private readonly userPermissionsService: UserPermissionsService,
   ) {}
 
-  async getUserPreferences(userId: number): Promise<NotificationPreferenceSummary[]> {
+  async getUserPreferences(
+    userId: number,
+  ): Promise<NotificationPreferenceSummary[]> {
     const preferences = await this.preferenceRepository.find({
       where: { userId },
       order: { eventType: 'ASC' },
@@ -281,12 +280,20 @@ export class NotificationRulesService {
     userId: number,
     scopeTypes?: string[],
   ): Promise<NotificationScopeMap> {
-    const allScopes: NotificationScopeType[] = ['organisation', 'calendar', 'reservation'];
+    const allScopes: NotificationScopeType[] = [
+      'organisation',
+      'calendar',
+      'reservation',
+    ];
     const normalizedTypes =
       scopeTypes && scopeTypes.length > 0
         ? scopeTypes
             .map((value) => value?.toLowerCase().trim())
-            .filter((value): value is NotificationScopeType => Boolean(value) && allScopes.includes(value as NotificationScopeType))
+            .filter(
+              (value): value is NotificationScopeType =>
+                Boolean(value) &&
+                allScopes.includes(value as NotificationScopeType),
+            )
         : null;
 
     const requested =
@@ -303,9 +310,8 @@ export class NotificationRulesService {
     const isRequested = (scope: NotificationScopeType): boolean =>
       !requested || requested.has(scope);
 
-    const permissions = await this.userPermissionsService.getUserPermissions(
-      userId,
-    );
+    const permissions =
+      await this.userPermissionsService.getUserPermissions(userId);
 
     if (isRequested('organisation')) {
       if (permissions.accessibleOrganizationIds.length > 0) {
@@ -318,9 +324,7 @@ export class NotificationRulesService {
           value: String(organisation.id),
           label: organisation.name ?? `Organisation #${organisation.id}`,
           meta: {
-            isAdmin: permissions.adminOrganizationIds.includes(
-              organisation.id,
-            ),
+            isAdmin: permissions.adminOrganizationIds.includes(organisation.id),
           },
         }));
       } else {
@@ -377,9 +381,7 @@ export class NotificationRulesService {
           where: { id: In(sharedCalendarIds), isActive: true },
           select: ['id', 'name', 'isReservationCalendar', 'organisationId'],
         });
-        sharedCalendars.forEach((calendar) =>
-          addCalendar(calendar, 'Shared'),
-        );
+        sharedCalendars.forEach((calendar) => addCalendar(calendar, 'Shared'));
       }
 
       const reservationCalendarIds = new Set<number>(
@@ -400,12 +402,11 @@ export class NotificationRulesService {
       }
 
       if (reservationCalendarIds.size > 0) {
-        const reservationCalendars = await this.reservationCalendarRepository.find(
-          {
+        const reservationCalendars =
+          await this.reservationCalendarRepository.find({
             where: { id: In(Array.from(reservationCalendarIds)) },
             relations: ['calendar', 'organisation'],
-          },
-        );
+          });
         reservationCalendars.forEach((reservationCalendar) => {
           addCalendar(reservationCalendar.calendar, 'Reservation', {
             reservationCalendarId: reservationCalendar.id,
@@ -413,8 +414,7 @@ export class NotificationRulesService {
               reservationCalendar.organisationId ??
               reservationCalendar.organisation?.id ??
               null,
-            organisationName:
-              reservationCalendar.organisation?.name ?? null,
+            organisationName: reservationCalendar.organisation?.name ?? null,
           });
         });
       }
@@ -430,7 +430,8 @@ export class NotificationRulesService {
               ...meta,
               tags: tagList,
               isReservation: Boolean(calendar.isReservationCalendar),
-              organisationId: calendar.organisationId ?? meta.organisationId ?? null,
+              organisationId:
+                calendar.organisationId ?? meta.organisationId ?? null,
             },
           };
         })
@@ -568,7 +569,7 @@ export class NotificationRulesService {
   ): Promise<Map<number, NotificationRuleContext>> {
     const uniqueIds = Array.from(
       new Set(userIds.filter((id) => Number.isInteger(id))),
-    ) as number[];
+    );
 
     const contextMap = new Map<number, NotificationRuleContext>();
     if (uniqueIds.length === 0) {
@@ -726,11 +727,12 @@ export class NotificationRulesService {
     if (!scopes.length || !mutes.length) {
       return false;
     }
-    const scopeSet = new Set(scopes.map((scope) => `${scope.scopeType}:${scope.scopeId}`));
+    const scopeSet = new Set(
+      scopes.map((scope) => `${scope.scopeType}:${scope.scopeId}`),
+    );
     return mutes.some(
       (mute) =>
-        mute.isMuted &&
-        scopeSet.has(`${mute.scopeType}:${mute.scopeId}`),
+        mute.isMuted && scopeSet.has(`${mute.scopeType}:${mute.scopeId}`),
     );
   }
 
@@ -784,8 +786,10 @@ export class NotificationRulesService {
     switch (operator) {
       case 'equals':
         if (Array.isArray(actual) && Array.isArray(expected)) {
-          return actual.length === expected.length &&
-            actual.every((value, index) => value === expected[index]);
+          return (
+            actual.length === expected.length &&
+            actual.every((value, index) => value === expected[index])
+          );
         }
         if (typeof actual === typeof expected) {
           return actual === expected;
@@ -800,12 +804,16 @@ export class NotificationRulesService {
         if (actual == null || expected == null) {
           return false;
         }
-        return String(actual).toLowerCase().includes(String(expected).toLowerCase());
+        return String(actual)
+          .toLowerCase()
+          .includes(String(expected).toLowerCase());
       case 'not_contains':
         if (actual == null || expected == null) {
           return true;
         }
-        return !String(actual).toLowerCase().includes(String(expected).toLowerCase());
+        return !String(actual)
+          .toLowerCase()
+          .includes(String(expected).toLowerCase());
       case 'starts_with':
         if (actual == null || expected == null) {
           return false;
@@ -836,10 +844,7 @@ export class NotificationRulesService {
     }
   }
 
-  private resolveFieldValue(
-    context: RuleConditionContext,
-    field: string,
-  ): any {
+  private resolveFieldValue(context: RuleConditionContext, field: string): any {
     const segments = field.split('.');
     if (segments.length === 1) {
       return (context as any)[segments[0]];
@@ -883,7 +888,7 @@ export class NotificationRulesService {
             ? action.payload.channels
             : [];
           channels.forEach((channel: NotificationChannelType) => {
-            const normalized = channel as NotificationChannelType;
+            const normalized = channel;
             if (ALL_CHANNELS.includes(normalized)) {
               suppressChannelSet.add(normalized);
             }
@@ -917,7 +922,9 @@ export class NotificationRulesService {
     return { stop, note };
   }
 
-  private toScopeMuteDto(entity: NotificationScopeMute): NotificationScopeMuteDto {
+  private toScopeMuteDto(
+    entity: NotificationScopeMute,
+  ): NotificationScopeMuteDto {
     return {
       scopeType: entity.scopeType,
       scopeId: entity.scopeId,
@@ -927,7 +934,9 @@ export class NotificationRulesService {
     };
   }
 
-  private normaliseScopeId(scopeId: string | number | null | undefined): string | null {
+  private normaliseScopeId(
+    scopeId: string | number | null | undefined,
+  ): string | null {
     if (scopeId === null || scopeId === undefined) {
       return null;
     }

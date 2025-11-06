@@ -16,7 +16,83 @@ interface ConfigurationGroup {
   label: string;
   description?: string;
   settings: ConfigurationSetting[];
+  derived?: Record<string, unknown>;
 }
+
+type ChannelToggleMap = Record<
+  string,
+  { enabled: boolean; label: string; description?: string }
+>;
+
+interface ChannelDefinition {
+  id: string;
+  label: string;
+  toggleKey?: string;
+  match: (key: string) => boolean;
+  description?: string;
+}
+
+interface ChannelGroupInfo {
+  definition?: ChannelDefinition;
+  settings: ConfigurationSetting[];
+}
+
+type ChannelGroupMap = Record<string, ChannelGroupInfo>;
+
+const isChannelToggle = (setting: ConfigurationSetting) =>
+  setting.valueType === 'boolean' && setting.key.startsWith('ENABLE_');
+
+const CHANNEL_DEFINITIONS: ChannelDefinition[] = [
+  {
+    id: 'engine',
+    label: 'Notification Engine',
+    toggleKey: 'ENABLE_NOTIFICATIONS',
+    match: (key) => key === 'REDIS_URL',
+  },
+  {
+    id: 'rules',
+    label: 'Inbox Rules',
+    toggleKey: 'ENABLE_NOTIFICATION_RULES',
+    match: (key) => key === 'MAX_INBOX_RULES_PER_USER',
+  },
+  {
+    id: 'email',
+    label: 'Email Channel',
+    match: (key) =>
+      key === 'EMAIL_PROVIDER' ||
+      key.startsWith('SMTP_') ||
+      key.startsWith('SENDGRID') ||
+      key.startsWith('POSTMARK') ||
+      key.startsWith('AWS_SES'),
+  },
+  {
+    id: 'webpush',
+    label: 'Web Push Channel',
+    toggleKey: 'ENABLE_WEBPUSH',
+    match: (key) => key.startsWith('WEBPUSH_'),
+  },
+  {
+    id: 'mobile',
+    label: 'Mobile Push Channel',
+    toggleKey: 'ENABLE_MOBILE_PUSH',
+    match: (key) => key.startsWith('FCM_'),
+  },
+  {
+    id: 'slack',
+    label: 'Slack Channel',
+    toggleKey: 'ENABLE_SLACK',
+    match: (key) => key.includes('SLACK'),
+  },
+  {
+    id: 'teams',
+    label: 'Microsoft Teams Channel',
+    toggleKey: 'ENABLE_TEAMS',
+    match: (key) => key.includes('TEAMS'),
+  },
+];
+
+const FALLBACK_GROUP_ID = 'other';
+const FALLBACK_GROUP_LABEL = 'General Settings';
 
 export const AdminNotificationsPanel = ({ themeColor = '#3b82f6' }: { themeColor?: string }) => {
   const [config, setConfig] = useState<ConfigurationGroup | null>(null);
@@ -107,12 +183,71 @@ export const AdminNotificationsPanel = ({ themeColor = '#3b82f6' }: { themeColor
   };
 
   const derivedInfo = useMemo(() => {
-    if (!config) {
+    if (!config || !config.derived) {
       return [];
     }
-    const data = (config as any)?.derived ?? {};
-    return Object.entries(data);
+    return Object.entries(config.derived);
   }, [config]);
+
+  const channelMeta = useMemo<{
+    toggles: ChannelToggleMap;
+    groups: ChannelGroupMap;
+  }>(() => {
+    if (!config) {
+      return { toggles: {}, groups: {} };
+    }
+
+    const toggleSettings = config.settings.filter(isChannelToggle);
+    const toggles = toggleSettings.reduce<ChannelToggleMap>((acc, setting) => {
+      const enabled =
+        setting.value === true || setting.value === 'true' || setting.value === 'enabled';
+      acc[setting.key] = {
+        enabled,
+        label: setting.label,
+        description: setting.description,
+      };
+      return acc;
+    }, {});
+
+    const providerSettings = config.settings.filter((setting) => !isChannelToggle(setting));
+    const groups = providerSettings.reduce<ChannelGroupMap>((acc, setting) => {
+      const definition = CHANNEL_DEFINITIONS.find((def) => def.match(setting.key));
+      const groupId = definition?.id ?? FALLBACK_GROUP_ID;
+
+      if (!acc[groupId]) {
+        acc[groupId] = { definition, settings: [] };
+      }
+      acc[groupId].settings.push(setting);
+      return acc;
+    }, {});
+
+    return { toggles, groups };
+  }, [config]);
+
+  const providerGroupEntries = useMemo(
+    () =>
+      Object.entries(channelMeta.groups)
+        .map(([id, info]) => ({
+          id,
+          definition: info.definition,
+          settings: info.settings,
+        }))
+        .filter((entry) => entry.settings.length > 0)
+        .sort((a, b) => {
+          const orderA = a.definition
+            ? CHANNEL_DEFINITIONS.findIndex((def) => def.id === a.definition?.id)
+            : CHANNEL_DEFINITIONS.length + 1;
+          const orderB = b.definition
+            ? CHANNEL_DEFINITIONS.findIndex((def) => def.id === b.definition?.id)
+            : CHANNEL_DEFINITIONS.length + 1;
+
+          if (orderA === orderB) {
+            return a.id.localeCompare(b.id);
+          }
+          return orderA - orderB;
+        }),
+    [channelMeta.groups],
+  );
 
   return (
     <div className="space-y-6">
@@ -134,7 +269,7 @@ export const AdminNotificationsPanel = ({ themeColor = '#3b82f6' }: { themeColor
           <section>
             <h2 className="text-lg font-medium text-gray-900 mb-3">Channel toggles</h2>
             <div className="grid gap-3">
-              {config.settings.filter((setting) => setting.valueType === 'boolean').map((setting) => (
+              {config.settings.filter(isChannelToggle).map((setting) => (
                 <div key={setting.key} className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 border border-gray-200 rounded-xl p-4 bg-white shadow-sm">
                   <div>
                     <p className="text-sm font-semibold text-gray-900">{setting.label}</p>
@@ -150,18 +285,69 @@ export const AdminNotificationsPanel = ({ themeColor = '#3b82f6' }: { themeColor
 
           <section>
             <h2 className="text-lg font-medium text-gray-900 mb-3">Provider configuration</h2>
-            <div className="grid gap-4">
-              {config.settings.filter((setting) => setting.valueType !== 'boolean').map((setting) => (
-                <div key={setting.key} className="border border-gray-200 rounded-xl p-4 bg-white shadow-sm">
-                  <label className="block text-sm font-medium text-gray-700" htmlFor={setting.key}>
-                    {setting.label}
-                  </label>
-                  {setting.description && (
-                    <p className="text-xs text-gray-500 mb-2">{setting.description}</p>
-                  )}
-                  {renderControl(setting)}
+            <div className="space-y-5">
+              {providerGroupEntries.map(({ id: groupId, definition, settings }) => {
+                const toggle = definition?.toggleKey
+                  ? channelMeta.toggles[definition.toggleKey]
+                  : undefined;
+
+                if (toggle && !toggle.enabled) {
+                  return null;
+                }
+
+                const defaultHeading = groupId
+                  .replace(/[_-]/g, ' ')
+                  .toLowerCase()
+                  .replace(/\b\w/g, (char) => char.toUpperCase());
+
+                const heading = definition?.label ?? toggle?.label ?? defaultHeading ?? FALLBACK_GROUP_LABEL;
+
+                return (
+                  <div key={groupId} className="space-y-3">
+                    <div>
+                      <h3 className="text-sm font-semibold text-gray-800 uppercase tracking-wide">
+                        {heading}
+                      </h3>
+                      {(definition?.description || toggle?.description) && (
+                        <p className="text-xs text-gray-500">
+                          {definition?.description || toggle?.description}
+                        </p>
+                      )}
+                    </div>
+                    <div className="grid gap-4">
+                      {settings.map((setting) => {
+                        const isBooleanControl = setting.valueType === 'boolean';
+                        return (
+                          <div
+                            key={setting.key}
+                            className="border border-gray-200 rounded-xl p-4 bg-white shadow-sm"
+                          >
+                            {!isBooleanControl && (
+                              <label
+                                className="block text-sm font-medium text-gray-700"
+                                htmlFor={setting.key}
+                              >
+                                {setting.label}
+                              </label>
+                            )}
+                            {setting.description && (
+                              <p className={`text-xs text-gray-500 mb-2 ${isBooleanControl ? 'mt-0' : ''}`}>
+                                {setting.description}
+                              </p>
+                            )}
+                            {renderControl(setting)}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })}
+              {providerGroupEntries.length === 0 && (
+                <div className="rounded-lg border border-gray-200 bg-white px-4 py-6 text-sm text-gray-500">
+                  No provider configuration available for the current channel selection.
                 </div>
-              ))}
+              )}
             </div>
           </section>
 
