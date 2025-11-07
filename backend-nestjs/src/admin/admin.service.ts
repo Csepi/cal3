@@ -35,7 +35,7 @@ import { AdminCreateUserDto, AdminUpdateUserDto } from './dto/admin-user.dto';
 import { CreateCalendarDto, UpdateCalendarDto } from '../dto/calendar.dto';
 import { CreateEventDto, UpdateEventDto } from '../dto/event.dto';
 
-interface DatabaseStatsOverview {
+export interface DatabaseStatsOverview {
   users: {
     total: number;
     active: number;
@@ -71,7 +71,7 @@ interface PublicBookingInitializationResult {
   errors: string[];
 }
 
-interface PublicBookingInitializationResponse
+export interface PublicBookingInitializationResponse
   extends PublicBookingInitializationResult {
   success: boolean;
   message: string;
