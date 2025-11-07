@@ -51,11 +51,7 @@ export class ReservationsController {
     @Body() updateDto: UpdateReservationDto,
     @Req() req,
   ) {
-    return await this.reservationsService.update(
-      +id,
-      updateDto,
-      req.user.id,
-    );
+    return await this.reservationsService.update(+id, updateDto, req.user.id);
   }
 
   @Delete(':id')

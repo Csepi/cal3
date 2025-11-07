@@ -63,7 +63,14 @@ const Dashboard: React.FC = () => {
 
   // UI state management
   const [currentView, setCurrentView] = useState<DashboardView>('calendar');
-  const [themeColor, setThemeColor] = useState<string>(THEME_COLORS.BLUE);
+  const getInitialThemeColor = () => {
+    if (typeof window === 'undefined') {
+      return THEME_COLORS.BLUE;
+    }
+    return localStorage.getItem('themeColor') || THEME_COLORS.BLUE;
+  };
+
+  const [themeColor, setThemeColor] = useState<string>(getInitialThemeColor);
   const [userProfile, setUserProfile] = useState<any>(null);
 
   // Permissions state
@@ -96,6 +103,7 @@ const Dashboard: React.FC = () => {
     // Apply user's theme preference if available
     if (userData && userData.themeColor) {
       setThemeColor(userData.themeColor);
+      localStorage.setItem('themeColor', userData.themeColor);
     }
 
     // Load complete user profile from server
@@ -115,6 +123,7 @@ const Dashboard: React.FC = () => {
     setUserRole('user');
     setCurrentView('calendar');
     setThemeColor(THEME_COLORS.BLUE);
+    localStorage.removeItem('themeColor');
     setUserProfile(null);
 
     // Reset permissions state
@@ -146,6 +155,7 @@ const Dashboard: React.FC = () => {
       // Apply user's saved theme preference
       if (profile.themeColor) {
         setThemeColor(profile.themeColor);
+        localStorage.setItem('themeColor', profile.themeColor);
       }
 
       // Apply user's saved language preference
@@ -181,6 +191,7 @@ const Dashboard: React.FC = () => {
    */
   const handleThemeChange = (newTheme: string) => {
     setThemeColor(newTheme);
+    localStorage.setItem('themeColor', newTheme);
   };
 
   // Initialize authentication state from localStorage on component mount
@@ -286,7 +297,7 @@ const Dashboard: React.FC = () => {
             <AutomationPanel themeColor={themeColor} />
           )}
           {currentView === 'agent' && featureFlags.agents && (
-            <AgentSettingsPage />
+            <AgentSettingsPage themeColor={themeColor} />
           )}
           {currentView === 'reservations' && featureFlags.reservations && canAccessReservations && !userProfile?.hideReservationsTab && (
             <ReservationsPanel themeColor={themeColor} />

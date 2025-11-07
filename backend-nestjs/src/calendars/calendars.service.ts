@@ -189,7 +189,12 @@ export class CalendarsService {
 
     const updatedCalendar = await this.calendarRepository.save(calendar);
 
-    await this.notifyCalendarShareChange(updatedCalendar, userIds, userId, 'shared');
+    await this.notifyCalendarShareChange(
+      updatedCalendar,
+      userIds,
+      userId,
+      'shared',
+    );
 
     return updatedCalendar;
   }

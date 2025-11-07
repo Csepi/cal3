@@ -128,9 +128,8 @@ export class OrganisationsService {
 
     if (!organisation.users.find((u) => u.id === userId)) {
       organisation.users.push(user);
-      const savedOrganisation = await this.organisationRepository.save(
-        organisation,
-      );
+      const savedOrganisation =
+        await this.organisationRepository.save(organisation);
 
       await this.notifyOrganisationMembershipChange(
         savedOrganisation,
@@ -156,9 +155,8 @@ export class OrganisationsService {
 
     if (organisation.users) {
       organisation.users = organisation.users.filter((u) => u.id !== userId);
-      const updatedOrganisation = await this.organisationRepository.save(
-        organisation,
-      );
+      const updatedOrganisation =
+        await this.organisationRepository.save(organisation);
 
       await this.notifyOrganisationMembershipChange(
         updatedOrganisation,

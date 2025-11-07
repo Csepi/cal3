@@ -3,7 +3,10 @@ import type { Job } from 'bull';
 import { Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { NOTIFICATIONS_DIGEST_QUEUE, NotificationChannelType } from '../notifications.constants';
+import {
+  NOTIFICATIONS_DIGEST_QUEUE,
+  NotificationChannelType,
+} from '../notifications.constants';
 import { NotificationDelivery } from '../../entities/notification-delivery.entity';
 import { NotificationMessage } from '../../entities/notification-message.entity';
 import { NotificationChannelSkipError } from '../channels/notification-channel.interface';
@@ -88,7 +91,9 @@ export class NotificationsDigestProcessor {
     await this.dispatchDelivery(delivery);
   }
 
-  private async dispatchDelivery(delivery: NotificationDelivery): Promise<void> {
+  private async dispatchDelivery(
+    delivery: NotificationDelivery,
+  ): Promise<void> {
     const message = delivery.notification
       ? delivery.notification
       : await this.messageRepository.findOne({
@@ -139,7 +144,10 @@ export class NotificationsDigestProcessor {
     }
   }
 
-  private async scheduleDelivery(deliveryId: number, delay: number): Promise<void> {
+  private async scheduleDelivery(
+    deliveryId: number,
+    delay: number,
+  ): Promise<void> {
     const safeDelay = Math.max(delay, 1000);
     await this.digestQueue.add(
       'delivery-release',

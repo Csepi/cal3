@@ -1,7 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as nodemailer from 'nodemailer';
-import { NotificationChannelProvider, NotificationChannelContext, NotificationChannelSkipError } from './notification-channel.interface';
+import {
+  NotificationChannelProvider,
+  NotificationChannelContext,
+  NotificationChannelSkipError,
+} from './notification-channel.interface';
 
 @Injectable()
 export class EmailChannelProvider implements NotificationChannelProvider {
@@ -76,7 +80,9 @@ export class EmailChannelProvider implements NotificationChannelProvider {
     const pass = this.configService.get<string>('SMTP_PASSWORD');
 
     if (!host || !user || !pass) {
-      this.logger.warn('SMTP configuration incomplete; email channel disabled.');
+      this.logger.warn(
+        'SMTP configuration incomplete; email channel disabled.',
+      );
       this.transporter = null;
       this.configuredProvider = provider;
       return;

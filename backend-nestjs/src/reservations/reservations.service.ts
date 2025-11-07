@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  Logger,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Reservation } from '../entities/reservation.entity';
@@ -8,6 +13,7 @@ import {
   UpdateReservationDto,
 } from '../dto/reservation.dto';
 import { NotificationsService } from '../notifications/notifications.service';
+import { ReservationAvailabilityService } from '../common/services/reservation-availability.service';
 
 @Injectable()
 export class ReservationsService {
@@ -19,12 +25,20 @@ export class ReservationsService {
     @InjectRepository(Resource)
     private resourceRepository: Repository<Resource>,
     private readonly notificationsService: NotificationsService,
+    private readonly reservationAvailabilityService: ReservationAvailabilityService,
   ) {}
 
   async create(
     createDto: CreateReservationDto,
     userId: number,
   ): Promise<Reservation> {
+    const startTime = new Date(createDto.startTime);
+    const endTime = new Date(createDto.endTime);
+
+    if (Number.isNaN(startTime.getTime()) || Number.isNaN(endTime.getTime())) {
+      throw new BadRequestException('Invalid start or end time provided');
+    }
+
     const resource = await this.resourceRepository.findOne({
       where: { id: createDto.resourceId },
       relations: ['managedBy'],
@@ -36,8 +50,20 @@ export class ReservationsService {
       );
     }
 
+    const quantity = createDto.quantity ?? 1;
+
+    await this.reservationAvailabilityService.assertAvailability(
+      resource,
+      startTime,
+      endTime,
+      quantity,
+    );
+
     const reservation = this.reservationRepository.create({
       ...createDto,
+      startTime,
+      endTime,
+      quantity,
       resource,
       createdBy: { id: userId } as any,
     });
@@ -100,10 +126,42 @@ export class ReservationsService {
     userId?: number,
   ): Promise<Reservation> {
     const reservation = await this.findOne(id);
-    Object.assign(reservation, updateDto);
-    const updatedReservation = await this.reservationRepository.save(reservation);
 
-    await this.notifyReservationChange(updatedReservation.id, 'updated', userId);
+    const startTime = updateDto.startTime
+      ? new Date(updateDto.startTime)
+      : new Date(reservation.startTime);
+    const endTime = updateDto.endTime
+      ? new Date(updateDto.endTime)
+      : new Date(reservation.endTime);
+
+    if (Number.isNaN(startTime.getTime()) || Number.isNaN(endTime.getTime())) {
+      throw new BadRequestException('Invalid start or end time provided');
+    }
+
+    const quantity = updateDto.quantity ?? reservation.quantity ?? 1;
+
+    await this.reservationAvailabilityService.assertAvailability(
+      reservation.resource,
+      startTime,
+      endTime,
+      quantity,
+      reservation.id,
+    );
+
+    Object.assign(reservation, updateDto, {
+      startTime,
+      endTime,
+      quantity,
+    });
+
+    const updatedReservation =
+      await this.reservationRepository.save(reservation);
+
+    await this.notifyReservationChange(
+      updatedReservation.id,
+      'updated',
+      userId,
+    );
 
     return (
       (await this.reservationRepository.findOne({

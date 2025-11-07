@@ -248,6 +248,11 @@ export const bulkUpdateUsagePlans = async (
     throw new Error('No admin token found. Please login as admin.');
   }
 
+  const normalisePlan = (value: string) => value?.toLowerCase?.().trim?.() ?? value;
+  const normalisedPlans = plans.map(normalisePlan);
+
+  const dedupePlans = (values: string[]) => Array.from(new Set(values.map(normalisePlan)));
+
   const results: BulkOperationResult = {
     success: 0,
     failed: 0,
@@ -260,11 +265,30 @@ export const bulkUpdateUsagePlans = async (
     updateProgress?.(progress, `Updating user ${i + 1} of ${userIds.length}...`);
 
     try {
+      const user = await adminApiCall({
+        endpoint: `/admin/users/${userId}`,
+        token
+      });
+
+      const currentPlans: string[] = Array.isArray(user?.usagePlans)
+        ? user.usagePlans.map(normalisePlan)
+        : [];
+
+      let nextPlans: string[];
+      if (operation === 'set') {
+        nextPlans = dedupePlans(normalisedPlans);
+      } else if (operation === 'add') {
+        nextPlans = dedupePlans([...currentPlans, ...normalisedPlans]);
+      } else {
+        const planSet = new Set(normalisedPlans);
+        nextPlans = currentPlans.filter((plan) => !planSet.has(plan));
+      }
+
       await adminApiCall({
         endpoint: `/admin/users/${userId}/usage-plans`,
         token,
         method: 'PATCH',
-        data: { plans, operation }
+        data: { usagePlans: nextPlans }
       });
       results.success++;
     } catch (error) {
@@ -273,7 +297,6 @@ export const bulkUpdateUsagePlans = async (
       results.errors.push(`Failed to update user ${userId}: ${errorMessage}`);
     }
 
-    // Small delay to prevent overwhelming the server
     await new Promise(resolve => setTimeout(resolve, 100));
   }
 

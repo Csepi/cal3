@@ -207,10 +207,7 @@ export class AgentMcpService {
       throw new BadRequestException('eventId is required to update an event.');
     }
 
-    const existing = await this.eventsService.findOne(
-      eventId,
-      context.user.id,
-    );
+    const existing = await this.eventsService.findOne(eventId, context.user.id);
     if (!existing) {
       throw new NotFoundException('Event not found.');
     }
@@ -376,5 +373,3 @@ export class AgentMcpService {
       .filter((item) => Number.isInteger(item) && item > 0);
   }
 }
-
-

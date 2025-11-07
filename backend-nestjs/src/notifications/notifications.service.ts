@@ -209,15 +209,15 @@ export class NotificationsService implements OnModuleInit {
       );
 
       const enabledChannelsFromPreference = preference
-        ? (Object.entries(preference.channels || {})
+        ? Object.entries(preference.channels || {})
             .filter(([, enabled]) => Boolean(enabled))
-            .map(([channel]) => channel as NotificationChannelType))
+            .map(([channel]) => channel as NotificationChannelType)
         : undefined;
 
       const baseChannels =
         options.preferredChannels && options.preferredChannels.length > 0
           ? options.preferredChannels
-          : enabledChannelsFromPreference ?? [];
+          : (enabledChannelsFromPreference ?? []);
 
       const filteredChannels = baseChannels.filter(
         (channel) => !suppressedSet.has(channel),
@@ -372,7 +372,8 @@ export class NotificationsService implements OnModuleInit {
       {
         id: 'global',
         label: 'All notifications',
-        description: 'Applies across every calendar, reservation, and organisation.',
+        description:
+          'Applies across every calendar, reservation, and organisation.',
       },
       {
         id: 'organisation',
@@ -467,9 +468,10 @@ export class NotificationsService implements OnModuleInit {
     (preferredChannels ?? []).forEach((channel) => channelSet.add(channel));
     const channels = Array.from(channelSet);
 
-    const fallbackCandidates = (preference?.fallbackOrder ?? []) as NotificationChannelType[];
+    const fallbackCandidates = (preference?.fallbackOrder ??
+      []) as NotificationChannelType[];
     let fallbackChain = fallbackCandidates
-      .map((channel) => channel as NotificationChannelType)
+      .map((channel) => channel)
       .filter((channel) => channel !== 'inapp' && channelSet.has(channel));
     if (fallbackChain.length === 0) {
       fallbackChain = channels.filter((channel) => channel !== 'inapp');
@@ -478,7 +480,9 @@ export class NotificationsService implements OnModuleInit {
     for (const [index, channel] of channels.entries()) {
       const isInApp = channel === 'inapp';
       const digestDelay = isInApp ? 0 : this.computeDigestDelay(preference);
-      const quietDelay = isInApp ? 0 : this.calculateQuietHoursDelay(preference?.quietHours);
+      const quietDelay = isInApp
+        ? 0
+        : this.calculateQuietHoursDelay(preference?.quietHours);
       const releaseDelay = Math.max(digestDelay, quietDelay);
 
       const metadata: Record<string, any> = {
@@ -500,11 +504,7 @@ export class NotificationsService implements OnModuleInit {
         this.deliveryRepository.create({
           notificationId: message.id,
           channel,
-          status: isInApp
-            ? 'sent'
-            : releaseDelay > 0
-              ? 'scheduled'
-              : 'pending',
+          status: isInApp ? 'sent' : releaseDelay > 0 ? 'scheduled' : 'pending',
           sentAt: isInApp && releaseDelay === 0 ? new Date() : null,
           metadata,
         }),
@@ -540,7 +540,9 @@ export class NotificationsService implements OnModuleInit {
     }
   }
 
-  private computeDigestDelay(preference?: NotificationPreferenceSummary): number {
+  private computeDigestDelay(
+    preference?: NotificationPreferenceSummary,
+  ): number {
     if (!preference?.digest || preference.digest === 'immediate') {
       return 0;
     }
@@ -553,7 +555,9 @@ export class NotificationsService implements OnModuleInit {
     return 0;
   }
 
-  private calculateQuietHoursDelay(quietHours?: Record<string, any> | null): number {
+  private calculateQuietHoursDelay(
+    quietHours?: Record<string, any> | null,
+  ): number {
     if (!quietHours || quietHours.suppressImmediate === false) {
       return 0;
     }
@@ -571,9 +575,10 @@ export class NotificationsService implements OnModuleInit {
 
     const currentMinutes = this.getLocalMinutes(timezone || 'UTC');
 
-    const isWithinQuietHours = startMinutes < endMinutes
-      ? currentMinutes >= startMinutes && currentMinutes < endMinutes
-      : currentMinutes >= startMinutes || currentMinutes < endMinutes;
+    const isWithinQuietHours =
+      startMinutes < endMinutes
+        ? currentMinutes >= startMinutes && currentMinutes < endMinutes
+        : currentMinutes >= startMinutes || currentMinutes < endMinutes;
 
     if (!isWithinQuietHours) {
       return 0;
@@ -583,7 +588,7 @@ export class NotificationsService implements OnModuleInit {
       return (endMinutes - currentMinutes) * 60 * 1000;
     }
 
-    const minutesUntilMidnight = (24 * 60) - currentMinutes;
+    const minutesUntilMidnight = 24 * 60 - currentMinutes;
     return (minutesUntilMidnight + endMinutes) * 60 * 1000;
   }
 
@@ -631,7 +636,10 @@ export class NotificationsService implements OnModuleInit {
     userIds: number[],
     eventType: string,
   ): Promise<Map<number, NotificationPreferenceSummary & { userId: number }>> {
-    const map = new Map<number, NotificationPreferenceSummary & { userId: number }>();
+    const map = new Map<
+      number,
+      NotificationPreferenceSummary & { userId: number }
+    >();
 
     if (userIds.length === 0) {
       return map;

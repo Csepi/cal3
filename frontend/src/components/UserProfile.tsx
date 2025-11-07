@@ -67,6 +67,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ onThemeChange, currentTheme }
   // Form validation errors
   const [profileErrors, setProfileErrors] = useState<Record<string, string>>({});
   const [passwordErrors, setPasswordErrors] = useState<Record<string, string>>({});
+  const [isThemeSaving, setIsThemeSaving] = useState(false);
 
   /**
    * Load user profile data from the API and populate form fields
@@ -90,6 +91,10 @@ const UserProfile: React.FC<UserProfileProps> = ({ onThemeChange, currentTheme }
         language: userData.language || 'en',
         usagePlans: userData.usagePlans || ['user']
       });
+
+      if (userData.themeColor && userData.themeColor !== currentTheme) {
+        onThemeChange(userData.themeColor);
+      }
 
       // Sync language with i18n
       if (userData.language) {
@@ -259,8 +264,28 @@ const UserProfile: React.FC<UserProfileProps> = ({ onThemeChange, currentTheme }
   /**
    * Handle theme color change
    */
-  const handleThemeChange = (color: string) => {
+  const handleThemeChange = async (color: string) => {
+    if (color === currentTheme || isThemeSaving) {
+      return;
+    }
+
+    const previousTheme = currentTheme;
+    setError(null);
+    setSuccess(null);
+    setIsThemeSaving(true);
     onThemeChange(color);
+
+    try {
+      await apiService.updateUserTheme(color);
+      setSuccess('Theme updated successfully!');
+      setTimeout(() => setSuccess(null), 3000);
+    } catch (err) {
+      console.error('Error updating theme:', err);
+      setError(err instanceof Error ? err.message : 'Failed to update theme');
+      onThemeChange(previousTheme);
+    } finally {
+      setIsThemeSaving(false);
+    }
   };
 
   // Load user data on component mount
@@ -288,7 +313,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ onThemeChange, currentTheme }
           <div className="container mx-auto px-4">
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-3xl font-bold text-gray-800">👤 User Profile</h1>
+                <h1 className="text-3xl font-bold text-gray-800">User Profile</h1>
                 <p className="text-gray-600 mt-1">Manage your account settings and preferences</p>
               </div>
               {user && (
@@ -348,7 +373,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ onThemeChange, currentTheme }
               <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
                 <div className={`flex ${isMobile ? 'flex-col gap-4' : 'items-center justify-between'}`}>
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-800 mb-2">🔒 Password</h3>
+                    <h3 className="text-lg font-semibold text-gray-800 mb-2">Password</h3>
                     <p className="text-gray-600 text-sm">Keep your account secure with a strong password</p>
                   </div>
                   <Button
@@ -384,6 +409,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ onThemeChange, currentTheme }
             <ThemeSelector
               currentTheme={currentTheme}
               onThemeChange={handleThemeChange}
+              isSaving={isThemeSaving}
             />
           </div>
         </div>
@@ -393,3 +419,6 @@ const UserProfile: React.FC<UserProfileProps> = ({ onThemeChange, currentTheme }
 };
 
 export default UserProfile;
+
+
+

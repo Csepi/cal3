@@ -127,5 +127,3 @@ export class AgentsController {
     return { success: true };
   }
 }
-
-

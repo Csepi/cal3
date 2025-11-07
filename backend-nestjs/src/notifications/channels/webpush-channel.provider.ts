@@ -62,7 +62,8 @@ export class WebPushChannelProvider implements NotificationChannelProvider {
           const subscription = JSON.parse(token.token);
           await webPush.sendNotification(subscription, payload);
         } catch (error) {
-          const messageText = error instanceof Error ? error.message : String(error);
+          const messageText =
+            error instanceof Error ? error.message : String(error);
           failures.push(messageText);
           this.logger.warn(
             `Web push send failed for user ${message.userId}: ${messageText}`,
@@ -72,7 +73,7 @@ export class WebPushChannelProvider implements NotificationChannelProvider {
             error &&
             typeof error === 'object' &&
             'statusCode' in error &&
-            (error as any).statusCode === 410
+            error.statusCode === 410
           ) {
             await this.pushDeviceRepository.delete(token.id);
           }
@@ -90,10 +91,15 @@ export class WebPushChannelProvider implements NotificationChannelProvider {
       return;
     }
 
-    const publicKey = this.configService.get<string>('WEBPUSH_VAPID_PUBLIC_KEY');
-    const privateKey = this.configService.get<string>('WEBPUSH_VAPID_PRIVATE_KEY');
+    const publicKey = this.configService.get<string>(
+      'WEBPUSH_VAPID_PUBLIC_KEY',
+    );
+    const privateKey = this.configService.get<string>(
+      'WEBPUSH_VAPID_PRIVATE_KEY',
+    );
     const subject =
-      this.configService.get<string>('WEBPUSH_VAPID_SUBJECT') || 'mailto:support@cal3.local';
+      this.configService.get<string>('WEBPUSH_VAPID_SUBJECT') ||
+      'mailto:support@cal3.local';
 
     if (!publicKey || !privateKey) {
       this.logger.warn('VAPID keys missing; web push disabled');

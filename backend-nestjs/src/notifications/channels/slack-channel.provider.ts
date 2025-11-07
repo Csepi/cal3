@@ -28,7 +28,9 @@ export class SlackChannelProvider implements NotificationChannelProvider {
     }
 
     const payload = {
-      text: message.title ? `*${message.title}*\n${message.body}` : message.body,
+      text: message.title
+        ? `*${message.title}*\n${message.body}`
+        : message.body,
       attachments: [
         {
           color: '#3b82f6',

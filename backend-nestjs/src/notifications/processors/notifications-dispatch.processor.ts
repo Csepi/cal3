@@ -54,7 +54,9 @@ export class NotificationsDispatchProcessor {
     });
 
     if (!message) {
-      this.logger.warn(`Message ${messageId} not found. Marking delivery failed`);
+      this.logger.warn(
+        `Message ${messageId} not found. Marking delivery failed`,
+      );
       await this.deliveryRepository.update(delivery.id, {
         status: 'failed',
         lastError: 'Notification message not found',
@@ -109,7 +111,11 @@ export class NotificationsDispatchProcessor {
       });
 
       if (shouldFail) {
-        const fallbackHandled = await this.tryScheduleFallback(delivery, message, job);
+        const fallbackHandled = await this.tryScheduleFallback(
+          delivery,
+          message,
+          job,
+        );
         if (fallbackHandled) {
           return;
         }
@@ -127,18 +133,23 @@ export class NotificationsDispatchProcessor {
     job: Job<DispatchJobPayload>,
   ): Promise<boolean> {
     const metadata = delivery.metadata || {};
-    const fallbackChain: NotificationChannelType[] = Array.isArray(metadata.fallbackChain)
+    const fallbackChain: NotificationChannelType[] = Array.isArray(
+      metadata.fallbackChain,
+    )
       ? metadata.fallbackChain
       : [];
     if (fallbackChain.length === 0) {
       return false;
     }
 
-    const currentIndex = typeof metadata.position === 'number'
-      ? metadata.position
-      : fallbackChain.indexOf(delivery.channel as NotificationChannelType);
+    const currentIndex =
+      typeof metadata.position === 'number'
+        ? metadata.position
+        : fallbackChain.indexOf(delivery.channel as NotificationChannelType);
 
-    const nextChannel = fallbackChain.find((channel, index) => index > currentIndex);
+    const nextChannel = fallbackChain.find(
+      (channel, index) => index > currentIndex,
+    );
     if (!nextChannel) {
       return false;
     }

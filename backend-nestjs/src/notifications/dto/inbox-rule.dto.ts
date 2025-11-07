@@ -10,7 +10,11 @@ import {
   ValidateNested,
 } from 'class-validator';
 
-export type InboxRuleScope = 'global' | 'organisation' | 'calendar' | 'reservation';
+export type InboxRuleScope =
+  | 'global'
+  | 'organisation'
+  | 'calendar'
+  | 'reservation';
 
 export class InboxRuleConditionDto {
   @IsString()

@@ -15,7 +15,12 @@ import { NotificationsModule } from '../notifications/notifications.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Organisation, OrganisationAdmin, OrganisationUser, User]),
+    TypeOrmModule.forFeature([
+      Organisation,
+      OrganisationAdmin,
+      OrganisationUser,
+      User,
+    ]),
     CalendarsModule,
     CommonModule, // This imports UserPermissionsService
     NotificationsModule,

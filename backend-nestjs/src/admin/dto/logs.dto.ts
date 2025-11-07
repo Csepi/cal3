@@ -40,8 +40,12 @@ const normalizeToArray = (value: unknown): string[] | undefined => {
     return pieces.length > 0 ? pieces : undefined;
   }
 
-  const coerced = String(value).trim();
-  return coerced.length > 0 ? [coerced] : undefined;
+  if (typeof value === 'number' || typeof value === 'boolean') {
+    const coerced = String(value).trim();
+    return coerced.length > 0 ? [coerced] : undefined;
+  }
+
+  return undefined;
 };
 
 export class LogQueryDto {

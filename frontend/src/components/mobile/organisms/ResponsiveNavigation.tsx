@@ -166,7 +166,7 @@ export const ResponsiveNavigation: React.FC<ResponsiveNavigationProps> = ({
       label: 'Notifications',
       shortLabel: 'Alerts',
       visible: true,
-      isFeature: false,
+      isFeature: true,
       badge: notificationsBadge,
     },
     {
@@ -223,6 +223,8 @@ export const ResponsiveNavigation: React.FC<ResponsiveNavigationProps> = ({
   const featureTabs = tabs.filter(tab => tab.isFeature);
   const hasFeatures = featureTabs.length > 0;
   const isFeatureActive = featureTabs.some(tab => tab.id === activeTab);
+  const notificationsFeature = featureTabs.find((tab) => tab.id === 'notifications');
+  const featureAlertBadge = notificationsFeature?.badge ?? 0;
 
   // Mobile: Bottom Tab Bar
   if (isMobile) {
@@ -242,64 +244,52 @@ export const ResponsiveNavigation: React.FC<ResponsiveNavigationProps> = ({
 
   // Desktop/Tablet: Top Horizontal Bar with Features dropdown
   return (
-    <div className="bg-white/80 backdrop-blur-md border-b border-gray-200 sticky top-0 z-[100000] shadow-sm overflow-visible">
-      <div className="max-w-7xl mx-auto px-4 md:px-6 py-3 md:py-4 flex justify-between items-center overflow-visible">
-        {/* Brand and Navigation */}
-        <div className="flex items-center space-x-4 md:space-x-6 flex-1 overflow-x-auto overflow-y-visible">
-          <div className="flex items-center gap-3 pr-4 md:pr-6 border-r border-gray-200 shrink-0">
-            <img src="/primecal-icon.svg" alt="PrimeCal logo" className="h-10 w-10" />
-            <div className="leading-tight">
-              <p className="text-lg font-semibold text-gray-900">PrimeCal</p>
-              <p className="text-xs uppercase tracking-[0.3em] text-gray-500">Be in sync with Reality</p>
-            </div>
+    <nav className="sticky top-0 z-[100000] border-b border-gray-200 bg-white/85 backdrop-blur-md shadow-sm">
+      <div className="mx-auto flex max-w-7xl items-center gap-6 px-4 py-3 md:px-6 md:py-4">
+        {/* Brand */}
+        <div className="flex items-center gap-3 shrink-0">
+          <img src="/primecal-icon.svg" alt="PrimeCal logo" className="h-10 w-10" />
+          <div className="leading-tight">
+            <p className="text-lg font-semibold text-gray-900">PrimeCal</p>
+            <p className="text-xs uppercase tracking-[0.3em] text-gray-500">Be in sync with reality</p>
           </div>
+        </div>
 
-          {/* User Welcome - Hide on smaller screens */}
-          <div className="text-gray-800 hidden lg:block shrink-0">
-            <span className="text-sm text-gray-600">Welcome,</span>
-            <span className={`ml-2 text-lg font-medium text-${themeConfig.text}`}>{userName}</span>
-            {userRole === 'admin' && (
-              <span className="ml-3 px-3 py-1 bg-red-100 border border-red-300 text-red-700 text-xs rounded-full font-medium">
-                Admin
-              </span>
-            )}
-          </div>
-
-          {/* Navigation Tabs */}
-          <div className={`flex space-x-1 bg-white/50 backdrop-blur-sm border-2 border-${themeConfig.border} rounded-2xl p-1 overflow-visible`}>
-            {/* Main tabs (Calendar, Profile, Admin) */}
+        {/* Navigation */}
+        <div className="flex flex-1 flex-col items-center gap-2 overflow-visible">
+          <div
+            className={`flex w-full items-center justify-center gap-2 overflow-x-auto rounded-2xl border-2 border-${themeConfig.border} bg-white/60 p-1 backdrop-blur-sm`}
+            role="tablist"
+            aria-label="Primary navigation"
+          >
             {mainTabs.map((tab) => (
               <button
                 key={tab.id}
+                type="button"
                 onClick={() => onTabChange(tab.id)}
-                className={`
-                  px-3 md:px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 whitespace-nowrap flex items-center gap-2
-                  ${activeTab === tab.id
-                    ? `${themeConfig.button} text-white shadow-lg`
-                    : `text-${themeConfig.text} hover:bg-white/50`
-                  }
-                `}
+                className={`flex items-center gap-2 whitespace-nowrap rounded-xl px-3 py-2 text-sm font-medium transition-all duration-300
+                  ${activeTab === tab.id ? `${themeConfig.button} text-white shadow-lg` : `text-${themeConfig.text} hover:bg-white/70`}`}
                 aria-label={tab.label}
+                role="tab"
+                aria-selected={activeTab === tab.id}
               >
                 <span className="relative text-gray-600" aria-hidden="true">
                   {tab.icon}
                   {!!tab.badge && tab.badge > 0 && (
-                    <span className="absolute -top-2 -right-2 min-w-[1.1rem] px-1 py-0.5 rounded-full bg-red-500 text-white text-[0.65rem] leading-none text-center">
+                    <span className="absolute -top-2 -right-2 min-w-[1.1rem] rounded-full bg-red-500 px-1 py-0.5 text-[0.65rem] leading-none text-white">
                       {tab.badge > 99 ? '99+' : tab.badge}
                     </span>
                   )}
                 </span>
-                <span className="hidden md:inline">
-                  {isTablet && tab.shortLabel ? tab.shortLabel : tab.label}
-                </span>
+                <span className="hidden md:inline">{isTablet && tab.shortLabel ? tab.shortLabel : tab.label}</span>
               </button>
             ))}
 
-            {/* Features Dropdown (Sync, Automation, Reservations) */}
             {hasFeatures && (
               <>
                 <button
                   ref={buttonRef}
+                  type="button"
                   onClick={() => {
                     if (buttonRef.current) {
                       const rect = buttonRef.current.getBoundingClientRect();
@@ -310,13 +300,8 @@ export const ResponsiveNavigation: React.FC<ResponsiveNavigationProps> = ({
                     }
                     setShowFeaturesDropdown(!showFeaturesDropdown);
                   }}
-                  className={`
-                    px-3 md:px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 whitespace-nowrap flex items-center gap-2
-                    ${isFeatureActive
-                      ? `${themeConfig.button} text-white shadow-lg`
-                      : `text-${themeConfig.text} hover:bg-white/50`
-                    }
-                  `}
+                  className={`flex items-center gap-2 whitespace-nowrap rounded-xl px-3 py-2 text-sm font-medium transition-all duration-300
+                    ${isFeatureActive ? `${themeConfig.button} text-white shadow-lg` : `text-${themeConfig.text} hover:bg-white/70`}`}
                   aria-expanded={showFeaturesDropdown}
                   aria-controls="primecal-feature-menu"
                 >
@@ -324,58 +309,80 @@ export const ResponsiveNavigation: React.FC<ResponsiveNavigationProps> = ({
                     {FeatureIcon}
                   </span>
                   <span className="hidden md:inline">Features</span>
-                  <span className="text-xs">v</span>
+                  {featureAlertBadge > 0 && (
+                    <span className="ml-1 inline-flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-red-500 px-1 text-[0.65rem] font-semibold leading-none text-white">
+                      {featureAlertBadge > 99 ? '99+' : featureAlertBadge}
+                    </span>
+                  )}
+                  <span className="text-xs text-gray-400" aria-hidden="true">
+                    ▾
+                  </span>
                 </button>
 
-                {/* Dropdown Menu - Rendered via Portal */}
-                {showFeaturesDropdown && createPortal(
-                  <div
-                    ref={dropdownRef}
-                    id="primecal-feature-menu"
-                    className="fixed min-w-[200px] bg-white rounded-xl shadow-2xl border-2 border-gray-200 py-2 z-[999999]"
-                    style={{
-                      top: `${dropdownPosition.top}px`,
-                      left: `${dropdownPosition.left}px`,
-                    }}
-                  >
-                    {featureTabs.map((tab) => (
-                      <button
-                        key={tab.id}
-                        onClick={() => {
-                          onTabChange(tab.id);
-                          setShowFeaturesDropdown(false);
-                        }}
-                        className={`
-                          w-full text-left px-4 py-2.5 text-sm font-medium transition-all duration-200 flex items-center gap-3
-                          ${activeTab === tab.id
-                            ? `${themeConfig.button} text-white`
-                            : 'text-gray-700 hover:bg-gray-100'
-                          }
-                        `}
-                      >
-                        <span className="text-gray-600" aria-hidden="true">
-                          {tab.icon}
-                        </span>
-                        <span>{tab.label}</span>
-                      </button>
-                    ))}
-                  </div>,
-                  document.body,
-                )}
+                {showFeaturesDropdown &&
+                  createPortal(
+                    <div
+                      ref={dropdownRef}
+                      id="primecal-feature-menu"
+                      className="fixed z-[999999] min-w-[220px] rounded-xl border border-gray-200 bg-white py-2 shadow-2xl"
+                      style={{
+                        top: `${dropdownPosition.top}px`,
+                        left: `${dropdownPosition.left}px`,
+                      }}
+                      role="menu"
+                      aria-label="Feature navigation"
+                    >
+                      {featureTabs.map((tab) => (
+                        <button
+                          key={tab.id}
+                          type="button"
+                          onClick={() => {
+                            onTabChange(tab.id);
+                            setShowFeaturesDropdown(false);
+                          }}
+                          className={`flex w-full items-center gap-3 px-4 py-2.5 text-sm font-medium transition-all duration-200
+                            ${activeTab === tab.id ? `${themeConfig.button} text-white` : 'text-gray-700 hover:bg-gray-100'}`}
+                          role="menuitem"
+                        >
+                          <span className="text-gray-600" aria-hidden="true">
+                            {tab.icon}
+                          </span>
+                          <span className="flex-1">{tab.label}</span>
+                          {!!tab.badge && tab.badge > 0 && (
+                            <span className="inline-flex min-w-[1.8rem] items-center justify-center rounded-full bg-red-500 px-2 py-0.5 text-[0.65rem] font-semibold leading-none text-white">
+                              {tab.badge > 99 ? '99+' : tab.badge}
+                            </span>
+                          )}
+                        </button>
+                      ))}
+                    </div>,
+                    document.body,
+                  )}
               </>
             )}
           </div>
         </div>
 
-        {/* Logout Button */}
-        <button
-          onClick={onLogout}
-          className="ml-4 px-3 md:px-4 py-2 bg-red-500 border border-red-400 text-white rounded-2xl hover:bg-red-600 font-medium transition-all duration-300 hover:scale-105 shadow-md text-sm md:text-base shrink-0"
-        >
-          <span className="hidden md:inline">Sign Out</span>
-          <span className="md:hidden">Exit</span>
-        </button>
+        {/* User summary + sign out */}
+        <div className="flex items-center gap-4 shrink-0">
+          <div className="hidden md:flex flex-col text-right">
+            <span className="text-xs font-medium uppercase tracking-wide text-gray-500">Profile</span>
+            <span className="text-sm font-semibold text-gray-900">{userName}</span>
+            {userRole === 'admin' && (
+              <span className="mt-1 inline-flex items-center justify-end gap-1 rounded-full border border-red-200 bg-red-50 px-2 py-0.5 text-xs font-medium text-red-600">
+                Admin
+              </span>
+            )}
+          </div>
+          <button
+            type="button"
+            onClick={onLogout}
+            className="rounded-xl border border-red-400 bg-red-500 px-3 py-2 text-sm font-medium text-white shadow-md transition-all duration-300 hover:scale-105 hover:bg-red-600 md:px-4 md:text-base"
+          >
+            Sign out
+          </button>
+        </div>
       </div>
-    </div>
+    </nav>
   );
 };

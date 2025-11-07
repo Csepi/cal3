@@ -1,26 +1,101 @@
 ﻿import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DataSource } from 'typeorm';
+import { DataSource, DataSourceOptions, IsNull, Repository } from 'typeorm';
 import { User, UserRole, UsagePlan } from '../entities/user.entity';
-import { Calendar } from '../entities/calendar.entity';
+import { Calendar, CalendarShare } from '../entities/calendar.entity';
 import { Event } from '../entities/event.entity';
-import { CalendarShare } from '../entities/calendar.entity';
 import { Reservation } from '../entities/reservation.entity';
 import { Organisation } from '../entities/organisation.entity';
-import { OrganisationUser } from '../entities/organisation-user.entity';
+import {
+  OrganisationRoleType,
+  OrganisationUser,
+} from '../entities/organisation-user.entity';
 import { OrganisationAdmin } from '../entities/organisation-admin.entity';
 import { ResourceType } from '../entities/resource-type.entity';
 import { Resource } from '../entities/resource.entity';
 import { OperatingHours } from '../entities/operating-hours.entity';
 import { AutomationRule } from '../entities/automation-rule.entity';
 import * as bcrypt from 'bcryptjs';
-import { v4 as uuidv4 } from 'uuid';
-import { SystemInfoDto } from './dto/system-info.dto';
+import { randomUUID } from 'crypto';
+import { readFileSync } from 'fs';
+import { join } from 'path';
+import {
+  DatabaseInfoDto,
+  DatabaseStatsDto,
+  EnvironmentInfoDto,
+  FeatureFlagsDto,
+  ServerInfoDto,
+  SystemInfoDto,
+} from './dto/system-info.dto';
 import * as os from 'os';
 import { LoggingService } from '../logging/logging.service';
-import type { LogLevel } from '../entities/log-entry.entity';
 import { LogQueryDto, UpdateLogSettingsDto } from './dto/logs.dto';
 import { ConfigurationService } from '../configuration/configuration.service';
+import { AdminCreateUserDto, AdminUpdateUserDto } from './dto/admin-user.dto';
+import { CreateCalendarDto, UpdateCalendarDto } from '../dto/calendar.dto';
+import { CreateEventDto, UpdateEventDto } from '../dto/event.dto';
+
+interface DatabaseStatsOverview {
+  users: {
+    total: number;
+    active: number;
+    admins: number;
+  };
+  calendars: {
+    total: number;
+  };
+  events: {
+    total: number;
+  };
+  shares: {
+    total: number;
+  };
+  lastUpdated: string;
+}
+
+type OrganisationWithStats = Organisation & {
+  adminCount: number;
+  userCount: number;
+  calendarCount: number;
+};
+
+type OrganizationUserWithRole = User & {
+  organizationRole: OrganisationRoleType;
+  assignedAt?: Date;
+  isOrgAdmin: boolean;
+};
+
+interface PublicBookingInitializationResult {
+  resourcesUpdated: number;
+  resourceTypesWithHours: number;
+  errors: string[];
+}
+
+interface PublicBookingInitializationResponse
+  extends PublicBookingInitializationResult {
+  success: boolean;
+  message: string;
+  error?: string;
+}
+
+const hasRelatedUser = <T extends { user?: User | null }>(
+  entity: T,
+): entity is T & { user: User } => Boolean(entity.user);
+
+type DataSourceExtraOptions = {
+  max?: number;
+  min?: number;
+  connectionTimeoutMillis?: number;
+};
+
+type ExtendedDataSourceOptions = Omit<DataSourceOptions, 'extra'> & {
+  extra?: DataSourceExtraOptions;
+  poolSize?: number;
+  host?: string;
+  port?: number;
+  database?: string;
+  ssl?: boolean | Record<string, unknown>;
+};
 
 @Injectable()
 export class AdminService {
@@ -100,7 +175,7 @@ export class AdminService {
     });
   }
 
-  async getDatabaseStats(): Promise<any> {
+  async getDatabaseStats(): Promise<DatabaseStatsOverview> {
     const [userCount, calendarCount, eventCount, shareCount] =
       await Promise.all([
         this.userRepository.count(),
@@ -135,13 +210,13 @@ export class AdminService {
     };
   }
 
-  async updateUserRole(userId: number, role: string): Promise<User> {
+  async updateUserRole(userId: number, role: UserRole): Promise<User> {
     const user = await this.userRepository.findOne({ where: { id: userId } });
     if (!user) {
       throw new NotFoundException('User not found');
     }
 
-    user.role = role as any;
+    user.role = role;
     return this.userRepository.save(user);
   }
 
@@ -208,7 +283,7 @@ export class AdminService {
   }
 
   // CREATE OPERATIONS
-  async createUser(createUserDto: any): Promise<User> {
+  async createUser(createUserDto: AdminCreateUserDto): Promise<User> {
     const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
 
     const user = this.userRepository.create({
@@ -216,35 +291,39 @@ export class AdminService {
       password: hashedPassword,
     });
 
-    return (await this.userRepository.save(user)) as unknown as User;
+    return this.userRepository.save(user);
   }
 
-  async createCalendar(createCalendarDto: any): Promise<Calendar> {
+  async createCalendar(
+    createCalendarDto: CreateCalendarDto,
+  ): Promise<Calendar> {
     const calendar = this.calendarRepository.create(createCalendarDto);
-    return (await this.calendarRepository.save(
-      calendar,
-    )) as unknown as Calendar;
+    return this.calendarRepository.save(calendar);
   }
 
-  async createEvent(createEventDto: any): Promise<Event> {
+  async createEvent(createEventDto: CreateEventDto): Promise<Event> {
     const event = this.eventRepository.create({
       ...createEventDto,
       startDate: new Date(createEventDto.startDate),
-      endDate: createEventDto.endDate ? new Date(createEventDto.endDate) : null,
+      endDate: createEventDto.endDate
+        ? new Date(createEventDto.endDate)
+        : undefined,
     });
-    return (await this.eventRepository.save(event)) as unknown as Event;
+    return this.eventRepository.save(event);
   }
 
   // UPDATE OPERATIONS
-  async updateUser(userId: number, updateUserDto: any): Promise<User> {
+  async updateUser(
+    userId: number,
+    updateUserDto: AdminUpdateUserDto,
+  ): Promise<User> {
     const user = await this.userRepository.findOne({ where: { id: userId } });
     if (!user) {
       throw new NotFoundException('User not found');
     }
 
     // Don't update password here, use separate endpoint
-    const { password, ...updateData } = updateUserDto;
-    Object.assign(user, updateData);
+    Object.assign(user, updateUserDto);
 
     return await this.userRepository.save(user);
   }
@@ -261,7 +340,7 @@ export class AdminService {
 
   async updateCalendar(
     calendarId: number,
-    updateCalendarDto: any,
+    updateCalendarDto: UpdateCalendarDto,
   ): Promise<Calendar> {
     const calendar = await this.calendarRepository.findOne({
       where: { id: calendarId },
@@ -275,7 +354,10 @@ export class AdminService {
     return await this.calendarRepository.save(calendar);
   }
 
-  async updateEvent(eventId: number, updateEventDto: any): Promise<Event> {
+  async updateEvent(
+    eventId: number,
+    updateEventDto: UpdateEventDto,
+  ): Promise<Event> {
     const event = await this.eventRepository.findOne({
       where: { id: eventId },
       relations: ['calendar', 'createdBy'],
@@ -284,15 +366,15 @@ export class AdminService {
       throw new NotFoundException('Event not found');
     }
 
-    // Handle date conversion
-    if (updateEventDto.startDate) {
-      updateEventDto.startDate = new Date(updateEventDto.startDate);
-    }
-    if (updateEventDto.endDate) {
-      updateEventDto.endDate = new Date(updateEventDto.endDate);
-    }
+    const { startDate, endDate, ...rest } = updateEventDto;
+    Object.assign(event, rest);
 
-    Object.assign(event, updateEventDto);
+    if (startDate) {
+      event.startDate = new Date(startDate);
+    }
+    if (endDate) {
+      event.endDate = new Date(endDate);
+    }
     return await this.eventRepository.save(event);
   }
 
@@ -341,7 +423,7 @@ export class AdminService {
   }
 
   // ORGANIZATION MANAGEMENT OPERATIONS
-  async getAllOrganizations(): Promise<any[]> {
+  async getAllOrganizations(): Promise<OrganisationWithStats[]> {
     const organizations = await this.organisationRepository.find({
       order: { name: 'ASC' },
     });
@@ -354,8 +436,10 @@ export class AdminService {
           where: { organisationId: org.id },
         });
 
-        const adminCount = orgUsers.filter((ou) => ou.role === 'admin').length;
-        const userCount = orgUsers.filter((ou) => ou.role !== 'admin').length;
+        const adminCount = orgUsers.filter(
+          (ou) => ou.role === OrganisationRoleType.ADMIN,
+        ).length;
+        const userCount = orgUsers.length - adminCount;
 
         // Get calendar count for this organization
         // Calendars are linked through resource_types and resources
@@ -368,12 +452,14 @@ export class AdminService {
           return total + (rt.resources?.length || 0);
         }, 0);
 
-        return {
+        const organisationWithStats: OrganisationWithStats = {
           ...org,
           adminCount,
           userCount,
           calendarCount,
         };
+
+        return organisationWithStats;
       }),
     );
 
@@ -445,7 +531,9 @@ export class AdminService {
     return { message: 'User removed from organization successfully' };
   }
 
-  async getOrganizationUsers(organizationId: number): Promise<any[]> {
+  async getOrganizationUsers(
+    organizationId: number,
+  ): Promise<OrganizationUserWithRole[]> {
     const organization = await this.organisationRepository.findOne({
       where: { id: organizationId },
     });
@@ -478,23 +566,27 @@ export class AdminService {
     );
 
     // Convert OrganisationAdmin records to user format with ADMIN role
-    const adminUsers = orgAdmins.map((admin) => ({
-      ...admin.user,
-      organizationRole: 'admin',
-      assignedAt: admin.assignedAt,
-      isOrgAdmin: true,
-    }));
+    const adminUsers: OrganizationUserWithRole[] = orgAdmins
+      .filter(hasRelatedUser)
+      .map((admin) => ({
+        ...admin.user,
+        organizationRole: OrganisationRoleType.ADMIN,
+        assignedAt: admin.assignedAt,
+        isOrgAdmin: true,
+      }));
 
     // Convert OrganisationUser records to user format
-    const regularUsers = orgUsers.map((orgUser) => ({
-      ...orgUser.user,
-      organizationRole: orgUser.role,
-      assignedAt: orgUser.assignedAt,
-      isOrgAdmin: false,
-    }));
+    const regularUsers: OrganizationUserWithRole[] = orgUsers
+      .filter(hasRelatedUser)
+      .map((orgUser) => ({
+        ...orgUser.user,
+        organizationRole: orgUser.role,
+        assignedAt: orgUser.assignedAt,
+        isOrgAdmin: false,
+      }));
 
     // Combine both lists, removing duplicates (prefer ADMIN role if user is in both tables)
-    const userMap = new Map<number, any>();
+    const userMap = new Map<number, OrganizationUserWithRole>();
 
     // First add regular org users
     regularUsers.forEach((user) => userMap.set(user.id, user));
@@ -513,7 +605,7 @@ export class AdminService {
   async addUserToOrganizationWithRole(
     userId: number,
     organizationId: number,
-    role: string,
+    role: OrganisationRoleType,
   ): Promise<{ message: string }> {
     const user = await this.userRepository.findOne({ where: { id: userId } });
     if (!user) {
@@ -534,7 +626,7 @@ export class AdminService {
 
     if (existingOrgUser) {
       // Update existing role
-      existingOrgUser.role = role as any;
+      existingOrgUser.role = role;
       await this.organisationUserRepository.save(existingOrgUser);
       return { message: 'User role updated in organization successfully' };
     }
@@ -543,7 +635,7 @@ export class AdminService {
     const orgUser = this.organisationUserRepository.create({
       userId,
       organisationId: organizationId,
-      role: role as any,
+      role,
     });
 
     await this.organisationUserRepository.save(orgUser);
@@ -551,8 +643,8 @@ export class AdminService {
   }
 
   // PUBLIC BOOKING INITIALIZATION
-  async initializePublicBooking(): Promise<any> {
-    const results = {
+  async initializePublicBooking(): Promise<PublicBookingInitializationResponse> {
+    const results: PublicBookingInitializationResult = {
       resourcesUpdated: 0,
       resourceTypesWithHours: 0,
       errors: [] as string[],
@@ -561,7 +653,7 @@ export class AdminService {
     try {
       // 1. Generate public booking tokens for all resources that don't have one
       const resources = await this.resourceRepository.find({
-        where: { publicBookingToken: null as any },
+        where: { publicBookingToken: IsNull() },
       });
 
       console.log(
@@ -570,13 +662,13 @@ export class AdminService {
 
       for (const resource of resources) {
         try {
-          resource.publicBookingToken = uuidv4();
+          resource.publicBookingToken = randomUUID();
           await this.resourceRepository.save(resource);
           results.resourcesUpdated++;
           console.log(`Generated token for resource: ${resource.name}`);
-        } catch (error) {
+        } catch {
           results.errors.push(
-            `Failed to generate token for resource ${resource.id}: ${error.message}`,
+            `Failed to generate token for resource ${resource.id}`,
           );
         }
       }
@@ -616,9 +708,9 @@ export class AdminService {
             }
             results.resourceTypesWithHours++;
             console.log(`Created operating hours for: ${resourceType.name}`);
-          } catch (error) {
+          } catch {
             results.errors.push(
-              `Failed to create operating hours for resource type ${resourceType.id}: ${error.message}`,
+              `Failed to create operating hours for resource type ${resourceType.id}`,
             );
           }
         }
@@ -629,12 +721,13 @@ export class AdminService {
         message: 'Public booking initialization completed',
         ...results,
       };
-    } catch (error) {
-      console.error('Error initializing public booking:', error);
+    } catch (error: unknown) {
+      const normalizedError = this.normalizeError(error);
+      console.error('Error initializing public booking:', normalizedError);
       return {
         success: false,
         message: 'Public booking initialization failed',
-        error: error.message,
+        error: normalizedError.message,
         ...results,
       };
     }
@@ -719,12 +812,12 @@ export class AdminService {
   }
 
   async getSystemInfo(): Promise<SystemInfoDto> {
-    const packageJson = require('../../package.json');
+    const packageVersion = this.getPackageVersion();
 
     // Server Information
     const memoryUsage = process.memoryUsage();
     const cpuUsage = process.cpuUsage();
-    const serverInfo = {
+    const serverInfo: ServerInfoDto = {
       nodeVersion: process.version,
       platform: `${os.platform()} ${os.release()}`,
       architecture: os.arch(),
@@ -742,17 +835,34 @@ export class AdminService {
     };
 
     // Database Information
-    const dbOptions = this.dataSource.options as any;
-    const databaseInfo = {
+    const dbOptions = this.dataSource.options as ExtendedDataSourceOptions;
+    const databaseName =
+      typeof dbOptions.database === 'string' ? dbOptions.database : undefined;
+    const databaseHost =
+      typeof dbOptions.host === 'string' ? dbOptions.host : undefined;
+    const databasePort =
+      typeof dbOptions.port === 'number' ? dbOptions.port : undefined;
+    const poolMax =
+      typeof dbOptions.extra?.max === 'number'
+        ? dbOptions.extra.max
+        : dbOptions.poolSize;
+    const poolMin =
+      typeof dbOptions.extra?.min === 'number' ? dbOptions.extra.min : 2;
+    const connectionTimeout =
+      typeof dbOptions.extra?.connectionTimeoutMillis === 'number'
+        ? dbOptions.extra.connectionTimeoutMillis
+        : 10000;
+
+    const databaseInfo: DatabaseInfoDto = {
       type: dbOptions.type,
-      host: dbOptions.host,
-      port: dbOptions.port,
-      database: dbOptions.database,
-      ssl: dbOptions.ssl ? true : false,
-      poolMax: dbOptions.extra?.max || dbOptions.poolSize || 10,
-      poolMin: dbOptions.extra?.min || 2,
-      connectionTimeout: dbOptions.extra?.connectionTimeoutMillis || 10000,
-      synchronized: dbOptions.synchronize || false,
+      host: databaseHost,
+      port: databasePort,
+      database: databaseName,
+      ssl: Boolean(dbOptions.ssl),
+      poolMax: poolMax ?? 10,
+      poolMin,
+      connectionTimeout,
+      synchronized: Boolean(dbOptions.synchronize),
     };
 
     // Environment Information
@@ -772,7 +882,7 @@ export class AdminService {
       ? 8081
       : parsedBackendPort;
 
-    const environmentInfo = {
+    const environmentInfo: EnvironmentInfoDto = {
       nodeEnv:
         this.configurationService.getValue('NODE_ENV') ||
         process.env.NODE_ENV ||
@@ -788,7 +898,7 @@ export class AdminService {
       'ENABLE_OAUTH',
       true,
     );
-    const featureFlags = {
+    const featureFlags: FeatureFlagsDto = {
       googleOAuthEnabled:
         enableOAuth &&
         !!(
@@ -833,7 +943,7 @@ export class AdminService {
       this.organisationRepository.count(),
     ]);
 
-    const databaseStats = {
+    const databaseStats: DatabaseStatsDto = {
       users: userCount,
       calendars: calendarCount,
       events: eventCount,
@@ -842,14 +952,39 @@ export class AdminService {
       organisations: organisationCount,
     };
 
-    return {
-      server: serverInfo as any,
-      database: databaseInfo as any,
+    const systemInfo: SystemInfoDto = {
+      server: serverInfo,
+      database: databaseInfo,
       environment: environmentInfo,
       features: featureFlags,
       stats: databaseStats,
       timestamp: new Date().toISOString(),
-      version: packageJson.version || '1.3.0',
+      version: packageVersion,
     };
+
+    return systemInfo;
+  }
+
+  private normalizeError(error: unknown): Error {
+    return error instanceof Error ? error : new Error(String(error));
+  }
+
+  private getPackageVersion(): string {
+    try {
+      const packageJsonPath = join(process.cwd(), 'package.json');
+      const packageRaw = readFileSync(packageJsonPath, 'utf8');
+      const parsed = JSON.parse(packageRaw) as unknown;
+      if (
+        parsed &&
+        typeof parsed === 'object' &&
+        'version' in parsed &&
+        typeof (parsed as { version?: unknown }).version === 'string'
+      ) {
+        return (parsed as { version: string }).version;
+      }
+      return '1.3.0';
+    } catch {
+      return '1.3.0';
+    }
   }
 }

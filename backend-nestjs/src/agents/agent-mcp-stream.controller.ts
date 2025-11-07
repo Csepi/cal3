@@ -1,11 +1,4 @@
-import {
-  All,
-  Body,
-  Controller,
-  Req,
-  Res,
-  UseGuards,
-} from '@nestjs/common';
+import { All, Body, Controller, Req, Res, UseGuards } from '@nestjs/common';
 import type { Request, Response } from 'express';
 import { AgentApiKeyGuard } from './guards/agent-api-key.guard';
 import { AgentMcpHttpService } from './agent-mcp-http.service';

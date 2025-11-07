@@ -32,9 +32,11 @@ export async function upgradeLegacyCalendarPermissions(
     });
 
     const replacements = legacyPermissions.flatMap((permission) =>
-      [AgentActionKey.CALENDAR_EVENTS_CREATE,
-      AgentActionKey.CALENDAR_EVENTS_UPDATE,
-      AgentActionKey.CALENDAR_EVENTS_DELETE].map((actionKey) =>
+      [
+        AgentActionKey.CALENDAR_EVENTS_CREATE,
+        AgentActionKey.CALENDAR_EVENTS_UPDATE,
+        AgentActionKey.CALENDAR_EVENTS_DELETE,
+      ].map((actionKey) =>
         manager.create(AgentPermission, {
           agentId,
           actionKey,

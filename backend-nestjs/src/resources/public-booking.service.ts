@@ -5,16 +5,18 @@ import {
   Logger,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Between } from 'typeorm';
+import { Repository } from 'typeorm';
 import { Resource } from '../entities/resource.entity';
 import { Reservation, ReservationStatus } from '../entities/reservation.entity';
 import { OperatingHours } from '../entities/operating-hours.entity';
 import { CreatePublicBookingDto } from '../dto/public-booking.dto';
+import { ReservationAvailabilityService } from '../common/services/reservation-availability.service';
 
 export interface TimeSlot {
   startTime: string;
   endTime: string;
   available: boolean;
+  availableQuantity: number;
 }
 
 export interface ResourceAvailability {
@@ -29,6 +31,11 @@ export interface ResourceAvailability {
     closeTime: string;
   };
 }
+
+const ACTIVE_RESERVATION_STATUSES = [
+  ReservationStatus.CONFIRMED,
+  ReservationStatus.PENDING,
+];
 
 /**
  * PublicBookingService
@@ -52,6 +59,7 @@ export class PublicBookingService {
     private reservationRepository: Repository<Reservation>,
     @InjectRepository(OperatingHours)
     private operatingHoursRepository: Repository<OperatingHours>,
+    private readonly reservationAvailabilityService: ReservationAvailabilityService,
   ) {}
 
   /**
@@ -134,13 +142,19 @@ export class PublicBookingService {
     const endOfDay = new Date(date);
     endOfDay.setHours(23, 59, 59, 999);
 
-    const reservations = await this.reservationRepository.find({
-      where: {
-        resource: { id: resource.id },
-        startTime: Between(startOfDay, endOfDay),
-        status: ReservationStatus.CONFIRMED,
-      },
-    });
+    const reservations = await this.reservationRepository
+      .createQueryBuilder('reservation')
+      .where('reservation.resourceId = :resourceId', {
+        resourceId: resource.id,
+      })
+      .andWhere('reservation.status IN (:...statuses)', {
+        statuses: ACTIVE_RESERVATION_STATUSES,
+      })
+      .andWhere(
+        'reservation.startTime < :endOfDay AND reservation.endTime > :startOfDay',
+        { startOfDay, endOfDay },
+      )
+      .getMany();
 
     // Generate time slots based on operating hours and min booking duration
     const slots = this.generateTimeSlots(
@@ -150,6 +164,7 @@ export class PublicBookingService {
       resource.resourceType.bufferTime,
       reservations,
       dateStr,
+      resource.capacity,
     );
 
     return {
@@ -188,28 +203,22 @@ export class PublicBookingService {
     const startTime = new Date(bookingDto.startTime);
     const endTime = new Date(bookingDto.endTime);
 
+    if (Number.isNaN(startTime.getTime()) || Number.isNaN(endTime.getTime())) {
+      throw new BadRequestException('Invalid start or end time');
+    }
+
     if (startTime >= endTime) {
       throw new BadRequestException('End time must be after start time');
     }
 
-    // Check if time slot is available
-    const conflictingReservations = await this.reservationRepository
-      .createQueryBuilder('reservation')
-      .where('reservation.resourceId = :resourceId', {
-        resourceId: resource.id,
-      })
-      .andWhere('reservation.status IN (:...statuses)', {
-        statuses: [ReservationStatus.CONFIRMED, ReservationStatus.PENDING],
-      })
-      .andWhere(
-        '(reservation.startTime < :endTime AND reservation.endTime > :startTime)',
-        { startTime, endTime },
-      )
-      .getCount();
+    const quantity = bookingDto.quantity ?? 1;
 
-    if (conflictingReservations > 0) {
-      throw new BadRequestException('This time slot is no longer available');
-    }
+    await this.reservationAvailabilityService.assertAvailability(
+      resource,
+      startTime,
+      endTime,
+      quantity,
+    );
 
     // Create customer info object
     const customerInfo = {
@@ -222,7 +231,7 @@ export class PublicBookingService {
     const reservation = this.reservationRepository.create({
       startTime,
       endTime,
-      quantity: bookingDto.quantity,
+      quantity,
       customerInfo,
       notes: bookingDto.notes,
       status: ReservationStatus.CONFIRMED, // Auto-confirm public bookings
@@ -257,6 +266,7 @@ export class PublicBookingService {
     bufferTime: number,
     reservations: Reservation[],
     dateStr: string,
+    capacity: number,
   ): TimeSlot[] {
     const slots: TimeSlot[] = [];
     const [openHour, openMinute] = openTime.split(':').map(Number);
@@ -276,16 +286,28 @@ export class PublicBookingService {
       const slotEnd = new Date(currentTime.getTime() + minDuration * 60000);
 
       // Check if this slot conflicts with any reservation
-      const isAvailable = !reservations.some((reservation) => {
+      const reservedQuantity = reservations.reduce((total, reservation) => {
+        if (!ACTIVE_RESERVATION_STATUSES.includes(reservation.status)) {
+          return total;
+        }
+
         const resStart = new Date(reservation.startTime);
         const resEnd = new Date(reservation.endTime);
-        return slotStart < resEnd && slotEnd > resStart;
-      });
+
+        if (slotStart < resEnd && slotEnd > resStart) {
+          return total + (reservation.quantity ?? 1);
+        }
+
+        return total;
+      }, 0);
+
+      const availableQuantity = Math.max(capacity - reservedQuantity, 0);
 
       slots.push({
         startTime: slotStart.toISOString(),
         endTime: slotEnd.toISOString(),
-        available: isAvailable,
+        available: availableQuantity > 0,
+        availableQuantity,
       });
 
       // Move to next slot (including buffer time)
