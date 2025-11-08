@@ -17,6 +17,8 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import type { Event, CreateEventRequest, UpdateEventRequest } from '../types/Event';
 import type { Calendar as CalendarType } from '../types/Calendar';
 import { apiService } from '../services/api';
+import { BASE_URL } from '../config/apiConfig';
+import { secureFetch } from '../services/authErrorHandler';
 import { ConfirmationDialog, RecurrenceEditDialog } from './dialogs';
 import { CalendarSidebar } from '.';
 import { LoadingScreen } from './common';
@@ -152,21 +154,9 @@ const Calendar: React.FC<CalendarProps> = ({ themeColor }) => {
    */
   const loadReservationsAndResources = async () => {
     try {
-      const token = localStorage.getItem('authToken');
-
       const [reservationsResponse, resourcesResponse] = await Promise.all([
-        fetch('http://localhost:8081/api/reservations', {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        }),
-        fetch('http://localhost:8081/api/resources', {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        })
+        secureFetch(`${BASE_URL}/api/reservations`),
+        secureFetch(`${BASE_URL}/api/resources`),
       ]);
 
       if (reservationsResponse.ok) {

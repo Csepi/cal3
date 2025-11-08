@@ -109,10 +109,6 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
           lastName
         });
 
-        // Store token if user is admin
-        if (result.user.role === 'admin') {
-          localStorage.setItem('admin_token', result.token);
-        }
         onLogin(result.user.username, result.token, result.user.role, result.user);
       } catch (err: any) {
         setError(extractErrorDetails(err));
@@ -132,10 +128,6 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
       try {
         const result = await apiService.login(username, password);
 
-        // Store token if user is admin
-        if (result.user.role === 'admin') {
-          localStorage.setItem('admin_token', result.token);
-        }
         onLogin(result.user.username, result.token, result.user.role, result.user);
       } catch (err: any) {
         // Fallback to demo mode

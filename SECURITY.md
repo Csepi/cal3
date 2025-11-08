@@ -17,7 +17,7 @@ This document captures the current security gaps, the “quick wins” we can de
 | Configure Dependabot + CodeQL + ZAP workflows. | GitHub Actions | TBD | Not Started |
 | Move secrets to vault; validate env vars on boot. | Config module | TBD | Not Started |
 | Ensure Docker runs as non-root, minimal base, healthchecks. | Dockerfiles | TBD | Not Started |
-| Remove `dangerouslySetInnerHTML`, adopt CSP nonces, stop using `localStorage` for tokens. | Frontend | TBD | Not Started |
+| Remove `dangerouslySetInnerHTML`, adopt CSP nonces, stop using `localStorage` for tokens. | Frontend | Codex | Done (`frontend/src/services/sessionManager.ts`, `frontend/src/services/authErrorHandler.ts`, README updates) |
 
 ### Completed Task 1: Repository Hygiene Baseline
 - **Outcome:** `.gitignore` now blocks package-manager caches, coverage dumps, and other generated assets, and the committed `node_modules/` + `dist/` trees were purged via `git rm --cached`.
@@ -117,11 +117,11 @@ Progress log for this section (kept in `/docs/security/data-layer-hardening.md`)
 
 ## 4. Frontend (Web + Mobile)
 
-- [ ] Remove `dangerouslySetInnerHTML` usages; if unavoidable, sanitize via DOMPurify w/ strict config.
-- [ ] Adopt CSP-compatible patterns (no inline scripts/styles; use nonces).
-- [ ] Replace `localStorage` token storage with HttpOnly cookies (web) or secure keychain (mobile).
-- [ ] Implement global error boundaries and a secure fetch wrapper that injects CSRF headers when cookies are used.
-- [ ] Align theme assets/fonts with CSP requirements.
+- [x] Remove `dangerouslySetInnerHTML` usages; if unavoidable, sanitize via DOMPurify w/ strict config. (Audit complete + `frontend/src/utils/sanitizeHtml.ts` consolidated DOMPurify usage.)
+- [x] Adopt CSP-compatible patterns (no inline scripts/styles; use nonces). (Nonce meta + `frontend/src/services/themeAssets.ts` apply CSP nonces to font preloads.)
+- [x] Replace `localStorage` token storage with HttpOnly cookies (web) or secure keychain (mobile). (`frontend/src/services/sessionManager.ts`, `frontend/src/services/api.ts`, and Dashboard/Login components now rely on the cookie flow.)
+- [x] Implement global error boundaries and a secure fetch wrapper that injects CSRF headers when cookies are used. (`secureFetch` in `frontend/src/services/authErrorHandler.ts` now injects `X-CSRF-Token` and auto-refreshes tokens.)
+- [x] Align theme assets/fonts with CSP requirements. (Self-hosted Inter fonts via `@fontsource-variable/inter` + runtime loader described in `frontend/README.md`.)
 
 ---
 

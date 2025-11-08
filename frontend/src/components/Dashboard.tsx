@@ -26,6 +26,7 @@ import CalendarSync from './sync/CalendarSync';
 import ReservationsPanel from './ReservationsPanel';
 import { AutomationPanel } from './automation/AutomationPanel';
 import { apiService } from '../services/api';
+import { sessionManager } from '../services/sessionManager';
 import { UserPermissionsService } from '../services/userPermissions';
 import { THEME_COLORS, getThemeConfig } from '../constants/theme';
 import { useFeatureFlags } from '../hooks/useFeatureFlags';
@@ -96,8 +97,7 @@ const Dashboard: React.FC = () => {
     localStorage.setItem('username', username);
     localStorage.setItem('userRole', role || 'user');
     if (token) {
-      localStorage.setItem('authToken', token);
-      // Note: apiService automatically reads token from localStorage in getAuthHeaders()
+      // Token is managed via sessionManager; no browser storage required.
     }
 
     // Apply user's theme preference if available
@@ -117,7 +117,7 @@ const Dashboard: React.FC = () => {
    * Handles user logout and clears all session data
    * Resets component state to default values and clears localStorage
    */
-  const handleLogout = () => {
+  const handleLogout = async () => {
     // Reset component state to defaults
     setUser(null);
     setUserRole('user');
@@ -133,14 +133,16 @@ const Dashboard: React.FC = () => {
     // Clear all authentication data from localStorage
     localStorage.removeItem('username');
     localStorage.removeItem('userRole');
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('admin_token');
 
     // Clear permissions cache
     UserPermissionsService.clearCache();
 
     // Notify API service to clear any cached tokens
-    apiService.logout();
+    try {
+      await apiService.logout();
+    } catch (error) {
+      console.warn('Logout request failed', error);
+    }
   };
 
   /**
@@ -198,21 +200,38 @@ const Dashboard: React.FC = () => {
   useEffect(() => {
     const storedUsername = localStorage.getItem('username');
     const storedRole = localStorage.getItem('userRole');
-    const authToken = localStorage.getItem('authToken');
 
-    if (storedUsername && authToken) {
+    if (storedUsername) {
       setUser(storedUsername);
       setUserRole(storedRole || 'user');
-      // Note: apiService automatically reads token from localStorage in getAuthHeaders()
+    }
+
+    if (!sessionManager.hasActiveSession()) {
+      sessionManager.refreshAccessToken().catch(() => {
+        setUser(null);
+      });
     }
   }, []);
 
   // Load user profile and permissions on component mount if logged in
   useEffect(() => {
-    if (user && apiService.isAuthenticated()) {
-      loadUserProfile();
-      loadUserPermissions();
+    if (!user) {
+      return;
     }
+
+    const initialise = async () => {
+      if (!apiService.isAuthenticated()) {
+        const refreshed = await sessionManager.refreshAccessToken();
+        if (!refreshed) {
+          await handleLogout();
+          return;
+        }
+      }
+      await loadUserProfile();
+      await loadUserPermissions();
+    };
+
+    void initialise();
   }, [user]);
 
   // Redirect to calendar if user loses access to current view

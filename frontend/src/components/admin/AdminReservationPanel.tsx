@@ -7,7 +7,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Card, CardHeader, Button } from '../ui';
-import { loadAdminData, formatAdminError } from './adminApiService';
+import { loadAdminData, formatAdminError, adminApiCall } from './adminApiService';
 import type { Reservation } from './types';
 
 export interface AdminReservationPanelProps {
@@ -57,12 +57,9 @@ export const AdminReservationPanel: React.FC<AdminReservationPanelProps> = ({
 
     try {
       setLoading(true);
-      await fetch(`/api/admin/reservations/${reservationId}`, {
+      await adminApiCall({
+        endpoint: `/admin/reservations/${reservationId}`,
         method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
-          'Content-Type': 'application/json',
-        },
       });
 
       // Reload reservations after deletion

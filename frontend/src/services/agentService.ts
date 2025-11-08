@@ -1,5 +1,5 @@
 import { BASE_URL } from '../config/apiConfig';
-import { secureFetch, authErrorHandler } from './authErrorHandler';
+import { secureFetch } from './authErrorHandler';
 import type {
   AgentSummary,
   AgentDetail,
@@ -12,29 +12,23 @@ import type {
 } from '../types/agent';
 
 class AgentService {
-  private getAuthHeaders(): HeadersInit {
-    const token = localStorage.getItem('authToken');
-    return {
-      'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    };
-  }
-
   private async request<T>(
     endpoint: string,
     options: RequestInit = {},
   ): Promise<T> {
+    const headers = new Headers(options.headers ?? {});
+    if (
+      options.body &&
+      typeof options.body === 'string' &&
+      !headers.has('Content-Type')
+    ) {
+      headers.set('Content-Type', 'application/json');
+    }
+
     const response = await secureFetch(`${BASE_URL}/api${endpoint}`, {
       ...options,
-      headers: {
-        ...this.getAuthHeaders(),
-        ...options.headers,
-      },
+      headers,
     });
-
-    if (authErrorHandler.isAuthError(response)) {
-      throw new Error(`Authentication error: ${response.status}`);
-    }
 
     if (!response.ok) {
       let message = `Request to ${endpoint} failed with status ${response.status}`;

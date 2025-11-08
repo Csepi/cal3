@@ -6,7 +6,7 @@
  */
 
 import { useState, useCallback } from 'react';
-import { loadAdminData, adminApiCall, getAdminToken, formatAdminError } from '../components/admin/adminApiService';
+import { loadAdminData, adminApiCall, formatAdminError } from '../components/admin/adminApiService';
 import type { Organisation, OrganisationAdmin, User } from '../components/admin/types';
 
 export interface MemberWithRole extends User {
@@ -66,14 +66,8 @@ export const useOrganizationList = () => {
       setLoading(true);
       setError(null);
 
-      const token = getAdminToken();
-      if (!token) {
-        throw new Error('No admin token found. Please login as admin.');
-      }
-
       await adminApiCall({
         endpoint: '/organisations',
-        token,
         method: 'POST',
         data: { name: name.trim(), description: description?.trim() }
       });
@@ -99,14 +93,8 @@ export const useOrganizationList = () => {
       setLoading(true);
       setError(null);
 
-      const token = getAdminToken();
-      if (!token) {
-        throw new Error('No admin token found. Please login as admin.');
-      }
-
       await adminApiCall({
         endpoint: `/organisations/${orgId}`,
-        token,
         method: 'DELETE'
       });
 
@@ -154,29 +142,21 @@ export const useOrganizationDetails = (orgId: number | null) => {
     try {
       setData(prev => ({ ...prev, loading: true, error: null }));
 
-      const token = getAdminToken();
-      if (!token) {
-        throw new Error('No admin token found. Please login as admin.');
-      }
-
       // Load organization details
       const orgResponse = await adminApiCall({
         endpoint: `/organisations/${orgId}`,
-        token,
         method: 'GET'
       });
 
       // Load organization admins
       const adminsResponse = await adminApiCall({
         endpoint: `/organisations/${orgId}/admins`,
-        token,
         method: 'GET'
       });
 
       // Load organization users (includes editors and regular users)
       const usersResponse = await adminApiCall({
         endpoint: `/organisations/${orgId}/users`,
-        token,
         method: 'GET'
       });
 
@@ -231,15 +211,9 @@ export const useOrganizationDetails = (orgId: number | null) => {
     try {
       setData(prev => ({ ...prev, loading: true, error: null }));
 
-      const token = getAdminToken();
-      if (!token) {
-        throw new Error('No admin token found. Please login as admin.');
-      }
-
       // Use the assign endpoint that accepts role
       await adminApiCall({
         endpoint: `/organisations/${orgId}/users/assign`,
-        token,
         method: 'POST',
         data: { userId, role }
       });
@@ -268,23 +242,16 @@ export const useOrganizationDetails = (orgId: number | null) => {
     try {
       setData(prev => ({ ...prev, loading: true, error: null }));
 
-      const token = getAdminToken();
-      if (!token) {
-        throw new Error('No admin token found. Please login as admin.');
-      }
-
       if (isAdmin) {
         // Remove organization admin
         await adminApiCall({
           endpoint: `/organisations/${orgId}/admins/${userId}`,
-          token,
           method: 'DELETE'
         });
       } else {
         // Remove regular user/editor
         await adminApiCall({
           endpoint: `/admin/users/${userId}/organizations/${orgId}`,
-          token,
           method: 'DELETE'
         });
       }

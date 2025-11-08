@@ -7,7 +7,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Card, CardHeader, Button } from '../ui';
-import { loadAdminData, formatAdminError, adminApiCall, getAdminToken } from './adminApiService';
+import { loadAdminData, formatAdminError, adminApiCall } from './adminApiService';
 import type { Event } from './types';
 
 export interface AdminEventPanelProps {
@@ -57,14 +57,9 @@ export const AdminEventPanel: React.FC<AdminEventPanelProps> = ({
 
     try {
       setLoading(true);
-      const token = getAdminToken();
-      if (!token) {
-        throw new Error('No admin token found. Please login as admin.');
-      }
 
       await adminApiCall({
         endpoint: `/admin/events/${eventId}`,
-        token,
         method: 'DELETE'
       });
 

@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import { BASE_URL } from '../config/apiConfig';
+import { secureFetch } from '../services/authErrorHandler';
 
 interface Reservation {
   id: number;
@@ -103,10 +105,8 @@ const ReservationManagement: React.FC<ReservationManagementProps> = ({ themeColo
     setLoading(true);
     setError('');
     try {
-      const token = localStorage.getItem('authToken');
-      const response = await fetch('http://localhost:8081/api/reservations', {
+      const response = await secureFetch(`${BASE_URL}/api/reservations`, {
         headers: {
-          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         }
       });
@@ -123,10 +123,8 @@ const ReservationManagement: React.FC<ReservationManagementProps> = ({ themeColo
 
   const loadResources = async () => {
     try {
-      const token = localStorage.getItem('authToken');
-      const response = await fetch('http://localhost:8081/api/resources', {
+      const response = await secureFetch(`${BASE_URL}/api/resources`, {
         headers: {
-          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         }
       });
@@ -148,11 +146,9 @@ const ReservationManagement: React.FC<ReservationManagementProps> = ({ themeColo
     setError('');
 
     try {
-      const token = localStorage.getItem('authToken');
-      const response = await fetch('http://localhost:8081/api/reservations', {
+      const response = await secureFetch(`${BASE_URL}/api/reservations`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify(formData)
@@ -183,7 +179,6 @@ const ReservationManagement: React.FC<ReservationManagementProps> = ({ themeColo
     setError('');
 
     try {
-      const token = localStorage.getItem('authToken');
       // Only send fields that the backend expects
       const updateData = {
         startTime: formData.startTime,
@@ -192,10 +187,9 @@ const ReservationManagement: React.FC<ReservationManagementProps> = ({ themeColo
         customerInfo: formData.customerInfo,
         notes: formData.notes
       };
-      const response = await fetch(`http://localhost:8081/api/reservations/${editingReservation.id}`, {
+      const response = await secureFetch(`${BASE_URL}/api/reservations/${editingReservation.id}`, {
         method: 'PATCH',
         headers: {
-          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify(updateData)
@@ -221,11 +215,9 @@ const ReservationManagement: React.FC<ReservationManagementProps> = ({ themeColo
     if (!confirm('Are you sure you want to delete this reservation?')) return;
 
     try {
-      const token = localStorage.getItem('authToken');
-      const response = await fetch(`http://localhost:8081/api/reservations/${id}`, {
+      const response = await secureFetch(`${BASE_URL}/api/reservations/${id}`, {
         method: 'DELETE',
         headers: {
-          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         }
       });
@@ -239,11 +231,9 @@ const ReservationManagement: React.FC<ReservationManagementProps> = ({ themeColo
 
   const handleStatusChange = async (id: number, status: string) => {
     try {
-      const token = localStorage.getItem('authToken');
-      const response = await fetch(`http://localhost:8081/api/reservations/${id}`, {
+      const response = await secureFetch(`${BASE_URL}/api/reservations/${id}`, {
         method: 'PATCH',
         headers: {
-          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({ status })
@@ -277,10 +267,7 @@ const ReservationManagement: React.FC<ReservationManagementProps> = ({ themeColo
   // Load resource types for filtering
   const loadResourceTypes = async () => {
     try {
-      const token = localStorage.getItem('authToken');
-      const response = await fetch('http://localhost:8081/api/resource-types', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+      const response = await secureFetch(`${BASE_URL}/api/resource-types`);
       if (response.ok) {
         const data = await response.json();
         setResourceTypes(data);
@@ -293,10 +280,7 @@ const ReservationManagement: React.FC<ReservationManagementProps> = ({ themeColo
   // Load organizations for filtering
   const loadOrganizations = async () => {
     try {
-      const token = localStorage.getItem('authToken');
-      const response = await fetch('http://localhost:8081/api/organisations', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+      const response = await secureFetch(`${BASE_URL}/api/organisations`);
       if (response.ok) {
         const data = await response.json();
         setOrganizations(data);

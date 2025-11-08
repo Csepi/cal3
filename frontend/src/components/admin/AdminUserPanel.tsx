@@ -7,7 +7,6 @@ import {
   bulkUpdateUsagePlans,
   bulkDelete,
   adminApiCall,
-  getAdminToken,
 } from "./adminApiService";
 import type { User, Organisation } from "./types";
 import { USAGE_PLAN_OPTIONS } from "../../constants";
@@ -175,11 +174,8 @@ export const AdminUserPanel: React.FC<AdminUserPanelProps> = ({
     if (!profileDraft) return;
     try {
       setSavingProfile(true);
-      const token = getAdminToken();
-      if (!token) throw new Error("No admin token found. Please login as admin.");
       await adminApiCall({
         endpoint: `/admin/users/${profileDraft.id}`,
-        token,
         method: "PATCH",
         data: {
           username: profileDraft.username,
@@ -203,11 +199,8 @@ export const AdminUserPanel: React.FC<AdminUserPanelProps> = ({
     if (!selectedUser) return;
     try {
       setSavingPlans(true);
-      const token = getAdminToken();
-      if (!token) throw new Error("No admin token found. Please login as admin.");
       const updatedUser = await adminApiCall({
         endpoint: `/admin/users/${selectedUser.id}/usage-plans`,
-        token,
         method: "PATCH",
         data: {
           usagePlans: toPayloadPlans(plansDraft),
@@ -270,9 +263,7 @@ export const AdminUserPanel: React.FC<AdminUserPanelProps> = ({
     if (!user) return;
     if (!window.confirm(`Delete ${getDisplayName(user)}? This cannot be undone.`)) return;
     try {
-      const token = getAdminToken();
-      if (!token) throw new Error("No admin token found. Please login as admin.");
-      await adminApiCall({ endpoint: `/admin/users/${userId}`, token, method: "DELETE" });
+      await adminApiCall({ endpoint: `/admin/users/${userId}`, method: "DELETE" });
       setSuccess("User deleted.");
       await loadUsers();
     } catch (error) {
@@ -284,11 +275,8 @@ export const AdminUserPanel: React.FC<AdminUserPanelProps> = ({
     if (!selectedUser) return;
     try {
       setResettingPassword(true);
-      const token = getAdminToken();
-      if (!token) throw new Error("No admin token found. Please login as admin.");
       await adminApiCall({
         endpoint: `/admin/users/${selectedUser.id}/reset-password`,
-        token,
         method: "POST",
       });
       setSuccess("Password reset email sent.");
@@ -304,11 +292,9 @@ export const AdminUserPanel: React.FC<AdminUserPanelProps> = ({
     if (!targetUser) return;
     try {
       setOrgLoading(true);
-      const token = getAdminToken();
-      if (!token) throw new Error("No admin token found. Please login as admin.");
       const [assigned, available] = await Promise.all([
-        adminApiCall({ endpoint: `/admin/users/${targetUser.id}/organizations`, token }),
-        adminApiCall({ endpoint: "/admin/organizations", token }),
+        adminApiCall({ endpoint: `/admin/users/${targetUser.id}/organizations` }),
+        adminApiCall({ endpoint: "/admin/organizations" }),
       ]);
       setOrgAssignments(assigned as Array<Organisation & { role?: string }>);
       setOrgOptions(available as Organisation[]);
@@ -328,11 +314,8 @@ export const AdminUserPanel: React.FC<AdminUserPanelProps> = ({
     }
     try {
       setOrgLoading(true);
-      const token = getAdminToken();
-      if (!token) throw new Error("No admin token found. Please login as admin.");
       await adminApiCall({
         endpoint: `/admin/organizations/${organisationId}/users`,
-        token,
         method: "POST",
         data: { userId: selectedUser.id, role },
       });
@@ -350,11 +333,8 @@ export const AdminUserPanel: React.FC<AdminUserPanelProps> = ({
     if (!window.confirm("Remove user from this organisation?")) return;
     try {
       setOrgLoading(true);
-      const token = getAdminToken();
-      if (!token) throw new Error("No admin token found. Please login as admin.");
       await adminApiCall({
         endpoint: `/admin/organizations/${organisationId}/users/${selectedUser.id}`,
-        token,
         method: "DELETE",
       });
       await loadOrganisations();

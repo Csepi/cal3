@@ -1,20 +1,20 @@
+import { sessionManager } from './sessionManager';
+import { applyCsrfHeader } from './csrf';
+
+const MUTATING_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
+
+export interface SecureFetchOptions extends RequestInit {
+  auth?: boolean;
+  autoRefresh?: boolean;
+  csrf?: boolean;
+}
+
 /**
  * Authentication Error Handler
  *
  * Centralized security handler for authentication and authorization errors.
- * Implements best practices for secure session management:
- * - Automatic logout on 401 (Unauthorized) or 403 (Forbidden)
- * - Complete session cleanup (token, user data, cached data)
- * - Immediate redirect to login page
- * - Prevention of data exposure after auth failure
- *
- * Security Principles:
- * - Fail securely: Clear all sensitive data on auth failure
- * - Zero trust: Don't rely on server-side session cleanup alone
- * - Defense in depth: Multiple layers of protection
- * - Audit trail: Log security events for monitoring
+ * Implements best practices for secure session management.
  */
-
 export class AuthErrorHandler {
   private static instance: AuthErrorHandler;
   private isHandlingAuthError = false; // Prevent recursive calls
@@ -68,22 +68,25 @@ export class AuthErrorHandler {
    */
   private clearAllSessionData(): void {
     try {
+      sessionManager.clearSession();
+
       // 1. Clear authentication token
-      localStorage.removeItem('authToken');
+      if (typeof localStorage !== 'undefined') {
+        // 2. Clear any user profile data
+        localStorage.removeItem('userProfile');
+        localStorage.removeItem('user');
 
-      // 2. Clear any user profile data
-      localStorage.removeItem('userProfile');
-      localStorage.removeItem('user');
-
-      // 3. Clear any cached permissions
-      localStorage.removeItem('userPermissions');
-      localStorage.removeItem('userRole');
+        // 3. Clear any cached permissions
+        localStorage.removeItem('userPermissions');
+      }
 
       // 4. Clear any cached API responses
       this.clearCachedApiData();
 
       // 5. Clear session storage (if used)
-      sessionStorage.clear();
+      if (typeof sessionStorage !== 'undefined') {
+        sessionStorage.clear();
+      }
 
       // 6. Clear any in-memory cached data by forcing a reload
       // This ensures React components re-initialize without stale data
@@ -99,6 +102,9 @@ export class AuthErrorHandler {
    * Clear cached API data from localStorage
    */
   private clearCachedApiData(): void {
+    if (typeof localStorage === 'undefined') {
+      return;
+    }
     const keysToRemove: string[] = [];
 
     // Find all keys that might contain cached data
@@ -155,8 +161,7 @@ export class AuthErrorHandler {
    * Should be called before rendering protected content
    */
   isAuthenticated(): boolean {
-    const token = localStorage.getItem('authToken');
-    return !!token;
+    return sessionManager.hasActiveSession();
   }
 
   /**
@@ -164,7 +169,7 @@ export class AuthErrorHandler {
    * This doesn't validate the token signature, just format
    */
   hasValidTokenFormat(): boolean {
-    const token = localStorage.getItem('authToken');
+    const token = sessionManager.peekAccessToken();
     if (!token) return false;
 
     // JWT tokens have 3 parts separated by dots
@@ -178,30 +183,75 @@ export class AuthErrorHandler {
  * Use this instead of raw fetch for all API calls
  */
 export async function secureFetch(
-  url: string,
-  options: RequestInit = {}
+  input: RequestInfo | URL,
+  options: SecureFetchOptions = {},
 ): Promise<Response> {
   const authHandler = AuthErrorHandler.getInstance();
+  const {
+    auth = true,
+    autoRefresh = true,
+    csrf,
+    ...rest
+  } = options;
 
-  try {
-    const response = await fetch(url, options);
+  const originalBody = rest.body;
+  const method = (rest.method ?? 'GET').toUpperCase();
+  const headers = new Headers(rest.headers ?? {});
+  const requestInit: RequestInit = {
+    ...rest,
+    headers,
+    credentials: rest.credentials ?? 'include',
+    body: originalBody,
+  };
 
-    // Check for auth errors
-    if (authHandler.isAuthError(response)) {
+  if (auth) {
+    const token = await sessionManager.getAccessToken();
+    if (token) {
+      headers.set('Authorization', `Bearer ${token}`);
+    }
+  }
+
+  const shouldAttachCsrf =
+    typeof csrf === 'boolean' ? csrf : MUTATING_METHODS.has(method);
+  if (shouldAttachCsrf) {
+    applyCsrfHeader(headers);
+  }
+
+  const execute = async (): Promise<Response> => {
+    const response = await fetch(input, requestInit);
+
+    if (auth && (response.status === 401 || response.status === 403)) {
+      if (response.status === 401 && autoRefresh) {
+        const refreshed = await sessionManager.refreshAccessToken(true);
+        if (refreshed) {
+          headers.set('Authorization', `Bearer ${refreshed}`);
+          const retryInit: RequestInit = {
+            ...requestInit,
+            body: originalBody,
+          };
+          return fetch(input, retryInit);
+        }
+      }
+
       authHandler.handleAuthError(
         response.status as 401 | 403,
-        url
+        typeof input === 'string' ? input : undefined,
       );
-
-      // Throw error to prevent further processing
       throw new Error(`Authentication error: ${response.status}`);
     }
 
     return response;
+  };
+
+  try {
+    return await execute();
   } catch (error) {
     // If it's a network error, check if we still have a valid token
-    if (!authHandler.hasValidTokenFormat()) {
-      authHandler.handleAuthError(401, url);
+    if (auth && !authHandler.hasValidTokenFormat()) {
+      authHandler.handleAuthError(
+        401,
+        typeof input === 'string' ? input : undefined,
+      );
     }
     throw error;
   }

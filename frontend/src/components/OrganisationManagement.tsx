@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { apiService } from '../services/api';
 import { UserPermissionsService } from '../services/userPermissions';
+import { BASE_URL } from '../config/apiConfig';
+import { secureFetch } from '../services/authErrorHandler';
 import OrganisationUserManagement from './OrganisationUserManagement';
 
 interface Organisation {
@@ -63,10 +65,8 @@ const OrganisationManagement: React.FC<OrganisationManagementProps> = ({ themeCo
     setLoading(true);
     setError('');
     try {
-      const token = localStorage.getItem('authToken');
-      const response = await fetch(`http://localhost:8081/api/organisations?t=${Date.now()}`, {
+      const response = await secureFetch(`${BASE_URL}/api/organisations?t=${Date.now()}`, {
         headers: {
-          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
           'Cache-Control': 'no-cache'
         }
@@ -84,11 +84,9 @@ const OrganisationManagement: React.FC<OrganisationManagementProps> = ({ themeCo
 
   const handleCreate = async () => {
     try {
-      const token = localStorage.getItem('authToken');
-      const response = await fetch('http://localhost:8081/api/organisations', {
+      const response = await secureFetch(`${BASE_URL}/api/organisations`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify(formData)
@@ -108,11 +106,9 @@ const OrganisationManagement: React.FC<OrganisationManagementProps> = ({ themeCo
     if (!editingOrg) return;
 
     try {
-      const token = localStorage.getItem('authToken');
-      const response = await fetch(`http://localhost:8081/api/organisations/${editingOrg.id}`, {
+      const response = await secureFetch(`${BASE_URL}/api/organisations/${editingOrg.id}`, {
         method: 'PATCH',
         headers: {
-          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify(formData)
@@ -133,11 +129,9 @@ const OrganisationManagement: React.FC<OrganisationManagementProps> = ({ themeCo
     if (!confirm('Are you sure you want to delete this organisation?')) return;
 
     try {
-      const token = localStorage.getItem('authToken');
-      const response = await fetch(`http://localhost:8081/api/organisations/${id}`, {
+      const response = await secureFetch(`${BASE_URL}/api/organisations/${id}`, {
         method: 'DELETE',
         headers: {
-          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         }
       });

@@ -15,6 +15,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { getThemeConfig } from '../constants';
+import { BASE_URL } from '../config/apiConfig';
+import { secureFetch } from '../services/authErrorHandler';
 import {
   ReservationFilterPanel,
   ReservationFormModal,
@@ -105,10 +107,8 @@ const ReservationManagement: React.FC<ReservationManagementProps> = ({
    * Load reservations from API
    */
   const loadReservations = async () => {
-    const token = localStorage.getItem('authToken');
-    const response = await fetch('http://localhost:8081/api/reservations', {
+    const response = await secureFetch(`${BASE_URL}/api/reservations`, {
       headers: {
-        'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json'
       }
     });
@@ -122,10 +122,8 @@ const ReservationManagement: React.FC<ReservationManagementProps> = ({
    * Load resources from API
    */
   const loadResources = async () => {
-    const token = localStorage.getItem('authToken');
-    const response = await fetch('http://localhost:8081/api/resources', {
+    const response = await secureFetch(`${BASE_URL}/api/resources`, {
       headers: {
-        'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json'
       }
     });
@@ -140,10 +138,8 @@ const ReservationManagement: React.FC<ReservationManagementProps> = ({
    */
   const loadResourceTypes = async () => {
     try {
-      const token = localStorage.getItem('authToken');
-      const response = await fetch('http://localhost:8081/api/resource-types', {
+      const response = await secureFetch(`${BASE_URL}/api/resource-types`, {
         headers: {
-          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         }
       });
@@ -162,10 +158,8 @@ const ReservationManagement: React.FC<ReservationManagementProps> = ({
    */
   const loadOrganizations = async () => {
     try {
-      const token = localStorage.getItem('authToken');
-      const response = await fetch(`http://localhost:8081/api/organisations?t=${Date.now()}`, {
+      const response = await secureFetch(`${BASE_URL}/api/organisations?t=${Date.now()}`, {
         headers: {
-          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
           'Cache-Control': 'no-cache'
         }
@@ -267,7 +261,6 @@ const ReservationManagement: React.FC<ReservationManagementProps> = ({
   const handleSaveReservation = async (formData: ReservationFormData) => {
     try {
       setError('');
-      const token = localStorage.getItem('authToken');
 
       // Prepare the payload based on whether it's multi-day or not
       let payload: any = {
@@ -289,15 +282,14 @@ const ReservationManagement: React.FC<ReservationManagementProps> = ({
       }
 
       const url = editingReservation
-        ? `http://localhost:8081/api/reservations/${editingReservation.id}`
-        : 'http://localhost:8081/api/reservations';
+        ? `${BASE_URL}/api/reservations/${editingReservation.id}`
+        : `${BASE_URL}/api/reservations`;
 
       const method = editingReservation ? 'PUT' : 'POST';
 
-      const response = await fetch(url, {
+      const response = await secureFetch(url, {
         method,
         headers: {
-          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify(payload)
@@ -325,12 +317,10 @@ const ReservationManagement: React.FC<ReservationManagementProps> = ({
   const handleDeleteReservation = async (reservation: Reservation) => {
     try {
       setError('');
-      const token = localStorage.getItem('authToken');
 
-      const response = await fetch(`http://localhost:8081/api/reservations/${reservation.id}`, {
+      const response = await secureFetch(`${BASE_URL}/api/reservations/${reservation.id}`, {
         method: 'DELETE',
         headers: {
-          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         }
       });

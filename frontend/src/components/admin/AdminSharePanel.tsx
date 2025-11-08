@@ -7,7 +7,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Card, CardHeader, Button } from '../ui';
-import { loadAdminData, formatAdminError } from './adminApiService';
+import { loadAdminData, formatAdminError, adminApiCall } from './adminApiService';
 import type { CalendarShare } from './types';
 
 export interface AdminSharePanelProps {
@@ -57,12 +57,9 @@ export const AdminSharePanel: React.FC<AdminSharePanelProps> = ({
 
     try {
       setLoading(true);
-      await fetch(`/api/admin/shares/${shareId}`, {
+      await adminApiCall({
+        endpoint: `/admin/shares/${shareId}`,
         method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
-          'Content-Type': 'application/json',
-        },
       });
 
       // Reload shares after deletion

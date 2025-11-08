@@ -64,37 +64,16 @@ const mapRecurrenceRule = (pattern: RecurrencePattern): any => {
 
 // Import centralized API configuration
 import { BASE_URL } from '../config/apiConfig';
-import { secureFetch, authErrorHandler } from './authErrorHandler';
+import { secureFetch } from './authErrorHandler';
+import { sessionManager } from './sessionManager';
 
 class ApiService {
-  private getAuthHeaders(): HeadersInit {
-    const token = localStorage.getItem('authToken');
-    return {
-      'Content-Type': 'application/json',
-      ...(token && { 'Authorization': `Bearer ${token}` })
-    };
-  }
-
   /**
    * Secure fetch wrapper that handles auth errors automatically
    * Use this for all API calls to ensure consistent security handling
    */
   private async secureApiFetch(url: string, options: RequestInit = {}): Promise<Response> {
-    const response = await secureFetch(url, {
-      ...options,
-      headers: {
-        ...this.getAuthHeaders(),
-        ...options.headers,
-      },
-    });
-
-    // Check for auth errors (401/403)
-    if (authErrorHandler.isAuthError(response)) {
-      // authErrorHandler will handle logout and redirect
-      throw new Error(`Authentication error: ${response.status}`);
-    }
-
-    return response;
+    return secureFetch(url, options);
   }
 
   async getAllEvents(): Promise<Event[]> {
@@ -137,9 +116,11 @@ class ApiService {
       }
     };
 
-    const response = await fetch(`${BASE_URL}/api/events/recurring`, {
+    const response = await this.secureApiFetch(`${BASE_URL}/api/events/recurring`, {
       method: 'POST',
-      headers: this.getAuthHeaders(),
+      headers: {
+        'Content-Type': 'application/json',
+      },
       body: JSON.stringify(recurringEventData),
     });
 
@@ -156,9 +137,11 @@ class ApiService {
   }
 
   async updateEvent(eventId: number, eventData: UpdateEventRequest): Promise<Event> {
-    const response = await fetch(`${BASE_URL}/api/events/${eventId}`, {
+    const response = await this.secureApiFetch(`${BASE_URL}/api/events/${eventId}`, {
       method: 'PATCH',
-      headers: this.getAuthHeaders(),
+      headers: {
+        'Content-Type': 'application/json',
+      },
       body: JSON.stringify(eventData),
     });
 
@@ -174,9 +157,8 @@ class ApiService {
   }
 
   async deleteEvent(eventId: number, scope: 'this' | 'future' | 'all' = 'this'): Promise<void> {
-    const response = await fetch(`${BASE_URL}/api/events/${eventId}?scope=${scope}`, {
+    const response = await this.secureApiFetch(`${BASE_URL}/api/events/${eventId}?scope=${scope}`, {
       method: 'DELETE',
-      headers: this.getAuthHeaders(),
     });
 
     if (!response.ok) {
@@ -191,9 +173,11 @@ class ApiService {
   // Recurring event methods
 
   async updateRecurringEvent(eventId: number, eventData: UpdateRecurringEventRequest): Promise<Event[]> {
-    const response = await fetch(`${BASE_URL}/api/events/${eventId}/recurring`, {
+    const response = await this.secureApiFetch(`${BASE_URL}/api/events/${eventId}/recurring`, {
       method: 'PATCH',
-      headers: this.getAuthHeaders(),
+      headers: {
+        'Content-Type': 'application/json',
+      },
       body: JSON.stringify(eventData),
     });
 
@@ -210,9 +194,7 @@ class ApiService {
 
   // Calendar methods
   async getAllCalendars(): Promise<Calendar[]> {
-    const response = await fetch(`${BASE_URL}/api/calendars`, {
-      headers: this.getAuthHeaders(),
-    });
+    const response = await this.secureApiFetch(`${BASE_URL}/api/calendars`);
     if (!response.ok) {
       if (response.status === 401) {
         throw new Error('Authentication required. Please log in to view calendars.');
@@ -223,9 +205,11 @@ class ApiService {
   }
 
   async createCalendar(calendarData: CreateCalendarRequest): Promise<Calendar> {
-    const response = await fetch(`${BASE_URL}/api/calendars`, {
+    const response = await this.secureApiFetch(`${BASE_URL}/api/calendars`, {
       method: 'POST',
-      headers: this.getAuthHeaders(),
+      headers: {
+        'Content-Type': 'application/json',
+      },
       body: JSON.stringify(calendarData),
     });
 
@@ -241,9 +225,11 @@ class ApiService {
   }
 
   async updateCalendar(calendarId: number, calendarData: UpdateCalendarRequest): Promise<Calendar> {
-    const response = await fetch(`${BASE_URL}/api/calendars/${calendarId}`, {
+    const response = await this.secureApiFetch(`${BASE_URL}/api/calendars/${calendarId}`, {
       method: 'PATCH',
-      headers: this.getAuthHeaders(),
+      headers: {
+        'Content-Type': 'application/json',
+      },
       body: JSON.stringify(calendarData),
     });
 
@@ -259,9 +245,8 @@ class ApiService {
   }
 
   async deleteCalendar(calendarId: number): Promise<void> {
-    const response = await fetch(`${BASE_URL}/api/calendars/${calendarId}`, {
+    const response = await this.secureApiFetch(`${BASE_URL}/api/calendars/${calendarId}`, {
       method: 'DELETE',
-      headers: this.getAuthHeaders(),
     });
 
     if (!response.ok) {
@@ -275,12 +260,14 @@ class ApiService {
 
   // Authentication methods
   async login(usernameOrEmail: string, password: string): Promise<{ token: string, user: any }> {
-    const response = await fetch(`${BASE_URL}/api/auth/login`, {
+    const response = await secureFetch(`${BASE_URL}/api/auth/login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ username: usernameOrEmail, password }),
+      auth: false,
+      csrf: true,
     });
 
     if (!response.ok) {
@@ -289,17 +276,19 @@ class ApiService {
     }
 
     const data = await response.json();
-    localStorage.setItem('authToken', data.access_token);
+    sessionManager.setSessionFromResponse(data);
     return { token: data.access_token, user: data.user };
   }
 
   async register(userData: { username: string, email: string, password: string, firstName?: string, lastName?: string }): Promise<{ token: string, user: any }> {
-    const response = await fetch(`${BASE_URL}/api/auth/register`, {
+    const response = await secureFetch(`${BASE_URL}/api/auth/register`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(userData),
+      auth: false,
+      csrf: true,
     });
 
     if (!response.ok) {
@@ -308,20 +297,23 @@ class ApiService {
     }
 
     const data = await response.json();
-    localStorage.setItem('authToken', data.access_token);
+    sessionManager.setSessionFromResponse(data);
     return { token: data.access_token, user: data.user };
   }
 
-  logout(): void {
-    localStorage.removeItem('authToken');
-  }
-
-  getToken(): string | null {
-    return localStorage.getItem('authToken');
+  async logout(): Promise<void> {
+    await secureFetch(`${BASE_URL}/api/auth/logout`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({}),
+    });
+    sessionManager.clearSession();
   }
 
   isAuthenticated(): boolean {
-    return !!this.getToken();
+    return sessionManager.hasActiveSession();
   }
 
   // OAuth methods
@@ -335,9 +327,7 @@ class ApiService {
 
   // User Profile methods
   async getUserProfile(): Promise<any> {
-    const response = await fetch(`${BASE_URL}/api/user/profile`, {
-      headers: this.getAuthHeaders(),
-    });
+    const response = await this.secureApiFetch(`${BASE_URL}/api/user/profile`);
 
     if (!response.ok) {
       if (response.status === 401) {
@@ -350,9 +340,11 @@ class ApiService {
   }
 
   async updateUserProfile(profileData: any): Promise<any> {
-    const response = await fetch(`${BASE_URL}/api/user/profile`, {
+    const response = await this.secureApiFetch(`${BASE_URL}/api/user/profile`, {
       method: 'PATCH',
-      headers: this.getAuthHeaders(),
+      headers: {
+        'Content-Type': 'application/json',
+      },
       body: JSON.stringify(profileData),
     });
 
@@ -368,9 +360,11 @@ class ApiService {
   }
 
   async updateUserTheme(themeColor: string): Promise<any> {
-    const response = await fetch(`${BASE_URL}/api/user/theme`, {
+    const response = await this.secureApiFetch(`${BASE_URL}/api/user/theme`, {
       method: 'PATCH',
-      headers: this.getAuthHeaders(),
+      headers: {
+        'Content-Type': 'application/json',
+      },
       body: JSON.stringify({ themeColor }),
     });
 
@@ -386,9 +380,11 @@ class ApiService {
   }
 
   async changePassword(currentPassword: string, newPassword: string): Promise<any> {
-    const response = await fetch(`${BASE_URL}/api/user/password`, {
+    const response = await this.secureApiFetch(`${BASE_URL}/api/user/password`, {
       method: 'PATCH',
-      headers: this.getAuthHeaders(),
+      headers: {
+        'Content-Type': 'application/json',
+      },
       body: JSON.stringify({ currentPassword, newPassword }),
     });
 
@@ -402,9 +398,7 @@ class ApiService {
 
   // Generic HTTP methods
   async get(endpoint: string): Promise<any> {
-    const response = await fetch(`${BASE_URL}/api${endpoint}`, {
-      headers: this.getAuthHeaders(),
-    });
+    const response = await this.secureApiFetch(`${BASE_URL}/api${endpoint}`);
 
     if (!response.ok) {
       if (response.status === 401) {
@@ -418,9 +412,11 @@ class ApiService {
   }
 
   async post(endpoint: string, data?: any): Promise<any> {
-    const response = await fetch(`${BASE_URL}/api${endpoint}`, {
+    const response = await this.secureApiFetch(`${BASE_URL}/api${endpoint}`, {
       method: 'POST',
-      headers: this.getAuthHeaders(),
+      headers: {
+        'Content-Type': 'application/json',
+      },
       ...(data && { body: JSON.stringify(data) }),
     });
 
@@ -436,9 +432,11 @@ class ApiService {
   }
 
   async patch(endpoint: string, data?: any): Promise<any> {
-    const response = await fetch(`${BASE_URL}/api${endpoint}`, {
+    const response = await this.secureApiFetch(`${BASE_URL}/api${endpoint}`, {
       method: 'PATCH',
-      headers: this.getAuthHeaders(),
+      headers: {
+        'Content-Type': 'application/json',
+      },
       ...(data && { body: JSON.stringify(data) }),
     });
 
@@ -454,9 +452,8 @@ class ApiService {
   }
 
   async delete(endpoint: string): Promise<any> {
-    const response = await fetch(`${BASE_URL}/api${endpoint}`, {
+    const response = await this.secureApiFetch(`${BASE_URL}/api${endpoint}`, {
       method: 'DELETE',
-      headers: this.getAuthHeaders(),
     });
 
     if (!response.ok) {
@@ -474,9 +471,7 @@ class ApiService {
 
   // Calendar Sync methods
   async getCalendarSyncStatus(): Promise<any> {
-    const response = await fetch(`${BASE_URL}/api/calendar-sync/status`, {
-      headers: this.getAuthHeaders(),
-    });
+    const response = await this.secureApiFetch(`${BASE_URL}/api/calendar-sync/status`);
 
     if (!response.ok) {
       if (response.status === 401) {
@@ -498,9 +493,7 @@ class ApiService {
   }
 
   async getCalendarAuthUrl(provider: 'google' | 'microsoft'): Promise<string> {
-    const response = await fetch(`${BASE_URL}/api/calendar-sync/auth/${provider}`, {
-      headers: this.getAuthHeaders(),
-    });
+    const response = await this.secureApiFetch(`${BASE_URL}/api/calendar-sync/auth/${provider}`);
 
     if (!response.ok) {
       if (response.status === 401) {
@@ -523,9 +516,11 @@ class ApiService {
       selectedRuleIds?: number[]
     }>
   }): Promise<any> {
-    const response = await fetch(`${BASE_URL}/api/calendar-sync/sync`, {
+    const response = await this.secureApiFetch(`${BASE_URL}/api/calendar-sync/sync`, {
       method: 'POST',
-      headers: this.getAuthHeaders(),
+      headers: {
+        'Content-Type': 'application/json',
+      },
       body: JSON.stringify(syncData),
     });
 
@@ -545,9 +540,8 @@ class ApiService {
       ? `${BASE_URL}/api/calendar-sync/disconnect/${provider}`
       : `${BASE_URL}/api/calendar-sync/disconnect`;
 
-    const response = await fetch(url, {
+    const response = await this.secureApiFetch(url, {
       method: 'POST',
-      headers: this.getAuthHeaders(),
     });
 
     if (!response.ok) {
@@ -560,9 +554,8 @@ class ApiService {
   }
 
   async forceCalendarSync(): Promise<any> {
-    const response = await fetch(`${BASE_URL}/api/calendar-sync/force`, {
+    const response = await this.secureApiFetch(`${BASE_URL}/api/calendar-sync/force`, {
       method: 'POST',
-      headers: this.getAuthHeaders(),
     });
 
     if (!response.ok) {

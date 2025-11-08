@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
+import { sessionManager } from '../../services/sessionManager';
 
 interface AuthCallbackProps {
   onLogin: (username: string, token?: string, role?: string) => void;
@@ -7,6 +8,25 @@ interface AuthCallbackProps {
 
 const AuthCallback: React.FC<AuthCallbackProps> = ({ onLogin }) => {
   const location = useLocation();
+
+  const decodeTokenPayload = (jwt: string): Record<string, any> | null => {
+    if (typeof atob !== 'function') {
+      return null;
+    }
+    try {
+      const [, payload] = jwt.split('.');
+      if (!payload) return null;
+      const normalized = payload.replace(/-/g, '+').replace(/_/g, '/');
+      const padded = normalized.padEnd(
+        normalized.length + ((4 - (normalized.length % 4)) % 4),
+        '=',
+      );
+      const decoded = atob(padded);
+      return JSON.parse(decoded);
+    } catch {
+      return null;
+    }
+  };
 
   useEffect(() => {
     const urlParams = new URLSearchParams(location.search);
@@ -18,31 +38,17 @@ const AuthCallback: React.FC<AuthCallbackProps> = ({ onLogin }) => {
 
     if (token) {
       console.log('AuthCallback - Token received:', token);
-      // Store the token
-      localStorage.setItem('authToken', token);
-
-      // Decode token to get user info (simple base64 decode for demo)
-      try {
-        const payload = JSON.parse(atob(token.split('.')[1]));
-        console.log('AuthCallback - Decoded payload:', payload);
-        // Store the token and user info in localStorage
-        localStorage.setItem('username', payload.username || `${provider}_user`);
-        localStorage.setItem('userRole', payload.role || 'user');
-
-        // Store admin token if user has admin role
-        if (payload.role === 'admin') {
-          localStorage.setItem('admin_token', token);
-        }
-
-        console.log('AuthCallback - Calling onLogin with:', payload.username || `${provider}_user`, token, payload.role || 'user');
-        onLogin(payload.username || `${provider}_user`, token, payload.role || 'user');
-      } catch (error) {
-        console.error('Failed to decode token:', error);
-        console.log('AuthCallback - Using fallback values for provider:', provider);
-        localStorage.setItem('username', `${provider}_user`);
-        localStorage.setItem('userRole', 'user');
-        onLogin(`${provider}_user`, token, 'user');
-      }
+      const payload = decodeTokenPayload(token);
+      const username = payload?.username || `${provider}_user`;
+      const role = payload?.role || 'user';
+      sessionManager.setSessionFromJwt(token, { username, role });
+      console.log(
+        'AuthCallback - Calling onLogin with:',
+        username,
+        token,
+        role,
+      );
+      onLogin(username, token, role);
     } else {
       console.log('AuthCallback - No token found, redirecting to login');
       // Redirect to login page if no token

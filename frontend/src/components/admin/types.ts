@@ -88,7 +88,6 @@ export interface DatabaseStats {
 
 export interface AdminApiOptions {
   endpoint: string;
-  token: string;
   method?: string;
   data?: any;
 }

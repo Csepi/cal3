@@ -9,17 +9,24 @@ import type {
   AuditLogStatsDto,
 } from '../types/Automation';
 import { BASE_URL } from '../config/apiConfig';
+import { secureFetch } from './authErrorHandler';
+import { sessionManager } from './sessionManager';
 
-/**
- * Get authorization headers with JWT token
- */
-function getAuthHeaders(): HeadersInit {
-  const token = localStorage.getItem('authToken');
-  return {
-    'Content-Type': 'application/json',
-    Authorization: `Bearer ${token}`,
-  };
-}
+const apiFetch = async (url: string, init: RequestInit = {}): Promise<Response> => {
+  const headers = new Headers(init.headers ?? {});
+  if (
+    init.body &&
+    typeof init.body === 'string' &&
+    !headers.has('Content-Type')
+  ) {
+    headers.set('Content-Type', 'application/json');
+  }
+
+  return secureFetch(url, {
+    ...init,
+    headers,
+  });
+};
 
 /**
  * Handle API response and throw errors for non-2xx responses
@@ -53,11 +60,10 @@ export async function getAutomationRules(
     params.append('enabled', enabled.toString());
   }
 
-  const response = await fetch(
+  const response = await apiFetch(
     `${BASE_URL}/api/automation/rules?${params.toString()}`,
     {
       method: 'GET',
-      headers: getAuthHeaders(),
     }
   );
 
@@ -70,11 +76,10 @@ export async function getAutomationRules(
 export async function getAutomationRule(
   ruleId: number
 ): Promise<AutomationRuleDetailDto> {
-  const response = await fetch(
+  const response = await apiFetch(
     `${BASE_URL}/api/automation/rules/${ruleId}`,
     {
       method: 'GET',
-      headers: getAuthHeaders(),
     }
   );
 
@@ -87,9 +92,8 @@ export async function getAutomationRule(
 export async function createAutomationRule(
   ruleData: CreateAutomationRuleDto
 ): Promise<AutomationRuleDetailDto> {
-  const response = await fetch(`${BASE_URL}/api/automation/rules`, {
+  const response = await apiFetch(`${BASE_URL}/api/automation/rules`, {
     method: 'POST',
-    headers: getAuthHeaders(),
     body: JSON.stringify(ruleData),
   });
 
@@ -103,11 +107,10 @@ export async function updateAutomationRule(
   ruleId: number,
   updateData: UpdateAutomationRuleDto
 ): Promise<AutomationRuleDetailDto> {
-  const response = await fetch(
+  const response = await apiFetch(
     `${BASE_URL}/api/automation/rules/${ruleId}`,
     {
       method: 'PUT',
-      headers: getAuthHeaders(),
       body: JSON.stringify(updateData),
     }
   );
@@ -119,11 +122,10 @@ export async function updateAutomationRule(
  * Delete an automation rule
  */
 export async function deleteAutomationRule(ruleId: number): Promise<void> {
-  const response = await fetch(
+  const response = await apiFetch(
     `${BASE_URL}/api/automation/rules/${ruleId}`,
     {
       method: 'DELETE',
-      headers: getAuthHeaders(),
     }
   );
 
@@ -151,11 +153,10 @@ export async function toggleAutomationRule(
 export async function regenerateWebhookToken(
   ruleId: number
 ): Promise<{ webhookToken: string }> {
-  const response = await fetch(
+  const response = await apiFetch(
     `${BASE_URL}/api/automation/rules/${ruleId}/webhook/regenerate`,
     {
       method: 'POST',
-      headers: getAuthHeaders(),
     }
   );
 
@@ -170,11 +171,10 @@ export async function regenerateWebhookToken(
 export async function executeRuleNow(
   ruleId: number
 ): Promise<{ message: string; executionCount: number }> {
-  const response = await fetch(
+  const response = await apiFetch(
     `${BASE_URL}/api/automation/rules/${ruleId}/execute`,
     {
       method: 'POST',
-      headers: getAuthHeaders(),
     }
   );
 
@@ -203,9 +203,8 @@ export async function getAuditLogs(
     queryString ? `?${queryString}` : ''
   }`;
 
-  const response = await fetch(url, {
+  const response = await apiFetch(url, {
     method: 'GET',
-    headers: getAuthHeaders(),
   });
 
   const paginatedResponse = await handleResponse<{ data: AuditLogDto[]; pagination: any }>(response);
@@ -218,11 +217,10 @@ export async function getAuditLogs(
 export async function getAuditLogStats(
   ruleId: number
 ): Promise<AuditLogStatsDto> {
-  const response = await fetch(
+  const response = await apiFetch(
     `${BASE_URL}/api/automation/rules/${ruleId}/stats`,
     {
       method: 'GET',
-      headers: getAuthHeaders(),
     }
   );
 
@@ -248,9 +246,8 @@ export async function getAllAuditLogs(
     queryString ? `?${queryString}` : ''
   }`;
 
-  const response = await fetch(url, {
+  const response = await apiFetch(url, {
     method: 'GET',
-    headers: getAuthHeaders(),
   });
 
   return handleResponse<AuditLogDto[]>(response);
@@ -262,7 +259,7 @@ export async function getAllAuditLogs(
  * Check if user is authenticated
  */
 export function isAuthenticated(): boolean {
-  return !!localStorage.getItem('authToken');
+  return sessionManager.hasActiveSession();
 }
 
 /**

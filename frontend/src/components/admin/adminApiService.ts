@@ -13,23 +13,19 @@ import type {
   ConfigurationSettingSummary,
 } from './types';
 import { BASE_URL } from '../../config/apiConfig';
+import { secureFetch } from '../../services/authErrorHandler';
+import { sessionManager } from '../../services/sessionManager';
 
-/**
- * Get admin authentication token with fallback logic
- * Tries admin_token first, then falls back to authToken for admin users
- */
-export const getAdminToken = (): string | null => {
-  let token = localStorage.getItem('admin_token');
-
-  // Fallback to regular auth token if user has admin role
-  if (!token) {
-    const userRole = localStorage.getItem('userRole');
-    if (userRole === 'admin') {
-      token = localStorage.getItem('authToken');
-    }
+const ensureAdminSession = (): void => {
+  if (!sessionManager.hasActiveSession()) {
+    throw new Error('Authentication required. Please log in.');
   }
 
-  return token;
+  const role =
+    sessionManager.getCurrentUser()?.role || localStorage.getItem('userRole');
+  if (role !== 'admin') {
+    throw new Error('Admin privileges required.');
+  }
 };
 
 /**
@@ -38,14 +34,13 @@ export const getAdminToken = (): string | null => {
  */
 export const adminApiCall = async ({
   endpoint,
-  token,
   method = 'GET',
   data,
 }: AdminApiOptions) => {
+  ensureAdminSession();
   const options: RequestInit = {
     method,
     headers: {
-      Authorization: `Bearer ${token}`,
       'Content-Type': 'application/json',
     },
   };
@@ -58,7 +53,7 @@ export const adminApiCall = async ({
   const normalizedEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
   const url = base.endsWith('/api') ? `${base}${normalizedEndpoint}` : `${base}/api${normalizedEndpoint}`;
 
-  const response = await fetch(url, options);
+  const response = await secureFetch(url, options);
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
@@ -78,15 +73,10 @@ export const loadAdminData = async <T>(
 ): Promise<T> => {
   updateProgress?.(10, 'Checking authentication...');
 
-  const token = getAdminToken();
-  if (!token) {
-    throw new Error('No admin token found. Please login as admin.');
-  }
-
   const resource = endpoint.split('/').pop() || 'data';
   updateProgress?.(30, `Loading ${resource}...`);
 
-  const response = await adminApiCall({ endpoint, token });
+  const response = await adminApiCall({ endpoint });
 
   updateProgress?.(70, `Processing ${resource}...`);
 
@@ -109,14 +99,6 @@ interface LogQueryParams {
   offset?: number;
 }
 
-const requireAdminToken = (): string => {
-  const token = getAdminToken();
-  if (!token) {
-    throw new Error('No admin token found. Please login as admin.');
-  }
-  return token;
-};
-
 const buildQueryString = (params: Record<string, string | number | string[] | undefined>) => {
   const searchParams = new URLSearchParams();
   Object.entries(params).forEach(([key, value]) => {
@@ -133,7 +115,6 @@ const buildQueryString = (params: Record<string, string | number | string[] | un
 };
 
 export const fetchAdminLogs = async (params: LogQueryParams = {}) => {
-  const token = requireAdminToken();
   const query = buildQueryString({
     levels: params.levels && params.levels.length > 0 ? params.levels : undefined,
     contexts: params.contexts && params.contexts.length > 0 ? params.contexts : undefined,
@@ -146,36 +127,29 @@ export const fetchAdminLogs = async (params: LogQueryParams = {}) => {
 
   return adminApiCall({
     endpoint: `/admin/logs${query}`,
-    token,
   });
 };
 
 export const updateLogRetentionSettings = async (data: { retentionDays?: number; autoCleanupEnabled?: boolean }) => {
-  const token = requireAdminToken();
   return adminApiCall({
     endpoint: '/admin/logs/settings',
-    token,
     method: 'PATCH',
     data,
   });
 };
 
 export const clearAdminLogs = async (before?: string) => {
-  const token = requireAdminToken();
   const query = buildQueryString({ before });
 
   return adminApiCall({
     endpoint: `/admin/logs${query}`,
-    token,
     method: 'DELETE',
   });
 };
 
 export const runAdminLogRetention = async () => {
-  const token = requireAdminToken();
   return adminApiCall({
     endpoint: '/admin/logs/purge',
-    token,
     method: 'POST',
   });
 };
@@ -193,10 +167,7 @@ export const bulkDelete = async (
     return { success: 0, failed: 0, errors: [] };
   }
 
-  const token = getAdminToken();
-  if (!token) {
-    throw new Error('No admin token found. Please login as admin.');
-  }
+  ensureAdminSession();
 
   const results: BulkOperationResult = {
     success: 0,
@@ -212,7 +183,6 @@ export const bulkDelete = async (
     try {
       await adminApiCall({
         endpoint: `${endpoint}/${id}`,
-        token,
         method: 'DELETE'
       });
       results.success++;
@@ -243,10 +213,7 @@ export const bulkUpdateUsagePlans = async (
     return { success: 0, failed: 0, errors: [] };
   }
 
-  const token = getAdminToken();
-  if (!token) {
-    throw new Error('No admin token found. Please login as admin.');
-  }
+  ensureAdminSession();
 
   const normalisePlan = (value: string) => value?.toLowerCase?.().trim?.() ?? value;
   const normalisedPlans = plans.map(normalisePlan);
@@ -267,7 +234,6 @@ export const bulkUpdateUsagePlans = async (
     try {
       const user = await adminApiCall({
         endpoint: `/admin/users/${userId}`,
-        token
       });
 
       const currentPlans: string[] = Array.isArray(user?.usagePlans)
@@ -286,7 +252,6 @@ export const bulkUpdateUsagePlans = async (
 
       await adminApiCall({
         endpoint: `/admin/users/${userId}/usage-plans`,
-        token,
         method: 'PATCH',
         data: { usagePlans: nextPlans }
       });
@@ -308,10 +273,9 @@ export const bulkUpdateUsagePlans = async (
  * Used for conditional rendering of admin features
  */
 export const isAdminUser = (): boolean => {
-  const userRole = localStorage.getItem('userRole');
-  const adminToken = localStorage.getItem('admin_token');
-
-  return userRole === 'admin' || !!adminToken;
+  const userRole =
+    sessionManager.getCurrentUser()?.role || localStorage.getItem('userRole');
+  return userRole === 'admin';
 };
 
 /**
@@ -346,12 +310,10 @@ export const updateConfigurationSetting = async (
   key: string,
   value: string | boolean | null
 ): Promise<ConfigurationSettingSummary> => {
-  const token = requireAdminToken();
   const normalizedKey = key.toUpperCase();
 
   const response = await adminApiCall({
     endpoint: `/admin/configuration/${encodeURIComponent(normalizedKey)}`,
-    token,
     method: 'PATCH',
     data: { value },
   });

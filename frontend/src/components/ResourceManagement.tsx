@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import { BASE_URL } from '../config/apiConfig';
+import { secureFetch } from '../services/authErrorHandler';
 
 interface Resource {
   id: number;
@@ -43,10 +45,8 @@ const ResourceManagement: React.FC<ResourceManagementProps> = ({ themeColor = '#
     setLoading(true);
     setError('');
     try {
-      const token = localStorage.getItem('authToken');
-      const response = await fetch('http://localhost:8081/api/resources', {
+      const response = await secureFetch(`${BASE_URL}/api/resources`, {
         headers: {
-          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         }
       });
@@ -63,10 +63,8 @@ const ResourceManagement: React.FC<ResourceManagementProps> = ({ themeColor = '#
 
   const loadResourceTypes = async () => {
     try {
-      const token = localStorage.getItem('authToken');
-      const response = await fetch('http://localhost:8081/api/resource-types', {
+      const response = await secureFetch(`${BASE_URL}/api/resource-types`, {
         headers: {
-          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         }
       });
@@ -81,11 +79,9 @@ const ResourceManagement: React.FC<ResourceManagementProps> = ({ themeColor = '#
 
   const handleCreate = async () => {
     try {
-      const token = localStorage.getItem('authToken');
-      const response = await fetch('http://localhost:8081/api/resources', {
+      const response = await secureFetch(`${BASE_URL}/api/resources`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify(formData)
@@ -105,12 +101,10 @@ const ResourceManagement: React.FC<ResourceManagementProps> = ({ themeColor = '#
     if (!editingResource) return;
 
     try {
-      const token = localStorage.getItem('authToken');
       const { resourceTypeId, ...updateData } = formData;
-      const response = await fetch(`http://localhost:8081/api/resources/${editingResource.id}`, {
+      const response = await secureFetch(`${BASE_URL}/api/resources/${editingResource.id}`, {
         method: 'PATCH',
         headers: {
-          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify(updateData)
@@ -131,11 +125,9 @@ const ResourceManagement: React.FC<ResourceManagementProps> = ({ themeColor = '#
     if (!confirm('Are you sure you want to delete this resource?')) return;
 
     try {
-      const token = localStorage.getItem('authToken');
-      const response = await fetch(`http://localhost:8081/api/resources/${id}`, {
+      const response = await secureFetch(`${BASE_URL}/api/resources/${id}`, {
         method: 'DELETE',
         headers: {
-          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         }
       });

@@ -11,6 +11,7 @@ import {
 import { io, type Socket } from 'socket.io-client';
 import { BASE_URL } from '../config/apiConfig';
 import { apiService } from '../services/api';
+import { sessionManager } from '../services/sessionManager';
 import type {
   NotificationMessage,
   NotificationThreadSummary,
@@ -221,35 +222,39 @@ export const NotificationsProvider = ({ children }: { children: ReactNode }) => 
       return;
     }
 
-    const token = localStorage.getItem('authToken');
-    if (!token) {
-      return;
-    }
-
-    const socketNamespaceUrl = buildSocketUrl();
-    const socket = io(socketNamespaceUrl, {
-      transports: ['websocket'],
-      path: SOCKET_IO_PATH,
-      auth: { token },
-    });
-
-    socket.on('connect', () => {
-      socket.emit('ping', { ts: Date.now() });
-    });
-
-    socket.on('notification:new', () => refreshNotifications());
-    socket.on('notification:unreadCount', (payload: { count: number }) => {
-      if (typeof payload?.count === 'number') {
-        setUnreadCount(payload.count);
+    const establishConnection = async () => {
+      const token = await sessionManager.getAccessToken();
+      if (!token) {
+        return;
       }
-    });
-    socket.on('thread:state', () => refreshThreads());
 
-    socket.on('disconnect', () => {
-      socketRef.current = null;
-    });
+      const socketNamespaceUrl = buildSocketUrl();
+      const socket = io(socketNamespaceUrl, {
+        transports: ['websocket'],
+        path: SOCKET_IO_PATH,
+        auth: { token },
+      });
 
-    socketRef.current = socket;
+      socket.on('connect', () => {
+        socket.emit('ping', { ts: Date.now() });
+      });
+
+      socket.on('notification:new', () => refreshNotifications());
+      socket.on('notification:unreadCount', (payload: { count: number }) => {
+        if (typeof payload?.count === 'number') {
+          setUnreadCount(payload.count);
+        }
+      });
+      socket.on('thread:state', () => refreshThreads());
+
+      socket.on('disconnect', () => {
+        socketRef.current = null;
+      });
+
+      socketRef.current = socket;
+    };
+
+    void establishConnection();
   }, [refreshNotifications, refreshThreads]);
 
   useEffect(() => {

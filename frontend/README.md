@@ -10,6 +10,12 @@ The PrimeCal frontend is a modern React 18 application built with TypeScript and
 - **Tailwind CSS** - Utility-first CSS framework with custom theming
 - **Date/Time Libraries** - Native JavaScript Date with timezone support
 
+## Security & CSP Integration
+- **HttpOnly Session Flow**: The frontend no longer reads or writes access tokens to `localStorage`. Access tokens live in memory (see `src/services/sessionManager.ts`) and are rotated via the refresh-cookie endpoints exposed by the backend.
+- **CSRF Enforcement**: All mutating requests automatically include the `X-CSRF-Token` header via `secureFetch`. The helper in `src/services/csrf.ts` issues a double-submit cookie so same-origin POSTs stay aligned with the backend allow-list.
+- **Nonce-Aware Asset Loader**: `bootstrapThemeAssets()` (imported in `src/main.tsx`) preloads the self-hosted Inter variable font from `@fontsource-variable/inter` and applies the CSP nonce announced via `<meta name="csp-nonce" ...>`.
+- **DOM Sanitization**: `src/utils/sanitizeHtml.ts` centralizes DOMPurify usage for any future `dangerouslySetInnerHTML` needs. Prefer `createSanitizedMarkup()` whenever user-generated HTML must be rendered.
+
 ## Architecture
 
 ### Component Structure
