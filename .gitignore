@@ -2,11 +2,22 @@
 node_modules/
 */node_modules/
 
+# Package manager caches
+.npm/
+.pnpm-store/
+.yarn/
+.yarn-cache/
+package-lock.json.LOCK
+
 # Build outputs
 dist/
 */dist/
 build/
 */build/
+.next/
+.turbo/
+.cache/
+*.tsbuildinfo
 
 # Environment files
 .env
@@ -41,6 +52,8 @@ pids/
 coverage/
 .nyc_output/
 .jest/
+coverage-final.json
+reports/
 
 # Temporary files
 tmp/

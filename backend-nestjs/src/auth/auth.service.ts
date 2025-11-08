@@ -3,22 +3,45 @@ import {
   UnauthorizedException,
   ConflictException,
 } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcryptjs';
 import { User, UserRole } from '../entities/user.entity';
-import { RegisterDto, LoginDto, AuthResponseDto } from '../dto/auth.dto';
+import {
+  RegisterDto,
+  LoginDto,
+  AuthResponseDto,
+} from '../dto/auth.dto';
+import { TokenService, TokenIssueResult } from './token.service';
+import { SecurityAuditService } from '../logging/security-audit.service';
+import { LoginAttemptService } from './services/login-attempt.service';
+
+export interface AuthRequestMetadata {
+  ip?: string;
+  userAgent?: string;
+}
+
+export interface AuthSessionResult {
+  response: AuthResponseDto;
+  refreshToken: string;
+  refreshExpiresAt: Date;
+  user: User;
+}
 
 @Injectable()
 export class AuthService {
   constructor(
     @InjectRepository(User)
     private userRepository: Repository<User>,
-    private jwtService: JwtService,
+    private readonly tokenService: TokenService,
+    private readonly securityAudit: SecurityAuditService,
+    private readonly loginAttemptService: LoginAttemptService,
   ) {}
 
-  async register(registerDto: RegisterDto): Promise<AuthResponseDto> {
+  async register(
+    registerDto: RegisterDto,
+    metadata: AuthRequestMetadata = {},
+  ): Promise<AuthSessionResult> {
     const { username, email, password, firstName, lastName, role } =
       registerDto;
 
@@ -47,27 +70,18 @@ export class AuthService {
 
     const savedUser = await this.userRepository.save(user);
 
-    // Generate JWT token
-    const payload = { username: savedUser.username, sub: savedUser.id };
-    const access_token = this.jwtService.sign(payload);
-
-    return {
-      access_token,
-      token_type: 'Bearer',
-      expires_in: 3600,
-      user: {
-        id: savedUser.id,
-        username: savedUser.username,
-        email: savedUser.email,
-        firstName: savedUser.firstName,
-        lastName: savedUser.lastName,
-        role: savedUser.role,
-        themeColor: savedUser.themeColor,
-      },
-    };
+    const session = await this.createSession(savedUser, metadata);
+    await this.securityAudit.log('auth.register', {
+      userId: savedUser.id,
+      ip: metadata.ip,
+    });
+    return session;
   }
 
-  async login(loginDto: LoginDto): Promise<AuthResponseDto> {
+  async login(
+    loginDto: LoginDto,
+    metadata: AuthRequestMetadata = {},
+  ): Promise<AuthSessionResult> {
     const { username, password } = loginDto;
 
     // Find user by username or email
@@ -76,12 +90,24 @@ export class AuthService {
     });
 
     if (!user) {
+      this.loginAttemptService.registerFailure(username, metadata.ip);
+      await this.securityAudit.log('auth.login.failure', {
+        username,
+        reason: 'user_not_found',
+        ip: metadata.ip,
+      });
       throw new UnauthorizedException('Invalid credentials');
     }
 
     // Verify password
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
+      this.loginAttemptService.registerFailure(username, metadata.ip);
+      await this.securityAudit.log('auth.login.failure', {
+        userId: user.id,
+        reason: 'bad_password',
+        ip: metadata.ip,
+      });
       throw new UnauthorizedException('Invalid credentials');
     }
 
@@ -90,24 +116,14 @@ export class AuthService {
       throw new UnauthorizedException('Account is disabled');
     }
 
-    // Generate JWT token
-    const payload = { username: user.username, sub: user.id, role: user.role };
-    const access_token = this.jwtService.sign(payload);
+    this.loginAttemptService.reset(username, metadata.ip);
 
-    return {
-      access_token,
-      token_type: 'Bearer',
-      expires_in: 3600,
-      user: {
-        id: user.id,
-        username: user.username,
-        email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        role: user.role,
-        themeColor: user.themeColor,
-      },
-    };
+    const session = await this.createSession(user, metadata);
+    await this.securityAudit.log('auth.login.success', {
+      userId: user.id,
+      ip: metadata.ip,
+    });
+    return session;
   }
 
   async validateUser(userId: number): Promise<User> {
@@ -145,7 +161,7 @@ export class AuthService {
     return user;
   }
 
-  async validateGoogleUser(googleUser: any): Promise<AuthResponseDto> {
+  async validateGoogleUser(googleUser: any): Promise<AuthSessionResult> {
     const { googleId, email, firstName, lastName } = googleUser;
 
     // Check if user already exists by email
@@ -169,27 +185,12 @@ export class AuthService {
       user = await this.userRepository.save(user);
     }
 
-    // Generate JWT token
-    const payload = { username: user.username, sub: user.id, role: user.role };
-    const access_token = this.jwtService.sign(payload);
-
-    return {
-      access_token,
-      token_type: 'Bearer',
-      expires_in: 3600,
-      user: {
-        id: user.id,
-        username: user.username,
-        email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        role: user.role,
-        themeColor: user.themeColor,
-      },
-    };
+    return this.createSession(user, {});
   }
 
-  async validateMicrosoftUser(microsoftUser: any): Promise<AuthResponseDto> {
+  async validateMicrosoftUser(
+    microsoftUser: any,
+  ): Promise<AuthSessionResult> {
     const { microsoftId, email, firstName, lastName, displayName } =
       microsoftUser;
 
@@ -220,14 +221,66 @@ export class AuthService {
       user = await this.userRepository.save(user);
     }
 
-    // Generate JWT token
-    const payload = { username: user.username, sub: user.id, role: user.role };
-    const access_token = this.jwtService.sign(payload);
+    return this.createSession(user, {});
+  }
 
+  async refreshSession(
+    refreshToken: string | undefined,
+    metadata: AuthRequestMetadata = {},
+  ): Promise<AuthSessionResult> {
+    if (!refreshToken) {
+      throw new UnauthorizedException('Refresh token missing');
+    }
+
+    const { user, ...tokens } =
+      await this.tokenService.rotateRefreshToken(refreshToken, metadata);
+    await this.securityAudit.log('auth.refresh', {
+      userId: user.id,
+      ip: metadata.ip,
+    });
     return {
-      access_token,
+      response: this.buildResponse(user, tokens),
+      refreshToken: tokens.refreshToken,
+      refreshExpiresAt: tokens.refreshExpiresAt,
+      user,
+    };
+  }
+
+  async logout(
+    userId: number,
+    refreshToken: string | null,
+    metadata: AuthRequestMetadata = {},
+  ): Promise<void> {
+    await this.tokenService.revokeToken(refreshToken, 'logout');
+    await this.securityAudit.log('auth.logout', {
+      userId,
+      ip: metadata.ip,
+    });
+  }
+
+  private async createSession(
+    user: User,
+    metadata: AuthRequestMetadata = {},
+  ): Promise<AuthSessionResult> {
+    const tokens = await this.tokenService.issueTokens(user, metadata);
+    return {
+      response: this.buildResponse(user, tokens),
+      refreshToken: tokens.refreshToken,
+      refreshExpiresAt: tokens.refreshExpiresAt,
+      user,
+    };
+  }
+
+  private buildResponse(
+    user: User,
+    tokens: TokenIssueResult,
+  ): AuthResponseDto {
+    return {
+      access_token: tokens.accessToken,
       token_type: 'Bearer',
-      expires_in: 3600,
+      expires_in: tokens.accessExpiresIn,
+      refresh_expires_at: tokens.refreshExpiresAt.toISOString(),
+      issued_at: new Date().toISOString(),
       user: {
         id: user.id,
         username: user.username,

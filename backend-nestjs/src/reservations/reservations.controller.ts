@@ -19,6 +19,7 @@ import {
   UpdateReservationDto,
 } from '../dto/reservation.dto';
 import { UserPermissionsService } from '../common/services/user-permissions.service';
+import { IdempotencyService } from '../common/services/idempotency.service';
 
 @Controller('reservations')
 @UseGuards(JwtAuthGuard, ReservationAccessGuard) // Require both authentication and reservation access
@@ -26,11 +27,23 @@ export class ReservationsController {
   constructor(
     private readonly reservationsService: ReservationsService,
     private readonly userPermissionsService: UserPermissionsService,
+    private readonly idempotencyService: IdempotencyService,
   ) {}
 
   @Post()
   async create(@Body() createDto: CreateReservationDto, @Req() req) {
-    return await this.reservationsService.create(createDto, req.user.id);
+    const key =
+      (req.headers['idempotency-key'] as string) ||
+      (req.headers['x-idempotency-key'] as string);
+    return this.idempotencyService.execute(
+      {
+        key,
+        scope: 'reservations:create',
+        userId: req.user.id,
+        payload: createDto,
+      },
+      () => this.reservationsService.create(createDto, req.user.id),
+    );
   }
 
   @Get()

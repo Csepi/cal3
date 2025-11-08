@@ -15,6 +15,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       ignoreExpiration: false,
       secretOrKey:
         configService.get<string>('JWT_SECRET') || 'default-secret-key',
+      audience: configService.get<string>('JWT_AUDIENCE') || 'cal3-users',
+      issuer: configService.get<string>('JWT_ISSUER') || 'cal3-backend',
     });
   }
 

@@ -11,6 +11,10 @@ import { ReservationCalendar } from '../entities/reservation-calendar.entity';
 import { ResourceType } from '../entities/resource-type.entity';
 import { Resource } from '../entities/resource.entity';
 import { Reservation } from '../entities/reservation.entity';
+import { IdempotencyRecord } from '../entities/idempotency-record.entity';
+import { RequestContextService } from './services/request-context.service';
+import { IdempotencyService } from './services/idempotency.service';
+import { OrganisationOwnershipGuard } from '../auth/guards/organisation-ownership.guard';
 import { UserPermissionsService } from './services/user-permissions.service';
 import { CascadeDeletionService } from './services/cascade-deletion.service';
 import { ReservationAvailabilityService } from './services/reservation-availability.service';
@@ -30,17 +34,24 @@ import { ReservationAvailabilityService } from './services/reservation-availabil
       ResourceType,
       Resource,
       Reservation,
+      IdempotencyRecord,
     ]),
   ],
   providers: [
     UserPermissionsService,
     CascadeDeletionService,
     ReservationAvailabilityService,
+    RequestContextService,
+    IdempotencyService,
+    OrganisationOwnershipGuard,
   ],
   exports: [
     UserPermissionsService,
     CascadeDeletionService,
     ReservationAvailabilityService,
+    RequestContextService,
+    IdempotencyService,
+    OrganisationOwnershipGuard,
     TypeOrmModule,
   ],
 })

@@ -7,10 +7,12 @@ import {
   ManyToOne,
   OneToMany,
   BeforeInsert,
+  BeforeUpdate,
 } from 'typeorm';
 import { ResourceType } from './resource-type.entity';
 import { Reservation } from './reservation.entity';
 import { User } from './user.entity';
+import { Organisation } from './organisation.entity';
 import { v4 as uuidv4 } from 'uuid';
 
 @Entity('resources')
@@ -40,8 +42,24 @@ export class Resource {
     }
   }
 
+  @BeforeInsert()
+  @BeforeUpdate()
+  syncOrganisationScope() {
+    if (!this.organisationId && this.resourceType?.organisationId) {
+      this.organisationId = this.resourceType.organisationId;
+    }
+  }
+
   @ManyToOne(() => ResourceType, (resourceType) => resourceType.resources)
   resourceType: ResourceType;
+
+  @Column({ nullable: true })
+  organisationId: number;
+
+  @ManyToOne(() => Organisation, (organisation) => organisation.resources, {
+    onDelete: 'SET NULL',
+  })
+  organisation: Organisation;
 
   @ManyToOne(() => User)
   managedBy: User;

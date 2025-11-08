@@ -1,10 +1,14 @@
 import { ConsoleLogger, Injectable } from '@nestjs/common';
 import { LoggingService } from './logging.service';
 import { LogLevel } from '../entities/log-entry.entity';
+import { RequestContextService } from '../common/services/request-context.service';
 
 @Injectable()
 export class AppLoggerService extends ConsoleLogger {
-  constructor(private readonly loggingService: LoggingService) {
+  constructor(
+    private readonly loggingService: LoggingService,
+    private readonly requestContext: RequestContextService,
+  ) {
     super();
   }
 
@@ -40,9 +44,25 @@ export class AppLoggerService extends ConsoleLogger {
     stack?: string,
   ) {
     const normalizedMessage = this.normalizeMessage(message);
+    const requestContext = this.requestContext.getContext();
+    const metadata = requestContext
+      ? {
+          requestId: requestContext.requestId,
+          method: requestContext.method,
+          path: requestContext.path,
+          ip: requestContext.ip,
+          userId: requestContext.userId ?? null,
+        }
+      : undefined;
 
     void this.loggingService
-      .persistLog(level, normalizedMessage, context, stack ?? null, null)
+      .persistLog(
+        level,
+        normalizedMessage,
+        context,
+        stack ?? null,
+        metadata ?? null,
+      )
       .catch((error) => {
         super.error(
           `Failed to persist log entry: ${error.message}`,

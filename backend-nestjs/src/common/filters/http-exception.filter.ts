@@ -8,10 +8,15 @@ import {
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { QueryFailedError } from 'typeorm';
+import { RequestContextService } from '../services/request-context.service';
 
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
   private readonly logger = new Logger(AllExceptionsFilter.name);
+
+  constructor(
+    private readonly requestContext: RequestContextService,
+  ) {}
 
   catch(exception: unknown, host: ArgumentsHost): void {
     const ctx = host.switchToHttp();
@@ -60,9 +65,10 @@ export class AllExceptionsFilter implements ExceptionFilter {
       error = 'Internal Server Error';
     }
 
+    const requestId = this.requestContext.getRequestId();
     // Log the error for debugging
     this.logger.error(
-      `${request.method} ${request.url} - ${status} - ${JSON.stringify(message)}`,
+      `${request.method} ${request.url} - ${status} - ${JSON.stringify(message)} - requestId=${requestId}`,
       exception instanceof Error ? exception.stack : exception,
     );
 
@@ -74,6 +80,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
       method: request.method,
       error,
       message,
+      requestId,
     };
 
     // Don't expose internal details in production
@@ -82,6 +89,11 @@ export class AllExceptionsFilter implements ExceptionFilter {
       status === HttpStatus.INTERNAL_SERVER_ERROR
     ) {
       errorResponse.message = 'Internal server error';
+    }
+
+    if (requestId) {
+      response.setHeader('x-request-id', requestId);
+      errorResponse.requestId = requestId;
     }
 
     response.status(status).json(errorResponse);

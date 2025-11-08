@@ -5,9 +5,12 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   ManyToOne,
+  BeforeInsert,
+  BeforeUpdate,
 } from 'typeorm';
 import { Resource } from './resource.entity';
 import { User } from './user.entity';
+import { Organisation } from './organisation.entity';
 
 export enum ReservationStatus {
   PENDING = 'pending',
@@ -52,6 +55,14 @@ export class Reservation {
   @ManyToOne(() => Resource, (resource) => resource.reservations)
   resource: Resource;
 
+  @Column({ nullable: true })
+  organisationId: number;
+
+  @ManyToOne(() => Organisation, (organisation) => organisation.reservations, {
+    onDelete: 'SET NULL',
+  })
+  organisation: Organisation;
+
   @ManyToOne(() => User, { nullable: true })
   createdBy: User;
 
@@ -60,4 +71,12 @@ export class Reservation {
 
   @UpdateDateColumn()
   updatedAt: Date;
+
+  @BeforeInsert()
+  @BeforeUpdate()
+  syncOrganisationScope() {
+    if (!this.organisationId && this.resource?.organisationId) {
+      this.organisationId = this.resource.organisationId;
+    }
+  }
 }

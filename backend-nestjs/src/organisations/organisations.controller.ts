@@ -24,6 +24,9 @@ import {
   UpdateOrganisationUserRoleDto,
 } from '../dto/organisation-user.dto';
 import { UserPermissionsService } from '../common/services/user-permissions.service';
+import { OrganisationOwnershipGuard } from '../auth/guards/organisation-ownership.guard';
+import { OrganisationScope } from '../common/decorators/organisation-scope.decorator';
+import { OrganisationRoleType } from '../entities/organisation-user.entity';
 
 @Controller('organisations')
 @UseGuards(JwtAuthGuard)
@@ -78,6 +81,8 @@ export class OrganisationsController {
   }
 
   @Get(':id')
+  @UseGuards(OrganisationOwnershipGuard)
+  @OrganisationScope({ field: 'id', source: 'params' })
   async findOne(@Param('id') id: string, @Req() req) {
     const organizationId = +id;
 
@@ -95,6 +100,12 @@ export class OrganisationsController {
   }
 
   @Patch(':id')
+  @UseGuards(OrganisationOwnershipGuard)
+  @OrganisationScope({
+    field: 'id',
+    source: 'params',
+    minimumRole: OrganisationRoleType.ADMIN,
+  })
   async update(
     @Param('id') id: string,
     @Body() updateDto: UpdateOrganisationDto,
@@ -124,6 +135,12 @@ export class OrganisationsController {
   }
 
   @Post(':id/users')
+  @UseGuards(OrganisationOwnershipGuard)
+  @OrganisationScope({
+    field: 'id',
+    source: 'params',
+    minimumRole: OrganisationRoleType.ADMIN,
+  })
   async assignUser(
     @Param('id') id: string,
     @Body() assignDto: AssignUserDto,
@@ -150,6 +167,12 @@ export class OrganisationsController {
   }
 
   @Delete(':id/users/:userId')
+  @UseGuards(OrganisationOwnershipGuard)
+  @OrganisationScope({
+    field: 'id',
+    source: 'params',
+    minimumRole: OrganisationRoleType.ADMIN,
+  })
   async removeUser(
     @Param('id') id: string,
     @Param('userId') userId: string,
@@ -235,6 +258,12 @@ export class OrganisationsController {
    * Body: { role: OrganisationRoleType }
    */
   @Patch(':id/users/:userId/role')
+  @UseGuards(OrganisationOwnershipGuard)
+  @OrganisationScope({
+    field: 'id',
+    source: 'params',
+    minimumRole: OrganisationRoleType.ADMIN,
+  })
   async updateUserRole(
     @Param('id') id: string,
     @Param('userId') userId: string,
@@ -267,6 +296,12 @@ export class OrganisationsController {
    * DELETE /api/organisations/:id/users/:userId/remove
    */
   @Delete(':id/users/:userId/remove')
+  @UseGuards(OrganisationOwnershipGuard)
+  @OrganisationScope({
+    field: 'id',
+    source: 'params',
+    minimumRole: OrganisationRoleType.ADMIN,
+  })
   async removeUserFromOrganization(
     @Param('id') id: string,
     @Param('userId') userId: string,
@@ -298,6 +333,12 @@ export class OrganisationsController {
    * GET /api/organisations/:id/deletion-preview
    */
   @Get(':id/deletion-preview')
+  @UseGuards(OrganisationOwnershipGuard)
+  @OrganisationScope({
+    field: 'id',
+    source: 'params',
+    minimumRole: OrganisationRoleType.ADMIN,
+  })
   async previewDeletion(@Param('id') id: string, @Req() req) {
     const organizationId = +id;
 
@@ -323,6 +364,12 @@ export class OrganisationsController {
    * Requires organization admin permission
    */
   @Delete(':id/cascade')
+  @UseGuards(OrganisationOwnershipGuard)
+  @OrganisationScope({
+    field: 'id',
+    source: 'params',
+    minimumRole: OrganisationRoleType.ADMIN,
+  })
   async deleteCascade(@Param('id') id: string, @Req() req) {
     const organizationId = +id;
 
@@ -350,6 +397,12 @@ export class OrganisationsController {
    * Body: { color: string, cascadeToResourceTypes?: boolean }
    */
   @Patch(':id/color')
+  @UseGuards(OrganisationOwnershipGuard)
+  @OrganisationScope({
+    field: 'id',
+    source: 'params',
+    minimumRole: OrganisationRoleType.ADMIN,
+  })
   async updateColor(
     @Param('id') id: string,
     @Body() body: { color: string; cascadeToResourceTypes?: boolean },

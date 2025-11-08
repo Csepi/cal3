@@ -12,6 +12,8 @@ import { User } from './user.entity';
 import { ResourceType } from './resource-type.entity';
 import { OrganisationAdmin } from './organisation-admin.entity';
 import { ReservationCalendar } from './reservation-calendar.entity';
+import { Reservation } from './reservation.entity';
+import { Resource } from './resource.entity';
 
 @Entity('organisations')
 export class Organisation {
@@ -56,6 +58,9 @@ export class Organisation {
   @OneToMany(() => ResourceType, (resourceType) => resourceType.organisation)
   resourceTypes: ResourceType[];
 
+  @OneToMany(() => Resource, (resource) => resource.organisation)
+  resources: Resource[];
+
   // Organisation admin relationships
   @OneToMany(() => OrganisationAdmin, (orgAdmin) => orgAdmin.organisation)
   organisationAdmins: OrganisationAdmin[];
@@ -66,6 +71,9 @@ export class Organisation {
     (reservationCalendar) => reservationCalendar.organisation,
   )
   reservationCalendars: ReservationCalendar[];
+
+  @OneToMany(() => Reservation, (reservation) => reservation.organisation)
+  reservations: Reservation[];
 
   @CreateDateColumn()
   createdAt: Date;

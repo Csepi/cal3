@@ -41,7 +41,7 @@ export class LoggingService {
   ): Promise<void> {
     const entry = this.logRepository.create({
       level,
-      message,
+      message: this.redactSecrets(message),
       context,
       stack,
       metadata,
@@ -160,5 +160,13 @@ export class LoggingService {
     });
 
     return deleteResult.affected || 0;
+  }
+
+  private redactSecrets(input: string): string {
+    let output = input;
+    output = output.replace(/Bearer\s+[A-Za-z0-9\-._~+/]+=*/gi, 'Bearer [REDACTED]');
+    output = output.replace(/("password"\s*:\s*")([^"]+)/gi, '$1[REDACTED]');
+    output = output.replace(/(api[_-]?key"?\s*:\s*")([^"]+)/gi, '$1[REDACTED]');
+    return output;
   }
 }

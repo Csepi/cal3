@@ -10,22 +10,39 @@ import { GoogleStrategy } from './google.strategy';
 import { MicrosoftStrategy } from './microsoft.strategy';
 import { User } from '../entities/user.entity';
 import { ConfigurationModule } from '../configuration/configuration.module';
+import { TokenService } from './token.service';
+import { RefreshToken } from '../entities/refresh-token.entity';
+import { LoginAttemptService } from './services/login-attempt.service';
+import { LoggingModule } from '../logging/logging.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User]),
+    TypeOrmModule.forFeature([User, RefreshToken]),
     ConfigurationModule,
+    LoggingModule,
     PassportModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
         secret: configService.get<string>('JWT_SECRET') || 'default-secret-key',
-        signOptions: { expiresIn: '24h' },
+        signOptions: {
+          expiresIn:
+            configService.get<string>('JWT_ACCESS_TTL') || '15m',
+          issuer: configService.get<string>('JWT_ISSUER') || 'cal3-backend',
+          audience: configService.get<string>('JWT_AUDIENCE') || 'cal3-users',
+        },
       }),
       inject: [ConfigService],
     }),
   ],
-  providers: [AuthService, JwtStrategy, GoogleStrategy, MicrosoftStrategy],
+  providers: [
+    AuthService,
+    JwtStrategy,
+    GoogleStrategy,
+    MicrosoftStrategy,
+    TokenService,
+    LoginAttemptService,
+  ],
   controllers: [AuthController],
   exports: [AuthService],
 })

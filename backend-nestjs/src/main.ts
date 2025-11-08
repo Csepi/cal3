@@ -11,6 +11,18 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { DataSource } from 'typeorm';
 import { DatabaseDiagnosticsService } from './database/database-diagnostics.service';
 import { AppLoggerService } from './logging/app-logger.service';
+import { AllExceptionsFilter } from './common/filters/http-exception.filter';
+import { RequestContextService } from './common/services/request-context.service';
+import { RequestContextUserInterceptor } from './common/interceptors/request-context-user.interceptor';
+import {
+  applyPermissionsPolicy,
+  buildCorsOptions,
+  buildHelmetOptions,
+  resolveAllowedOrigins,
+} from './common/security/security.config';
+import helmet from 'helmet';
+import cookieParser from 'cookie-parser';
+import { NestExpressApplication } from '@nestjs/platform-express';
 
 const logger = new Logger('Bootstrap');
 const dbLogger = new Logger('DatabaseConnection');
@@ -27,12 +39,15 @@ async function bootstrap() {
 
   try {
     dbLogger.log('Creating NestJS application...');
-    const app = await NestFactory.create(AppModule, {
-      bufferLogs: true,
-    });
+    const app =
+      await NestFactory.create<NestExpressApplication>(AppModule, {
+        bufferLogs: true,
+      });
 
     const appLogger = app.get(AppLoggerService);
     app.useLogger(appLogger);
+    app.enableShutdownHooks();
+    app.enable('trust proxy');
 
     // Get DataSource to monitor connection
     const dataSource = app.get(DataSource);
@@ -96,12 +111,20 @@ async function bootstrap() {
     const frontendUrl =
       process.env.FRONTEND_URL || `${baseUrl}:${frontendPort}`;
 
-    // Enable CORS
-    app.enableCors({
-      origin: [frontendUrl, 'http://localhost:3000'],
-      methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-      credentials: true,
+    const allowedOrigins = resolveAllowedOrigins();
+    app.use(cookieParser());
+    app.use(helmet(buildHelmetOptions(allowedOrigins)));
+    app.use((req, res, next) => {
+      applyPermissionsPolicy(res);
+      next();
     });
+    app.enableCors(buildCorsOptions(allowedOrigins));
+
+    const requestContext = app.get(RequestContextService);
+    app.useGlobalFilters(new AllExceptionsFilter(requestContext));
+    app.useGlobalInterceptors(
+      new RequestContextUserInterceptor(requestContext),
+    );
 
     // Global validation pipe
     app.useGlobalPipes(
@@ -109,6 +132,10 @@ async function bootstrap() {
         whitelist: true,
         transform: true,
         forbidNonWhitelisted: true,
+        stopAtFirstError: true,
+        forbidUnknownValues: true,
+        enableDebugMessages: process.env.NODE_ENV !== 'production',
+        transformOptions: { enableImplicitConversion: true },
       }),
     );
 
@@ -135,7 +162,7 @@ async function bootstrap() {
     logger.log('========================================');
     logger.log(`Server: ${baseUrl}:${backendPort}`);
     logger.log(`API Docs: ${baseUrl}:${backendPort}/api/docs`);
-    logger.log(`CORS Allowed Origin: ${frontendUrl}`);
+    logger.log(`CORS Allowed Origins: ${allowedOrigins.join(', ')}`);
     logger.log(`Total startup time: ${totalStartupTime}ms`);
     logger.log('========================================');
   } catch (error: any) {

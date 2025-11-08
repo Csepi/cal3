@@ -1,7 +1,9 @@
-import { Module, Logger } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule, Logger } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
@@ -62,6 +64,9 @@ import { NotificationThreadState } from './entities/notification-thread-state.en
 import { NotificationInboxRule } from './entities/notification-inbox-rule.entity';
 import { NotificationScopeMute } from './entities/notification-scope-mute.entity';
 import { NotificationsModule } from './notifications/notifications.module';
+import { RefreshToken } from './entities/refresh-token.entity';
+import { IdempotencyRecord } from './entities/idempotency-record.entity';
+import { RequestContextMiddleware } from './common/middleware/request-context.middleware';
 
 // Create logger instance for database connection logging
 const dbLogger = new Logger('DatabaseConnection');
@@ -71,6 +76,12 @@ const dbLogger = new Logger('DatabaseConnection');
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    ThrottlerModule.forRoot([
+      {
+        ttl: parseInt(process.env.RATE_LIMIT_WINDOW_SEC ?? '60', 10),
+        limit: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS ?? '120', 10),
+      },
+    ]),
     ScheduleModule.forRoot(),
     TypeOrmModule.forRoot(
       (() => {
@@ -170,6 +181,8 @@ const dbLogger = new Logger('DatabaseConnection');
               NotificationThreadState,
               NotificationInboxRule,
               NotificationScopeMute,
+              RefreshToken,
+              IdempotencyRecord,
             ],
             synchronize:
               process.env.DB_SYNCHRONIZE === 'true' ||
@@ -246,6 +259,8 @@ const dbLogger = new Logger('DatabaseConnection');
               NotificationThreadState,
               NotificationInboxRule,
               NotificationScopeMute,
+              RefreshToken,
+              IdempotencyRecord,
             ],
             synchronize: true,
             logging: process.env.NODE_ENV === 'development',
@@ -277,6 +292,18 @@ const dbLogger = new Logger('DatabaseConnection');
     UserPermissionsController,
     FeatureFlagsController,
   ],
-  providers: [AppService, DatabaseDiagnosticsService, FeatureFlagsService],
+  providers: [
+    AppService,
+    DatabaseDiagnosticsService,
+    FeatureFlagsService,
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
+  ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(RequestContextMiddleware).forRoutes('*');
+  }
+}

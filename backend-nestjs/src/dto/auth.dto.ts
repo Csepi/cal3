@@ -78,6 +78,18 @@ export class AuthResponseDto {
   })
   expires_in: number;
 
+  @ApiProperty({
+    example: '2025-11-07T21:00:00.000Z',
+    description: 'Refresh token expiration timestamp (ISO8601)',
+  })
+  refresh_expires_at: string;
+
+  @ApiProperty({
+    example: '2025-11-07T20:00:00.000Z',
+    description: 'Access token issued timestamp (ISO8601)',
+  })
+  issued_at: string;
+
   @ApiProperty({ description: 'User information' })
   user: {
     id: number;
@@ -88,4 +100,14 @@ export class AuthResponseDto {
     role: UserRole;
     themeColor: string;
   };
+}
+
+export class RefreshTokenRequestDto {
+  @ApiPropertyOptional({
+    description:
+      'Refresh token (optional when HttpOnly cookie is present).',
+  })
+  @IsOptional()
+  @IsString()
+  refreshToken?: string;
 }
