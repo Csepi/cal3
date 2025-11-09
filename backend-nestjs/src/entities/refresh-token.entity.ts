@@ -42,10 +42,10 @@ export class RefreshToken {
   @Column({ type: 'uuid', nullable: true })
   replacedByTokenId?: string | null;
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', length: 45, nullable: true })
   ipAddress?: string | null;
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', length: 512, nullable: true })
   userAgent?: string | null;
 
   @CreateDateColumn()
