@@ -1,7 +1,32 @@
 import { sessionManager } from './sessionManager';
 import { applyCsrfHeader } from './csrf';
+import { clientLogger } from '../utils/clientLogger';
 
 const MUTATING_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
+const generateTraceId = (): string =>
+  Math.random().toString(36).substring(2, 8);
+
+const resolveRequestUrl = (input: RequestInfo | URL): string => {
+  if (typeof input === 'string') {
+    return input;
+  }
+  if (typeof Request !== 'undefined' && input instanceof Request) {
+    return input.url;
+  }
+  if (input instanceof URL) {
+    return input.toString();
+  }
+  try {
+    return String(input);
+  } catch {
+    return '[unresolved-url]';
+  }
+};
+
+const now = (): number =>
+  typeof performance !== 'undefined' && performance.now
+    ? performance.now()
+    : Date.now();
 
 export interface SecureFetchOptions extends RequestInit {
   auth?: boolean;
@@ -203,6 +228,17 @@ export async function secureFetch(
     credentials: rest.credentials ?? 'include',
     body: originalBody,
   };
+  const requestUrl = resolveRequestUrl(input);
+  const traceId = generateTraceId();
+  const startedAt = now();
+
+  clientLogger.debug(
+    `[network:${traceId}] ${method} ${requestUrl} -> dispatch`,
+    {
+      auth,
+      autoRefresh,
+    },
+  );
 
   if (auth) {
     const token = await sessionManager.getAccessToken();
@@ -219,9 +255,16 @@ export async function secureFetch(
 
   const execute = async (): Promise<Response> => {
     const response = await fetch(input, requestInit);
+    const duration = Math.round(now() - startedAt);
+    clientLogger.debug(
+      `[network:${traceId}] ${method} ${requestUrl} <- ${response.status} (${duration}ms)`,
+    );
 
     if (auth && (response.status === 401 || response.status === 403)) {
       if (response.status === 401 && autoRefresh) {
+        clientLogger.warn(
+          `[network:${traceId}] ${method} ${requestUrl} returned 401 – attempting token refresh`,
+        );
         const refreshed = await sessionManager.refreshAccessToken(true);
         if (refreshed) {
           headers.set('Authorization', `Bearer ${refreshed}`);
@@ -229,6 +272,9 @@ export async function secureFetch(
             ...requestInit,
             body: originalBody,
           };
+          clientLogger.debug(
+            `[network:${traceId}] retrying ${method} ${requestUrl} after refresh`,
+          );
           return fetch(input, retryInit);
         }
       }
@@ -247,6 +293,10 @@ export async function secureFetch(
     return await execute();
   } catch (error) {
     // If it's a network error, check if we still have a valid token
+    clientLogger.error(
+      `[network:${traceId}] ${method} ${requestUrl} request failed`,
+      error,
+    );
     if (auth && !authHandler.hasValidTokenFormat()) {
       authHandler.handleAuthError(
         401,

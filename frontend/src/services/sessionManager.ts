@@ -1,5 +1,6 @@
 import { BASE_URL } from '../config/apiConfig';
 import { applyCsrfHeader, clearCsrfToken, ensureCsrfToken } from './csrf';
+import { clientLogger } from '../utils/clientLogger';
 
 interface SessionUser {
   id?: number;
@@ -125,6 +126,10 @@ class SessionManager {
       this.persistUserMetadata(this.currentUser);
     }
     ensureCsrfToken();
+    clientLogger.debug('[session] set session from response', {
+      userId: payload.user?.id ?? null,
+      expiresIn: payload.expires_in,
+    });
     this.notify();
   }
 
@@ -143,6 +148,11 @@ class SessionManager {
     this.currentUser = resolvedUser;
     this.persistUserMetadata(resolvedUser);
     ensureCsrfToken();
+    clientLogger.debug('[session] set session from JWT', {
+      userId: resolvedUser.id ?? null,
+      username: resolvedUser.username,
+      expiresAt: exp ? new Date(exp).toISOString() : null,
+    });
     this.notify();
   }
 
@@ -189,6 +199,9 @@ class SessionManager {
       });
       applyCsrfHeader(headers, true);
       try {
+        clientLogger.debug('[session] requesting refresh token rotation', {
+          force,
+        });
         const response = await fetch(`${BASE_URL}/api/auth/refresh`, {
           method: 'POST',
           credentials: 'include',
@@ -196,14 +209,22 @@ class SessionManager {
           body: JSON.stringify({}),
         });
         if (!response.ok) {
+          const errorBody = await readErrorPayload(response);
+          clientLogger.warn('[session] refresh failed', {
+            status: response.status,
+            body: errorBody,
+          });
           this.clearSession();
           return null;
         }
         const data: AuthSessionPayload = await response.json();
         this.setSessionFromResponse(data);
+        clientLogger.debug('[session] refresh succeeded', {
+          expiresIn: data.expires_in,
+        });
         return this.accessToken;
       } catch (error) {
-        console.warn('[session] failed to refresh access token', error);
+        clientLogger.error('[session] failed to refresh access token', error);
         this.clearSession();
         return null;
       }
@@ -216,6 +237,7 @@ class SessionManager {
   }
 
   clearSession(): void {
+    clientLogger.debug('[session] clearing session state');
     this.accessToken = null;
     this.accessTokenExpiresAt = 0;
     this.refreshPromise = null;
@@ -235,3 +257,12 @@ class SessionManager {
 }
 
 export const sessionManager = new SessionManager();
+
+const readErrorPayload = async (response: Response): Promise<string> => {
+  try {
+    const text = await response.text();
+    return text.length > 500 ? `${text.slice(0, 500)}…` : text;
+  } catch {
+    return '[unavailable]';
+  }
+};

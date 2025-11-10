@@ -14,6 +14,7 @@ import { AppLoggerService } from './logging/app-logger.service';
 import { AllExceptionsFilter } from './common/filters/http-exception.filter';
 import { RequestContextService } from './common/services/request-context.service';
 import { RequestContextUserInterceptor } from './common/interceptors/request-context-user.interceptor';
+import { RequestLoggingInterceptor } from './logging/request-logging.interceptor';
 import {
   applyPermissionsPolicy,
   buildCorsOptions,
@@ -122,8 +123,10 @@ async function bootstrap() {
 
     const requestContext = app.get(RequestContextService);
     app.useGlobalFilters(new AllExceptionsFilter(requestContext));
+    const requestLoggingInterceptor = app.get(RequestLoggingInterceptor);
     app.useGlobalInterceptors(
       new RequestContextUserInterceptor(requestContext),
+      requestLoggingInterceptor,
     );
 
     // Global validation pipe
