@@ -105,6 +105,11 @@ async function bootstrap() {
 
     // Smart port and URL configuration
     const backendPort = process.env.PORT || process.env.BACKEND_PORT || '8081';
+    const backendHost =
+      process.env.BACKEND_HOST ||
+      process.env.BIND_ADDRESS ||
+      process.env.HOST ||
+      '0.0.0.0';
     const frontendPort = process.env.FRONTEND_PORT || '8080';
     const baseUrl = process.env.BASE_URL || 'http://localhost';
 
@@ -157,13 +162,13 @@ async function bootstrap() {
     const document = SwaggerModule.createDocument(app, config);
     SwaggerModule.setup('api/docs', app, document);
 
-    await app.listen(backendPort);
+    await app.listen(backendPort, backendHost);
 
     const totalStartupTime = Date.now() - startTime;
     logger.log('========================================');
     logger.log('APPLICATION STARTED SUCCESSFULLY');
     logger.log('========================================');
-    logger.log(`Server: ${baseUrl}:${backendPort}`);
+    logger.log(`Server: ${baseUrl}:${backendPort} (bind: ${backendHost})`);
     logger.log(`API Docs: ${baseUrl}:${backendPort}/api/docs`);
     logger.log(`CORS Allowed Origins: ${allowedOrigins.join(', ')}`);
     logger.log(`Total startup time: ${totalStartupTime}ms`);
