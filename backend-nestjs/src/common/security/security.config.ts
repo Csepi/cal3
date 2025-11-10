@@ -30,6 +30,10 @@ export function resolveAllowedOrigins(): string[] {
     process.env.BASE_URL,
     process.env.DASHBOARD_URL,
     process.env.WEB_URL,
+    deriveOriginWithPort(
+      process.env.BASE_URL,
+      process.env.FRONTEND_HOST_PORT ?? process.env.FRONTEND_PORT,
+    ),
   ].filter(Boolean) as string[];
 
   const localDefaults = [
@@ -142,6 +146,35 @@ function normalizeOrigin(origin: string): string {
     return url.origin;
   } catch {
     return origin.replace(/\/+$/, '');
+  }
+}
+
+function deriveOriginWithPort(
+  origin?: string,
+  port?: string,
+): string | null {
+  if (!origin) {
+    return null;
+  }
+  const trimmedPort = port?.trim();
+  if (!trimmedPort) {
+    return null;
+  }
+  try {
+    const url = new URL(origin);
+    if (url.port === trimmedPort) {
+      return url.origin;
+    }
+    if (url.protocol === 'http:' && trimmedPort === '80') {
+      url.port = '';
+    } else if (url.protocol === 'https:' && trimmedPort === '443') {
+      url.port = '';
+    } else {
+      url.port = trimmedPort;
+    }
+    return url.origin;
+  } catch {
+    return `${origin.replace(/\/+$/, '')}:${trimmedPort}`;
   }
 }
 
