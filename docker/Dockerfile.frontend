@@ -25,7 +25,12 @@ COPY scripts ./scripts
 COPY backend-nestjs/.env ./backend-nestjs/.env
 
 # Sync runtime config from environment/back-end .env
-RUN node scripts/sync-app-config.cjs
+RUN if [ -f backend-nestjs/.env ]; then \
+      node scripts/sync-app-config.cjs; \
+    else \
+      echo "Warning: backend-nestjs/.env not found, using default runtime config" && \
+      node scripts/sync-app-config.cjs || true; \
+    fi
 
 # Build production bundle
 RUN npm run build
