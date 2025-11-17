@@ -15,7 +15,12 @@ version: '3.9'
 services:
   # Backend API (NestJS)
   backend:
-    image: ghcr.io/csepi/cal3-backend:${BACKEND_IMAGE_TAG:-latest}
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.backend
+      args:
+        NODE_ENV: production
+    image: cal3-backend:${BACKEND_IMAGE_TAG:-latest}
     container_name: cal3-backend
     restart: unless-stopped
     environment:
@@ -84,7 +89,12 @@ services:
 
   # Frontend (React + Nginx)
   frontend:
-    image: ghcr.io/csepi/cal3-frontend:${FRONTEND_IMAGE_TAG:-latest}
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.frontend
+      args:
+        NODE_ENV: production
+    image: cal3-frontend:${FRONTEND_IMAGE_TAG:-latest}
     container_name: cal3-frontend
     restart: unless-stopped
     environment:
