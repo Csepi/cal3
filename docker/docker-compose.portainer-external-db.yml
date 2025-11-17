@@ -88,6 +88,11 @@ services:
 
   # Frontend (React + Nginx)
   frontend:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.frontend
+      args:
+        NODE_ENV: production
     image: cal3-frontend:${FRONTEND_IMAGE_TAG:-latest}
     container_name: cal3-frontend
     restart: unless-stopped
