@@ -88,13 +88,7 @@ services:
 
   # Frontend (React + Nginx)
   frontend:
-    build:
-      context: ..
-      dockerfile: docker/Dockerfile.frontend
-      target: runner
-      args:
-        BASE_URL: ${BASE_URL:-http://www.cselo.hu}
-        BACKEND_PORT: ${BACKEND_CONTAINER_PORT:-8082}
+    image: cal3-frontend:${FRONTEND_IMAGE_TAG:-latest}
     container_name: cal3-frontend
     restart: unless-stopped
     environment:
