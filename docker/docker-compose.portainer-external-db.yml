@@ -26,7 +26,7 @@ services:
       NODE_ENV: production
       
       # Smart port/URL configuration
-      BASE_URL: ${BASE_URL:-http://localhost}
+      BASE_URL: ${BASE_URL:-http://www.cselo.hu}
       PORT: ${BACKEND_CONTAINER_PORT:-8082}
       BACKEND_PORT: ${BACKEND_CONTAINER_PORT:-8082}
       BACKEND_HOST: ${BACKEND_HOST:-0.0.0.0}
@@ -97,7 +97,7 @@ services:
     container_name: cal3-frontend
     restart: unless-stopped
     environment:
-      BASE_URL: ${BASE_URL:-http://localhost}
+      BASE_URL: ${BASE_URL:-http://www.cselo.hu}
       BACKEND_PORT: ${BACKEND_CONTAINER_PORT:-8082}
       NODE_ENV: production
     ports:
