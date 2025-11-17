@@ -22,9 +22,8 @@ RUN npm ci
 COPY frontend/ .
 COPY config ./config
 COPY scripts ./scripts
-COPY backend-nestjs/.env ./backend-nestjs/.env
 
-# Sync runtime config from environment/back-end .env
+# Sync runtime config from environment/back-end .env if available
 RUN if [ -f backend-nestjs/.env ]; then \
       node scripts/sync-app-config.cjs; \
     else \
