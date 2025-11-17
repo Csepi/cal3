@@ -91,8 +91,9 @@ services:
     build:
       context: ..
       dockerfile: docker/Dockerfile.frontend
+      target: runner
       args:
-        BASE_URL: ${BASE_URL:-http://localhost}
+        BASE_URL: ${BASE_URL:-http://www.cselo.hu}
         BACKEND_PORT: ${BACKEND_CONTAINER_PORT:-8082}
     container_name: cal3-frontend
     restart: unless-stopped
