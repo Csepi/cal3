@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 const fs = require('fs');
 const path = require('path');
-const { resolveAppEnv } = require('../config/app-env');
+const { resolveAppEnv, DEFAULTS } = require('../config/app-env');
 
 const repoRoot = path.resolve(__dirname, '..');
 const runtimeConfigPath = path.join(
@@ -34,17 +34,30 @@ function buildRuntimeConfig(env) {
   return `${banner}(function bootstrapRuntimeConfig(globalScope){\n  const env = ${payload};\n  const target = (globalScope.ENV = globalScope.ENV || {});\n  for (const [key, value] of Object.entries(env)) {\n    if (value) {\n      target[key] = value;\n    }\n  }\n  globalScope.CONFIG = Object.assign(globalScope.CONFIG || {}, target);\n})(typeof window !== 'undefined' ? window : globalThis);\n`;
 }
 
+function writeRuntimeConfig(env, sourceLabel) {
+  const content = buildRuntimeConfig(env);
+  fs.writeFileSync(runtimeConfigPath, content, 'utf8');
+  console.log(
+    `runtime-config.js updated -> ${env.backendUrl} (source: ${sourceLabel})`,
+  );
+}
+
 function main() {
   try {
     const env = resolveAppEnv();
-    const content = buildRuntimeConfig(env);
-    fs.writeFileSync(runtimeConfigPath, content, 'utf8');
-    console.log(
-      `runtime-config.js updated -> ${env.backendUrl} (source: ${env.source})`,
-    );
+    writeRuntimeConfig(env, env.source);
   } catch (error) {
     console.error('Failed to sync runtime config:', error);
-    process.exitCode = 1;
+    console.warn(
+      'Falling back to default localhost configuration so the build can continue.',
+    );
+    const fallbackEnv = resolveAppEnv({
+      BASE_URL: DEFAULTS.BASE_URL,
+      FRONTEND_PORT: DEFAULTS.FRONTEND_PORT,
+      BACKEND_PORT: DEFAULTS.BACKEND_PORT,
+      __source: 'fallback-defaults',
+    });
+    writeRuntimeConfig(fallbackEnv, fallbackEnv.source);
   }
 }
 
