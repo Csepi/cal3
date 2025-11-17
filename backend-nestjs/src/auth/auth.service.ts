@@ -15,6 +15,7 @@ import {
 import { TokenService, TokenIssueResult } from './token.service';
 import { SecurityAuditService } from '../logging/security-audit.service';
 import { LoginAttemptService } from './services/login-attempt.service';
+import { UserBootstrapService } from '../tasks/user-bootstrap.service';
 
 export interface AuthRequestMetadata {
   ip?: string;
@@ -36,6 +37,7 @@ export class AuthService {
     private readonly tokenService: TokenService,
     private readonly securityAudit: SecurityAuditService,
     private readonly loginAttemptService: LoginAttemptService,
+    private readonly userBootstrapService: UserBootstrapService,
   ) {}
 
   async register(
@@ -69,6 +71,8 @@ export class AuthService {
     });
 
     const savedUser = await this.userRepository.save(user);
+
+    await this.userBootstrapService.ensureUserDefaults(savedUser);
 
     const session = await this.createSession(savedUser, metadata);
     await this.securityAudit.log('auth.register', {
@@ -183,6 +187,7 @@ export class AuthService {
       });
 
       user = await this.userRepository.save(user);
+      await this.userBootstrapService.ensureUserDefaults(user);
     }
 
     return this.createSession(user, {});
@@ -219,6 +224,7 @@ export class AuthService {
       });
 
       user = await this.userRepository.save(user);
+      await this.userBootstrapService.ensureUserDefaults(user);
     }
 
     return this.createSession(user, {});

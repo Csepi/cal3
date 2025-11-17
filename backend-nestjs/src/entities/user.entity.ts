@@ -14,6 +14,8 @@ import { OrganisationAdmin } from './organisation-admin.entity';
 import { ReservationCalendarRole } from './reservation-calendar-role.entity';
 import { AgentProfile } from './agent-profile.entity';
 import { Exclude } from 'class-transformer';
+import { Task } from './task.entity';
+import { TaskLabel } from './task-label.entity';
 
 export enum UserRole {
   OBSERVER = 'observer',
@@ -76,6 +78,12 @@ export class User {
   @Column({ default: 'en' }) // User's preferred language (e.g., 'en', 'de', 'fr', 'es', 'hu')
   language: string;
 
+  @Column({ type: 'int', nullable: true })
+  defaultTasksCalendarId: number | null;
+
+  @Column({ type: 'json', nullable: true })
+  tasksSettings: Record<string, unknown> | null;
+
   @Column({ type: 'json', default: () => '\'["user"]\'' }) // Array of usage plans
   usagePlans: UsagePlan[];
 
@@ -129,4 +137,13 @@ export class User {
 
   @OneToMany(() => AgentProfile, (agent) => agent.user)
   agentProfiles: AgentProfile[];
+
+  @OneToMany(() => Task, (task) => task.owner)
+  tasks: Task[];
+
+  @OneToMany(() => Task, (task) => task.assignee)
+  assignedTasks: Task[];
+
+  @OneToMany(() => TaskLabel, (label) => label.user)
+  taskLabels: TaskLabel[];
 }

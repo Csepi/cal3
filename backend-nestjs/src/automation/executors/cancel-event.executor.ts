@@ -110,7 +110,7 @@ export class CancelEventExecutor implements IActionExecutor, OnModuleInit {
   }
 
   private appendCancellationReason(
-    currentNotes: string | null,
+    currentNotes: string | null | undefined,
     reason: string,
     executedAt: Date,
   ): string {

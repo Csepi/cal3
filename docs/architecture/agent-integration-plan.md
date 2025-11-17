@@ -33,6 +33,14 @@ Static registry defines available MCP actions:
 | Automation | `automation.rules.list` | List automation rules owned by user. | `ruleIds` optional |
 | Automation | `automation.rules.trigger` | Trigger automation rule execution. | Required `ruleIds` allowed |
 | Profile | `user.profile.read` | Read basic profile metadata. | No scope |
+| Tasks | `tasks.list` | List Tasks workspace items owned by the user. | Owner-only (no additional scope) |
+| Tasks | `tasks.create` | Create tasks that mirror into the default Tasks calendar. | Owner-only |
+| Tasks | `tasks.update` | Update task fields: status, priority, due dates, metadata. | Owner-only |
+| Tasks | `tasks.delete` | Delete tasks the user owns. | Owner-only |
+| Tasks | `task-labels.list` | List personal task labels. | Owner-only |
+| Tasks | `task-labels.create` | Create task labels. | Owner-only |
+| Tasks | `task-labels.update` | Rename/update task labels. | Owner-only |
+| Tasks | `task-labels.delete` | Delete task labels. | Owner-only |
 
 Catalogue is exposed to both the UI and agent runtime through `AgentActionRegistry`. Future subsystems add new entries without schema changes.
 

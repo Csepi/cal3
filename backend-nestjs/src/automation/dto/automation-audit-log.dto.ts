@@ -182,8 +182,8 @@ export class AuditLogDetailDto extends AuditLogDto {
   event: {
     id: number;
     title: string;
-    startTime: string;
-    endTime: string;
+    startTime: string | null;
+    endTime: string | null;
   };
 
   @ApiPropertyOptional({ description: 'User who executed (for manual runs)' })

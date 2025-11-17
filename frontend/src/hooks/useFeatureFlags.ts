@@ -23,6 +23,7 @@ export function useFeatureFlags() {
     reservations: true,
     automation: true,
     agents: true,
+    tasks: true,
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -51,6 +52,7 @@ export function useFeatureFlags() {
             reservations: true,
             automation: true,
             agents: true,
+            tasks: true,
           });
         }
       } finally {

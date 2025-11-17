@@ -776,8 +776,8 @@ export class AutomationService {
       event: {
         id: log.event.id,
         title: log.event.title,
-        startTime: log.event.startTime,
-        endTime: log.event.endTime,
+        startTime: log.event.startTime ?? null,
+        endTime: log.event.endTime ?? null,
       },
       executedBy: log.executedBy
         ? {

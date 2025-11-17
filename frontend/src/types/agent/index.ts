@@ -7,9 +7,21 @@ export enum AgentActionKey {
   AUTOMATION_RULES_LIST = 'automation.rules.list',
   AUTOMATION_RULES_TRIGGER = 'automation.rules.trigger',
   USER_PROFILE_READ = 'user.profile.read',
+  TASKS_LIST = 'tasks.list',
+  TASKS_CREATE = 'tasks.create',
+  TASKS_UPDATE = 'tasks.update',
+  TASKS_DELETE = 'tasks.delete',
+  TASK_LABELS_LIST = 'task-labels.list',
+  TASK_LABELS_CREATE = 'task-labels.create',
+  TASK_LABELS_UPDATE = 'task-labels.update',
+  TASK_LABELS_DELETE = 'task-labels.delete',
 }
 
-export type AgentActionCategory = 'calendars' | 'automation' | 'profile';
+export type AgentActionCategory =
+  | 'calendars'
+  | 'automation'
+  | 'profile'
+  | 'tasks';
 
 export interface AgentActionDefinition {
   key: AgentActionKey;
@@ -119,4 +131,3 @@ export interface AgentPermissionUpdate {
 export interface UpdateAgentPermissionsPayload {
   permissions: AgentPermissionUpdate[];
 }
-

@@ -43,6 +43,7 @@ Intelligent automation that responds to your calendar events automatically:
 - Per-user agent profiles with granular action permissions (calendar access, automation triggers, profile data).
 - One-click API key issuance with secure hashing and revocation controls.
 - HTTP gateway for external MCP-compatible tools (`/api/mcp/metadata`, `/api/mcp/actions`, `/api/mcp/execute`).
+- Tasks workspace endpoints so agents can list/create/update/delete tasks and manage labels while mirroring to the owner`s default Tasks calendar.
 - [Setup guide](docs/agents/setup.md) · [Usage guide](docs/agents/usage.md)
 
 **Example Use Cases**:

@@ -17,6 +17,7 @@ import { AutomationModule } from '../automation/automation.module';
 import { User } from '../entities/user.entity';
 import { FeatureFlagsService } from '../common/feature-flags.service';
 import { ConfigurationModule } from '../configuration/configuration.module';
+import { TasksModule } from '../tasks/tasks.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { ConfigurationModule } from '../configuration/configuration.module';
     forwardRef(() => CalendarsModule),
     forwardRef(() => EventsModule),
     forwardRef(() => AutomationModule),
+    forwardRef(() => TasksModule),
     ConfigurationModule,
   ],
   controllers: [AgentsController, AgentMcpController, AgentMcpStreamController],

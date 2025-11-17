@@ -13,6 +13,14 @@ import {
   getAgentActionDefinition,
 } from './agent-actions.registry';
 import { ExecuteAgentActionDto } from './dto/agent.dto';
+import { TasksService } from '../tasks/tasks.service';
+import { TaskLabelsService } from '../tasks/task-labels.service';
+import { QueryTasksDto } from '../tasks/dto/query-tasks.dto';
+import { CreateTaskDto } from '../tasks/dto/create-task.dto';
+import { UpdateTaskDto } from '../tasks/dto/update-task.dto';
+import { TaskPriority, TaskStatus } from '../entities/task.entity';
+import { CreateTaskLabelDto } from '../tasks/dto/create-task-label.dto';
+import { UpdateTaskLabelDto } from '../tasks/dto/update-task-label.dto';
 
 @Injectable()
 export class AgentMcpService {
@@ -20,6 +28,8 @@ export class AgentMcpService {
     private readonly calendarsService: CalendarsService,
     private readonly eventsService: EventsService,
     private readonly automationService: AutomationService,
+    private readonly tasksService: TasksService,
+    private readonly taskLabelsService: TaskLabelsService,
     private readonly agentAuthorization: AgentAuthorizationService,
   ) {}
 
@@ -73,6 +83,30 @@ export class AgentMcpService {
 
       case AgentActionKey.AUTOMATION_RULES_TRIGGER:
         return this.triggerAutomationRule(context, dto.parameters);
+
+      case AgentActionKey.TASKS_LIST:
+        return this.listTasks(context, dto.parameters);
+
+      case AgentActionKey.TASKS_CREATE:
+        return this.createTask(context, dto.parameters);
+
+      case AgentActionKey.TASKS_UPDATE:
+        return this.updateTask(context, dto.parameters);
+
+      case AgentActionKey.TASKS_DELETE:
+        return this.deleteTask(context, dto.parameters);
+
+      case AgentActionKey.TASK_LABELS_LIST:
+        return this.listTaskLabels(context);
+
+      case AgentActionKey.TASK_LABELS_CREATE:
+        return this.createTaskLabel(context, dto.parameters);
+
+      case AgentActionKey.TASK_LABELS_UPDATE:
+        return this.updateTaskLabel(context, dto.parameters);
+
+      case AgentActionKey.TASK_LABELS_DELETE:
+        return this.deleteTaskLabel(context, dto.parameters);
 
       default:
         throw new BadRequestException(`Unsupported MCP action: ${dto.action}`);
@@ -344,6 +378,274 @@ export class AgentMcpService {
     };
   }
 
+  private async listTasks(
+    context: AgentContext,
+    parameters: Record<string, any> = {},
+  ) {
+    this.agentAuthorization.ensureActionAllowed(
+      context,
+      AgentActionKey.TASKS_LIST,
+    );
+
+    const query: QueryTasksDto = {};
+    if (parameters.status) {
+      query.status = this.parseTaskStatus(parameters.status);
+    }
+    if (parameters.priority) {
+      query.priority = this.parseTaskPriority(parameters.priority);
+    }
+    if (parameters.search) {
+      query.search = String(parameters.search);
+    }
+    if (parameters.dueFrom) {
+      query.dueFrom = this.normalizeTaskDate(parameters.dueFrom) ?? undefined;
+    }
+    if (parameters.dueTo) {
+      query.dueTo = this.normalizeTaskDate(parameters.dueTo) ?? undefined;
+    }
+    const labelIds = this.parseOptionalIdArray(parameters.labelIds);
+    if (labelIds.length) {
+      query.labelIds = labelIds;
+    }
+    if (parameters.limit) {
+      query.limit = Math.min(Number(parameters.limit) || 25, 100);
+    }
+    if (parameters.page) {
+      query.page = Math.max(Number(parameters.page) || 1, 1);
+    }
+
+    return this.tasksService.findAll(context.user.id, query);
+  }
+
+  private async createTask(
+    context: AgentContext,
+    parameters: Record<string, any> = {},
+  ) {
+    this.agentAuthorization.ensureActionAllowed(
+      context,
+      AgentActionKey.TASKS_CREATE,
+    );
+
+    const title = (parameters.title ?? '').toString().trim();
+    if (!title) {
+      throw new BadRequestException('title is required to create a task.');
+    }
+
+    const payload: CreateTaskDto = {
+      title,
+    };
+
+    if (parameters.body !== undefined) {
+      payload.body = parameters.body ?? null;
+    }
+    if (parameters.bodyFormat) {
+      payload.bodyFormat = parameters.bodyFormat;
+    }
+    if (parameters.color) {
+      payload.color = this.normalizeHexColor(parameters.color);
+    }
+    if (parameters.priority) {
+      payload.priority = this.parseTaskPriority(parameters.priority);
+    }
+    if (parameters.status) {
+      payload.status = this.parseTaskStatus(parameters.status);
+    }
+    if (parameters.place !== undefined) {
+      payload.place =
+        parameters.place === null ? null : String(parameters.place);
+    }
+    if (parameters.dueDate !== undefined) {
+      payload.dueDate = this.normalizeTaskDate(parameters.dueDate);
+    }
+    if (parameters.dueEnd !== undefined) {
+      payload.dueEnd = this.normalizeTaskDate(parameters.dueEnd);
+    }
+    if (parameters.dueTimezone !== undefined) {
+      payload.dueTimezone =
+        parameters.dueTimezone === null
+          ? null
+          : String(parameters.dueTimezone);
+    }
+    if (parameters.assigneeId !== undefined) {
+      payload.assigneeId =
+        parameters.assigneeId === null
+          ? null
+          : Number(parameters.assigneeId) || null;
+    }
+    const labelIds = this.parseOptionalIdArray(parameters.labelIds);
+    if (labelIds.length) {
+      payload.labelIds = labelIds;
+    }
+
+    return this.tasksService.create(context.user.id, payload);
+  }
+
+  private async updateTask(
+    context: AgentContext,
+    parameters: Record<string, any> = {},
+  ) {
+    this.agentAuthorization.ensureActionAllowed(
+      context,
+      AgentActionKey.TASKS_UPDATE,
+    );
+
+    const taskId = Number(parameters.taskId ?? parameters.id);
+    if (!taskId || Number.isNaN(taskId)) {
+      throw new BadRequestException('taskId is required to update a task.');
+    }
+
+    const payload: UpdateTaskDto = {};
+    if ('title' in parameters) {
+      const title = (parameters.title ?? '').toString().trim();
+      if (!title) {
+        throw new BadRequestException('title cannot be empty.');
+      }
+      payload.title = title;
+    }
+    if ('body' in parameters) {
+      payload.body = parameters.body ?? null;
+    }
+    if ('bodyFormat' in parameters) {
+      payload.bodyFormat = parameters.bodyFormat;
+    }
+    if ('color' in parameters) {
+      payload.color = parameters.color
+        ? this.normalizeHexColor(parameters.color)
+        : undefined;
+    }
+    if ('priority' in parameters) {
+      payload.priority = this.parseTaskPriority(parameters.priority);
+    }
+    if ('status' in parameters) {
+      payload.status = this.parseTaskStatus(parameters.status);
+    }
+    if ('place' in parameters) {
+      payload.place =
+        parameters.place === null ? null : String(parameters.place);
+    }
+    if ('dueDate' in parameters) {
+      payload.dueDate = this.normalizeTaskDate(parameters.dueDate);
+    }
+    if ('dueEnd' in parameters) {
+      payload.dueEnd = this.normalizeTaskDate(parameters.dueEnd);
+    }
+    if ('dueTimezone' in parameters) {
+      payload.dueTimezone =
+        parameters.dueTimezone === null
+          ? null
+          : String(parameters.dueTimezone);
+    }
+    if ('assigneeId' in parameters) {
+      payload.assigneeId =
+        parameters.assigneeId === null
+          ? null
+          : Number(parameters.assigneeId) || null;
+    }
+    if ('labelIds' in parameters) {
+      const labelIds = this.parseOptionalIdArray(parameters.labelIds);
+      payload.labelIds = labelIds.length ? labelIds : [];
+    }
+
+    return this.tasksService.update(context.user.id, taskId, payload);
+  }
+
+  private async deleteTask(
+    context: AgentContext,
+    parameters: Record<string, any> = {},
+  ) {
+    this.agentAuthorization.ensureActionAllowed(
+      context,
+      AgentActionKey.TASKS_DELETE,
+    );
+
+    const taskId = Number(parameters.taskId ?? parameters.id);
+    if (!taskId || Number.isNaN(taskId)) {
+      throw new BadRequestException('taskId is required to delete a task.');
+    }
+
+    await this.tasksService.remove(context.user.id, taskId);
+    return { success: true };
+  }
+
+  private async listTaskLabels(context: AgentContext) {
+    this.agentAuthorization.ensureActionAllowed(
+      context,
+      AgentActionKey.TASK_LABELS_LIST,
+    );
+    return this.taskLabelsService.findAll(context.user.id);
+  }
+
+  private async createTaskLabel(
+    context: AgentContext,
+    parameters: Record<string, any> = {},
+  ) {
+    this.agentAuthorization.ensureActionAllowed(
+      context,
+      AgentActionKey.TASK_LABELS_CREATE,
+    );
+
+    const name = (parameters.name ?? '').toString().trim();
+    if (!name) {
+      throw new BadRequestException('name is required to create a label.');
+    }
+
+    const payload: CreateTaskLabelDto = { name };
+    if (parameters.color) {
+      payload.color = this.normalizeHexColor(parameters.color);
+    }
+
+    return this.taskLabelsService.create(context.user.id, payload);
+  }
+
+  private async updateTaskLabel(
+    context: AgentContext,
+    parameters: Record<string, any> = {},
+  ) {
+    this.agentAuthorization.ensureActionAllowed(
+      context,
+      AgentActionKey.TASK_LABELS_UPDATE,
+    );
+
+    const labelId = Number(parameters.labelId ?? parameters.id);
+    if (!labelId || Number.isNaN(labelId)) {
+      throw new BadRequestException('labelId is required to update a label.');
+    }
+
+    const payload: UpdateTaskLabelDto = {};
+    if ('name' in parameters) {
+      const name = (parameters.name ?? '').toString().trim();
+      if (!name) {
+        throw new BadRequestException('name cannot be empty.');
+      }
+      payload.name = name;
+    }
+    if ('color' in parameters) {
+      payload.color = parameters.color
+        ? this.normalizeHexColor(parameters.color)
+        : undefined;
+    }
+
+    return this.taskLabelsService.update(context.user.id, labelId, payload);
+  }
+
+  private async deleteTaskLabel(
+    context: AgentContext,
+    parameters: Record<string, any> = {},
+  ) {
+    this.agentAuthorization.ensureActionAllowed(
+      context,
+      AgentActionKey.TASK_LABELS_DELETE,
+    );
+
+    const labelId = Number(parameters.labelId ?? parameters.id);
+    if (!labelId || Number.isNaN(labelId)) {
+      throw new BadRequestException('labelId is required to delete a label.');
+    }
+
+    await this.taskLabelsService.remove(context.user.id, labelId);
+    return { success: true };
+  }
+
   private mapEvent(event: any) {
     return {
       id: event.id,
@@ -361,14 +663,71 @@ export class AgentMcpService {
     };
   }
 
-  private parseOptionalIdArray(value: any): number[] {
+  private parseTaskPriority(value: any): TaskPriority | undefined {
+    if (value === undefined || value === null || value === '') {
+      return undefined;
+    }
+    const normalized = String(value).toLowerCase();
+    if (
+      normalized === TaskPriority.HIGH ||
+      normalized === TaskPriority.MEDIUM ||
+      normalized === TaskPriority.LOW
+    ) {
+      return normalized as TaskPriority;
+    }
+    throw new BadRequestException(
+      'Invalid task priority. Expected high, medium, or low.',
+    );
+  }
+
+  private parseTaskStatus(value: any): TaskStatus | undefined {
+    if (value === undefined || value === null || value === '') {
+      return undefined;
+    }
+    const normalized = String(value).toLowerCase();
+    if (
+      normalized === TaskStatus.TODO ||
+      normalized === TaskStatus.IN_PROGRESS ||
+      normalized === TaskStatus.DONE
+    ) {
+      return normalized as TaskStatus;
+    }
+    throw new BadRequestException(
+      'Invalid task status. Expected todo, in_progress, or done.',
+    );
+  }
+
+  private normalizeTaskDate(value: any): string | null | undefined {
+    if (value === undefined) {
+      return undefined;
+    }
+    if (value === null || value === '') {
+      return null;
+    }
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) {
+      throw new BadRequestException('Invalid date value. Use ISO8601 strings.');
+    }
+    return date.toISOString();
+  }
+
+  private normalizeHexColor(value: any): string {
     if (!value) {
+      throw new BadRequestException('Color must be a 6-digit hex string.');
+    }
+    const hex = String(value).trim();
+    if (!/^#?[0-9a-fA-F]{6}$/.test(hex)) {
+      throw new BadRequestException('Color must be a 6-digit hex string.');
+    }
+    return hex.startsWith('#') ? hex : `#${hex}`;
+  }
+
+  private parseOptionalIdArray(value: any): number[] {
+    if (!value && value !== 0) {
       return [];
     }
-    if (!Array.isArray(value)) {
-      return [];
-    }
-    return value
+    const source = Array.isArray(value) ? value : [value];
+    return source
       .map((item) => Number(item))
       .filter((item) => Number.isInteger(item) && item > 0);
   }

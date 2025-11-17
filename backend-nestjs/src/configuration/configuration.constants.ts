@@ -155,6 +155,15 @@ export const CONFIGURATION_DEFINITIONS: ConfigurationDefinition[] = [
     defaultValue: process.env.ENABLE_AGENT_INTEGRATIONS ?? 'false',
   },
   {
+    key: 'ENABLE_TASKS',
+    label: 'Enable Tasks',
+    description:
+      'Toggle the Tasks workspace, APIs, and navigation entry points across the platform.',
+    category: 'feature-flags',
+    valueType: 'boolean',
+    defaultValue: process.env.ENABLE_TASKS ?? 'true',
+  },
+  {
     key: 'ENABLE_NOTIFICATIONS',
     label: 'Enable Notification Engine',
     description:

@@ -559,3 +559,14 @@ npm run migration:drop && npm run migration:run && npm run seed
 **NestJS Version**: 10.3.2
 **TypeORM Version**: 0.3.17
 **Node.js Version**: 18.19.1
+#### Tasks Workspace
+- **Module Location**: `src/tasks` exposes controllers, services, and DTOs backing `/api/tasks` plus `/api/tasks/labels`.
+- **Guard Rails**: DTOs enforce Markdown body length (8k chars), enum-backed status/priority, and strict 6-digit hex colors so palettes match calendars.
+- **Label CRUD**: REST endpoints expose label creation/update/removal, mirroring the event color UX for the new Tasks tab.
+- **Task Labels API**: `/api/tasks/:id/labels` supports bulk attach/detach with inline label creation so the UI can create chips on the fly while editing a task.
+- **Filter & Pagination**: Query DTO supports label/status/priority/date filters with pagination + sorting to hydrate dashboard views efficiently.
+- **Calendar Bridge**: `TaskCalendarBridgeService` mirrors dated tasks into the owner’s Tasks calendar and listens for mirrored event edits/deletions to push changes back to the originating task.
+- **User Bootstrap**: `UserBootstrapService` provisions the default Tasks calendar for new accounts automatically. Run `npm run tasks:bootstrap` to backfill legacy users.
+- **Profile APIs**: `/user/profile` updates now accept `defaultTasksCalendarId` and enforce ownership/isTasksCalendar validation so users can switch their mirrored calendar safely from the UI.
+- **Tasks UI**: React workspace components (board, composer, markdown preview, mobile quick-create drawer) consume the Tasks APIs/hooks for a full in-app experience.
+

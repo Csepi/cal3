@@ -19,6 +19,7 @@ import {
   applyPermissionsPolicy,
   buildCorsOptions,
   buildHelmetOptions,
+  getCorsAllowedHeaders,
   resolveAllowedOrigins,
 } from './common/security/security.config';
 import helmet from 'helmet';
@@ -118,13 +119,42 @@ async function bootstrap() {
       process.env.FRONTEND_URL || `${baseUrl}:${frontendPort}`;
 
     const allowedOrigins = resolveAllowedOrigins();
+    const corsOptions = buildCorsOptions(allowedOrigins);
+    const allowedHeaders = getCorsAllowedHeaders();
     app.use(cookieParser());
     app.use(helmet(buildHelmetOptions(allowedOrigins)));
     app.use((req, res, next) => {
       applyPermissionsPolicy(res);
       next();
     });
-    app.enableCors(buildCorsOptions(allowedOrigins));
+    app.enableCors(corsOptions);
+    app.use((req, res: any, next) => {
+      res.setHeader('Access-Control-Allow-Credentials', 'true');
+      if (req.method === 'OPTIONS') {
+        const origin = req.headers.origin;
+        if (origin) {
+          res.setHeader('Access-Control-Allow-Origin', origin);
+          res.setHeader('Vary', 'Origin');
+        }
+        res.setHeader(
+          'Access-Control-Allow-Methods',
+          'GET,POST,PUT,PATCH,DELETE,OPTIONS',
+        );
+        res.setHeader(
+          'Access-Control-Allow-Headers',
+          allowedHeaders.join(', '),
+        );
+        res
+          .status(
+            typeof corsOptions.optionsSuccessStatus === 'number'
+              ? corsOptions.optionsSuccessStatus
+              : 204,
+          )
+          .send();
+        return;
+      }
+      next();
+    });
 
     const requestContext = app.get(RequestContextService);
     app.useGlobalFilters(new AllExceptionsFilter(requestContext));

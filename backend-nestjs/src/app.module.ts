@@ -67,6 +67,9 @@ import { NotificationsModule } from './notifications/notifications.module';
 import { RefreshToken } from './entities/refresh-token.entity';
 import { IdempotencyRecord } from './entities/idempotency-record.entity';
 import { RequestContextMiddleware } from './common/middleware/request-context.middleware';
+import { Task } from './entities/task.entity';
+import { TaskLabel } from './entities/task-label.entity';
+import { TasksModule } from './tasks/tasks.module';
 
 // Create logger instance for database connection logging
 const dbLogger = new Logger('DatabaseConnection');
@@ -149,6 +152,8 @@ const dbLogger = new Logger('DatabaseConnection');
               Calendar,
               CalendarShare,
               Event,
+              Task,
+              TaskLabel,
               CalendarSyncConnection,
               SyncedCalendar,
               SyncEventMapping,
@@ -184,9 +189,6 @@ const dbLogger = new Logger('DatabaseConnection');
               RefreshToken,
               IdempotencyRecord,
             ],
-            synchronize:
-              process.env.DB_SYNCHRONIZE === 'true' ||
-              process.env.NODE_ENV === 'development',
             ssl: sslEnabled
               ? { rejectUnauthorized: sslRejectUnauthorized }
               : false,
@@ -205,6 +207,13 @@ const dbLogger = new Logger('DatabaseConnection');
             },
           };
 
+          const synchronizeSchema = process.env.DB_SYNCHRONIZE === 'true';
+          if (!synchronizeSchema && process.env.NODE_ENV === 'development') {
+            dbLogger.warn(
+              '⚠️  DB_SYNCHRONIZE is disabled for PostgreSQL even in development. Enable it explicitly only against disposable databases.',
+            );
+          }
+
           dbLogger.log('🔌 Attempting to connect to PostgreSQL...');
           const startTime = Date.now();
 
@@ -216,7 +225,10 @@ const dbLogger = new Logger('DatabaseConnection');
             );
           });
 
-          return config;
+          return {
+            ...config,
+            synchronize: synchronizeSchema,
+          };
         } else {
           dbLogger.log('Using SQLite database');
           return {
@@ -227,6 +239,8 @@ const dbLogger = new Logger('DatabaseConnection');
               Calendar,
               CalendarShare,
               Event,
+              Task,
+              TaskLabel,
               CalendarSyncConnection,
               SyncedCalendar,
               SyncEventMapping,
@@ -284,7 +298,8 @@ const dbLogger = new Logger('DatabaseConnection');
     AgentsModule,
     NotificationsModule,
     ConfigurationModule,
-    TypeOrmModule.forFeature([User]),
+    TasksModule,
+    TypeOrmModule.forFeature([User, Calendar, CalendarShare, Task]),
   ],
   controllers: [
     AppController,

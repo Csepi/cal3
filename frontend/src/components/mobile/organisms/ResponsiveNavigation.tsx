@@ -80,6 +80,15 @@ const FeatureIcon = (
   </svg>
 );
 
+const TasksIcon = (
+  <svg viewBox="0 0 24 24" {...iconProps}>
+    <path d="M4 7h16M4 12h16M4 17h10" />
+    <circle cx="7" cy="17" r="1.5" />
+    <circle cx="17" cy="7" r="1.5" />
+    <circle cx="17" cy="12" r="1.5" />
+  </svg>
+);
+
 const AgentIcon = (
   <svg viewBox="0 0 24 24" {...iconProps}>
     <rect x="7" y="2" width="10" height="6" rx="3" />
@@ -108,6 +117,7 @@ interface ResponsiveNavigationProps {
     reservations: boolean;
     automation: boolean;
     agents: boolean;
+    tasks: boolean;
   };
   canAccessReservations: boolean;
   hideReservationsTab?: boolean;
@@ -158,6 +168,13 @@ export const ResponsiveNavigation: React.FC<ResponsiveNavigationProps> = ({
       icon: CalendarIcon,
       label: 'Calendar',
       visible: true,
+      isFeature: false,
+    },
+    {
+      id: 'tasks' as TabId,
+      icon: TasksIcon,
+      label: 'Tasks',
+      visible: featureFlags.tasks,
       isFeature: false,
     },
     {

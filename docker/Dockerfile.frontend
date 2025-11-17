@@ -20,6 +20,12 @@ RUN npm ci
 
 # Copy source code
 COPY frontend/ .
+COPY config ./config
+COPY scripts ./scripts
+COPY backend-nestjs/.env ./backend-nestjs/.env
+
+# Sync runtime config from environment/back-end .env
+RUN node scripts/sync-app-config.cjs
 
 # Build production bundle
 RUN npm run build

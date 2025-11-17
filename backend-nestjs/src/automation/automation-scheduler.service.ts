@@ -189,7 +189,7 @@ export class AutomationSchedulerService implements OnModuleInit {
         .getMany();
 
       const matchingEvents = events.filter((event) => {
-        if (!event.endTime) return false;
+        if (!event.endTime || !event.endDate) return false;
 
         const [hours, minutes] = event.endTime.split(':').map(Number);
         const eventDateTime = new Date(event.endDate);

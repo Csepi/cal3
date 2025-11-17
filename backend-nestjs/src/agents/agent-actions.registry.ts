@@ -7,9 +7,21 @@ export enum AgentActionKey {
   AUTOMATION_RULES_LIST = 'automation.rules.list',
   AUTOMATION_RULES_TRIGGER = 'automation.rules.trigger',
   USER_PROFILE_READ = 'user.profile.read',
+  TASKS_LIST = 'tasks.list',
+  TASKS_CREATE = 'tasks.create',
+  TASKS_UPDATE = 'tasks.update',
+  TASKS_DELETE = 'tasks.delete',
+  TASK_LABELS_LIST = 'task-labels.list',
+  TASK_LABELS_CREATE = 'task-labels.create',
+  TASK_LABELS_UPDATE = 'task-labels.update',
+  TASK_LABELS_DELETE = 'task-labels.delete',
 }
 
-export type AgentActionCategory = 'calendars' | 'automation' | 'profile';
+export type AgentActionCategory =
+  | 'calendars'
+  | 'automation'
+  | 'profile'
+  | 'tasks';
 
 export interface AgentActionDefinition {
   key: AgentActionKey;
@@ -143,6 +155,66 @@ const ACTION_DEFINITIONS: AgentActionDefinition[] = [
     description:
       'Allow the agent to read your display name, email and theme preferences.',
     risk: 'read',
+  },
+  {
+    key: AgentActionKey.TASKS_LIST,
+    category: 'tasks',
+    label: 'List Tasks',
+    description:
+      'Allow the agent to list your Tasks workspace items (owner-scoped).',
+    risk: 'read',
+  },
+  {
+    key: AgentActionKey.TASKS_CREATE,
+    category: 'tasks',
+    label: 'Create Tasks',
+    description:
+      'Allow the agent to create tasks in your Tasks workspace and mirror them into the default Tasks calendar.',
+    risk: 'write',
+  },
+  {
+    key: AgentActionKey.TASKS_UPDATE,
+    category: 'tasks',
+    label: 'Update Tasks',
+    description:
+      'Allow the agent to update task fields such as status, priority, due date, and body.',
+    risk: 'write',
+  },
+  {
+    key: AgentActionKey.TASKS_DELETE,
+    category: 'tasks',
+    label: 'Delete Tasks',
+    description: 'Allow the agent to delete tasks you own.',
+    risk: 'write',
+  },
+  {
+    key: AgentActionKey.TASK_LABELS_LIST,
+    category: 'tasks',
+    label: 'List Task Labels',
+    description:
+      'Allow the agent to read the task labels you have defined for Tasks.',
+    risk: 'read',
+  },
+  {
+    key: AgentActionKey.TASK_LABELS_CREATE,
+    category: 'tasks',
+    label: 'Create Task Labels',
+    description: 'Allow the agent to create new task labels on your behalf.',
+    risk: 'write',
+  },
+  {
+    key: AgentActionKey.TASK_LABELS_UPDATE,
+    category: 'tasks',
+    label: 'Rename Task Labels',
+    description: 'Allow the agent to update existing task labels.',
+    risk: 'write',
+  },
+  {
+    key: AgentActionKey.TASK_LABELS_DELETE,
+    category: 'tasks',
+    label: 'Delete Task Labels',
+    description: 'Allow the agent to delete task labels you no longer use.',
+    risk: 'write',
   },
 ];
 

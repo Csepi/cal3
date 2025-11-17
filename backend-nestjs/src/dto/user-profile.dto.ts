@@ -121,6 +121,15 @@ export class UpdateProfileDto {
   @IsArray()
   @IsNumber({}, { each: true })
   visibleResourceTypeIds?: number[];
+
+  @ApiPropertyOptional({
+    example: 42,
+    description: 'Default calendar ID for mirrored Tasks events (must own a Tasks calendar)',
+  })
+  @IsOptional()
+  @IsNumber()
+  @Min(1)
+  defaultTasksCalendarId?: number | null;
 }
 
 export class UpdateThemeDto {

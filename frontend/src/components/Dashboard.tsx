@@ -15,7 +15,7 @@
  * @component
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Login } from './auth';
 import Calendar from './Calendar';
@@ -37,12 +37,14 @@ import { useScreenSize } from '../hooks/useScreenSize';
 import type { TabId } from './mobile/organisms/BottomTabBar';
 import { useNotifications } from '../hooks/useNotifications';
 import { NotificationCenter, NotificationSettingsPanel } from './notifications';
+import { TasksWorkspace, type TasksWorkspaceHandle } from './tasks/TasksWorkspace';
 
 /**
  * View types for the main navigation
  */
 type DashboardView =
   | 'calendar'
+  | 'tasks'
   | 'admin'
   | 'profile'
   | 'sync'
@@ -79,6 +81,7 @@ const Dashboard: React.FC = () => {
   const [permissionsLoading, setPermissionsLoading] = useState<boolean>(true);
 
   const { unreadCount } = useNotifications();
+  const tasksWorkspaceRef = useRef<TasksWorkspaceHandle | null>(null);
 
   /**
    * Handles user login and initializes user session
@@ -245,6 +248,8 @@ const Dashboard: React.FC = () => {
       setCurrentView('calendar');
     } else if (currentView === 'reservations' && (!featureFlags.reservations || !canAccessReservations)) {
       setCurrentView('calendar');
+    } else if (currentView === 'tasks' && !featureFlags.tasks) {
+      setCurrentView('calendar');
     }
   }, [featureFlagsLoading, permissionsLoading, currentView, featureFlags, canAccessReservations]);
 
@@ -260,10 +265,11 @@ const Dashboard: React.FC = () => {
     setCurrentView(tabId as DashboardView);
   };
 
-  // FAB primary action (create event)
   const handleCreateEvent = () => {
-    // This will be connected to calendar's create event
     console.log('Create new event');
+  };
+  const handleCreateTask = () => {
+    tasksWorkspaceRef.current?.openComposer();
   };
 
   // Refresh handler for pull-to-refresh
@@ -303,6 +309,9 @@ const Dashboard: React.FC = () => {
           {currentView === 'calendar' && (
             <Calendar themeColor={themeColor} timeFormat={userProfile?.timeFormat || '12h'} />
           )}
+          {currentView === 'tasks' && featureFlags.tasks && (
+            <TasksWorkspace ref={tasksWorkspaceRef} themeColor={themeColor} />
+          )}
           {currentView === 'profile' && (
             <UserProfile
               onThemeChange={handleThemeChange}
@@ -334,13 +343,23 @@ const Dashboard: React.FC = () => {
         </div>
       </MobileLayout>
 
-      {/* FAB - Only shows on mobile, only on calendar view */}
+      {/* FAB quick actions */}
       {currentView === 'calendar' && (
         <FloatingActionButton
           primaryAction={{
             icon: '+',
             label: 'New Event',
             onClick: handleCreateEvent,
+          }}
+          themeColor={themeColor}
+        />
+      )}
+      {currentView === 'tasks' && featureFlags.tasks && (
+        <FloatingActionButton
+          primaryAction={{
+            icon: '+',
+            label: 'New Task',
+            onClick: handleCreateTask,
           }}
           themeColor={themeColor}
         />

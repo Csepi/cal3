@@ -94,6 +94,22 @@ export class NotificationsService implements OnModuleInit {
 
   async onModuleInit(): Promise<void> {
     try {
+      const bootstrapTimeout = parseInt(
+        process.env.NOTIFICATIONS_QUEUE_BOOTSTRAP_TIMEOUT_MS || '4000',
+        10,
+      );
+      const ready = await this.waitForQueueReady(
+        this.digestQueue,
+        bootstrapTimeout,
+      );
+
+      if (!ready) {
+        this.logger.warn(
+          `Digest scheduler initialisation skipped (Redis queue not ready after ${bootstrapTimeout}ms).`,
+        );
+        return;
+      }
+
       await this.digestQueue.add(
         'notifications-scheduler',
         {},
@@ -108,6 +124,54 @@ export class NotificationsService implements OnModuleInit {
         error instanceof Error ? error.message : error,
       );
     }
+  }
+
+  private async waitForQueueReady(
+    queue: Queue,
+    timeoutMs: number,
+  ): Promise<boolean> {
+    const client: any = (queue as any).client;
+    if (!client) {
+      return false;
+    }
+
+    if (client.status === 'ready') {
+      return true;
+    }
+
+    return new Promise((resolve) => {
+      let isResolved = false;
+      const onReady = () => {
+        if (!isResolved) {
+          isResolved = true;
+          cleanup();
+          resolve(true);
+        }
+      };
+      const onError = () => {
+        if (!isResolved) {
+          isResolved = true;
+          cleanup();
+          resolve(false);
+        }
+      };
+      const timer = setTimeout(() => {
+        if (!isResolved) {
+          isResolved = true;
+          cleanup();
+          resolve(false);
+        }
+      }, timeoutMs);
+
+      const cleanup = () => {
+        clearTimeout(timer);
+        client.off?.('ready', onReady);
+        client.off?.('error', onError);
+      };
+
+      client.once?.('ready', onReady);
+      client.once?.('error', onError);
+    });
   }
 
   async publish(options: PublishNotificationOptions): Promise<void> {

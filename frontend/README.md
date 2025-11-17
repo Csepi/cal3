@@ -114,6 +114,10 @@ npm run preview
 #### ** CRITICAL PORT REQUIREMENT**
 The frontend **MUST** run on port 8080. This is hardcoded in the application configuration and cannot be changed.
 
+#### Environment Sync
+
+The SPA reads all API connection details from `public/runtime-config.js`, which is now **generated** from `backend-nestjs/.env` (local development) or Docker environment variables (container builds). Every `npm run dev`, `npm run build`, and `npm run preview` automatically runs `node ../scripts/sync-app-config.cjs` to keep the runtime config in sync. If you edit `backend-nestjs/.env` while a dev server is running, rerun `npm run sync:env` (or restart the dev server) so the frontend picks up the new URLs.
+
 ### Component Integration
 
 #### Data Flow

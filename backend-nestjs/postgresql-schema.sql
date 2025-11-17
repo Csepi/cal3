@@ -101,7 +101,6 @@ CREATE TABLE calendars (
 CREATE INDEX idx_calendars_userId ON calendars("userId");
 CREATE INDEX idx_calendars_organisationId ON calendars("organisationId");
 CREATE INDEX idx_calendars_name ON calendars(name);
-
 -- =============================================
 -- 4. CALENDAR_SHARES TABLE
 -- =============================================
@@ -284,18 +283,21 @@ CREATE TABLE resources (
     name VARCHAR(255) NOT NULL,
     description TEXT,
     "resourceTypeId" INTEGER NOT NULL,
+    "organisationId" INTEGER,
     "isActive" BOOLEAN NOT NULL DEFAULT true,
     location VARCHAR(255),
     capacity INTEGER,
     "publicBookingToken" VARCHAR(500),
     "createdAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT "FK_resources_resource_type" FOREIGN KEY ("resourceTypeId") REFERENCES resource_types(id) ON DELETE CASCADE
+    CONSTRAINT "FK_resources_resource_type" FOREIGN KEY ("resourceTypeId") REFERENCES resource_types(id) ON DELETE CASCADE,
+    CONSTRAINT "FK_resources_organisation" FOREIGN KEY ("organisationId") REFERENCES organisations(id) ON DELETE SET NULL
 );
 
 CREATE INDEX idx_resources_resourceTypeId ON resources("resourceTypeId");
 CREATE INDEX idx_resources_publicBookingToken ON resources("publicBookingToken");
 CREATE INDEX idx_resources_name ON resources(name);
+CREATE INDEX idx_resources_organisationId ON resources("organisationId");
 
 -- =============================================
 -- 13. OPERATING_HOURS TABLE
@@ -330,11 +332,13 @@ CREATE TABLE reservations (
     "guestEmail" VARCHAR(255),
     "approvedBy" INTEGER,
     "approvedAt" TIMESTAMP,
+    "organisationId" INTEGER,
     "createdAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT "FK_reservations_resource" FOREIGN KEY ("resourceId") REFERENCES resources(id) ON DELETE CASCADE,
     CONSTRAINT "FK_reservations_user" FOREIGN KEY ("userId") REFERENCES users(id) ON DELETE SET NULL,
-    CONSTRAINT "FK_reservations_approver" FOREIGN KEY ("approvedBy") REFERENCES users(id) ON DELETE SET NULL
+    CONSTRAINT "FK_reservations_approver" FOREIGN KEY ("approvedBy") REFERENCES users(id) ON DELETE SET NULL,
+    CONSTRAINT "FK_reservations_organisation" FOREIGN KEY ("organisationId") REFERENCES organisations(id) ON DELETE SET NULL
 );
 
 CREATE INDEX idx_reservations_resourceId ON reservations("resourceId");
@@ -343,6 +347,7 @@ CREATE INDEX idx_reservations_startTime ON reservations("startTime");
 CREATE INDEX idx_reservations_endTime ON reservations("endTime");
 CREATE INDEX idx_reservations_status ON reservations(status);
 CREATE INDEX idx_reservations_time_range ON reservations("startTime", "endTime");
+CREATE INDEX idx_reservations_organisationId ON reservations("organisationId");
 
 -- =============================================
 -- 15. RESERVATION_CALENDARS TABLE

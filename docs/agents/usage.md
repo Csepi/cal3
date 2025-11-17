@@ -89,11 +89,40 @@ The gateway returns standard HTTP errors:
 
 ### Available actions
 
-The `GET /api/mcp/actions` endpoint returns the exact actions and scope configured in the UI. The initial release exposes:
+The `GET /api/mcp/actions` endpoint returns the exact actions and scope configured in the UI. Current categories include:
 
-- Calendar listing, event read, event management (create/update/delete).
-- Automation rule list and manual trigger.
-- User profile read.
+- **Calendars**: list calendars plus event read/create/update/delete (scoped to explicit calendars).
+- **Automation**: list automation rules and trigger selected rules.
+- **Profile**: read owner profile basics.
+- **Tasks**: list/create/update/delete Tasks workspace items, plus manage task labels (list/create/update/delete). These actions always run as the task owner and honour the default Tasks calendar for event mirroring.
+
+Example task creation request:
+
+```http
+POST /api/mcp/execute HTTP/1.1
+X-Agent-Key: ag_sk_1234_example_secret
+Content-Type: application/json
+
+{
+  "action": "tasks.create",
+  "parameters": {
+    "title": "Draft Q4 launch plan",
+    "priority": "high",
+    "status": "in_progress",
+    "dueDate": "2025-11-21T16:00:00Z",
+    "labelIds": [3, 7]
+  }
+}
+```
+
+The response contains the saved task (including label associations and mirrored calendar metadata).
+
+### Release & communication checklist
+
+1. **Backend/Frontend deploy** – deploy both apps after running database migrations and feature flag toggle.
+2. **Docs** – share links to this usage guide plus [`docs/agents/setup.md`](setup.md) in the release announcement.
+3. **Customer communication** – notify pilot users via the in-app changelog and email snippets outlining new Tasks MCP actions and required scopes.
+4. **Monitoring** – watch `/api/mcp/execute` logs and the agent settings audit stream for the first 48 hours to ensure task mirroring works for agent-created notes.
 
 ## 3. Operational tips
 

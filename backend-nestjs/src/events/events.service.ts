@@ -6,6 +6,7 @@ import {
   Inject,
   forwardRef,
   Logger,
+  Optional,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -24,6 +25,7 @@ import {
   RecurrenceEndType,
 } from '../dto/recurrence.dto';
 import { NotificationsService } from '../notifications/notifications.service';
+import { TaskCalendarBridgeService } from '../tasks/task-calendar-bridge.service';
 
 @Injectable()
 export class EventsService {
@@ -37,12 +39,14 @@ export class EventsService {
     @InjectRepository(CalendarShare)
     private calendarShareRepository: Repository<CalendarShare>,
     private readonly notificationsService: NotificationsService,
+    private readonly taskCalendarBridgeService: TaskCalendarBridgeService,
+    @Optional()
     @Inject(
       forwardRef(
         () => require('../automation/automation.service').AutomationService,
       ),
     )
-    private automationService?: any,
+    private readonly automationService: any,
   ) {}
 
   async create(createEventDto: CreateEventDto, userId: number): Promise<Event> {
@@ -300,6 +304,10 @@ export class EventsService {
       console.error('Automation trigger error:', err),
     );
 
+    if (updatedEvent.taskId && this.taskCalendarBridgeService) {
+      await this.taskCalendarBridgeService.handleEventMutation(updatedEvent);
+    }
+
     await this.notifyEventChange(updatedEvent, 'updated', userId);
 
     return updatedEvent;
@@ -336,6 +344,10 @@ export class EventsService {
     );
 
     await this.notifyEventChange(event, 'deleted', userId);
+
+    if (event.taskId && this.taskCalendarBridgeService) {
+      await this.taskCalendarBridgeService.handleEventDeletion(event);
+    }
 
     if (event.recurrenceType !== RecurrenceType.NONE) {
       await this.removeRecurringEvent(event, scope);

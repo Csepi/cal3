@@ -54,6 +54,9 @@ export class Calendar {
   @Column({ default: false })
   isReservationCalendar: boolean; // Indicates if this is a reservation calendar
 
+  @Column({ default: false })
+  isTasksCalendar: boolean;
+
   @Column({ nullable: true })
   organisationId: number; // For reservation calendars, links to organisation
 

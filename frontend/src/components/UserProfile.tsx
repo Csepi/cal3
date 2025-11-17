@@ -31,6 +31,13 @@ interface UserProfileProps {
  * Main UserProfile component that manages user profile information,
  * theme preferences, and password changes through modular subcomponents.
  */
+type TasksCalendarOption = {
+  id: number;
+  name: string;
+  isTasksCalendar?: boolean;
+  ownerId?: number;
+};
+
 const UserProfile: React.FC<UserProfileProps> = ({ onThemeChange, currentTheme }) => {
   // Hooks
   const { i18n } = useTranslation();
@@ -51,7 +58,10 @@ const UserProfile: React.FC<UserProfileProps> = ({ onThemeChange, currentTheme }
     lastName: '',
     timezone: '',
     timeFormat: '',
-    language: 'en'
+    language: 'en',
+    hideReservationsTab: false,
+    usagePlans: ['user'],
+    defaultTasksCalendarId: '',
   });
 
   const [passwordForm, setPasswordForm] = useState<PasswordFormData>({
@@ -68,6 +78,56 @@ const UserProfile: React.FC<UserProfileProps> = ({ onThemeChange, currentTheme }
   const [profileErrors, setProfileErrors] = useState<Record<string, string>>({});
   const [passwordErrors, setPasswordErrors] = useState<Record<string, string>>({});
   const [isThemeSaving, setIsThemeSaving] = useState(false);
+  const [tasksCalendars, setTasksCalendars] = useState<TasksCalendarOption[]>([]);
+  const [tasksCalendarsLoading, setTasksCalendarsLoading] = useState(false);
+
+  const loadTasksCalendars = async (currentUserId?: number) => {
+    if (!currentUserId) {
+      return;
+    }
+    try {
+      setTasksCalendarsLoading(true);
+      const calendars = await apiService.getAllCalendars();
+      const eligible = calendars.filter((calendar) => {
+        if (!calendar || calendar.isActive === false) {
+          return false;
+        }
+        if (calendar.ownerId === currentUserId) {
+          return true;
+        }
+        if (Array.isArray(calendar.sharedWith)) {
+          const shareEntry = calendar.sharedWith.find(
+            (shared: any) => shared?.id === currentUserId,
+          );
+          if (shareEntry?.permission) {
+            const permission = String(shareEntry.permission).toLowerCase();
+            if (permission === 'write' || permission === 'admin') {
+              return true;
+            }
+          }
+        }
+        return false;
+      });
+      eligible.sort((a, b) => {
+        if (Boolean(a.isTasksCalendar) === Boolean(b.isTasksCalendar)) {
+          return a.name.localeCompare(b.name);
+        }
+        return a.isTasksCalendar ? -1 : 1;
+      });
+      setTasksCalendars(
+        eligible.map((calendar) => ({
+          id: calendar.id,
+          name: calendar.name,
+          isTasksCalendar: Boolean(calendar.isTasksCalendar),
+          ownerId: calendar.ownerId,
+        })),
+      );
+    } catch (err) {
+      console.error('Error loading calendars for Tasks selector:', err);
+    } finally {
+      setTasksCalendarsLoading(false);
+    }
+  };
 
   /**
    * Load user profile data from the API and populate form fields
@@ -89,7 +149,11 @@ const UserProfile: React.FC<UserProfileProps> = ({ onThemeChange, currentTheme }
         timezone: userData.timezone || '',
         timeFormat: userData.timeFormat || '12h',
         language: userData.language || 'en',
-        usagePlans: userData.usagePlans || ['user']
+        hideReservationsTab: Boolean(userData.hideReservationsTab),
+        usagePlans: userData.usagePlans || ['user'],
+        defaultTasksCalendarId: userData.defaultTasksCalendarId
+          ? String(userData.defaultTasksCalendarId)
+          : '',
       });
 
       if (userData.themeColor && userData.themeColor !== currentTheme) {
@@ -100,6 +164,8 @@ const UserProfile: React.FC<UserProfileProps> = ({ onThemeChange, currentTheme }
       if (userData.language) {
         i18n.changeLanguage(userData.language);
       }
+
+      await loadTasksCalendars(userData.id);
 
     } catch (err) {
       console.error('Error loading user data:', err);
@@ -112,8 +178,8 @@ const UserProfile: React.FC<UserProfileProps> = ({ onThemeChange, currentTheme }
   /**
    * Handle profile form field changes
    */
-  const handleProfileFormChange = (field: string, value: string) => {
-    setProfileForm(prev => ({ ...prev, [field]: value }));
+  const handleProfileFormChange = (field: string, value: string | boolean) => {
+    setProfileForm(prev => ({ ...prev, [field]: value }) as PersonalInfoFormData);
     // Clear specific field error when user starts typing
     if (profileErrors[field]) {
       setProfileErrors(prev => ({ ...prev, [field]: '' }));
@@ -203,8 +269,13 @@ const UserProfile: React.FC<UserProfileProps> = ({ onThemeChange, currentTheme }
       setProfileLoading(true);
       setError(null);
 
-      const { usagePlans, ...profileData } = profileForm;
-      await apiService.updateUserProfile(profileData);
+      const { usagePlans, defaultTasksCalendarId, ...profileData } = profileForm;
+      await apiService.updateUserProfile({
+        ...profileData,
+        defaultTasksCalendarId: defaultTasksCalendarId
+          ? Number(defaultTasksCalendarId)
+          : null,
+      });
 
       // Update i18n language if changed
       if (profileData.language) {
@@ -366,6 +437,8 @@ const UserProfile: React.FC<UserProfileProps> = ({ onThemeChange, currentTheme }
               loading={profileLoading}
               themeColor={currentTheme}
               errors={profileErrors}
+              tasksCalendars={tasksCalendars}
+              tasksCalendarsLoading={tasksCalendarsLoading}
             />
 
             {/* Password Management */}
@@ -419,6 +492,3 @@ const UserProfile: React.FC<UserProfileProps> = ({ onThemeChange, currentTheme }
 };
 
 export default UserProfile;
-
-
-

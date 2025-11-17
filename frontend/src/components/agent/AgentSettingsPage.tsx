@@ -39,7 +39,7 @@ const hexToRgba = (hex: string, alpha: number): string => {
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 };
 
-const CATEGORY_ORDER: AgentActionDefinition['category'][] = ['calendars', 'automation', 'profile'];
+const CATEGORY_ORDER: AgentActionDefinition['category'][] = ['calendars', 'tasks', 'automation', 'profile'];
 
 const RISK_BADGE: Record<'read' | 'write' | 'execute', string> = {
   read: 'bg-sky-100 text-sky-700',

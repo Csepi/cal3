@@ -13,6 +13,7 @@ import { ConfigurationService } from '../configuration/configuration.service';
  * - ENABLE_CALENDAR_SYNC: Enable/disable external calendar synchronization
  * - ENABLE_RESERVATIONS: Enable/disable reservation system
  * - ENABLE_AUTOMATION: Enable/disable automation rules system
+ * - ENABLE_TASKS: Enable/disable Tasks workspace and APIs
  *
  * Usage:
  * - Set environment variables to 'true' to enable features
@@ -66,6 +67,13 @@ export class FeatureFlagsService {
       false,
     );
   }
+  /**
+   * Check if Tasks feature is enabled
+   * Controls visibility of Tasks tab, APIs, and related UI
+   */
+  isTasksEnabled(): boolean {
+    return this.configurationService.getBoolean('ENABLE_TASKS', true);
+  }
 
   /**
    * Get all feature flags as an object
@@ -77,6 +85,7 @@ export class FeatureFlagsService {
     reservations: boolean;
     automation: boolean;
     agents: boolean;
+    tasks: boolean;
   } {
     return {
       oauth: this.isOAuthEnabled(),
@@ -84,6 +93,7 @@ export class FeatureFlagsService {
       reservations: this.isReservationsEnabled(),
       automation: this.isAutomationEnabled(),
       agents: this.isAgentIntegrationsEnabled(),
+      tasks: this.isTasksEnabled(),
     };
   }
 }

@@ -3,10 +3,10 @@
 	"appName": "PrimeCal Calendar",
 	"webDir": "dist",
 	"server": {
-		"url": "http://www.cselo.hu:8079",
+		"url": "http://localhost:8080",
 		"cleartext": true,
 		"allowNavigation": [
-			"www.cselo.hu"
+			"localhost"
 		]
 	}
 }

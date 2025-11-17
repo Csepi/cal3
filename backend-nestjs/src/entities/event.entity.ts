@@ -32,25 +32,25 @@ export class Event {
   title: string;
 
   @Column({ type: 'text', nullable: true })
-  description: string;
+  description: string | null;
 
   @Column({ type: 'date' })
   startDate: Date;
 
   @Column({ type: 'time', nullable: true })
-  startTime: string;
+  startTime: string | null;
 
   @Column({ type: 'date', nullable: true })
-  endDate: Date;
+  endDate: Date | null;
 
   @Column({ type: 'time', nullable: true })
-  endTime: string;
+  endTime: string | null;
 
   @Column({ default: false })
   isAllDay: boolean;
 
-  @Column({ length: 200, nullable: true })
-  location: string;
+  @Column({ type: 'varchar', length: 200, nullable: true })
+  location: string | null;
 
   @Column({
     type: 'varchar',
@@ -79,17 +79,17 @@ export class Event {
   @Column({ default: false })
   isRecurrenceException: boolean; // True if this is a modified instance of a recurring event
 
-  @Column({ length: 7, nullable: true })
-  color: string;
+  @Column({ type: 'varchar', length: 7, nullable: true })
+  color: string | null;
 
-  @Column({ length: 10, nullable: true }) // Emoji/icon for event (e.g., 🎉, 📝, 🎯)
-  icon: string;
+  @Column({ type: 'varchar', length: 10, nullable: true }) // Emoji/icon for event (e.g., 🎉, 📝, 🎯)
+  icon: string | null;
 
   @Column({ type: 'text', nullable: true })
-  notes: string;
+  notes: string | null;
 
   @Column({ type: 'json', nullable: true })
-  tags: string[];
+  tags?: string[];
 
   @Column({ type: 'json', nullable: true })
   automationTasks: Array<{
@@ -121,4 +121,13 @@ export class Event {
 
   @Column()
   createdById: number;
+
+  @Column({ type: 'integer', nullable: true })
+  taskId?: number;
+
+  @Column({ type: 'timestamptz', nullable: true })
+  taskSyncedAt?: Date;
+
+  @Column({ type: 'varchar', length: 64, nullable: true })
+  taskSyncChecksum?: string;
 }

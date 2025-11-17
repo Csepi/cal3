@@ -24,7 +24,7 @@ export function resolveAllowedOrigins(): string[] {
     .map((origin) => origin.trim())
     .filter(Boolean);
 
-  const derived = [
+const derived = [
     process.env.FRONTEND_URL,
     process.env.PUBLIC_APP_URL,
     process.env.BASE_URL,
@@ -36,10 +36,11 @@ export function resolveAllowedOrigins(): string[] {
     ),
   ].filter(Boolean) as string[];
 
-  const localDefaults = [
+const localDefaults = [
     'http://localhost:3000',
     'http://localhost:4200',
     'http://localhost:5173',
+    'http://localhost:8080',
     `http://localhost:${process.env.FRONTEND_PORT ?? '3000'}`,
   ];
 
@@ -81,6 +82,19 @@ export function buildHelmetOptions(
   };
 }
 
+const BASE_ALLOWED_HEADERS = [
+  'Authorization',
+  'Content-Type',
+  'X-Requested-With',
+  'X-Organisation-Id',
+  'X-Idempotency-Key',
+  'X-CSRF-Token',
+] as const;
+
+export function getCorsAllowedHeaders(): string[] {
+  return [...BASE_ALLOWED_HEADERS];
+}
+
 export function buildCorsOptions(
   allowedOrigins: string[],
 ): CorsOptions {
@@ -89,14 +103,7 @@ export function buildCorsOptions(
     .filter((origin) => origin.includes('*'))
     .map((origin) => wildcardToRegExp(origin));
 
-  const allowedHeaders = [
-    'Authorization',
-    'Content-Type',
-    'X-Requested-With',
-    'X-Organisation-Id',
-    'X-Idempotency-Key',
-    'X-CSRF-Token',
-  ];
+  const allowedHeaders = getCorsAllowedHeaders();
 
   return {
     origin: (origin, callback) => {
@@ -119,6 +126,8 @@ export function buildCorsOptions(
     allowedHeaders,
     exposedHeaders: ['x-request-id'],
     credentials: true,
+    preflightContinue: true,
+    optionsSuccessStatus: 204,
     maxAge: parseInt(process.env.SECURITY_CORS_MAX_AGE ?? '600', 10),
   };
 }

@@ -10,6 +10,7 @@
  * - Reservations (reservations system tab)
  * - Automation (automation rules tab)
  * - MCP Agents (external agent integrations tab)
+ * - Tasks (Tasks workspace visibility)
  */
 
 import { BASE_URL } from '../config/apiConfig';
@@ -20,6 +21,7 @@ export interface FeatureFlags {
   reservations: boolean;
   automation: boolean;
   agents: boolean;
+  tasks: boolean;
 }
 
 class FeatureFlagsService {
@@ -53,6 +55,9 @@ class FeatureFlagsService {
         agents: Boolean(
           responsePayload.agents !== undefined ? responsePayload.agents : true,
         ),
+        tasks: Boolean(
+          responsePayload.tasks !== undefined ? responsePayload.tasks : true,
+        ),
       };
 
       // Update cache
@@ -71,6 +76,7 @@ class FeatureFlagsService {
         reservations: true,
         automation: true,
         agents: true,
+        tasks: true,
       };
 
       return defaultFlags;

@@ -14,11 +14,13 @@ import { TokenService } from './token.service';
 import { RefreshToken } from '../entities/refresh-token.entity';
 import { LoginAttemptService } from './services/login-attempt.service';
 import { LoggingModule } from '../logging/logging.module';
+import { TasksModule } from '../tasks/tasks.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([User, RefreshToken]),
     ConfigurationModule,
+    TasksModule,
     LoggingModule,
     PassportModule,
     JwtModule.registerAsync({

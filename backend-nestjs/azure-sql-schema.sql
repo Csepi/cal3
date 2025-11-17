@@ -74,6 +74,7 @@ CREATE TABLE calendars (
     visibility NVARCHAR(20) NOT NULL DEFAULT 'private',
     isActive BIT NOT NULL DEFAULT 1,
     isReservationCalendar BIT NOT NULL DEFAULT 0,
+    isTasksCalendar BIT NOT NULL DEFAULT 0,
     organisationId INT NULL,
     ownerId INT NOT NULL,
     createdAt DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
@@ -128,6 +129,7 @@ CREATE TABLE events (
     notes NVARCHAR(MAX) NULL,
     calendarId INT NOT NULL,
     createdById INT NOT NULL,
+    taskId INT NULL,
     createdAt DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
     updatedAt DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
     CONSTRAINT FK_events_calendar FOREIGN KEY (calendarId) REFERENCES calendars(id) ON DELETE CASCADE,
@@ -281,16 +283,19 @@ CREATE TABLE resources (
     isActive BIT NOT NULL DEFAULT 1,
     publicBookingToken NVARCHAR(100) NULL UNIQUE,
     resourceTypeId INT NOT NULL,
+    organisationId INT NULL,
     managedById INT NULL,
     createdAt DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
     updatedAt DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
     CONSTRAINT FK_resources_resource_type FOREIGN KEY (resourceTypeId) REFERENCES resource_types(id),
+    CONSTRAINT FK_resources_organisation FOREIGN KEY (organisationId) REFERENCES organisations(id) ON DELETE SET NULL,
     CONSTRAINT FK_resources_manager FOREIGN KEY (managedById) REFERENCES users(id)
 );
 
 CREATE INDEX idx_resources_publicBookingToken ON resources(publicBookingToken);
 CREATE INDEX idx_resources_isActive ON resources(isActive);
 CREATE INDEX idx_resources_resourceTypeId ON resources(resourceTypeId);
+CREATE INDEX idx_resources_organisationId ON resources(organisationId);
 
 -- =============================================
 -- 13. OPERATING_HOURS TABLE
@@ -325,10 +330,12 @@ CREATE TABLE reservations (
     parentReservationId INT NULL,
     recurrencePattern NVARCHAR(MAX) NULL,
     resourceId INT NOT NULL,
+    organisationId INT NULL,
     createdById INT NULL,
     createdAt DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
     updatedAt DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
     CONSTRAINT FK_reservations_resource FOREIGN KEY (resourceId) REFERENCES resources(id),
+    CONSTRAINT FK_reservations_organisation FOREIGN KEY (organisationId) REFERENCES organisations(id) ON DELETE SET NULL,
     CONSTRAINT FK_reservations_creator FOREIGN KEY (createdById) REFERENCES users(id),
     CONSTRAINT CK_reservations_status CHECK (status IN ('pending', 'confirmed', 'completed', 'cancelled', 'waitlist'))
 );
@@ -338,6 +345,7 @@ CREATE INDEX idx_reservations_endTime ON reservations(endTime);
 CREATE INDEX idx_reservations_status ON reservations(status);
 CREATE INDEX idx_reservations_time_range ON reservations(startTime, endTime);
 CREATE INDEX idx_reservations_resourceId ON reservations(resourceId);
+CREATE INDEX idx_reservations_organisationId ON reservations(organisationId);
 
 -- =============================================
 -- 15. RESERVATION_CALENDARS TABLE

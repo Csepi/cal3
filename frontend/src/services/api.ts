@@ -12,6 +12,17 @@ import type {
   NotificationScopeMute,
   NotificationScopeOption,
 } from '../types/Notification';
+import type {
+  Task,
+  TaskLabel,
+  TaskListResponse,
+  TaskPriority,
+  TaskStatus,
+  TaskQueryParams,
+  CreateTaskRequest,
+  UpdateTaskRequest,
+  CreateTaskLabelRequest,
+} from '../types/Task';
 
 export interface CreateRecurringEventRequest extends CreateEventRequest {
   recurrence: RecurrencePattern;
@@ -74,6 +85,44 @@ class ApiService {
    */
   private async secureApiFetch(url: string, options: RequestInit = {}): Promise<Response> {
     return secureFetch(url, options);
+  }
+
+  private buildTaskQuery(params: TaskQueryParams = {}): string {
+    const searchParams = new URLSearchParams();
+    if (params.status) {
+      searchParams.append('status', params.status);
+    }
+    if (params.priority) {
+      searchParams.append('priority', params.priority);
+    }
+    if (params.search) {
+      searchParams.append('search', params.search);
+    }
+    if (params.dueFrom) {
+      searchParams.append('dueFrom', params.dueFrom);
+    }
+    if (params.dueTo) {
+      searchParams.append('dueTo', params.dueTo);
+    }
+    if (params.labelIds?.length) {
+      params.labelIds.forEach((id) =>
+        searchParams.append('labelIds', String(id)),
+      );
+    }
+    if (params.sortBy) {
+      searchParams.append('sortBy', params.sortBy);
+    }
+    if (params.sortDirection) {
+      searchParams.append('sortDirection', params.sortDirection);
+    }
+    if (params.page) {
+      searchParams.append('page', String(params.page));
+    }
+    if (params.limit) {
+      searchParams.append('limit', String(params.limit));
+    }
+    const query = searchParams.toString();
+    return query ? `?${query}` : '';
   }
 
   async getAllEvents(): Promise<Event[]> {
@@ -930,6 +979,139 @@ class ApiService {
       throw new Error('Failed to update notification admin config');
     }
     return await response.json();
+  }
+
+  async getTasks(params: TaskQueryParams = {}): Promise<TaskListResponse> {
+    const query = this.buildTaskQuery(params);
+    const response = await this.secureApiFetch(`${BASE_URL}/api/tasks${query}`);
+    if (!response.ok) {
+      throw new Error('Failed to load tasks');
+    }
+    return (await response.json()) as TaskListResponse;
+  }
+
+  async createTask(payload: CreateTaskRequest): Promise<Task> {
+    const response = await this.secureApiFetch(`${BASE_URL}/api/tasks`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({}));
+      throw new Error(error.message || 'Failed to create task');
+    }
+    return (await response.json()) as Task;
+  }
+
+  async updateTask(taskId: number, payload: UpdateTaskRequest): Promise<Task> {
+    const response = await this.secureApiFetch(
+      `${BASE_URL}/api/tasks/${taskId}`,
+      {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      },
+    );
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({}));
+      throw new Error(error.message || 'Failed to update task');
+    }
+    return (await response.json()) as Task;
+  }
+
+  async deleteTask(taskId: number): Promise<void> {
+    const response = await this.secureApiFetch(
+      `${BASE_URL}/api/tasks/${taskId}`,
+      { method: 'DELETE' },
+    );
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({}));
+      throw new Error(error.message || 'Failed to delete task');
+    }
+  }
+
+  async getTaskLabels(): Promise<TaskLabel[]> {
+    const response = await this.secureApiFetch(`${BASE_URL}/api/task-labels`);
+    if (!response.ok) {
+      throw new Error('Failed to load task labels');
+    }
+    return (await response.json()) as TaskLabel[];
+  }
+
+  async createTaskLabel(
+    payload: CreateTaskLabelRequest,
+  ): Promise<TaskLabel> {
+    const response = await this.secureApiFetch(`${BASE_URL}/api/task-labels`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({}));
+      throw new Error(error.message || 'Failed to create label');
+    }
+    return (await response.json()) as TaskLabel;
+  }
+
+  async updateTaskLabel(
+    labelId: number,
+    payload: CreateTaskLabelRequest,
+  ): Promise<TaskLabel> {
+    const response = await this.secureApiFetch(
+      `${BASE_URL}/api/task-labels/${labelId}`,
+      {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      },
+    );
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({}));
+      throw new Error(error.message || 'Failed to update label');
+    }
+    return (await response.json()) as TaskLabel;
+  }
+
+  async deleteTaskLabel(labelId: number): Promise<void> {
+    const response = await this.secureApiFetch(
+      `${BASE_URL}/api/task-labels/${labelId}`,
+      { method: 'DELETE' },
+    );
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({}));
+      throw new Error(error.message || 'Failed to delete label');
+    }
+  }
+
+  async addTaskLabels(
+    taskId: number,
+    payload: { labelIds?: number[]; inlineLabels?: CreateTaskLabelRequest[] },
+  ): Promise<Task> {
+    const response = await this.secureApiFetch(
+      `${BASE_URL}/api/tasks/${taskId}/labels`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      },
+    );
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({}));
+      throw new Error(error.message || 'Failed to update labels');
+    }
+    return (await response.json()) as Task;
+  }
+
+  async removeTaskLabel(taskId: number, labelId: number): Promise<Task> {
+    const response = await this.secureApiFetch(
+      `${BASE_URL}/api/tasks/${taskId}/labels/${labelId}`,
+      { method: 'DELETE' },
+    );
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({}));
+      throw new Error(error.message || 'Failed to remove label');
+    }
+    return (await response.json()) as Task;
   }
 }
 

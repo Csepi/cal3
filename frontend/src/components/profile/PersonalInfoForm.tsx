@@ -19,6 +19,7 @@ export interface PersonalInfoFormData {
   language: string;
   hideReservationsTab?: boolean; // Optional, to hide the Reservations tab
   usagePlans?: string[]; // Optional, for display purposes only
+  defaultTasksCalendarId?: string;
 }
 
 export interface PersonalInfoFormProps {
@@ -36,6 +37,10 @@ export interface PersonalInfoFormProps {
   errors?: Record<string, string>;
   /** Additional CSS classes */
   className?: string;
+  /** Optional list of selectable calendars for default Tasks calendar */
+  tasksCalendars?: Array<{ id: number; name: string; isTasksCalendar?: boolean; ownerId?: number }>;
+  /** Whether calendar options are still loading */
+  tasksCalendarsLoading?: boolean;
 }
 
 /**
@@ -48,7 +53,9 @@ export const PersonalInfoForm: React.FC<PersonalInfoFormProps> = ({
   loading = false,
   themeColor,
   errors = {},
-  className = ''
+  className = '',
+  tasksCalendars = [],
+  tasksCalendarsLoading = false,
 }) => {
   return (
     <Card
@@ -91,6 +98,43 @@ export const PersonalInfoForm: React.FC<PersonalInfoFormProps> = ({
               themeColor={themeColor}
               placeholder="Enter your email"
             />
+          </div>
+
+          {/* Default Tasks Calendar Selection */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Default Tasks Calendar
+            </label>
+            {tasksCalendarsLoading ? (
+              <div className="text-sm text-gray-500">Loading calendars...</div>
+            ) : (
+              <select
+                value={formData.defaultTasksCalendarId ?? ''}
+                onChange={(e) =>
+                  onFormDataChange('defaultTasksCalendarId', e.target.value)
+                }
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
+              >
+                <option value="">
+                  PrimeCal Tasks (auto-managed)
+                </option>
+                {tasksCalendars.map((calendar) => (
+                  <option key={calendar.id} value={String(calendar.id)}>
+                    {calendar.name}
+                    {calendar.isTasksCalendar ? ' (Tasks)' : ''}
+                  </option>
+                ))}
+              </select>
+            )}
+            <p className="mt-1 text-xs text-gray-500">
+              Choose which eligible calendar should host mirrored Task due dates. Clear this to
+              let PrimeCal create a private Tasks calendar automatically.
+            </p>
+            {errors.defaultTasksCalendarId && (
+              <p className="mt-1 text-sm text-red-600" role="alert">
+                {errors.defaultTasksCalendarId}
+              </p>
+            )}
           </div>
 
           {/* First Name and Last Name Row */}

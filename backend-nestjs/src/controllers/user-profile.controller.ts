@@ -14,15 +14,23 @@ import {
   ApiBearerAuth,
 } from '@nestjs/swagger';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, Not, IsNull } from 'typeorm';
+import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
 import * as bcrypt from 'bcryptjs';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { User } from '../entities/user.entity';
+import {
+  Calendar,
+  CalendarShare,
+  SharePermission,
+} from '../entities/calendar.entity';
 import {
   UpdateProfileDto,
   UpdateThemeDto,
   ChangePasswordDto,
 } from '../dto/user-profile.dto';
+import { Task } from '../entities/task.entity';
+import { TaskCalendarBridgeService } from '../tasks/task-calendar-bridge.service';
 
 @ApiTags('User Profile')
 @Controller('user')
@@ -32,6 +40,13 @@ export class UserProfileController {
   constructor(
     @InjectRepository(User)
     private userRepository: Repository<User>,
+    @InjectRepository(Calendar)
+    private calendarRepository: Repository<Calendar>,
+    @InjectRepository(CalendarShare)
+    private readonly calendarShareRepository: Repository<CalendarShare>,
+    @InjectRepository(Task)
+    private readonly taskRepository: Repository<Task>,
+    private readonly taskCalendarBridgeService: TaskCalendarBridgeService,
   ) {}
 
   @Get('profile')
@@ -59,6 +74,7 @@ export class UserProfileController {
         'hiddenResourceIds',
         'visibleCalendarIds',
         'visibleResourceTypeIds',
+        'defaultTasksCalendarId',
         'createdAt',
         'updatedAt',
       ],
@@ -96,7 +112,91 @@ export class UserProfileController {
       }
     }
 
-    await this.userRepository.update(userId, updateProfileDto);
+    const { defaultTasksCalendarId, ...rest } = updateProfileDto;
+    const updatePayload: QueryDeepPartialEntity<User> = { ...rest };
+
+    if (defaultTasksCalendarId !== undefined) {
+      const calendarId = defaultTasksCalendarId;
+
+      if (calendarId === null) {
+        updatePayload.defaultTasksCalendarId = () => 'NULL';
+        await this.calendarRepository
+          .createQueryBuilder()
+          .update(Calendar)
+          .set({ isTasksCalendar: false })
+          .where('ownerId = :userId', { userId })
+          .execute();
+      } else {
+        const calendar = await this.calendarRepository.findOne({
+          where: {
+            id: calendarId,
+            isActive: true,
+          },
+          select: ['id', 'ownerId', 'isTasksCalendar'],
+        });
+
+        if (!calendar) {
+          throw new ConflictException(
+            'Invalid Tasks calendar. Select one you own or can edit.',
+          );
+        }
+
+        const ownsCalendar = calendar.ownerId === userId;
+        let hasWriteAccess = ownsCalendar;
+
+        if (!hasWriteAccess) {
+          const share = await this.calendarShareRepository.findOne({
+            where: { calendarId, userId },
+            select: ['permission'],
+          });
+          if (
+            share &&
+            (share.permission === SharePermission.WRITE ||
+              share.permission === SharePermission.ADMIN)
+          ) {
+            hasWriteAccess = true;
+          }
+        }
+
+        if (!hasWriteAccess) {
+          throw new ConflictException(
+            'Invalid Tasks calendar. Select one you own or can edit.',
+          );
+        }
+
+        if (ownsCalendar) {
+          await this.calendarRepository
+            .createQueryBuilder()
+            .update(Calendar)
+            .set({ isTasksCalendar: false })
+            .where('ownerId = :userId', { userId })
+            .execute();
+
+          await this.calendarRepository.update(calendarId, {
+            isTasksCalendar: true,
+          });
+        }
+
+        updatePayload.defaultTasksCalendarId = calendar.id;
+      }
+    }
+
+    const defaultCalendarChanged =
+      defaultTasksCalendarId !== undefined &&
+      defaultTasksCalendarId !== null;
+
+    await this.userRepository.update(userId, updatePayload);
+
+    if (defaultCalendarChanged) {
+      const tasksNeedingSync = await this.taskRepository.find({
+        where: { ownerId: userId, dueDate: Not(IsNull()) },
+        select: ['id'],
+      });
+
+      for (const task of tasksNeedingSync) {
+        await this.taskCalendarBridgeService.syncTask(task.id);
+      }
+    }
 
     const updatedUser = await this.userRepository.findOne({
       where: { id: userId },
@@ -118,6 +218,7 @@ export class UserProfileController {
         'hiddenResourceIds',
         'visibleCalendarIds',
         'visibleResourceTypeIds',
+        'defaultTasksCalendarId',
         'createdAt',
         'updatedAt',
       ],
@@ -157,6 +258,7 @@ export class UserProfileController {
         'hiddenResourceIds',
         'visibleCalendarIds',
         'visibleResourceTypeIds',
+        'defaultTasksCalendarId',
         'createdAt',
         'updatedAt',
       ],

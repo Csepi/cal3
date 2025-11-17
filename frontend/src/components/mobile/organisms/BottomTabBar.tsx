@@ -11,6 +11,7 @@ import { TabBarItem } from '../molecules/TabBarItem';
 
 export type TabId =
   | 'calendar'
+  | 'tasks'
   | 'profile'
   | 'sync'
   | 'reservations'
@@ -38,6 +39,7 @@ interface BottomTabBarProps {
     reservations: boolean;
     automation: boolean;
     agents: boolean;
+    tasks: boolean;
   };
   canAccessReservations: boolean;
   hideReservationsTab?: boolean;
@@ -61,6 +63,12 @@ export const BottomTabBar: React.FC<BottomTabBarProps> = ({
       icon: '[CAL]',
       label: 'Calendar',
       visible: true, // Always visible
+    },
+    {
+      id: 'tasks',
+      icon: '[TSK]',
+      label: 'Tasks',
+      visible: featureFlags.tasks,
     },
     {
       id: 'profile',
@@ -109,13 +117,14 @@ export const BottomTabBar: React.FC<BottomTabBarProps> = ({
 
   const tabPriority: Record<TabId, number> = {
     calendar: 0,
-    notifications: 1,
-    profile: 2,
-    agent: 3,
-    sync: 4,
-    automation: 5,
-    reservations: 6,
-    admin: 7,
+    tasks: 1,
+    notifications: 2,
+    profile: 3,
+    agent: 4,
+    sync: 5,
+    automation: 6,
+    reservations: 7,
+    admin: 8,
   };
 
   const visibleTabs = allTabs

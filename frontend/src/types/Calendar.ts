@@ -18,11 +18,14 @@ export interface Calendar {
   icon?: string;
   visibility: CalendarVisibility;
   isActive: boolean;
+  isReservationCalendar?: boolean;
+  isTasksCalendar?: boolean;
   owner: {
     id: number;
     username: string;
     email: string;
   };
+  ownerId?: number;
   sharedWith?: Array<{
     id: number;
     username: string;
