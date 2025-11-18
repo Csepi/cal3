@@ -264,13 +264,34 @@ Professional booking management for any business:
 - [ ] Custom branding options
 - [ ] Advanced reporting and insights
 
-## ðŸ“ž Support & Documentation
+## Docker & Deployment
 
-- **Setup Guide**: See [setup-guide.md](setup-guide.md) for initial configuration
-- **API Documentation**: Complete endpoint reference at [API_DOCUMENTATION.md](API_DOCUMENTATION.md)
-- **Automation Guide**: Detailed automation documentation at [docs/automation.md](docs/automation.md)
-- **Feature Flags**: Configuration guide at [docs/feature-flags.md](docs/feature-flags.md)
-- **Deployment**: Server deployment guide at [DEPLOYMENT.md](DEPLOYMENT.md)
+- **Quick start:** `npm run docker:precheck && npm run docker:build && npm run docker:up`.
+- **Profiles:** `docker compose --profile local up` (bundled Postgres) or `--profile portainer` (external DB/Azure).
+- **Docs:** [docs/docker/HOWTO.md](docs/docker/HOWTO.md), [docs/docker/TROUBLESHOOTING.md](docs/docker/TROUBLESHOOTING.md), [docs/docker/PORTAINER_DEBUG.md](docs/docker/PORTAINER_DEBUG.md), [docs/DOCKER_SECURITY.md](docs/DOCKER_SECURITY.md).
+- **Security:** keep secrets in `docker/.env.local` or Portainer secrets; terminate TLS upstream and forward `X-Forwarded-*` headers.
+- **Release cadence:** tag/push images (e.g., `ghcr.io/<org>/cal3-backend:1.2.x`) and clean up with `docker compose down --remove-orphans` plus `docker volume rm cal3_postgres-data` when resetting state.
+
+## Troubleshooting & FAQ
+
+### Common Issues
+- **CORS / callback mismatch:** align `BASE_URL`, `FRONTEND_URL`, `BACKEND_URL`, and OAuth callback env vars with the public HTTPS endpoint.
+- **Database connectivity:** ensure `DB_HOST/PORT` and SSL flags are correct; local profile uses `db`, Azure requires `DB_SSL=true`.
+- **JWT errors:** rotate `JWT_SECRET` and redeploy when switching environments to avoid stale tokens.
+
+### Frequently Asked Questions
+- *How do I redeploy via Portainer?* Use the stack UI › "Pull and redeploy".
+- *Can I skip the bundled DB?* Run the `portainer` profile or comment out the `db` service in `docker/compose.portainer.yml`.
+- *Where do I configure OAuth callbacks?* Update the values in `docker/.env.local` or the Portainer stack environment variables to match your API URL.
+
+## ?"? Support & Documentation
+
+- **Setup Guide**: [setup-guide.md](setup-guide.md)
+- **API Documentation**: [API_DOCUMENTATION.md](API_DOCUMENTATION.md)
+- **Automation Guide**: [docs/automation.md](docs/automation.md)
+- **Feature Flags**: [docs/feature-flags.md](docs/feature-flags.md)
+- **Deployment**: [DEPLOYMENT.md](DEPLOYMENT.md)
+- **Docker Guides**: [docs/docker/HOWTO.md](docs/docker/HOWTO.md), [docs/DOCKER_SECURITY.md](docs/DOCKER_SECURITY.md)
 
 For support inquiries, please contact the development team or open an issue on GitHub.
 

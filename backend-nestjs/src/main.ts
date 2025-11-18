@@ -47,6 +47,9 @@ async function bootstrap() {
       });
 
     const appLogger = app.get(AppLoggerService);
+    if (process.env.LOG_JSON === 'true') {
+      appLogger.setFormat('json');
+    }
     app.useLogger(appLogger);
     app.enableShutdownHooks();
     app.enable('trust proxy');

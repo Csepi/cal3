@@ -11,11 +11,7 @@ export class AppController {
     return this.appService.getHello();
   }
 
-  @Get('health')
-  @ApiTags('Health')
-  @ApiOperation({ summary: 'Health check endpoint for Docker and monitoring' })
-  @ApiResponse({ status: 200, description: 'Service is healthy' })
-  getHealth() {
+  private buildHealthResponse() {
     return {
       status: 'ok',
       timestamp: new Date().toISOString(),
@@ -25,5 +21,21 @@ export class AppController {
         heapTotal: Math.round(process.memoryUsage().heapTotal / 1024 / 1024),
       },
     };
+  }
+
+  @Get('health')
+  @ApiTags('Health')
+  @ApiOperation({ summary: 'Health check endpoint for Docker and monitoring' })
+  @ApiResponse({ status: 200, description: 'Service is healthy' })
+  getHealth() {
+    return this.buildHealthResponse();
+  }
+
+  @Get('healthz')
+  @ApiTags('Health')
+  @ApiOperation({ summary: 'Kubernetes-style health probe' })
+  @ApiResponse({ status: 200, description: 'Service is healthy' })
+  getHealthz() {
+    return this.buildHealthResponse();
   }
 }

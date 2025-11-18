@@ -13,7 +13,12 @@
     "build": "tsc",
     "prestart": "npm run build",
     "postinstall": "echo 'Dependencies installed successfully'",
-    "test": "echo \"No tests specified\""
+    "test": "echo \"No tests specified\"",
+    "docker:check-env": "node scripts/validate-docker-env.cjs",
+    "docker:precheck": "npm run docker:check-env && npm --prefix backend-nestjs run lint && npm --prefix backend-nestjs run test",
+    "docker:build": "npm run docker:precheck && docker compose -f docker/compose.yaml --profile local build",
+    "docker:up": "docker compose -f docker/compose.yaml --profile local up",
+    "docker:logs": "docker compose -f docker/compose.yaml logs -f"
   },
   "keywords": [
     "calendar",

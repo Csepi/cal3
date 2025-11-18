@@ -1,0 +1,13 @@
+services:
+  backend:
+    image: alpine
+    command: ["sleep","300"]
+    profiles: ["local","portainer"]
+    depends_on:
+      db:
+        condition: service_healthy
+  db:
+    image: alpine
+    profiles: ["local"]
+    healthcheck:
+      test: ["CMD","true"]

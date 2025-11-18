@@ -87,7 +87,8 @@ docker/.env
 docker/config/.env
 docker/config/.env.dev
 docker/config/.env.prod
-.env
+docker/.env.local
+docker/.env.portainer
 # Mobile app generated files
 frontend/android/.gradle/
 frontend/android/**/build/

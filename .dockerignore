@@ -1,0 +1,33 @@
+# Node / npm artifacts
+node_modules
+**/node_modules
+npm-debug.log
+yarn-error.log
+
+# Build outputs
+dist
+coverage
+frontend/dist
+backend-nestjs/dist
+
+# Runtime files
+.env
+.env.*
+docker/.env.local
+
+# OS / editor files
+.DS_Store
+Thumbs.db
+*.swp
+
+# Git metadata
+.git
+.gitignore
+
+# IDE
+.vscode
+.idea
+
+# Misc
+*.log
+*.cache

@@ -90,12 +90,31 @@ export class TasksService {
         sortDirection.toUpperCase() as 'ASC' | 'DESC',
       );
     } else {
+      const priorityRankAlias = 'task_priority_rank';
+      const dueDateNullAlias = 'task_due_date_null';
+
+      qb.addSelect(
+        `
+        CASE
+          WHEN task.priority = :priorityHigh THEN 0
+          WHEN task.priority = :priorityMedium THEN 1
+          ELSE 2
+        END
+      `,
+        priorityRankAlias,
+      );
+
+      qb.addSelect(
+        'CASE WHEN task.dueDate IS NULL THEN 1 ELSE 0 END',
+        dueDateNullAlias,
+      );
+
+      qb.setParameter('priorityHigh', TaskPriority.HIGH);
+      qb.setParameter('priorityMedium', TaskPriority.MEDIUM);
+
       qb
-        .orderBy(
-          `CASE task.priority WHEN '${TaskPriority.HIGH}' THEN 0 WHEN '${TaskPriority.MEDIUM}' THEN 1 ELSE 2 END`,
-          'ASC',
-        )
-        .addOrderBy('CASE WHEN task.dueDate IS NULL THEN 1 ELSE 0 END', 'ASC')
+        .orderBy(priorityRankAlias, 'ASC')
+        .addOrderBy(dueDateNullAlias, 'ASC')
         .addOrderBy('task.dueDate', 'ASC')
         .addOrderBy('task.createdAt', 'DESC');
     }
