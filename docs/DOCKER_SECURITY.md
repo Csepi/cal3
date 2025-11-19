@@ -4,8 +4,8 @@ This document explains how to handle sensitive configuration when running Cal3 v
 
 ## 1. Secret Management
 
-- **Local development:** copy `docker/.env.example` to `docker/.env.local`. This file is ignored by Git, so you can store local JWT secrets, database passwords, and OAuth keys without committing them. Never check the populated file into the repository.
-- **Portainer / production:** keep secrets out of Git entirely. Use Portainer's stack UI to define environment variables or mount entries from the Portainer secret store. Inject values such as `DB_PASSWORD`, `JWT_SECRET`, and `GOOGLE_CLIENT_SECRET` via Portainer, CI/CD (GitHub Actions), or another encrypted channel.
+- **Local development:** copy `docker/.env.example` to `docker/.env.local`. This file is ignored by Git, so you can store local JWT secrets and database passwords without committing them. OAuth credentials live in Cal3's configuration database (Admin → Runtime Configuration) and should not be injected via env vars.
+- **Portainer / production:** keep secrets out of Git entirely. Use Portainer's stack UI to define environment variables or mount entries from the Portainer secret store. Inject values such as `DB_PASSWORD` and `JWT_SECRET` via Portainer, CI/CD (GitHub Actions), or another encrypted channel; OAuth credentials are still edited inside the Cal3 admin console.
 - **Versioning:** if you need to document required environment variables, create sanitized copies (e.g., `docker/.env.portainer.example`) or update `docker/.env.example`. Actual values should live only in secret stores.
 - **Auditing:** when rotating sensitive credentials, track the change in your infrastructure log and rotate dependent systems (database users, OAuth clients) in the same change window.
 

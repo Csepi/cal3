@@ -4,11 +4,11 @@
 - Docker Engine 24+ (or Docker Desktop for Windows/macOS).
 - Node.js 20+ (for running local scripts, `npm run docker:*`).
 - Optional: Portainer CE instance with Git access if deploying via stacks.
-- Access to the required secrets (DB credentials, JWT secret, OAuth keys) stored outside Git.
+- Access to required secrets (DB credentials, JWT secret). OAuth credentials are maintained in the in-app configuration database, not via environment variables.
 
 ## 2. Environment Preparation
 1. Copy `docker/.env.example` to `docker/.env.local`.
-2. Populate required variables (`BASE_URL`, `FRONTEND/BACKEND_PORT`, `DB_*`, `JWT_SECRET`, OAuth callbacks).
+2. Populate required variables (`BASE_URL`, `FRONTEND/BACKEND_PORT`, `DB_*`, `JWT_SECRET`). OAuth callbacks and credentials are configured inside the Cal3 admin UI.
 3. Run `npm run docker:check-env` to validate the file. The script fails if any critical values are missing or empty.
 4. For Portainer deployments, either upload `docker/.env.portainer` manually or define each variable via the Portainer stack UI/secrets store.
 
@@ -35,7 +35,8 @@ npm run docker:logs
 2. Repository URL: `https://github.com/Csepi/cal3.git` (or your fork). Reference branch/tag as needed.
 3. Compose path: `docker/compose.portainer.yml`.
 4. Add environment variables via the Portainer UI (matching `docker/.env.example`) or mount secrets:
-   - `BACKEND_HOST_PORT`, `FRONTEND_HOST_PORT`, `DB_HOST`, `DB_PORT`, `DB_USERNAME`, `DB_PASSWORD`, `DB_NAME`, `JWT_SECRET`, `BASE_URL`, `FRONTEND_URL`, `BACKEND_URL`, OAuth credentials.
+   - `BACKEND_HOST_PORT`, `FRONTEND_HOST_PORT`, `DB_HOST`, `DB_PORT`, `DB_USERNAME`, `DB_PASSWORD`, `DB_NAME`, `JWT_SECRET`, `BASE_URL`, optional explicit `FRONTEND_URL`/`BACKEND_URL`.
+   - OAuth credentials are stored and edited in the configuration database (Admin → Runtime Configuration) and do not need to be injected as env vars.
 5. Enable *Auto update* or use the stack's *Pull and redeploy* button to resync with Git.
 6. For GitHub-hosted builds, prebuild/push images to a registry and update `compose.portainer.yml` to reference them.
 
@@ -69,6 +70,8 @@ npm run docker:logs
 | Exec shell in backend | `docker compose -f docker/compose.yaml exec backend sh` |
 | Health check backend | `curl -f http://localhost:8081/healthz` |
 | Portainer redeploy | Use UI -> *Pull and redeploy* |
+
+> Tip: if `FRONTEND_URL`/`BACKEND_URL` are left blank, the runtime config derives them automatically from `BASE_URL` and the exposed ports.
 | Portainer redeploy | Use UI -> *Pull and redeploy* |
 | Portainer redeploy | Use UI → *Pull and redeploy* |
 

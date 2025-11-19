@@ -4,7 +4,7 @@
 1. Portainer → **Stacks → Add stack → From git repository**.
 2. Repository URL: your fork of `https://github.com/Csepi/cal3.git`, choose the target branch/tag.
 3. Compose path: `docker/compose.portainer.yml`.
-4. Supply environment variables via the stack UI/secrets store (no `.env` file is required). Mirror `docker/.env.example` – e.g. `BACKEND_HOST_PORT`, `FRONTEND_HOST_PORT`, `DB_HOST`, `DB_PORT`, `DB_USERNAME`, `DB_PASSWORD`, `DB_NAME`, `JWT_SECRET`, `BASE_URL`, OAuth callbacks.
+4. Supply environment variables via the stack UI/secrets store (no `.env` file is required). Mirror `docker/.env.example` – e.g. `BACKEND_HOST_PORT`, `FRONTEND_HOST_PORT`, `DB_HOST`, `DB_PORT`, `DB_USERNAME`, `DB_PASSWORD`, `DB_NAME`, `JWT_SECRET`, `BASE_URL`. OAuth credentials are configured inside the Cal3 admin console, not via environment variables.
 5. Enable *Auto update* or configure a webhook so pushes to Git trigger redeploys.
 6. Deploy the stack and note the stack ID for future webhook usage.
 
@@ -22,7 +22,7 @@
 - If healthchecks keep failing, inspect container logs and confirm the environment variables match the desired environment (DB host, JWT secret, etc.).
 
 ## 4. Troubleshooting Tips
-- **Stack stuck at “Updating”:** usually network/authentication issues reaching the Git repo. Verify credentials and connectivity from the Portainer host.
+- **Stack stuck at "Updating":** usually network/authentication issues reaching the Git repo. Verify credentials and connectivity from the Portainer host.
 - **Secrets not updating:** after editing env vars/secrets in Portainer, click *Pull and redeploy* so new values flow into containers.
 - **Live restore:** enable the *Live restore* option when editing the stack so containers stay up if the Portainer service restarts.
 - **Console diagnostics:** run commands like `pg_isready -h $DB_HOST` or `curl http://localhost:8081/healthz` from within the backend container to debug connectivity.

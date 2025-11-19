@@ -32,8 +32,8 @@
 | `RATE_LIMIT_WINDOW_SEC`, `RATE_LIMIT_MAX_REQUESTS` | Throttling knobs. | `60` / `120` | backend |
 | `LOGIN_MAX_ATTEMPTS`, `LOGIN_BLOCK_SECONDS` | Brute-force protection. | `5` / `900` | backend |
 | `IDEMPOTENCY_DEFAULT_TTL_SEC` | Default TTL for API idempotency keys. | `3600` | backend |
-| `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_CALLBACK_URL`, `GOOGLE_CALENDAR_SYNC_CALLBACK_URL` | Google OAuth + Calendar sync endpoints (must match exposed API host). | per tenant | backend |
-| `MICROSOFT_TENANT_ID`, `MICROSOFT_CLIENT_ID`, `MICROSOFT_CLIENT_SECRET`, `MICROSOFT_CALLBACK_URL`, `MICROSOFT_CALENDAR_SYNC_CALLBACK_URL` | Microsoft OAuth + sync settings. | per tenant | backend |
+| `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_CALLBACK_URL`, `GOOGLE_CALENDAR_SYNC_CALLBACK_URL` | Managed via runtime configuration stored in the database (set inside Admin → Runtime Configuration). | configured in app | backend |
+| `MICROSOFT_TENANT_ID`, `MICROSOFT_CLIENT_ID`, `MICROSOFT_CLIENT_SECRET`, `MICROSOFT_CALLBACK_URL`, `MICROSOFT_CALENDAR_SYNC_CALLBACK_URL` | Managed via runtime configuration stored in the database (set inside Admin → Runtime Configuration). | configured in app | backend |
 | `ENABLE_OAUTH`, `ENABLE_CALENDAR_SYNC`, `ENABLE_RESERVATIONS`, `ENABLE_AUTOMATION`, `ENABLE_AGENT_INTEGRATIONS` | Feature flags toggled at runtime. | `true` | backend, docs |
 | `GOOGLE_FIREBASE_*`, `WEB_PUSH_*` (if added later) | Reserve placeholders for push/email secrets if added to `.env`. | n/a | backend |
 | `PERSIST_DATA_PATH`, `BACKUP_CRON` (optional new) | To be added if backup scripts needed in containers. | tbd | Postgres cron sidecar |
