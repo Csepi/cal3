@@ -5,7 +5,7 @@
 2. Repository URL: your fork of `https://github.com/Csepi/cal3.git`, choose the target branch/tag.
 3. Compose path: `docker/compose.portainer.yml`.
 4. Supply environment variables via the stack UI/secrets store (no `.env` file is required). Mirror `docker/.env.example` – e.g. `BACKEND_HOST_PORT`, `FRONTEND_HOST_PORT`, `DB_HOST`, `DB_PORT`, `DB_USERNAME`, `DB_PASSWORD`, `DB_NAME`, `JWT_SECRET`, `BASE_URL`. OAuth credentials are configured inside the Cal3 admin console, not via environment variables.
-5. Enable *Auto update* or configure a webhook so pushes to Git trigger redeploys.
+5. Enable *Auto update* or configure a webhook so pushes to Git trigger redeploys. Because the compose file includes `build:` instructions, Portainer automatically builds fresh backend/frontend images from this repo during each deploy.
 6. Deploy the stack and note the stack ID for future webhook usage.
 
 ## 2. Redeploy & Monitor

@@ -37,8 +37,8 @@ npm run docker:logs
 4. Add environment variables via the Portainer UI (matching `docker/.env.example`) or mount secrets:
    - `BACKEND_HOST_PORT`, `FRONTEND_HOST_PORT`, `DB_HOST`, `DB_PORT`, `DB_USERNAME`, `DB_PASSWORD`, `DB_NAME`, `JWT_SECRET`, `BASE_URL`, optional explicit `FRONTEND_URL`/`BACKEND_URL`.
    - OAuth credentials are stored and edited in the configuration database (Admin → Runtime Configuration) and do not need to be injected as env vars.
-5. Enable *Auto update* or use the stack's *Pull and redeploy* button to resync with Git.
-6. For GitHub-hosted builds, prebuild/push images to a registry and update `compose.portainer.yml` to reference them.
+5. Portainer builds the backend/frontend images directly from this repository (see the `build:` blocks). Enable *Auto update* or use *Pull and redeploy* to fetch the latest commit and rebuild.
+6. If you prefer prebuilt images (for CI/CD or registry reuse), edit `docker/compose.portainer.yml` to point to your own `image:` names and push them before redeploying.
 
 ## 5. Database Scenarios
 - **Bundled Postgres (local profile):** default `db` service uses `postgres:15-alpine`, data stored in volume `postgres-data`. Healthcheck ensures backend waits until DB is ready.

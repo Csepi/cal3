@@ -2,7 +2,11 @@ name: cal3-portainer
 
 services:
   backend:
-    image: ghcr.io/example/cal3-backend:latest
+    build:
+      context: ..
+      dockerfile: docker/backend/Dockerfile
+      target: production
+    image: cal3-backend:stack
     environment:
       NODE_ENV: production
     ports:
@@ -26,7 +30,11 @@ services:
       - cal3_net
 
   frontend:
-    image: ghcr.io/example/cal3-frontend:latest
+    build:
+      context: ..
+      dockerfile: docker/frontend/Dockerfile
+      target: production
+    image: cal3-frontend:stack
     ports:
       - "${FRONTEND_HOST_PORT:-8080}:${FRONTEND_PORT:-80}"
     depends_on:
