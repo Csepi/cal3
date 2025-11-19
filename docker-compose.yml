@@ -1,0 +1,26 @@
+version: "3.9"
+name: cal3-portainer
+
+services:
+  backend:
+    extends:
+      file: ./docker/compose.portainer.yml
+      service: backend
+
+  frontend:
+    extends:
+      file: ./docker/compose.portainer.yml
+      service: frontend
+
+  db:
+    extends:
+      file: ./docker/compose.portainer.yml
+      service: db
+
+networks:
+  cal3_net:
+    driver: bridge
+
+volumes:
+  postgres-data:
+  backend-logs:

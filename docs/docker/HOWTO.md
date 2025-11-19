@@ -33,7 +33,7 @@ npm run docker:logs
 ## 4. Portainer Deployment (Git Stack)
 1. In Portainer, create a new stack -> *From git repository*.
 2. Repository URL: `https://github.com/Csepi/cal3.git` (or your fork). Reference branch/tag as needed.
-3. Compose path: `docker/compose.portainer.yml`.
+3. Compose path: `docker/compose.portainer.yml` (or leave the default `docker-compose.yml`; the root file extends the Portainer-specific compose).
 4. Add environment variables via the Portainer UI (matching `docker/.env.example`) or mount secrets:
    - `BACKEND_HOST_PORT`, `FRONTEND_HOST_PORT`, `DB_HOST`, `DB_PORT`, `DB_USERNAME`, `DB_PASSWORD`, `DB_NAME`, `JWT_SECRET`, `BASE_URL`, optional explicit `FRONTEND_URL`/`BACKEND_URL`.
    - OAuth credentials are stored and edited in the configuration database (Admin → Runtime Configuration) and do not need to be injected as env vars.
