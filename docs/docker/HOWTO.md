@@ -68,7 +68,7 @@ npm run docker:logs
 | Start local stack | `npm run docker:up` |
 | Tail backend logs | `docker compose -f docker/compose.yaml logs backend -f` |
 | Exec shell in backend | `docker compose -f docker/compose.yaml exec backend sh` |
-| Health check backend | `curl -f http://localhost:8081/healthz` |
+| Health check backend | `curl -f http://localhost:8081/api/healthz` |
 | Portainer redeploy | Use UI -> *Pull and redeploy* |
 
 > Tip: if `FRONTEND_URL`/`BACKEND_URL` are left blank, the runtime config derives them automatically from `BASE_URL` and the exposed ports.

@@ -48,7 +48,7 @@
   - Multi-stage (`node:20-alpine` builder -> smaller runtime).  
   - Install dependencies with `npm ci --omit=dev`, copy source, build, prune dev deps.  
   - Provide ARGs/ENVs for all listed variables; run `node scripts/sync-app-config.cjs --mode backend` if needed before build (ensures runtime-config).  
-  - Expose `BACKEND_PORT`, add `HEALTHCHECK` hitting `/healthz` (implement Nest endpoint if missing).  
+  - Expose `BACKEND_PORT`, add `HEALTHCHECK` hitting `/api/healthz` (implement Nest endpoint if missing).  
   - Include wait-for DB script or `CMD ["node","dist/main"]` preceded by small entrypoint that checks DB reachability.
 - [x] Frontend Dockerfile  
   - Builder stage `node:20-alpine` to run `npm ci && npm run build`.  
@@ -86,7 +86,7 @@
   - Use multi-stage builds with `--progress=plain` when debugging.  
   - Add `ARG NPM_TOKEN` if private packages appear (currently not).  
 - [x] Runtime health checks  
-  - Implement `/healthz` route in backend and static `healthz.json` for frontend to allow Compose and Portainer health monitors.  
+  - Implement `/api/healthz` route in backend and static `healthz.json` for frontend to allow Compose and Portainer health monitors.  
   - Compose `healthcheck` definitions ensure `depends_on` gating.  
 - [x] Troubleshooting workflow  
   - `docker compose logs backend -f`, `docker compose exec backend sh`.  

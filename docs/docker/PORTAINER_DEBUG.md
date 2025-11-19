@@ -16,7 +16,7 @@
 - **Webhooks:** create a webhook under Stack settings and call it from GitHub Actions or other CI after pushing new images/commits.
 
 ## 3. Health Verification
-- Backend health: `curl -f http://<PUBLIC_HOST>:${BACKEND_HOST_PORT:-8081}/healthz`.
+- Backend health: `curl -f http://<PUBLIC_HOST>:${BACKEND_HOST_PORT:-8081}/api/healthz`.
 - Frontend health: `curl -f http://<PUBLIC_HOST>:${FRONTEND_HOST_PORT:-8080}/healthz`.
 - Database: Portainer automatically runs `pg_isready`; check the stack Events tab if healthchecks fail.
 - If healthchecks keep failing, inspect container logs and confirm the environment variables match the desired environment (DB host, JWT secret, etc.).
@@ -25,7 +25,7 @@
 - **Stack stuck at "Updating":** usually network/authentication issues reaching the Git repo. Verify credentials and connectivity from the Portainer host.
 - **Secrets not updating:** after editing env vars/secrets in Portainer, click *Pull and redeploy* so new values flow into containers.
 - **Live restore:** enable the *Live restore* option when editing the stack so containers stay up if the Portainer service restarts.
-- **Console diagnostics:** run commands like `pg_isready -h $DB_HOST` or `curl http://localhost:8081/healthz` from within the backend container to debug connectivity.
+- **Console diagnostics:** run commands like `pg_isready -h $DB_HOST` or `curl http://localhost:8081/api/healthz` from within the backend container to debug connectivity.
 
 ## 5. Alternative Flow: External Registry
 If Docker builds are heavy on the Portainer host:

@@ -27,9 +27,9 @@
   - SSL flags: set `DB_SSL=true` and `DB_SSL_REJECT_UNAUTHORIZED=false` when pointing to Azure PostgreSQL with self-signed certificates.
 
 ## 3. Health Checks & HTTP Verification
-- Backend exposes `/healthz` (in addition to `/health`). Validate via:
+- Backend exposes `/api/healthz` (in addition to `/api/health`). Validate via:
   ```bash
-  curl -f http://localhost:${BACKEND_HOST_PORT:-8081}/healthz
+  curl -f http://localhost:${BACKEND_HOST_PORT:-8081}/api/healthz
   ```
 - Frontend serves `http://localhost:${FRONTEND_HOST_PORT:-8080}/healthz`. If the curl command fails, run `docker compose logs frontend` and ensure the runtime config file exists.
 - The compose files already contain `healthcheck` definitions so `depends_on` waits for the DB before starting the backend, and for the backend before the frontend. If containers keep restarting, inspect `docker inspect <container> --format '{{json .State}}'`.
