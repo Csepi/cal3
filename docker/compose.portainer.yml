@@ -3,7 +3,7 @@ name: cal3-portainer
 services:
   backend:
     build:
-      context: .
+      context: ..
       dockerfile: docker/backend/Dockerfile
       target: production
     environment:
@@ -23,7 +23,7 @@ services:
 
   frontend:
     build:
-      context: .
+      context: ..
       dockerfile: docker/frontend/Dockerfile
       target: production
     ports:
