@@ -17,10 +17,6 @@ services:
     deploy:
       restart_policy:
         condition: on-failure
-      resources:
-        limits:
-          cpus: "1.0"
-          memory: 1G
       labels:
         - "com.portainer.stack.name=cal3"
         - "com.portainer.stack.version=1"
@@ -43,10 +39,6 @@ services:
     deploy:
       restart_policy:
         condition: on-failure
-      resources:
-        limits:
-          cpus: "0.5"
-          memory: 512M
       labels:
         - "com.portainer.stack.name=cal3"
         - "com.portainer.stack.version=1"
