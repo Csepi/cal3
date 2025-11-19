@@ -33,7 +33,7 @@ npm run docker:logs
 ## 4. Portainer Deployment (Git Stack)
 1. In Portainer, create a new stack -> *From git repository*.
 2. Repository URL: `https://github.com/Csepi/cal3.git` (or your fork). Reference branch/tag as needed.
-3. Compose path: leave the default `docker-compose.yml` (located at repository root) or explicitly set `docker/compose.portainer.yml`—both define the same services with build instructions.
+3. Compose path: leave the default `docker-compose.yml` (located at repository root) or explicitly set `docker/compose.portainer.yml`—both build the backend and frontend images and do **not** include a database container.
 4. Add environment variables via the Portainer UI (matching `docker/.env.example`) or mount secrets:
    - `BACKEND_HOST_PORT`, `FRONTEND_HOST_PORT`, `DB_HOST`, `DB_PORT`, `DB_USERNAME`, `DB_PASSWORD`, `DB_NAME`, `JWT_SECRET`, `BASE_URL`, optional explicit `FRONTEND_URL`/`BACKEND_URL`.
    - OAuth credentials are stored and edited in the configuration database (Admin → Runtime Configuration) and do not need to be injected as env vars.
@@ -44,7 +44,7 @@ npm run docker:logs
 - **Bundled Postgres (local profile):** default `db` service uses `postgres:15-alpine`, data stored in volume `postgres-data`. Healthcheck ensures backend waits until DB is ready.
 - **External Postgres (Portainer or Azure):**
   - Set `DB_HOST`, `DB_PORT`, `DB_USERNAME`, `DB_PASSWORD`, `DB_NAME`, `DB_SSL=true`, `DB_SSL_REJECT_UNAUTHORIZED=false` (if using self-signed certs).
-  - Run `docker compose --profile portainer up` locally to mimic the no-DB mode, or remove/comment the `db` service in `compose.portainer.yml`.
+  - Run `docker compose --profile portainer up` locally (see `docker/compose.yaml`) to mimic the no-DB mode; the Portainer deployment already excludes the DB container entirely.
   - Keep `DB_SYNCHRONIZE=false`; run TypeORM migrations via `docker compose exec backend npm run typeorm:migration:run` if scripts are available.
 
 ## 6. Data Persistence & Backups
@@ -52,7 +52,7 @@ npm run docker:logs
   - `postgres-data`: PostgreSQL data directory.
   - `backend-logs`: optional log directory for file-based persistence.
 - To backup: `docker run --rm -v cal3_postgres-data:/var/lib/postgresql/data -v $(pwd):/backup alpine tar czf /backup/postgres-backup.tgz /var/lib/postgresql/data`.
-- For Portainer, use its volume backup/export feature or connect to Azure managed backups.
+- For Portainer (which uses an external database), rely on your managed database backups (e.g., Azure) since the stack does not run its own Postgres container.
 
 ## 7. Security Best Practices
 - Keep `.env.local` / `.env.portainer` out of Git (already ensured via `.gitignore`).

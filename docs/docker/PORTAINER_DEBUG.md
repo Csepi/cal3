@@ -12,7 +12,7 @@
 - **Pull and redeploy:** fetches the latest commit from Git, rebuilds backend/frontend images, and recreates containers.
 - **Logs:** Stack → Containers → select service → *Logs* (equivalent to `docker logs <container>`).
 - **Console:** use the *Console* tab to run `/bin/sh` inside the container (equivalent to `docker exec -it`).
-- **Volumes:** remove `cal3_postgres-data` or `backend-logs` from the Volumes UI when you need a clean slate.
+- **Volumes:** remove `backend-logs` from the Volumes UI when you need a clean slate. (The Portainer stack connects to an external database, so there is no Postgres volume.)
 - **Webhooks:** create a webhook under Stack settings and call it from GitHub Actions or other CI after pushing new images/commits.
 
 ## 3. Health Verification
