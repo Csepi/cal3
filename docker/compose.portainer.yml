@@ -8,6 +8,24 @@ services:
       target: production
     environment:
       NODE_ENV: production
+      BASE_URL: ${BASE_URL:-http://localhost}
+      FRONTEND_PORT: ${FRONTEND_PORT:-80}
+      BACKEND_PORT: ${BACKEND_PORT:-8081}
+      FRONTEND_URL: ${FRONTEND_URL:-}
+      BACKEND_URL: ${BACKEND_URL:-}
+      API_URL: ${API_URL:-}
+      SECURITY_ALLOWED_ORIGINS: ${SECURITY_ALLOWED_ORIGINS:-http://localhost:8080}
+      DB_HOST: ${DB_HOST:-db}
+      DB_PORT: ${DB_PORT:-5432}
+      DB_USERNAME: ${DB_USERNAME:-cal3_admin}
+      DB_PASSWORD: ${DB_PASSWORD:-change-me}
+      DB_NAME: ${DB_NAME:-cal3}
+      DB_SSL: ${DB_SSL:-false}
+      DB_SSL_REJECT_UNAUTHORIZED: ${DB_SSL_REJECT_UNAUTHORIZED:-false}
+      JWT_SECRET: ${JWT_SECRET:-changeme}
+      WAIT_FOR_DB: ${WAIT_FOR_DB:-true}
+      WAIT_FOR_DB_INTERVAL: ${WAIT_FOR_DB_INTERVAL:-2}
+      WAIT_FOR_DB_MAX_ATTEMPTS: ${WAIT_FOR_DB_MAX_ATTEMPTS:-30}
     ports:
       - "${BACKEND_HOST_PORT:-8081}:${BACKEND_PORT:-8081}"
     deploy:
@@ -26,6 +44,16 @@ services:
       context: ..
       dockerfile: docker/frontend/Dockerfile
       target: production
+    environment:
+      BASE_URL: ${BASE_URL:-http://localhost}
+      FRONTEND_PORT: ${FRONTEND_PORT:-80}
+      BACKEND_PORT: ${BACKEND_PORT:-8081}
+      FRONTEND_HOST_PORT: ${FRONTEND_HOST_PORT:-8080}
+      BACKEND_HOST_PORT: ${BACKEND_HOST_PORT:-8081}
+      FRONTEND_URL: ${FRONTEND_URL:-}
+      BACKEND_URL: ${BACKEND_URL:-}
+      API_URL: ${API_URL:-}
+      SECURITY_ALLOWED_ORIGINS: ${SECURITY_ALLOWED_ORIGINS:-http://localhost:8080}
     ports:
       - "${FRONTEND_HOST_PORT:-8080}:${FRONTEND_PORT:-80}"
     depends_on:

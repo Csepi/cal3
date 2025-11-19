@@ -34,8 +34,8 @@ npm run docker:logs
 1. In Portainer, create a new stack -> *From git repository*.
 2. Repository URL: `https://github.com/Csepi/cal3.git` (or your fork). Reference branch/tag as needed.
 3. Compose path: leave the default `docker-compose.yml` (located at repository root) or explicitly set `docker/compose.portainer.yml`—both build the backend and frontend images and do **not** include a database container.
-4. Add environment variables via the Portainer UI (matching `docker/.env.example`) or mount secrets:
-   - `BACKEND_HOST_PORT`, `FRONTEND_HOST_PORT`, `DB_HOST`, `DB_PORT`, `DB_USERNAME`, `DB_PASSWORD`, `DB_NAME`, `JWT_SECRET`, `BASE_URL`, optional explicit `FRONTEND_URL`/`BACKEND_URL`.
+4. Add environment variables via the Portainer UI (matching `docker/.env.example`) or mount secrets. These values are injected directly into the backend/frontend containers:
+   - `BACKEND_HOST_PORT`, `FRONTEND_HOST_PORT`, `BACKEND_PORT`, `FRONTEND_PORT`, `DB_HOST`, `DB_PORT`, `DB_USERNAME`, `DB_PASSWORD`, `DB_NAME`, `JWT_SECRET`, `BASE_URL`, optional explicit `FRONTEND_URL`/`BACKEND_URL`.
    - OAuth credentials are stored and edited in the configuration database (Admin → Runtime Configuration) and do not need to be injected as env vars.
 5. Portainer builds the backend/frontend images directly from this repository (see the `build:` blocks). Because no prebuilt image tags are defined, Compose will build before running. Enable *Auto update* or use *Pull and redeploy* to fetch the latest commit and rebuild.
 6. If you prefer prebuilt images (for CI/CD or registry reuse), edit `docker/compose.portainer.yml` to point to your own `image:` names and push them before redeploying.
