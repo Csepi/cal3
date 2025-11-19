@@ -9,7 +9,7 @@
 6. Deploy the stack and note the stack ID for future webhook usage.
 
 ## 2. Redeploy & Monitor
-- **Pull and redeploy:** fetches the latest commit from Git and recreates containers.
+- **Pull and redeploy:** fetches the latest commit from Git, rebuilds backend/frontend images, and recreates containers.
 - **Logs:** Stack → Containers → select service → *Logs* (equivalent to `docker logs <container>`).
 - **Console:** use the *Console* tab to run `/bin/sh` inside the container (equivalent to `docker exec -it`).
 - **Volumes:** remove `cal3_postgres-data` or `backend-logs` from the Volumes UI when you need a clean slate.
