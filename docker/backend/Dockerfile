@@ -113,4 +113,4 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
   CMD ["/bin/sh", "/usr/local/bin/healthcheck.sh"]
 
 ENTRYPOINT ["/usr/bin/dumb-init", "/usr/local/bin/docker-entrypoint.sh"]
-CMD ["node", "dist/main"]
+CMD ["node", "dist/src/main"]
