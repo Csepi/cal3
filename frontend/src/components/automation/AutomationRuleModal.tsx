@@ -17,6 +17,7 @@ import { ActionBuilder } from './builders/ActionBuilder';
 import { WebhookConfiguration } from './WebhookConfiguration';
 import { automationService } from '../../services/automationService';
 import { useAutomationMetadata } from '../../hooks/useAutomationMetadata';
+import { clientLogger } from '../../utils/clientLogger';
 
 interface AutomationRuleModalProps {
   rule?: AutomationRuleDetailDto;
@@ -150,7 +151,7 @@ export function AutomationRuleModal({
       setWebhookToken(response.webhookToken);
       return response.webhookToken;
     } catch (error) {
-      console.error('Failed to regenerate webhook token:', error);
+      clientLogger.error('automation-rule-modal', 'failed to regenerate webhook token', error);
       throw error;
     }
   };
@@ -159,12 +160,14 @@ export function AutomationRuleModal({
   const handleSave = async () => {
     setError(null);
 
-    console.log('=== handleSave called ===');
-    console.log('Editing rule:', rule ? `ID ${rule.id}` : 'NEW');
+    clientLogger.debug('automation-rule-modal', 'handleSave invoked', {
+      mode: rule ? 'edit' : 'create',
+      ruleId: rule?.id ?? null,
+    });
 
     const validationError = validate();
     if (validationError) {
-      console.log('Validation error:', validationError);
+      clientLogger.warn('automation-rule-modal', 'validation error', validationError);
       setError(validationError);
       return;
     }
@@ -203,11 +206,13 @@ export function AutomationRuleModal({
         })),
       };
 
-      console.log('Rule data to save:', JSON.stringify(ruleData, null, 2));
+      clientLogger.debug('automation-rule-modal', 'saving automation rule', ruleData);
       await onSave(ruleData);
-      console.log('Save successful!');
+      clientLogger.info('automation-rule-modal', 'rule saved successfully', {
+        ruleId: rule?.id ?? 'new',
+      });
     } catch (err) {
-      console.error('Save error:', err);
+      clientLogger.error('automation-rule-modal', 'save failed', err);
       setError(err instanceof Error ? err.message : 'Failed to save rule');
     } finally {
       setIsSaving(false);

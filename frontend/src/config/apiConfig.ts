@@ -1,3 +1,5 @@
+import { clientLogger } from '../utils/clientLogger';
+
 /**
  * Centralized API Configuration
  *
@@ -180,9 +182,9 @@ export const getApiUrl = (endpoint: string): string => {
  * Log the current API configuration (for debugging)
  */
 export const logApiConfig = () => {
-  console.log('API Configuration:', {
-    BASE_URL,
-    BACKEND_PORT,
+  clientLogger.debug('api', 'API configuration resolved', {
+    baseUrl: BASE_URL,
+    backendPort: BACKEND_PORT,
     portOverride: lastPortOverride ?? 'none',
     source: lastResolutionSource,
   });

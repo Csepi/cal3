@@ -4,6 +4,7 @@ import { LoadingScreen } from '../common';
 import { useLoadingProgress } from '../../hooks/useLoadingProgress';
 import { getAutomationRules } from '../../services/automationService';
 import type { AutomationRuleDto, TriggerType } from '../../types/Automation';
+import { clientLogger } from '../../utils/clientLogger';
 
 interface CalendarSyncProps {
   themeColor: string;
@@ -472,12 +473,14 @@ const CalendarSync: React.FC<CalendarSyncProps> = ({ themeColor }) => {
             message.includes('moz-extension:')) {
           // This is a browser extension error, suppress it
           event.preventDefault();
-          console.debug('Suppressed browser extension error:', event.reason.message);
+          clientLogger.debug('calendar-sync', 'suppressed browser extension rejection', {
+            reason: event.reason.message,
+          });
           return;
         }
       }
       // For other errors, log them for debugging
-      console.warn('Unhandled promise rejection:', event.reason);
+      clientLogger.warn('calendar-sync', 'unhandled promise rejection', event.reason);
     };
 
     // Suppress browser extension console errors
@@ -490,12 +493,14 @@ const CalendarSync: React.FC<CalendarSyncProps> = ({ themeColor }) => {
             message.includes('listener indicated an asynchronous response')) {
           // Suppress browser extension errors
           event.preventDefault();
-          console.debug('Suppressed browser extension console error:', event.error.message);
+          clientLogger.debug('calendar-sync', 'suppressed browser extension console error', {
+            reason: event.error.message,
+          });
           return;
         }
       }
       // For other errors, let them through for debugging
-      console.warn('Console error:', event.error);
+      clientLogger.warn('calendar-sync', 'window console error', event.error);
     };
 
     window.addEventListener('unhandledrejection', handleUnhandledRejection);
@@ -531,9 +536,11 @@ const CalendarSync: React.FC<CalendarSyncProps> = ({ themeColor }) => {
         setSyncStatus(status);
       }
 
-      console.log('Sync status loaded:', status);
+      clientLogger.info('calendar-sync', 'sync status loaded', {
+        providers: status.providers?.length ?? 0,
+      });
     } catch (err) {
-      console.warn('Could not load sync status:', err);
+      clientLogger.warn('calendar-sync', 'failed to load sync status', err);
       // Initialize with default providers on error
       setSyncStatus({
         providers: [
@@ -556,9 +563,11 @@ const CalendarSync: React.FC<CalendarSyncProps> = ({ themeColor }) => {
         rule.triggerType === 'calendar.imported'
       );
       setAutomationRules(eventRules);
-      console.log('Automation rules loaded:', eventRules);
+      clientLogger.debug('calendar-sync', 'automation rules loaded', {
+        total: eventRules.length,
+      });
     } catch (err) {
-      console.warn('Could not load automation rules:', err);
+      clientLogger.warn('calendar-sync', 'failed to load automation rules', err);
       setAutomationRules([]);
     }
   };

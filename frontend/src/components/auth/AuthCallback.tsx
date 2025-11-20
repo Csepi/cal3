@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { sessionManager } from '../../services/sessionManager';
+import { clientLogger } from '../../utils/clientLogger';
 
 interface AuthCallbackProps {
   onLogin: (username: string, token?: string, role?: string) => void;
@@ -33,24 +34,30 @@ const AuthCallback: React.FC<AuthCallbackProps> = ({ onLogin }) => {
     const token = urlParams.get('token');
     const provider = urlParams.get('provider');
 
-    console.log('AuthCallback - URL params:', { token, provider });
-    console.log('AuthCallback - Full URL:', location.search);
+    clientLogger.info('auth-callback', 'received OAuth response', {
+      provider,
+      hasToken: Boolean(token),
+      rawQuery: location.search,
+    });
 
     if (token) {
-      console.log('AuthCallback - Token received:', token);
+      clientLogger.debug('auth-callback', 'processing JWT payload', {
+        provider,
+      });
       const payload = decodeTokenPayload(token);
       const username = payload?.username || `${provider}_user`;
       const role = payload?.role || 'user';
       sessionManager.setSessionFromJwt(token, { username, role });
-      console.log(
-        'AuthCallback - Calling onLogin with:',
+      clientLogger.info('auth-callback', 'session initialised from callback', {
         username,
-        token,
         role,
-      );
+        provider,
+      });
       onLogin(username, token, role);
     } else {
-      console.log('AuthCallback - No token found, redirecting to login');
+      clientLogger.warn('auth-callback', 'missing token in callback response', {
+        provider,
+      });
       // Redirect to login page if no token
       window.location.href = '/';
     }

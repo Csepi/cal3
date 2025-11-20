@@ -290,7 +290,6 @@ function useCalendarState(themeColor: string) {
     },
 
     createEvent: (date?: Date) => {
-      console.log('createEvent called, date:', date);
       setModalData(prev => ({
         ...prev,
         editingEvent: null,
@@ -302,7 +301,6 @@ function useCalendarState(themeColor: string) {
       }
 
       setModals(prev => {
-        console.log('Setting eventModal to true');
         return { ...prev, eventModal: true };
       });
     },
@@ -1277,7 +1275,6 @@ export const EnhancedCalendar: React.FC<EnhancedCalendarProps> = ({
       )}
 
       {/* Modals */}
-      {console.log('Rendering modals, eventModal isOpen:', modals.eventModal)}
       <CalendarEventModal
         isOpen={modals.eventModal}
         onClose={() => setModals(prev => ({ ...prev, eventModal: false }))}

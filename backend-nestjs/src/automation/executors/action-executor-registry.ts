@@ -1,4 +1,4 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { ActionType } from '../../entities/automation-action.entity';
 import { IActionExecutor } from './action-executor.interface';
@@ -10,6 +10,7 @@ import { IActionExecutor } from './action-executor.interface';
 @Injectable()
 export class ActionExecutorRegistry implements OnModuleInit {
   private executors = new Map<ActionType, IActionExecutor>();
+  private readonly logger = new Logger(ActionExecutorRegistry.name);
 
   constructor(private moduleRef: ModuleRef) {}
 
@@ -29,9 +30,7 @@ export class ActionExecutorRegistry implements OnModuleInit {
     }
 
     this.executors.set(executor.actionType, executor);
-    console.log(
-      `[ActionExecutorRegistry] Registered executor for: ${executor.actionType}`,
-    );
+    this.logger.log(`Registered executor for action: ${executor.actionType}`);
   }
 
   /**

@@ -126,18 +126,14 @@ const dbLogger = new Logger('DatabaseConnection');
 
           // Warnings for common issues
           if (host.includes('azure.com') || host.includes('amazonaws.com')) {
-            dbLogger.warn('⚠️  Detected cloud database provider');
-            dbLogger.warn(
-              '⚠️  Ensure firewall rules allow connections from this IP',
-            );
+            dbLogger.warn('WARNING: Detected cloud database provider');
+            dbLogger.warn('WARNING: Ensure firewall rules allow connections from this IP');
           }
           if (connectionTimeout < 30000) {
             dbLogger.warn(
-              `⚠️  Connection timeout (${connectionTimeout}ms) may be too short for cloud databases`,
+              `WARNING: Connection timeout (${connectionTimeout}ms) may be too short for cloud databases`,
             );
-            dbLogger.warn(
-              '⚠️  Recommended: 60000ms (60 seconds) for Azure/AWS',
-            );
+            dbLogger.warn('WARNING: Recommended: 60000ms (60 seconds) for Azure/AWS');
           }
 
           const config = {
@@ -210,18 +206,18 @@ const dbLogger = new Logger('DatabaseConnection');
           const synchronizeSchema = process.env.DB_SYNCHRONIZE === 'true';
           if (!synchronizeSchema && process.env.NODE_ENV === 'development') {
             dbLogger.warn(
-              '⚠️  DB_SYNCHRONIZE is disabled for PostgreSQL even in development. Enable it explicitly only against disposable databases.',
+              'DB_SYNCHRONIZE is disabled for PostgreSQL in development. Enable it only for disposable databases.',
             );
           }
 
-          dbLogger.log('🔌 Attempting to connect to PostgreSQL...');
+          dbLogger.log('Attempting to connect to PostgreSQL...');
           const startTime = Date.now();
 
           // Note: We can't use async/await here, but we can add event listeners
           // These will be triggered by TypeORM's internal connection logic
           process.nextTick(() => {
             dbLogger.log(
-              `⏱️  Connection attempt started at ${new Date().toISOString()}`,
+              `Connection attempt started at ${new Date().toISOString()}`,
             );
           });
 

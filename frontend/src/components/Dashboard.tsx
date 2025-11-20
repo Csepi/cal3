@@ -38,6 +38,7 @@ import type { TabId } from './mobile/organisms/BottomTabBar';
 import { useNotifications } from '../hooks/useNotifications';
 import { NotificationCenter, NotificationSettingsPanel } from './notifications';
 import { TasksWorkspace, type TasksWorkspaceHandle } from './tasks/TasksWorkspace';
+import { clientLogger } from '../utils/clientLogger';
 
 /**
  * View types for the main navigation
@@ -144,7 +145,7 @@ const Dashboard: React.FC = () => {
     try {
       await apiService.logout();
     } catch (error) {
-      console.warn('Logout request failed', error);
+      clientLogger.warn('dashboard', 'logout request failed', error);
     }
   };
 
@@ -168,7 +169,7 @@ const Dashboard: React.FC = () => {
         i18n.changeLanguage(profile.language);
       }
     } catch (err) {
-      console.warn('Could not load user profile:', err);
+      clientLogger.warn('dashboard', 'failed to load user profile', err);
     }
   };
 
@@ -182,7 +183,7 @@ const Dashboard: React.FC = () => {
       const hasReservationAccess = await UserPermissionsService.canAccessReservations();
       setCanAccessReservations(hasReservationAccess);
     } catch (err) {
-      console.warn('Could not load user permissions:', err);
+      clientLogger.warn('dashboard', 'failed to load user permissions', err);
       setCanAccessReservations(false);
     } finally {
       setPermissionsLoading(false);
@@ -266,7 +267,9 @@ const Dashboard: React.FC = () => {
   };
 
   const handleCreateEvent = () => {
-    console.log('Create new event');
+    clientLogger.debug('dashboard', 'floating action button pressed', {
+      action: 'create-event',
+    });
   };
   const handleCreateTask = () => {
     tasksWorkspaceRef.current?.openComposer();
