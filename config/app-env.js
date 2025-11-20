@@ -74,24 +74,45 @@ function trimTrailingSlash(value) {
   return value ? value.replace(/\/+$/, '') : value;
 }
 
+function overrideUrlPort(url, port) {
+  if (port == null) {
+    return;
+  }
+  const normalized = String(port).trim();
+  if (!normalized) {
+    return;
+  }
+  const shouldClear =
+    (url.protocol === 'http:' && normalized === '80') ||
+    (url.protocol === 'https:' && normalized === '443');
+  url.port = shouldClear ? '' : normalized;
+}
+
 function normalizeOrigin(value, fallbackPort) {
   if (!value) {
     return '';
   }
   try {
     const url = new URL(ensureProtocol(value));
-    if (!url.port && fallbackPort) {
-      url.port = String(fallbackPort);
+    if (fallbackPort) {
+      overrideUrlPort(url, fallbackPort);
     }
     url.pathname = '';
     url.search = '';
     url.hash = '';
     return trimTrailingSlash(url.origin);
   } catch {
-    if (fallbackPort && !value.includes(':')) {
-      return `${trimTrailingSlash(value)}:${fallbackPort}`;
+    const sanitized = trimTrailingSlash(value);
+    if (fallbackPort) {
+      const normalized = String(fallbackPort).trim();
+      if (normalized) {
+        if (/:([0-9]+)$/.test(sanitized)) {
+          return sanitized.replace(/:([0-9]+)$/, `:${normalized}`);
+        }
+        return `${sanitized}:${normalized}`;
+      }
     }
-    return trimTrailingSlash(value);
+    return sanitized;
   }
 }
 

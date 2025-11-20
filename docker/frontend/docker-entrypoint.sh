@@ -3,6 +3,10 @@ set -e
 
 CONFIG_PATH="/usr/share/nginx/html/runtime-config.js"
 
+log() {
+  echo "[frontend-entrypoint] $*"
+}
+
 # Provide defaults for common vars (can be overridden at runtime)
 : "${BASE_URL:=http://localhost}"
 : "${FRONTEND_PORT:=80}"
@@ -47,8 +51,14 @@ if (!/^https?:\/\//i.test(normalized)) {
 }
 try {
   const url = new URL(normalized);
-  if (port && !url.port) {
-    url.port = String(port);
+  if (port) {
+    const trimmed = String(port).trim();
+    if (trimmed) {
+      const shouldClear =
+        (url.protocol === 'http:' && trimmed === '80') ||
+        (url.protocol === 'https:' && trimmed === '443');
+      url.port = shouldClear ? '' : trimmed;
+    }
   }
   url.pathname = '';
   url.search = '';
@@ -113,5 +123,6 @@ EOF
 }
 
 generate_runtime_config
+log "Runtime config -> FRONTEND_URL=${FRONTEND_URL}, BACKEND_URL=${BACKEND_URL}, API_URL=${API_URL}"
 
 exec "$@"
