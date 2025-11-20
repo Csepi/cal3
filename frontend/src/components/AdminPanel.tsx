@@ -52,7 +52,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ themeColor = '#3b82f6' }) => {
     const panelProps = { themeColor, isActive: true };
     switch (activeTab) {
       case 'stats':
-        return <AdminStatsPanel {...panelProps} />;
+        return <AdminStatsPanel {...panelProps} onNavigate={(tab) => setActiveTab(tab)} />;
       case 'users':
         return <AdminUserPanel {...panelProps} />;
       case 'organizations':
@@ -83,7 +83,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ themeColor = '#3b82f6' }) => {
           </div>
         );
     }
-  }, [activeTab, themeColor]);
+  }, [activeTab, themeColor, setActiveTab]);
 
   if (loadingState.isLoading && loadingState.progress < 100) {
     return (
