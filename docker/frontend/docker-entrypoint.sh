@@ -62,11 +62,14 @@ NODE
 
 BASE_URL=$(normalize_base "$BASE_URL")
 
+effective_frontend_port="${FRONTEND_HOST_PORT:-$FRONTEND_PORT}"
+effective_backend_port="${BACKEND_HOST_PORT:-$BACKEND_PORT}"
+
 if [ -z "$FRONTEND_URL" ]; then
-  FRONTEND_URL=$(derive_url "$BASE_URL" "$FRONTEND_PORT")
+  FRONTEND_URL=$(derive_url "$BASE_URL" "$effective_frontend_port")
 fi
 if [ -z "$BACKEND_URL" ]; then
-  BACKEND_URL=$(derive_url "$BASE_URL" "$BACKEND_PORT")
+  BACKEND_URL=$(derive_url "$BASE_URL" "$effective_backend_port")
 fi
 if [ -z "$API_URL" ]; then
   API_URL="$BACKEND_URL"

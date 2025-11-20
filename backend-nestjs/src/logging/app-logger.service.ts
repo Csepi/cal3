@@ -76,7 +76,7 @@ export class AppLoggerService extends ConsoleLogger {
     stack?: string,
   ) {
     const normalized = this.normalizeMessage(message);
-    const timestamp = new Date().toISOString();
+    const timestamp = new Date();
     const requestContext = this.requestContext.getContext();
 
     if (this.format === 'json') {
@@ -84,7 +84,7 @@ export class AppLoggerService extends ConsoleLogger {
         level,
         message: normalized,
         context: context ?? null,
-        timestamp,
+        timestamp: timestamp.toISOString(),
       };
       if (stack) payload.stack = stack;
       if (requestContext) {
@@ -97,18 +97,28 @@ export class AppLoggerService extends ConsoleLogger {
       return JSON.stringify(payload);
     }
 
-    const segments = [
-      `[${timestamp}]`,
-      level.toUpperCase().padEnd(7),
-      context ? `[${context}]` : null,
-      requestContext?.requestId ? `(req:${requestContext.requestId})` : null,
-      normalized,
-    ].filter(Boolean);
+    const pid = process.pid;
+    const localeTimestamp = timestamp.toLocaleString(undefined, {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false,
+    });
+    const resolvedContext = context ?? 'Application';
+    const baseLine = `[Nest] ${pid}  - ${localeTimestamp}     ${level
+      .toUpperCase()
+      .padEnd(5)} [${resolvedContext}] ${normalized}`;
+    const requestSuffix = requestContext?.requestId
+      ? ` (req:${requestContext.requestId})`
+      : '';
 
     if (stack && level === 'error') {
-      segments.push(`\n${stack}`);
+      return `${baseLine}${requestSuffix}\n${stack}`;
     }
-    return segments.join(' ');
+    return `${baseLine}${requestSuffix}`;
   }
 
   private shouldLog(level: NestLogLevel, context?: string): boolean {
