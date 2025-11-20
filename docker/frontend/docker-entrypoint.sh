@@ -64,6 +64,10 @@ BASE_URL=$(normalize_base "$BASE_URL")
 
 effective_frontend_port="${FRONTEND_HOST_PORT:-$FRONTEND_PORT}"
 effective_backend_port="${BACKEND_HOST_PORT:-$BACKEND_PORT}"
+runtime_frontend_port="${effective_frontend_port:-$FRONTEND_PORT}"
+runtime_backend_port="${effective_backend_port:-$BACKEND_PORT}"
+runtime_frontend_host_port="${FRONTEND_HOST_PORT:-$runtime_frontend_port}"
+runtime_backend_host_port="${BACKEND_HOST_PORT:-$runtime_backend_port}"
 
 if [ -z "$FRONTEND_URL" ]; then
   FRONTEND_URL=$(derive_url "$BASE_URL" "$effective_frontend_port")
@@ -89,10 +93,10 @@ generate_runtime_config() {
     "FRONTEND_URL": "${FRONTEND_URL}",
     "BACKEND_URL": "${BACKEND_URL}",
     "API_URL": "${API_URL}",
-    "FRONTEND_PORT": "${FRONTEND_PORT}",
-    "BACKEND_PORT": "${BACKEND_PORT}",
-    "FRONTEND_HOST_PORT": "${FRONTEND_HOST_PORT}",
-    "BACKEND_HOST_PORT": "${BACKEND_HOST_PORT}",
+    "FRONTEND_PORT": "${runtime_frontend_port}",
+    "BACKEND_PORT": "${runtime_backend_port}",
+    "FRONTEND_HOST_PORT": "${runtime_frontend_host_port}",
+    "BACKEND_HOST_PORT": "${runtime_backend_host_port}",
     "SECURITY_ALLOWED_ORIGINS": "${SECURITY_ALLOWED_ORIGINS}",
     "SOURCE": "docker-env",
     "GENERATED_AT": "${generated_at}"
