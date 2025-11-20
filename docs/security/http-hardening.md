@@ -3,7 +3,7 @@
 This document captures the runtime controls that now protect the NestJS backend. Update the checklist whenever the configuration changes so operators can validate settings quickly.
 
 ## Middleware Stack
-- Helmet enforces CSP (no `unsafe-inline`), HSTS (1 year + preload), frameguard deny, referrer policy `strict-origin-when-cross-origin`, COEP/COEP.
+- Helmet enforces CSP (no `unsafe-inline`), HSTS (1 year + preload), frameguard deny, referrer policy `strict-origin-when-cross-origin`, COEP/COOP (COOP auto-disables itself when the public origin is not trusted).
 - Permissions Policy disables camera/microphone/geolocation/payment/usb/bluetooth by default.
 - Request correlation IDs (`x-request-id`) are injected via middleware and surfaced on every error payload.
 - Cookie parser is enabled so refresh tokens are exchanged exclusively with HttpOnly Secure SameSite cookies.
@@ -36,7 +36,7 @@ This document captures the runtime controls that now protect the NestJS backend.
 ## Operator Checklist
 1. Set/verify the following env vars in each environment:
    - `JWT_SECRET`, `JWT_ISSUER`, `JWT_AUDIENCE`, `JWT_ACCESS_TTL`, `JWT_REFRESH_TTL`
-   - `SECURITY_ALLOWED_ORIGINS`, `SECURITY_CORS_MAX_AGE`
+   - `SECURITY_ALLOWED_ORIGINS`, `SECURITY_CORS_MAX_AGE`, `SECURITY_ENABLE_COOP` (optional override)
    - `RATE_LIMIT_WINDOW_SEC`, `RATE_LIMIT_MAX_REQUESTS`, `LOGIN_MAX_ATTEMPTS`, `LOGIN_BLOCK_SECONDS`
 2. Confirm `curl -I https://api.example.com/health` returns the expected headers:
    - `content-security-policy`

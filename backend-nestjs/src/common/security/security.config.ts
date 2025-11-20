@@ -18,6 +18,12 @@ const DEFAULT_DIRECTIVES: Record<string, Iterable<string>> = {
   formAction: ["'self'"],
 };
 
+const TRUSTED_LOCAL_HOSTS = new Set([
+  'localhost',
+  '127.0.0.1',
+  '[::1]',
+]);
+
 export function resolveAllowedOrigins(): string[] {
   const envOrigins = (process.env.SECURITY_ALLOWED_ORIGINS || '')
     .split(',')
@@ -60,6 +66,7 @@ export function buildHelmetOptions(
   const connectSrc = Array.from(
     new Set([...allowedOrigins, "'self'"].filter(Boolean)),
   );
+  const coopEnabled = shouldEnableCrossOriginOpenerPolicy(allowedOrigins);
 
   return {
     contentSecurityPolicy: {
@@ -69,7 +76,9 @@ export function buildHelmetOptions(
       },
     },
     crossOriginEmbedderPolicy: true,
-    crossOriginOpenerPolicy: { policy: 'same-origin' },
+    crossOriginOpenerPolicy: coopEnabled
+      ? { policy: process.env.SECURITY_COOP_POLICY || 'same-origin' }
+      : false,
     referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
     hsts: {
       includeSubDomains: true,
@@ -191,4 +200,59 @@ function wildcardToRegExp(pattern: string): RegExp {
   const escaped = pattern.replace(/[.+?^${}()|[\]\\]/g, '\\$&');
   const regex = '^' + escaped.replace(/\\\*/g, '.*') + '$';
   return new RegExp(regex);
+}
+
+function isPotentiallyTrustworthyOrigin(origin?: string | null): boolean {
+  if (!origin) {
+    return false;
+  }
+  try {
+    const url = new URL(origin);
+    if (url.protocol === 'https:' || url.protocol === 'wss:') {
+      return true;
+    }
+    if (
+      url.protocol === 'http:' &&
+      TRUSTED_LOCAL_HOSTS.has(url.hostname.toLowerCase())
+    ) {
+      return true;
+    }
+  } catch {
+    return false;
+  }
+  return false;
+}
+
+function shouldEnableCrossOriginOpenerPolicy(
+  allowedOrigins: string[],
+): boolean {
+  const override = process.env.SECURITY_ENABLE_COOP?.toLowerCase();
+  if (override === 'true') {
+    return true;
+  }
+  if (override === 'false') {
+    logger.log(
+      'Cross-Origin-Opener-Policy explicitly disabled via SECURITY_ENABLE_COOP=false',
+    );
+    return false;
+  }
+
+  const candidateOrigins = [
+    process.env.BACKEND_URL,
+    process.env.FRONTEND_URL,
+    process.env.BASE_URL,
+    ...allowedOrigins,
+  ].filter((origin): origin is string => Boolean(origin));
+
+  const trustworthy = candidateOrigins.some((origin) =>
+    isPotentiallyTrustworthyOrigin(origin),
+  );
+
+  if (!trustworthy) {
+    logger.warn(
+      'Cross-Origin-Opener-Policy header suppressed (origin not trustworthy). Use HTTPS or set SECURITY_ENABLE_COOP=true to override.',
+    );
+  }
+
+  return trustworthy;
 }

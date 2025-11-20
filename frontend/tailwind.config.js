@@ -1,3 +1,5 @@
+import defaultTheme from 'tailwindcss/defaultTheme.js';
+
 const themeColorFamilies = [
   "red",
   "orange",
@@ -35,7 +37,11 @@ export default {
   content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
   safelist: [{ pattern: colorUtilityPattern }, { pattern: gradientUtilityPattern }],
   theme: {
-    extend: {},
+    extend: {
+      fontFamily: {
+        sans: ["Inter Variable", "Inter", ...defaultTheme.fontFamily.sans],
+      },
+    },
   },
   plugins: [],
 };
