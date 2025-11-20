@@ -58,12 +58,13 @@ ARG FRONTEND_URL
 ARG BACKEND_URL
 ARG API_URL
 ARG SECURITY_ALLOWED_ORIGINS
-RUN apk add --no-cache curl
+RUN apk add --no-cache curl libstdc++ libgcc
 WORKDIR /usr/share/nginx/html
 COPY --from=builder /app/frontend/dist ./ 
 COPY docker/frontend/nginx.conf /etc/nginx/conf.d/default.conf
 COPY docker/frontend/docker-entrypoint.sh /docker-entrypoint.sh
 COPY docker/frontend/healthz.json /usr/share/nginx/html/healthz
+COPY --from=base /usr/local/bin/node /usr/local/bin/node
 RUN chmod +x /docker-entrypoint.sh
 
 ENV BASE_URL=${BASE_URL} \
