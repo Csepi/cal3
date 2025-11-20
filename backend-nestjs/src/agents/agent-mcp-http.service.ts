@@ -18,6 +18,7 @@ import {
   ListPromptsRequestSchema,
   ListResourcesRequestSchema,
 } from '@modelcontextprotocol/sdk/types.js';
+import { TaskPriority, TaskStatus } from '../entities/task.entity';
 
 type ToolHandler = (parameters: Record<string, any>) => Promise<unknown>;
 
@@ -285,6 +286,134 @@ export class AgentMcpHttpService {
       triggerAutomationSchema,
       (params) =>
         this.execute(context, AgentActionKey.AUTOMATION_RULES_TRIGGER, params),
+    );
+
+    const taskStatusValues = [
+      TaskStatus.TODO,
+      TaskStatus.IN_PROGRESS,
+      TaskStatus.DONE,
+    ] as const;
+    const taskPriorityValues = [
+      TaskPriority.HIGH,
+      TaskPriority.MEDIUM,
+      TaskPriority.LOW,
+    ] as const;
+    const taskSortColumns = ['updatedAt', 'createdAt', 'dueDate'] as const;
+    const sortDirections = ['asc', 'desc'] as const;
+    const positiveInt = () => z.number().int().positive();
+    const hexColorSchema = z
+      .string()
+      .regex(/^#?[0-9a-fA-F]{6}$/, 'Color must be a valid 6-digit hex value.');
+
+    const listTasksSchema: ZodRawShape = {
+      status: z.enum(taskStatusValues).optional(),
+      priority: z.enum(taskPriorityValues).optional(),
+      search: z.string().max(120).optional(),
+      dueFrom: z.string().optional(),
+      dueTo: z.string().optional(),
+      labelIds: z.array(positiveInt()).max(10).optional(),
+      sortBy: z.enum(taskSortColumns).optional(),
+      sortDirection: z.enum(sortDirections).optional(),
+      page: positiveInt().optional(),
+      limit: positiveInt().max(100).optional(),
+    };
+
+    registerTool(AgentActionKey.TASKS_LIST, listTasksSchema, (params) =>
+      this.execute(context, AgentActionKey.TASKS_LIST, params),
+    );
+
+    const createTaskSchema: ZodRawShape = {
+      title: z.string().min(1).max(240),
+      body: z.union([z.string().max(8000), z.null()]).optional(),
+      bodyFormat: z.enum(['markdown'] as const).optional(),
+      color: hexColorSchema.optional(),
+      priority: z.enum(taskPriorityValues).optional(),
+      status: z.enum(taskStatusValues).optional(),
+      place: z.union([z.string().max(255), z.null()]).optional(),
+      dueDate: z.string().optional(),
+      dueEnd: z.string().optional(),
+      dueTimezone: z.union([z.string().max(100), z.null()]).optional(),
+      assigneeId: positiveInt().nullable().optional(),
+      labelIds: z.array(positiveInt()).max(12).optional(),
+    };
+
+    registerTool(AgentActionKey.TASKS_CREATE, createTaskSchema, (params) =>
+      this.execute(context, AgentActionKey.TASKS_CREATE, params),
+    );
+
+    const updateTaskSchema: ZodRawShape = {
+      taskId: positiveInt().optional(),
+      id: positiveInt().optional(),
+      title: z.string().min(1).max(240).optional(),
+      body: z.union([z.string().max(8000), z.null()]).optional(),
+      bodyFormat: z.enum(['markdown'] as const).optional(),
+      color: hexColorSchema.nullable().optional(),
+      priority: z.enum(taskPriorityValues).optional(),
+      status: z.enum(taskStatusValues).optional(),
+      place: z.union([z.string().max(255), z.null()]).optional(),
+      dueDate: z.string().optional(),
+      dueEnd: z.string().optional(),
+      dueTimezone: z.union([z.string().max(100), z.null()]).optional(),
+      assigneeId: positiveInt().nullable().optional(),
+      labelIds: z.array(positiveInt()).max(12).optional(),
+    };
+
+    registerTool(AgentActionKey.TASKS_UPDATE, updateTaskSchema, (params) =>
+      this.execute(context, AgentActionKey.TASKS_UPDATE, params),
+    );
+
+    const deleteTaskSchema: ZodRawShape = {
+      taskId: positiveInt().optional(),
+      id: positiveInt().optional(),
+    };
+
+    registerTool(AgentActionKey.TASKS_DELETE, deleteTaskSchema, (params) =>
+      this.execute(context, AgentActionKey.TASKS_DELETE, params),
+    );
+
+    registerTool(
+      AgentActionKey.TASK_LABELS_LIST,
+      undefined,
+      (params) =>
+        this.execute(context, AgentActionKey.TASK_LABELS_LIST, params),
+    );
+
+    const createLabelSchema: ZodRawShape = {
+      name: z.string().min(1).max(64),
+      color: hexColorSchema.optional(),
+    };
+
+    registerTool(
+      AgentActionKey.TASK_LABELS_CREATE,
+      createLabelSchema,
+      (params) =>
+        this.execute(context, AgentActionKey.TASK_LABELS_CREATE, params),
+    );
+
+    const updateLabelSchema: ZodRawShape = {
+      labelId: positiveInt().optional(),
+      id: positiveInt().optional(),
+      name: z.string().min(1).max(64).optional(),
+      color: hexColorSchema.nullable().optional(),
+    };
+
+    registerTool(
+      AgentActionKey.TASK_LABELS_UPDATE,
+      updateLabelSchema,
+      (params) =>
+        this.execute(context, AgentActionKey.TASK_LABELS_UPDATE, params),
+    );
+
+    const deleteLabelSchema: ZodRawShape = {
+      labelId: positiveInt().optional(),
+      id: positiveInt().optional(),
+    };
+
+    registerTool(
+      AgentActionKey.TASK_LABELS_DELETE,
+      deleteLabelSchema,
+      (params) =>
+        this.execute(context, AgentActionKey.TASK_LABELS_DELETE, params),
     );
 
     server.server.registerCapabilities({

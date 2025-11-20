@@ -1,6 +1,6 @@
 import { Logger } from '@nestjs/common';
 import type { CorsOptions } from '@nestjs/common/interfaces/external/cors-options.interface';
-import helmet, { HelmetOptions } from 'helmet';
+import helmet, { type HelmetOptions } from 'helmet';
 
 const logger = new Logger('SecurityConfig');
 
@@ -22,6 +22,12 @@ const TRUSTED_LOCAL_HOSTS = new Set([
   'localhost',
   '127.0.0.1',
   '[::1]',
+]);
+type CoopPolicy = 'same-origin' | 'same-origin-allow-popups' | 'unsafe-none';
+const ALLOWED_COOP_POLICIES: Set<CoopPolicy> = new Set([
+  'same-origin',
+  'same-origin-allow-popups',
+  'unsafe-none',
 ]);
 
 export function resolveAllowedOrigins(): string[] {
@@ -67,6 +73,7 @@ export function buildHelmetOptions(
     new Set([...allowedOrigins, "'self'"].filter(Boolean)),
   );
   const coopEnabled = shouldEnableCrossOriginOpenerPolicy(allowedOrigins);
+  const coopPolicy = resolveCoopPolicy(process.env.SECURITY_COOP_POLICY);
 
   return {
     contentSecurityPolicy: {
@@ -77,7 +84,7 @@ export function buildHelmetOptions(
     },
     crossOriginEmbedderPolicy: true,
     crossOriginOpenerPolicy: coopEnabled
-      ? { policy: process.env.SECURITY_COOP_POLICY || 'same-origin' }
+      ? { policy: coopPolicy }
       : false,
     referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
     hsts: {
@@ -255,4 +262,17 @@ function shouldEnableCrossOriginOpenerPolicy(
   }
 
   return trustworthy;
+}
+
+function resolveCoopPolicy(rawPolicy?: string | null): CoopPolicy {
+  if (rawPolicy) {
+    const normalized = rawPolicy.trim().toLowerCase();
+    if (ALLOWED_COOP_POLICIES.has(normalized as CoopPolicy)) {
+      return normalized as CoopPolicy;
+    }
+    logger.warn(
+      `Unsupported SECURITY_COOP_POLICY="${rawPolicy}" provided. Falling back to "same-origin".`,
+    );
+  }
+  return 'same-origin';
 }
