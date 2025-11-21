@@ -95,6 +95,7 @@ The `GET /api/mcp/actions` endpoint returns the exact actions and scope configur
 - **Automation**: list automation rules and trigger selected rules.
 - **Profile**: read owner profile basics.
 - **Tasks**: list/create/update/delete Tasks workspace items, plus manage task labels (list/create/update/delete). These actions always run as the task owner and honour the default Tasks calendar for event mirroring.
+- **Reminders**: treat every reminder as a task; call `tasks.create` or `tasks.update` and set whichever combination of due date, due end, priority, or labels best captures the reminder semantics.
 
 Example task creation request:
 

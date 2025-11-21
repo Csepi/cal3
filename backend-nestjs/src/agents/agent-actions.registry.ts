@@ -169,7 +169,7 @@ const ACTION_DEFINITIONS: AgentActionDefinition[] = [
     category: 'tasks',
     label: 'Create Tasks',
     description:
-      'Allow the agent to create tasks in your Tasks workspace and mirror them into the default Tasks calendar.',
+      'Allow the agent to create tasks in your Tasks workspace and mirror them into the default Tasks calendar. Although due date/time or label is optional, confirm it with the user before calling this action.',
     risk: 'write',
   },
   {
