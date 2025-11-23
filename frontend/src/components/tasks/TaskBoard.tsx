@@ -6,6 +6,9 @@ interface TaskBoardProps {
   onSelect: (task: Task) => void;
   themeColor: string;
   onMoveTask?: (task: Task, status: TaskStatus) => void;
+  timeFormat?: string;
+  timezone?: string | null;
+  locale?: string;
 }
 
 const statusConfig: Record<
@@ -34,6 +37,9 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
   onSelect,
   themeColor,
   onMoveTask,
+  timeFormat,
+  timezone,
+  locale,
 }) => {
   const grouped: Record<TaskStatus, Task[]> = {
     todo: [],
@@ -74,6 +80,31 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
   const allowDrop = (event: React.DragEvent<HTMLElement>) => {
     if (onMoveTask) {
       event.preventDefault();
+    }
+  };
+
+  const formatDueDate = (value: string, taskTimezone?: string | null) => {
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) {
+      return value;
+    }
+
+    const formatLocale = locale && locale.trim() ? locale : 'en-US';
+    const formatterOptions: Intl.DateTimeFormatOptions = {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: timeFormat ? !['24h', '24'].includes(timeFormat) : undefined,
+      timeZone: timezone || taskTimezone || undefined,
+    };
+
+    try {
+      return new Intl.DateTimeFormat(formatLocale, formatterOptions).format(date);
+    } catch {
+      const { timeZone, ...fallbackOptions } = formatterOptions;
+      return date.toLocaleString(formatLocale, fallbackOptions);
     }
   };
 
@@ -121,7 +152,7 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
                   </div>
                   {task.dueDate && (
                     <p className="mt-1 text-xs text-gray-500">
-                      Due {new Date(task.dueDate).toLocaleString()}
+                      Due {formatDueDate(task.dueDate, task.dueTimezone)}
                     </p>
                   )}
                   {task.labels?.length ? (

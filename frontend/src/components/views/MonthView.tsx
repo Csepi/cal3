@@ -249,7 +249,7 @@ const MonthView: React.FC<MonthViewProps> = ({
                           color: reservationColor,
                           boxShadow: `0 3px 8px ${reservationColor}30`
                         }}
-                        title={`📅 ${reservation.resource?.name}\n${new Date(reservation.startTime).toLocaleTimeString()} - ${new Date(reservation.endTime).toLocaleTimeString()}\nStatus: ${reservation.status}`}
+                        title={`📅 ${reservation.resource?.name}\n${new Date(reservation.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${new Date(reservation.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}\nStatus: ${reservation.status}`}
                       >
                         <div className="font-medium truncate flex items-center">
                           📅 {reservation.resource?.name}

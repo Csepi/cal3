@@ -20,10 +20,13 @@ export interface TasksWorkspaceHandle {
 
 interface TasksWorkspaceProps {
   themeColor: string;
+  timeFormat?: string | null;
+  timezone?: string | null;
+  locale?: string | null;
 }
 
 export const TasksWorkspace = forwardRef<TasksWorkspaceHandle, TasksWorkspaceProps>(
-  ({ themeColor }, ref) => {
+  ({ themeColor, timeFormat, timezone, locale }, ref) => {
     const { isMobile } = useScreenSize();
     const {
       tasks,
@@ -275,6 +278,9 @@ export const TasksWorkspace = forwardRef<TasksWorkspaceHandle, TasksWorkspacePro
             onSelect={handleSelectTask}
             themeColor={themeColor}
             onMoveTask={handleMoveTask}
+            timeFormat={timeFormat ?? undefined}
+            timezone={timezone ?? undefined}
+            locale={locale ?? undefined}
           />
         )}
 

@@ -313,7 +313,13 @@ const Dashboard: React.FC = () => {
             <Calendar themeColor={themeColor} timeFormat={userProfile?.timeFormat || '12h'} />
           )}
           {currentView === 'tasks' && featureFlags.tasks && (
-            <TasksWorkspace ref={tasksWorkspaceRef} themeColor={themeColor} />
+            <TasksWorkspace
+              ref={tasksWorkspaceRef}
+              themeColor={themeColor}
+              timeFormat={userProfile?.timeFormat}
+              timezone={userProfile?.timezone}
+              locale={userProfile?.language}
+            />
           )}
           {currentView === 'profile' && (
             <UserProfile
