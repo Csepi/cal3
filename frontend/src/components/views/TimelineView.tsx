@@ -240,7 +240,7 @@ const TimelineView: React.FC<TimelineViewProps> = ({
                 onClick={() => onCreateEvent(new Date())}
                 className="inline-flex items-center justify-center px-3 py-2 text-sm font-semibold bg-white text-gray-900 rounded-xl shadow-md hover:shadow-lg transition-all"
               >
-                Start focus block
+                Log what I’m doing
               </button>
             )}
           </div>
@@ -297,45 +297,54 @@ const TimelineView: React.FC<TimelineViewProps> = ({
 
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 flex flex-col gap-3">
           <div className="flex items-center justify-between">
-            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Remaining today</p>
-            <span className="text-xs font-semibold text-gray-700">{Math.round(100 - dayProgress)}% of day left</span>
+            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Stay on track</p>
+            <span className="text-[11px] px-2 py-0.5 rounded-full bg-blue-50 text-blue-700">
+              {currentEvent ? 'In flow' : nextEvent ? 'Between tasks' : 'Wide open'}
+            </span>
           </div>
-          <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-            <div
-              className="h-full rounded-full"
-              style={{
-                width: `${dayProgress}%`,
-                background: `linear-gradient(90deg, ${withAlpha(focusColor, 0.5)}, ${withAlpha(focusColor, 0.85)})`
-              }}
-            ></div>
-          </div>
-          <p className="text-sm text-gray-600">
-            {currentEvent
-              ? `Stay with "${currentEvent.title}" then glide into ${nextEvent ? `"${nextEvent.title}"` : 'free time'}.`
-              : nextEvent
-                ? `You are clear until ${formatTime(nextEvent.start, timeFormat)}. Plan the handoff and hydrate.`
-                : 'You own the rest of the day. Set a focus block if needed.'}
-          </p>
+          <ul className="space-y-2 text-sm text-gray-700">
+            <li className="flex items-start gap-2">
+              <span className="mt-1 inline-block w-2 h-2 rounded-full" style={{ background: withAlpha(focusColor, 0.8) }}></span>
+              <div>
+                <p className="font-semibold">Name it</p>
+                <p className="text-gray-600 text-xs">Say out loud what you’re doing for the next 20–30 min.</p>
+              </div>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="mt-1 inline-block w-2 h-2 rounded-full" style={{ background: withAlpha(focusColor, 0.6) }}></span>
+              <div>
+                <p className="font-semibold">Clear one distraction</p>
+                <p className="text-gray-600 text-xs">Close one tab/DM or silence phone for this block.</p>
+              </div>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="mt-1 inline-block w-2 h-2 rounded-full" style={{ background: withAlpha(focusColor, 0.5) }}></span>
+              <div>
+                <p className="font-semibold">Body check</p>
+                <p className="text-gray-600 text-xs">Water, stretch, breathe 4-7-8 once.</p>
+              </div>
+            </li>
+          </ul>
         </div>
 
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 flex flex-col gap-2">
-          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Prep & buffer</p>
+          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Context switch kit</p>
           {nextEvent ? (
             <ul className="space-y-1 text-sm text-gray-700">
-              <li>- Review notes or agenda for "{nextEvent.title}".</li>
-              {nextEvent.location && <li>- Check location: {nextEvent.location}.</li>}
-              <li>- Set a reminder {prepWindowMinutes !== null && prepWindowMinutes > 15 ? '10 minutes before start.' : 'for the start time.'}</li>
+              <li>- Capture 2 decisions or blockers from this meeting.</li>
+              <li>- Drop a 2-line status note for "{nextEvent.title}".</li>
+              <li>- Park follow-ups in a quick note so work calendar stays clean.</li>
             </ul>
           ) : (
-            <p className="text-sm text-gray-600">No prep needed. Enjoy the breathing room.</p>
+            <p className="text-sm text-gray-600">Use this breathing room to brain-dump loose thoughts.</p>
           )}
           {onCreateEvent && (
             <button
-              onClick={() => onCreateEvent(dayStart)}
+              onClick={() => onCreateEvent(new Date())}
               className="mt-2 inline-flex items-center justify-center px-3 py-2 text-sm font-semibold text-white rounded-xl"
               style={{ background: `linear-gradient(135deg, ${withAlpha(focusColor, 0.9)}, ${withAlpha(focusColor, 0.7)})` }}
             >
-              Block prep time
+              Log a quick note
             </button>
           )}
         </div>
