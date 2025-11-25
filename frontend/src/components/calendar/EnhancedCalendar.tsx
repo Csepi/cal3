@@ -22,6 +22,7 @@ import { ConfirmationDialog } from '../dialogs';
 import { Button } from '../ui';
 import MonthView from '../views/MonthView';
 import WeekView from '../views/WeekView';
+import TimelineView from '../views/TimelineView';
 import { MobileDrawer } from '../mobile/MobileDrawer';
 import { MobileMonthView } from '../mobile/calendar/MobileMonthView';
 import { MobileWeekView } from '../mobile/calendar/MobileWeekView';
@@ -49,7 +50,7 @@ interface Organization {
 interface CalendarState {
   currentDate: Date;
   selectedDate: Date | null;
-  currentView: 'month' | 'week';
+  currentView: 'month' | 'week' | 'timeline';
   events: Event[];
   calendars: CalendarType[];
   selectedCalendars: number[];
@@ -63,7 +64,7 @@ interface CalendarState {
 interface CalendarActions {
   setCurrentDate: (date: Date) => void;
   setSelectedDate: (date: Date | null) => void;
-  setCurrentView: (view: 'month' | 'week') => void;
+  setCurrentView: (view: 'month' | 'week' | 'timeline') => void;
   navigateCalendar: (direction: 'prev' | 'next' | 'today') => void;
   toggleCalendar: (calendarId: number) => void;
   toggleResourceType: (resourceTypeId: number) => void;
@@ -206,7 +207,7 @@ function useCalendarState(themeColor: string) {
       setState(prev => ({ ...prev, selectedDate: date }));
     },
 
-    setCurrentView: (view: 'month' | 'week') => {
+    setCurrentView: (view: 'month' | 'week' | 'timeline') => {
       setState(prev => ({ ...prev, currentView: view }));
     },
 
@@ -222,8 +223,10 @@ function useCalendarState(themeColor: string) {
 
           if (prev.currentView === 'month') {
             newDate.setMonth(newDate.getMonth() + increment);
-          } else {
+          } else if (prev.currentView === 'week') {
             newDate.setDate(newDate.getDate() + (increment * 7));
+          } else {
+            newDate.setDate(newDate.getDate() + increment);
           }
         }
 
@@ -379,6 +382,14 @@ const CalendarHeader: React.FC<CalendarHeaderProps> = ({
   const formatTitle = useMemo(() => {
     const { currentDate, currentView } = state;
 
+    if (currentView === 'timeline') {
+      return `Focus timeline - ${currentDate.toLocaleDateString('en-US', {
+        weekday: 'long',
+        month: 'short',
+        day: 'numeric'
+      })}`;
+    }
+
     if (currentView === 'month') {
       return currentDate.toLocaleDateString('en-US', {
         month: 'long',
@@ -486,6 +497,18 @@ const CalendarHeader: React.FC<CalendarHeaderProps> = ({
               >
                 Week
               </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => actions.setCurrentView('timeline')}
+                className={`px-4 py-2 rounded-md transition-all duration-200 ${
+                  state.currentView === 'timeline'
+                    ? 'bg-white text-gray-800 shadow-md font-semibold'
+                    : 'text-white/90 hover:bg-white/30 hover:text-white'
+                }`}
+              >
+                Timeline
+              </Button>
             </div>
 
             {/* Create Actions */}
@@ -533,11 +556,12 @@ interface CalendarGridProps {
   actions: CalendarActions;
   themeConfig: ThemeConfig;
   timeFormat: string;
+  accentColor: string;
   isMobile?: boolean;
   onShowDayDetails?: (date: Date) => void;
 }
 
-const CalendarGrid: React.FC<CalendarGridProps> = ({ state, actions, themeConfig, timeFormat, isMobile = false, onShowDayDetails }) => {
+const CalendarGrid: React.FC<CalendarGridProps> = ({ state, actions, themeConfig, timeFormat, accentColor, isMobile = false, onShowDayDetails }) => {
   const { currentDate, currentView, events, selectedCalendars, reservations, selectedResourceTypes, organizations } = state;
 
   // Filter reservations based on selected resource types
@@ -558,6 +582,14 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({ state, actions, themeConfig
         // Find the resource type to get its color
         const resourceTypeId = r.resource?.resourceType?.id;
         let resourceTypeColor = '#f97316'; // Default orange
+        const startDateObj = r.startTime ? new Date(r.startTime) : null;
+        const endDateObj = r.endTime ? new Date(r.endTime) : null;
+        const startTimeLabel = startDateObj
+          ? startDateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+          : '';
+        const endTimeLabel = endDateObj
+          ? endDateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+          : '';
 
         if (resourceTypeId) {
           for (const org of organizations) {
@@ -574,13 +606,17 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({ state, actions, themeConfig
           title: r.resource?.name || 'Reservation',
           start: r.startTime,
           end: r.endTime,
+          startDate: r.startTime,
+          endDate: r.endTime,
+          startTime: startTimeLabel,
+          endTime: endTimeLabel,
           color: resourceTypeColor,
           isAllDay: false,
           notes: r.description || `${r.status} - ${r.customerName || 'No customer'}`,
           calendar: {
             id: -1, // Special ID for reservations
             name: 'Reservations',
-            color: '#f97316'
+            color: resourceTypeColor
           },
           isReservation: true, // Flag to identify reservation events
           reservationData: r // Keep original reservation data
@@ -615,6 +651,24 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({ state, actions, themeConfig
     threshold: 50,
     preventScroll: true,
   });
+
+  // Timeline view (desktop + mobile)
+  if (currentView === 'timeline') {
+    const wrapperProps = isMobile ? swipeHandlers : {};
+    return (
+      <div {...wrapperProps}>
+        <TimelineView
+          currentDate={currentDate}
+          events={filteredEvents}
+          onEventClick={handleEventClick}
+          onCreateEvent={(date) => actions.createEvent(date)}
+          accentColor={accentColor}
+          isMobile={isMobile}
+          timeFormat={timeFormat === '12h' ? '12' : '24'}
+        />
+      </div>
+    );
+  }
 
   // On mobile in week view, show mobile-optimized week view
   if (isMobile && currentView === 'week') {
@@ -1240,6 +1294,7 @@ export const EnhancedCalendar: React.FC<EnhancedCalendarProps> = ({
             actions={actions}
             themeConfig={themeConfig}
             timeFormat={timeFormat}
+            accentColor={themeColor}
             isMobile={isMobile}
             onShowDayDetails={(date) => {
               actions.setSelectedDate(date);

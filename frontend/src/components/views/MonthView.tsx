@@ -1,5 +1,5 @@
 import React from 'react';
-import type { Event } from '../types/Event';
+import type { Event } from '../../types/Event';
 
 interface MonthViewProps {
   currentDate: Date;

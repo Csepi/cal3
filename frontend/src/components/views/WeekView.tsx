@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import type { Event } from '../types/Event';
+import type { Event } from '../../types/Event';
 
 interface WeekViewProps {
   currentDate: Date;

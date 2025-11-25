@@ -16,8 +16,8 @@ import { Icon } from '../atoms/Icon';
 
 interface MobileCalendarHeaderProps {
   currentDate: Date;
-  currentView: 'month' | 'week';
-  onViewChange: (view: 'month' | 'week') => void;
+  currentView: 'month' | 'week' | 'timeline';
+  onViewChange: (view: 'month' | 'week' | 'timeline') => void;
   onNavigate: (direction: 'prev' | 'next' | 'today') => void;
   onOpenCalendarSelector: () => void;
   themeColor: string;
@@ -59,6 +59,21 @@ export const MobileCalendarHeader: React.FC<MobileCalendarHeaderProps> = ({
     }
   };
 
+  const formatFocusDay = (): string => {
+    return currentDate.toLocaleDateString('en-US', {
+      weekday: 'long',
+      month: 'short',
+      day: 'numeric'
+    });
+  };
+
+  const resolvedTitle =
+    currentView === 'month'
+      ? formatMonthYear()
+      : currentView === 'week'
+        ? formatWeekRange()
+        : formatFocusDay();
+
   return (
     <div className="bg-white border-b border-gray-200 safe-area-top">
       {/* Top Row: Navigation & Title */}
@@ -76,7 +91,7 @@ export const MobileCalendarHeader: React.FC<MobileCalendarHeaderProps> = ({
         {/* Date Display */}
         <div className="flex-1 text-center">
           <h2 className="text-lg font-semibold text-gray-800">
-            {currentView === 'month' ? formatMonthYear() : formatWeekRange()}
+            {resolvedTitle}
           </h2>
         </div>
 
@@ -93,7 +108,7 @@ export const MobileCalendarHeader: React.FC<MobileCalendarHeaderProps> = ({
       {/* Bottom Row: View Switcher & Navigation */}
       <div className="flex items-center justify-between px-4 pb-3">
         {/* View Switcher */}
-        <div className="flex rounded-lg bg-gray-100 p-1">
+        <div className="flex rounded-lg bg-gray-100 p-1 overflow-x-auto">
           <TouchableArea
             onClick={() => onViewChange('month')}
             className={`
@@ -119,6 +134,19 @@ export const MobileCalendarHeader: React.FC<MobileCalendarHeaderProps> = ({
             minSize="sm"
           >
             Week
+          </TouchableArea>
+          <TouchableArea
+            onClick={() => onViewChange('timeline')}
+            className={`
+              px-3 py-1 rounded-md text-sm font-medium transition-all
+              ${currentView === 'timeline'
+                ? 'bg-white text-gray-900 shadow-sm'
+                : 'text-gray-600'
+              }
+            `}
+            minSize="sm"
+          >
+            Timeline
           </TouchableArea>
         </div>
 
