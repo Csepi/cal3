@@ -137,6 +137,9 @@ class ApiService {
   async createEvent(eventData: CreateEventRequest): Promise<Event> {
     const response = await this.secureApiFetch(`${BASE_URL}/api/events`, {
       method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
       body: JSON.stringify(eventData),
     });
 
