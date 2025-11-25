@@ -14,7 +14,9 @@ interface TimelineViewProps {
 type TimelineItem = Event & {
   start: Date;
   end: Date;
-  color: string;
+  color: string; // event color fallback
+  eventColor: string;
+  calendarColor: string;
   calendarName?: string;
   isReservation?: boolean;
 };
@@ -122,6 +124,9 @@ const TimelineView: React.FC<TimelineViewProps> = ({
           end.setHours(end.getHours() + 1);
         }
 
+        const calendarColor = event.calendar?.color || event.color || focusColor;
+        const eventColor = event.color || calendarColor || focusColor;
+
         // All-day events should span the full day
         if (event.isAllDay) {
           const fullDayStart = new Date(start);
@@ -132,7 +137,9 @@ const TimelineView: React.FC<TimelineViewProps> = ({
             ...event,
             start: fullDayStart,
             end: fullDayEnd,
-            color: event.color || event.calendar?.color || focusColor,
+            color: eventColor,
+            eventColor,
+            calendarColor,
             calendarName: event.calendar?.name || 'My calendar'
           } as TimelineItem;
         }
@@ -141,7 +148,9 @@ const TimelineView: React.FC<TimelineViewProps> = ({
           ...event,
           start,
           end,
-          color: event.color || event.calendar?.color || focusColor,
+          color: eventColor,
+          eventColor,
+          calendarColor,
           calendarName: event.calendar?.name || 'My calendar'
         } as TimelineItem;
       })
@@ -350,11 +359,13 @@ const TimelineView: React.FC<TimelineViewProps> = ({
             const isPast = item.end < now;
             const startsInMs = item.start.getTime() - now.getTime();
             const statusLabel = isCurrent ? 'Live' : isPast ? 'Finished' : 'Upcoming';
+            const calendarColor = item.calendarColor || item.eventColor || item.color || focusColor;
+            const eventColor = item.eventColor || item.color || calendarColor;
 
             return (
               <div key={item.id} className="grid grid-cols-[56px,1fr] md:grid-cols-[64px,1fr] gap-3 items-start">
                 <div className="flex flex-col items-center pt-1 text-xs text-gray-600">
-                  <span className="w-2.5 h-2.5 rounded-full border border-white shadow-sm" style={{ background: item.color }}></span>
+                  <span className="w-2.5 h-2.5 rounded-full border border-white shadow-sm" style={{ background: eventColor }}></span>
                   <span className="mt-1 font-semibold text-gray-700">{formatTime(item.start, timeFormat)}</span>
                 </div>
                 <button
@@ -365,11 +376,11 @@ const TimelineView: React.FC<TimelineViewProps> = ({
                       : 'hover:-translate-y-0.5 hover:shadow-lg'
                   } ${isPast ? 'opacity-60 saturate-[0.4]' : ''}`}
                   style={{
-                    borderLeft: `6px solid ${item.color}`,
-                    background: `linear-gradient(135deg, ${withAlpha(item.color, isPast ? 0.08 : 0.16)}, ${withAlpha(item.color, isPast ? 0.05 : 0.24)})`,
+                    borderLeft: `6px solid ${calendarColor}`,
+                    background: `linear-gradient(135deg, ${withAlpha(calendarColor, isPast ? 0.08 : 0.16)}, ${withAlpha(eventColor, isPast ? 0.05 : 0.24)})`,
                     boxShadow: isCurrent
-                      ? `0 15px 30px ${withAlpha(item.color, 0.25)}`
-                      : `0 8px 20px ${withAlpha(item.color, 0.12)}`,
+                      ? `0 15px 30px ${withAlpha(eventColor, 0.25)}`
+                      : `0 8px 20px ${withAlpha(eventColor, 0.12)}`,
                     transformOrigin: 'left center'
                   }}
                 >
@@ -413,7 +424,7 @@ const TimelineView: React.FC<TimelineViewProps> = ({
                         className="h-full rounded-full"
                         style={{
                           width: `${currentProgress}%`,
-                          background: `linear-gradient(90deg, ${withAlpha(item.color, 0.95)}, ${withAlpha(focusColor, 0.95)})`
+                          background: `linear-gradient(90deg, ${withAlpha(eventColor, 0.95)}, ${withAlpha(calendarColor, 0.95)})`
                         }}
                       ></div>
                     </div>
