@@ -189,6 +189,24 @@ const TimelineView: React.FC<TimelineViewProps> = ({
   const prepWindowMinutes = nextEvent ? Math.max(0, Math.round((nextEvent.start.getTime() - now.getTime()) / 60000)) : null;
   const verticalSpacing = isMobile ? 'space-y-3' : 'space-y-4';
 
+  const gapMs = currentEvent && nextEvent
+    ? nextEvent.start.getTime() - currentEvent.end.getTime()
+    : !currentEvent && nextEvent
+      ? nextEvent.start.getTime() - now.getTime()
+      : null;
+  const gapLabel = gapMs !== null ? formatDuration(gapMs) : '—';
+  const backToBackLabel = (() => {
+    if (gapMs === null) return '—';
+    if (gapMs <= 10 * 60 * 1000) return 'High';
+    if (gapMs <= 30 * 60 * 1000) return 'Tight';
+    return 'Clear';
+  })();
+  const backToBackTone = backToBackLabel === 'High'
+    ? 'bg-red-100 text-red-700'
+    : backToBackLabel === 'Tight'
+      ? 'bg-amber-100 text-amber-700'
+      : 'bg-emerald-100 text-emerald-700';
+
   return (
     <div className={`h-full bg-gray-50 p-4 md:p-6 ${verticalSpacing}`}>
       {/* Live focus header */}
@@ -298,32 +316,26 @@ const TimelineView: React.FC<TimelineViewProps> = ({
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 flex flex-col gap-3">
           <div className="flex items-center justify-between">
             <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Flow control</p>
-            <span className="text-[11px] px-2 py-0.5 rounded-full bg-blue-50 text-blue-700">
-              {currentEvent ? 'In session' : nextEvent ? 'Idle' : 'Free'}
+            <span className={`text-[11px] px-2 py-0.5 rounded-full ${backToBackTone}`}>
+              {backToBackLabel} buffer
             </span>
           </div>
           <div className="grid grid-cols-1 gap-2 text-sm text-gray-700">
             <div className="flex items-center justify-between rounded-xl bg-gray-50 px-3 py-2 border border-gray-100">
-              <span className="text-gray-600">Current</span>
+              <span className="text-gray-600">Ends</span>
               <span className="font-semibold text-gray-900">
-                {currentEvent ? currentEvent.title : nextEvent ? 'Free until next' : 'No bookings'}
+                {currentEvent ? formatTime(currentEvent.end, timeFormat) : '—'}
               </span>
             </div>
             <div className="flex items-center justify-between rounded-xl bg-gray-50 px-3 py-2 border border-gray-100">
-              <span className="text-gray-600">Time to next</span>
+              <span className="text-gray-600">Next starts</span>
               <span className="font-semibold text-gray-900">
-                {nextEvent ? formatDuration(nextEvent.start.getTime() - now.getTime()) : '—'}
+                {nextEvent ? formatTime(nextEvent.start, timeFormat) : '—'}
               </span>
             </div>
             <div className="flex items-center justify-between rounded-xl bg-gray-50 px-3 py-2 border border-gray-100">
-              <span className="text-gray-600">Buffer</span>
-              <span className="font-semibold text-gray-900">
-                {currentEvent && nextEvent
-                  ? formatDuration(nextEvent.start.getTime() - currentEvent.end.getTime())
-                  : nextEvent
-                    ? formatDuration(nextEvent.start.getTime() - now.getTime())
-                    : '—'}
-              </span>
+              <span className="text-gray-600">Gap</span>
+              <span className="font-semibold text-gray-900">{gapLabel}</span>
             </div>
           </div>
         </div>
