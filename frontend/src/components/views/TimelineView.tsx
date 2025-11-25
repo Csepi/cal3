@@ -297,43 +297,44 @@ const TimelineView: React.FC<TimelineViewProps> = ({
 
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 flex flex-col gap-3">
           <div className="flex items-center justify-between">
-            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Stay on track</p>
+            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Flow control</p>
             <span className="text-[11px] px-2 py-0.5 rounded-full bg-blue-50 text-blue-700">
-              {currentEvent ? 'In flow' : nextEvent ? 'Between tasks' : 'Wide open'}
+              {currentEvent ? 'In session' : nextEvent ? 'Idle' : 'Free'}
             </span>
           </div>
-          <ul className="space-y-2 text-sm text-gray-700">
-            <li className="flex items-start gap-2">
-              <span className="mt-1 inline-block w-2 h-2 rounded-full" style={{ background: withAlpha(focusColor, 0.8) }}></span>
-              <div>
-                <p className="font-semibold">Name it</p>
-                <p className="text-gray-600 text-xs">Say out loud what you’re doing for the next 20–30 min.</p>
-              </div>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="mt-1 inline-block w-2 h-2 rounded-full" style={{ background: withAlpha(focusColor, 0.6) }}></span>
-              <div>
-                <p className="font-semibold">Clear one distraction</p>
-                <p className="text-gray-600 text-xs">Close one tab/DM or silence phone for this block.</p>
-              </div>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="mt-1 inline-block w-2 h-2 rounded-full" style={{ background: withAlpha(focusColor, 0.5) }}></span>
-              <div>
-                <p className="font-semibold">Body check</p>
-                <p className="text-gray-600 text-xs">Water, stretch, breathe 4-7-8 once.</p>
-              </div>
-            </li>
-          </ul>
+          <div className="grid grid-cols-1 gap-2 text-sm text-gray-700">
+            <div className="flex items-center justify-between rounded-xl bg-gray-50 px-3 py-2 border border-gray-100">
+              <span className="text-gray-600">Current</span>
+              <span className="font-semibold text-gray-900">
+                {currentEvent ? currentEvent.title : nextEvent ? 'Free until next' : 'No bookings'}
+              </span>
+            </div>
+            <div className="flex items-center justify-between rounded-xl bg-gray-50 px-3 py-2 border border-gray-100">
+              <span className="text-gray-600">Time to next</span>
+              <span className="font-semibold text-gray-900">
+                {nextEvent ? formatDuration(nextEvent.start.getTime() - now.getTime()) : '—'}
+              </span>
+            </div>
+            <div className="flex items-center justify-between rounded-xl bg-gray-50 px-3 py-2 border border-gray-100">
+              <span className="text-gray-600">Buffer</span>
+              <span className="font-semibold text-gray-900">
+                {currentEvent && nextEvent
+                  ? formatDuration(nextEvent.start.getTime() - currentEvent.end.getTime())
+                  : nextEvent
+                    ? formatDuration(nextEvent.start.getTime() - now.getTime())
+                    : '—'}
+              </span>
+            </div>
+          </div>
         </div>
 
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 flex flex-col gap-2">
           <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Context switch kit</p>
           {nextEvent ? (
             <ul className="space-y-1 text-sm text-gray-700">
-              <li>- Capture 2 decisions or blockers from this meeting.</li>
+              <li>- Capture 2 decisions or blockers before you leave.</li>
               <li>- Drop a 2-line status note for "{nextEvent.title}".</li>
-              <li>- Park follow-ups in a quick note so work calendar stays clean.</li>
+              <li>- Park follow-ups in one quick note so the calendar stays clean.</li>
             </ul>
           ) : (
             <p className="text-sm text-gray-600">Use this breathing room to brain-dump loose thoughts.</p>
