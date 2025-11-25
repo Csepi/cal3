@@ -342,9 +342,9 @@ const TimelineView: React.FC<TimelineViewProps> = ({
       </div>
 
       {/* Timeline */}
-      <div className="relative bg-white rounded-3xl shadow-sm border border-gray-100 p-4 md:p-6 overflow-hidden pl-6 md:pl-10">
+      <div className="relative bg-white rounded-3xl shadow-sm border border-gray-100 p-4 md:p-6 overflow-hidden pl-8 md:pl-12">
         <div
-          className="absolute left-6 md:left-9 top-4 bottom-4 w-1 rounded-full"
+          className="absolute left-8 md:left-11 top-4 bottom-4 w-1 rounded-full"
           style={{
             background: `linear-gradient(to bottom, ${withAlpha(focusColor, 0.6)}, ${withAlpha(focusColor, 0.08)})`
           }}
@@ -363,10 +363,10 @@ const TimelineView: React.FC<TimelineViewProps> = ({
             const eventColor = item.eventColor || item.color || calendarColor;
 
             return (
-              <div key={item.id} className="grid grid-cols-[56px,1fr] md:grid-cols-[64px,1fr] gap-3 items-start">
-                <div className="flex flex-col items-center pt-1 text-xs text-gray-600">
+              <div key={item.id} className="grid grid-cols-[60px,1fr] md:grid-cols-[72px,1fr] gap-3 items-start">
+                <div className="flex flex-col items-start text-xs text-gray-600 leading-none pt-0.5">
                   <span className="w-2.5 h-2.5 rounded-full border border-white shadow-sm" style={{ background: eventColor }}></span>
-                  <span className="mt-1 font-semibold text-gray-700">{formatTime(item.start, timeFormat)}</span>
+                  <span className="mt-2 font-semibold text-gray-700">{formatTime(item.start, timeFormat)}</span>
                 </div>
                 <button
                   onClick={() => onEventClick(item)}
@@ -424,7 +424,7 @@ const TimelineView: React.FC<TimelineViewProps> = ({
                         className="h-full rounded-full"
                         style={{
                           width: `${currentProgress}%`,
-                          background: `linear-gradient(90deg, ${withAlpha(eventColor, 0.95)}, ${withAlpha(calendarColor, 0.95)})`
+                          background: `linear-gradient(90deg, ${withAlpha(calendarColor, 0.95)}, ${withAlpha(eventColor, 0.95)})`
                         }}
                       ></div>
                     </div>
