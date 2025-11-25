@@ -207,17 +207,11 @@ const TimelineView: React.FC<TimelineViewProps> = ({
       ? 'bg-amber-100 text-amber-700'
       : 'bg-emerald-100 text-emerald-700';
 
-  const daySpanMs = dayEnd.getTime() - dayStart.getTime();
-  const toPercent = (date: Date) => clamp(((date.getTime() - dayStart.getTime()) / daySpanMs) * 100, 0, 100);
-  const eventBlocks = normalizedEvents.map(ev => {
-    const startPct = toPercent(ev.start);
-    const endPct = toPercent(ev.end);
-    return {
-      startPct,
-      widthPct: clamp(endPct - startPct, 2, 100),
-      color: ev.eventColor || ev.color || ev.calendarColor || focusColor
-    };
-  });
+  const overlapCounts = normalizedEvents.reduce<Record<string, number>>((acc, ev) => {
+    const key = `${ev.start.toISOString()}-${ev.end.toISOString()}`;
+    acc[key] = (acc[key] || 0) + 1;
+    return acc;
+  }, {});
 
   return (
     <div className={`h-full bg-gray-50 p-4 md:p-6 ${verticalSpacing}`}>
@@ -296,8 +290,8 @@ const TimelineView: React.FC<TimelineViewProps> = ({
       </div>
 
       {/* Quick glance cards */}
-      <div className="grid md:grid-cols-2 gap-3">
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 flex flex-col gap-3">
+      <div className="grid md:grid-cols-3 gap-3">
+        <div className="md:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 p-4 flex flex-col gap-3">
           <div className="flex items-center justify-between">
             <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Now & next</p>
             <span className={`text-[11px] px-2 py-0.5 rounded-full ${backToBackTone}`}>
@@ -305,18 +299,6 @@ const TimelineView: React.FC<TimelineViewProps> = ({
             </span>
           </div>
           <div className="grid grid-cols-1 gap-2 text-sm text-gray-700">
-            <div className="flex items-center justify-between rounded-xl bg-gray-50 px-3 py-2 border border-gray-100">
-              <span className="text-gray-600">Current</span>
-              <span className="font-semibold text-gray-900">
-                {currentEvent ? currentEvent.title : nextEvent ? 'Free until next' : 'No bookings'}
-              </span>
-            </div>
-            <div className="flex items-center justify-between rounded-xl bg-gray-50 px-3 py-2 border border-gray-100">
-              <span className="text-gray-600">Ends</span>
-              <span className="font-semibold text-gray-900">
-                {currentEvent ? formatTime(currentEvent.end, timeFormat) : '—'}
-              </span>
-            </div>
             <div className="flex items-center justify-between rounded-xl bg-gray-50 px-3 py-2 border border-gray-100">
               <span className="text-gray-600">Next</span>
               <span className="font-semibold text-gray-900">
@@ -327,33 +309,23 @@ const TimelineView: React.FC<TimelineViewProps> = ({
               <span className="text-gray-600">Gap</span>
               <span className="font-semibold text-gray-900">{gapLabel}</span>
             </div>
-          </div>
-          <div className="mt-2">
-            <div className="relative h-2 bg-gray-100 rounded-full overflow-hidden">
-              {eventBlocks.map((block, idx) => (
-                <div
-                  key={idx}
-                  className="absolute top-0 h-full rounded-full"
-                  style={{
-                    left: `${block.startPct}%`,
-                    width: `${block.widthPct}%`,
-                    background: `linear-gradient(135deg, ${withAlpha(block.color, 0.7)}, ${withAlpha(block.color, 0.9)})`
-                  }}
-                ></div>
-              ))}
-              <div
-                className="absolute -top-0.5 w-3 h-3 rounded-full border-2 border-white shadow"
-                style={{
-                  left: `${dayProgress}%`,
-                  background: focusColor,
-                  transform: 'translateX(-50%)'
-                }}
-              ></div>
+            <div className="flex items-center justify-between rounded-xl bg-gray-50 px-3 py-2 border border-gray-100">
+              <span className="text-gray-600">Calendar</span>
+              <span className="font-semibold text-gray-900">
+                {nextEvent?.calendarName || currentEvent?.calendarName || '—'}
+              </span>
             </div>
-            <div className="flex items-center justify-between text-[11px] text-gray-500 mt-1">
-              <span>00:00</span>
-              <span className="font-semibold text-gray-700">Now {formatTime(now, timeFormat)}</span>
-              <span>24:00</span>
+            <div className="flex items-center justify-between rounded-xl bg-gray-50 px-3 py-2 border border-gray-100">
+              <span className="text-gray-600">Location</span>
+              <span className="font-semibold text-gray-900 truncate">
+                {nextEvent?.location || currentEvent?.location || '—'}
+              </span>
+            </div>
+            <div className="flex items-center justify-between rounded-xl bg-gray-50 px-3 py-2 border border-gray-100">
+              <span className="text-gray-600">Prep window</span>
+              <span className="font-semibold text-gray-900">
+                {prepWindowMinutes !== null ? `${prepWindowMinutes} min` : '—'}
+              </span>
             </div>
           </div>
         </div>
@@ -424,17 +396,22 @@ const TimelineView: React.FC<TimelineViewProps> = ({
                     transformOrigin: 'left center'
                   }}
                 >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <h4 className="text-sm md:text-base font-semibold text-gray-900 leading-snug">{item.title}</h4>
-                        <span className={`text-[11px] px-2 py-0.5 rounded-full font-semibold ${isCurrent ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-700'}`}>
-                          {statusLabel}
-                        </span>
-                        {(item.parentEventId || item.recurrenceId || item.isRecurring) && (
-                          <span className="text-[10px]" title="Recurring event">🔄</span>
-                        )}
-                      </div>
+          <div className="flex items-start justify-between gap-3">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <h4 className="text-sm md:text-base font-semibold text-gray-900 leading-snug">{item.title}</h4>
+                <span className={`text-[11px] px-2 py-0.5 rounded-full font-semibold ${isCurrent ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-700'}`}>
+                  {statusLabel}
+                </span>
+                {overlapCounts[`${item.start.toISOString()}-${item.end.toISOString()}`] > 1 && (
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-100">
+                    Parallel x{overlapCounts[`${item.start.toISOString()}-${item.end.toISOString()}`]}
+                  </span>
+                )}
+                {(item.parentEventId || item.recurrenceId || item.isRecurring) && (
+                  <span className="text-[10px]" title="Recurring event">🔄</span>
+                )}
+              </div>
                       <p className="text-xs text-gray-700">
                         {formatTimeRange(item.start, item.end, timeFormat, item.isAllDay)} - {item.calendarName}
                       </p>
