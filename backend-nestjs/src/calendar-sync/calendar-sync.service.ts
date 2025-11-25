@@ -9,6 +9,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { DateTime } from 'luxon';
 import {
   CalendarSyncConnection,
   SyncedCalendar,
@@ -678,6 +679,7 @@ export class CalendarSyncService {
     );
 
     let externalEvents: any[] = [];
+    const userTimezone = await this.getUserTimezone(syncConnection.userId);
 
     if (syncConnection.provider === SyncProvider.MICROSOFT) {
       externalEvents = await this.fetchMicrosoftCalendarEvents(
@@ -700,23 +702,40 @@ export class CalendarSyncService {
       where: { syncedCalendarId: syncedCalendar.id },
     });
 
-    const mappedExternalIds = new Set(
-      existingMappings.map((m) => m.externalEventId),
+    const mappingByExternalId = new Map(
+      existingMappings.map((m) => [m.externalEventId, m]),
     );
 
-    // Create new events that don't exist locally
     for (const externalEvent of externalEvents) {
-      if (!mappedExternalIds.has(externalEvent.id)) {
+      const mapping = mappingByExternalId.get(externalEvent.id);
+
+      if (!mapping) {
         try {
           await this.createLocalEventFromExternal(
             syncConnection,
             syncedCalendar,
             externalEvent,
             automationSettings,
+            userTimezone,
           );
         } catch (error) {
           this.logger.error(
             `[syncCalendarEvents] Error creating local event from external event ${externalEvent.id}:`,
+            error.stack,
+          );
+        }
+      } else {
+        try {
+          await this.updateLocalEventFromExternal(
+            syncConnection,
+            syncedCalendar,
+            externalEvent,
+            mapping,
+            userTimezone,
+          );
+        } catch (error) {
+          this.logger.error(
+            `[syncCalendarEvents] Error updating local event from external event ${externalEvent.id}:`,
             error.stack,
           );
         }
@@ -818,30 +837,29 @@ export class CalendarSyncService {
     }
   }
 
-  private async createLocalEventFromExternal(
-    syncConnection: CalendarSyncConnection,
-    syncedCalendar: SyncedCalendar,
-    externalEvent: any,
-    automationSettings?: {
-      triggerAutomationRules?: boolean;
-      selectedRuleIds?: number[];
-    },
-  ): Promise<void> {
-    this.logger.log(
-      `[createLocalEventFromExternal] Creating local event from external: ${externalEvent.id} - ${externalEvent.subject || externalEvent.summary}`,
-    );
-
-    // Get user timezone preference (default to UTC if not set)
+  private async getUserTimezone(userId: number): Promise<string> {
     const user = await this.userRepository.findOne({
-      where: { id: syncConnection.userId },
+      where: { id: userId },
       select: ['timezone'],
     });
-    const userTimezone = user?.timezone || 'UTC';
+    return this.getSafeUserTimezone(user?.timezone);
+  }
 
+  private getExternalLastModified(externalEvent: any): Date {
+    const source =
+      externalEvent?.lastModifiedDateTime || externalEvent?.updated || null;
+    const parsed = source ? new Date(source) : new Date();
+    return isNaN(parsed.getTime()) ? new Date() : parsed;
+  }
+
+  private buildLocalEventData(
+    syncConnection: CalendarSyncConnection,
+    externalEvent: any,
+    userTimezone: string,
+  ): Partial<Event> {
     let eventData: any = {};
 
     if (syncConnection.provider === SyncProvider.MICROSOFT) {
-      // Microsoft Graph event format
       eventData = {
         title: externalEvent.subject || 'Untitled Event',
         description:
@@ -857,22 +875,22 @@ export class CalendarSyncService {
           );
           eventData.startTime = null;
         } else {
-          // Parse the external datetime with timezone info
-          const startDateTime = new Date(externalEvent.start.dateTime);
-
-          // Convert to user's timezone
-          const userLocalString = startDateTime.toLocaleString('sv-SE', {
-            timeZone: userTimezone,
-          });
-          const [datePart, timePart] = userLocalString.split(' ');
-
-          // Extract date and time in user timezone
-          eventData.startDate = datePart; // YYYY-MM-DD format (sv-SE locale gives ISO date format)
-          eventData.startTime = timePart.substring(0, 5); // HH:MM format
+          const start = this.convertToUserDateTime(
+            externalEvent.start.dateTime,
+            userTimezone,
+            [
+              externalEvent.start.timeZone,
+              externalEvent.originalStartTimeZone,
+              externalEvent.originalEndTimeZone,
+            ],
+          );
+          if (start) {
+            eventData.startDate = start.datePart;
+            eventData.startTime = start.timePart;
+          }
         }
       }
 
-      // Handle recurrence for Microsoft Graph
       if (externalEvent.recurrence) {
         const recurrenceData = this.parseMicrosoftRecurrence(
           externalEvent.recurrence,
@@ -883,9 +901,7 @@ export class CalendarSyncService {
         eventData.recurrenceType = RecurrenceType.NONE;
       }
 
-      // Handle recurring event instance vs parent for Microsoft
       if (externalEvent.seriesMasterId) {
-        // This is an instance of a recurring event
         eventData.parentEventId = externalEvent.seriesMasterId;
         eventData.recurrenceId = externalEvent.id;
         if (externalEvent.originalStart) {
@@ -900,31 +916,30 @@ export class CalendarSyncService {
           );
           eventData.endTime = null;
         } else {
-          // Parse the external datetime with timezone info
-          const endDateTime = new Date(externalEvent.end.dateTime);
-
-          // Convert to user's timezone
-          const userLocalString = endDateTime.toLocaleString('sv-SE', {
-            timeZone: userTimezone,
-          });
-          const [datePart, timePart] = userLocalString.split(' ');
-
-          // Extract date and time in user timezone
-          eventData.endDate = datePart; // YYYY-MM-DD format (sv-SE locale gives ISO date format)
-          eventData.endTime = timePart.substring(0, 5); // HH:MM format
+          const end = this.convertToUserDateTime(
+            externalEvent.end.dateTime,
+            userTimezone,
+            [
+              externalEvent.end.timeZone,
+              externalEvent.originalEndTimeZone,
+              externalEvent.originalStartTimeZone,
+            ],
+          );
+          if (end) {
+            eventData.endDate = end.datePart;
+            eventData.endTime = end.timePart;
+          }
         }
       }
     } else if (syncConnection.provider === SyncProvider.GOOGLE) {
-      // Google Calendar event format
       eventData = {
         title: externalEvent.summary || 'Untitled Event',
         description: externalEvent.description || '',
         location: externalEvent.location || '',
       };
 
-      // Handle recurrence for Google Calendar
       if (externalEvent.recurrence && externalEvent.recurrence.length > 0) {
-        const rrule = externalEvent.recurrence[0]; // Google uses RRULE format
+        const rrule = externalEvent.recurrence[0];
         const recurrenceData = this.parseGoogleRecurrence(rrule);
         eventData.recurrenceType = recurrenceData.type;
         eventData.recurrenceRule = JSON.stringify(recurrenceData.rule);
@@ -932,9 +947,7 @@ export class CalendarSyncService {
         eventData.recurrenceType = RecurrenceType.NONE;
       }
 
-      // Handle recurring event instance vs parent
       if (externalEvent.recurringEventId) {
-        // This is an instance of a recurring event
         eventData.parentEventId = externalEvent.recurringEventId;
         eventData.recurrenceId = externalEvent.id;
         if (externalEvent.originalStartTime) {
@@ -947,25 +960,20 @@ export class CalendarSyncService {
 
       if (externalEvent.start) {
         if (externalEvent.start.date) {
-          // All-day event
           eventData.isAllDay = true;
           eventData.startDate = new Date(externalEvent.start.date);
           eventData.startTime = null;
         } else if (externalEvent.start.dateTime) {
-          // Timed event
           eventData.isAllDay = false;
-          // Parse the external datetime with timezone info
-          const startDateTime = new Date(externalEvent.start.dateTime);
-
-          // Convert to user's timezone
-          const userLocalString = startDateTime.toLocaleString('sv-SE', {
-            timeZone: userTimezone,
-          });
-          const [datePart, timePart] = userLocalString.split(' ');
-
-          // Extract date and time in user timezone
-          eventData.startDate = datePart; // YYYY-MM-DD format (sv-SE locale gives ISO date format)
-          eventData.startTime = timePart.substring(0, 5); // HH:MM format
+          const start = this.convertToUserDateTime(
+            externalEvent.start.dateTime,
+            userTimezone,
+            [externalEvent.start.timeZone],
+          );
+          if (start) {
+            eventData.startDate = start.datePart;
+            eventData.startTime = start.timePart;
+          }
         }
       }
 
@@ -974,21 +982,45 @@ export class CalendarSyncService {
           eventData.endDate = new Date(externalEvent.end.date);
           eventData.endTime = null;
         } else if (externalEvent.end.dateTime) {
-          // Parse the external datetime with timezone info
-          const endDateTime = new Date(externalEvent.end.dateTime);
-
-          // Convert to user's timezone
-          const userLocalString = endDateTime.toLocaleString('sv-SE', {
-            timeZone: userTimezone,
-          });
-          const [datePart, timePart] = userLocalString.split(' ');
-
-          // Extract date and time in user timezone
-          eventData.endDate = datePart; // YYYY-MM-DD format (sv-SE locale gives ISO date format)
-          eventData.endTime = timePart.substring(0, 5); // HH:MM format
+          const end = this.convertToUserDateTime(
+            externalEvent.end.dateTime,
+            userTimezone,
+            [externalEvent.end.timeZone],
+          );
+          if (end) {
+            eventData.endDate = end.datePart;
+            eventData.endTime = end.timePart;
+          }
         }
       }
     }
+
+    return eventData;
+  }
+
+  private async createLocalEventFromExternal(
+    syncConnection: CalendarSyncConnection,
+    syncedCalendar: SyncedCalendar,
+    externalEvent: any,
+    automationSettings?: {
+      triggerAutomationRules?: boolean;
+      selectedRuleIds?: number[];
+    },
+    userTimezone?: string,
+  ): Promise<void> {
+    this.logger.log(
+      `[createLocalEventFromExternal] Creating local event from external: ${externalEvent.id} - ${externalEvent.subject || externalEvent.summary}`,
+    );
+
+    const resolvedUserTimezone =
+      userTimezone ||
+      (await this.getUserTimezone(syncConnection.userId)) ||
+      'UTC';
+    const eventData = this.buildLocalEventData(
+      syncConnection,
+      externalEvent,
+      resolvedUserTimezone,
+    );
 
     // Create the local event
     const localEvent = this.eventRepository.create({
@@ -1017,9 +1049,7 @@ export class CalendarSyncService {
       localEventId: savedEvent.id,
       externalEventId: externalEvent.id,
       lastModifiedExternal: new Date(
-        externalEvent.lastModifiedDateTime ||
-          externalEvent.updated ||
-          new Date(),
+        this.getExternalLastModified(externalEvent),
       ),
       lastModifiedLocal: new Date(),
     });
@@ -1028,6 +1058,65 @@ export class CalendarSyncService {
 
     this.logger.log(
       `[createLocalEventFromExternal] Created local event ID: ${savedEvent.id} mapped to external ID: ${externalEvent.id}`,
+    );
+  }
+
+  private async updateLocalEventFromExternal(
+    syncConnection: CalendarSyncConnection,
+    syncedCalendar: SyncedCalendar,
+    externalEvent: any,
+    existingMapping: SyncEventMapping,
+    userTimezone: string,
+  ): Promise<void> {
+    const localEvent = await this.eventRepository.findOne({
+      where: { id: existingMapping.localEventId },
+    });
+
+    if (!localEvent) {
+      // Mapping is stale; recreate event and mapping
+      await this.createLocalEventFromExternal(
+        syncConnection,
+        syncedCalendar,
+        externalEvent,
+        undefined,
+        userTimezone,
+      );
+      return;
+    }
+
+    const eventData = this.buildLocalEventData(
+      syncConnection,
+      externalEvent,
+      userTimezone,
+    );
+
+    const before = {
+      startDate: localEvent.startDate,
+      startTime: localEvent.startTime,
+      endDate: localEvent.endDate,
+      endTime: localEvent.endTime,
+    };
+
+    for (const [key, value] of Object.entries(eventData)) {
+      if (value !== undefined) {
+        (localEvent as any)[key] = value as any;
+      }
+    }
+
+    await this.eventRepository.save(localEvent);
+
+    existingMapping.lastModifiedExternal = this.getExternalLastModified(
+      externalEvent,
+    );
+    existingMapping.lastModifiedLocal = new Date();
+    await this.syncEventMappingRepository.save(existingMapping);
+
+    this.logger.log(
+      `[updateLocalEventFromExternal] Updated local event ID: ${
+        localEvent.id
+      } from external ID: ${externalEvent.id}; start ${before.startTime} -> ${
+        localEvent.startTime
+      }, end ${before.endTime} -> ${localEvent.endTime}`,
     );
   }
 
@@ -1131,6 +1220,94 @@ export class CalendarSyncService {
     };
 
     return { type, rule };
+  }
+
+  private getSafeUserTimezone(timeZone?: string): string {
+    const fallback = 'UTC';
+    if (!timeZone) return fallback;
+
+    try {
+      new Intl.DateTimeFormat('en-US', { timeZone }).format(new Date());
+      return timeZone;
+    } catch (error) {
+      this.logger.warn(
+        `[calendar-sync] Invalid user timezone "${timeZone}", falling back to ${fallback}`,
+      );
+      return fallback;
+    }
+  }
+
+  private resolveTimeZone(timeZone?: string): string | undefined {
+    if (!timeZone) return undefined;
+
+    const trimmed = timeZone.trim();
+    const mapped = this.mapWindowsToIana(trimmed);
+    const candidate = mapped || trimmed;
+
+    try {
+      new Intl.DateTimeFormat('en-US', { timeZone: candidate }).format(
+        new Date(),
+      );
+      return candidate;
+    } catch {
+      return undefined;
+    }
+  }
+
+  private convertToUserDateTime(
+    rawDateTime: string | undefined,
+    userTimezone: string,
+    preferredSourceTimezones: (string | undefined)[],
+  ): { datePart: string; timePart: string } | null {
+    if (!rawDateTime) return null;
+
+    const sourceZone =
+      preferredSourceTimezones
+        .map((tz) => this.resolveTimeZone(tz))
+        .find((tz): tz is string => !!tz) || 'UTC';
+
+    const hasOffset = /([zZ]|[+-]\d{2}:?\d{2})$/.test(rawDateTime);
+
+    let sourceDateTime = DateTime.fromISO(rawDateTime, {
+      zone: hasOffset ? undefined : sourceZone,
+      setZone: true,
+    });
+
+    if (!sourceDateTime.isValid) {
+      sourceDateTime = DateTime.fromJSDate(new Date(rawDateTime)).setZone(
+        sourceZone,
+      );
+    }
+
+    const userDateTime = sourceDateTime.setZone(userTimezone);
+    if (!userDateTime.isValid) return null;
+
+    return {
+      datePart: userDateTime.toISODate(),
+      timePart: userDateTime.toFormat('HH:mm'),
+    };
+  }
+
+  private mapWindowsToIana(timeZone: string): string | undefined {
+    const normalized = timeZone.toLowerCase();
+    const windowsToIana: Record<string, string> = {
+      utc: 'UTC',
+      'w. europe standard time': 'Europe/Berlin',
+      'central europe standard time': 'Europe/Budapest',
+      'central european standard time': 'Europe/Warsaw',
+      'romance standard time': 'Europe/Paris',
+      'gmt standard time': 'Europe/London',
+      'greenwich standard time': 'Etc/Greenwich',
+      'e. europe standard time': 'Europe/Bucharest',
+      'eastern standard time': 'America/New_York',
+      'pacific standard time': 'America/Los_Angeles',
+      'mountain standard time': 'America/Denver',
+      'china standard time': 'Asia/Shanghai',
+      'tokyo standard time': 'Asia/Tokyo',
+      'india standard time': 'Asia/Kolkata',
+    };
+
+    return windowsToIana[normalized];
   }
 
   /**
