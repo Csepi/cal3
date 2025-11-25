@@ -207,6 +207,18 @@ const TimelineView: React.FC<TimelineViewProps> = ({
       ? 'bg-amber-100 text-amber-700'
       : 'bg-emerald-100 text-emerald-700';
 
+  const daySpanMs = dayEnd.getTime() - dayStart.getTime();
+  const toPercent = (date: Date) => clamp(((date.getTime() - dayStart.getTime()) / daySpanMs) * 100, 0, 100);
+  const eventBlocks = normalizedEvents.map(ev => {
+    const startPct = toPercent(ev.start);
+    const endPct = toPercent(ev.end);
+    return {
+      startPct,
+      widthPct: clamp(endPct - startPct, 2, 100),
+      color: ev.eventColor || ev.color || ev.calendarColor || focusColor
+    };
+  });
+
   return (
     <div className={`h-full bg-gray-50 p-4 md:p-6 ${verticalSpacing}`}>
       {/* Live focus header */}
@@ -284,43 +296,21 @@ const TimelineView: React.FC<TimelineViewProps> = ({
       </div>
 
       {/* Quick glance cards */}
-      <div className="grid md:grid-cols-3 gap-3">
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 flex flex-col gap-2">
-          <div className="flex items-center justify-between">
-            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Up next</p>
-            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] bg-amber-100 text-amber-700">
-              {nextEvent ? formatDuration(nextEvent.start.getTime() - now.getTime()) : 'Nothing scheduled'}
-            </span>
-          </div>
-          {nextEvent ? (
-            <>
-              <h4 className="text-base font-semibold text-gray-900">{nextEvent.title}</h4>
-              <p className="text-sm text-gray-600">
-                {formatTimeRange(nextEvent.start, nextEvent.end, timeFormat, nextEvent.isAllDay)}
-              </p>
-              <div className="flex items-center gap-2 text-xs text-gray-600">
-                <span className="inline-block w-2 h-2 rounded-full" style={{ backgroundColor: nextEvent.color }}></span>
-                <span>{nextEvent.calendarName}</span>
-              </div>
-              {prepWindowMinutes !== null && (
-                <p className="text-xs text-gray-500">
-                  Prep window: {prepWindowMinutes >= 15 ? `${prepWindowMinutes} min` : 'Tight — glance at details now'}
-                </p>
-              )}
-            </>
-          ) : (
-            <p className="text-sm text-gray-600">You have open space. Perfect for deep work or a break.</p>
-          )}
-        </div>
-
+      <div className="grid md:grid-cols-2 gap-3">
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 flex flex-col gap-3">
           <div className="flex items-center justify-between">
-            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Flow control</p>
+            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Now & next</p>
             <span className={`text-[11px] px-2 py-0.5 rounded-full ${backToBackTone}`}>
               {backToBackLabel} buffer
             </span>
           </div>
           <div className="grid grid-cols-1 gap-2 text-sm text-gray-700">
+            <div className="flex items-center justify-between rounded-xl bg-gray-50 px-3 py-2 border border-gray-100">
+              <span className="text-gray-600">Current</span>
+              <span className="font-semibold text-gray-900">
+                {currentEvent ? currentEvent.title : nextEvent ? 'Free until next' : 'No bookings'}
+              </span>
+            </div>
             <div className="flex items-center justify-between rounded-xl bg-gray-50 px-3 py-2 border border-gray-100">
               <span className="text-gray-600">Ends</span>
               <span className="font-semibold text-gray-900">
@@ -328,14 +318,42 @@ const TimelineView: React.FC<TimelineViewProps> = ({
               </span>
             </div>
             <div className="flex items-center justify-between rounded-xl bg-gray-50 px-3 py-2 border border-gray-100">
-              <span className="text-gray-600">Next starts</span>
+              <span className="text-gray-600">Next</span>
               <span className="font-semibold text-gray-900">
-                {nextEvent ? formatTime(nextEvent.start, timeFormat) : '—'}
+                {nextEvent ? `${nextEvent.title} @ ${formatTime(nextEvent.start, timeFormat)}` : '—'}
               </span>
             </div>
             <div className="flex items-center justify-between rounded-xl bg-gray-50 px-3 py-2 border border-gray-100">
               <span className="text-gray-600">Gap</span>
               <span className="font-semibold text-gray-900">{gapLabel}</span>
+            </div>
+          </div>
+          <div className="mt-2">
+            <div className="relative h-2 bg-gray-100 rounded-full overflow-hidden">
+              {eventBlocks.map((block, idx) => (
+                <div
+                  key={idx}
+                  className="absolute top-0 h-full rounded-full"
+                  style={{
+                    left: `${block.startPct}%`,
+                    width: `${block.widthPct}%`,
+                    background: `linear-gradient(135deg, ${withAlpha(block.color, 0.7)}, ${withAlpha(block.color, 0.9)})`
+                  }}
+                ></div>
+              ))}
+              <div
+                className="absolute -top-0.5 w-3 h-3 rounded-full border-2 border-white shadow"
+                style={{
+                  left: `${dayProgress}%`,
+                  background: focusColor,
+                  transform: 'translateX(-50%)'
+                }}
+              ></div>
+            </div>
+            <div className="flex items-center justify-between text-[11px] text-gray-500 mt-1">
+              <span>00:00</span>
+              <span className="font-semibold text-gray-700">Now {formatTime(now, timeFormat)}</span>
+              <span>24:00</span>
             </div>
           </div>
         </div>
@@ -344,9 +362,9 @@ const TimelineView: React.FC<TimelineViewProps> = ({
           <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Context switch kit</p>
           {nextEvent ? (
             <ul className="space-y-1 text-sm text-gray-700">
-              <li>- Capture 2 decisions or blockers before you leave.</li>
+              <li>- Capture decisions/blockers before you leave.</li>
               <li>- Drop a 2-line status note for "{nextEvent.title}".</li>
-              <li>- Park follow-ups in one quick note so the calendar stays clean.</li>
+              <li>- Queue follow-ups (tickets/DMs) in one quick note.</li>
             </ul>
           ) : (
             <p className="text-sm text-gray-600">Use this breathing room to brain-dump loose thoughts.</p>
