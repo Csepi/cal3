@@ -333,9 +333,9 @@ const TimelineView: React.FC<TimelineViewProps> = ({
       </div>
 
       {/* Timeline */}
-      <div className="relative bg-white rounded-3xl shadow-sm border border-gray-100 p-4 md:p-6 overflow-hidden">
+      <div className="relative bg-white rounded-3xl shadow-sm border border-gray-100 p-4 md:p-6 overflow-hidden pl-6 md:pl-10">
         <div
-          className="absolute left-6 top-4 bottom-4 w-1 rounded-full"
+          className="absolute left-6 md:left-9 top-4 bottom-4 w-1 rounded-full"
           style={{
             background: `linear-gradient(to bottom, ${withAlpha(focusColor, 0.6)}, ${withAlpha(focusColor, 0.08)})`
           }}
@@ -352,73 +352,74 @@ const TimelineView: React.FC<TimelineViewProps> = ({
             const statusLabel = isCurrent ? 'Live' : isPast ? 'Finished' : 'Upcoming';
 
             return (
-              <button
-                key={item.id}
-                onClick={() => onEventClick(item)}
-                className={`w-full text-left rounded-2xl border border-gray-100 px-4 py-3 transition-all duration-300 relative ${
-                  isCurrent
-                    ? 'ring-2 ring-offset-2'
-                    : 'hover:-translate-y-0.5 hover:shadow-lg'
-                } ${isPast ? 'opacity-60 saturate-[0.4]' : ''}`}
-                style={{
-                  borderLeft: `6px solid ${item.color}`,
-                  background: `linear-gradient(135deg, ${withAlpha(item.color, isPast ? 0.08 : 0.16)}, ${withAlpha(item.color, isPast ? 0.05 : 0.24)})`,
-                  boxShadow: isCurrent
-                    ? `0 15px 30px ${withAlpha(item.color, 0.25)}`
-                    : `0 8px 20px ${withAlpha(item.color, 0.12)}`,
-                  transformOrigin: 'left center'
-                }}
-              >
-                <div className="absolute -left-8 top-1.5 flex items-center gap-2 text-xs text-gray-500">
+              <div key={item.id} className="grid grid-cols-[56px,1fr] md:grid-cols-[64px,1fr] gap-3 items-start">
+                <div className="flex flex-col items-center pt-1 text-xs text-gray-600">
                   <span className="w-2.5 h-2.5 rounded-full border border-white shadow-sm" style={{ background: item.color }}></span>
-                  <span className="font-semibold text-gray-700">{formatTime(item.start, timeFormat)}</span>
+                  <span className="mt-1 font-semibold text-gray-700">{formatTime(item.start, timeFormat)}</span>
                 </div>
-                <div className="flex items-start justify-between gap-3">
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <h4 className="text-sm md:text-base font-semibold text-gray-900 leading-snug">{item.title}</h4>
-                      <span className={`text-[11px] px-2 py-0.5 rounded-full font-semibold ${isCurrent ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-700'}`}>
-                        {statusLabel}
-                      </span>
-                      {(item.parentEventId || item.recurrenceId || item.isRecurring) && (
-                        <span className="text-[10px]" title="Recurring event">🔄</span>
+                <button
+                  onClick={() => onEventClick(item)}
+                  className={`w-full text-left rounded-2xl border border-gray-100 px-4 py-3 transition-all duration-300 relative ${
+                    isCurrent
+                      ? 'ring-2 ring-offset-2'
+                      : 'hover:-translate-y-0.5 hover:shadow-lg'
+                  } ${isPast ? 'opacity-60 saturate-[0.4]' : ''}`}
+                  style={{
+                    borderLeft: `6px solid ${item.color}`,
+                    background: `linear-gradient(135deg, ${withAlpha(item.color, isPast ? 0.08 : 0.16)}, ${withAlpha(item.color, isPast ? 0.05 : 0.24)})`,
+                    boxShadow: isCurrent
+                      ? `0 15px 30px ${withAlpha(item.color, 0.25)}`
+                      : `0 8px 20px ${withAlpha(item.color, 0.12)}`,
+                    transformOrigin: 'left center'
+                  }}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <h4 className="text-sm md:text-base font-semibold text-gray-900 leading-snug">{item.title}</h4>
+                        <span className={`text-[11px] px-2 py-0.5 rounded-full font-semibold ${isCurrent ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-700'}`}>
+                          {statusLabel}
+                        </span>
+                        {(item.parentEventId || item.recurrenceId || item.isRecurring) && (
+                          <span className="text-[10px]" title="Recurring event">🔄</span>
+                        )}
+                      </div>
+                      <p className="text-xs text-gray-700">
+                        {formatTimeRange(item.start, item.end, timeFormat, item.isAllDay)} - {item.calendarName}
+                      </p>
+                      {item.description && (
+                        <p className="text-xs text-gray-700 line-clamp-2">{item.description}</p>
                       )}
                     </div>
-                    <p className="text-xs text-gray-700">
-                      {formatTimeRange(item.start, item.end, timeFormat, item.isAllDay)} - {item.calendarName}
-                    </p>
-                    {item.description && (
-                      <p className="text-xs text-gray-700 line-clamp-2">{item.description}</p>
+                    {!isPast && (
+                      <div className="text-right text-xs text-gray-600 flex flex-col items-end gap-1">
+                        <span>
+                          {isCurrent
+                            ? `${formatDuration(remainingMs)} left`
+                            : startsInMs > 0
+                              ? `Starts in ${formatDuration(startsInMs)}`
+                              : 'Starting now'}
+                        </span>
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-white text-gray-700 border border-gray-200">
+                          {item.location ? `📍 ${item.location}` : item.calendarName}
+                        </span>
+                      </div>
                     )}
                   </div>
-                  {!isPast && (
-                    <div className="text-right text-xs text-gray-600 flex flex-col items-end gap-1">
-                      <span>
-                        {isCurrent
-                          ? `${formatDuration(remainingMs)} left`
-                          : startsInMs > 0
-                            ? `Starts in ${formatDuration(startsInMs)}`
-                            : 'Starting now'}
-                      </span>
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-white text-gray-700 border border-gray-200">
-                        {item.location ? `📍 ${item.location}` : item.calendarName}
-                      </span>
+
+                  {isCurrent && (
+                    <div className="mt-3 h-1.5 bg-white/50 rounded-full overflow-hidden">
+                      <div
+                        className="h-full rounded-full"
+                        style={{
+                          width: `${currentProgress}%`,
+                          background: `linear-gradient(90deg, ${withAlpha(item.color, 0.95)}, ${withAlpha(focusColor, 0.95)})`
+                        }}
+                      ></div>
                     </div>
                   )}
-                </div>
-
-                {isCurrent && (
-                  <div className="mt-3 h-1.5 bg-white/50 rounded-full overflow-hidden">
-                    <div
-                      className="h-full rounded-full"
-                      style={{
-                        width: `${currentProgress}%`,
-                        background: `linear-gradient(90deg, ${withAlpha(item.color, 0.95)}, ${withAlpha(focusColor, 0.95)})`
-                      }}
-                    ></div>
-                  </div>
-                )}
-              </button>
+                </button>
+              </div>
             );
           })}
         </div>
