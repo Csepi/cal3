@@ -3,11 +3,10 @@
  *
  * Compact header for mobile calendar view
  * Features:
- * - Month/Year display
- * - View switcher (Month/Week)
+ * - Timeline-first view switcher
  * - Navigation arrows
  * - Calendar selector button
- * - Today button
+ * - Today shortcut
  */
 
 import React from 'react';
@@ -22,6 +21,19 @@ interface MobileCalendarHeaderProps {
   onOpenCalendarSelector: () => void;
   themeColor: string;
 }
+
+const withAlpha = (color: string, alpha: number) => {
+  if (!color.startsWith('#')) return color;
+  const hex = color.replace('#', '');
+  const normalized = hex.length === 3
+    ? hex.split('').map((char) => char + char).join('')
+    : hex;
+  const bigint = parseInt(normalized, 16);
+  const r = (bigint >> 16) & 255;
+  const g = (bigint >> 8) & 255;
+  const b = bigint & 255;
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+};
 
 export const MobileCalendarHeader: React.FC<MobileCalendarHeaderProps> = ({
   currentDate,
@@ -39,13 +51,11 @@ export const MobileCalendarHeader: React.FC<MobileCalendarHeaderProps> = ({
   };
 
   const formatWeekRange = (): string => {
-    // Get week start (Monday)
     const start = new Date(currentDate);
     const day = start.getDay();
     const diff = start.getDate() - day + (day === 0 ? -6 : 1);
     start.setDate(diff);
 
-    // Get week end (Sunday)
     const end = new Date(start);
     end.setDate(start.getDate() + 6);
 
@@ -63,7 +73,7 @@ export const MobileCalendarHeader: React.FC<MobileCalendarHeaderProps> = ({
     return currentDate.toLocaleDateString('en-US', {
       weekday: 'long',
       month: 'short',
-      day: 'numeric'
+      day: 'numeric',
     });
   };
 
@@ -74,92 +84,98 @@ export const MobileCalendarHeader: React.FC<MobileCalendarHeaderProps> = ({
         ? formatWeekRange()
         : formatFocusDay();
 
+  const viewOptions: Array<{ id: 'month' | 'week' | 'timeline'; label: string }> = [
+    { id: 'timeline', label: 'Timeline' },
+    { id: 'week', label: 'Week' },
+    { id: 'month', label: 'Month' },
+  ];
+
   return (
-    <div className="bg-white border-b border-gray-200 safe-area-top">
-      {/* Top Row: Navigation & Title */}
-      <div className="flex items-center justify-between px-4 py-3">
-        {/* Calendar Selector Button */}
+    <div className="bg-white/95 border-b border-gray-100 safe-area-top backdrop-blur-md">
+      <div className="flex items-center justify-between px-4 py-2.5">
         <TouchableArea
           onClick={onOpenCalendarSelector}
-          className="flex items-center gap-2"
+          className="flex items-center"
           minSize="lg"
         >
-          <Icon icon="📅" size="md" />
-          <Icon icon="▼" size="sm" className="text-gray-500" />
+          <div
+            className="flex items-center gap-2 rounded-xl border px-3 py-2 text-sm font-semibold text-gray-800 shadow-sm"
+            style={{
+              borderColor: withAlpha(themeColor, 0.2),
+              backgroundColor: withAlpha(themeColor, 0.06),
+            }}
+          >
+            <Icon
+              icon={(
+                <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="3.5" y="5" width="17" height="15" rx="2.5" />
+                  <path d="M8 3v4" />
+                  <path d="M16 3v4" />
+                  <path d="M3.5 11h17" />
+                </svg>
+              )}
+              size="sm"
+            />
+            <span>Calendars</span>
+            <Icon icon="▼" size="xs" className="text-gray-500" />
+          </div>
         </TouchableArea>
 
-        {/* Date Display */}
-        <div className="flex-1 text-center">
-          <h2 className="text-lg font-semibold text-gray-800">
+        <div className="flex-1 text-center px-3">
+          <p className="text-[11px] uppercase tracking-[0.16em] text-gray-500 font-semibold">
+            {currentView === 'timeline' ? 'Today timeline' : currentView === 'week' ? 'This week' : 'This month'}
+          </p>
+          <h2
+            className="text-lg font-bold leading-tight"
+            style={{ color: themeColor }}
+          >
             {resolvedTitle}
           </h2>
         </div>
 
-        {/* Today Button */}
         <TouchableArea
           onClick={() => onNavigate('today')}
-          className="px-3 py-1 rounded-full bg-gray-100 text-gray-700 text-sm font-medium"
+          className="px-3 py-2 rounded-xl bg-gray-50 text-gray-800 text-sm font-semibold shadow-sm border border-gray-200"
           minSize="sm"
         >
           Today
         </TouchableArea>
       </div>
 
-      {/* Bottom Row: View Switcher & Navigation */}
-      <div className="flex items-center justify-between px-4 pb-3">
-        {/* View Switcher */}
-        <div className="flex rounded-lg bg-gray-100 p-1 overflow-x-auto">
-          <TouchableArea
-            onClick={() => onViewChange('month')}
-            className={`
-              px-3 py-1 rounded-md text-sm font-medium transition-all
-              ${currentView === 'month'
-                ? 'bg-white text-gray-900 shadow-sm'
-                : 'text-gray-600'
-              }
-            `}
-            minSize="sm"
-          >
-            Month
-          </TouchableArea>
-          <TouchableArea
-            onClick={() => onViewChange('week')}
-            className={`
-              px-3 py-1 rounded-md text-sm font-medium transition-all
-              ${currentView === 'week'
-                ? 'bg-white text-gray-900 shadow-sm'
-                : 'text-gray-600'
-              }
-            `}
-            minSize="sm"
-          >
-            Week
-          </TouchableArea>
-          <TouchableArea
-            onClick={() => onViewChange('timeline')}
-            className={`
-              px-3 py-1 rounded-md text-sm font-medium transition-all
-              ${currentView === 'timeline'
-                ? 'bg-white text-gray-900 shadow-sm'
-                : 'text-gray-600'
-              }
-            `}
-            minSize="sm"
-          >
-            Timeline
-          </TouchableArea>
+      <div className="flex items-center justify-between px-4 pb-3 gap-3">
+        <div className="flex flex-1 rounded-2xl border border-gray-100 bg-gray-50 p-1 overflow-x-auto">
+          {viewOptions.map((option) => {
+            const isActive = currentView === option.id;
+            return (
+              <TouchableArea
+                key={option.id}
+                onClick={() => onViewChange(option.id)}
+                className={`flex-1 px-3 py-2 rounded-xl text-sm font-semibold transition-all duration-200 whitespace-nowrap ${
+                  isActive ? 'shadow-sm' : 'text-gray-600'
+                }`}
+                minSize="sm"
+                ariaLabel={`Switch to ${option.label} view`}
+                style={{
+                  backgroundColor: isActive ? withAlpha(themeColor, 0.12) : 'transparent',
+                  color: isActive ? themeColor : undefined,
+                  border: isActive ? `1px solid ${withAlpha(themeColor, 0.2)}` : '1px solid transparent',
+                }}
+              >
+                {option.label}
+              </TouchableArea>
+            );
+          })}
         </div>
 
-        {/* Navigation Arrows */}
         <div className="flex items-center gap-2">
           <TouchableArea
             onClick={() => onNavigate('prev')}
-            className="p-2 rounded-full hover:bg-gray-100"
+            className="p-2 rounded-xl bg-white shadow-sm border border-gray-200"
             minSize="lg"
             ariaLabel="Previous"
           >
             <svg
-              className="w-5 h-5 text-gray-600"
+              className="w-5 h-5 text-gray-700"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -175,12 +191,12 @@ export const MobileCalendarHeader: React.FC<MobileCalendarHeaderProps> = ({
 
           <TouchableArea
             onClick={() => onNavigate('next')}
-            className="p-2 rounded-full hover:bg-gray-100"
+            className="p-2 rounded-xl bg-white shadow-sm border border-gray-200"
             minSize="lg"
             ariaLabel="Next"
           >
             <svg
-              className="w-5 h-5 text-gray-600"
+              className="w-5 h-5 text-gray-700"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"

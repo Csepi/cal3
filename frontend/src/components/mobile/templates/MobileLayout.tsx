@@ -20,6 +20,9 @@ interface MobileLayoutProps {
   onRefresh?: () => Promise<void>;
   className?: string;
   noPadding?: boolean;
+  themeColor?: string;
+  surfaceLabel?: string;
+  userName?: string;
 }
 
 export const MobileLayout: React.FC<MobileLayoutProps> = ({
@@ -28,12 +31,43 @@ export const MobileLayout: React.FC<MobileLayoutProps> = ({
   onRefresh,
   className = '',
   noPadding = false,
+  themeColor = '#3b82f6',
+  surfaceLabel,
+  userName,
 }) => {
   const { isMobile } = useScreenSize();
   const [isRefreshing, setIsRefreshing] = React.useState(false);
   const [pullDistance, setPullDistance] = React.useState(0);
   const touchStartY = useRef(0);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  const withAlpha = (color: string, alpha: number) => {
+    if (!color.startsWith('#')) return color;
+    const hex = color.replace('#', '');
+    const normalized = hex.length === 3
+      ? hex.split('').map(char => char + char).join('')
+      : hex;
+    const bigint = parseInt(normalized, 16);
+    const r = (bigint >> 16) & 255;
+    const g = (bigint >> 8) & 255;
+    const b = bigint & 255;
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+  };
+
+  const initials = userName
+    ? userName
+        .trim()
+        .split(/\s+/)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join('')
+    : '';
+
+  const todayLabel = new Intl.DateTimeFormat('en-US', {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+  }).format(new Date());
 
   // Pull-to-refresh logic (mobile only)
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -73,6 +107,48 @@ export const MobileLayout: React.FC<MobileLayoutProps> = ({
         ${className}
       `}
     >
+      {isMobile && (
+        <div className="sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b border-gray-100">
+          <div className="flex items-center justify-between px-4 py-2.5">
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-500">
+                {todayLabel}
+              </p>
+              <p
+                className="text-base font-semibold leading-tight"
+                style={{ color: themeColor }}
+              >
+                {surfaceLabel || 'PrimeCal mobile'}
+              </p>
+            </div>
+            <div className="flex items-center gap-3">
+              <span
+                className="rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide"
+                style={{
+                  backgroundColor: withAlpha(themeColor, 0.12),
+                  color: themeColor,
+                  border: `1px solid ${withAlpha(themeColor, 0.18)}`,
+                }}
+              >
+                Live
+              </span>
+              {initials && (
+                <div
+                  className="h-9 w-9 rounded-full bg-white shadow-sm flex items-center justify-center text-sm font-semibold"
+                  style={{
+                    color: themeColor,
+                    border: `1px solid ${withAlpha(themeColor, 0.22)}`,
+                    backgroundColor: withAlpha(themeColor, 0.08),
+                  }}
+                >
+                  {initials}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Pull-to-refresh indicator */}
       {isMobile && onRefresh && pullDistance > 0 && (
         <div
@@ -115,19 +191,10 @@ export const MobileLayout: React.FC<MobileLayoutProps> = ({
         `}
         style={{
           paddingBottom: isMobile && showBottomNav
-            ? 'calc(4rem + env(safe-area-inset-bottom))'
+            ? 'calc(5.25rem + env(safe-area-inset-bottom))'
             : undefined,
         }}
       >
-        {isMobile && (
-          <div className="flex items-center justify-center gap-3 py-5">
-            <img src="/primecal-icon.svg" alt="PrimeCal logo" className="h-10 w-10" />
-            <div className="text-center leading-tight">
-              <p className="text-lg font-semibold text-gray-900">PrimeCal</p>
-              <p className="text-xs uppercase tracking-[0.3em] text-gray-500">Be in sync with Reality</p>
-            </div>
-          </div>
-        )}
         {children}
       </div>
     </div>

@@ -29,59 +29,74 @@ export const TabBarItem: React.FC<TabBarItemProps> = ({
   onClick,
   themeColor = '#3b82f6',
 }) => {
+  const withAlpha = (color: string, alpha: number) => {
+    if (!color.startsWith('#')) return color;
+    const hex = color.replace('#', '');
+    const normalized = hex.length === 3
+      ? hex.split('').map((char) => char + char).join('')
+      : hex;
+    const bigint = parseInt(normalized, 16);
+    const r = (bigint >> 16) & 255;
+    const g = (bigint >> 8) & 255;
+    const b = bigint & 255;
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+  };
+
+  const activeSurface = withAlpha(themeColor, 0.12);
+  const activeBorder = withAlpha(themeColor, 0.28);
+  const activeGlow = withAlpha(themeColor, 0.2);
+
   return (
     <TouchableArea
       onClick={onClick}
       ariaLabel={label}
-      className="flex-1 flex flex-col items-center justify-center py-2 relative"
+      className="flex-1 px-1 py-1 relative"
       minSize="lg"
     >
-      {/* Badge or Dot */}
-      {(badge || showDot) && (
-        <div className="absolute top-1 right-1/2 translate-x-3">
-          {showDot ? (
-            <Badge variant="danger" dot size="sm" />
-          ) : (
-            <Badge variant="danger" size="sm">
-              {badge}
-            </Badge>
-          )}
-        </div>
-      )}
-
-      {/* Icon */}
       <div
-        className={`
-          transition-all duration-200
-          ${isActive ? 'scale-110' : 'scale-100'}
-        `}
+        className="relative flex w-full flex-col items-center gap-1 rounded-2xl border transition-all duration-200 ease-out bg-white/90"
         style={{
-          color: isActive ? themeColor : '#6b7280',
+          background: isActive
+            ? `linear-gradient(135deg, ${activeSurface}, ${withAlpha(themeColor, 0.06)})`
+            : 'transparent',
+          borderColor: isActive ? activeBorder : 'rgba(148, 163, 184, 0.25)',
+          boxShadow: isActive ? `0 14px 32px ${activeGlow}` : 'none',
         }}
       >
-        <Icon icon={icon} size="lg" />
-      </div>
+        {/* Badge or Dot */}
+        {(badge || showDot) && (
+          <div className="absolute -top-1 -right-1">
+            {showDot ? (
+              <Badge variant="danger" dot size="sm" />
+            ) : (
+              <Badge variant="danger" size="sm">
+                {badge}
+              </Badge>
+            )}
+          </div>
+        )}
 
-      {/* Label */}
-      <span
-        className={`
-          text-xs font-medium mt-1 transition-all duration-200
-          ${isActive ? 'opacity-100' : 'opacity-60'}
-        `}
-        style={{
-          color: isActive ? themeColor : '#6b7280',
-        }}
-      >
-        {label}
-      </span>
-
-      {/* Active Indicator */}
-      {isActive && (
         <div
-          className="absolute bottom-0 left-1/2 -translate-x-1/2 w-12 h-1 rounded-full"
-          style={{ backgroundColor: themeColor }}
-        />
-      )}
+          className="mt-2 flex h-10 w-10 items-center justify-center rounded-xl bg-white/90 shadow-sm transition-all duration-200"
+          style={{
+            color: isActive ? themeColor : '#475569',
+            border: `1px solid ${isActive ? activeBorder : 'rgba(226, 232, 240, 0.9)'}`,
+          }}
+        >
+          <Icon icon={icon} size="md" />
+        </div>
+
+        <span
+          className={`text-[11px] font-semibold tracking-wide transition-all duration-200 mb-2
+            ${isActive ? 'opacity-100' : 'opacity-70 text-gray-600'}
+          `}
+          style={{
+            color: isActive ? themeColor : undefined,
+          }}
+        >
+          {label}
+        </span>
+      </div>
     </TouchableArea>
   );
 };

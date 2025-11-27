@@ -285,6 +285,31 @@ const Dashboard: React.FC = () => {
     ? 'notifications'
     : currentView) as TabId;
 
+  const displayName = userProfile?.name || userProfile?.fullName || user || '';
+  const mobileSurfaceLabel = (() => {
+    switch (currentView) {
+      case 'calendar':
+        return 'Timeline';
+      case 'tasks':
+        return 'Tasks';
+      case 'reservations':
+        return 'Bookings';
+      case 'automation':
+        return 'Automation';
+      case 'agent':
+        return 'Agents';
+      case 'sync':
+        return 'Sync';
+      case 'admin':
+        return 'Admin';
+      case 'notifications':
+      case 'notification-settings':
+        return 'Notifications';
+      default:
+        return 'Profile';
+    }
+  })();
+
   return (
     <div className={`min-h-screen ${isMobile ? 'bg-white' : `bg-gradient-to-br ${themeConfig.gradient.background}`}`}>
       {/* Responsive Navigation - Adapts to screen size */}
@@ -307,6 +332,9 @@ const Dashboard: React.FC = () => {
         showBottomNav={isMobile}
         onRefresh={handleRefresh}
         noPadding={currentView === 'calendar'}
+        themeColor={themeColor}
+        surfaceLabel={mobileSurfaceLabel}
+        userName={displayName}
       >
         <div className={isMobile ? '' : 'relative'}>
           {currentView === 'calendar' && (

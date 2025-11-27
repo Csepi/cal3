@@ -84,11 +84,11 @@ interface EnhancedCalendarProps {
 }
 
 // Calendar hook for state management
-function useCalendarState(themeColor: string) {
+function useCalendarState(themeColor: string, initialView: CalendarState['currentView'] = 'month') {
   const [state, setState] = useState<CalendarState>({
     currentDate: new Date(),
     selectedDate: null,
-    currentView: 'month',
+    currentView: initialView,
     events: [],
     calendars: [],
     selectedCalendars: [],
@@ -1103,6 +1103,9 @@ export const EnhancedCalendar: React.FC<EnhancedCalendarProps> = ({
   className = '',
   timezone,
 }) => {
+  // Mobile detection (used to choose the default calendar view)
+  const { isMobile } = useScreenSize();
+
   const {
     state,
     actions,
@@ -1114,10 +1117,7 @@ export const EnhancedCalendar: React.FC<EnhancedCalendarProps> = ({
     setErrors,
     themeConfig,
     loadData,
-  } = useCalendarState(themeColor);
-
-  // Mobile detection
-  const { isMobile } = useScreenSize();
+  } = useCalendarState(themeColor, isMobile ? 'timeline' : 'month');
   const resolvedTimezone = useMemo(
     () => timezone || Intl.DateTimeFormat().resolvedOptions().timeZone,
     [timezone],
