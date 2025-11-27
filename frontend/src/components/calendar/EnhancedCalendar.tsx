@@ -80,6 +80,7 @@ interface EnhancedCalendarProps {
   themeColor: string;
   timeFormat?: string;
   className?: string;
+  timezone?: string;
 }
 
 // Calendar hook for state management
@@ -559,9 +560,19 @@ interface CalendarGridProps {
   accentColor: string;
   isMobile?: boolean;
   onShowDayDetails?: (date: Date) => void;
+  timezone?: string;
 }
 
-const CalendarGrid: React.FC<CalendarGridProps> = ({ state, actions, themeConfig, timeFormat, accentColor, isMobile = false, onShowDayDetails }) => {
+const CalendarGrid: React.FC<CalendarGridProps> = ({
+  state,
+  actions,
+  themeConfig,
+  timeFormat,
+  accentColor,
+  isMobile = false,
+  onShowDayDetails,
+  timezone,
+}) => {
   const { currentDate, currentView, events, selectedCalendars, reservations, selectedResourceTypes, organizations } = state;
 
   // Filter reservations based on selected resource types
@@ -665,6 +676,7 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({ state, actions, themeConfig
           accentColor={accentColor}
           isMobile={isMobile}
           timeFormat={timeFormat === '12h' ? '12' : '24'}
+          timezone={timezone}
         />
       </div>
     );
@@ -735,7 +747,7 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({ state, actions, themeConfig
         weekStartDay={1} // Monday start
         themeColor={themeConfig.primary}
         reservations={filteredReservations}
-        userTimezone="America/New_York" // You can make this configurable
+        userTimezone={timezone}
         timeFormat={timeFormat === '12h' ? '12' : '24'}
       />
     );
@@ -1089,6 +1101,7 @@ export const EnhancedCalendar: React.FC<EnhancedCalendarProps> = ({
   themeColor,
   timeFormat = '12h',
   className = '',
+  timezone,
 }) => {
   const {
     state,
@@ -1105,6 +1118,10 @@ export const EnhancedCalendar: React.FC<EnhancedCalendarProps> = ({
 
   // Mobile detection
   const { isMobile } = useScreenSize();
+  const resolvedTimezone = useMemo(
+    () => timezone || Intl.DateTimeFormat().resolvedOptions().timeZone,
+    [timezone],
+  );
 
   // Event handlers
   const handleSaveEvent = useCallback(async (eventData: CreateEventRequest | UpdateEventRequest) => {
@@ -1296,6 +1313,7 @@ export const EnhancedCalendar: React.FC<EnhancedCalendarProps> = ({
             timeFormat={timeFormat}
             accentColor={themeColor}
             isMobile={isMobile}
+            timezone={resolvedTimezone}
             onShowDayDetails={(date) => {
               actions.setSelectedDate(date);
               setModals(prev => ({ ...prev, mobileBottomSheet: true }));

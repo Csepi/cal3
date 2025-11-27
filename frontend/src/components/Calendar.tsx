@@ -14,6 +14,8 @@ interface CalendarProps {
   themeColor: string;
   /** Time format preference (12h/24h) */
   timeFormat?: string;
+  /** Optional timezone identifier (e.g. 'Europe/Budapest') */
+  timezone?: string;
 }
 
 /**
@@ -28,12 +30,13 @@ interface CalendarProps {
  * - Type-safe with comprehensive TypeScript coverage
  * - Modular and maintainable code structure
  */
-const Calendar: React.FC<CalendarProps> = ({ themeColor, timeFormat = '12h' }) => {
+const Calendar: React.FC<CalendarProps> = ({ themeColor, timeFormat = '12h', timezone }) => {
   return (
     <div className="container mx-auto px-4 py-6">
       <EnhancedCalendar
         themeColor={themeColor}
         timeFormat={timeFormat}
+        timezone={timezone}
         className="max-w-7xl mx-auto"
       />
     </div>

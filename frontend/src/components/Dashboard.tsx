@@ -310,7 +310,11 @@ const Dashboard: React.FC = () => {
       >
         <div className={isMobile ? '' : 'relative'}>
           {currentView === 'calendar' && (
-            <Calendar themeColor={themeColor} timeFormat={userProfile?.timeFormat || '12h'} />
+            <Calendar
+              themeColor={themeColor}
+              timeFormat={userProfile?.timeFormat || '12h'}
+              timezone={userProfile?.timezone}
+            />
           )}
           {currentView === 'tasks' && featureFlags.tasks && (
             <TasksWorkspace
