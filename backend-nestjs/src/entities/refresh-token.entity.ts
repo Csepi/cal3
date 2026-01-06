@@ -7,6 +7,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { timestampTzType } from './column-types';
 import { User } from './user.entity';
 
 @Entity('auth_refresh_tokens')
@@ -27,13 +28,13 @@ export class RefreshToken {
   @Column({ length: 128 })
   tokenHash: string;
 
-  @Column({ type: 'timestamptz' })
+  @Column({ type: timestampTzType })
   expiresAt: Date;
 
   @Column({ default: false })
   revoked: boolean;
 
-  @Column({ type: 'timestamptz', nullable: true })
+  @Column({ type: timestampTzType, nullable: true })
   revokedAt?: Date | null;
 
   @Column({ type: 'varchar', length: 64, nullable: true })

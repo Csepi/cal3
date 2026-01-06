@@ -8,10 +8,12 @@ import {
   ManyToMany,
   OneToMany,
   JoinTable,
+  JoinColumn,
 } from 'typeorm';
 import { User } from './user.entity';
 import { Event } from './event.entity';
 import { ReservationCalendar } from './reservation-calendar.entity';
+import { CalendarGroup } from './calendar-group.entity';
 
 export enum CalendarVisibility {
   PRIVATE = 'private',
@@ -72,6 +74,16 @@ export class Calendar {
 
   @Column()
   ownerId: number;
+
+  @ManyToOne(() => CalendarGroup, (group) => group.calendars, {
+    onDelete: 'SET NULL',
+    nullable: true,
+  })
+  @JoinColumn({ name: 'groupId' })
+  group?: CalendarGroup | null;
+
+  @Column({ nullable: true })
+  groupId?: number | null;
 
   // Many calendars can be shared with many users
   @ManyToMany(() => User, (user) => user.sharedCalendars, {

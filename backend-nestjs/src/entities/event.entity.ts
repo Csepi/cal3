@@ -5,9 +5,12 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   ManyToOne,
+  OneToMany,
 } from 'typeorm';
+import { timestampTzType } from './column-types';
 import { Calendar } from './calendar.entity';
 import { User } from './user.entity';
+import { EventComment } from './event-comment.entity';
 
 export enum EventStatus {
   CONFIRMED = 'confirmed',
@@ -125,9 +128,14 @@ export class Event {
   @Column({ type: 'integer', nullable: true })
   taskId?: number;
 
-  @Column({ type: 'timestamptz', nullable: true })
+  @Column({ type: timestampTzType, nullable: true })
   taskSyncedAt?: Date;
 
   @Column({ type: 'varchar', length: 64, nullable: true })
   taskSyncChecksum?: string;
+
+  @OneToMany(() => EventComment, (comment) => comment.event, {
+    cascade: true,
+  })
+  comments?: EventComment[];
 }

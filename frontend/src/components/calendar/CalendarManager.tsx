@@ -11,6 +11,7 @@ import { SimpleModal, Button, Input, Card } from '../ui';
 import { IconPicker } from '../ui/IconPicker';
 import { getThemeConfig, THEME_COLOR_OPTIONS } from '../../constants';
 import type { Calendar as CalendarType, CreateCalendarRequest, UpdateCalendarRequest } from '../../types/Calendar';
+import type { CalendarGroupWithCalendars } from '../../types/CalendarGroup';
 import { apiService } from '../../services/api';
 
 export interface CalendarManagerProps {
@@ -47,9 +48,11 @@ export const CalendarManager: React.FC<CalendarManagerProps> = ({
     name: '',
     description: '',
     color: themeColor,
-    icon: undefined
+    icon: undefined,
+    groupId: undefined,
   });
 
+  const [calendarGroups, setCalendarGroups] = useState<CalendarGroupWithCalendars[]>([]);
   const [loading, setLoading] = useState(false);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
@@ -58,13 +61,16 @@ export const CalendarManager: React.FC<CalendarManagerProps> = ({
    */
   useEffect(() => {
     if (isOpen) {
+      apiService.getCalendarGroups().then(setCalendarGroups).catch(() => setCalendarGroups([]));
+
       if (editingCalendar) {
         // Editing existing calendar
         setCalendarForm({
           name: editingCalendar.name,
           description: editingCalendar.description || '',
           color: editingCalendar.color,
-          icon: editingCalendar.icon
+          icon: editingCalendar.icon,
+          groupId: editingCalendar.groupId ?? undefined,
         });
       } else {
         // Creating new calendar
@@ -72,7 +78,8 @@ export const CalendarManager: React.FC<CalendarManagerProps> = ({
           name: '',
           description: '',
           color: themeColor,
-          icon: undefined
+          icon: undefined,
+          groupId: undefined,
         });
       }
 
@@ -133,7 +140,8 @@ export const CalendarManager: React.FC<CalendarManagerProps> = ({
           name: calendarForm.name!,
           description: calendarForm.description || '',
           color: calendarForm.color!,
-          icon: calendarForm.icon || undefined
+          icon: calendarForm.icon || undefined,
+          groupId: calendarForm.groupId ?? null,
         };
         await apiService.updateCalendar(editingCalendar.id, updateData);
       } else {
@@ -142,7 +150,8 @@ export const CalendarManager: React.FC<CalendarManagerProps> = ({
           name: calendarForm.name!,
           description: calendarForm.description || '',
           color: calendarForm.color!,
-          icon: calendarForm.icon || undefined
+          icon: calendarForm.icon || undefined,
+          groupId: calendarForm.groupId,
         };
         await apiService.createCalendar(createData);
       }
@@ -341,6 +350,47 @@ export const CalendarManager: React.FC<CalendarManagerProps> = ({
                 </div>
               </div>
             </div>
+          </div>
+        </Card>
+
+        {/* Calendar Group */}
+        <Card className="border border-gray-200 shadow-sm">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-lg font-semibold text-gray-800">🗂 Calendar Group</h3>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={async () => {
+                const name = window.prompt('New group name?');
+                if (!name || name.trim().length < 2) return;
+                const created = await apiService.createCalendarGroup({ name: name.trim(), isVisible: true });
+                const groups = await apiService.getCalendarGroups().catch(() => []);
+                setCalendarGroups(groups);
+                setCalendarForm((prev) => ({ ...prev, groupId: created.id }));
+              }}
+            >
+              + New Group
+            </Button>
+          </div>
+          <div className="space-y-2">
+            <label className="block text-sm text-gray-700">Assign to group (optional)</label>
+            <select
+              value={calendarForm.groupId ?? ''}
+              onChange={(e) =>
+                setCalendarForm((prev) => ({
+                  ...prev,
+                  groupId: e.target.value === '' ? undefined : Number(e.target.value),
+                }))
+              }
+              className="w-full rounded-lg border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="">No group</option>
+              {calendarGroups.map((group) => (
+                <option key={group.id} value={group.id}>
+                  {group.name}
+                </option>
+              ))}
+            </select>
           </div>
         </Card>
 

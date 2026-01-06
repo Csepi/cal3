@@ -1,6 +1,24 @@
 import type { Event, CreateEventRequest, UpdateEventRequest, RecurrencePattern } from '../types/Event';
 import { RecurrenceType, RecurrenceEndType } from '../types/Event';
-import type { Calendar, CreateCalendarRequest, UpdateCalendarRequest } from '../types/Calendar';
+import type {
+  EventComment,
+  EventCommentsResponse,
+  CreateEventCommentRequest,
+  UpdateEventCommentRequest,
+} from '../types/EventComment';
+import type {
+  Calendar,
+  CreateCalendarRequest,
+  UpdateCalendarRequest,
+} from '../types/Calendar';
+import type {
+  CalendarGroup,
+  CalendarGroupWithCalendars,
+  CreateCalendarGroupRequest,
+  UpdateCalendarGroupRequest,
+  AssignCalendarsToGroupRequest,
+  ShareCalendarGroupRequest,
+} from '../types/CalendarGroup';
 import type { WeekDay } from '../components/RecurrenceSelector';
 import type {
   NotificationMessage,
@@ -105,7 +123,17 @@ class ApiService {
       searchParams.append('dueTo', params.dueTo);
     }
     if (params.labelIds?.length) {
-      params.labelIds.forEach((id) =>
+      const normalizedLabelIds = Array.from(
+        new Set(
+          (params.labelIds as Array<string | number>).flatMap((raw) =>
+            String(raw)
+              .split(':')
+              .map((part) => Number(part))
+              .filter((num) => Number.isFinite(num) && num >= 0),
+          ),
+        ),
+      );
+      normalizedLabelIds.forEach((id) =>
         searchParams.append('labelIds', String(id)),
       );
     }
@@ -222,6 +250,129 @@ class ApiService {
     }
   }
 
+  // Event comments
+
+  async getEventComments(eventId: number): Promise<EventCommentsResponse> {
+    const response = await this.secureApiFetch(`${BASE_URL}/api/events/${eventId}/comments`);
+    if (!response.ok) {
+      throw new Error('Failed to load comments for event');
+    }
+    return (await response.json()) as EventCommentsResponse;
+  }
+
+  async addEventComment(
+    eventId: number,
+    payload: CreateEventCommentRequest,
+  ): Promise<EventComment> {
+    const response = await this.secureApiFetch(`${BASE_URL}/api/events/${eventId}/comments`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({}));
+      throw new Error(error.message || 'Failed to add comment');
+    }
+
+    return (await response.json()) as EventComment;
+  }
+
+  async replyToEventComment(
+    eventId: number,
+    parentCommentId: number,
+    payload: CreateEventCommentRequest,
+  ): Promise<EventComment> {
+    const response = await this.secureApiFetch(
+      `${BASE_URL}/api/events/${eventId}/comments/${parentCommentId}/replies`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      },
+    );
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({}));
+      throw new Error(error.message || 'Failed to reply to comment');
+    }
+
+    return (await response.json()) as EventComment;
+  }
+
+  async updateEventComment(
+    eventId: number,
+    commentId: number,
+    payload: UpdateEventCommentRequest,
+  ): Promise<EventComment> {
+    const response = await this.secureApiFetch(
+      `${BASE_URL}/api/events/${eventId}/comments/${commentId}`,
+      {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      },
+    );
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({}));
+      throw new Error(error.message || 'Failed to update comment');
+    }
+
+    return (await response.json()) as EventComment;
+  }
+
+  async flagEventComment(
+    eventId: number,
+    commentId: number,
+    isFlagged: boolean,
+  ): Promise<EventComment> {
+    const response = await this.secureApiFetch(
+      `${BASE_URL}/api/events/${eventId}/comments/${commentId}/flag`,
+      {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isFlagged }),
+      },
+    );
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({}));
+      throw new Error(error.message || 'Failed to update flag on comment');
+    }
+
+    return (await response.json()) as EventComment;
+  }
+
+  async trackEventOpen(eventId: number, note?: string): Promise<EventComment | null> {
+    const response = await this.secureApiFetch(
+      `${BASE_URL}/api/events/${eventId}/comments/track-open`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(note ? { note } : {}),
+      },
+    );
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({}));
+      throw new Error(error.message || 'Failed to track event open');
+    }
+
+    if (response.status === 204) {
+      return null;
+    }
+
+    // When a recent tracking entry exists, the backend may return null
+    const bodyText = await response.text();
+    if (!bodyText) return null;
+    try {
+      return JSON.parse(bodyText) as EventComment;
+    } catch {
+      return null;
+    }
+  }
+
   // Recurring event methods
 
   async updateRecurringEvent(eventId: number, eventData: UpdateRecurringEventRequest): Promise<Event[]> {
@@ -308,6 +459,199 @@ class ApiService {
       const errorData = await response.json();
       throw new Error(errorData.message || 'Failed to delete calendar');
     }
+  }
+
+  async getCalendarGroups(): Promise<CalendarGroupWithCalendars[]> {
+    const tryFetch = async (path: string) => {
+      const response = await this.secureApiFetch(`${BASE_URL}${path}`);
+      if (!response.ok) {
+        return { ok: false, response };
+      }
+      return { ok: true, data: (await response.json()) as CalendarGroupWithCalendars[] };
+    };
+
+    const primary = await tryFetch('/api/calendar-groups');
+    if (primary.ok) return primary.data;
+
+    if (primary.response && primary.response.status === 404) {
+      const fallback = await tryFetch('/api/calendars/groups');
+      if (fallback.ok) return fallback.data;
+    }
+
+    if (primary.response?.status === 401) {
+      throw new Error('Authentication required. Please log in to view calendar groups.');
+    }
+
+    const errorData = await primary.response?.json().catch(() => ({}));
+    throw new Error(errorData?.message || 'Failed to fetch calendar groups');
+  }
+
+  async createCalendarGroup(
+    payload: CreateCalendarGroupRequest,
+  ): Promise<CalendarGroup> {
+    const tryPost = async (path: string) => {
+      const response = await this.secureApiFetch(`${BASE_URL}${path}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (!response.ok) {
+        return { ok: false, response };
+      }
+      return { ok: true, data: (await response.json()) as CalendarGroup };
+    };
+
+    const primary = await tryPost('/api/calendar-groups');
+    if (primary.ok) return primary.data;
+
+    if (primary.response?.status === 404) {
+      const fallback = await tryPost('/api/calendars/groups');
+      if (fallback.ok) return fallback.data;
+    }
+
+    if (primary.response?.status === 401) {
+      throw new Error('Authentication required. Please log in to create calendar groups.');
+    }
+
+    const errorData = await primary.response?.json().catch(() => ({}));
+    throw new Error(errorData?.message || 'Failed to create calendar group');
+  }
+
+  async updateCalendarGroup(
+    groupId: number,
+    payload: UpdateCalendarGroupRequest,
+  ): Promise<CalendarGroup> {
+    const response = await this.secureApiFetch(
+      `${BASE_URL}/api/calendar-groups/${groupId}`,
+      {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      },
+    );
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        throw new Error('Authentication required. Please log in to update calendar groups.');
+      }
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || 'Failed to update calendar group');
+    }
+
+    return (await response.json()) as CalendarGroup;
+  }
+
+  async deleteCalendarGroup(groupId: number): Promise<void> {
+    const response = await this.secureApiFetch(
+      `${BASE_URL}/api/calendar-groups/${groupId}`,
+      {
+        method: 'DELETE',
+      },
+    );
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        throw new Error('Authentication required. Please log in to delete calendar groups.');
+      }
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || 'Failed to delete calendar group');
+    }
+  }
+
+  async assignCalendarsToGroup(
+    groupId: number,
+    payload: AssignCalendarsToGroupRequest,
+  ): Promise<CalendarGroupWithCalendars> {
+    const response = await this.secureApiFetch(
+      `${BASE_URL}/api/calendar-groups/${groupId}/calendars`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      },
+    );
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        throw new Error('Authentication required. Please log in to assign calendars.');
+      }
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || 'Failed to assign calendars to group');
+    }
+
+    return (await response.json()) as CalendarGroupWithCalendars;
+  }
+
+  async unassignCalendarsFromGroup(
+    groupId: number,
+    payload: AssignCalendarsToGroupRequest,
+  ): Promise<CalendarGroupWithCalendars> {
+    const response = await this.secureApiFetch(
+      `${BASE_URL}/api/calendar-groups/${groupId}/calendars/unassign`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      },
+    );
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        throw new Error('Authentication required. Please log in to update calendar groups.');
+      }
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || 'Failed to unassign calendars from group');
+    }
+
+    return (await response.json()) as CalendarGroupWithCalendars;
+  }
+
+  async shareCalendarGroup(
+    groupId: number,
+    payload: ShareCalendarGroupRequest,
+  ): Promise<{ sharedCalendarIds: number[] }> {
+    const response = await this.secureApiFetch(
+      `${BASE_URL}/api/calendar-groups/${groupId}/share`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      },
+    );
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        throw new Error('Authentication required. Please log in to share calendar groups.');
+      }
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || 'Failed to share calendar group');
+    }
+
+    return (await response.json()) as { sharedCalendarIds: number[] };
+  }
+
+  async unshareCalendarGroup(
+    groupId: number,
+    userIds: number[],
+  ): Promise<{ unsharedCalendarIds: number[] }> {
+    const response = await this.secureApiFetch(
+      `${BASE_URL}/api/calendar-groups/${groupId}/share`,
+      {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userIds }),
+      },
+    );
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        throw new Error('Authentication required. Please log in to update calendar groups.');
+      }
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || 'Failed to unshare calendar group');
+    }
+
+    return (await response.json()) as { unsharedCalendarIds: number[] };
   }
 
   // Authentication methods

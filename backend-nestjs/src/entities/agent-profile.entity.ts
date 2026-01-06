@@ -8,6 +8,7 @@ import {
   UpdateDateColumn,
   Index,
 } from 'typeorm';
+import { enumType, timestampType } from './column-types';
 import { User } from './user.entity';
 import { AgentPermission } from './agent-permission.entity';
 import { AgentApiKey } from './agent-api-key.entity';
@@ -35,10 +36,10 @@ export class AgentProfile {
   @Column('varchar', { length: 255, nullable: true })
   description?: string | null;
 
-  @Column({ type: 'enum', enum: AgentStatus, default: AgentStatus.ACTIVE })
+  @Column({ type: enumType, enum: AgentStatus, default: AgentStatus.ACTIVE })
   status: AgentStatus;
 
-  @Column({ type: 'timestamp', nullable: true })
+  @Column({ type: timestampType, nullable: true })
   lastUsedAt?: Date | null;
 
   @OneToMany(() => AgentPermission, (permission) => permission.agent, {

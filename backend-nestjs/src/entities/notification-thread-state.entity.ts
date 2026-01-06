@@ -9,6 +9,7 @@ import {
   Unique,
   UpdateDateColumn,
 } from 'typeorm';
+import { timestampWithTimeZoneType } from './column-types';
 import { NotificationThread } from './notification-thread.entity';
 import { User } from './user.entity';
 
@@ -39,7 +40,7 @@ export class NotificationThreadState {
   @Column({ type: 'boolean', default: false })
   isArchived!: boolean;
 
-  @Column({ type: 'timestamp with time zone', nullable: true })
+  @Column({ type: timestampWithTimeZoneType, nullable: true })
   lastReadAt?: Date | null;
 
   @CreateDateColumn()

@@ -25,7 +25,9 @@ import { FeatureFlagsService } from './common/feature-flags.service';
 import { DatabaseDiagnosticsService } from './database/database-diagnostics.service';
 import { User } from './entities/user.entity';
 import { Calendar, CalendarShare } from './entities/calendar.entity';
+import { CalendarGroup } from './entities/calendar-group.entity';
 import { Event } from './entities/event.entity';
+import { EventComment } from './entities/event-comment.entity';
 import {
   CalendarSyncConnection,
   SyncedCalendar,
@@ -148,11 +150,13 @@ const dbLogger = new Logger('DatabaseConnection');
               Calendar,
               CalendarShare,
               Event,
+              EventComment,
               Task,
               TaskLabel,
               CalendarSyncConnection,
               SyncedCalendar,
               SyncEventMapping,
+              CalendarGroup,
               Organisation,
               OrganisationAdmin,
               OrganisationUser,
@@ -235,11 +239,13 @@ const dbLogger = new Logger('DatabaseConnection');
               Calendar,
               CalendarShare,
               Event,
+              EventComment,
               Task,
               TaskLabel,
               CalendarSyncConnection,
               SyncedCalendar,
               SyncEventMapping,
+              CalendarGroup,
               Organisation,
               OrganisationAdmin,
               OrganisationUser,
@@ -295,7 +301,7 @@ const dbLogger = new Logger('DatabaseConnection');
     NotificationsModule,
     ConfigurationModule,
     TasksModule,
-    TypeOrmModule.forFeature([User, Calendar, CalendarShare, Task]),
+    TypeOrmModule.forFeature([User, Calendar, CalendarShare, CalendarGroup, Task]),
   ],
   controllers: [
     AppController,

@@ -7,6 +7,7 @@ import {
   UpdateDateColumn,
   Index,
 } from 'typeorm';
+import { timestampType } from './column-types';
 import { AgentProfile } from './agent-profile.entity';
 
 @Entity('agent_api_keys')
@@ -38,10 +39,10 @@ export class AgentApiKey {
   @Column({ default: true })
   isActive: boolean;
 
-  @Column({ type: 'timestamp', nullable: true })
+  @Column({ type: timestampType, nullable: true })
   lastUsedAt?: Date | null;
 
-  @Column({ type: 'timestamp', nullable: true })
+  @Column({ type: timestampType, nullable: true })
   revokedAt?: Date | null;
 
   @CreateDateColumn()

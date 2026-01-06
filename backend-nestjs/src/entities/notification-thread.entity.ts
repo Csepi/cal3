@@ -7,6 +7,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { timestampWithTimeZoneType } from './column-types';
 import { NotificationMessage } from './notification-message.entity';
 import { NotificationThreadState } from './notification-thread-state.entity';
 
@@ -28,7 +29,7 @@ export class NotificationThread {
   @Column({ type: 'varchar', length: 250, nullable: true })
   title?: string | null;
 
-  @Column({ type: 'timestamp with time zone', nullable: true })
+  @Column({ type: timestampWithTimeZoneType, nullable: true })
   lastMessageAt?: Date | null;
 
   @OneToMany(() => NotificationMessage, (message) => message.thread)

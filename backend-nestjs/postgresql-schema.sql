@@ -25,6 +25,7 @@ DROP TABLE IF EXISTS calendar_sync_connections CASCADE;
 DROP TABLE IF EXISTS events CASCADE;
 DROP TABLE IF EXISTS calendar_shares CASCADE;
 DROP TABLE IF EXISTS calendars CASCADE;
+DROP TABLE IF EXISTS calendar_groups CASCADE;
 DROP TABLE IF EXISTS organisations CASCADE;
 DROP TABLE IF EXISTS users CASCADE;
 
@@ -80,6 +81,21 @@ CREATE INDEX idx_organisations_name ON organisations(name);
 CREATE INDEX idx_organisations_isActive ON organisations("isActive");
 
 -- =============================================
+-- CALENDAR_GROUPS TABLE
+-- =============================================
+CREATE TABLE calendar_groups (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(200) NOT NULL,
+    "isVisible" BOOLEAN NOT NULL DEFAULT true,
+    "ownerId" INTEGER NOT NULL,
+    "createdAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "FK_calendar_groups_owner" FOREIGN KEY ("ownerId") REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_calendar_groups_owner ON calendar_groups("ownerId");
+
+-- =============================================
 -- 3. CALENDARS TABLE
 -- =============================================
 CREATE TABLE calendars (
@@ -91,16 +107,19 @@ CREATE TABLE calendars (
     "isDefault" BOOLEAN NOT NULL DEFAULT false,
     "userId" INTEGER NOT NULL,
     "organisationId" INTEGER,
+    "groupId" INTEGER,
     timezone VARCHAR(100) NOT NULL DEFAULT 'UTC',
     "createdAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT "FK_calendars_user" FOREIGN KEY ("userId") REFERENCES users(id) ON DELETE CASCADE,
-    CONSTRAINT "FK_calendars_organisation" FOREIGN KEY ("organisationId") REFERENCES organisations(id) ON DELETE SET NULL
+    CONSTRAINT "FK_calendars_organisation" FOREIGN KEY ("organisationId") REFERENCES organisations(id) ON DELETE SET NULL,
+    CONSTRAINT "FK_calendars_group" FOREIGN KEY ("groupId") REFERENCES calendar_groups(id) ON DELETE SET NULL
 );
 
 CREATE INDEX idx_calendars_userId ON calendars("userId");
 CREATE INDEX idx_calendars_organisationId ON calendars("organisationId");
 CREATE INDEX idx_calendars_name ON calendars(name);
+CREATE INDEX idx_calendars_groupId ON calendars("groupId");
 -- =============================================
 -- 4. CALENDAR_SHARES TABLE
 -- =============================================

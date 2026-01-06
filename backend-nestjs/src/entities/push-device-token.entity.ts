@@ -9,6 +9,7 @@ import {
   Unique,
   UpdateDateColumn,
 } from 'typeorm';
+import { timestampWithTimeZoneType } from './column-types';
 import { User } from './user.entity';
 
 @Entity('push_device_tokens')
@@ -34,7 +35,7 @@ export class PushDeviceToken {
   @Column({ type: 'varchar', length: 255, nullable: true })
   userAgent?: string | null;
 
-  @Column({ type: 'timestamp with time zone', nullable: true })
+  @Column({ type: timestampWithTimeZoneType, nullable: true })
   lastSeenAt?: Date | null;
 
   @CreateDateColumn()

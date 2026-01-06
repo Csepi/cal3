@@ -45,6 +45,14 @@ export class CreateCalendarDto {
   @IsOptional()
   @IsEnum(CalendarVisibility)
   visibility?: CalendarVisibility;
+
+  @ApiPropertyOptional({
+    example: 2,
+    description: 'Optional calendar group ID to place the calendar into',
+  })
+  @IsOptional()
+  @IsNumber()
+  groupId?: number | null;
 }
 
 export class UpdateCalendarDto {
@@ -85,6 +93,14 @@ export class UpdateCalendarDto {
   @IsOptional()
   @IsEnum(CalendarVisibility)
   visibility?: CalendarVisibility;
+
+  @ApiPropertyOptional({
+    example: 2,
+    description: 'Calendar group ID (set to null to remove)',
+  })
+  @IsOptional()
+  @IsNumber()
+  groupId?: number | null;
 }
 
 export class ShareCalendarDto {
@@ -155,4 +171,20 @@ export class CalendarResponseDto {
     description: 'Last update timestamp',
   })
   updatedAt: Date;
+
+  @ApiPropertyOptional({
+    example: 3,
+    description: 'Group ID the calendar belongs to',
+  })
+  groupId?: number | null;
+
+  @ApiPropertyOptional({
+    description: 'Group metadata when calendar is grouped',
+    example: { id: 3, name: 'Family', isVisible: true },
+  })
+  group?: {
+    id: number;
+    name: string;
+    isVisible: boolean;
+  } | null;
 }

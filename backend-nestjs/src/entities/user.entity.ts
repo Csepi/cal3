@@ -16,6 +16,7 @@ import { AgentProfile } from './agent-profile.entity';
 import { Exclude } from 'class-transformer';
 import { Task } from './task.entity';
 import { TaskLabel } from './task-label.entity';
+import { EventComment } from './event-comment.entity';
 
 export enum UserRole {
   OBSERVER = 'observer',
@@ -146,4 +147,7 @@ export class User {
 
   @OneToMany(() => TaskLabel, (label) => label.user)
   taskLabels: TaskLabel[];
+
+  @OneToMany(() => EventComment, (comment) => comment.reporter)
+  eventComments: EventComment[];
 }

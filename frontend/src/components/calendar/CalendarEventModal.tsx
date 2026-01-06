@@ -13,6 +13,7 @@ import { getThemeConfig, THEME_COLOR_OPTIONS } from '../../constants';
 import type { Event, CreateEventRequest, UpdateEventRequest, RecurrencePattern } from '../../types/Event';
 import type { Calendar as CalendarType } from '../../types/Calendar';
 import RecurrenceSelector from '../RecurrenceSelector';
+import { EventCommentsPanel } from './EventCommentsPanel';
 
 export interface CalendarEventModalProps {
   /** Whether the modal is open */
@@ -519,16 +520,24 @@ export const CalendarEventModal: React.FC<CalendarEventModalProps> = ({
           padding="lg"
           themeColor={themeColor}
         >
-          <RecurrenceSelector
-            value={recurrencePattern}
-            onChange={setRecurrencePattern}
-            themeColor={themeColor}
-          />
-        </Card>
+        <RecurrenceSelector
+          value={recurrencePattern}
+          onChange={setRecurrencePattern}
+          themeColor={themeColor}
+        />
+      </Card>
 
-        {/* Actions */}
-        <div className="flex justify-between items-center pt-6 border-t border-gray-200">
-          <div>
+      <EventCommentsPanel
+        eventId={editingEvent?.id}
+        eventTitle={editingEvent?.title}
+        eventVisibility={editingEvent?.calendar?.visibility}
+        themeColor={themeColor}
+        isOpen={isOpen}
+      />
+
+      {/* Actions */}
+      <div className="flex justify-between items-center pt-6 border-t border-gray-200">
+        <div>
             {editingEvent && onDelete && (
               <Button
                 variant="outline"

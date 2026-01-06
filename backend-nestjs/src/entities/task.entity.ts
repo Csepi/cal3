@@ -8,6 +8,7 @@ import {
   ManyToMany,
   JoinTable,
 } from 'typeorm';
+import { timestampTzType } from './column-types';
 import { User } from './user.entity';
 import { Event } from './event.entity';
 import { TaskLabel } from './task-label.entity';
@@ -58,16 +59,16 @@ export class Task {
   @Column({ type: 'varchar', length: 255, nullable: true })
   place: string | null;
 
-  @Column({ type: 'timestamptz', nullable: true })
+  @Column({ type: timestampTzType, nullable: true })
   dueDate: Date | null;
 
-  @Column({ type: 'timestamptz', nullable: true })
+  @Column({ type: timestampTzType, nullable: true })
   dueEnd: Date | null;
 
   @Column({ type: 'varchar', length: 100, nullable: true })
   dueTimezone: string | null;
 
-  @Column({ type: 'timestamptz', nullable: true })
+  @Column({ type: timestampTzType, nullable: true })
   lastSyncedAt: Date | null;
 
   @ManyToOne(() => User, (user) => user.tasks, { onDelete: 'CASCADE' })

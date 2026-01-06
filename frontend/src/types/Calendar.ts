@@ -20,6 +20,13 @@ export interface Calendar {
   isActive: boolean;
   isReservationCalendar?: boolean;
   isTasksCalendar?: boolean;
+  groupId?: number | null;
+  group?: {
+    id: number;
+    name: string;
+    isVisible: boolean;
+    ownerId?: number;
+  } | null;
   owner: {
     id: number;
     username: string;
@@ -41,6 +48,7 @@ export interface CreateCalendarRequest {
   color?: string;
   icon?: string;
   visibility?: CalendarVisibility;
+  groupId?: number | null;
 }
 
 export interface UpdateCalendarRequest {
@@ -49,4 +57,5 @@ export interface UpdateCalendarRequest {
   color?: string;
   icon?: string;
   visibility?: CalendarVisibility;
+  groupId?: number | null;
 }

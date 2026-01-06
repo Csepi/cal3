@@ -11,6 +11,7 @@ import {
   CalendarShare,
   SharePermission,
 } from '../entities/calendar.entity';
+import { CalendarGroup } from '../entities/calendar-group.entity';
 import { User } from '../entities/user.entity';
 import {
   CreateCalendarDto,
@@ -28,6 +29,8 @@ export class CalendarsService {
     private calendarRepository: Repository<Calendar>,
     @InjectRepository(CalendarShare)
     private calendarShareRepository: Repository<CalendarShare>,
+    @InjectRepository(CalendarGroup)
+    private calendarGroupRepository: Repository<CalendarGroup>,
     @InjectRepository(User)
     private userRepository: Repository<User>,
     private readonly notificationsService: NotificationsService,
@@ -37,6 +40,15 @@ export class CalendarsService {
     createCalendarDto: CreateCalendarDto,
     userId: number,
   ): Promise<Calendar> {
+    if (createCalendarDto.groupId !== undefined) {
+      const groupId = createCalendarDto.groupId;
+      if (groupId !== null) {
+        await this.ensureGroupForOwner(groupId, userId);
+      } else {
+        createCalendarDto.groupId = null;
+      }
+    }
+
     const calendar = this.calendarRepository.create({
       ...createCalendarDto,
       ownerId: userId,
@@ -51,7 +63,7 @@ export class CalendarsService {
     // Get regular calendars (non-reservation) owned by user and calendars shared with user
     const ownedCalendars = await this.calendarRepository.find({
       where: { ownerId: userId, isActive: true, isReservationCalendar: false },
-      relations: ['owner', 'sharedWith'],
+      relations: ['owner', 'sharedWith', 'group'],
     });
     console.log(
       '📋 Found owned calendars:',
@@ -66,6 +78,7 @@ export class CalendarsService {
       .andWhere('calendar.isReservationCalendar = false')
       .leftJoinAndSelect('calendar.owner', 'owner')
       .leftJoinAndSelect('calendar.sharedWith', 'sharedUsers')
+      .leftJoinAndSelect('calendar.group', 'group')
       .getMany();
     console.log(
       '📋 Found shared calendars:',
@@ -94,7 +107,7 @@ export class CalendarsService {
   async findOne(id: number, userId: number): Promise<Calendar> {
     const calendar = await this.calendarRepository.findOne({
       where: { id, isActive: true },
-      relations: ['owner', 'sharedWith', 'events'],
+      relations: ['owner', 'sharedWith', 'events', 'group'],
     });
 
     if (!calendar) {
@@ -134,6 +147,22 @@ export class CalendarsService {
     }
 
     Object.assign(calendar, updateCalendarDto);
+    if (updateCalendarDto.groupId !== undefined) {
+      if (calendar.ownerId !== userId) {
+        throw new ForbiddenException(
+          'Only the calendar owner can change its group',
+        );
+      }
+
+      if (updateCalendarDto.groupId === null) {
+        calendar.groupId = null;
+        calendar.group = null;
+      } else {
+        await this.ensureGroupForOwner(updateCalendarDto.groupId, userId);
+        calendar.groupId = updateCalendarDto.groupId;
+      }
+    }
+
     return this.calendarRepository.save(calendar);
   }
 
@@ -299,5 +328,20 @@ export class CalendarsService {
     });
 
     return share ? share.permission : null;
+  }
+
+  private async ensureGroupForOwner(
+    groupId: number,
+    ownerId: number,
+  ): Promise<CalendarGroup> {
+    const group = await this.calendarGroupRepository.findOne({
+      where: { id: groupId, ownerId },
+    });
+
+    if (!group) {
+      throw new ForbiddenException('Calendar group not found or not accessible');
+    }
+
+    return group;
   }
 }

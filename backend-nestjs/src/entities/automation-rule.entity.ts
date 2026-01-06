@@ -7,6 +7,7 @@ import {
   ManyToOne,
   OneToMany,
 } from 'typeorm';
+import { timestampType } from './column-types';
 import { User } from './user.entity';
 import { AutomationCondition } from './automation-condition.entity';
 import { AutomationAction } from './automation-action.entity';
@@ -58,7 +59,7 @@ export class AutomationRule {
   })
   conditionLogic: ConditionLogic;
 
-  @Column({ type: 'timestamp', nullable: true })
+  @Column({ type: timestampType, nullable: true })
   lastExecutedAt: Date;
 
   @Column({ default: 0 })

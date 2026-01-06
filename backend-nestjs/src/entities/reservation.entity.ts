@@ -8,6 +8,7 @@ import {
   BeforeInsert,
   BeforeUpdate,
 } from 'typeorm';
+import { timestampType } from './column-types';
 import { Resource } from './resource.entity';
 import { User } from './user.entity';
 import { Organisation } from './organisation.entity';
@@ -25,10 +26,10 @@ export class Reservation {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ type: 'timestamp' })
+  @Column({ type: timestampType })
   startTime: Date;
 
-  @Column({ type: 'timestamp' })
+  @Column({ type: timestampType })
   endTime: Date;
 
   @Column({ type: 'int', default: 1 })

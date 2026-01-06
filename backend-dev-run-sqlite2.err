@@ -1,0 +1,74 @@
+[Nest] 35556  - 2026. 01. 06. 11:08:50     ERROR [[Nest] 35556  - ] GET /health - 404 - "Cannot GET /health" - requestId=null
+  ERRORNotFoundException: Cannot GET /health
+    at callback (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\@nestjs\core\router\routes-resolver.js:77:19)
+    at C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\@nestjs\core\router\router-proxy.js:9:23
+    at Layer.handleRequest (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\router\lib\layer.js:152:17)
+    at trimPrefix (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\router\index.js:342:13)
+    at C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\router\index.js:297:9
+    at processParams (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\router\index.js:582:12)
+    at next (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\router\index.js:291:5)
+    at urlencodedParser (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\body-parser\lib\types\urlencoded.js:68:7)
+    at Layer.handleRequest (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\router\lib\layer.js:152:17)
+    at trimPrefix (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\router\index.js:342:13)
+[Nest] 35556  - 2026. 01. 06. 11:17:46     ERROR [[Nest] 35556  - ] [HTTP ERROR] [0f9d3679-9cf4-45f6-88ba-ac0b5ba6eabb] POST /api/auth/refresh -> 201 (16ms) :: Refresh token missing (req:0f9d3679-9cf4-45f6-88ba-ac0b5ba6eabb)
+  ERRORUnauthorizedException: Refresh token missing
+    at AuthService.refreshSession (C:\Users\ThinkPad\cal3\backend-nestjs\src\auth\auth.service.ts:238:13)
+    at AuthController.refresh (C:\Users\ThinkPad\cal3\backend-nestjs\src\auth\auth.controller.ts:108:44)
+    at C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\@nestjs\core\router\router-execution-context.js:38:29
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+[Nest] 35556  - 2026. 01. 06. 11:17:46     ERROR [[Nest] 35556  - ] POST /api/auth/refresh - 401 - "Refresh token missing" - requestId=0f9d3679-9cf4-45f6-88ba-ac0b5ba6eabb (req:0f9d3679-9cf4-45f6-88ba-ac0b5ba6eabb)
+  ERRORUnauthorizedException: Refresh token missing
+    at AuthService.refreshSession (C:\Users\ThinkPad\cal3\backend-nestjs\src\auth\auth.service.ts:238:13)
+    at AuthController.refresh (C:\Users\ThinkPad\cal3\backend-nestjs\src\auth\auth.controller.ts:108:44)
+    at C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\@nestjs\core\router\router-execution-context.js:38:29
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+[Nest] 35556  - 2026. 01. 06. 11:17:50     ERROR [[Nest] 35556  - ] [HTTP ERROR] [f39daa59-5842-48d0-b90b-8c2dbd58529c] POST /api/auth/login -> 201 (693ms) :: Invalid credentials (req:f39daa59-5842-48d0-b90b-8c2dbd58529c)
+  ERRORUnauthorizedException: Invalid credentials
+    at AuthService.login (C:\Users\ThinkPad\cal3\backend-nestjs\src\auth\auth.service.ts:115:13)
+    at async AuthController.login (C:\Users\ThinkPad\cal3\backend-nestjs\src\auth\auth.controller.ts:77:21)
+[Nest] 35556  - 2026. 01. 06. 11:17:50     ERROR [[Nest] 35556  - ] POST /api/auth/login - 401 - "Invalid credentials" - requestId=f39daa59-5842-48d0-b90b-8c2dbd58529c (req:f39daa59-5842-48d0-b90b-8c2dbd58529c)
+  ERRORUnauthorizedException: Invalid credentials
+    at AuthService.login (C:\Users\ThinkPad\cal3\backend-nestjs\src\auth\auth.service.ts:115:13)
+    at async AuthController.login (C:\Users\ThinkPad\cal3\backend-nestjs\src\auth\auth.controller.ts:77:21)
+[Nest] 35556  - 2026. 01. 06. 11:35:44     ERROR [[Nest] 35556  - ] [HTTP ERROR] [af989cb8-93df-48c3-ac8a-0fb612189d0a] POST /api/auth/login -> 201 (609ms) :: Invalid credentials (req:af989cb8-93df-48c3-ac8a-0fb612189d0a)
+  ERRORUnauthorizedException: Invalid credentials
+    at AuthService.login (C:\Users\ThinkPad\cal3\backend-nestjs\src\auth\auth.service.ts:115:13)
+    at async AuthController.login (C:\Users\ThinkPad\cal3\backend-nestjs\src\auth\auth.controller.ts:77:21)
+[Nest] 35556  - 2026. 01. 06. 11:35:44     ERROR [[Nest] 35556  - ] POST /api/auth/login - 401 - "Invalid credentials" - requestId=af989cb8-93df-48c3-ac8a-0fb612189d0a (req:af989cb8-93df-48c3-ac8a-0fb612189d0a)
+  ERRORUnauthorizedException: Invalid credentials
+    at AuthService.login (C:\Users\ThinkPad\cal3\backend-nestjs\src\auth\auth.service.ts:115:13)
+    at async AuthController.login (C:\Users\ThinkPad\cal3\backend-nestjs\src\auth\auth.controller.ts:77:21)
+[Nest] 35556  - 2026. 01. 06. 11:35:51     ERROR [[Nest] 35556  - ] [HTTP ERROR] [b98f2e0b-cee7-459e-9be3-d49ce5c155fc] POST /api/auth/login -> 201 (675ms) :: Invalid credentials (req:b98f2e0b-cee7-459e-9be3-d49ce5c155fc)
+  ERRORUnauthorizedException: Invalid credentials
+    at AuthService.login (C:\Users\ThinkPad\cal3\backend-nestjs\src\auth\auth.service.ts:115:13)
+    at async AuthController.login (C:\Users\ThinkPad\cal3\backend-nestjs\src\auth\auth.controller.ts:77:21)
+[Nest] 35556  - 2026. 01. 06. 11:35:51     ERROR [[Nest] 35556  - ] POST /api/auth/login - 401 - "Invalid credentials" - requestId=b98f2e0b-cee7-459e-9be3-d49ce5c155fc (req:b98f2e0b-cee7-459e-9be3-d49ce5c155fc)
+  ERRORUnauthorizedException: Invalid credentials
+    at AuthService.login (C:\Users\ThinkPad\cal3\backend-nestjs\src\auth\auth.service.ts:115:13)
+    at async AuthController.login (C:\Users\ThinkPad\cal3\backend-nestjs\src\auth\auth.controller.ts:77:21)
+[Nest] 35556  - 2026. 01. 06. 11:35:53     ERROR [[Nest] 35556  - ] [HTTP ERROR] [0b8f5c98-205c-4f43-817c-240a7821f494] POST /api/auth/login -> 201 (670ms) :: Invalid credentials (req:0b8f5c98-205c-4f43-817c-240a7821f494)
+  ERRORUnauthorizedException: Invalid credentials
+    at AuthService.login (C:\Users\ThinkPad\cal3\backend-nestjs\src\auth\auth.service.ts:115:13)
+    at async AuthController.login (C:\Users\ThinkPad\cal3\backend-nestjs\src\auth\auth.controller.ts:77:21)
+[Nest] 35556  - 2026. 01. 06. 11:35:53     ERROR [[Nest] 35556  - ] POST /api/auth/login - 401 - "Invalid credentials" - requestId=0b8f5c98-205c-4f43-817c-240a7821f494 (req:0b8f5c98-205c-4f43-817c-240a7821f494)
+  ERRORUnauthorizedException: Invalid credentials
+    at AuthService.login (C:\Users\ThinkPad\cal3\backend-nestjs\src\auth\auth.service.ts:115:13)
+    at async AuthController.login (C:\Users\ThinkPad\cal3\backend-nestjs\src\auth\auth.controller.ts:77:21)
+[Nest] 35556  - 2026. 01. 06. 11:35:57     ERROR [[Nest] 35556  - ] [HTTP ERROR] [675b1276-6392-411d-b4ea-921edddb4a82] POST /api/auth/login -> 201 (689ms) :: Invalid credentials (req:675b1276-6392-411d-b4ea-921edddb4a82)
+  ERRORUnauthorizedException: Invalid credentials
+    at AuthService.login (C:\Users\ThinkPad\cal3\backend-nestjs\src\auth\auth.service.ts:115:13)
+    at async AuthController.login (C:\Users\ThinkPad\cal3\backend-nestjs\src\auth\auth.controller.ts:77:21)
+[Nest] 35556  - 2026. 01. 06. 11:35:57     ERROR [[Nest] 35556  - ] POST /api/auth/login - 401 - "Invalid credentials" - requestId=675b1276-6392-411d-b4ea-921edddb4a82 (req:675b1276-6392-411d-b4ea-921edddb4a82)
+  ERRORUnauthorizedException: Invalid credentials
+    at AuthService.login (C:\Users\ThinkPad\cal3\backend-nestjs\src\auth\auth.service.ts:115:13)
+    at async AuthController.login (C:\Users\ThinkPad\cal3\backend-nestjs\src\auth\auth.controller.ts:77:21)
+[Nest] 35556  - 2026. 01. 06. 11:36:40     ERROR [[Nest] 35556  - ] [HTTP ERROR] [27195eba-94fa-4f36-883c-945743640642] POST /api/auth/login -> 201 (576ms) :: Too many failed attempts. Please try again later. (req:27195eba-94fa-4f36-883c-945743640642)
+  ERRORThrottlerException: Too many failed attempts. Please try again later.
+    at LoginAttemptService.registerFailure (C:\Users\ThinkPad\cal3\backend-nestjs\src\auth\services\login-attempt.service.ts:34:15)
+    at AuthService.login (C:\Users\ThinkPad\cal3\backend-nestjs\src\auth\auth.service.ts:109:32)
+    at async AuthController.login (C:\Users\ThinkPad\cal3\backend-nestjs\src\auth\auth.controller.ts:77:21)
+[Nest] 35556  - 2026. 01. 06. 11:36:40     ERROR [[Nest] 35556  - ] POST /api/auth/login - 429 - "Too many failed attempts. Please try again later." - requestId=27195eba-94fa-4f36-883c-945743640642 (req:27195eba-94fa-4f36-883c-945743640642)
+  ERRORThrottlerException: Too many failed attempts. Please try again later.
+    at LoginAttemptService.registerFailure (C:\Users\ThinkPad\cal3\backend-nestjs\src\auth\services\login-attempt.service.ts:34:15)
+    at AuthService.login (C:\Users\ThinkPad\cal3\backend-nestjs\src\auth\auth.service.ts:109:32)
+    at async AuthController.login (C:\Users\ThinkPad\cal3\backend-nestjs\src\auth\auth.controller.ts:77:21)

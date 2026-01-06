@@ -53,6 +53,7 @@ interface CalendarState {
   currentView: 'month' | 'week' | 'timeline';
   events: Event[];
   calendars: CalendarType[];
+  calendarGroups: import('../../types/CalendarGroup').CalendarGroupWithCalendars[];
   selectedCalendars: number[];
   reservations: any[];
   organizations: Organization[];
@@ -74,6 +75,7 @@ interface CalendarActions {
   createEvent: (date?: Date) => void;
   editEvent: (event: Event) => void;
   deleteEvent: (event: Event) => void;
+  refreshData: () => Promise<void>;
 }
 
 interface EnhancedCalendarProps {
@@ -91,6 +93,7 @@ function useCalendarState(themeColor: string, initialView: CalendarState['curren
     currentView: initialView,
     events: [],
     calendars: [],
+    calendarGroups: [],
     selectedCalendars: [],
     reservations: [],
     organizations: [],
@@ -131,9 +134,10 @@ function useCalendarState(themeColor: string, initialView: CalendarState['curren
     try {
       setState(prev => ({ ...prev, loading: true, error: null }));
 
-      const [eventsData, calendarsData] = await Promise.all([
+      const [eventsData, calendarsData, calendarGroupsData] = await Promise.all([
         apiService.getAllEvents(),
         apiService.getAllCalendars(),
+        apiService.getCalendarGroups().catch(() => []),
       ]);
 
       const selectedCalendars = calendarsData.map(cal => cal.id);
@@ -183,6 +187,7 @@ function useCalendarState(themeColor: string, initialView: CalendarState['curren
         ...prev,
         events: eventsData,
         calendars: calendarsData,
+        calendarGroups: calendarGroupsData,
         selectedCalendars,
         organizations,
         reservations,
@@ -339,6 +344,7 @@ function useCalendarState(themeColor: string, initialView: CalendarState['curren
       }));
       setModals(prev => ({ ...prev, confirmDialog: true }));
     },
+    refreshData: loadData,
   }), [loadData]);
 
   // Initialize
@@ -772,6 +778,7 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
   onEditCalendar,
   onDeleteCalendar,
 }) => {
+  const [creatingGroup, setCreatingGroup] = React.useState(false);
   // Collapsible sidebar state - persisted in localStorage
   const [isCollapsed, setIsCollapsed] = React.useState(() => {
     const saved = localStorage.getItem('enhancedCalendarSidebarCollapsed');
@@ -786,6 +793,111 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
   const toggleCollapse = () => {
     setIsCollapsed(!isCollapsed);
   };
+
+  const handleCreateGroup = async () => {
+    const name = window.prompt('Name for the new calendar group?');
+    if (!name || name.trim().length < 2) {
+      return;
+    }
+    try {
+      setCreatingGroup(true);
+      await apiService.createCalendarGroup({ name: name.trim(), isVisible: true });
+      await actions.refreshData();
+    } catch (err) {
+      console.error('Failed to create calendar group', err);
+      alert(err instanceof Error ? err.message : 'Failed to create group');
+    } finally {
+      setCreatingGroup(false);
+    }
+  };
+
+  const groupedCalendars = React.useMemo(() => {
+    const byId = new Map<number, CalendarType>();
+    state.calendars.forEach((cal) => byId.set(cal.id, cal));
+
+    const groups = state.calendarGroups.map((group) => ({
+      ...group,
+      calendars: group.calendars
+        .map((cal) => byId.get(cal.id))
+        .filter(Boolean) as CalendarType[],
+    }));
+
+    const groupedIds = new Set(groups.flatMap((g) => g.calendars.map((c) => c.id)));
+    const ungrouped = state.calendars.filter((cal) => !groupedIds.has(cal.id));
+
+    return { groups, ungrouped };
+  }, [state.calendars, state.calendarGroups]);
+
+  const renderCalendarRow = (calendar: CalendarType) => (
+    <div
+      key={calendar.id}
+      className={`
+        flex items-center space-x-3 p-3 rounded-lg cursor-pointer transition-all duration-200
+        hover:shadow-md border-l-4 group
+        ${state.selectedCalendars.includes(calendar.id) ? 'shadow-sm' : ''}
+      `}
+      style={{
+        borderLeftColor: calendar.color || '#64748b',
+        background: state.selectedCalendars.includes(calendar.id)
+          ? `linear-gradient(135deg, ${calendar.color || '#64748b'}15, white)`
+          : `linear-gradient(135deg, ${calendar.color || '#64748b'}08, transparent)`
+      }}
+      onClick={() => actions.toggleCalendar(calendar.id)}
+    >
+      <div
+        className="w-4 h-4 rounded border-2 flex items-center justify-center"
+        style={{
+          backgroundColor: state.selectedCalendars.includes(calendar.id)
+            ? (calendar.color || '#64748b')
+            : 'transparent',
+          borderColor: calendar.color || '#64748b'
+        }}
+      >
+        {state.selectedCalendars.includes(calendar.id) && (
+          <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+          </svg>
+        )}
+      </div>
+      {calendar.icon && (
+        <div className="text-xl mr-2 flex-shrink-0">
+          {calendar.icon}
+        </div>
+      )}
+      <div className="flex-1 min-w-0">
+        <div className="font-medium text-gray-800 truncate">{calendar.name}</div>
+        {calendar.description && (
+          <div className="text-sm text-gray-600 truncate">{calendar.description}</div>
+        )}
+      </div>
+      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        {onEditCalendar && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onEditCalendar(calendar);
+            }}
+            className="p-1 hover:bg-gray-200 rounded transition-all duration-200"
+            title="Edit Calendar"
+          >
+            <span className="text-xs">✎</span>
+          </button>
+        )}
+        {onDeleteCalendar && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onDeleteCalendar(calendar);
+            }}
+            className="p-1 hover:bg-red-100 rounded transition-all duration-200"
+            title="Delete Calendar"
+          >
+            <span className="text-xs">🗑</span>
+          </button>
+        )}
+      </div>
+    </div>
+  );
 
   // Collapsed view - icon-only sidebar
   if (isCollapsed) {
@@ -856,6 +968,68 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
           >
             <span className="text-lg">◀</span>
           </button>
+        </div>
+
+        {/* Calendar Groups */}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <h3 className={`text-md font-semibold text-${themeConfig.text}`}>Groups</h3>
+              <span className="text-xs text-gray-500">{groupedCalendars.groups.length} total</span>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleCreateGroup}
+              disabled={creatingGroup}
+              className={`text-${themeConfig.primary}-600 hover:bg-${themeConfig.primary}-100`}
+            >
+              + Group
+            </Button>
+          </div>
+
+          {groupedCalendars.groups.map((group) => {
+            const groupCalendarIds = group.calendars.map((c) => c.id);
+            const allSelected = groupCalendarIds.length > 0 && groupCalendarIds.every((id) => state.selectedCalendars.includes(id));
+
+            return (
+              <div key={group.id} className="rounded-lg border border-gray-200 bg-white/70">
+                <div className="flex items-center justify-between px-3 py-2 border-b border-gray-100">
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => {
+                        if (allSelected) {
+                          groupCalendarIds.forEach((id) => actions.toggleCalendar(id));
+                        } else {
+                          groupCalendarIds.forEach((id) => {
+                            if (!state.selectedCalendars.includes(id)) {
+                              actions.toggleCalendar(id);
+                            }
+                          });
+                        }
+                      }}
+                      className="w-4 h-4 rounded border border-gray-400 flex items-center justify-center"
+                      aria-label="Toggle group visibility"
+                    >
+                      {allSelected && <span className="text-xs">✓</span>}
+                    </button>
+                    <div>
+                      <div className="font-semibold text-gray-800">{group.name}</div>
+                      <div className="text-xs text-gray-500">
+                        {group.calendars.length} calendars · {group.isVisible ? 'Visible' : 'Hidden'}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="divide-y divide-gray-100">
+                  {group.calendars.map((calendar) => renderCalendarRow(calendar))}
+                  {group.calendars.length === 0 && (
+                    <div className="px-4 py-3 text-sm text-gray-500">No calendars in this group yet.</div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
         </div>
 
         {/* Calendars List */}

@@ -8,6 +8,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { timestampWithTimeZoneType } from './column-types';
 import { NotificationMessage } from './notification-message.entity';
 
 @Entity('notification_deliveries')
@@ -32,7 +33,7 @@ export class NotificationDelivery {
   @Column({ type: 'int', default: 0 })
   attemptCount!: number;
 
-  @Column({ type: 'timestamp with time zone', nullable: true })
+  @Column({ type: timestampWithTimeZoneType, nullable: true })
   sentAt?: Date | null;
 
   @Column({ type: 'text', nullable: true })

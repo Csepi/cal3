@@ -17,12 +17,17 @@ import {
   ApiParam,
 } from '@nestjs/swagger';
 import { CalendarsService } from './calendars.service';
+import { CalendarGroupsService } from './calendar-groups.service';
 import {
   CreateCalendarDto,
   UpdateCalendarDto,
   ShareCalendarDto,
   CalendarResponseDto,
 } from '../dto/calendar.dto';
+import {
+  CreateCalendarGroupDto,
+  CalendarGroupResponseDto,
+} from '../dto/calendar-group.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 @ApiTags('Calendars')
@@ -30,7 +35,10 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
 export class CalendarsController {
-  constructor(private readonly calendarsService: CalendarsService) {}
+  constructor(
+    private readonly calendarsService: CalendarsService,
+    private readonly calendarGroupsService: CalendarGroupsService,
+  ) {}
 
   @Post()
   @ApiOperation({ summary: 'Create a new calendar' })
@@ -149,5 +157,29 @@ export class CalendarsController {
   @ApiResponse({ status: 404, description: 'Calendar not found' })
   getSharedUsers(@Param('id') id: string, @Request() req) {
     return this.calendarsService.getSharedUsers(+id, req.user.id);
+  }
+
+  // Calendar Groups (alias under calendars prefix for clients expecting /calendars/...)
+  @Get('groups')
+  @ApiOperation({
+    summary:
+      'List calendar groups for the user with calendars they can access',
+  })
+  findAllGroups(@Request() req) {
+    return this.calendarGroupsService.findAll(req.user.id);
+  }
+
+  @Post('groups')
+  @ApiOperation({ summary: 'Create a new calendar group' })
+  @ApiResponse({
+    status: 201,
+    description: 'Calendar group created',
+    type: CalendarGroupResponseDto,
+  })
+  createGroup(
+    @Body() createCalendarGroupDto: CreateCalendarGroupDto,
+    @Request() req,
+  ) {
+    return this.calendarGroupsService.create(createCalendarGroupDto, req.user.id);
   }
 }

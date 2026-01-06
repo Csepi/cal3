@@ -6,6 +6,7 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { timestampType } from './column-types';
 import { User } from './user.entity';
 import { Calendar } from './calendar.entity';
 
@@ -43,7 +44,7 @@ export class CalendarSyncConnection {
   @Column({ nullable: true })
   refreshToken: string;
 
-  @Column({ nullable: true, type: 'timestamp' })
+  @Column({ nullable: true, type: timestampType })
   tokenExpiresAt: Date;
 
   @Column({
@@ -51,7 +52,7 @@ export class CalendarSyncConnection {
   })
   status: SyncStatus;
 
-  @Column({ nullable: true, type: 'timestamp' })
+  @Column({ nullable: true, type: timestampType })
   lastSyncAt: Date;
 
   @CreateDateColumn()
@@ -87,7 +88,7 @@ export class SyncedCalendar {
   @Column({ default: true })
   bidirectionalSync: boolean;
 
-  @Column({ nullable: true, type: 'timestamp' })
+  @Column({ nullable: true, type: timestampType })
   lastSyncAt: Date;
 
   @Column({ nullable: true })
@@ -117,10 +118,10 @@ export class SyncEventMapping {
   @Column()
   externalEventId: string;
 
-  @Column({ nullable: true, type: 'timestamp' })
+  @Column({ nullable: true, type: timestampType })
   lastModifiedLocal: Date;
 
-  @Column({ nullable: true, type: 'timestamp' })
+  @Column({ nullable: true, type: timestampType })
   lastModifiedExternal: Date;
 
   @CreateDateColumn()

@@ -8,6 +8,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { timestampWithTimeZoneType } from './column-types';
 import { User } from './user.entity';
 import { NotificationThread } from './notification-thread.entity';
 
@@ -40,13 +41,13 @@ export class NotificationMessage {
   @Column({ type: 'boolean', default: false })
   isRead!: boolean;
 
-  @Column({ type: 'timestamp with time zone', nullable: true })
+  @Column({ type: timestampWithTimeZoneType, nullable: true })
   readAt?: Date | null;
 
   @Column({ type: 'boolean', default: false })
   archived!: boolean;
 
-  @Column({ type: 'timestamp with time zone', nullable: true })
+  @Column({ type: timestampWithTimeZoneType, nullable: true })
   archivedAt?: Date | null;
 
   @Column({ type: 'int', nullable: true })

@@ -6,6 +6,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { timestampTzType } from './column-types';
 
 @Entity('idempotency_records')
 @Index(['key', 'userId', 'scope'], { unique: true })
@@ -28,7 +29,7 @@ export class IdempotencyRecord {
   @Column({ type: 'text', nullable: true })
   responsePayload?: string | null;
 
-  @Column({ type: 'timestamptz' })
+  @Column({ type: timestampTzType })
   expiresAt: Date;
 
   @CreateDateColumn()

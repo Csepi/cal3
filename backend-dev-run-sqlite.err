@@ -1,0 +1,1188 @@
+[31m[Nest] 4884  - [39m2026. 01. 06. 10:53:52 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (1)...[39m
+DataTypeNotSupportedError: Data type "timestamptz" in "EventComment.flaggedAt" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 4884  - [39m2026. 01. 06. 10:53:52 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (2)...[39m
+DataTypeNotSupportedError: Data type "timestamptz" in "EventComment.flaggedAt" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 4884  - [39m2026. 01. 06. 10:53:52 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (3)...[39m
+DataTypeNotSupportedError: Data type "timestamptz" in "EventComment.flaggedAt" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 4884  - [39m2026. 01. 06. 10:53:52 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (4)...[39m
+DataTypeNotSupportedError: Data type "timestamptz" in "EventComment.flaggedAt" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 4884  - [39m2026. 01. 06. 10:53:52 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (5)...[39m
+DataTypeNotSupportedError: Data type "timestamptz" in "EventComment.flaggedAt" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 4884  - [39m2026. 01. 06. 10:53:52 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (6)...[39m
+DataTypeNotSupportedError: Data type "timestamptz" in "EventComment.flaggedAt" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 4884  - [39m2026. 01. 06. 10:53:52 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (7)...[39m
+DataTypeNotSupportedError: Data type "timestamptz" in "EventComment.flaggedAt" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 4884  - [39m2026. 01. 06. 10:53:52 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (8)...[39m
+DataTypeNotSupportedError: Data type "timestamptz" in "EventComment.flaggedAt" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 4884  - [39m2026. 01. 06. 10:53:52 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (9)...[39m
+DataTypeNotSupportedError: Data type "timestamptz" in "EventComment.flaggedAt" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 4884  - [39m2026. 01. 06. 10:53:52 [31m  ERROR[39m [38;5;3m[ExceptionHandler] [39mDataTypeNotSupportedError: Data type "timestamptz" in "EventComment.flaggedAt" is not supported by "sqlite" database.
+    at <anonymous> [90m(C:\Users\ThinkPad\cal3\backend-nestjs\[39mnode_modules\[4mtypeorm[24m\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31[90m)[39m
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate [90m(C:\Users\ThinkPad\cal3\backend-nestjs\[39mnode_modules\[4mtypeorm[24m\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18[90m)[39m
+    at <anonymous> [90m(C:\Users\ThinkPad\cal3\backend-nestjs\[39mnode_modules\[4mtypeorm[24m\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18[90m)[39m
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany [90m(C:\Users\ThinkPad\cal3\backend-nestjs\[39mnode_modules\[4mtypeorm[24m\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25[90m)[39m
+    at DataSource.buildMetadatas [90m(C:\Users\ThinkPad\cal3\backend-nestjs\[39mnode_modules\[4mtypeorm[24m\data-source\src\data-source\DataSource.ts:753:33[90m)[39m
+    at async DataSource.initialize [90m(C:\Users\ThinkPad\cal3\backend-nestjs\[39mnode_modules\[4mtypeorm[24m\data-source\src\data-source\DataSource.ts:264:13[90m)[39m
+[31m[Nest] 37140  - [39m2026. 01. 06. 10:56:38 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (1)...[39m
+DataTypeNotSupportedError: Data type "timestamptz" in "Event.taskSyncedAt" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 37140  - [39m2026. 01. 06. 10:56:38 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (2)...[39m
+DataTypeNotSupportedError: Data type "timestamptz" in "Event.taskSyncedAt" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 37140  - [39m2026. 01. 06. 10:56:38 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (3)...[39m
+DataTypeNotSupportedError: Data type "timestamptz" in "Event.taskSyncedAt" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 37140  - [39m2026. 01. 06. 10:56:38 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (4)...[39m
+DataTypeNotSupportedError: Data type "timestamptz" in "Event.taskSyncedAt" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 37140  - [39m2026. 01. 06. 10:56:38 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (5)...[39m
+DataTypeNotSupportedError: Data type "timestamptz" in "Event.taskSyncedAt" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 37140  - [39m2026. 01. 06. 10:56:38 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (6)...[39m
+DataTypeNotSupportedError: Data type "timestamptz" in "Event.taskSyncedAt" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 37140  - [39m2026. 01. 06. 10:56:38 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (7)...[39m
+DataTypeNotSupportedError: Data type "timestamptz" in "Event.taskSyncedAt" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 37140  - [39m2026. 01. 06. 10:56:38 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (8)...[39m
+DataTypeNotSupportedError: Data type "timestamptz" in "Event.taskSyncedAt" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 37140  - [39m2026. 01. 06. 10:56:38 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (9)...[39m
+DataTypeNotSupportedError: Data type "timestamptz" in "Event.taskSyncedAt" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 37140  - [39m2026. 01. 06. 10:56:38 [31m  ERROR[39m [38;5;3m[ExceptionHandler] [39mDataTypeNotSupportedError: Data type "timestamptz" in "Event.taskSyncedAt" is not supported by "sqlite" database.
+    at <anonymous> [90m(C:\Users\ThinkPad\cal3\backend-nestjs\[39mnode_modules\[4mtypeorm[24m\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31[90m)[39m
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate [90m(C:\Users\ThinkPad\cal3\backend-nestjs\[39mnode_modules\[4mtypeorm[24m\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18[90m)[39m
+    at <anonymous> [90m(C:\Users\ThinkPad\cal3\backend-nestjs\[39mnode_modules\[4mtypeorm[24m\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18[90m)[39m
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany [90m(C:\Users\ThinkPad\cal3\backend-nestjs\[39mnode_modules\[4mtypeorm[24m\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25[90m)[39m
+    at DataSource.buildMetadatas [90m(C:\Users\ThinkPad\cal3\backend-nestjs\[39mnode_modules\[4mtypeorm[24m\data-source\src\data-source\DataSource.ts:753:33[90m)[39m
+    at async DataSource.initialize [90m(C:\Users\ThinkPad\cal3\backend-nestjs\[39mnode_modules\[4mtypeorm[24m\data-source\src\data-source\DataSource.ts:264:13[90m)[39m
+[31m[Nest] 8672  - [39m2026. 01. 06. 10:57:08 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (1)...[39m
+DataTypeNotSupportedError: Data type "timestamp" in "Reservation.startTime" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 8672  - [39m2026. 01. 06. 10:57:08 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (2)...[39m
+DataTypeNotSupportedError: Data type "timestamp" in "Reservation.startTime" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 8672  - [39m2026. 01. 06. 10:57:08 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (3)...[39m
+DataTypeNotSupportedError: Data type "timestamp" in "Reservation.startTime" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 8672  - [39m2026. 01. 06. 10:57:08 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (4)...[39m
+DataTypeNotSupportedError: Data type "timestamp" in "Reservation.startTime" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 8672  - [39m2026. 01. 06. 10:57:08 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (5)...[39m
+DataTypeNotSupportedError: Data type "timestamp" in "Reservation.startTime" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 8672  - [39m2026. 01. 06. 10:57:08 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (6)...[39m
+DataTypeNotSupportedError: Data type "timestamp" in "Reservation.startTime" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 8672  - [39m2026. 01. 06. 10:57:08 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (7)...[39m
+DataTypeNotSupportedError: Data type "timestamp" in "Reservation.startTime" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 8672  - [39m2026. 01. 06. 10:57:08 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (8)...[39m
+DataTypeNotSupportedError: Data type "timestamp" in "Reservation.startTime" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 8672  - [39m2026. 01. 06. 10:57:08 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (9)...[39m
+DataTypeNotSupportedError: Data type "timestamp" in "Reservation.startTime" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 8672  - [39m2026. 01. 06. 10:57:08 [31m  ERROR[39m [38;5;3m[ExceptionHandler] [39mDataTypeNotSupportedError: Data type "timestamp" in "Reservation.startTime" is not supported by "sqlite" database.
+    at <anonymous> [90m(C:\Users\ThinkPad\cal3\backend-nestjs\[39mnode_modules\[4mtypeorm[24m\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31[90m)[39m
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate [90m(C:\Users\ThinkPad\cal3\backend-nestjs\[39mnode_modules\[4mtypeorm[24m\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18[90m)[39m
+    at <anonymous> [90m(C:\Users\ThinkPad\cal3\backend-nestjs\[39mnode_modules\[4mtypeorm[24m\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18[90m)[39m
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany [90m(C:\Users\ThinkPad\cal3\backend-nestjs\[39mnode_modules\[4mtypeorm[24m\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25[90m)[39m
+    at DataSource.buildMetadatas [90m(C:\Users\ThinkPad\cal3\backend-nestjs\[39mnode_modules\[4mtypeorm[24m\data-source\src\data-source\DataSource.ts:753:33[90m)[39m
+    at async DataSource.initialize [90m(C:\Users\ThinkPad\cal3\backend-nestjs\[39mnode_modules\[4mtypeorm[24m\data-source\src\data-source\DataSource.ts:264:13[90m)[39m
+[31m[Nest] 38488  - [39m2026. 01. 06. 10:58:33 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (1)...[39m
+DataTypeNotSupportedError: Data type "timestamp" in "Reservation.startTime" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 38488  - [39m2026. 01. 06. 10:58:33 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (2)...[39m
+DataTypeNotSupportedError: Data type "timestamp" in "Reservation.startTime" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 38488  - [39m2026. 01. 06. 10:58:33 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (3)...[39m
+DataTypeNotSupportedError: Data type "timestamp" in "Reservation.startTime" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 38488  - [39m2026. 01. 06. 10:58:33 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (4)...[39m
+DataTypeNotSupportedError: Data type "timestamp" in "Reservation.startTime" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 38488  - [39m2026. 01. 06. 10:58:33 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (5)...[39m
+DataTypeNotSupportedError: Data type "timestamp" in "Reservation.startTime" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 38488  - [39m2026. 01. 06. 10:58:33 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (6)...[39m
+DataTypeNotSupportedError: Data type "timestamp" in "Reservation.startTime" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 38488  - [39m2026. 01. 06. 10:58:33 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (7)...[39m
+DataTypeNotSupportedError: Data type "timestamp" in "Reservation.startTime" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 38488  - [39m2026. 01. 06. 10:58:33 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (8)...[39m
+DataTypeNotSupportedError: Data type "timestamp" in "Reservation.startTime" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 38488  - [39m2026. 01. 06. 10:58:33 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (9)...[39m
+DataTypeNotSupportedError: Data type "timestamp" in "Reservation.startTime" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 38488  - [39m2026. 01. 06. 10:58:33 [31m  ERROR[39m [38;5;3m[ExceptionHandler] [39mDataTypeNotSupportedError: Data type "timestamp" in "Reservation.startTime" is not supported by "sqlite" database.
+    at <anonymous> [90m(C:\Users\ThinkPad\cal3\backend-nestjs\[39mnode_modules\[4mtypeorm[24m\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31[90m)[39m
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate [90m(C:\Users\ThinkPad\cal3\backend-nestjs\[39mnode_modules\[4mtypeorm[24m\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18[90m)[39m
+    at <anonymous> [90m(C:\Users\ThinkPad\cal3\backend-nestjs\[39mnode_modules\[4mtypeorm[24m\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18[90m)[39m
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany [90m(C:\Users\ThinkPad\cal3\backend-nestjs\[39mnode_modules\[4mtypeorm[24m\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25[90m)[39m
+    at DataSource.buildMetadatas [90m(C:\Users\ThinkPad\cal3\backend-nestjs\[39mnode_modules\[4mtypeorm[24m\data-source\src\data-source\DataSource.ts:753:33[90m)[39m
+    at async DataSource.initialize [90m(C:\Users\ThinkPad\cal3\backend-nestjs\[39mnode_modules\[4mtypeorm[24m\data-source\src\data-source\DataSource.ts:264:13[90m)[39m
+[31m[Nest] 30012  - [39m2026. 01. 06. 10:59:03 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (1)...[39m
+DataTypeNotSupportedError: Data type "timestamp" in "Reservation.startTime" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 30012  - [39m2026. 01. 06. 10:59:03 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (2)...[39m
+DataTypeNotSupportedError: Data type "timestamp" in "Reservation.startTime" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 30012  - [39m2026. 01. 06. 10:59:03 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (3)...[39m
+DataTypeNotSupportedError: Data type "timestamp" in "Reservation.startTime" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 30012  - [39m2026. 01. 06. 10:59:03 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (4)...[39m
+DataTypeNotSupportedError: Data type "timestamp" in "Reservation.startTime" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 30012  - [39m2026. 01. 06. 10:59:03 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (5)...[39m
+DataTypeNotSupportedError: Data type "timestamp" in "Reservation.startTime" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 30012  - [39m2026. 01. 06. 10:59:03 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (6)...[39m
+DataTypeNotSupportedError: Data type "timestamp" in "Reservation.startTime" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 30012  - [39m2026. 01. 06. 10:59:03 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (7)...[39m
+DataTypeNotSupportedError: Data type "timestamp" in "Reservation.startTime" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 30012  - [39m2026. 01. 06. 10:59:03 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (8)...[39m
+DataTypeNotSupportedError: Data type "timestamp" in "Reservation.startTime" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 30012  - [39m2026. 01. 06. 10:59:03 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (9)...[39m
+DataTypeNotSupportedError: Data type "timestamp" in "Reservation.startTime" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 30012  - [39m2026. 01. 06. 10:59:03 [31m  ERROR[39m [38;5;3m[ExceptionHandler] [39mDataTypeNotSupportedError: Data type "timestamp" in "Reservation.startTime" is not supported by "sqlite" database.
+    at <anonymous> [90m(C:\Users\ThinkPad\cal3\backend-nestjs\[39mnode_modules\[4mtypeorm[24m\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31[90m)[39m
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate [90m(C:\Users\ThinkPad\cal3\backend-nestjs\[39mnode_modules\[4mtypeorm[24m\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18[90m)[39m
+    at <anonymous> [90m(C:\Users\ThinkPad\cal3\backend-nestjs\[39mnode_modules\[4mtypeorm[24m\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18[90m)[39m
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany [90m(C:\Users\ThinkPad\cal3\backend-nestjs\[39mnode_modules\[4mtypeorm[24m\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25[90m)[39m
+    at DataSource.buildMetadatas [90m(C:\Users\ThinkPad\cal3\backend-nestjs\[39mnode_modules\[4mtypeorm[24m\data-source\src\data-source\DataSource.ts:753:33[90m)[39m
+    at async DataSource.initialize [90m(C:\Users\ThinkPad\cal3\backend-nestjs\[39mnode_modules\[4mtypeorm[24m\data-source\src\data-source\DataSource.ts:264:13[90m)[39m
+[31m[Nest] 33516  - [39m2026. 01. 06. 11:00:11 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (1)...[39m
+DataTypeNotSupportedError: Data type "timestamp" in "Reservation.startTime" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 33516  - [39m2026. 01. 06. 11:00:11 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (2)...[39m
+DataTypeNotSupportedError: Data type "timestamp" in "Reservation.startTime" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 33516  - [39m2026. 01. 06. 11:00:11 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (3)...[39m
+DataTypeNotSupportedError: Data type "timestamp" in "Reservation.startTime" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 33516  - [39m2026. 01. 06. 11:00:11 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (4)...[39m
+DataTypeNotSupportedError: Data type "timestamp" in "Reservation.startTime" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 33516  - [39m2026. 01. 06. 11:00:11 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (5)...[39m
+DataTypeNotSupportedError: Data type "timestamp" in "Reservation.startTime" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 33516  - [39m2026. 01. 06. 11:00:11 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (6)...[39m
+DataTypeNotSupportedError: Data type "timestamp" in "Reservation.startTime" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 33516  - [39m2026. 01. 06. 11:00:11 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (7)...[39m
+DataTypeNotSupportedError: Data type "timestamp" in "Reservation.startTime" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 33516  - [39m2026. 01. 06. 11:00:11 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (8)...[39m
+DataTypeNotSupportedError: Data type "timestamp" in "Reservation.startTime" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 33516  - [39m2026. 01. 06. 11:00:11 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (9)...[39m
+DataTypeNotSupportedError: Data type "timestamp" in "Reservation.startTime" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 33516  - [39m2026. 01. 06. 11:00:11 [31m  ERROR[39m [38;5;3m[ExceptionHandler] [39mDataTypeNotSupportedError: Data type "timestamp" in "Reservation.startTime" is not supported by "sqlite" database.
+    at <anonymous> [90m(C:\Users\ThinkPad\cal3\backend-nestjs\[39mnode_modules\[4mtypeorm[24m\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31[90m)[39m
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate [90m(C:\Users\ThinkPad\cal3\backend-nestjs\[39mnode_modules\[4mtypeorm[24m\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18[90m)[39m
+    at <anonymous> [90m(C:\Users\ThinkPad\cal3\backend-nestjs\[39mnode_modules\[4mtypeorm[24m\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18[90m)[39m
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany [90m(C:\Users\ThinkPad\cal3\backend-nestjs\[39mnode_modules\[4mtypeorm[24m\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25[90m)[39m
+    at DataSource.buildMetadatas [90m(C:\Users\ThinkPad\cal3\backend-nestjs\[39mnode_modules\[4mtypeorm[24m\data-source\src\data-source\DataSource.ts:753:33[90m)[39m
+    at async DataSource.initialize [90m(C:\Users\ThinkPad\cal3\backend-nestjs\[39mnode_modules\[4mtypeorm[24m\data-source\src\data-source\DataSource.ts:264:13[90m)[39m
+[31m[Nest] 27816  - [39m2026. 01. 06. 11:00:42 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (1)...[39m
+DataTypeNotSupportedError: Data type "timestamp" in "Reservation.startTime" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 27816  - [39m2026. 01. 06. 11:00:42 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (2)...[39m
+DataTypeNotSupportedError: Data type "timestamp" in "Reservation.startTime" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 27816  - [39m2026. 01. 06. 11:00:42 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (3)...[39m
+DataTypeNotSupportedError: Data type "timestamp" in "Reservation.startTime" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 27816  - [39m2026. 01. 06. 11:00:42 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (4)...[39m
+DataTypeNotSupportedError: Data type "timestamp" in "Reservation.startTime" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 27816  - [39m2026. 01. 06. 11:00:42 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (5)...[39m
+DataTypeNotSupportedError: Data type "timestamp" in "Reservation.startTime" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 27816  - [39m2026. 01. 06. 11:00:42 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (6)...[39m
+DataTypeNotSupportedError: Data type "timestamp" in "Reservation.startTime" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 27816  - [39m2026. 01. 06. 11:00:42 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (7)...[39m
+DataTypeNotSupportedError: Data type "timestamp" in "Reservation.startTime" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 27816  - [39m2026. 01. 06. 11:00:42 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (8)...[39m
+DataTypeNotSupportedError: Data type "timestamp" in "Reservation.startTime" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 27816  - [39m2026. 01. 06. 11:00:42 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (9)...[39m
+DataTypeNotSupportedError: Data type "timestamp" in "Reservation.startTime" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 27816  - [39m2026. 01. 06. 11:00:42 [31m  ERROR[39m [38;5;3m[ExceptionHandler] [39mDataTypeNotSupportedError: Data type "timestamp" in "Reservation.startTime" is not supported by "sqlite" database.
+    at <anonymous> [90m(C:\Users\ThinkPad\cal3\backend-nestjs\[39mnode_modules\[4mtypeorm[24m\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31[90m)[39m
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate [90m(C:\Users\ThinkPad\cal3\backend-nestjs\[39mnode_modules\[4mtypeorm[24m\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18[90m)[39m
+    at <anonymous> [90m(C:\Users\ThinkPad\cal3\backend-nestjs\[39mnode_modules\[4mtypeorm[24m\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18[90m)[39m
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany [90m(C:\Users\ThinkPad\cal3\backend-nestjs\[39mnode_modules\[4mtypeorm[24m\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25[90m)[39m
+    at DataSource.buildMetadatas [90m(C:\Users\ThinkPad\cal3\backend-nestjs\[39mnode_modules\[4mtypeorm[24m\data-source\src\data-source\DataSource.ts:753:33[90m)[39m
+    at async DataSource.initialize [90m(C:\Users\ThinkPad\cal3\backend-nestjs\[39mnode_modules\[4mtypeorm[24m\data-source\src\data-source\DataSource.ts:264:13[90m)[39m
+[31m[Nest] 32232  - [39m2026. 01. 06. 11:01:12 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (1)...[39m
+DataTypeNotSupportedError: Data type "enum" in "AgentProfile.status" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 32232  - [39m2026. 01. 06. 11:01:12 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (2)...[39m
+DataTypeNotSupportedError: Data type "enum" in "AgentProfile.status" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 32232  - [39m2026. 01. 06. 11:01:12 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (3)...[39m
+DataTypeNotSupportedError: Data type "enum" in "AgentProfile.status" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 32232  - [39m2026. 01. 06. 11:01:12 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (4)...[39m
+DataTypeNotSupportedError: Data type "enum" in "AgentProfile.status" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 32232  - [39m2026. 01. 06. 11:01:12 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (5)...[39m
+DataTypeNotSupportedError: Data type "enum" in "AgentProfile.status" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 32232  - [39m2026. 01. 06. 11:01:12 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (6)...[39m
+DataTypeNotSupportedError: Data type "enum" in "AgentProfile.status" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 32232  - [39m2026. 01. 06. 11:01:12 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (7)...[39m
+DataTypeNotSupportedError: Data type "enum" in "AgentProfile.status" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 32232  - [39m2026. 01. 06. 11:01:12 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (8)...[39m
+DataTypeNotSupportedError: Data type "enum" in "AgentProfile.status" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 32232  - [39m2026. 01. 06. 11:01:12 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (9)...[39m
+DataTypeNotSupportedError: Data type "enum" in "AgentProfile.status" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 32232  - [39m2026. 01. 06. 11:01:12 [31m  ERROR[39m [38;5;3m[ExceptionHandler] [39mDataTypeNotSupportedError: Data type "enum" in "AgentProfile.status" is not supported by "sqlite" database.
+    at <anonymous> [90m(C:\Users\ThinkPad\cal3\backend-nestjs\[39mnode_modules\[4mtypeorm[24m\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31[90m)[39m
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate [90m(C:\Users\ThinkPad\cal3\backend-nestjs\[39mnode_modules\[4mtypeorm[24m\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18[90m)[39m
+    at <anonymous> [90m(C:\Users\ThinkPad\cal3\backend-nestjs\[39mnode_modules\[4mtypeorm[24m\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18[90m)[39m
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany [90m(C:\Users\ThinkPad\cal3\backend-nestjs\[39mnode_modules\[4mtypeorm[24m\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25[90m)[39m
+    at DataSource.buildMetadatas [90m(C:\Users\ThinkPad\cal3\backend-nestjs\[39mnode_modules\[4mtypeorm[24m\data-source\src\data-source\DataSource.ts:753:33[90m)[39m
+    at async DataSource.initialize [90m(C:\Users\ThinkPad\cal3\backend-nestjs\[39mnode_modules\[4mtypeorm[24m\data-source\src\data-source\DataSource.ts:264:13[90m)[39m
+[31m[Nest] 35444  - [39m2026. 01. 06. 11:01:43 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (1)...[39m
+DataTypeNotSupportedError: Data type "enum" in "AgentProfile.status" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 35444  - [39m2026. 01. 06. 11:01:43 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (2)...[39m
+DataTypeNotSupportedError: Data type "enum" in "AgentProfile.status" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 35444  - [39m2026. 01. 06. 11:01:43 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (3)...[39m
+DataTypeNotSupportedError: Data type "enum" in "AgentProfile.status" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 35444  - [39m2026. 01. 06. 11:01:43 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (4)...[39m
+DataTypeNotSupportedError: Data type "enum" in "AgentProfile.status" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 35444  - [39m2026. 01. 06. 11:01:43 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (5)...[39m
+DataTypeNotSupportedError: Data type "enum" in "AgentProfile.status" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 35444  - [39m2026. 01. 06. 11:01:43 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (6)...[39m
+DataTypeNotSupportedError: Data type "enum" in "AgentProfile.status" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 35444  - [39m2026. 01. 06. 11:01:43 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (7)...[39m
+DataTypeNotSupportedError: Data type "enum" in "AgentProfile.status" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 35444  - [39m2026. 01. 06. 11:01:43 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (8)...[39m
+DataTypeNotSupportedError: Data type "enum" in "AgentProfile.status" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 35444  - [39m2026. 01. 06. 11:01:43 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (9)...[39m
+DataTypeNotSupportedError: Data type "enum" in "AgentProfile.status" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 35444  - [39m2026. 01. 06. 11:01:43 [31m  ERROR[39m [38;5;3m[ExceptionHandler] [39mDataTypeNotSupportedError: Data type "enum" in "AgentProfile.status" is not supported by "sqlite" database.
+    at <anonymous> [90m(C:\Users\ThinkPad\cal3\backend-nestjs\[39mnode_modules\[4mtypeorm[24m\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31[90m)[39m
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate [90m(C:\Users\ThinkPad\cal3\backend-nestjs\[39mnode_modules\[4mtypeorm[24m\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18[90m)[39m
+    at <anonymous> [90m(C:\Users\ThinkPad\cal3\backend-nestjs\[39mnode_modules\[4mtypeorm[24m\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18[90m)[39m
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany [90m(C:\Users\ThinkPad\cal3\backend-nestjs\[39mnode_modules\[4mtypeorm[24m\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25[90m)[39m
+    at DataSource.buildMetadatas [90m(C:\Users\ThinkPad\cal3\backend-nestjs\[39mnode_modules\[4mtypeorm[24m\data-source\src\data-source\DataSource.ts:753:33[90m)[39m
+    at async DataSource.initialize [90m(C:\Users\ThinkPad\cal3\backend-nestjs\[39mnode_modules\[4mtypeorm[24m\data-source\src\data-source\DataSource.ts:264:13[90m)[39m
+[31m[Nest] 40992  - [39m2026. 01. 06. 11:02:20 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (1)...[39m
+DataTypeNotSupportedError: Data type "enum" in "AgentProfile.status" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 40992  - [39m2026. 01. 06. 11:02:20 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (2)...[39m
+DataTypeNotSupportedError: Data type "enum" in "AgentProfile.status" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 40992  - [39m2026. 01. 06. 11:02:20 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (3)...[39m
+DataTypeNotSupportedError: Data type "enum" in "AgentProfile.status" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 40992  - [39m2026. 01. 06. 11:02:20 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (4)...[39m
+DataTypeNotSupportedError: Data type "enum" in "AgentProfile.status" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 40992  - [39m2026. 01. 06. 11:02:20 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (5)...[39m
+DataTypeNotSupportedError: Data type "enum" in "AgentProfile.status" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 40992  - [39m2026. 01. 06. 11:02:20 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (6)...[39m
+DataTypeNotSupportedError: Data type "enum" in "AgentProfile.status" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 40992  - [39m2026. 01. 06. 11:02:20 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (7)...[39m
+DataTypeNotSupportedError: Data type "enum" in "AgentProfile.status" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 40992  - [39m2026. 01. 06. 11:02:20 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (8)...[39m
+DataTypeNotSupportedError: Data type "enum" in "AgentProfile.status" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 40992  - [39m2026. 01. 06. 11:02:20 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (9)...[39m
+DataTypeNotSupportedError: Data type "enum" in "AgentProfile.status" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 40992  - [39m2026. 01. 06. 11:02:20 [31m  ERROR[39m [38;5;3m[ExceptionHandler] [39mDataTypeNotSupportedError: Data type "enum" in "AgentProfile.status" is not supported by "sqlite" database.
+    at <anonymous> [90m(C:\Users\ThinkPad\cal3\backend-nestjs\[39mnode_modules\[4mtypeorm[24m\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31[90m)[39m
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate [90m(C:\Users\ThinkPad\cal3\backend-nestjs\[39mnode_modules\[4mtypeorm[24m\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18[90m)[39m
+    at <anonymous> [90m(C:\Users\ThinkPad\cal3\backend-nestjs\[39mnode_modules\[4mtypeorm[24m\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18[90m)[39m
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany [90m(C:\Users\ThinkPad\cal3\backend-nestjs\[39mnode_modules\[4mtypeorm[24m\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25[90m)[39m
+    at DataSource.buildMetadatas [90m(C:\Users\ThinkPad\cal3\backend-nestjs\[39mnode_modules\[4mtypeorm[24m\data-source\src\data-source\DataSource.ts:753:33[90m)[39m
+    at async DataSource.initialize [90m(C:\Users\ThinkPad\cal3\backend-nestjs\[39mnode_modules\[4mtypeorm[24m\data-source\src\data-source\DataSource.ts:264:13[90m)[39m
+[31m[Nest] 17960  - [39m2026. 01. 06. 11:02:53 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (1)...[39m
+DataTypeNotSupportedError: Data type "enum" in "AgentProfile.status" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 17960  - [39m2026. 01. 06. 11:02:53 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (2)...[39m
+DataTypeNotSupportedError: Data type "enum" in "AgentProfile.status" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 17960  - [39m2026. 01. 06. 11:02:53 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (3)...[39m
+DataTypeNotSupportedError: Data type "enum" in "AgentProfile.status" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 17960  - [39m2026. 01. 06. 11:02:53 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (4)...[39m
+DataTypeNotSupportedError: Data type "enum" in "AgentProfile.status" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 17960  - [39m2026. 01. 06. 11:02:53 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (5)...[39m
+DataTypeNotSupportedError: Data type "enum" in "AgentProfile.status" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 17960  - [39m2026. 01. 06. 11:02:53 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (6)...[39m
+DataTypeNotSupportedError: Data type "enum" in "AgentProfile.status" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 17960  - [39m2026. 01. 06. 11:02:53 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (7)...[39m
+DataTypeNotSupportedError: Data type "enum" in "AgentProfile.status" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 17960  - [39m2026. 01. 06. 11:02:53 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (8)...[39m
+DataTypeNotSupportedError: Data type "enum" in "AgentProfile.status" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 17960  - [39m2026. 01. 06. 11:02:53 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (9)...[39m
+DataTypeNotSupportedError: Data type "enum" in "AgentProfile.status" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 17960  - [39m2026. 01. 06. 11:02:53 [31m  ERROR[39m [38;5;3m[ExceptionHandler] [39mDataTypeNotSupportedError: Data type "enum" in "AgentProfile.status" is not supported by "sqlite" database.
+    at <anonymous> [90m(C:\Users\ThinkPad\cal3\backend-nestjs\[39mnode_modules\[4mtypeorm[24m\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31[90m)[39m
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate [90m(C:\Users\ThinkPad\cal3\backend-nestjs\[39mnode_modules\[4mtypeorm[24m\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18[90m)[39m
+    at <anonymous> [90m(C:\Users\ThinkPad\cal3\backend-nestjs\[39mnode_modules\[4mtypeorm[24m\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18[90m)[39m
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany [90m(C:\Users\ThinkPad\cal3\backend-nestjs\[39mnode_modules\[4mtypeorm[24m\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25[90m)[39m
+    at DataSource.buildMetadatas [90m(C:\Users\ThinkPad\cal3\backend-nestjs\[39mnode_modules\[4mtypeorm[24m\data-source\src\data-source\DataSource.ts:753:33[90m)[39m
+    at async DataSource.initialize [90m(C:\Users\ThinkPad\cal3\backend-nestjs\[39mnode_modules\[4mtypeorm[24m\data-source\src\data-source\DataSource.ts:264:13[90m)[39m
+[31m[Nest] 37892  - [39m2026. 01. 06. 11:03:25 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (1)...[39m
+DataTypeNotSupportedError: Data type "enum" in "AgentProfile.status" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 37892  - [39m2026. 01. 06. 11:03:25 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (2)...[39m
+DataTypeNotSupportedError: Data type "enum" in "AgentProfile.status" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 37892  - [39m2026. 01. 06. 11:03:25 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (3)...[39m
+DataTypeNotSupportedError: Data type "enum" in "AgentProfile.status" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 37892  - [39m2026. 01. 06. 11:03:25 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (4)...[39m
+DataTypeNotSupportedError: Data type "enum" in "AgentProfile.status" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 37892  - [39m2026. 01. 06. 11:03:25 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (5)...[39m
+DataTypeNotSupportedError: Data type "enum" in "AgentProfile.status" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 37892  - [39m2026. 01. 06. 11:03:25 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (6)...[39m
+DataTypeNotSupportedError: Data type "enum" in "AgentProfile.status" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 37892  - [39m2026. 01. 06. 11:03:25 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (7)...[39m
+DataTypeNotSupportedError: Data type "enum" in "AgentProfile.status" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 37892  - [39m2026. 01. 06. 11:03:25 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (8)...[39m
+DataTypeNotSupportedError: Data type "enum" in "AgentProfile.status" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 37892  - [39m2026. 01. 06. 11:03:25 [31m  ERROR[39m [38;5;3m[TypeOrmModule] [39m[31mUnable to connect to the database. Retrying (9)...[39m
+DataTypeNotSupportedError: Data type "enum" in "AgentProfile.status" is not supported by "sqlite" database.
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18)
+    at <anonymous> (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18)
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25)
+    at DataSource.buildMetadatas (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:753:33)
+    at async DataSource.initialize (C:\Users\ThinkPad\cal3\backend-nestjs\node_modules\typeorm\data-source\src\data-source\DataSource.ts:264:13)
+[31m[Nest] 37892  - [39m2026. 01. 06. 11:03:25 [31m  ERROR[39m [38;5;3m[ExceptionHandler] [39mDataTypeNotSupportedError: Data type "enum" in "AgentProfile.status" is not supported by "sqlite" database.
+    at <anonymous> [90m(C:\Users\ThinkPad\cal3\backend-nestjs\[39mnode_modules\[4mtypeorm[24m\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:133:31[90m)[39m
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validate [90m(C:\Users\ThinkPad\cal3\backend-nestjs\[39mnode_modules\[4mtypeorm[24m\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:128:18[90m)[39m
+    at <anonymous> [90m(C:\Users\ThinkPad\cal3\backend-nestjs\[39mnode_modules\[4mtypeorm[24m\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:43:18[90m)[39m
+    at Array.forEach (<anonymous>)
+    at EntityMetadataValidator.validateMany [90m(C:\Users\ThinkPad\cal3\backend-nestjs\[39mnode_modules\[4mtypeorm[24m\metadata-builder\src\metadata-builder\EntityMetadataValidator.ts:42:25[90m)[39m
+    at DataSource.buildMetadatas [90m(C:\Users\ThinkPad\cal3\backend-nestjs\[39mnode_modules\[4mtypeorm[24m\data-source\src\data-source\DataSource.ts:753:33[90m)[39m
+    at async DataSource.initialize [90m(C:\Users\ThinkPad\cal3\backend-nestjs\[39mnode_modules\[4mtypeorm[24m\data-source\src\data-source\DataSource.ts:264:13[90m)[39m

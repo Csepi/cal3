@@ -64,7 +64,22 @@ CREATE INDEX idx_organisations_name ON organisations(name);
 CREATE INDEX idx_organisations_isActive ON organisations(isActive);
 
 -- =============================================
--- 3. CALENDARS TABLE
+-- 3. CALENDAR_GROUPS TABLE
+-- =============================================
+CREATE TABLE calendar_groups (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    name NVARCHAR(200) NOT NULL,
+    isVisible BIT NOT NULL DEFAULT 1,
+    ownerId INT NOT NULL,
+    createdAt DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
+    updatedAt DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
+    CONSTRAINT FK_calendar_groups_owner FOREIGN KEY (ownerId) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_calendar_groups_ownerId ON calendar_groups(ownerId);
+
+-- =============================================
+-- 4. CALENDARS TABLE
 -- =============================================
 CREATE TABLE calendars (
     id INT IDENTITY(1,1) PRIMARY KEY,
@@ -77,15 +92,18 @@ CREATE TABLE calendars (
     isTasksCalendar BIT NOT NULL DEFAULT 0,
     organisationId INT NULL,
     ownerId INT NOT NULL,
+    groupId INT NULL,
     createdAt DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
     updatedAt DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
     CONSTRAINT FK_calendars_owner FOREIGN KEY (ownerId) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT FK_calendars_group FOREIGN KEY (groupId) REFERENCES calendar_groups(id) ON DELETE SET NULL,
     CONSTRAINT CK_calendars_visibility CHECK (visibility IN ('private', 'shared', 'public'))
 );
 
 CREATE INDEX idx_calendars_ownerId ON calendars(ownerId);
 CREATE INDEX idx_calendars_visibility ON calendars(visibility);
 CREATE INDEX idx_calendars_isReservationCalendar ON calendars(isReservationCalendar);
+CREATE INDEX idx_calendars_groupId ON calendars(groupId) WHERE groupId IS NOT NULL;
 
 -- =============================================
 -- 4. CALENDAR_SHARES TABLE
