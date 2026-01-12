@@ -2,13 +2,12 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
-  UnauthorizedException,
   Logger,
   Inject,
   forwardRef,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { DateTime } from 'luxon';
 import {
   CalendarSyncConnection,
@@ -29,9 +28,16 @@ import {
 } from '../dto/calendar-sync.dto';
 import { ConfigurationService } from '../configuration/configuration.service';
 
+type ExternalEventsResult = {
+  events: any[];
+  deletedEventIds: string[];
+  nextSyncToken?: string;
+};
+
 @Injectable()
 export class CalendarSyncService {
   private readonly logger = new Logger(CalendarSyncService.name);
+  private readonly activeSyncConnectionIds = new Set<number>();
 
   constructor(
     @InjectRepository(CalendarSyncConnection)
@@ -189,7 +195,9 @@ export class CalendarSyncService {
           `[handleOAuthCallback] Updating existing sync connection with ID: ${syncConnection.id}`,
         );
         syncConnection.accessToken = tokens.accessToken;
-        syncConnection.refreshToken = tokens.refreshToken;
+        if (tokens.refreshToken) {
+          syncConnection.refreshToken = tokens.refreshToken;
+        }
         syncConnection.tokenExpiresAt = tokens.expiresAt;
         syncConnection.status = SyncStatus.ACTIVE;
       } else {
@@ -236,6 +244,36 @@ export class CalendarSyncService {
     }
 
     for (const calendarData of syncData.calendars) {
+      const existingSyncedCalendar = await this.syncedCalendarRepository.findOne(
+        {
+          where: {
+            syncConnectionId: syncConnection.id,
+            externalCalendarId: calendarData.externalId,
+          },
+          relations: ['localCalendar'],
+        },
+      );
+
+      if (existingSyncedCalendar) {
+        existingSyncedCalendar.bidirectionalSync =
+          calendarData.bidirectionalSync ??
+          existingSyncedCalendar.bidirectionalSync ??
+          true;
+
+        if (
+          calendarData.localName &&
+          existingSyncedCalendar.localCalendar?.name !== calendarData.localName
+        ) {
+          existingSyncedCalendar.localCalendar.name = calendarData.localName;
+          await this.calendarRepository.save(
+            existingSyncedCalendar.localCalendar,
+          );
+        }
+
+        await this.syncedCalendarRepository.save(existingSyncedCalendar);
+        continue;
+      }
+
       // Create local calendar
       const localCalendar = this.calendarRepository.create({
         name: calendarData.localName,
@@ -256,7 +294,7 @@ export class CalendarSyncService {
           syncConnection,
           calendarData.externalId,
         ),
-        bidirectionalSync: calendarData.bidirectionalSync || true,
+        bidirectionalSync: calendarData.bidirectionalSync ?? true,
       });
 
       await this.syncedCalendarRepository.save(syncedCalendar);
@@ -279,7 +317,12 @@ export class CalendarSyncService {
     });
 
     for (const connection of syncConnections) {
+      await this.deleteSyncedCalendars(connection);
       connection.status = SyncStatus.INACTIVE;
+      connection.accessToken = null;
+      connection.refreshToken = null;
+      connection.tokenExpiresAt = null;
+      connection.lastSyncAt = null;
       await this.syncConnectionRepository.save(connection);
     }
   }
@@ -293,21 +336,409 @@ export class CalendarSyncService {
     });
 
     if (syncConnection) {
+      await this.deleteSyncedCalendars(syncConnection);
       syncConnection.status = SyncStatus.INACTIVE;
+      syncConnection.accessToken = null;
+      syncConnection.refreshToken = null;
+      syncConnection.tokenExpiresAt = null;
+      syncConnection.lastSyncAt = null;
       await this.syncConnectionRepository.save(syncConnection);
     }
   }
 
   async forceSync(userId: number): Promise<void> {
-    const syncConnection = await this.syncConnectionRepository.findOne({
+    const syncConnections = await this.syncConnectionRepository.find({
       where: { userId, status: SyncStatus.ACTIVE },
     });
 
-    if (!syncConnection) {
+    if (syncConnections.length === 0) {
       throw new NotFoundException('No active sync connection found');
     }
 
-    await this.performSync(syncConnection, { triggerAutomationRules: false });
+    for (const syncConnection of syncConnections) {
+      await this.performSync(syncConnection, { triggerAutomationRules: false });
+    }
+  }
+
+  async syncAllActiveConnections(): Promise<void> {
+    const connections = await this.syncConnectionRepository.find({
+      where: { status: SyncStatus.ACTIVE },
+    });
+
+    const intervalMinutes = this.getSyncIntervalMinutes();
+    const now = Date.now();
+
+    for (const connection of connections) {
+      if (connection.lastSyncAt) {
+        const diffMinutes =
+          (now - connection.lastSyncAt.getTime()) / (60 * 1000);
+        if (diffMinutes < intervalMinutes) {
+          continue;
+        }
+      }
+
+      try {
+        await this.performSync(connection, { triggerAutomationRules: false });
+      } catch (error) {
+        this.logger.error(
+          `[syncAllActiveConnections] Failed syncing connection ${connection.id}:`,
+          error.stack,
+        );
+      }
+    }
+  }
+
+  async handleLocalEventCreated(event: Event): Promise<void> {
+    if (!this.isSyncableLocalEvent(event)) {
+      return;
+    }
+
+    const syncedCalendars = await this.syncedCalendarRepository.find({
+      where: { localCalendarId: event.calendarId, bidirectionalSync: true },
+      relations: ['syncConnection'],
+    });
+
+    for (const syncedCalendar of syncedCalendars) {
+      if (syncedCalendar.syncConnection.status !== SyncStatus.ACTIVE) {
+        continue;
+      }
+
+      const existingMapping = await this.syncEventMappingRepository.findOne({
+        where: {
+          syncedCalendarId: syncedCalendar.id,
+          localEventId: event.id,
+        },
+      });
+
+      if (existingMapping) {
+        continue;
+      }
+
+      try {
+        await this.createExternalEventFromLocal(
+          syncedCalendar.syncConnection,
+          syncedCalendar,
+          event,
+        );
+      } catch (error) {
+        this.logger.warn(
+          `[handleLocalEventCreated] Failed to create external event for local event ${event.id}: ${error.message}`,
+        );
+      }
+    }
+  }
+
+  async handleLocalEventUpdated(event: Event): Promise<void> {
+    if (!this.isSyncableLocalEvent(event)) {
+      return;
+    }
+
+    const syncedCalendars = await this.syncedCalendarRepository.find({
+      where: { localCalendarId: event.calendarId, bidirectionalSync: true },
+      relations: ['syncConnection'],
+    });
+
+    for (const syncedCalendar of syncedCalendars) {
+      if (syncedCalendar.syncConnection.status !== SyncStatus.ACTIVE) {
+        continue;
+      }
+
+      const existingMapping = await this.syncEventMappingRepository.findOne({
+        where: {
+          syncedCalendarId: syncedCalendar.id,
+          localEventId: event.id,
+        },
+      });
+
+      try {
+        if (!existingMapping) {
+          await this.createExternalEventFromLocal(
+            syncedCalendar.syncConnection,
+            syncedCalendar,
+            event,
+          );
+          continue;
+        }
+
+        await this.updateExternalEventFromLocal(
+          syncedCalendar.syncConnection,
+          syncedCalendar,
+          event,
+          existingMapping,
+        );
+      } catch (error) {
+        this.logger.warn(
+          `[handleLocalEventUpdated] Failed to update external event for local event ${event.id}: ${error.message}`,
+        );
+      }
+    }
+  }
+
+  async handleLocalEventDeleted(event: Event): Promise<void> {
+    const syncedCalendars = await this.syncedCalendarRepository.find({
+      where: { localCalendarId: event.calendarId, bidirectionalSync: true },
+      relations: ['syncConnection'],
+    });
+
+    for (const syncedCalendar of syncedCalendars) {
+      if (syncedCalendar.syncConnection.status !== SyncStatus.ACTIVE) {
+        continue;
+      }
+
+      const existingMapping = await this.syncEventMappingRepository.findOne({
+        where: {
+          syncedCalendarId: syncedCalendar.id,
+          localEventId: event.id,
+        },
+      });
+
+      if (!existingMapping) {
+        continue;
+      }
+
+      try {
+        await this.deleteExternalEvent(
+          syncedCalendar.syncConnection,
+          syncedCalendar,
+          existingMapping.externalEventId,
+        );
+      } catch (error) {
+        this.logger.warn(
+          `[handleLocalEventDeleted] Failed to delete external event for local event ${event.id}: ${error.message}`,
+        );
+      } finally {
+        await this.syncEventMappingRepository.delete({
+          id: existingMapping.id,
+        });
+      }
+    }
+  }
+
+  private async deleteSyncedCalendars(
+    syncConnection: CalendarSyncConnection,
+  ): Promise<void> {
+    const syncedCalendars = await this.syncedCalendarRepository.find({
+      where: { syncConnectionId: syncConnection.id },
+      relations: ['localCalendar'],
+    });
+
+    if (syncedCalendars.length === 0) {
+      return;
+    }
+
+    const calendarIds = syncedCalendars
+      .map((syncedCalendar) => syncedCalendar.localCalendarId)
+      .filter(Boolean);
+
+    const syncedCalendarIds = syncedCalendars.map((calendar) => calendar.id);
+
+    if (calendarIds.length > 0) {
+      await this.calendarRepository.delete({ id: In(calendarIds) });
+    }
+
+    if (syncedCalendarIds.length > 0) {
+      await this.syncEventMappingRepository.delete({
+        syncedCalendarId: In(syncedCalendarIds),
+      });
+      await this.syncedCalendarRepository.delete({
+        id: In(syncedCalendarIds),
+      });
+    }
+  }
+
+  private getNumberConfig(key: string, fallback: number): number {
+    const raw = this.configurationService.getValue(key);
+    if (!raw) {
+      return fallback;
+    }
+
+    const parsed = Number(raw);
+    if (!Number.isFinite(parsed) || parsed <= 0) {
+      return fallback;
+    }
+
+    return parsed;
+  }
+
+  private getSyncWindow(): { startDate: Date; endDate: Date } {
+    const lookbackDays = this.getNumberConfig(
+      'CALENDAR_SYNC_LOOKBACK_DAYS',
+      90,
+    );
+    const lookaheadDays = this.getNumberConfig(
+      'CALENDAR_SYNC_LOOKAHEAD_DAYS',
+      365,
+    );
+
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - lookbackDays);
+
+    const endDate = new Date();
+    endDate.setDate(endDate.getDate() + lookaheadDays);
+
+    return { startDate, endDate };
+  }
+
+  private getMicrosoftSyncWindow(): { startDate: Date; endDate: Date } {
+    const { startDate, endDate } = this.getSyncWindow();
+    const maxWindowDays = 365;
+    const maxWindowMs = maxWindowDays * 24 * 60 * 60 * 1000;
+    const windowMs = endDate.getTime() - startDate.getTime();
+
+    if (windowMs <= maxWindowMs) {
+      return { startDate, endDate };
+    }
+
+    const cappedStartDate = new Date(endDate.getTime() - maxWindowMs);
+    return { startDate: cappedStartDate, endDate };
+  }
+
+  private getSyncIntervalMinutes(): number {
+    return this.getNumberConfig('CALENDAR_SYNC_POLL_INTERVAL_MINUTES', 5);
+  }
+
+  private isSyncableLocalEvent(event: Event): boolean {
+    if (!event) {
+      return false;
+    }
+
+    if (event.recurrenceType !== RecurrenceType.NONE && !event.parentEventId) {
+      // Skip recurrence templates; sync instances instead.
+      return false;
+    }
+
+    return true;
+  }
+
+  private async ensureValidAccessToken(
+    syncConnection: CalendarSyncConnection,
+  ): Promise<CalendarSyncConnection> {
+    if (!syncConnection?.tokenExpiresAt) {
+      return syncConnection;
+    }
+
+    const expiresAt = new Date(syncConnection.tokenExpiresAt).getTime();
+    const now = Date.now();
+    const bufferMs = 60 * 1000;
+
+    if (expiresAt - now > bufferMs) {
+      return syncConnection;
+    }
+
+    if (!syncConnection.refreshToken) {
+      this.logger.warn(
+        `[ensureValidAccessToken] Missing refresh token for connection ${syncConnection.id}`,
+      );
+      return syncConnection;
+    }
+
+    return this.refreshAccessToken(syncConnection);
+  }
+
+  private async refreshAccessToken(
+    syncConnection: CalendarSyncConnection,
+  ): Promise<CalendarSyncConnection> {
+    if (!syncConnection.refreshToken) {
+      return syncConnection;
+    }
+
+    let tokenUrl = '';
+    let tokenRequestParams: Record<string, string> = {};
+
+    if (syncConnection.provider === SyncProvider.GOOGLE) {
+      tokenUrl = 'https://oauth2.googleapis.com/token';
+      tokenRequestParams = {
+        client_id: this.configurationService.getValue('GOOGLE_CLIENT_ID') || '',
+        client_secret:
+          this.configurationService.getValue('GOOGLE_CLIENT_SECRET') || '',
+        refresh_token: syncConnection.refreshToken,
+        grant_type: 'refresh_token',
+      };
+    } else if (syncConnection.provider === SyncProvider.MICROSOFT) {
+      const tenant =
+        this.configurationService.getValue('MICROSOFT_TENANT_ID') || 'common';
+      tokenUrl = `https://login.microsoftonline.com/${tenant}/oauth2/v2.0/token`;
+      tokenRequestParams = {
+        client_id:
+          this.configurationService.getValue('MICROSOFT_CLIENT_ID') || '',
+        client_secret:
+          this.configurationService.getValue('MICROSOFT_CLIENT_SECRET') || '',
+        refresh_token: syncConnection.refreshToken,
+        grant_type: 'refresh_token',
+        scope:
+          'https://graph.microsoft.com/calendars.readwrite offline_access',
+      };
+    }
+
+    if (!tokenUrl) {
+      return syncConnection;
+    }
+
+    const response = await fetch(tokenUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams(tokenRequestParams),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      this.logger.error(
+        `[refreshAccessToken] Failed to refresh tokens for connection ${syncConnection.id}: ${response.status} - ${errorText}`,
+      );
+      return syncConnection;
+    }
+
+    const data = await response.json();
+    if (!data.access_token) {
+      this.logger.error(
+        `[refreshAccessToken] Missing access token in refresh response for connection ${syncConnection.id}`,
+      );
+      return syncConnection;
+    }
+
+    syncConnection.accessToken = data.access_token;
+    if (data.refresh_token) {
+      syncConnection.refreshToken = data.refresh_token;
+    }
+    if (data.expires_in) {
+      const expiresAt = new Date();
+      expiresAt.setSeconds(expiresAt.getSeconds() + data.expires_in);
+      syncConnection.tokenExpiresAt = expiresAt;
+    }
+
+    await this.syncConnectionRepository.save(syncConnection);
+    return syncConnection;
+  }
+
+  private async fetchWithAuth(
+    syncConnection: CalendarSyncConnection,
+    url: string,
+    init: RequestInit = {},
+  ): Promise<Response> {
+    const currentConnection = await this.ensureValidAccessToken(syncConnection);
+    const headers = {
+      ...(init.headers || {}),
+      Authorization: `Bearer ${currentConnection.accessToken}`,
+    };
+
+    const response = await fetch(url, { ...init, headers });
+    if (response.status !== 401) {
+      return response;
+    }
+
+    if (!currentConnection.refreshToken) {
+      return response;
+    }
+
+    const refreshed = await this.refreshAccessToken(currentConnection);
+    const retryHeaders = {
+      ...(init.headers || {}),
+      Authorization: `Bearer ${refreshed.accessToken}`,
+    };
+
+    return fetch(url, { ...init, headers: retryHeaders });
   }
 
   private async getExternalCalendars(
@@ -315,13 +746,10 @@ export class CalendarSyncService {
   ): Promise<ExternalCalendarDto[]> {
     try {
       if (syncConnection.provider === SyncProvider.GOOGLE) {
-        const response = await fetch(
+        const response = await this.fetchWithAuth(
+          syncConnection,
           'https://www.googleapis.com/calendar/v3/users/me/calendarList',
-          {
-            headers: {
-              Authorization: `Bearer ${syncConnection.accessToken}`,
-            },
-          },
+          { headers: {} },
         );
 
         if (!response.ok) {
@@ -343,13 +771,10 @@ export class CalendarSyncService {
           })) || []
         );
       } else if (syncConnection.provider === SyncProvider.MICROSOFT) {
-        const response = await fetch(
+        const response = await this.fetchWithAuth(
+          syncConnection,
           'https://graph.microsoft.com/v1.0/me/calendars',
-          {
-            headers: {
-              Authorization: `Bearer ${syncConnection.accessToken}`,
-            },
-          },
+          { headers: {} },
         );
 
         if (!response.ok) {
@@ -382,7 +807,7 @@ export class CalendarSyncService {
     code: string,
   ): Promise<{
     accessToken: string;
-    refreshToken: string;
+    refreshToken: string | null;
     expiresAt: Date;
     userId: string;
   }> {
@@ -475,7 +900,7 @@ export class CalendarSyncService {
 
       return {
         accessToken: data.access_token,
-        refreshToken: data.refresh_token,
+        refreshToken: data.refresh_token || null,
         expiresAt,
         userId: userInfo.id,
       };
@@ -567,7 +992,7 @@ export class CalendarSyncService {
 
       return {
         accessToken: data.access_token,
-        refreshToken: data.refresh_token,
+        refreshToken: data.refresh_token || null,
         expiresAt,
         userId: userInfo.id,
       };
@@ -583,15 +1008,13 @@ export class CalendarSyncService {
     syncConnection: CalendarSyncConnection,
     calendarId: string,
   ): Promise<string> {
+    const encodedCalendarId = encodeURIComponent(calendarId);
     try {
       if (syncConnection.provider === SyncProvider.GOOGLE) {
-        const response = await fetch(
-          `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}`,
-          {
-            headers: {
-              Authorization: `Bearer ${syncConnection.accessToken}`,
-            },
-          },
+        const response = await this.fetchWithAuth(
+          syncConnection,
+          `https://www.googleapis.com/calendar/v3/calendars/${encodedCalendarId}`,
+          { headers: {} },
         );
 
         if (response.ok) {
@@ -599,13 +1022,10 @@ export class CalendarSyncService {
           return data.summary || `Calendar ${calendarId}`;
         }
       } else if (syncConnection.provider === SyncProvider.MICROSOFT) {
-        const response = await fetch(
-          `https://graph.microsoft.com/v1.0/me/calendars/${calendarId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${syncConnection.accessToken}`,
-            },
-          },
+        const response = await this.fetchWithAuth(
+          syncConnection,
+          `https://graph.microsoft.com/v1.0/me/calendars/${encodedCalendarId}`,
+          { headers: {} },
         );
 
         if (response.ok) {
@@ -627,43 +1047,56 @@ export class CalendarSyncService {
       selectedRuleIds?: number[];
     },
   ): Promise<void> {
-    this.logger.log(
-      `[performSync] Starting sync for provider: ${syncConnection.provider}, user: ${syncConnection.userId}`,
-    );
-
-    // Get all synced calendars for this connection
-    const syncedCalendars = await this.syncedCalendarRepository.find({
-      where: { syncConnectionId: syncConnection.id },
-      relations: ['localCalendar'],
-    });
-
-    this.logger.log(
-      `[performSync] Found ${syncedCalendars.length} synced calendars`,
-    );
-
-    for (const syncedCalendar of syncedCalendars) {
-      try {
-        this.logger.log(
-          `[performSync] Syncing calendar: ${syncedCalendar.externalCalendarName} (${syncedCalendar.externalCalendarId})`,
-        );
-        await this.syncCalendarEvents(
-          syncConnection,
-          syncedCalendar,
-          automationSettings,
-        );
-      } catch (error) {
-        this.logger.error(
-          `[performSync] Error syncing calendar ${syncedCalendar.externalCalendarId}:`,
-          error.stack,
-        );
-      }
+    const lockKey = syncConnection.id;
+    if (this.activeSyncConnectionIds.has(lockKey)) {
+      this.logger.warn(
+        `[performSync] Sync already running for provider: ${syncConnection.provider}, user: ${syncConnection.userId}; skipping`,
+      );
+      return;
     }
 
-    syncConnection.lastSyncAt = new Date();
-    await this.syncConnectionRepository.save(syncConnection);
-    this.logger.log(
-      `[performSync] Sync completed for provider: ${syncConnection.provider}`,
-    );
+    this.activeSyncConnectionIds.add(lockKey);
+    try {
+      this.logger.log(
+        `[performSync] Starting sync for provider: ${syncConnection.provider}, user: ${syncConnection.userId}`,
+      );
+
+      // Get all synced calendars for this connection
+      const syncedCalendars = await this.syncedCalendarRepository.find({
+        where: { syncConnectionId: syncConnection.id },
+        relations: ['localCalendar'],
+      });
+
+      this.logger.log(
+        `[performSync] Found ${syncedCalendars.length} synced calendars`,
+      );
+
+      for (const syncedCalendar of syncedCalendars) {
+        try {
+          this.logger.log(
+            `[performSync] Syncing calendar: ${syncedCalendar.externalCalendarName} (${syncedCalendar.externalCalendarId})`,
+          );
+          await this.syncCalendarEvents(
+            syncConnection,
+            syncedCalendar,
+            automationSettings,
+          );
+        } catch (error) {
+          this.logger.error(
+            `[performSync] Error syncing calendar ${syncedCalendar.externalCalendarId}:`,
+            error.stack,
+          );
+        }
+      }
+
+      syncConnection.lastSyncAt = new Date();
+      await this.syncConnectionRepository.save(syncConnection);
+      this.logger.log(
+        `[performSync] Sync completed for provider: ${syncConnection.provider}`,
+      );
+    } finally {
+      this.activeSyncConnectionIds.delete(lockKey);
+    }
   }
 
   private async syncCalendarEvents(
@@ -678,23 +1111,34 @@ export class CalendarSyncService {
       `[syncCalendarEvents] Fetching events for calendar: ${syncedCalendar.externalCalendarId}`,
     );
 
-    let externalEvents: any[] = [];
     const userTimezone = await this.getUserTimezone(syncConnection.userId);
+    const touchedLocalEventIds = new Set<number>();
+
+    let externalResult: ExternalEventsResult = {
+      events: [],
+      deletedEventIds: [],
+    };
 
     if (syncConnection.provider === SyncProvider.MICROSOFT) {
-      externalEvents = await this.fetchMicrosoftCalendarEvents(
+      externalResult = await this.fetchMicrosoftCalendarEvents(
         syncConnection,
         syncedCalendar.externalCalendarId,
+        userTimezone,
+        syncedCalendar.syncToken,
       );
     } else if (syncConnection.provider === SyncProvider.GOOGLE) {
-      externalEvents = await this.fetchGoogleCalendarEvents(
+      externalResult = await this.fetchGoogleCalendarEvents(
         syncConnection,
         syncedCalendar.externalCalendarId,
+        syncedCalendar.syncToken,
       );
     }
 
+    const { events: externalEvents, deletedEventIds, nextSyncToken } =
+      externalResult;
+
     this.logger.log(
-      `[syncCalendarEvents] Found ${externalEvents.length} external events`,
+      `[syncCalendarEvents] Found ${externalEvents.length} external events (${deletedEventIds.length} deletions)`,
     );
 
     // Get existing event mappings
@@ -706,18 +1150,32 @@ export class CalendarSyncService {
       existingMappings.map((m) => [m.externalEventId, m]),
     );
 
+    for (const deletedEventId of deletedEventIds) {
+      const mapping = mappingByExternalId.get(deletedEventId);
+      if (!mapping) {
+        continue;
+      }
+
+      await this.deleteLocalEventFromExternal(mapping);
+      touchedLocalEventIds.add(mapping.localEventId);
+      mappingByExternalId.delete(deletedEventId);
+    }
+
     for (const externalEvent of externalEvents) {
       const mapping = mappingByExternalId.get(externalEvent.id);
 
       if (!mapping) {
         try {
-          await this.createLocalEventFromExternal(
+          const createdEvent = await this.createLocalEventFromExternal(
             syncConnection,
             syncedCalendar,
             externalEvent,
             automationSettings,
             userTimezone,
           );
+          if (createdEvent) {
+            touchedLocalEventIds.add(createdEvent.id);
+          }
         } catch (error) {
           this.logger.error(
             `[syncCalendarEvents] Error creating local event from external event ${externalEvent.id}:`,
@@ -725,14 +1183,28 @@ export class CalendarSyncService {
           );
         }
       } else {
+        const externalUpdatedAt = this.getExternalLastModified(externalEvent);
+        const lastExternalSync = mapping.lastModifiedExternal;
+        const lastLocalChange = mapping.lastModifiedLocal;
+
+        if (
+          (lastExternalSync && externalUpdatedAt <= lastExternalSync) ||
+          (lastLocalChange && externalUpdatedAt <= lastLocalChange)
+        ) {
+          continue;
+        }
+
         try {
-          await this.updateLocalEventFromExternal(
+          const updatedEvent = await this.updateLocalEventFromExternal(
             syncConnection,
             syncedCalendar,
             externalEvent,
             mapping,
             userTimezone,
           );
+          if (updatedEvent) {
+            touchedLocalEventIds.add(updatedEvent.id);
+          }
         } catch (error) {
           this.logger.error(
             `[syncCalendarEvents] Error updating local event from external event ${externalEvent.id}:`,
@@ -742,99 +1214,626 @@ export class CalendarSyncService {
       }
     }
 
+    if (nextSyncToken) {
+      syncedCalendar.syncToken = nextSyncToken;
+    }
+
     // Update lastSyncAt for this calendar
     syncedCalendar.lastSyncAt = new Date();
     await this.syncedCalendarRepository.save(syncedCalendar);
+
+    if (syncedCalendar.bidirectionalSync) {
+      await this.syncLocalCalendarChanges(
+        syncConnection,
+        syncedCalendar,
+        touchedLocalEventIds,
+      );
+    }
   }
 
   private async fetchMicrosoftCalendarEvents(
     syncConnection: CalendarSyncConnection,
     calendarId: string,
-  ): Promise<any[]> {
-    try {
-      // Set date range: 30 days ago to 365 days in the future
-      const startDate = new Date();
-      startDate.setDate(startDate.getDate() - 30);
-      const endDate = new Date();
-      endDate.setDate(endDate.getDate() + 365);
+    userTimezone: string,
+    syncToken?: string | null,
+  ): Promise<ExternalEventsResult> {
+    const { startDate, endDate } = this.getMicrosoftSyncWindow();
+    const deletedEventIds: string[] = [];
+    const events: any[] = [];
 
-      const queryParams = new URLSearchParams({
-        $filter: `start/dateTime ge '${startDate.toISOString()}' and start/dateTime le '${endDate.toISOString()}'`,
-        $orderby: 'start/dateTime',
-        $top: '1000', // Limit to 1000 events to avoid performance issues
-      });
+    const hasTopParam = (value?: string | null): boolean =>
+      !!value && /(\$top=|%24top=)/i.test(value);
+    const sanitizeDeltaUrl = (value?: string | null): string | undefined => {
+      if (!value) return undefined;
 
-      const response = await fetch(
-        `https://graph.microsoft.com/v1.0/me/calendars/${calendarId}/events?${queryParams}`,
-        {
-          headers: {
-            Authorization: `Bearer ${syncConnection.accessToken}`,
-          },
-        },
-      );
-
-      if (!response.ok) {
-        this.logger.error(
-          `[fetchMicrosoftCalendarEvents] Failed to fetch events: ${response.status} - ${response.statusText}`,
+      try {
+        const parsed = new URL(value);
+        if (parsed.searchParams.has('$top')) {
+          parsed.searchParams.delete('$top');
+          return parsed.toString();
+        }
+        return value;
+      } catch {
+        const cleaned = value.replace(
+          /([?&])(?:%24|\$)top=[^&]*&?/gi,
+          '$1',
         );
-        return [];
+        return cleaned.replace(/[?&]$/, '');
       }
+    };
 
-      const data = await response.json();
-      this.logger.log(
-        `[fetchMicrosoftCalendarEvents] Fetched ${data.value?.length || 0} events for calendar ${calendarId}`,
+    const encodedCalendarId = encodeURIComponent(calendarId);
+    const baseUrl = `https://graph.microsoft.com/v1.0/me/calendars/${encodedCalendarId}/calendarView/delta`;
+    const initialParams = new URLSearchParams({
+      startDateTime: startDate.toISOString(),
+      endDateTime: endDate.toISOString(),
+    });
+
+    let effectiveSyncToken = sanitizeDeltaUrl(syncToken);
+    if (hasTopParam(effectiveSyncToken)) {
+      this.logger.warn(
+        `[fetchMicrosoftCalendarEvents] Sync token contains $top; clearing token to avoid Graph errors`,
       );
-      return data.value || [];
+      effectiveSyncToken = undefined;
+    }
+
+    let nextUrl: string | undefined =
+      effectiveSyncToken || `${baseUrl}?${initialParams.toString()}`;
+    let deltaLink: string | undefined;
+    const preferTimeZone = this.getMicrosoftTimeZone(userTimezone);
+    const preferParts = [`odata.maxpagesize=1000`];
+    if (preferTimeZone) {
+      preferParts.unshift(`outlook.timezone="${preferTimeZone}"`);
+    }
+    const headers: Record<string, string> = {
+      Prefer: preferParts.join(', '),
+    };
+
+    try {
+      while (nextUrl) {
+        const sanitizedNextUrl = sanitizeDeltaUrl(nextUrl) || nextUrl;
+        const response = await this.fetchWithAuth(syncConnection, sanitizedNextUrl, {
+          headers,
+        });
+
+        if (response.status === 410 && syncToken) {
+          this.logger.warn(
+            `[fetchMicrosoftCalendarEvents] Delta token expired for calendar ${calendarId}, performing full sync`,
+          );
+          return this.fetchMicrosoftCalendarEvents(
+            syncConnection,
+            calendarId,
+            userTimezone,
+          );
+        }
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          const errorSuffix = errorText ? ` - ${errorText}` : '';
+          const hasTopError =
+            response.status === 400 &&
+            errorText.includes('ErrorInvalidUrlQuery') &&
+            errorText.includes('$top');
+          if (hasTopError && effectiveSyncToken) {
+            this.logger.warn(
+              `[fetchMicrosoftCalendarEvents] Graph rejected $top in delta token; retrying full sync`,
+            );
+            return this.fetchMicrosoftCalendarEvents(
+              syncConnection,
+              calendarId,
+              userTimezone,
+            );
+          }
+          this.logger.error(
+            `[fetchMicrosoftCalendarEvents] Failed to fetch events: ${response.status} - ${response.statusText}${errorSuffix}`,
+          );
+          break;
+        }
+
+        const data = await response.json();
+        const values = data.value || [];
+        for (const item of values) {
+          if (item['@removed']) {
+            deletedEventIds.push(item.id);
+            continue;
+          }
+          events.push(item);
+        }
+
+        nextUrl = sanitizeDeltaUrl(data['@odata.nextLink']);
+        if (data['@odata.deltaLink']) {
+          deltaLink = sanitizeDeltaUrl(data['@odata.deltaLink']);
+        }
+      }
     } catch (error) {
       this.logger.error(`[fetchMicrosoftCalendarEvents] Error:`, error.stack);
-      return [];
     }
+
+    if (events.length > 0 || deletedEventIds.length > 0) {
+      this.logger.log(
+        `[fetchMicrosoftCalendarEvents] Fetched ${events.length} events (${deletedEventIds.length} deletions) for calendar ${calendarId}`,
+      );
+    }
+
+    return {
+      events,
+      deletedEventIds,
+      nextSyncToken: deltaLink || effectiveSyncToken || undefined,
+    };
   }
 
   private async fetchGoogleCalendarEvents(
     syncConnection: CalendarSyncConnection,
     calendarId: string,
-  ): Promise<any[]> {
+    syncToken?: string | null,
+  ): Promise<ExternalEventsResult> {
+    const { startDate, endDate } = this.getSyncWindow();
+    const events: any[] = [];
+    const deletedEventIds: string[] = [];
+    let pageToken: string | undefined;
+    let nextSyncToken: string | undefined;
+
+    const baseParams = new URLSearchParams({
+      maxResults: '2500',
+      singleEvents: 'true',
+      showDeleted: 'true',
+    });
+
+    if (syncToken) {
+      baseParams.set('syncToken', syncToken);
+    } else {
+      baseParams.set('timeMin', startDate.toISOString());
+      baseParams.set('timeMax', endDate.toISOString());
+      baseParams.set('orderBy', 'startTime');
+    }
+
     try {
-      // Set date range: 30 days ago to 365 days in the future
-      const startDate = new Date();
-      startDate.setDate(startDate.getDate() - 30);
-      const endDate = new Date();
-      endDate.setDate(endDate.getDate() + 365);
+      do {
+        const params = new URLSearchParams(baseParams);
+        if (pageToken) {
+          params.set('pageToken', pageToken);
+        }
 
-      const queryParams = new URLSearchParams({
-        timeMin: startDate.toISOString(),
-        timeMax: endDate.toISOString(),
-        orderBy: 'startTime',
-        singleEvents: 'false', // Changed to false to get recurring events as series
-        maxResults: '1000', // Limit to 1000 events to avoid performance issues
-      });
-
-      const response = await fetch(
-        `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events?${queryParams}`,
-        {
-          headers: {
-            Authorization: `Bearer ${syncConnection.accessToken}`,
-          },
-        },
-      );
-
-      if (!response.ok) {
-        this.logger.error(
-          `[fetchGoogleCalendarEvents] Failed to fetch events: ${response.status} - ${response.statusText}`,
+        const response = await this.fetchWithAuth(
+          syncConnection,
+          `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events?${params.toString()}`,
+          { headers: {} },
         );
-        return [];
-      }
 
-      const data = await response.json();
-      this.logger.log(
-        `[fetchGoogleCalendarEvents] Fetched ${data.items?.length || 0} events for calendar ${calendarId}`,
-      );
-      return data.items || [];
+        if (response.status === 410 && syncToken) {
+          this.logger.warn(
+            `[fetchGoogleCalendarEvents] Sync token expired for calendar ${calendarId}, performing full sync`,
+          );
+          return this.fetchGoogleCalendarEvents(
+            syncConnection,
+            calendarId,
+          );
+        }
+
+        if (!response.ok) {
+          this.logger.error(
+            `[fetchGoogleCalendarEvents] Failed to fetch events: ${response.status} - ${response.statusText}`,
+          );
+          break;
+        }
+
+        const data = await response.json();
+        const items = data.items || [];
+
+        for (const item of items) {
+          if (item.status === 'cancelled') {
+            deletedEventIds.push(item.id);
+            continue;
+          }
+          events.push(item);
+        }
+
+        pageToken = data.nextPageToken;
+        if (data.nextSyncToken) {
+          nextSyncToken = data.nextSyncToken;
+        }
+      } while (pageToken);
     } catch (error) {
       this.logger.error(`[fetchGoogleCalendarEvents] Error:`, error.stack);
-      return [];
     }
+
+    if (events.length > 0 || deletedEventIds.length > 0) {
+      this.logger.log(
+        `[fetchGoogleCalendarEvents] Fetched ${events.length} events (${deletedEventIds.length} deletions) for calendar ${calendarId}`,
+      );
+    }
+
+    return { events, deletedEventIds, nextSyncToken };
+  }
+
+  private async syncLocalCalendarChanges(
+    syncConnection: CalendarSyncConnection,
+    syncedCalendar: SyncedCalendar,
+    skipEventIds: Set<number>,
+  ): Promise<void> {
+    const { startDate, endDate } = this.getSyncWindow();
+
+    const [localEvents, localEventIds, existingMappings] = await Promise.all([
+      this.eventRepository
+        .createQueryBuilder('event')
+        .where('event.calendarId = :calendarId', {
+          calendarId: syncedCalendar.localCalendarId,
+        })
+        .andWhere('event.startDate BETWEEN :startDate AND :endDate', {
+          startDate,
+          endDate,
+        })
+        .getMany(),
+      this.eventRepository.find({
+        where: { calendarId: syncedCalendar.localCalendarId },
+        select: ['id'],
+      }),
+      this.syncEventMappingRepository.find({
+        where: { syncedCalendarId: syncedCalendar.id },
+      }),
+    ]);
+
+    const localIdSet = new Set(localEventIds.map((event) => event.id));
+    const mappingByLocalId = new Map(
+      existingMappings.map((mapping) => [mapping.localEventId, mapping]),
+    );
+
+    for (const localEvent of localEvents) {
+      if (skipEventIds.has(localEvent.id)) {
+        continue;
+      }
+
+      if (!this.isSyncableLocalEvent(localEvent)) {
+        continue;
+      }
+
+      const mapping = mappingByLocalId.get(localEvent.id);
+      if (!mapping) {
+        try {
+          await this.createExternalEventFromLocal(
+            syncConnection,
+            syncedCalendar,
+            localEvent,
+          );
+        } catch (error) {
+          this.logger.warn(
+            `[syncLocalCalendarChanges] Failed to create external event for local event ${localEvent.id}: ${error.message}`,
+          );
+        }
+        continue;
+      }
+
+      const lastLocalSync = mapping.lastModifiedLocal ?? new Date(0);
+      const lastExternalSync = mapping.lastModifiedExternal ?? new Date(0);
+      const localUpdatedAt = localEvent.updatedAt ?? localEvent.createdAt;
+
+      if (
+        localUpdatedAt > lastLocalSync &&
+        localUpdatedAt > lastExternalSync
+      ) {
+        try {
+          await this.updateExternalEventFromLocal(
+            syncConnection,
+            syncedCalendar,
+            localEvent,
+            mapping,
+          );
+        } catch (error) {
+          this.logger.warn(
+            `[syncLocalCalendarChanges] Failed to update external event for local event ${localEvent.id}: ${error.message}`,
+          );
+        }
+      }
+    }
+
+    for (const mapping of existingMappings) {
+      if (localIdSet.has(mapping.localEventId)) {
+        continue;
+      }
+
+      try {
+        await this.deleteExternalEvent(
+          syncConnection,
+          syncedCalendar,
+          mapping.externalEventId,
+        );
+      } catch (error) {
+        this.logger.warn(
+          `[syncLocalCalendarChanges] Failed to delete external event ${mapping.externalEventId}: ${error.message}`,
+        );
+      } finally {
+        await this.syncEventMappingRepository.delete({ id: mapping.id });
+      }
+    }
+  }
+
+  private async createExternalEventFromLocal(
+    syncConnection: CalendarSyncConnection,
+    syncedCalendar: SyncedCalendar,
+    localEvent: Event,
+  ): Promise<void> {
+    const userTimezone = await this.getUserTimezone(syncConnection.userId);
+    const payload = this.buildExternalEventPayload(
+      syncConnection.provider,
+      localEvent,
+      userTimezone,
+    );
+
+    if (!payload) {
+      return;
+    }
+
+    const encodedCalendarId = encodeURIComponent(
+      syncedCalendar.externalCalendarId,
+    );
+    const url =
+      syncConnection.provider === SyncProvider.GOOGLE
+        ? `https://www.googleapis.com/calendar/v3/calendars/${encodedCalendarId}/events`
+        : `https://graph.microsoft.com/v1.0/me/calendars/${encodedCalendarId}/events`;
+
+    const response = await this.fetchWithAuth(syncConnection, url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      this.logger.error(
+        `[createExternalEventFromLocal] Failed to create external event for local event ${localEvent.id}: ${response.status} - ${errorText}`,
+      );
+      return;
+    }
+
+    const responseText = await response.text();
+    const data = responseText ? JSON.parse(responseText) : null;
+    if (!data?.id) {
+      return;
+    }
+
+    const mapping = this.syncEventMappingRepository.create({
+      syncedCalendarId: syncedCalendar.id,
+      localEventId: localEvent.id,
+      externalEventId: data.id,
+      lastModifiedLocal: localEvent.updatedAt ?? new Date(),
+      lastModifiedExternal: this.getExternalLastModified(data),
+    });
+
+    await this.syncEventMappingRepository.save(mapping);
+  }
+
+  private async updateExternalEventFromLocal(
+    syncConnection: CalendarSyncConnection,
+    syncedCalendar: SyncedCalendar,
+    localEvent: Event,
+    existingMapping: SyncEventMapping,
+  ): Promise<void> {
+    const userTimezone = await this.getUserTimezone(syncConnection.userId);
+    const payload = this.buildExternalEventPayload(
+      syncConnection.provider,
+      localEvent,
+      userTimezone,
+    );
+
+    if (!payload) {
+      return;
+    }
+
+    const encodedCalendarId = encodeURIComponent(
+      syncedCalendar.externalCalendarId,
+    );
+    const encodedExternalEventId = encodeURIComponent(
+      existingMapping.externalEventId,
+    );
+    const url =
+      syncConnection.provider === SyncProvider.GOOGLE
+        ? `https://www.googleapis.com/calendar/v3/calendars/${encodedCalendarId}/events/${encodedExternalEventId}`
+        : `https://graph.microsoft.com/v1.0/me/calendars/${encodedCalendarId}/events/${encodedExternalEventId}`;
+
+    const response = await this.fetchWithAuth(syncConnection, url, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      this.logger.error(
+        `[updateExternalEventFromLocal] Failed to update external event for local event ${localEvent.id}: ${response.status} - ${errorText}`,
+      );
+      return;
+    }
+
+    let data: any = null;
+    const responseText = await response.text();
+    if (responseText) {
+      data = JSON.parse(responseText);
+    }
+
+    existingMapping.lastModifiedLocal = localEvent.updatedAt ?? new Date();
+    if (data) {
+      existingMapping.lastModifiedExternal = this.getExternalLastModified(data);
+    }
+    await this.syncEventMappingRepository.save(existingMapping);
+  }
+
+  private async deleteExternalEvent(
+    syncConnection: CalendarSyncConnection,
+    syncedCalendar: SyncedCalendar,
+    externalEventId: string,
+  ): Promise<void> {
+    const encodedCalendarId = encodeURIComponent(
+      syncedCalendar.externalCalendarId,
+    );
+    const encodedExternalEventId = encodeURIComponent(externalEventId);
+    const url =
+      syncConnection.provider === SyncProvider.GOOGLE
+        ? `https://www.googleapis.com/calendar/v3/calendars/${encodedCalendarId}/events/${encodedExternalEventId}`
+        : `https://graph.microsoft.com/v1.0/me/calendars/${encodedCalendarId}/events/${encodedExternalEventId}`;
+
+    const response = await this.fetchWithAuth(syncConnection, url, {
+      method: 'DELETE',
+    });
+
+    if (!response.ok && response.status !== 404) {
+      const errorText = await response.text();
+      this.logger.warn(
+        `[deleteExternalEvent] Failed to delete external event ${externalEventId}: ${response.status} - ${errorText}`,
+      );
+    }
+  }
+
+  private async deleteLocalEventFromExternal(
+    mapping: SyncEventMapping,
+  ): Promise<void> {
+    const localEvent = await this.eventRepository.findOne({
+      where: { id: mapping.localEventId },
+    });
+
+    if (localEvent) {
+      await this.eventRepository.remove(localEvent);
+    }
+
+    await this.syncEventMappingRepository.delete({ id: mapping.id });
+  }
+
+  private buildExternalEventPayload(
+    provider: SyncProvider,
+    localEvent: Event,
+    userTimezone: string,
+  ): Record<string, any> | null {
+    const { startDateTime, endDateTime, startDate, endDate } =
+      this.buildEventDateRange(localEvent, userTimezone);
+
+    if (localEvent.isAllDay && (!startDate || !endDate)) {
+      return null;
+    }
+
+    if (!localEvent.isAllDay && (!startDateTime || !endDateTime)) {
+      return null;
+    }
+
+    if (provider === SyncProvider.GOOGLE) {
+      return {
+        summary: localEvent.title,
+        description: localEvent.description || '',
+        location: localEvent.location || '',
+        start: localEvent.isAllDay
+          ? { date: startDate }
+          : { dateTime: startDateTime, timeZone: userTimezone },
+        end: localEvent.isAllDay
+          ? { date: endDate }
+          : { dateTime: endDateTime, timeZone: userTimezone },
+      };
+    }
+
+    if (provider === SyncProvider.MICROSOFT) {
+      const microsoftTimezone =
+        this.getMicrosoftTimeZone(userTimezone) || userTimezone;
+      const payload: any = {
+        subject: localEvent.title,
+        body: {
+          contentType: 'HTML',
+          content: localEvent.description || '',
+        },
+        isAllDay: localEvent.isAllDay,
+        start: localEvent.isAllDay
+          ? { dateTime: startDateTime, timeZone: microsoftTimezone }
+          : { dateTime: startDateTime, timeZone: microsoftTimezone },
+        end: localEvent.isAllDay
+          ? { dateTime: endDateTime, timeZone: microsoftTimezone }
+          : { dateTime: endDateTime, timeZone: microsoftTimezone },
+      };
+
+      if (localEvent.location) {
+        payload.location = { displayName: localEvent.location };
+      }
+
+      return payload;
+    }
+
+    return null;
+  }
+
+  private buildEventDateRange(
+    localEvent: Event,
+    userTimezone: string,
+  ): {
+    startDateTime?: string;
+    endDateTime?: string;
+    startDate?: string;
+    endDate?: string;
+  } {
+    if (localEvent.isAllDay) {
+      const start = DateTime.fromJSDate(localEvent.startDate, {
+        zone: userTimezone,
+      }).startOf('day');
+      const rawEndDate = localEvent.endDate || localEvent.startDate;
+      const end = DateTime.fromJSDate(rawEndDate, {
+        zone: userTimezone,
+      })
+        .startOf('day')
+        .plus({ days: 1 });
+
+      return {
+        startDateTime: start.toISO() || undefined,
+        endDateTime: end.toISO() || undefined,
+        startDate: start.toISODate() || undefined,
+        endDate: end.toISODate() || undefined,
+      };
+    }
+
+    const startTime = this.parseTimeValue(localEvent.startTime);
+    const endTime = this.parseTimeValue(localEvent.endTime);
+
+    let start = DateTime.fromJSDate(localEvent.startDate, {
+      zone: userTimezone,
+    });
+    if (startTime) {
+      start = start.set({
+        hour: startTime.hours,
+        minute: startTime.minutes,
+        second: 0,
+        millisecond: 0,
+      });
+    }
+
+    let endBase = localEvent.endDate || localEvent.startDate;
+    let end = DateTime.fromJSDate(endBase, { zone: userTimezone });
+    if (endTime) {
+      end = end.set({
+        hour: endTime.hours,
+        minute: endTime.minutes,
+        second: 0,
+        millisecond: 0,
+      });
+    } else if (start.isValid) {
+      end = start.plus({ minutes: 60 });
+    }
+
+    return {
+      startDateTime: start.isValid ? start.toISO() || undefined : undefined,
+      endDateTime: end.isValid ? end.toISO() || undefined : undefined,
+    };
+  }
+
+  private parseTimeValue(
+    timeValue: string | null,
+  ): { hours: number; minutes: number } | null {
+    if (!timeValue) {
+      return null;
+    }
+
+    const [hours, minutes] = timeValue.split(':').map((value) => Number(value));
+    if (Number.isNaN(hours) || Number.isNaN(minutes)) {
+      return null;
+    }
+
+    return { hours, minutes };
   }
 
   private async getUserTimezone(userId: number): Promise<string> {
@@ -850,6 +1849,78 @@ export class CalendarSyncService {
       externalEvent?.lastModifiedDateTime || externalEvent?.updated || null;
     const parsed = source ? new Date(source) : new Date();
     return isNaN(parsed.getTime()) ? new Date() : parsed;
+  }
+
+  private isUniqueConstraintViolation(error: any): boolean {
+    const code = error?.code || error?.driverError?.code;
+    return code === '23505';
+  }
+
+  private isMissingMicrosoftSubject(externalEvent: any): boolean {
+    if (!externalEvent) {
+      return true;
+    }
+
+    const subject = externalEvent.subject;
+    if (typeof subject === 'string') {
+      return subject.trim().length === 0;
+    }
+
+    return !subject;
+  }
+
+  private async fetchMicrosoftEventDetails(
+    syncConnection: CalendarSyncConnection,
+    calendarId: string,
+    eventId: string,
+    userTimezone: string,
+  ): Promise<any | null> {
+    const encodedCalendarId = encodeURIComponent(calendarId);
+    const encodedEventId = encodeURIComponent(eventId);
+    const selectFields = [
+      'subject',
+      'body',
+      'bodyPreview',
+      'location',
+      'isAllDay',
+      'start',
+      'end',
+      'organizer',
+      'attendees',
+      'sensitivity',
+      'showAs',
+    ];
+
+    const url = `https://graph.microsoft.com/v1.0/me/calendars/${encodedCalendarId}/events/${encodedEventId}?$select=${selectFields.join(',')}`;
+    const preferParts: string[] = ['outlook.body-content-type="text"'];
+    const preferTimeZone = this.getMicrosoftTimeZone(userTimezone);
+    if (preferTimeZone) {
+      preferParts.unshift(`outlook.timezone="${preferTimeZone}"`);
+    }
+
+    try {
+      const response = await this.fetchWithAuth(syncConnection, url, {
+        headers: {
+          Prefer: preferParts.join(', '),
+        },
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        this.logger.warn(
+          `[fetchMicrosoftEventDetails] Failed to fetch event ${eventId}: ${response.status} - ${response.statusText}${errorText ? ` - ${errorText}` : ''}`,
+        );
+        return null;
+      }
+
+      return await response.json();
+    } catch (error) {
+      this.logger.error(
+        `[fetchMicrosoftEventDetails] Error fetching event ${eventId}:`,
+        error.stack,
+      );
+      return null;
+    }
   }
 
   private buildLocalEventData(
@@ -891,19 +1962,10 @@ export class CalendarSyncService {
         }
       }
 
-      if (externalEvent.recurrence) {
-        const recurrenceData = this.parseMicrosoftRecurrence(
-          externalEvent.recurrence,
-        );
-        eventData.recurrenceType = recurrenceData.type;
-        eventData.recurrenceRule = JSON.stringify(recurrenceData.rule);
-      } else {
-        eventData.recurrenceType = RecurrenceType.NONE;
-      }
+      eventData.recurrenceType = RecurrenceType.NONE;
 
       if (externalEvent.seriesMasterId) {
-        eventData.parentEventId = externalEvent.seriesMasterId;
-        eventData.recurrenceId = externalEvent.id;
+        eventData.recurrenceId = externalEvent.seriesMasterId;
         if (externalEvent.originalStart) {
           eventData.originalDate = new Date(externalEvent.originalStart);
         }
@@ -911,9 +1973,9 @@ export class CalendarSyncService {
 
       if (externalEvent.end) {
         if (externalEvent.isAllDay) {
-          eventData.endDate = new Date(
-            externalEvent.end.dateTime || externalEvent.end.date,
-          );
+          const rawEndDate =
+            externalEvent.end.dateTime || externalEvent.end.date;
+          eventData.endDate = this.normalizeAllDayEndDate(rawEndDate);
           eventData.endTime = null;
         } else {
           const end = this.convertToUserDateTime(
@@ -938,18 +2000,10 @@ export class CalendarSyncService {
         location: externalEvent.location || '',
       };
 
-      if (externalEvent.recurrence && externalEvent.recurrence.length > 0) {
-        const rrule = externalEvent.recurrence[0];
-        const recurrenceData = this.parseGoogleRecurrence(rrule);
-        eventData.recurrenceType = recurrenceData.type;
-        eventData.recurrenceRule = JSON.stringify(recurrenceData.rule);
-      } else {
-        eventData.recurrenceType = RecurrenceType.NONE;
-      }
+      eventData.recurrenceType = RecurrenceType.NONE;
 
       if (externalEvent.recurringEventId) {
-        eventData.parentEventId = externalEvent.recurringEventId;
-        eventData.recurrenceId = externalEvent.id;
+        eventData.recurrenceId = externalEvent.recurringEventId;
         if (externalEvent.originalStartTime) {
           eventData.originalDate = new Date(
             externalEvent.originalStartTime.dateTime ||
@@ -979,7 +2033,9 @@ export class CalendarSyncService {
 
       if (externalEvent.end) {
         if (externalEvent.end.date) {
-          eventData.endDate = new Date(externalEvent.end.date);
+          eventData.endDate = this.normalizeAllDayEndDate(
+            externalEvent.end.date,
+          );
           eventData.endTime = null;
         } else if (externalEvent.end.dateTime) {
           const end = this.convertToUserDateTime(
@@ -998,6 +2054,23 @@ export class CalendarSyncService {
     return eventData;
   }
 
+  private normalizeAllDayEndDate(
+    rawDate: string | Date | undefined,
+  ): Date | null {
+    if (!rawDate) {
+      return null;
+    }
+
+    const parsed =
+      rawDate instanceof Date ? new Date(rawDate) : new Date(rawDate);
+    if (Number.isNaN(parsed.getTime())) {
+      return null;
+    }
+
+    parsed.setDate(parsed.getDate() - 1);
+    return parsed;
+  }
+
   private async createLocalEventFromExternal(
     syncConnection: CalendarSyncConnection,
     syncedCalendar: SyncedCalendar,
@@ -1007,18 +2080,39 @@ export class CalendarSyncService {
       selectedRuleIds?: number[];
     },
     userTimezone?: string,
-  ): Promise<void> {
-    this.logger.log(
-      `[createLocalEventFromExternal] Creating local event from external: ${externalEvent.id} - ${externalEvent.subject || externalEvent.summary}`,
-    );
-
+  ): Promise<Event | null> {
     const resolvedUserTimezone =
       userTimezone ||
       (await this.getUserTimezone(syncConnection.userId)) ||
       'UTC';
+
+    let eventSource = externalEvent;
+    if (
+      syncConnection.provider === SyncProvider.MICROSOFT &&
+      this.isMissingMicrosoftSubject(externalEvent) &&
+      externalEvent?.id
+    ) {
+      this.logger.warn(
+        `[createLocalEventFromExternal] Missing subject for event ${externalEvent.id}; fetching full details`,
+      );
+      const details = await this.fetchMicrosoftEventDetails(
+        syncConnection,
+        syncedCalendar.externalCalendarId,
+        externalEvent.id,
+        resolvedUserTimezone,
+      );
+      if (details) {
+        eventSource = { ...externalEvent, ...details };
+      }
+    }
+
+    this.logger.log(
+      `[createLocalEventFromExternal] Creating local event from external: ${eventSource.id} - ${eventSource.subject || eventSource.summary}`,
+    );
+
     const eventData = this.buildLocalEventData(
       syncConnection,
-      externalEvent,
+      eventSource,
       resolvedUserTimezone,
     );
 
@@ -1034,6 +2128,30 @@ export class CalendarSyncService {
       localEvent,
     )) as unknown as Event;
 
+    // Create event mapping
+    const eventMapping = this.syncEventMappingRepository.create({
+      syncedCalendarId: syncedCalendar.id,
+      localEventId: savedEvent.id,
+      externalEventId: eventSource.id,
+      lastModifiedExternal: new Date(
+        this.getExternalLastModified(eventSource),
+      ),
+      lastModifiedLocal: savedEvent.updatedAt ?? new Date(),
+    });
+
+    try {
+      await this.syncEventMappingRepository.save(eventMapping);
+    } catch (error) {
+      if (this.isUniqueConstraintViolation(error)) {
+        this.logger.warn(
+          `[createLocalEventFromExternal] Duplicate mapping for external event ${eventSource.id}; removing local event ${savedEvent.id}`,
+        );
+        await this.eventRepository.delete({ id: savedEvent.id });
+        return null;
+      }
+      throw error;
+    }
+
     // Trigger automation rules for calendar.imported only if enabled
     if (automationSettings?.triggerAutomationRules) {
       this.triggerCalendarImportRules(
@@ -1043,22 +2161,11 @@ export class CalendarSyncService {
       ).catch((err) => this.logger.error('Automation trigger error:', err));
     }
 
-    // Create event mapping
-    const eventMapping = this.syncEventMappingRepository.create({
-      syncedCalendarId: syncedCalendar.id,
-      localEventId: savedEvent.id,
-      externalEventId: externalEvent.id,
-      lastModifiedExternal: new Date(
-        this.getExternalLastModified(externalEvent),
-      ),
-      lastModifiedLocal: new Date(),
-    });
-
-    await this.syncEventMappingRepository.save(eventMapping);
-
     this.logger.log(
       `[createLocalEventFromExternal] Created local event ID: ${savedEvent.id} mapped to external ID: ${externalEvent.id}`,
     );
+
+    return savedEvent;
   }
 
   private async updateLocalEventFromExternal(
@@ -1067,26 +2174,46 @@ export class CalendarSyncService {
     externalEvent: any,
     existingMapping: SyncEventMapping,
     userTimezone: string,
-  ): Promise<void> {
+  ): Promise<Event | null> {
     const localEvent = await this.eventRepository.findOne({
       where: { id: existingMapping.localEventId },
     });
 
     if (!localEvent) {
       // Mapping is stale; recreate event and mapping
-      await this.createLocalEventFromExternal(
+      const recreatedEvent = await this.createLocalEventFromExternal(
         syncConnection,
         syncedCalendar,
         externalEvent,
         undefined,
         userTimezone,
       );
-      return;
+      return recreatedEvent;
+    }
+
+    let eventSource = externalEvent;
+    if (
+      syncConnection.provider === SyncProvider.MICROSOFT &&
+      this.isMissingMicrosoftSubject(externalEvent) &&
+      externalEvent?.id
+    ) {
+      this.logger.warn(
+        `[updateLocalEventFromExternal] Missing subject for event ${externalEvent.id}; fetching full details`,
+      );
+      const details = await this.fetchMicrosoftEventDetails(
+        syncConnection,
+        syncedCalendar.externalCalendarId,
+        externalEvent.id,
+        userTimezone,
+      );
+      if (details) {
+        eventSource = { ...externalEvent, ...details };
+      }
     }
 
     const eventData = this.buildLocalEventData(
       syncConnection,
-      externalEvent,
+      eventSource,
       userTimezone,
     );
 
@@ -1108,7 +2235,7 @@ export class CalendarSyncService {
     existingMapping.lastModifiedExternal = this.getExternalLastModified(
       externalEvent,
     );
-    existingMapping.lastModifiedLocal = new Date();
+    existingMapping.lastModifiedLocal = localEvent.updatedAt ?? new Date();
     await this.syncEventMappingRepository.save(existingMapping);
 
     this.logger.log(
@@ -1118,108 +2245,8 @@ export class CalendarSyncService {
         localEvent.startTime
       }, end ${before.endTime} -> ${localEvent.endTime}`,
     );
-  }
 
-  private parseGoogleRecurrence(rrule: string): {
-    type: RecurrenceType;
-    rule: any;
-  } {
-    this.logger.log(`[parseGoogleRecurrence] Parsing RRULE: ${rrule}`);
-
-    // Extract frequency from RRULE (e.g., "RRULE:FREQ=DAILY;INTERVAL=1")
-    const freqMatch = rrule.match(/FREQ=(\w+)/);
-    const intervalMatch = rrule.match(/INTERVAL=(\d+)/);
-    const countMatch = rrule.match(/COUNT=(\d+)/);
-    const untilMatch = rrule.match(/UNTIL=([^;]+)/);
-    const bydayMatch = rrule.match(/BYDAY=([^;]+)/);
-
-    if (!freqMatch) {
-      return { type: RecurrenceType.NONE, rule: null };
-    }
-
-    const frequency = freqMatch[1];
-    const interval = intervalMatch ? parseInt(intervalMatch[1]) : 1;
-
-    let type: RecurrenceType;
-    switch (frequency) {
-      case 'DAILY':
-        type = RecurrenceType.DAILY;
-        break;
-      case 'WEEKLY':
-        type = RecurrenceType.WEEKLY;
-        break;
-      case 'MONTHLY':
-        type = RecurrenceType.MONTHLY;
-        break;
-      case 'YEARLY':
-        type = RecurrenceType.YEARLY;
-        break;
-      default:
-        return { type: RecurrenceType.NONE, rule: null };
-    }
-
-    const rule: any = {
-      frequency,
-      interval,
-      rrule: rrule,
-    };
-
-    if (countMatch) {
-      rule.count = parseInt(countMatch[1]);
-    }
-
-    if (untilMatch) {
-      rule.until = new Date(untilMatch[1]);
-    }
-
-    if (bydayMatch) {
-      rule.byDay = bydayMatch[1].split(',');
-    }
-
-    return { type, rule };
-  }
-
-  private parseMicrosoftRecurrence(recurrence: any): {
-    type: RecurrenceType;
-    rule: any;
-  } {
-    this.logger.log(
-      `[parseMicrosoftRecurrence] Parsing Microsoft recurrence:`,
-      JSON.stringify(recurrence),
-    );
-
-    if (!recurrence.pattern) {
-      return { type: RecurrenceType.NONE, rule: null };
-    }
-
-    const pattern = recurrence.pattern;
-    let type: RecurrenceType;
-
-    switch (pattern.type) {
-      case 'daily':
-        type = RecurrenceType.DAILY;
-        break;
-      case 'weekly':
-        type = RecurrenceType.WEEKLY;
-        break;
-      case 'absoluteMonthly':
-      case 'relativeMonthly':
-        type = RecurrenceType.MONTHLY;
-        break;
-      case 'absoluteYearly':
-      case 'relativeYearly':
-        type = RecurrenceType.YEARLY;
-        break;
-      default:
-        return { type: RecurrenceType.NONE, rule: null };
-    }
-
-    const rule: any = {
-      pattern: pattern,
-      range: recurrence.range || null,
-    };
-
-    return { type, rule };
+    return localEvent;
   }
 
   private getSafeUserTimezone(timeZone?: string): string {
@@ -1235,6 +2262,23 @@ export class CalendarSyncService {
       );
       return fallback;
     }
+  }
+
+  private getMicrosoftTimeZone(timeZone: string): string | undefined {
+    if (!timeZone) return undefined;
+    const trimmed = timeZone.trim();
+    if (!trimmed) return undefined;
+
+    const windowsFromIana = this.mapIanaToWindows(trimmed);
+    if (windowsFromIana) {
+      return windowsFromIana;
+    }
+
+    if (this.mapWindowsToIana(trimmed)) {
+      return trimmed;
+    }
+
+    return undefined;
   }
 
   private resolveTimeZone(timeZone?: string): string | undefined {
@@ -1308,6 +2352,28 @@ export class CalendarSyncService {
     };
 
     return windowsToIana[normalized];
+  }
+
+  private mapIanaToWindows(timeZone: string): string | undefined {
+    const normalized = timeZone.toLowerCase();
+    const ianaToWindows: Record<string, string> = {
+      utc: 'UTC',
+      'europe/berlin': 'W. Europe Standard Time',
+      'europe/budapest': 'Central Europe Standard Time',
+      'europe/warsaw': 'Central European Standard Time',
+      'europe/paris': 'Romance Standard Time',
+      'europe/london': 'GMT Standard Time',
+      'etc/greenwich': 'Greenwich Standard Time',
+      'europe/bucharest': 'E. Europe Standard Time',
+      'america/new_york': 'Eastern Standard Time',
+      'america/los_angeles': 'Pacific Standard Time',
+      'america/denver': 'Mountain Standard Time',
+      'asia/shanghai': 'China Standard Time',
+      'asia/tokyo': 'Tokyo Standard Time',
+      'asia/kolkata': 'India Standard Time',
+    };
+
+    return ianaToWindows[normalized];
   }
 
   /**

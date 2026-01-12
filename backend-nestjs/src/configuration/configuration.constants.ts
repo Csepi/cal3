@@ -63,6 +63,33 @@ export const CONFIGURATION_DEFINITIONS: ConfigurationDefinition[] = [
     },
   },
   {
+    key: 'CALENDAR_SYNC_LOOKBACK_DAYS',
+    label: 'Calendar Sync Lookback (Days)',
+    description:
+      'How many days in the past to import when syncing external calendars.',
+    category: 'environment',
+    valueType: 'string',
+    defaultValue: process.env.CALENDAR_SYNC_LOOKBACK_DAYS ?? '90',
+  },
+  {
+    key: 'CALENDAR_SYNC_LOOKAHEAD_DAYS',
+    label: 'Calendar Sync Lookahead (Days)',
+    description:
+      'How many days into the future to import when syncing external calendars.',
+    category: 'environment',
+    valueType: 'string',
+    defaultValue: process.env.CALENDAR_SYNC_LOOKAHEAD_DAYS ?? '365',
+  },
+  {
+    key: 'CALENDAR_SYNC_POLL_INTERVAL_MINUTES',
+    label: 'Calendar Sync Poll Interval (Minutes)',
+    description:
+      'How often the background sync checks connected calendars for updates.',
+    category: 'environment',
+    valueType: 'string',
+    defaultValue: process.env.CALENDAR_SYNC_POLL_INTERVAL_MINUTES ?? '5',
+  },
+  {
     key: 'GOOGLE_CLIENT_ID',
     label: 'Google Client ID',
     description:

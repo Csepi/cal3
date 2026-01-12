@@ -1,4 +1,6 @@
-﻿// Polyfill for crypto module (required for @nestjs/schedule in some Docker environments)
+import 'dotenv/config';
+
+// Polyfill for crypto module (required for @nestjs/schedule in some Docker environments)
 import crypto from 'crypto';
 if (typeof globalThis.crypto === 'undefined') {
   (globalThis as any).crypto = crypto;

@@ -26,6 +26,7 @@ import {
 } from '../dto/recurrence.dto';
 import { NotificationsService } from '../notifications/notifications.service';
 import { TaskCalendarBridgeService } from '../tasks/task-calendar-bridge.service';
+import { CalendarSyncService } from '../calendar-sync/calendar-sync.service';
 
 @Injectable()
 export class EventsService {
@@ -41,12 +42,15 @@ export class EventsService {
     private readonly notificationsService: NotificationsService,
     private readonly taskCalendarBridgeService: TaskCalendarBridgeService,
     @Optional()
+    @Inject(forwardRef(() => CalendarSyncService))
+    private readonly calendarSyncService?: CalendarSyncService,
+    @Optional()
     @Inject(
       forwardRef(
         () => require('../automation/automation.service').AutomationService,
       ),
     )
-    private readonly automationService: any,
+    private readonly automationService?: any,
   ) {}
 
   async create(createEventDto: CreateEventDto, userId: number): Promise<Event> {
@@ -75,6 +79,7 @@ export class EventsService {
 
     const event = this.createEventEntity(eventData, calendarId, userId);
     const savedEvent = await this.eventRepository.save(event);
+    let savedInstances: Event[] = [];
 
     // Trigger automation rules for event.created
     this.triggerAutomationRules('event.created', savedEvent).catch((err) =>
@@ -103,7 +108,7 @@ export class EventsService {
         );
 
         if (instances.length > 0) {
-          await this.eventRepository.save(instances);
+          savedInstances = await this.eventRepository.save(instances);
         }
       } catch (error) {
         console.error('Error generating recurring instances:', error);
@@ -112,6 +117,26 @@ export class EventsService {
     }
 
     await this.notifyEventChange(savedEvent, 'created', userId);
+
+    if (this.calendarSyncService) {
+      this.calendarSyncService
+        .handleLocalEventCreated(savedEvent)
+        .catch((err) =>
+          this.logger.warn(
+            `Calendar sync create failed for event ${savedEvent.id}: ${err.message}`,
+          ),
+        );
+
+      for (const instance of savedInstances) {
+        this.calendarSyncService
+          .handleLocalEventCreated(instance)
+          .catch((err) =>
+            this.logger.warn(
+              `Calendar sync create failed for event ${instance.id}: ${err.message}`,
+            ),
+          );
+      }
+    }
 
     return savedEvent;
   }
@@ -310,6 +335,16 @@ export class EventsService {
 
     await this.notifyEventChange(updatedEvent, 'updated', userId);
 
+    if (this.calendarSyncService) {
+      this.calendarSyncService
+        .handleLocalEventUpdated(updatedEvent)
+        .catch((err) =>
+          this.logger.warn(
+            `Calendar sync update failed for event ${updatedEvent.id}: ${err.message}`,
+          ),
+        );
+    }
+
     return updatedEvent;
   }
 
@@ -353,6 +388,19 @@ export class EventsService {
       await this.removeRecurringEvent(event, scope);
     } else {
       await this.eventRepository.remove(event);
+    }
+
+    if (
+      this.calendarSyncService &&
+      (event.recurrenceType === RecurrenceType.NONE || event.parentEventId)
+    ) {
+      this.calendarSyncService
+        .handleLocalEventDeleted(event)
+        .catch((err) =>
+          this.logger.warn(
+            `Calendar sync delete failed for event ${event.id}: ${err.message}`,
+          ),
+        );
     }
   }
 
@@ -499,6 +547,26 @@ export class EventsService {
 
     await this.notifyEventChange(savedParentEvent, 'created', userId);
 
+    if (this.calendarSyncService) {
+      this.calendarSyncService
+        .handleLocalEventCreated(savedParentEvent)
+        .catch((err) =>
+          this.logger.warn(
+            `Calendar sync create failed for event ${savedParentEvent.id}: ${err.message}`,
+          ),
+        );
+
+      for (const instance of savedInstances) {
+        this.calendarSyncService
+          .handleLocalEventCreated(instance)
+          .catch((err) =>
+            this.logger.warn(
+              `Calendar sync create failed for event ${instance.id}: ${err.message}`,
+            ),
+          );
+      }
+    }
+
     return [savedParentEvent, ...savedInstances];
   }
 
@@ -571,6 +639,18 @@ export class EventsService {
 
     if (updatedEvents.length > 0) {
       await this.notifyEventChange(updatedEvents[0], 'updated', userId);
+    }
+
+    if (this.calendarSyncService && updatedEvents.length > 0) {
+      for (const updatedEvent of updatedEvents) {
+        this.calendarSyncService
+          .handleLocalEventUpdated(updatedEvent)
+          .catch((err) =>
+            this.logger.warn(
+              `Calendar sync update failed for event ${updatedEvent.id}: ${err.message}`,
+            ),
+          );
+      }
     }
 
     return updatedEvents;

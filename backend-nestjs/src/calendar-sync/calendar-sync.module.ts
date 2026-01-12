@@ -2,6 +2,7 @@ import { Module, forwardRef } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CalendarSyncController } from './calendar-sync.controller';
 import { CalendarSyncService } from './calendar-sync.service';
+import { CalendarSyncSchedulerService } from './calendar-sync.scheduler';
 import {
   CalendarSyncConnection,
   SyncedCalendar,
@@ -27,7 +28,7 @@ import { ConfigurationModule } from '../configuration/configuration.module';
     ConfigurationModule,
   ],
   controllers: [CalendarSyncController],
-  providers: [CalendarSyncService],
+  providers: [CalendarSyncService, CalendarSyncSchedulerService],
   exports: [CalendarSyncService],
 })
 export class CalendarSyncModule {}

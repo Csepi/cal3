@@ -10,6 +10,7 @@ import { NotificationsModule } from '../notifications/notifications.module';
 import { TasksModule } from '../tasks/tasks.module';
 import { EventCommentsService } from './event-comments.service';
 import { EventCommentsController } from './event-comments.controller';
+import { CalendarSyncModule } from '../calendar-sync/calendar-sync.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { EventCommentsController } from './event-comments.controller';
     forwardRef(() => AutomationModule),
     NotificationsModule,
     TasksModule,
+    forwardRef(() => CalendarSyncModule),
   ],
   providers: [EventsService, EventCommentsService],
   controllers: [EventsController, EventCommentsController],

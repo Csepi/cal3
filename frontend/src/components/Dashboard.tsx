@@ -55,7 +55,11 @@ type DashboardView =
   | 'notifications'
   | 'notification-settings';
 
-const Dashboard: React.FC = () => {
+interface DashboardProps {
+  initialView?: DashboardView;
+}
+
+const Dashboard: React.FC<DashboardProps> = ({ initialView = 'calendar' }) => {
   // Hooks
   const { i18n } = useTranslation();
   const { flags: featureFlags, loading: featureFlagsLoading } = useFeatureFlags();
@@ -66,7 +70,7 @@ const Dashboard: React.FC = () => {
   const [userRole, setUserRole] = useState<string>('user');
 
   // UI state management
-  const [currentView, setCurrentView] = useState<DashboardView>('calendar');
+  const [currentView, setCurrentView] = useState<DashboardView>(initialView);
   const getInitialThemeColor = () => {
     if (typeof window === 'undefined') {
       return THEME_COLORS.BLUE;

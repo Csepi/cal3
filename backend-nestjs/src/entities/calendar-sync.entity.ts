@@ -5,6 +5,7 @@ import {
   ManyToOne,
   CreateDateColumn,
   UpdateDateColumn,
+  Index,
 } from 'typeorm';
 import { timestampType } from './column-types';
 import { User } from './user.entity';
@@ -35,17 +36,17 @@ export class CalendarSyncConnection {
   @Column()
   provider: SyncProvider;
 
-  @Column({ nullable: true })
-  providerUserId: string;
+  @Column({ nullable: true, type: 'varchar' })
+  providerUserId: string | null;
 
-  @Column({ nullable: true })
-  accessToken: string;
+  @Column({ nullable: true, type: 'varchar' })
+  accessToken: string | null;
 
-  @Column({ nullable: true })
-  refreshToken: string;
+  @Column({ nullable: true, type: 'varchar' })
+  refreshToken: string | null;
 
   @Column({ nullable: true, type: timestampType })
-  tokenExpiresAt: Date;
+  tokenExpiresAt: Date | null;
 
   @Column({
     default: SyncStatus.ACTIVE,
@@ -53,7 +54,7 @@ export class CalendarSyncConnection {
   status: SyncStatus;
 
   @Column({ nullable: true, type: timestampType })
-  lastSyncAt: Date;
+  lastSyncAt: Date | null;
 
   @CreateDateColumn()
   createdAt: Date;
@@ -91,8 +92,8 @@ export class SyncedCalendar {
   @Column({ nullable: true, type: timestampType })
   lastSyncAt: Date;
 
-  @Column({ nullable: true })
-  syncToken: string;
+  @Column({ nullable: true, type: 'varchar' })
+  syncToken: string | null;
 
   @CreateDateColumn()
   createdAt: Date;
@@ -102,6 +103,9 @@ export class SyncedCalendar {
 }
 
 @Entity('sync_event_mappings')
+@Index('IDX_sync_event_mappings_unique', ['syncedCalendarId', 'externalEventId'], {
+  unique: true,
+})
 export class SyncEventMapping {
   @PrimaryGeneratedColumn()
   id: number;

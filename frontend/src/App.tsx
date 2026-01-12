@@ -22,6 +22,7 @@ function App() {
         <Routes>
           <Route path="/auth/callback" element={<AuthCallback onLogin={handleLogin} />} />
           <Route path="/public-booking/:token" element={<PublicBookingPage />} />
+          <Route path="/calendar-sync" element={<Dashboard initialView="sync" />} />
           <Route path="/*" element={<Dashboard />} />
         </Routes>
       </NotificationsProvider>
