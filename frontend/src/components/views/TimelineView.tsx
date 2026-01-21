@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import type { Event } from '../../types/Event';
 
 interface TimelineViewProps {
@@ -19,6 +19,7 @@ type TimelineItem = Event & {
   eventColor: string;
   calendarColor: string;
   calendarName?: string;
+  calendarRank: number;
 };
 
 const clamp = (value: number, min: number, max: number) =>
@@ -113,6 +114,28 @@ const formatTimeRange = (
   return `${formatTime(start, timeFormat, timeZone)} - ${formatTime(end, timeFormat, timeZone)}`;
 };
 
+const resolveCalendarRank = (event: Event): number => {
+  const rank = event.calendar?.rank;
+  return Number.isFinite(rank) ? Number(rank) : 0;
+};
+
+const resolveCalendarId = (event: Event): number =>
+  event.calendar?.id ?? event.calendarId ?? 0;
+
+const compareByRank = (a: TimelineItem, b: TimelineItem): number => {
+  const rankDiff = b.calendarRank - a.calendarRank;
+  if (rankDiff !== 0) return rankDiff;
+  const calendarIdDiff = resolveCalendarId(a) - resolveCalendarId(b);
+  if (calendarIdDiff !== 0) return calendarIdDiff;
+  return a.id - b.id;
+};
+
+const compareByStartThenRank = (a: TimelineItem, b: TimelineItem): number => {
+  const startDiff = a.start.getTime() - b.start.getTime();
+  if (startDiff !== 0) return startDiff;
+  return compareByRank(a, b);
+};
+
 const isSameDay = (a: Date, b: Date) =>
   a.getFullYear() === b.getFullYear() &&
   a.getMonth() === b.getMonth() &&
@@ -133,6 +156,8 @@ const TimelineView: React.FC<TimelineViewProps> = ({
     [timezone],
   );
   const [now, setNow] = useState(() => getZonedDate(new Date(), resolvedTimezone));
+  const [focusEventId, setFocusEventId] = useState<number | null>(null);
+  const scrollContainerRef = useRef<HTMLDivElement | null>(null);
   const focusColor = accentColor || '#06b6d4';
 
   useEffect(() => {
@@ -179,6 +204,8 @@ const TimelineView: React.FC<TimelineViewProps> = ({
         }
         const zonedStart = getZonedDate(start, resolvedTimezone);
         const zonedEnd = getZonedDate(end, resolvedTimezone);
+        const calendarRank = resolveCalendarRank(event);
+        const calendarId = resolveCalendarId(event);
         const calendarColor = event.calendar?.color || event.color || focusColor;
         const eventColor = event.color || calendarColor || focusColor;
         if (event.isAllDay) {
@@ -194,6 +221,8 @@ const TimelineView: React.FC<TimelineViewProps> = ({
             eventColor,
             calendarColor,
             calendarName: event.calendar?.name || 'Calendar',
+            calendarRank,
+            calendarId,
           } as TimelineItem;
         }
           return {
@@ -204,47 +233,57 @@ const TimelineView: React.FC<TimelineViewProps> = ({
             eventColor,
             calendarColor,
             calendarName: event.calendar?.name || 'Calendar',
+            calendarRank,
+            calendarId,
           } as TimelineItem;
       })
       .filter(Boolean) as TimelineItem[];
 
     return mapped
       .filter((ev) => ev.start <= dayEnd && ev.end >= dayStart)
-      .sort((a, b) => a.start.getTime() - b.start.getTime());
+      .sort(compareByStartThenRank);
   }, [events, focusColor, dayEnd, dayStart, resolvedTimezone]);
 
-  const currentEvent =
-    normalizedEvents.find((ev) => ev.start <= now && ev.end >= now) || null;
-  const nextEvent = normalizedEvents.find((ev) => ev.start > now) || null;
-  const pastEvents = normalizedEvents.filter((ev) => ev.end < now);
-  const recentPast = pastEvents.slice(-3);
-  const upcomingEvents = normalizedEvents
-    .filter((ev) => ev.start >= now)
-    .slice(0, 5);
-  const timelineItems = [
-    ...recentPast,
-    ...(currentEvent ? [currentEvent] : []),
-    ...upcomingEvents,
-  ];
-
-  const dayProgress = clamp(
-    ((now.getTime() - dayStart.getTime()) /
-      (dayEnd.getTime() - dayStart.getTime())) *
-      100,
-    0,
-    100,
+  const currentEvents = useMemo(
+    () => normalizedEvents.filter((ev) => ev.start <= now && ev.end >= now),
+    [normalizedEvents, now],
   );
+  const sortedCurrentEvents = useMemo(
+    () => [...currentEvents].sort(compareByRank),
+    [currentEvents],
+  );
+  const focusEvent = useMemo(() => {
+    if (sortedCurrentEvents.length === 0) return null;
+    if (focusEventId) {
+      const selected = sortedCurrentEvents.find((ev) => ev.id === focusEventId);
+      if (selected) return selected;
+    }
+    return sortedCurrentEvents[0];
+  }, [focusEventId, sortedCurrentEvents]);
+  const nextEvent = useMemo(() => {
+    const upcoming = normalizedEvents
+      .filter((ev) => ev.start > now)
+      .sort(compareByStartThenRank);
+    return upcoming[0] ?? null;
+  }, [normalizedEvents, now]);
 
-  const currentDuration = currentEvent
-    ? currentEvent.end.getTime() - currentEvent.start.getTime()
+  useEffect(() => {
+    if (!focusEventId) return;
+    if (!sortedCurrentEvents.some((ev) => ev.id === focusEventId)) {
+      setFocusEventId(null);
+    }
+  }, [focusEventId, sortedCurrentEvents]);
+
+  const currentDuration = focusEvent
+    ? focusEvent.end.getTime() - focusEvent.start.getTime()
     : 0;
-  const remainingMs = currentEvent
-    ? Math.max(0, currentEvent.end.getTime() - now.getTime())
+  const remainingMs = focusEvent
+    ? Math.max(0, focusEvent.end.getTime() - now.getTime())
     : 0;
-  const currentProgress = currentEvent
+  const currentProgress = focusEvent
     ? currentDuration > 0
       ? clamp(
-          ((now.getTime() - currentEvent.start.getTime()) / currentDuration) *
+          ((now.getTime() - focusEvent.start.getTime()) / currentDuration) *
             100,
           0,
           100,
@@ -252,18 +291,284 @@ const TimelineView: React.FC<TimelineViewProps> = ({
       : 100
     : 0;
 
-  const overlapCounts = normalizedEvents.reduce<Record<string, number>>(
-    (acc, ev) => {
-      const key = `${ev.start.toISOString()}-${ev.end.toISOString()}`;
-      acc[key] = (acc[key] || 0) + 1;
-      return acc;
-    },
-    {},
+  const isToday = isSameDay(now, zonedCurrentDate);
+  const referenceTime = useMemo(() => {
+    if (isToday) return now;
+    const ref = new Date(zonedCurrentDate);
+    ref.setHours(now.getHours(), now.getMinutes(), 0, 0);
+    return ref;
+  }, [isToday, now, zonedCurrentDate]);
+
+  const windowPastMinutes = 3 * 60;
+  const windowFutureMinutes = 5 * 60;
+  const windowMinutes = windowPastMinutes + windowFutureMinutes;
+  const tickMinutes = 5;
+  const majorTickMinutes = 30;
+  const hourTickMinutes = 60;
+  const pxPerMinute = isMobile ? 1.4 : 1.8;
+  const minEventHeight = Math.max(8, pxPerMinute * 4);
+  const labelColumnWidth = isMobile ? 52 : 68;
+  const railOffset = labelColumnWidth - 16;
+  const eventAreaLeft = labelColumnWidth + 8;
+  const eventColumnGap = isMobile ? 6 : 10;
+
+  const dayMinutes = 24 * 60;
+  const dayHeight = dayMinutes * pxPerMinute;
+  const timelineViewportHeight = windowMinutes * pxPerMinute;
+  const maxScrollTop = Math.max(0, dayHeight - timelineViewportHeight);
+  const anchorOffset =
+    ((referenceTime.getTime() - dayStart.getTime()) / 60000) * pxPerMinute;
+  const anchorScrollTop = clamp(
+    anchorOffset - windowPastMinutes * pxPerMinute,
+    0,
+    maxScrollTop,
+  );
+  const [scrollTop, setScrollTop] = useState(anchorScrollTop);
+  const clampedScrollTop = clamp(scrollTop, 0, maxScrollTop);
+  const followThreshold = Math.max(pxPerMinute * 10, 12);
+  const followNow = Math.abs(clampedScrollTop - anchorScrollTop) < followThreshold;
+
+  useEffect(() => {
+    if (clampedScrollTop === scrollTop) return;
+    setScrollTop(clampedScrollTop);
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTop = clampedScrollTop;
+    }
+  }, [clampedScrollTop, scrollTop]);
+
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+    if (!followNow) return;
+    if (Math.abs(container.scrollTop - anchorScrollTop) < 1) return;
+    container.scrollTop = anchorScrollTop;
+    setScrollTop(anchorScrollTop);
+  }, [anchorScrollTop, followNow]);
+
+  const windowStart = useMemo(
+    () =>
+      new Date(dayStart.getTime() + (clampedScrollTop / pxPerMinute) * 60000),
+    [dayStart, clampedScrollTop, pxPerMinute],
+  );
+  const windowEnd = useMemo(
+    () => new Date(windowStart.getTime() + windowMinutes * 60000),
+    [windowStart, windowMinutes],
   );
 
+  const statusTime = referenceTime;
+
+  const timelineHeight = dayHeight;
+  const nowMarkerOffset = clamp(
+    ((now.getTime() - dayStart.getTime()) / 60000) * pxPerMinute,
+    0,
+    timelineHeight,
+  );
+
+  const timelineEvents = useMemo(
+    () => normalizedEvents.filter((ev) => !ev.isAllDay),
+    [normalizedEvents],
+  );
+
+  const windowEvents = useMemo(
+    () =>
+      timelineEvents.filter(
+        (ev) => ev.end > windowStart && ev.start < windowEnd,
+      ),
+    [timelineEvents, windowStart, windowEnd],
+  );
+
+  const allDayEvents = useMemo(
+    () => normalizedEvents.filter((ev) => ev.isAllDay).sort(compareByRank),
+    [normalizedEvents],
+  );
+
+  const activeTimelineEvent = useMemo(
+    () => {
+      const active = timelineEvents.filter(
+        (ev) => ev.start <= statusTime && ev.end >= statusTime,
+      );
+      if (active.length === 0) return null;
+      return [...active].sort(compareByRank)[0];
+    },
+    [timelineEvents, statusTime],
+  );
+
+  const nextTimelineEvent = useMemo(
+    () => timelineEvents.find((ev) => ev.start > statusTime) || null,
+    [timelineEvents, statusTime],
+  );
+
+  const freeTimeSummary = useMemo(() => {
+    if (activeTimelineEvent) {
+      return `In ${activeTimelineEvent.title} until ${formatTime(
+        activeTimelineEvent.end,
+        timeFormat,
+        resolvedTimezone,
+      )}`;
+    }
+    if (nextTimelineEvent) {
+      const gapMs = Math.max(
+        0,
+        nextTimelineEvent.start.getTime() - statusTime.getTime(),
+      );
+      if (gapMs <= windowFutureMinutes * 60000) {
+        return `${formatDuration(gapMs)} free until ${formatTime(
+          nextTimelineEvent.start,
+          timeFormat,
+          resolvedTimezone,
+        )}`;
+      }
+    }
+    return 'No meetings scheduled in the next 5 hours.';
+  }, [
+    activeTimelineEvent,
+    nextTimelineEvent,
+    resolvedTimezone,
+    statusTime,
+    timeFormat,
+    windowFutureMinutes,
+  ]);
+
+  const timelineBlocks = useMemo(() => {
+    const startMs = dayStart.getTime();
+    const endMs = dayEnd.getTime();
+    const blocks = timelineEvents
+      .map((item) => {
+        const itemStart = Math.max(item.start.getTime(), startMs);
+        const itemEnd = Math.min(item.end.getTime(), endMs);
+        const top = ((itemStart - startMs) / 60000) * pxPerMinute;
+        const height = Math.max(
+          ((itemEnd - itemStart) / 60000) * pxPerMinute,
+          minEventHeight,
+        );
+
+        return {
+          item,
+          startMs: itemStart,
+          endMs: Math.max(itemEnd, itemStart + 1),
+          top,
+          height,
+          column: 0,
+          columnCount: 1,
+        };
+      })
+      .sort((a, b) => a.startMs - b.startMs || a.endMs - b.endMs);
+
+    if (isMobile) {
+      for (const block of blocks) {
+        block.column = 0;
+        block.columnCount = 1;
+      }
+      return blocks;
+    }
+
+    const clusters: typeof blocks[] = [];
+    let currentCluster: typeof blocks = [];
+    let clusterEnd = -Infinity;
+
+    for (const block of blocks) {
+      if (currentCluster.length === 0 || block.startMs <= clusterEnd) {
+        currentCluster.push(block);
+        clusterEnd = Math.max(clusterEnd, block.endMs);
+      } else {
+        clusters.push(currentCluster);
+        currentCluster = [block];
+        clusterEnd = block.endMs;
+      }
+    }
+    if (currentCluster.length) clusters.push(currentCluster);
+
+    const overlaps = (a: (typeof blocks)[number], b: (typeof blocks)[number]) =>
+      a.startMs < b.endMs && a.endMs > b.startMs;
+
+    for (const cluster of clusters) {
+      const ordered = [...cluster].sort((a, b) => {
+        const rankDiff = b.item.calendarRank - a.item.calendarRank;
+        if (rankDiff !== 0) return rankDiff;
+        const calendarIdDiff = resolveCalendarId(a.item) - resolveCalendarId(b.item);
+        if (calendarIdDiff !== 0) return calendarIdDiff;
+        const idDiff = a.item.id - b.item.id;
+        if (idDiff !== 0) return idDiff;
+        return a.startMs - b.startMs;
+      });
+
+      const columns: typeof cluster[] = [];
+      for (const block of ordered) {
+        let minColumn = 0;
+        for (let colIndex = 0; colIndex < columns.length; colIndex += 1) {
+          const columnBlocks = columns[colIndex];
+          const overlapsHigherRank = columnBlocks.some(
+            (existing) =>
+              overlaps(existing, block) &&
+              existing.item.calendarRank > block.item.calendarRank,
+          );
+          if (overlapsHigherRank) {
+            minColumn = Math.max(minColumn, colIndex + 1);
+          }
+        }
+
+        let assignedIndex = -1;
+        for (let colIndex = minColumn; colIndex < columns.length; colIndex += 1) {
+          const columnBlocks = columns[colIndex];
+          if (!columnBlocks.some((existing) => overlaps(existing, block))) {
+            assignedIndex = colIndex;
+            break;
+          }
+        }
+        if (assignedIndex === -1) {
+          assignedIndex = columns.length;
+          columns.push([block]);
+        } else {
+          columns[assignedIndex].push(block);
+        }
+        block.column = assignedIndex;
+      }
+
+      const columnCount = Math.max(1, columns.length);
+      for (const block of cluster) {
+        block.columnCount = columnCount;
+      }
+    }
+
+    return blocks;
+  }, [timelineEvents, dayStart, dayEnd, pxPerMinute, minEventHeight, isMobile]);
+
+  const ticks = useMemo(() => {
+    const count = Math.floor(dayMinutes / tickMinutes);
+    return Array.from({ length: count + 1 }, (_, index) => {
+      const minutesFromStart = index * tickMinutes;
+      const tickDate = new Date(
+        dayStart.getTime() + minutesFromStart * 60000,
+      );
+      return {
+        minutesFromStart,
+        tickDate,
+        isMajor: minutesFromStart % majorTickMinutes === 0,
+        isHour: minutesFromStart % hourTickMinutes === 0,
+      };
+    });
+  }, [
+    dayMinutes,
+    tickMinutes,
+    majorTickMinutes,
+    hourTickMinutes,
+    dayStart,
+  ]);
+
+  const handleTimelineScroll = (event: React.UIEvent<HTMLDivElement>) => {
+    setScrollTop(event.currentTarget.scrollTop);
+  };
+
+  const handleBackToNow = () => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+    container.scrollTo({ top: anchorScrollTop, behavior: 'smooth' });
+    setScrollTop(anchorScrollTop);
+  };
+
   const handleLogCurrentEvent = () => {
-    if (currentEvent) {
-      onEventClick(currentEvent);
+    if (focusEvent) {
+      onEventClick(focusEvent);
       return;
     }
     if (onCreateEvent) onCreateEvent(new Date(now));
@@ -271,8 +576,8 @@ const TimelineView: React.FC<TimelineViewProps> = ({
 
   const handleFollowUp = () => {
     if (!onCreateEvent) return;
-    const start = currentEvent?.end
-      ? new Date(currentEvent.end)
+    const start = focusEvent?.end
+      ? new Date(focusEvent.end)
       : new Date(now.getTime() + 30 * 60000);
     onCreateEvent(start);
   };
@@ -284,7 +589,7 @@ const TimelineView: React.FC<TimelineViewProps> = ({
   };
 
   const handleBlockers = () => {
-    if (currentEvent) onEventClick(currentEvent);
+    if (focusEvent) onEventClick(focusEvent);
   };
 
   const handlePrepNext = () => {
@@ -294,9 +599,6 @@ const TimelineView: React.FC<TimelineViewProps> = ({
     }
     if (onCreateEvent) onCreateEvent(new Date(now.getTime() + 15 * 60000));
   };
-
-  const isToday = isSameDay(now, zonedCurrentDate);
-  const nowMarkerTop = `${dayProgress}%`;
 
   return (
     <div className={`h-full bg-gray-50 p-4 md:p-6 space-y-4`}>
@@ -320,36 +622,36 @@ const TimelineView: React.FC<TimelineViewProps> = ({
               Live focus
             </p>
             <h3 className="text-2xl md:text-3xl font-semibold leading-tight drop-shadow-sm">
-              {currentEvent ? currentEvent.title : 'No event right now'}
+              {focusEvent ? focusEvent.title : 'No event right now'}
             </h3>
             <p className="text-sm opacity-90">
-              {currentEvent
+              {focusEvent
                 ? `${formatTimeRange(
-                    currentEvent.start,
-                    currentEvent.end,
+                    focusEvent.start,
+                    focusEvent.end,
                     timeFormat,
                     resolvedTimezone,
-                    currentEvent.isAllDay,
-                  )} - ${currentEvent.calendarName}`
+                    focusEvent.isAllDay,
+                  )} - ${focusEvent.calendarName}`
                 : 'Use this gap to reset, stretch, or block a quick focus session.'}
             </p>
             <div className="flex flex-wrap items-center gap-2 pt-1">
               <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-white/20 backdrop-blur-sm text-xs font-semibold">
                 <span className="w-2 h-2 rounded-full bg-white animate-pulse mr-2"></span>
-                {currentEvent
+                {focusEvent
                   ? `${formatDuration(remainingMs)} remaining`
                   : nextEvent
                     ? `Next starts in ${formatDuration(nextEvent.start.getTime() - now.getTime())}`
                     : 'Free for now'}
               </span>
-              {currentEvent?.calendarName && (
+              {focusEvent?.calendarName && (
                 <span className="inline-flex items-center px-2 py-1 rounded-full bg-black/20 text-xs">
-                  {currentEvent.calendarName}
+                  {focusEvent.calendarName}
                 </span>
               )}
-              {currentEvent?.location && (
+              {focusEvent?.location && (
                 <span className="inline-flex items-center px-2 py-1 rounded-full bg-white/20 text-xs">
-                  Location: {currentEvent.location}
+                  Location: {focusEvent.location}
                 </span>
               )}
             </div>
@@ -378,180 +680,306 @@ const TimelineView: React.FC<TimelineViewProps> = ({
           </div>
         </div>
 
-        {currentEvent && (
+        {focusEvent && (
           <div className="relative mt-4">
             <div className="h-2.5 w-full bg-white/30 rounded-full overflow-hidden backdrop-blur-sm">
               <div
                 className="h-full rounded-full transition-all duration-300"
                 style={{
                   width: `${currentProgress}%`,
-                  background: `linear-gradient(90deg, ${withAlpha(currentEvent.color, 0.95)}, ${withAlpha(focusColor, 0.95)})`,
+                  background: `linear-gradient(90deg, ${withAlpha(focusEvent.color, 0.95)}, ${withAlpha(focusColor, 0.95)})`,
                 }}
               ></div>
             </div>
             <div className="flex items-center justify-between text-xs opacity-90 mt-1">
               <span>
-                Started {formatTime(currentEvent.start, timeFormat, resolvedTimezone)}
+                Started {formatTime(focusEvent.start, timeFormat, resolvedTimezone)}
               </span>
               <span>{formatDuration(remainingMs)} left</span>
             </div>
           </div>
         )}
+
+        {sortedCurrentEvents.length > 1 && (
+          <div className="relative mt-4">
+            <p className="text-[10px] uppercase tracking-[0.2em] opacity-70">
+              Switch focus
+            </p>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {sortedCurrentEvents.map((event) => {
+                const isSelected = focusEvent?.id === event.id;
+                const chipColor = event.calendarColor || event.color || focusColor;
+                return (
+                  <button
+                    key={event.id}
+                    onClick={() => setFocusEventId(event.id)}
+                    aria-pressed={isSelected}
+                    className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold transition ${
+                      isSelected
+                        ? 'bg-white text-gray-900 shadow'
+                        : 'bg-white/20 text-white hover:bg-white/30'
+                    }`}
+                  >
+                    <span
+                      className="w-2 h-2 rounded-full"
+                      style={{ backgroundColor: chipColor }}
+                    />
+                    <span className="max-w-[180px] truncate">{event.title}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* Full-day timeline and context kit (4:1) */}
+      {/* Time-scaled timeline and context kit (4:1) */}
       <div className="grid md:grid-cols-5 gap-4">
-        <div className="md:col-span-4 relative bg-white rounded-3xl shadow-sm border border-gray-100 p-4 md:p-6 overflow-hidden pl-8 md:pl-12">
-          <div
-            className="absolute left-8 md:left-11 top-4 bottom-4 w-1 rounded-full"
-            style={{
-              background: `linear-gradient(to bottom, ${withAlpha(focusColor, 0.6)}, ${withAlpha(focusColor, 0.08)})`,
-            }}
-          ></div>
-          {isToday && (
-            <div
-              className="absolute left-4 right-4 h-0.5 bg-red-400/70 pointer-events-none"
-              style={{ top: nowMarkerTop }}
-            >
-              <span className="absolute -top-2 -left-4 text-[10px] font-semibold text-red-700 bg-white px-1.5 py-0.5 rounded-full shadow">
-                Now
-              </span>
-            </div>
-          )}
-          <div className="space-y-3 relative">
-            {timelineItems.length === 0 && (
-              <div className="text-sm text-gray-600">
-                No events scheduled for this day.
+        <div className="md:col-span-4 relative bg-white rounded-3xl shadow-sm border border-gray-100 p-4 md:p-6 overflow-hidden">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <div className="text-xs font-semibold text-gray-500 uppercase tracking-[0.2em]">
+                Past 3h / Next 5h
               </div>
-            )}
-
-            {timelineItems.map((item) => {
-              const isCurrent = currentEvent?.id === item.id;
-              const isPast = item.end < now;
-              const startsInMs = item.start.getTime() - now.getTime();
-              const statusLabel = isCurrent ? 'Live' : isPast ? 'Finished' : 'Upcoming';
-              const calendarColor =
-                item.calendarColor || item.eventColor || item.color || focusColor;
-              const eventColor = item.eventColor || item.color || calendarColor;
-
-              return (
-                <div
-                  key={item.id}
-                  className="grid grid-cols-[60px,1fr] md:grid-cols-[72px,1fr] gap-3 items-start"
+              {!followNow && (
+                <button
+                  type="button"
+                  onClick={handleBackToNow}
+                  className="inline-flex items-center rounded-full border border-slate-200 bg-white px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-600 shadow-sm transition hover:border-slate-300 hover:text-slate-700"
                 >
-                  <div className="flex flex-col items-start text-xs text-gray-600 leading-none pt-0.5">
-                    <span
-                      className="w-2.5 h-2.5 rounded-full border border-white shadow-sm"
-                      style={{ background: eventColor }}
-                    ></span>
-                    <span className="mt-2 font-semibold text-gray-700">
-                      {formatTime(item.start, timeFormat, resolvedTimezone)}
-                    </span>
-                  </div>
+                  Back to now
+                </button>
+              )}
+            </div>
+            <div className="text-xs text-gray-500">
+              {formatTime(windowStart, timeFormat, resolvedTimezone)} -{' '}
+              {formatTime(windowEnd, timeFormat, resolvedTimezone)}
+            </div>
+            <div className="text-xs font-semibold text-gray-600">
+              {freeTimeSummary}
+            </div>
+          </div>
+
+          {allDayEvents.length > 0 && (
+            <div className="mt-3 flex flex-wrap gap-2">
+              <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold uppercase tracking-wide bg-slate-100 text-slate-600">
+                All-day
+              </span>
+              {allDayEvents.map((event) => {
+                const calendarColor =
+                  event.calendarColor || event.eventColor || event.color || focusColor;
+                return (
                   <button
-                    onClick={() => onEventClick(item)}
-                    className={`w-full text-left rounded-2xl border border-gray-100 px-4 py-3 transition-all duration-300 relative ${
-                      isCurrent
-                        ? 'ring-2 ring-offset-2'
-                        : 'hover:-translate-y-0.5 hover:shadow-lg'
-                    } ${isPast ? 'opacity-60 saturate-[0.4]' : ''}`}
+                    key={event.id}
+                    onClick={() => onEventClick(event)}
+                    className="text-[11px] px-2.5 py-1 rounded-full font-semibold border border-slate-200 text-slate-700 hover:shadow-sm transition"
                     style={{
-                      borderLeft: `6px solid ${calendarColor}`,
-                      background: `linear-gradient(135deg, ${withAlpha(
-                        calendarColor,
-                        isPast ? 0.08 : 0.16,
-                      )}, ${withAlpha(eventColor, isPast ? 0.05 : 0.24)})`,
-                      boxShadow: isCurrent
-                        ? `0 15px 30px ${withAlpha(eventColor, 0.25)}`
-                        : `0 8px 20px ${withAlpha(eventColor, 0.12)}`,
-                      transformOrigin: 'left center',
+                      background: withAlpha(calendarColor, 0.12),
+                      borderColor: withAlpha(calendarColor, 0.2),
                     }}
                   >
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2">
-                          <h4 className="text-sm md:text-base font-semibold text-gray-900 leading-snug">
-                            {item.title}
-                          </h4>
+                    {event.title}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
+          <div className="mt-4 relative rounded-2xl border border-gray-100 bg-slate-50/60 overflow-hidden">
+            <div
+              ref={scrollContainerRef}
+              className="relative overflow-y-auto"
+              style={{ height: timelineViewportHeight }}
+              onScroll={handleTimelineScroll}
+            >
+              <div className="relative" style={{ height: timelineHeight }}>
+                <div
+                  className="absolute inset-0 pointer-events-none"
+                  style={{
+                    background:
+                      'linear-gradient(180deg, rgba(255,255,255,0.85), rgba(248,250,252,0.6))',
+                  }}
+                />
+
+                {isToday && (
+                  <div
+                    className="absolute left-0 right-0 top-0 bg-rose-50/40 pointer-events-none"
+                    style={{ height: nowMarkerOffset }}
+                  />
+                )}
+
+                <div
+                  className="absolute top-0 bottom-0"
+                  style={{
+                    left: railOffset,
+                    width: 2,
+                    background: `linear-gradient(to bottom, ${withAlpha(
+                      focusColor,
+                      0.6,
+                    )}, ${withAlpha(focusColor, 0.12)})`,
+                  }}
+                />
+
+                {ticks.map((tick) => {
+                  const top = tick.minutesFromStart * pxPerMinute;
+                  return (
+                    <div
+                      key={`${tick.minutesFromStart}-${tick.tickDate.toISOString()}`}
+                      className="absolute left-0 right-0 pointer-events-none"
+                      style={{ top }}
+                    >
+                      <div
+                        className={`absolute border-t ${
+                          tick.isMajor ? 'border-slate-200' : 'border-slate-100'
+                        }`}
+                        style={{ left: railOffset, right: 0 }}
+                      />
+                      <div
+                        className="absolute"
+                        style={{
+                          left: railOffset - (tick.isMajor ? 8 : 5),
+                          width: tick.isMajor ? 16 : 10,
+                          height: 1,
+                          backgroundColor: tick.isMajor ? '#cbd5f5' : '#e2e8f0',
+                        }}
+                      />
+                      {tick.isMajor && (
+                        <div
+                          className={`absolute -translate-y-1/2 text-[11px] ${
+                            tick.isHour
+                              ? 'font-semibold text-gray-700'
+                              : 'text-gray-500'
+                          }`}
+                          style={{ left: 0, width: labelColumnWidth }}
+                        >
+                          {formatTime(tick.tickDate, timeFormat, resolvedTimezone)}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+
+                {isToday && (
+                  <div
+                    className="absolute left-0 right-0 flex items-center gap-2 pointer-events-none -translate-y-1/2"
+                    style={{ top: nowMarkerOffset }}
+                  >
+                    <div
+                      className="h-0.5 bg-red-400/70"
+                      style={{ marginLeft: railOffset - 6, flex: 1 }}
+                    />
+                    <span
+                      className="text-[10px] font-semibold text-red-700 bg-white px-1.5 py-0.5 rounded-full shadow"
+                      style={{ marginRight: 8 }}
+                    >
+                      Now
+                    </span>
+                  </div>
+                )}
+
+                <div
+                  className="absolute top-0 bottom-0"
+                  style={{ left: eventAreaLeft, right: 12 }}
+                >
+                  {timelineBlocks.map((block) => {
+                    const { item } = block;
+                    const isLive =
+                      statusTime >= item.start && statusTime <= item.end;
+                    const isPast = item.end < statusTime;
+                    const statusLabel = isLive
+                      ? 'Live'
+                      : isPast
+                        ? 'Past'
+                        : 'Upcoming';
+                    const calendarColor =
+                      item.calendarColor ||
+                      item.eventColor ||
+                      item.color ||
+                      focusColor;
+                    const eventColor =
+                      item.eventColor || item.color || calendarColor;
+                    const totalGap =
+                      Math.max(0, block.columnCount - 1) * eventColumnGap;
+                    const width = `calc((100% - ${totalGap}px) / ${block.columnCount})`;
+                    const left = `calc(${block.column} * ((100% - ${totalGap}px) / ${block.columnCount}) + ${block.column * eventColumnGap}px)`;
+                    const isCompact = block.height < (isMobile ? 52 : 64);
+
+                    return (
+                      <button
+                        key={item.id}
+                        onClick={() => onEventClick(item)}
+                        title={`${item.title} - ${formatTimeRange(
+                          item.start,
+                          item.end,
+                          timeFormat,
+                          resolvedTimezone,
+                          item.isAllDay,
+                        )}`}
+                        className={`absolute rounded-2xl border border-white/60 px-3 py-2 text-left transition-all duration-200 overflow-hidden ${
+                          isLive
+                            ? 'ring-2 ring-offset-2'
+                            : 'hover:shadow-md hover:-translate-y-0.5'
+                        } ${isPast ? 'opacity-70 saturate-[0.6]' : ''}`}
+                        style={{
+                          top: block.top,
+                          height: block.height,
+                          left,
+                          width,
+                          borderLeft: `4px solid ${calendarColor}`,
+                          background: `linear-gradient(135deg, ${withAlpha(
+                            calendarColor,
+                            isPast ? 0.08 : 0.18,
+                          )}, ${withAlpha(eventColor, isPast ? 0.05 : 0.28)})`,
+                          boxShadow: isLive
+                            ? `0 12px 24px ${withAlpha(eventColor, 0.22)}`
+                            : `0 6px 14px ${withAlpha(eventColor, 0.12)}`,
+                          transformOrigin: 'left center',
+                        }}
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="min-w-0">
+                            <p className="text-[10px] font-semibold text-gray-600">
+                              {formatTimeRange(
+                                item.start,
+                                item.end,
+                                timeFormat,
+                                resolvedTimezone,
+                                item.isAllDay,
+                              )}
+                            </p>
+                            <h4 className="text-xs md:text-sm font-semibold text-gray-900 leading-snug line-clamp-2">
+                              {item.title}
+                            </h4>
+                            {!isCompact && (
+                              <p className="text-[11px] text-gray-600 line-clamp-2">
+                                {item.location
+                                  ? `Location: ${item.location}`
+                                  : item.calendarName}
+                              </p>
+                            )}
+                          </div>
                           <span
-                            className={`text-[11px] px-2 py-0.5 rounded-full font-semibold ${
-                              isCurrent
+                            className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${
+                              isLive
                                 ? 'bg-red-100 text-red-700'
                                 : 'bg-gray-100 text-gray-700'
                             }`}
                           >
                             {statusLabel}
                           </span>
-                          {overlapCounts[
-                            `${item.start.toISOString()}-${item.end.toISOString()}`
-                          ] > 1 && (
-                            <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-100">
-                              Parallel x
-                              {overlapCounts[
-                                `${item.start.toISOString()}-${item.end.toISOString()}`
-                              ]}
-                            </span>
-                          )}
-                          {(item.parentEventId ||
-                            item.recurrenceId ||
-                            (item as any).isRecurring) && (
-                            <span className="text-[10px]" title="Recurring event">
-                              Recurring
-                            </span>
-                          )}
                         </div>
-                        <p className="text-xs text-gray-700">
-                          {formatTimeRange(
-                            item.start,
-                            item.end,
-                            timeFormat,
-                            resolvedTimezone,
-                            item.isAllDay,
-                          )}{' '}
-                          - {item.calendarName}
-                        </p>
-                        {item.description && (
-                          <p className="text-xs text-gray-700 line-clamp-2">
-                            {item.description}
-                          </p>
-                        )}
-                      </div>
-                      {!isPast && (
-                        <div className="text-right text-xs text-gray-600 flex flex-col items-end gap-1">
-                          <span>
-                            {isCurrent
-                              ? `${formatDuration(remainingMs)} left`
-                              : startsInMs > 0
-                                ? `Starts in ${formatDuration(startsInMs)}`
-                                : 'Starting now'}
-                          </span>
-                          <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-white text-gray-700 border border-gray-200">
-                            {item.location
-                              ? `Location: ${item.location}`
-                              : item.calendarName}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-
-                    {isCurrent && (
-                      <div className="mt-3 h-1.5 bg-white/50 rounded-full overflow-hidden">
-                        <div
-                          className="h-full rounded-full"
-                          style={{
-                            width: `${currentProgress}%`,
-                            background: `linear-gradient(90deg, ${withAlpha(
-                              calendarColor,
-                              0.95,
-                            )}, ${withAlpha(eventColor, 0.95)})`,
-                          }}
-                        ></div>
-                      </div>
-                    )}
-                  </button>
+                      </button>
+                    );
+                  })}
                 </div>
-              );
-            })}
+              </div>
+            </div>
+
+            {windowEvents.length === 0 && (
+              <div className="pointer-events-none absolute inset-0 flex items-center justify-center text-sm text-gray-500">
+                No events in this 8-hour window.
+              </div>
+            )}
           </div>
         </div>
 
