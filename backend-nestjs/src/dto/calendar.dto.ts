@@ -53,6 +53,14 @@ export class CreateCalendarDto {
   @IsOptional()
   @IsNumber()
   groupId?: number | null;
+
+  @ApiPropertyOptional({
+    example: 10,
+    description: 'Hidden calendar importance rank (higher = more important)',
+  })
+  @IsOptional()
+  @IsNumber()
+  rank?: number;
 }
 
 export class UpdateCalendarDto {
@@ -101,6 +109,14 @@ export class UpdateCalendarDto {
   @IsOptional()
   @IsNumber()
   groupId?: number | null;
+
+  @ApiPropertyOptional({
+    example: 10,
+    description: 'Hidden calendar importance rank (higher = more important)',
+  })
+  @IsOptional()
+  @IsNumber()
+  rank?: number;
 }
 
 export class ShareCalendarDto {
@@ -187,4 +203,10 @@ export class CalendarResponseDto {
     name: string;
     isVisible: boolean;
   } | null;
+
+  @ApiPropertyOptional({
+    example: 10,
+    description: 'Hidden calendar importance rank (higher = more important)',
+  })
+  rank?: number;
 }

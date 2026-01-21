@@ -59,6 +59,9 @@ export class Calendar {
   @Column({ default: false })
   isTasksCalendar: boolean;
 
+  @Column({ type: 'int', default: 0 })
+  rank: number;
+
   @Column({ nullable: true })
   organisationId: number; // For reservation calendars, links to organisation
 

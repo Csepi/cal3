@@ -95,6 +95,14 @@ export class CalendarsService {
         index === self.findIndex((c) => c.id === calendar.id),
     );
 
+    uniqueCalendars.sort((a, b) => {
+      const rankDiff = (b.rank ?? 0) - (a.rank ?? 0);
+      if (rankDiff !== 0) return rankDiff;
+      const nameDiff = a.name.localeCompare(b.name);
+      if (nameDiff !== 0) return nameDiff;
+      return a.id - b.id;
+    });
+
     console.log(
       '📋 Final filtered calendars:',
       uniqueCalendars.map(
@@ -345,3 +353,4 @@ export class CalendarsService {
     return group;
   }
 }
+

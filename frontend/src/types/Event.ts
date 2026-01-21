@@ -30,6 +30,7 @@ export interface Event {
     createdAt: string;
     updatedAt: string;
     ownerId: number;
+    rank?: number;
   };
   calendarId?: number;
   createdBy?: {

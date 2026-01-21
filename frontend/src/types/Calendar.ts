@@ -20,6 +20,7 @@ export interface Calendar {
   isActive: boolean;
   isReservationCalendar?: boolean;
   isTasksCalendar?: boolean;
+  rank?: number;
   groupId?: number | null;
   group?: {
     id: number;
@@ -49,6 +50,7 @@ export interface CreateCalendarRequest {
   icon?: string;
   visibility?: CalendarVisibility;
   groupId?: number | null;
+  rank?: number;
 }
 
 export interface UpdateCalendarRequest {
@@ -58,4 +60,5 @@ export interface UpdateCalendarRequest {
   icon?: string;
   visibility?: CalendarVisibility;
   groupId?: number | null;
+  rank?: number;
 }

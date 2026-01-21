@@ -32,6 +32,19 @@ const WeekView: React.FC<WeekViewProps> = ({
       background: `linear-gradient(135deg, ${themeColor}08 0%, white 50%, ${themeColor}05 100%)`
     };
   };
+  const getCalendarRank = (event: Event): number => {
+    const rank = event.calendar?.rank;
+    return Number.isFinite(rank) ? Number(rank) : 0;
+  };
+  const getCalendarId = (event: Event): number =>
+    event.calendar?.id ?? event.calendarId ?? 0;
+  const sortEventsByRank = (a: Event, b: Event): number => {
+    const rankDiff = getCalendarRank(b) - getCalendarRank(a);
+    if (rankDiff !== 0) return rankDiff;
+    const calendarIdDiff = getCalendarId(a) - getCalendarId(b);
+    if (calendarIdDiff !== 0) return calendarIdDiff;
+    return a.id - b.id;
+  };
   const hours = Array.from({ length: 24 }, (_, i) => i);
 
   // Time range selection state
@@ -137,16 +150,18 @@ const WeekView: React.FC<WeekViewProps> = ({
   const getEventsStartingAtHour = (date: Date, hour: number): Event[] => {
     const dayEvents = getEventsForDay(date);
 
-    return dayEvents.filter(event => {
-      if (event.isAllDay) return hour === 0; // Show all-day events at midnight
+    return dayEvents
+      .filter(event => {
+        if (event.isAllDay) return hour === 0; // Show all-day events at midnight
 
-      if (event.startTime) {
-        const [eventHour] = event.startTime.split(':').map(Number);
-        return eventHour === hour;
-      }
+        if (event.startTime) {
+          const [eventHour] = event.startTime.split(':').map(Number);
+          return eventHour === hour;
+        }
 
-      return false;
-    });
+        return false;
+      })
+      .sort(sortEventsByRank);
   };
 
   // Check if an event spans through a specific hour

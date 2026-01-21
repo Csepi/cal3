@@ -90,6 +90,7 @@ CREATE TABLE calendars (
     isActive BIT NOT NULL DEFAULT 1,
     isReservationCalendar BIT NOT NULL DEFAULT 0,
     isTasksCalendar BIT NOT NULL DEFAULT 0,
+    rank INT NOT NULL DEFAULT 0,
     organisationId INT NULL,
     ownerId INT NOT NULL,
     groupId INT NULL,

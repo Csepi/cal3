@@ -85,6 +85,20 @@ interface EnhancedCalendarProps {
   timezone?: string;
 }
 
+const getCalendarRankValue = (calendar?: CalendarType | null): number => {
+  const rank = calendar?.rank;
+  return Number.isFinite(rank) ? Number(rank) : 0;
+};
+
+const sortCalendarsByRank = (calendars: CalendarType[]): CalendarType[] =>
+  [...calendars].sort((a, b) => {
+    const rankDiff = getCalendarRankValue(b) - getCalendarRankValue(a);
+    if (rankDiff !== 0) return rankDiff;
+    const nameDiff = a.name.localeCompare(b.name);
+    if (nameDiff !== 0) return nameDiff;
+    return a.id - b.id;
+  });
+
 // Calendar hook for state management
 function useCalendarState(themeColor: string, initialView: CalendarState['currentView'] = 'month') {
   const [state, setState] = useState<CalendarState>({
@@ -140,7 +154,8 @@ function useCalendarState(themeColor: string, initialView: CalendarState['curren
         apiService.getCalendarGroups().catch(() => []),
       ]);
 
-      const selectedCalendars = calendarsData.map(cal => cal.id);
+      const sortedCalendars = sortCalendarsByRank(calendarsData);
+      const selectedCalendars = sortedCalendars.map(cal => cal.id);
 
       // Fetch user's accessible organizations with resource types
       let organizations: Organization[] = [];
@@ -186,7 +201,7 @@ function useCalendarState(themeColor: string, initialView: CalendarState['curren
       setState(prev => ({
         ...prev,
         events: eventsData,
-        calendars: calendarsData,
+        calendars: sortedCalendars,
         calendarGroups: calendarGroupsData,
         selectedCalendars,
         organizations,
@@ -200,6 +215,15 @@ function useCalendarState(themeColor: string, initialView: CalendarState['curren
         error: error instanceof Error ? error.message : 'Failed to load calendar data',
         loading: false,
       }));
+    }
+  }, []);
+
+  const refreshEvents = useCallback(async () => {
+    try {
+      const eventsData = await apiService.getAllEvents();
+      setState(prev => ({ ...prev, events: eventsData }));
+    } catch (error) {
+      console.error('Error refreshing events:', error);
     }
   }, []);
 
@@ -351,6 +375,18 @@ function useCalendarState(themeColor: string, initialView: CalendarState['curren
   useEffect(() => {
     loadData();
   }, [loadData]);
+
+  useEffect(() => {
+    const intervalMs = 30000;
+    const intervalId = setInterval(() => {
+      if (typeof document !== 'undefined' && document.hidden) {
+        return;
+      }
+      refreshEvents();
+    }, intervalMs);
+
+    return () => clearInterval(intervalId);
+  }, [refreshEvents]);
 
   return {
     state,
@@ -784,15 +820,149 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
     const saved = localStorage.getItem('enhancedCalendarSidebarCollapsed');
     return saved ? JSON.parse(saved) : true; // Default to collapsed for more screen space
   });
+  const [calendarOrder, setCalendarOrder] = React.useState<CalendarType[]>([]);
+  const [draggingCalendarId, setDraggingCalendarId] = React.useState<number | null>(null);
+  const [isPersistingOrder, setIsPersistingOrder] = React.useState(false);
+  const calendarOrderRef = React.useRef<CalendarType[]>([]);
+  const didDropRef = React.useRef(false);
 
   // Save collapse state to localStorage
   React.useEffect(() => {
     localStorage.setItem('enhancedCalendarSidebarCollapsed', JSON.stringify(isCollapsed));
   }, [isCollapsed]);
 
+  React.useEffect(() => {
+    if (!draggingCalendarId) {
+      setCalendarOrder(state.calendars);
+    }
+  }, [state.calendars, draggingCalendarId]);
+
+  React.useEffect(() => {
+    calendarOrderRef.current = calendarOrder;
+  }, [calendarOrder]);
+
   const toggleCollapse = () => {
     setIsCollapsed(!isCollapsed);
   };
+
+  const moveCalendarInList = React.useCallback(
+    (list: CalendarType[], draggedId: number, overId: number) => {
+      if (draggedId === overId) return list;
+      const fromIndex = list.findIndex((cal) => cal.id === draggedId);
+      const toIndex = list.findIndex((cal) => cal.id === overId);
+      if (fromIndex === -1 || toIndex === -1) return list;
+      const next = [...list];
+      const [dragged] = next.splice(fromIndex, 1);
+      next.splice(toIndex, 0, dragged);
+      return next;
+    },
+    [],
+  );
+
+  const persistCalendarOrder = React.useCallback(
+    async (ordered: CalendarType[]) => {
+      if (ordered.length === 0) return;
+      const originalOrder = state.calendars.map((calendar) => calendar.id);
+      const nextOrder = ordered.map((calendar) => calendar.id);
+      if (
+        originalOrder.length === nextOrder.length &&
+        originalOrder.every((id, index) => id === nextOrder[index])
+      ) {
+        return;
+      }
+      const supportsRank = ordered.some((calendar) =>
+        Number.isFinite(calendar.rank),
+      );
+      if (!supportsRank) {
+        alert('Calendar ranking is not available on this backend. Restart the backend to apply the rank update.');
+        setCalendarOrder(state.calendars);
+        return;
+      }
+      const total = ordered.length;
+      const updates = ordered
+        .map((calendar, index) => {
+          const nextRank = (total - index) * 10;
+          return {
+            id: calendar.id,
+            nextRank,
+            currentRank: Number.isFinite(calendar.rank) ? Number(calendar.rank) : 0,
+          };
+        })
+        .filter((update) => update.currentRank !== update.nextRank);
+
+      if (updates.length === 0) return;
+
+      setIsPersistingOrder(true);
+      try {
+        for (const update of updates) {
+          await apiService.updateCalendar(update.id, { rank: update.nextRank });
+        }
+        await actions.refreshData();
+      } catch (err) {
+        console.error('Failed to update calendar ranks', err);
+        const message =
+          err instanceof Error ? err.message : 'Failed to update calendar order';
+        if (message.includes('rank should not exist')) {
+          alert('Calendar ranking is not enabled on the backend yet. Restart the backend and try again.');
+        } else {
+          alert(message);
+        }
+        setCalendarOrder(state.calendars);
+      } finally {
+        setIsPersistingOrder(false);
+      }
+    },
+    [actions, state.calendars],
+  );
+
+  const handleDragStart = React.useCallback(
+    (event: React.DragEvent<HTMLSpanElement>, calendarId: number) => {
+      if (isPersistingOrder) return;
+      didDropRef.current = false;
+      setCalendarOrder(state.calendars);
+      setDraggingCalendarId(calendarId);
+      event.dataTransfer.effectAllowed = 'move';
+      event.dataTransfer.setData('text/plain', String(calendarId));
+    },
+    [isPersistingOrder, state.calendars],
+  );
+
+  const handleDragOver = React.useCallback(
+    (event: React.DragEvent<HTMLDivElement>, calendarId: number) => {
+      if (draggingCalendarId === null || isPersistingOrder) return;
+      event.preventDefault();
+      setCalendarOrder((prev) =>
+        moveCalendarInList(prev, draggingCalendarId, calendarId),
+      );
+    },
+    [draggingCalendarId, isPersistingOrder, moveCalendarInList],
+  );
+
+  const handleDrop = React.useCallback(
+    (event: React.DragEvent<HTMLDivElement>, calendarId: number) => {
+      if (draggingCalendarId === null || isPersistingOrder) return;
+      event.preventDefault();
+      didDropRef.current = true;
+      const reordered = moveCalendarInList(
+        calendarOrderRef.current,
+        draggingCalendarId,
+        calendarId,
+      );
+      setCalendarOrder(reordered);
+      setDraggingCalendarId(null);
+      void persistCalendarOrder(reordered);
+    },
+    [draggingCalendarId, isPersistingOrder, moveCalendarInList, persistCalendarOrder],
+  );
+
+  const handleDragEnd = React.useCallback(() => {
+    if (draggingCalendarId === null) return;
+    if (!didDropRef.current) {
+      setCalendarOrder(state.calendars);
+    }
+    didDropRef.current = false;
+    setDraggingCalendarId(null);
+  }, [draggingCalendarId, state.calendars]);
 
   const handleCreateGroup = async () => {
     const name = window.prompt('Name for the new calendar group?');
@@ -815,18 +985,23 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
     const byId = new Map<number, CalendarType>();
     state.calendars.forEach((cal) => byId.set(cal.id, cal));
 
-    const groups = state.calendarGroups.map((group) => ({
-      ...group,
-      calendars: group.calendars
+    const groups = state.calendarGroups.map((group) => {
+      const calendars = group.calendars
         .map((cal) => byId.get(cal.id))
-        .filter(Boolean) as CalendarType[],
-    }));
+        .filter(Boolean) as CalendarType[];
+      return { ...group, calendars: sortCalendarsByRank(calendars) };
+    });
 
     const groupedIds = new Set(groups.flatMap((g) => g.calendars.map((c) => c.id)));
-    const ungrouped = state.calendars.filter((cal) => !groupedIds.has(cal.id));
+    const ungrouped = sortCalendarsByRank(
+      state.calendars.filter((cal) => !groupedIds.has(cal.id)),
+    );
 
     return { groups, ungrouped };
   }, [state.calendars, state.calendarGroups]);
+
+  const calendarsToRender =
+    calendarOrder.length > 0 ? calendarOrder : state.calendars;
 
   const renderCalendarRow = (calendar: CalendarType) => (
     <div
@@ -1034,8 +1209,14 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
 
         {/* Calendars List */}
         <div>
-          <div className="flex items-center justify-between mb-4">
-            <h3 className={`text-lg font-semibold text-${themeConfig.text}`}>My Calendars</h3>
+          <div className="flex items-start justify-between mb-4">
+            <div>
+              <h3 className={`text-lg font-semibold text-${themeConfig.text}`}>My Calendars</h3>
+              <p className="text-xs text-gray-500">Drag to reorder (updates priority)</p>
+              {isPersistingOrder && (
+                <p className="text-xs text-gray-400">Saving order...</p>
+              )}
+            </div>
             <Button
               variant="ghost"
               size="sm"
@@ -1050,13 +1231,15 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
           </div>
 
           <div className="space-y-2">
-            {state.calendars.map(calendar => (
+            {calendarsToRender.map(calendar => (
               <div
                 key={calendar.id}
                 className={`
                   flex items-center space-x-3 p-3 rounded-lg cursor-pointer transition-all duration-200
                   hover:shadow-md border-l-4 group
                   ${state.selectedCalendars.includes(calendar.id) ? 'shadow-sm' : ''}
+                  ${draggingCalendarId === calendar.id ? 'ring-2 ring-blue-200' : ''}
+                  ${isPersistingOrder ? 'opacity-70' : ''}
                 `}
                 style={{
                   borderLeftColor: calendar.color || '#64748b',
@@ -1065,7 +1248,19 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
                     : `linear-gradient(135deg, ${calendar.color || '#64748b'}08, transparent)`
                 }}
                 onClick={() => actions.toggleCalendar(calendar.id)}
+                onDragOver={(event) => handleDragOver(event, calendar.id)}
+                onDrop={(event) => handleDrop(event, calendar.id)}
               >
+                <span
+                  className="text-xs text-gray-400 px-1 cursor-grab"
+                  title="Drag to reorder"
+                  draggable={!isPersistingOrder}
+                  onDragStart={(event) => handleDragStart(event, calendar.id)}
+                  onDragEnd={handleDragEnd}
+                  onClick={(event) => event.stopPropagation()}
+                >
+                  |||
+                </span>
                 <div
                   className="w-4 h-4 rounded border-2 flex items-center justify-center"
                   style={{
