@@ -1243,6 +1243,8 @@ export class CalendarSyncService {
 
     const hasTopParam = (value?: string | null): boolean =>
       !!value && /(\$top=|%24top=)/i.test(value);
+    const hasSelectParam = (value?: string | null): boolean =>
+      !!value && /(\$select=|%24select=)/i.test(value);
     const sanitizeDeltaUrl = (value?: string | null): string | undefined => {
       if (!value) return undefined;
 
@@ -1264,9 +1266,25 @@ export class CalendarSyncService {
 
     const encodedCalendarId = encodeURIComponent(calendarId);
     const baseUrl = `https://graph.microsoft.com/v1.0/me/calendars/${encodedCalendarId}/calendarView/delta`;
+    const selectFields = [
+      'id',
+      'subject',
+      'body',
+      'bodyPreview',
+      'location',
+      'isAllDay',
+      'start',
+      'end',
+      'seriesMasterId',
+      'originalStart',
+      'originalStartTimeZone',
+      'originalEndTimeZone',
+      'lastModifiedDateTime',
+    ];
     const initialParams = new URLSearchParams({
       startDateTime: startDate.toISOString(),
       endDateTime: endDate.toISOString(),
+      $select: selectFields.join(','),
     });
 
     let effectiveSyncToken = sanitizeDeltaUrl(syncToken);
@@ -1276,12 +1294,21 @@ export class CalendarSyncService {
       );
       effectiveSyncToken = undefined;
     }
+    if (effectiveSyncToken && !hasSelectParam(effectiveSyncToken)) {
+      this.logger.warn(
+        `[fetchMicrosoftCalendarEvents] Sync token missing $select; clearing token to refresh event bodies for calendar ${calendarId}`,
+      );
+      effectiveSyncToken = undefined;
+    }
 
     let nextUrl: string | undefined =
       effectiveSyncToken || `${baseUrl}?${initialParams.toString()}`;
     let deltaLink: string | undefined;
     const preferTimeZone = this.getMicrosoftTimeZone(userTimezone);
-    const preferParts = [`odata.maxpagesize=1000`];
+    const preferParts = [
+      'odata.maxpagesize=1000',
+      'outlook.body-content-type="text"',
+    ];
     if (preferTimeZone) {
       preferParts.unshift(`outlook.timezone="${preferTimeZone}"`);
     }
@@ -1856,17 +1883,31 @@ export class CalendarSyncService {
     return code === '23505';
   }
 
-  private isMissingMicrosoftSubject(externalEvent: any): boolean {
+  private needsMicrosoftEventDetails(externalEvent: any): boolean {
     if (!externalEvent) {
-      return true;
+      return false;
     }
 
     const subject = externalEvent.subject;
-    if (typeof subject === 'string') {
-      return subject.trim().length === 0;
+    const hasSubject =
+      typeof subject === 'string' ? subject.trim().length > 0 : !!subject;
+
+    const bodyContent =
+      typeof externalEvent.body?.content === 'string'
+        ? externalEvent.body.content.trim()
+        : '';
+    const bodyPreview =
+      typeof externalEvent.bodyPreview === 'string'
+        ? externalEvent.bodyPreview.trim()
+        : '';
+
+    if (!hasSubject) return true;
+    if (!bodyContent && bodyPreview) return true;
+    if (bodyPreview && bodyContent && bodyPreview.length >= 200) {
+      return bodyContent.length <= bodyPreview.length;
     }
 
-    return !subject;
+    return false;
   }
 
   private async fetchMicrosoftEventDetails(
@@ -1934,7 +1975,7 @@ export class CalendarSyncService {
       eventData = {
         title: externalEvent.subject || 'Untitled Event',
         description:
-          externalEvent.bodyPreview || externalEvent.body?.content || '',
+          externalEvent.body?.content || externalEvent.bodyPreview || '',
         location: externalEvent.location?.displayName || '',
         isAllDay: externalEvent.isAllDay || false,
       };
@@ -2089,11 +2130,11 @@ export class CalendarSyncService {
     let eventSource = externalEvent;
     if (
       syncConnection.provider === SyncProvider.MICROSOFT &&
-      this.isMissingMicrosoftSubject(externalEvent) &&
+      this.needsMicrosoftEventDetails(externalEvent) &&
       externalEvent?.id
     ) {
       this.logger.warn(
-        `[createLocalEventFromExternal] Missing subject for event ${externalEvent.id}; fetching full details`,
+        `[createLocalEventFromExternal] Missing event details for event ${externalEvent.id}; fetching full details`,
       );
       const details = await this.fetchMicrosoftEventDetails(
         syncConnection,
@@ -2194,11 +2235,11 @@ export class CalendarSyncService {
     let eventSource = externalEvent;
     if (
       syncConnection.provider === SyncProvider.MICROSOFT &&
-      this.isMissingMicrosoftSubject(externalEvent) &&
+      this.needsMicrosoftEventDetails(externalEvent) &&
       externalEvent?.id
     ) {
       this.logger.warn(
-        `[updateLocalEventFromExternal] Missing subject for event ${externalEvent.id}; fetching full details`,
+        `[updateLocalEventFromExternal] Missing event details for event ${externalEvent.id}; fetching full details`,
       );
       const details = await this.fetchMicrosoftEventDetails(
         syncConnection,

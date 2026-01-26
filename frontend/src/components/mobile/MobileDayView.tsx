@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import type { Event } from '../../types/Event';
+import { getMeetingLinkFromEvent } from '../../utils/meetingLinks';
 
 interface MobileDayViewProps {
   date: Date;
@@ -128,38 +129,55 @@ export const MobileDayView: React.FC<MobileDayViewProps> = ({
 
               {/* Events */}
               <div className="ml-20 mr-2 mt-2 space-y-2">
-                {hourEvents.map((event) => (
-                  <div
-                    key={event.id}
-                    className="p-3 rounded-lg shadow-sm border-l-4 cursor-pointer active:scale-98 transition-transform"
-                    style={{
-                      borderLeftColor: event.color || event.calendar.color,
-                      backgroundColor: `${event.color || event.calendar.color}10`,
-                    }}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onEventClick(event);
-                    }}
-                  >
-                    <div className="font-semibold text-gray-900 text-sm">
-                      {event.title}
+                {hourEvents.map((event) => {
+                  const meetingLink = getMeetingLinkFromEvent(event);
+
+                  return (
+                    <div
+                      key={event.id}
+                      className="p-3 rounded-lg shadow-sm border-l-4 cursor-pointer active:scale-98 transition-transform"
+                      style={{
+                        borderLeftColor: event.color || event.calendar.color,
+                        backgroundColor: `${event.color || event.calendar.color}10`,
+                      }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onEventClick(event);
+                      }}
+                    >
+                      <div className="font-semibold text-gray-900 text-sm">
+                        {event.title}
+                      </div>
+                      {!event.isAllDay && event.startTime && event.endTime && (
+                        <div className="text-xs text-gray-600 mt-1">
+                          {event.startTime} - {event.endTime}
+                        </div>
+                      )}
+                      {event.location && (
+                        <div className="text-xs text-gray-500 mt-1 flex items-center">
+                          <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                          </svg>
+                          {event.location}
+                        </div>
+                      )}
+                      {meetingLink && (
+                        <button
+                          type="button"
+                          className="mt-1 inline-flex items-center rounded-full bg-white/80 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-gray-600"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            window.open(meetingLink, '_blank', 'noopener,noreferrer');
+                          }}
+                          aria-label={`Join ${event.title} meeting`}
+                        >
+                          Join
+                        </button>
+                      )}
                     </div>
-                    {!event.isAllDay && event.startTime && event.endTime && (
-                      <div className="text-xs text-gray-600 mt-1">
-                        {event.startTime} - {event.endTime}
-                      </div>
-                    )}
-                    {event.location && (
-                      <div className="text-xs text-gray-500 mt-1 flex items-center">
-                        <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                        </svg>
-                        {event.location}
-                      </div>
-                    )}
-                  </div>
-                ))}
+                  );
+                })}
               </div>
 
               {/* Empty state for tap to create */}

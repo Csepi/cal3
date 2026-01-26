@@ -12,6 +12,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import type { Event } from '../../../types/Event';
+import { getMeetingLinkFromEvent } from '../../../utils/meetingLinks';
 import { TouchableArea } from '../atoms/TouchableArea';
 import { Icon } from '../atoms/Icon';
 
@@ -212,6 +213,7 @@ export const MobileWeekView: React.FC<MobileWeekViewProps> = ({
                       const eventEnd = new Date(event.endDate);
                       const slotStart = new Date(day);
                       slotStart.setHours(hour, 0, 0, 0);
+                      const meetingLink = getMeetingLinkFromEvent(event);
 
                       // Calculate position within the hour slot
                       const startMinute = eventStart.getHours() === hour ? eventStart.getMinutes() : 0;
@@ -227,7 +229,7 @@ export const MobileWeekView: React.FC<MobileWeekViewProps> = ({
                             e.stopPropagation();
                             onEventClick(event);
                           }}
-                          className="absolute left-0 right-0 px-1 cursor-pointer"
+                          className="absolute left-0 right-0 px-1 cursor-pointer relative"
                           style={{
                             top: `${topOffset}px`,
                             height: `${Math.max(height, 20)}px`,
@@ -242,6 +244,19 @@ export const MobileWeekView: React.FC<MobileWeekViewProps> = ({
                             <div className="text-white text-xs opacity-75 truncate">
                               {formatTime(eventStart.getHours())}
                             </div>
+                          )}
+                          {meetingLink && (
+                            <button
+                              type="button"
+                              className="absolute bottom-0.5 right-1 inline-flex items-center rounded-full bg-white/80 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-gray-700"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                window.open(meetingLink, '_blank', 'noopener,noreferrer');
+                              }}
+                              aria-label={`Join ${event.title} meeting`}
+                            >
+                              Join
+                            </button>
                           )}
                         </div>
                       );

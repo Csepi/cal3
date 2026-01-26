@@ -1,5 +1,6 @@
 import React from 'react';
 import type { Event } from '../../types/Event';
+import { getMeetingLinkFromEvent } from '../../utils/meetingLinks';
 
 interface MonthViewProps {
   currentDate: Date;
@@ -202,6 +203,7 @@ const MonthView: React.FC<MonthViewProps> = ({
                     const eventColor = event.color || themeColor;
                     const calendarColor = event.calendar?.color || themeColor;
                     const hasGradient = event.color && event.calendar?.color && eventColor !== calendarColor;
+                    const meetingLink = getMeetingLinkFromEvent(event);
 
                     return (
                       <div
@@ -231,6 +233,19 @@ const MonthView: React.FC<MonthViewProps> = ({
                           <div className="opacity-75">
                             {event.startTime}
                           </div>
+                        )}
+                        {meetingLink && (
+                          <button
+                            type="button"
+                            className="mt-1 inline-flex items-center rounded-full bg-white/70 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-gray-700 hover:bg-white"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              window.open(meetingLink, '_blank', 'noopener,noreferrer');
+                            }}
+                            aria-label={`Join ${event.title} meeting`}
+                          >
+                            Join
+                          </button>
                         )}
                       </div>
                     );
@@ -297,7 +312,10 @@ const MonthView: React.FC<MonthViewProps> = ({
           <div className="flex-1 overflow-y-auto p-4">
             {selectedDateEvents.length > 0 || selectedDateReservations.length > 0 ? (
               <div className="space-y-3">
-                {selectedDateEvents.map(event => (
+                {selectedDateEvents.map(event => {
+                  const meetingLink = getMeetingLinkFromEvent(event);
+
+                  return (
                   <div
                     key={event.id}
                     className="bg-white rounded-lg border border-gray-200 p-3 cursor-pointer hover:shadow-lg transition-all duration-300 border-l-4 relative overflow-hidden"
@@ -316,10 +334,27 @@ const MonthView: React.FC<MonthViewProps> = ({
                           </span>
                         )}
                       </h4>
-                      {event.isAllDay && (
-                        <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full">
-                          All day
-                        </span>
+                      {(meetingLink || event.isAllDay) && (
+                        <div className="flex items-center gap-2">
+                          {meetingLink && (
+                            <button
+                              type="button"
+                              className="text-xs font-semibold uppercase tracking-wide bg-white/80 text-gray-700 px-2 py-1 rounded-full border border-white/60 hover:bg-white"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                window.open(meetingLink, '_blank', 'noopener,noreferrer');
+                              }}
+                              aria-label={`Join ${event.title} meeting`}
+                            >
+                              Join
+                            </button>
+                          )}
+                          {event.isAllDay && (
+                            <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full">
+                              All day
+                            </span>
+                          )}
+                        </div>
                       )}
                     </div>
 
@@ -357,7 +392,8 @@ const MonthView: React.FC<MonthViewProps> = ({
                       </span>
                     </div>
                   </div>
-                ))}
+                );
+                })}
 
                 {/* Reservations */}
                 {selectedDateReservations.map(reservation => {

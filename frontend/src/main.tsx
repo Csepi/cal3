@@ -1,7 +1,9 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
+import { QueryClientProvider } from '@tanstack/react-query';
 import { bootstrapThemeAssets } from './services/themeAssets';
 import { installClientLogger, clientLogger } from './utils/clientLogger';
+import queryClient from './services/queryClient';
 import './index.css';
 import './styles/animations.css';
 import './styles/mobile.css';
@@ -17,6 +19,8 @@ bootstrapThemeAssets();
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <App />
+    <QueryClientProvider client={queryClient}>
+      <App />
+    </QueryClientProvider>
   </StrictMode>,
 );

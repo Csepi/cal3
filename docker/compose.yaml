@@ -4,7 +4,7 @@ x-backend-common: &backend-common
     dockerfile: docker/backend/Dockerfile
     target: production
   env_file:
-    - ./docker/.env.local
+    - ./.env.local
   environment:
     NODE_ENV: production
   ports:
@@ -20,7 +20,7 @@ x-frontend-common: &frontend-common
     dockerfile: docker/frontend/Dockerfile
     target: production
   env_file:
-    - ./docker/.env.local
+    - ./.env.local
   ports:
     - "${FRONTEND_HOST_PORT:-8080}:${FRONTEND_PORT:-80}"
   networks:

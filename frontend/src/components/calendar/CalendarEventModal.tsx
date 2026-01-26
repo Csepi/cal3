@@ -573,6 +573,12 @@ export const CalendarEventModal: React.FC<CalendarEventModalProps> = ({
           </div>
         </div>
       </div>
+
+      {editingEvent && (
+        <div className="pt-3 text-center text-[11px] text-gray-400">
+          Event ID: {editingEvent.id}
+        </div>
+      )}
     </SimpleModal>
   );
 };

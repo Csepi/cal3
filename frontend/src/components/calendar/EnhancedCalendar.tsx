@@ -11,11 +11,13 @@
  * - Modular and maintainable code structure
  */
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { Event, CreateEventRequest, UpdateEventRequest } from '../../types/Event';
 import type { Calendar as CalendarType } from '../../types/Calendar';
+import type { CalendarGroupWithCalendars } from '../../types/CalendarGroup';
 import { apiService } from '../../services/api';
-import { getThemeConfig, type ThemeConfig, THEME_COLORS, LOADING_MESSAGES } from '../../constants';
+import { getThemeConfig, type ThemeConfig, LOADING_MESSAGES } from '../../constants';
 import { CalendarEventModal } from './CalendarEventModal';
 import { CalendarManager } from './CalendarManager';
 import { ConfirmationDialog } from '../dialogs';
@@ -28,24 +30,10 @@ import { MobileMonthView } from '../mobile/calendar/MobileMonthView';
 import { MobileWeekView } from '../mobile/calendar/MobileWeekView';
 import { MobileCalendarHeader } from '../mobile/calendar/MobileCalendarHeader';
 import { DayDetailSheet } from '../mobile/calendar/DayDetailSheet';
+import { useCalendarData, calendarQueryKeys } from '../../hooks/useCalendarData';
+import type { Organization } from '../../hooks/useCalendarData';
 import { useScreenSize } from '../../hooks/useScreenSize';
 import { useSwipeGesture } from '../../hooks/useSwipeGesture';
-
-// Types for enhanced calendar
-interface ResourceType {
-  id: number;
-  name: string;
-  organisationId: number;
-  color: string;
-}
-
-interface Organization {
-  id: number;
-  name: string;
-  role: string;
-  color: string;
-  resourceTypes: ResourceType[];
-}
 
 interface CalendarState {
   currentDate: Date;
@@ -53,13 +41,11 @@ interface CalendarState {
   currentView: 'month' | 'week' | 'timeline';
   events: Event[];
   calendars: CalendarType[];
-  calendarGroups: import('../../types/CalendarGroup').CalendarGroupWithCalendars[];
+  calendarGroups: CalendarGroupWithCalendars[];
   selectedCalendars: number[];
   reservations: any[];
   organizations: Organization[];
   selectedResourceTypes: number[]; // Array of selected resource type IDs
-  loading: boolean;
-  error: string | null;
 }
 
 interface CalendarActions {
@@ -74,7 +60,6 @@ interface CalendarActions {
   updateResourceTypeColor: (resourceTypeId: number, color: string) => Promise<void>;
   createEvent: (date?: Date) => void;
   editEvent: (event: Event) => void;
-  deleteEvent: (event: Event) => void;
   refreshData: () => Promise<void>;
 }
 
@@ -101,20 +86,61 @@ const sortCalendarsByRank = (calendars: CalendarType[]): CalendarType[] =>
 
 // Calendar hook for state management
 function useCalendarState(themeColor: string, initialView: CalendarState['currentView'] = 'month') {
-  const [state, setState] = useState<CalendarState>({
-    currentDate: new Date(),
-    selectedDate: null,
-    currentView: initialView,
-    events: [],
-    calendars: [],
-    calendarGroups: [],
-    selectedCalendars: [],
-    reservations: [],
-    organizations: [],
-    selectedResourceTypes: [],
-    loading: true,
-    error: null,
-  });
+  const queryClient = useQueryClient();
+  const {
+    eventsQuery,
+    calendarsQuery,
+    calendarGroupsQuery,
+    orgsQuery,
+    isLoading,
+    isFetching,
+    error,
+  } = useCalendarData();
+
+  const calendars = useMemo(
+    () => sortCalendarsByRank(calendarsQuery.data ?? []),
+    [calendarsQuery.data],
+  );
+  const events = eventsQuery.data ?? [];
+  const calendarGroups = calendarGroupsQuery.data ?? [];
+  const organizations = orgsQuery.data?.organizations ?? [];
+  const reservations = orgsQuery.data?.reservations ?? [];
+
+  const [currentDate, setCurrentDate] = useState(() => new Date());
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [currentView, setCurrentView] =
+    useState<CalendarState['currentView']>(initialView);
+  const [selectedCalendars, setSelectedCalendars] = useState<number[]>([]);
+  const [selectedResourceTypes, setSelectedResourceTypes] = useState<number[]>([]);
+
+  const previousCalendarIdsRef = useRef<number[]>([]);
+  const hasInitializedSelectionRef = useRef(false);
+
+  useEffect(() => {
+    if (calendars.length === 0) {
+      previousCalendarIdsRef.current = [];
+      return;
+    }
+
+    const nextIds = calendars.map((calendar) => calendar.id);
+    setSelectedCalendars((prev) => {
+      if (!hasInitializedSelectionRef.current) {
+        hasInitializedSelectionRef.current = true;
+        return nextIds;
+      }
+
+      const prevIds = previousCalendarIdsRef.current;
+      const hadAllSelected =
+        prevIds.length > 0 &&
+        prevIds.length === prev.length &&
+        prevIds.every((id) => prev.includes(id));
+      const filtered = prev.filter((id) => nextIds.includes(id));
+
+      return hadAllSelected ? nextIds : filtered;
+    });
+
+    previousCalendarIdsRef.current = nextIds;
+  }, [calendars]);
 
   // Modal states
   const [modals, setModals] = useState({
@@ -134,259 +160,159 @@ function useCalendarState(themeColor: string, initialView: CalendarState['curren
     confirmMessage: '',
   });
 
-  // Error handling
-  const [errors, setErrors] = useState({
-    event: null as string | null,
-    calendar: null as string | null,
+  const [errors, setErrors] = useState<{
+    event: string | null;
+    calendar: string | null;
+  }>({
+    event: null,
+    calendar: null,
   });
 
-  // Theme configuration
   const themeConfig = useMemo(() => getThemeConfig(themeColor), [themeColor]);
 
-  // Load data from API
-  const loadData = useCallback(async () => {
-    try {
-      setState(prev => ({ ...prev, loading: true, error: null }));
+  const refreshData = useCallback(async () => {
+    await queryClient.invalidateQueries({ queryKey: calendarQueryKeys.root });
+  }, [queryClient]);
 
-      const [eventsData, calendarsData, calendarGroupsData] = await Promise.all([
-        apiService.getAllEvents(),
-        apiService.getAllCalendars(),
-        apiService.getCalendarGroups().catch(() => []),
-      ]);
-
-      const sortedCalendars = sortCalendarsByRank(calendarsData);
-      const selectedCalendars = sortedCalendars.map(cal => cal.id);
-
-      // Fetch user's accessible organizations with resource types
-      let organizations: Organization[] = [];
-      let reservations: any[] = [];
-      try {
-        // Get organizations where user has access
-        const orgsData = await apiService.get('/user-permissions/accessible-organizations');
-
-        // For each organization, fetch its resource types
-        const orgsWithResourceTypes = await Promise.all(
-          orgsData.map(async (org: any) => {
-            try {
-              const resourceTypes = await apiService.get(`/resource-types?organisationId=${org.id}`);
-              return {
-                id: org.id,
-                name: org.name,
-                role: org.role || 'USER',
-                color: org.color || '#000000', // Include organization color
-                resourceTypes: resourceTypes || []
-              };
-            } catch (err) {
-              console.error(`Error loading resource types for org ${org.id}:`, err);
-              return {
-                id: org.id,
-                name: org.name,
-                role: org.role || 'USER',
-                color: org.color || '#000000', // Include organization color
-                resourceTypes: []
-              };
-            }
-          })
-        );
-
-        organizations = orgsWithResourceTypes;
-
-        // Fetch all reservations (will be filtered by selected resource types in the UI)
-        reservations = await apiService.get('/reservations').catch(() => []);
-      } catch (err) {
-        console.error('Error loading organizations/reservations:', err);
-        // Non-critical error, continue with empty data
-      }
-
-      setState(prev => ({
-        ...prev,
-        events: eventsData,
-        calendars: sortedCalendars,
-        calendarGroups: calendarGroupsData,
-        selectedCalendars,
-        organizations,
-        reservations,
-        loading: false,
-      }));
-    } catch (error) {
-      console.error('Error loading calendar data:', error);
-      setState(prev => ({
-        ...prev,
-        error: error instanceof Error ? error.message : 'Failed to load calendar data',
-        loading: false,
-      }));
-    }
-  }, []);
-
-  const refreshEvents = useCallback(async () => {
-    try {
-      const eventsData = await apiService.getAllEvents();
-      setState(prev => ({ ...prev, events: eventsData }));
-    } catch (error) {
-      console.error('Error refreshing events:', error);
-    }
-  }, []);
-
-  // Calendar actions
   const actions: CalendarActions = useMemo(() => ({
-    setCurrentDate: (date: Date) => {
-      setState(prev => ({ ...prev, currentDate: date }));
-    },
-
-    setSelectedDate: (date: Date | null) => {
-      setState(prev => ({ ...prev, selectedDate: date }));
-    },
-
-    setCurrentView: (view: 'month' | 'week' | 'timeline') => {
-      setState(prev => ({ ...prev, currentView: view }));
-    },
-
+    setCurrentDate,
+    setSelectedDate,
+    setCurrentView,
     navigateCalendar: (direction: 'prev' | 'next' | 'today') => {
-      setState(prev => {
+      setCurrentDate((prev) => {
         let newDate: Date;
 
         if (direction === 'today') {
           newDate = new Date();
         } else {
           const increment = direction === 'next' ? 1 : -1;
-          newDate = new Date(prev.currentDate);
+          newDate = new Date(prev);
 
-          if (prev.currentView === 'month') {
+          if (currentView === 'month') {
             newDate.setMonth(newDate.getMonth() + increment);
-          } else if (prev.currentView === 'week') {
-            newDate.setDate(newDate.getDate() + (increment * 7));
+          } else if (currentView === 'week') {
+            newDate.setDate(newDate.getDate() + increment * 7);
           } else {
             newDate.setDate(newDate.getDate() + increment);
           }
         }
 
-        return { ...prev, currentDate: newDate };
+        return newDate;
       });
     },
 
     toggleCalendar: (calendarId: number) => {
-      setState(prev => ({
-        ...prev,
-        selectedCalendars: prev.selectedCalendars.includes(calendarId)
-          ? prev.selectedCalendars.filter(id => id !== calendarId)
-          : [...prev.selectedCalendars, calendarId]
-      }));
+      setSelectedCalendars((prev) =>
+        prev.includes(calendarId)
+          ? prev.filter((id) => id !== calendarId)
+          : [...prev, calendarId],
+      );
     },
 
     toggleResourceType: (resourceTypeId: number) => {
-      setState(prev => ({
-        ...prev,
-        selectedResourceTypes: prev.selectedResourceTypes.includes(resourceTypeId)
-          ? prev.selectedResourceTypes.filter(id => id !== resourceTypeId)
-          : [...prev.selectedResourceTypes, resourceTypeId]
-      }));
+      setSelectedResourceTypes((prev) =>
+        prev.includes(resourceTypeId)
+          ? prev.filter((id) => id !== resourceTypeId)
+          : [...prev, resourceTypeId],
+      );
     },
 
     toggleOrganization: (org: Organization) => {
-      setState(prev => {
-        const orgResourceTypeIds = org.resourceTypes.map(rt => rt.id);
-        const allSelected = orgResourceTypeIds.every(id => prev.selectedResourceTypes.includes(id));
+      setSelectedResourceTypes((prev) => {
+        const orgResourceTypeIds = org.resourceTypes.map((rt) => rt.id);
+        const allSelected = orgResourceTypeIds.every((id) => prev.includes(id));
 
-        return {
-          ...prev,
-          selectedResourceTypes: allSelected
-            ? prev.selectedResourceTypes.filter(id => !orgResourceTypeIds.includes(id))
-            : [...new Set([...prev.selectedResourceTypes, ...orgResourceTypeIds])]
-        };
+        return allSelected
+          ? prev.filter((id) => !orgResourceTypeIds.includes(id))
+          : [...new Set([...prev, ...orgResourceTypeIds])];
       });
     },
 
-    updateOrganizationColor: async (orgId: number, color: string, cascadeToResourceTypes: boolean) => {
+    updateOrganizationColor: async (
+      orgId: number,
+      color: string,
+      cascadeToResourceTypes: boolean,
+    ) => {
       try {
-        await apiService.patch(`/organisations/${orgId}/color`, { color, cascadeToResourceTypes });
-        await loadData(); // Reload data to get updated colors
+        await apiService.patch(`/organisations/${orgId}/color`, {
+          color,
+          cascadeToResourceTypes,
+        });
+        await queryClient.invalidateQueries({
+          queryKey: calendarQueryKeys.orgsAndReservations,
+        });
       } catch (error) {
         console.error('Error updating organization color:', error);
-        setErrors(prev => ({
-          ...prev,
-          general: error instanceof Error ? error.message : 'Failed to update organization color'
-        }));
       }
     },
 
     updateResourceTypeColor: async (resourceTypeId: number, color: string) => {
       try {
         await apiService.patch(`/resource-types/${resourceTypeId}/color`, { color });
-        await loadData(); // Reload data to get updated colors
+        await queryClient.invalidateQueries({
+          queryKey: calendarQueryKeys.orgsAndReservations,
+        });
       } catch (error) {
         console.error('Error updating resource type color:', error);
-        setErrors(prev => ({
-          ...prev,
-          general: error instanceof Error ? error.message : 'Failed to update resource type color'
-        }));
       }
     },
 
     createEvent: (date?: Date) => {
-      setModalData(prev => ({
+      setModalData((prev) => ({
         ...prev,
         editingEvent: null,
       }));
-      setErrors(prev => ({ ...prev, event: null }));
+      setErrors((prev) => ({ ...prev, event: null }));
 
       if (date) {
-        actions.setSelectedDate(date);
+        setSelectedDate(date);
       }
 
-      setModals(prev => {
-        return { ...prev, eventModal: true };
-      });
+      setModals((prev) => ({ ...prev, eventModal: true }));
     },
 
     editEvent: (event: Event) => {
-      setModalData(prev => ({
+      setModalData((prev) => ({
         ...prev,
         editingEvent: event,
       }));
-      setErrors(prev => ({ ...prev, event: null }));
-      setModals(prev => ({ ...prev, eventModal: true }));
+      setErrors((prev) => ({ ...prev, event: null }));
+      setModals((prev) => ({ ...prev, eventModal: true }));
     },
 
-    deleteEvent: (event: Event) => {
-      setModalData(prev => ({
-        ...prev,
-        confirmAction: async () => {
-          try {
-            await apiService.deleteEvent(event.id);
-            await loadData();
-            setModals(prev => ({ ...prev, confirmDialog: false }));
-          } catch (error) {
-            console.error('Error deleting event:', error);
-            setErrors(prev => ({
-              ...prev,
-              event: error instanceof Error ? error.message : 'Failed to delete event'
-            }));
-          }
-        },
-        confirmTitle: 'Delete Event',
-        confirmMessage: `Are you sure you want to delete "${event.title}"?`,
-      }));
-      setModals(prev => ({ ...prev, confirmDialog: true }));
-    },
-    refreshData: loadData,
-  }), [loadData]);
+    refreshData,
+  }), [currentView, queryClient, refreshData]);
 
-  // Initialize
-  useEffect(() => {
-    loadData();
-  }, [loadData]);
+  const state = useMemo<CalendarState>(
+    () => ({
+      currentDate,
+      selectedDate,
+      currentView,
+      events,
+      calendars,
+      calendarGroups,
+      selectedCalendars,
+      reservations,
+      organizations,
+      selectedResourceTypes,
+    }),
+    [
+      currentDate,
+      selectedDate,
+      currentView,
+      events,
+      calendars,
+      calendarGroups,
+      selectedCalendars,
+      reservations,
+      organizations,
+      selectedResourceTypes,
+    ],
+  );
 
-  useEffect(() => {
-    const intervalMs = 30000;
-    const intervalId = setInterval(() => {
-      if (typeof document !== 'undefined' && document.hidden) {
-        return;
-      }
-      refreshEvents();
-    }, intervalMs);
-
-    return () => clearInterval(intervalId);
-  }, [refreshEvents]);
+  const isInitialLoading = isLoading && events.length === 0 && calendars.length === 0;
+  const loadError =
+    error instanceof Error ? error.message : error ? String(error) : null;
 
   return {
     state,
@@ -398,7 +324,9 @@ function useCalendarState(themeColor: string, initialView: CalendarState['curren
     errors,
     setErrors,
     themeConfig,
-    loadData,
+    isInitialLoading,
+    isRefreshing: isFetching,
+    loadError,
   };
 }
 
@@ -627,7 +555,10 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
 
   // Filter events based on selected calendars
   const filteredEvents = useMemo(() => {
-    const calendarEvents = events.filter(event => selectedCalendars.includes(event.calendar.id));
+    const calendarEvents = events.filter((event) => {
+      const calendarId = event.calendar?.id ?? event.calendarId;
+      return calendarId ? selectedCalendars.includes(calendarId) : false;
+    });
 
     // Convert filtered reservations to event format
     const reservationEvents = filteredReservations
@@ -1485,85 +1416,254 @@ export const EnhancedCalendar: React.FC<EnhancedCalendarProps> = ({
     errors,
     setErrors,
     themeConfig,
-    loadData,
+    isInitialLoading,
+    isRefreshing,
+    loadError,
   } = useCalendarState(themeColor, isMobile ? 'timeline' : 'month');
   const resolvedTimezone = useMemo(
     () => timezone || Intl.DateTimeFormat().resolvedOptions().timeZone,
     [timezone],
   );
 
-  // Event handlers
-  const handleSaveEvent = useCallback(async (eventData: CreateEventRequest | UpdateEventRequest) => {
-    try {
-      setErrors(prev => ({ ...prev, event: null }));
+  const queryClient = useQueryClient();
 
-      if (modalData.editingEvent) {
-        await apiService.updateEvent(modalData.editingEvent.id, eventData as UpdateEventRequest);
-      } else {
-        await apiService.createEvent(eventData as CreateEventRequest);
+  const resolveEventCalendar = useCallback(
+    (event: Event, fallbackCalendarId?: number, previousEvent?: Event) => {
+      if (event.calendar) return event;
+      const calendarId =
+        event.calendarId ??
+        fallbackCalendarId ??
+        previousEvent?.calendarId ??
+        previousEvent?.calendar?.id;
+      if (!calendarId) return event;
+      if (previousEvent?.calendar) {
+        return { ...event, calendar: previousEvent.calendar, calendarId };
       }
+      const calendars = queryClient.getQueryData<CalendarType[]>(
+        calendarQueryKeys.calendars,
+      );
+      const calendar = calendars?.find((item) => item.id === calendarId);
+      if (!calendar) {
+        return { ...event, calendarId };
+      }
+      return {
+        ...event,
+        calendar: calendar as Event['calendar'],
+        calendarId,
+      };
+    },
+    [queryClient],
+  );
 
-      await loadData();
-      setModals(prev => ({ ...prev, eventModal: false }));
-    } catch (error) {
-      console.error('Error saving event:', error);
-      setErrors(prev => ({
-        ...prev,
-        event: error instanceof Error ? error.message : 'Failed to save event'
-      }));
-      throw error; // Re-throw to prevent modal from closing
-    }
-  }, [modalData.editingEvent, loadData, setErrors, setModals]);
+  const createEventMutation = useMutation<Event, Error, CreateEventRequest>({
+    mutationFn: (eventData: CreateEventRequest) =>
+      apiService.createEvent(eventData),
+    onSuccess: (createdEvent, variables) => {
+      const resolvedEvent = resolveEventCalendar(
+        createdEvent,
+        variables.calendarId,
+      );
+      queryClient.setQueryData<Event[]>(
+        calendarQueryKeys.events,
+        (previous = []) => [...previous, resolvedEvent],
+      );
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: calendarQueryKeys.events });
+    },
+  });
 
-  const handleDeleteEvent = useCallback(async (eventId: number) => {
-    try {
-      await apiService.deleteEvent(eventId);
-      await loadData();
-      setModals(prev => ({ ...prev, eventModal: false }));
-    } catch (error) {
-      console.error('Error deleting event:', error);
-      setErrors(prev => ({
-        ...prev,
-        event: error instanceof Error ? error.message : 'Failed to delete event'
-      }));
-      throw error;
-    }
-  }, [loadData, setErrors, setModals]);
+  const updateEventMutation = useMutation<
+    Event,
+    Error,
+    { eventId: number; eventData: UpdateEventRequest }
+  >({
+    mutationFn: ({
+      eventId,
+      eventData,
+    }: {
+      eventId: number;
+      eventData: UpdateEventRequest;
+    }) => apiService.updateEvent(eventId, eventData),
+    onSuccess: (updatedEvent, variables) => {
+      queryClient.setQueryData<Event[]>(
+        calendarQueryKeys.events,
+        (previous = []) => {
+          const existingEvent = previous.find(
+            (event) => event.id === updatedEvent.id,
+          );
+          const resolvedEvent = resolveEventCalendar(
+            updatedEvent,
+            variables.eventData.calendarId,
+            existingEvent,
+          );
+          return previous.map((event) =>
+            event.id === updatedEvent.id ? resolvedEvent : event,
+          );
+        },
+      );
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: calendarQueryKeys.events });
+    },
+  });
+
+  const deleteEventMutation = useMutation<
+    void,
+    Error,
+    number,
+    { previous?: Event[] }
+  >({
+    mutationFn: (eventId: number) => apiService.deleteEvent(eventId),
+    onMutate: async (eventId: number) => {
+      await queryClient.cancelQueries({ queryKey: calendarQueryKeys.events });
+      const previous = queryClient.getQueryData<Event[]>(calendarQueryKeys.events);
+      queryClient.setQueryData<Event[]>(
+        calendarQueryKeys.events,
+        (current = []) => current.filter((event) => event.id !== eventId),
+      );
+      return { previous };
+    },
+    onError: (_error, _eventId, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(calendarQueryKeys.events, context.previous);
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: calendarQueryKeys.events });
+    },
+  });
+
+  const deleteCalendarMutation = useMutation<
+    void,
+    Error,
+    number,
+    { previous?: CalendarType[] }
+  >({
+    mutationFn: (calendarId: number) => apiService.deleteCalendar(calendarId),
+    onMutate: async (calendarId: number) => {
+      await queryClient.cancelQueries({ queryKey: calendarQueryKeys.calendars });
+      const previous = queryClient.getQueryData<CalendarType[]>(
+        calendarQueryKeys.calendars,
+      );
+      queryClient.setQueryData<CalendarType[]>(
+        calendarQueryKeys.calendars,
+        (current = []) => current.filter((calendar) => calendar.id !== calendarId),
+      );
+      return { previous };
+    },
+    onError: (_error, _calendarId, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(calendarQueryKeys.calendars, context.previous);
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: calendarQueryKeys.calendars });
+      queryClient.invalidateQueries({ queryKey: calendarQueryKeys.calendarGroups });
+      queryClient.invalidateQueries({ queryKey: calendarQueryKeys.events });
+    },
+  });
+
+  // Event handlers
+  const handleSaveEvent = useCallback(
+    async (eventData: CreateEventRequest | UpdateEventRequest) => {
+      try {
+        setErrors((prev) => ({ ...prev, event: null }));
+
+        if (modalData.editingEvent) {
+          await updateEventMutation.mutateAsync({
+            eventId: modalData.editingEvent.id,
+            eventData: eventData as UpdateEventRequest,
+          });
+        } else {
+          await createEventMutation.mutateAsync(eventData as CreateEventRequest);
+        }
+
+        setModals((prev) => ({ ...prev, eventModal: false }));
+      } catch (error) {
+        console.error('Error saving event:', error);
+        setErrors((prev) => ({
+          ...prev,
+          event: error instanceof Error ? error.message : 'Failed to save event',
+        }));
+        throw error; // Re-throw to prevent modal from closing
+      }
+    },
+    [
+      modalData.editingEvent,
+      createEventMutation,
+      updateEventMutation,
+      setErrors,
+      setModals,
+    ],
+  );
+
+  const handleDeleteEvent = useCallback(
+    async (eventId: number) => {
+      try {
+        await deleteEventMutation.mutateAsync(eventId);
+        setModals((prev) => ({ ...prev, eventModal: false }));
+      } catch (error) {
+        console.error('Error deleting event:', error);
+        setErrors((prev) => ({
+          ...prev,
+          event: error instanceof Error ? error.message : 'Failed to delete event',
+        }));
+        throw error;
+      }
+    },
+    [deleteEventMutation, setErrors, setModals],
+  );
 
   const handleCalendarChange = useCallback(async () => {
     try {
-      await loadData();
-      setModals(prev => ({ ...prev, calendarModal: false }));
+      await queryClient.invalidateQueries({
+        queryKey: calendarQueryKeys.calendars,
+      });
+      await queryClient.invalidateQueries({
+        queryKey: calendarQueryKeys.calendarGroups,
+      });
+      await queryClient.invalidateQueries({
+        queryKey: calendarQueryKeys.events,
+      });
+      setModals((prev) => ({ ...prev, calendarModal: false }));
     } catch (error) {
       console.error('Error refreshing calendar data:', error);
-      setErrors(prev => ({
+      setErrors((prev) => ({
         ...prev,
-        calendar: error instanceof Error ? error.message : 'Failed to refresh calendar data'
+        calendar:
+          error instanceof Error ? error.message : 'Failed to refresh calendar data',
       }));
     }
-  }, [loadData, setErrors, setModals]);
+  }, [queryClient, setErrors, setModals]);
 
   const handleEditCalendar = useCallback((calendar: CalendarType) => {
     setModalData(prev => ({ ...prev, editingCalendar: calendar }));
     setModals(prev => ({ ...prev, calendarModal: true }));
   }, [setModalData, setModals]);
 
-  const handleDeleteCalendar = useCallback(async (calendar: CalendarType) => {
-    if (!confirm(`Are you sure you want to delete "${calendar.name}"? This will also delete all events in this calendar.`)) {
-      return;
-    }
+  const handleDeleteCalendar = useCallback(
+    async (calendar: CalendarType) => {
+      if (
+        !confirm(
+          `Are you sure you want to delete "${calendar.name}"? This will also delete all events in this calendar.`,
+        )
+      ) {
+        return;
+      }
 
-    try {
-      await apiService.deleteCalendar(calendar.id);
-      await loadData();
-    } catch (error) {
-      console.error('Error deleting calendar:', error);
-      alert(error instanceof Error ? error.message : 'Failed to delete calendar');
-    }
-  }, [loadData]);
+      try {
+        await deleteCalendarMutation.mutateAsync(calendar.id);
+      } catch (error) {
+        console.error('Error deleting calendar:', error);
+        alert(error instanceof Error ? error.message : 'Failed to delete calendar');
+      }
+    },
+    [deleteCalendarMutation],
+  );
 
   // Loading state
-  if (state.loading) {
+  if (isInitialLoading) {
     return (
       <div className={`${className} flex items-center justify-center min-h-96 bg-white rounded-3xl shadow-2xl`}>
         <div className="text-center">
@@ -1582,7 +1682,7 @@ export const EnhancedCalendar: React.FC<EnhancedCalendarProps> = ({
   }
 
   // Error state
-  if (state.error) {
+  if (loadError) {
     return (
       <div className={`${className} flex items-center justify-center min-h-96 bg-white rounded-3xl shadow-2xl`}>
         <div className="text-center max-w-md">
@@ -1592,10 +1692,10 @@ export const EnhancedCalendar: React.FC<EnhancedCalendarProps> = ({
             </svg>
           </div>
           <h3 className="text-lg font-medium text-gray-900 mb-2">Error Loading Calendar</h3>
-          <p className="text-sm text-gray-600 mb-4">{state.error}</p>
+          <p className="text-sm text-gray-600 mb-4">{loadError}</p>
           <Button
             variant="primary"
-            onClick={loadData}
+            onClick={actions.refreshData}
             themeColor={themeColor}
           >
             Try Again
@@ -1606,7 +1706,12 @@ export const EnhancedCalendar: React.FC<EnhancedCalendarProps> = ({
   }
 
   return (
-    <div className={`bg-white rounded-3xl shadow-2xl overflow-hidden ${className}`}>
+    <div className={`bg-white rounded-3xl shadow-2xl overflow-hidden relative ${className}`}>
+      {isRefreshing && !isInitialLoading && (
+        <div className="pointer-events-none absolute right-6 top-4 text-[10px] uppercase tracking-[0.3em] text-slate-400">
+          Syncing
+        </div>
+      )}
       {/* Header - Conditional Mobile/Desktop */}
       {isMobile ? (
         <MobileCalendarHeader
@@ -1728,6 +1833,11 @@ export const EnhancedCalendar: React.FC<EnhancedCalendarProps> = ({
         themeColor={themeColor}
         timeFormat={timeFormat}
         error={errors.event}
+        loading={
+          createEventMutation.isPending ||
+          updateEventMutation.isPending ||
+          deleteEventMutation.isPending
+        }
       />
 
       <CalendarManager

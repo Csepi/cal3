@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import type { Event } from '../../types/Event';
+import { getMeetingLinkFromEvent } from '../../utils/meetingLinks';
 
 interface WeekViewProps {
   currentDate: Date;
@@ -437,6 +438,7 @@ const WeekView: React.FC<WeekViewProps> = ({
                       const eventColor = event.color || themeColor;
                       const calendarColor = event.calendar?.color || themeColor;
                       const hasGradient = event.color && event.calendar?.color && eventColor !== calendarColor;
+                      const meetingLink = getMeetingLinkFromEvent(event);
 
                       // Calculate position for overlapping events
                       const eventWidth = eventsStartingHere.length > 1 ? `${100 / eventsStartingHere.length}%` : '100%';
@@ -479,6 +481,20 @@ const WeekView: React.FC<WeekViewProps> = ({
                                 )}
                               </div>
                             </div>
+
+                            {meetingLink && (
+                              <button
+                                type="button"
+                                className="mb-1 inline-flex items-center rounded-full bg-white/80 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-gray-700 hover:bg-white"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  window.open(meetingLink, '_blank', 'noopener,noreferrer');
+                                }}
+                                aria-label={`Join ${event.title} meeting`}
+                              >
+                                Join
+                              </button>
+                            )}
 
                             {/* Time display for non-all-day events */}
                             {!event.isAllDay && event.startTime && duration < 3 && (

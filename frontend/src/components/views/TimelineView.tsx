@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import type { Event } from '../../types/Event';
+import { getMeetingLinkFromEvent } from '../../utils/meetingLinks';
 
 interface TimelineViewProps {
   currentDate: Date;
@@ -266,6 +267,7 @@ const TimelineView: React.FC<TimelineViewProps> = ({
       .sort(compareByStartThenRank);
     return upcoming[0] ?? null;
   }, [normalizedEvents, now]);
+  const focusMeetingLink = getMeetingLinkFromEvent(focusEvent);
 
   useEffect(() => {
     if (!focusEventId) return;
@@ -669,6 +671,15 @@ const TimelineView: React.FC<TimelineViewProps> = ({
                 timeZone: resolvedTimezone,
               }).format(currentDate)}
             </p>
+            {focusMeetingLink && (
+              <button
+                type="button"
+                onClick={() => window.open(focusMeetingLink, '_blank', 'noopener,noreferrer')}
+                className="inline-flex items-center justify-center px-3 py-2 text-sm font-semibold bg-white/90 text-gray-900 rounded-xl shadow-md hover:shadow-lg transition-all"
+              >
+                Join meeting
+              </button>
+            )}
             {onCreateEvent && (
               <button
                 onClick={handleLogCurrentEvent}
@@ -903,11 +914,20 @@ const TimelineView: React.FC<TimelineViewProps> = ({
                     const width = `calc((100% - ${totalGap}px) / ${block.columnCount})`;
                     const left = `calc(${block.column} * ((100% - ${totalGap}px) / ${block.columnCount}) + ${block.column * eventColumnGap}px)`;
                     const isCompact = block.height < (isMobile ? 52 : 64);
+                    const meetingLink = getMeetingLinkFromEvent(item);
 
                     return (
-                      <button
+                      <div
                         key={item.id}
                         onClick={() => onEventClick(item)}
+                        onKeyDown={(event) => {
+                          if (event.key === 'Enter' || event.key === ' ') {
+                            event.preventDefault();
+                            onEventClick(item);
+                          }
+                        }}
+                        role="button"
+                        tabIndex={0}
                         title={`${item.title} - ${formatTimeRange(
                           item.start,
                           item.end,
@@ -915,7 +935,7 @@ const TimelineView: React.FC<TimelineViewProps> = ({
                           resolvedTimezone,
                           item.isAllDay,
                         )}`}
-                        className={`absolute rounded-2xl border border-white/60 px-3 py-2 text-left transition-all duration-200 overflow-hidden ${
+                        className={`absolute cursor-pointer rounded-2xl border border-white/60 px-3 py-2 text-left transition-all duration-200 overflow-hidden ${
                           isLive
                             ? 'ring-2 ring-offset-2'
                             : 'hover:shadow-md hover:-translate-y-0.5'
@@ -958,17 +978,32 @@ const TimelineView: React.FC<TimelineViewProps> = ({
                               </p>
                             )}
                           </div>
-                          <span
-                            className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${
-                              isLive
-                                ? 'bg-red-100 text-red-700'
-                                : 'bg-gray-100 text-gray-700'
-                            }`}
-                          >
-                            {statusLabel}
-                          </span>
+                          <div className="flex flex-col items-end gap-1">
+                            <span
+                              className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${
+                                isLive
+                                  ? 'bg-red-100 text-red-700'
+                                  : 'bg-gray-100 text-gray-700'
+                              }`}
+                            >
+                              {statusLabel}
+                            </span>
+                            {meetingLink && (
+                              <button
+                                type="button"
+                                className="text-[10px] px-2 py-0.5 rounded-full font-semibold bg-white/80 text-gray-700 hover:bg-white"
+                                onClick={(event) => {
+                                  event.stopPropagation();
+                                  window.open(meetingLink, '_blank', 'noopener,noreferrer');
+                                }}
+                                aria-label={`Join ${item.title} meeting`}
+                              >
+                                Join
+                              </button>
+                            )}
+                          </div>
                         </div>
-                      </button>
+                      </div>
                     );
                   })}
                 </div>

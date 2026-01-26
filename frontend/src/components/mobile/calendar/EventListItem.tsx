@@ -11,6 +11,7 @@
 
 import React from 'react';
 import type { Event } from '../../../types/Event';
+import { getMeetingLinkFromEvent } from '../../../utils/meetingLinks';
 import { TouchableArea } from '../atoms/TouchableArea';
 import { Icon } from '../atoms/Icon';
 
@@ -28,6 +29,7 @@ export const EventListItem: React.FC<EventListItemProps> = ({
   compact = false,
 }) => {
   const eventColor = event.color || event.calendar.color || themeColor;
+  const meetingLink = getMeetingLinkFromEvent(event);
 
   const formatTime = (time: string) => {
     if (!time) return '';
@@ -89,6 +91,20 @@ export const EventListItem: React.FC<EventListItemProps> = ({
               <Icon icon="📍" size="xs" />
               <span className="truncate">{event.location}</span>
             </div>
+          )}
+
+          {meetingLink && (
+            <button
+              type="button"
+              className="mt-1 inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-gray-600"
+              onClick={(e) => {
+                e.stopPropagation();
+                window.open(meetingLink, '_blank', 'noopener,noreferrer');
+              }}
+              aria-label={`Join ${event.title} meeting`}
+            >
+              Join
+            </button>
           )}
 
           {/* Calendar Name */}
