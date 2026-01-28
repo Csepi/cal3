@@ -1,4 +1,3 @@
-import React from 'react';
 import type { AutomationRuleDto } from '../../types/Automation';
 import { AutomationRuleCard } from './AutomationRuleCard';
 

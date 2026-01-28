@@ -19,7 +19,7 @@ export class NotificationChannelRegistry {
 
   constructor(
     @Inject(NOTIFICATION_CHANNEL_PROVIDERS)
-    private readonly providers: NotificationChannelProvider[],
+    providers: NotificationChannelProvider[],
   ) {
     providers.forEach((provider) => {
       this.providerMap.set(provider.channel, provider);

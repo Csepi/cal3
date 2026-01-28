@@ -53,12 +53,6 @@ async function deploySchema() {
     const sqlScript = fs.readFileSync(schemaFilePath, 'utf-8');
     console.log(`✅ Schema file loaded (${sqlScript.length} characters)\n`);
 
-    // Split script by GO statements (Azure SQL batch separator)
-    const batches = sqlScript
-      .split(/^\s*GO\s*$/gim)
-      .map((batch) => batch.trim())
-      .filter((batch) => batch.length > 0 && !batch.startsWith('--'));
-
     console.log(`📦 Executing schema in 1 batch...\n`);
     console.log('─'.repeat(80));
 

@@ -21,7 +21,6 @@ import {
   CreateRecurringEventDto,
   UpdateRecurringEventDto,
   RecurrencePatternDto,
-  WeekDay,
   RecurrenceEndType,
 } from '../dto/recurrence.dto';
 import { NotificationsService } from '../notifications/notifications.service';
@@ -625,7 +624,6 @@ export class EventsService {
       case 'future':
         updatedEvents = await this.updateFutureInstances(
           event,
-          updateData,
           recurrence,
         );
         break;
@@ -742,7 +740,6 @@ export class EventsService {
 
   private async updateFutureInstances(
     event: Event,
-    updateData: any,
     newRecurrence?: RecurrencePatternDto,
   ): Promise<Event[]> {
     const parentEventId = event.parentEventId || event.id;

@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { apiService } from '../services/api';
 import { UserPermissionsService } from '../services/userPermissions';
 import { BASE_URL } from '../config/apiConfig';
 import { secureFetch } from '../services/authErrorHandler';

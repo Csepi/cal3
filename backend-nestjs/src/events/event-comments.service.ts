@@ -38,8 +38,6 @@ export class EventCommentsService {
   constructor(
     @InjectRepository(EventComment)
     private readonly commentRepository: Repository<EventComment>,
-    @InjectRepository(Event)
-    private readonly eventRepository: Repository<Event>,
     @InjectRepository(Calendar)
     private readonly calendarRepository: Repository<Calendar>,
     @InjectRepository(CalendarShare)
@@ -102,12 +100,7 @@ export class EventCommentsService {
       }
     }
 
-    const content = this.composeContent(
-      dto.content,
-      dto.templateKey,
-      parentComment ? 'reply' : 'comment',
-      false,
-    );
+    const content = this.composeContent(dto.content, dto.templateKey, false);
 
     const comment = this.commentRepository.create({
       eventId,
@@ -157,7 +150,6 @@ export class EventCommentsService {
     comment.content = this.composeContent(
       dto.content,
       comment.templateKey,
-      comment.context,
       false,
     );
 
@@ -219,7 +211,6 @@ export class EventCommentsService {
     const content = this.composeContent(
       note || 'Viewed the event details',
       CommentTemplateKey.OPEN_EVENT,
-      'open-tracking',
       true,
     );
 
@@ -242,7 +233,6 @@ export class EventCommentsService {
   private composeContent(
     rawContent: string | undefined,
     templateKey: CommentTemplateKey | undefined,
-    context: string,
     allowEmpty = false,
   ): string {
     const base = templateKey ? this.templateLibrary[templateKey] || '' : '';

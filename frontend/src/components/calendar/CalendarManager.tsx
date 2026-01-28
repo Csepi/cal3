@@ -9,7 +9,7 @@
 import React, { useState, useEffect } from 'react';
 import { SimpleModal, Button, Input, Card } from '../ui';
 import { IconPicker } from '../ui/IconPicker';
-import { getThemeConfig, THEME_COLOR_OPTIONS } from '../../constants';
+import { THEME_COLOR_OPTIONS } from '../../constants';
 import type { Calendar as CalendarType, CreateCalendarRequest, UpdateCalendarRequest } from '../../types/Calendar';
 import type { CalendarGroupWithCalendars } from '../../types/CalendarGroup';
 import { apiService } from '../../services/api';
@@ -41,8 +41,6 @@ export const CalendarManager: React.FC<CalendarManagerProps> = ({
   themeColor,
   error
 }) => {
-  const themeConfig = getThemeConfig(themeColor);
-
   // Form state
   const [calendarForm, setCalendarForm] = useState<Partial<CreateCalendarRequest>>({
     name: '',

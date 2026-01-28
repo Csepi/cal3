@@ -20,8 +20,7 @@ export const CalendarDayCell = memo<CalendarDayCellProps>(({
   theme,
   className = '',
   style,
-  'data-testid': testId,
-  ...props
+  'data-testid': testId
 }) => {
   // Event handlers
   const handleClick = useCallback((e: React.MouseEvent) => {

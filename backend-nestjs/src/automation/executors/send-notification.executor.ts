@@ -1,4 +1,4 @@
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { Injectable, OnModuleInit } from '@nestjs/common';
 import {
   AutomationAction,
   ActionType,
@@ -15,7 +15,6 @@ import { NotificationsService } from '../../notifications/notifications.service'
 @Injectable()
 export class SendNotificationExecutor implements IActionExecutor, OnModuleInit {
   readonly actionType = ActionType.SEND_NOTIFICATION;
-  private readonly logger = new Logger(SendNotificationExecutor.name);
 
   constructor(
     private readonly registry: ActionExecutorRegistry,

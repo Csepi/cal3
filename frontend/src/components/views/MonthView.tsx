@@ -56,9 +56,6 @@ const MonthView: React.FC<MonthViewProps> = ({
 
     // First day of the month
     const firstDay = new Date(year, month, 1);
-    // Last day of the month
-    const lastDay = new Date(year, month + 1, 0);
-
     // Get the start of the calendar (may include days from previous month)
     const startDate = new Date(firstDay);
     const dayOfWeek = (firstDay.getDay() + 7 - weekStartDay) % 7;

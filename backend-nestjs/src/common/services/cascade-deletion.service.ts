@@ -44,8 +44,6 @@ export class CascadeDeletionService {
     private resourceTypeRepository: Repository<ResourceType>,
     @InjectRepository(Resource)
     private resourceRepository: Repository<Resource>,
-    @InjectRepository(Reservation)
-    private reservationRepository: Repository<Reservation>,
     private dataSource: DataSource,
   ) {}
 

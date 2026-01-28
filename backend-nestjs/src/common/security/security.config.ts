@@ -1,6 +1,6 @@
 import { Logger } from '@nestjs/common';
 import type { CorsOptions } from '@nestjs/common/interfaces/external/cors-options.interface';
-import helmet, { type HelmetOptions } from 'helmet';
+import { type HelmetOptions } from 'helmet';
 
 const logger = new Logger('SecurityConfig');
 

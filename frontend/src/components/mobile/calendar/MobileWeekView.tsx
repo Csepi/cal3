@@ -10,11 +10,10 @@
  * - Current time indicator
  */
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useRef, useEffect } from 'react';
 import type { Event } from '../../../types/Event';
 import { getMeetingLinkFromEvent } from '../../../utils/meetingLinks';
 import { TouchableArea } from '../atoms/TouchableArea';
-import { Icon } from '../atoms/Icon';
 
 interface MobileWeekViewProps {
   currentDate: Date;
@@ -37,17 +36,8 @@ export const MobileWeekView: React.FC<MobileWeekViewProps> = ({
   themeColor,
   timeFormat,
 }) => {
-  const [currentTime, setCurrentTime] = useState(new Date());
   const scrollRef = useRef<HTMLDivElement>(null);
   const hasScrolledToCurrentTime = useRef(false);
-
-  // Update current time every minute
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentTime(new Date());
-    }, 60000);
-    return () => clearInterval(interval);
-  }, []);
 
   // Scroll to current time on mount (once)
   useEffect(() => {

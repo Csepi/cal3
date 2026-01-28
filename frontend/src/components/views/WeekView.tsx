@@ -165,20 +165,6 @@ const WeekView: React.FC<WeekViewProps> = ({
       .sort(sortEventsByRank);
   };
 
-  // Check if an event spans through a specific hour
-  const isEventActiveAtHour = (event: Event, hour: number): boolean => {
-    if (event.isAllDay) return hour === 0;
-
-    if (event.startTime && event.endTime) {
-      const [startHour] = event.startTime.split(':').map(Number);
-      const [endHour] = event.endTime.split(':').map(Number);
-
-      return hour >= startHour && hour < endHour;
-    }
-
-    return false;
-  };
-
   const formatHour = (hour: number): string => {
     // Create a date object for the hour on the current date
     const date = new Date(currentDate);
@@ -410,8 +396,6 @@ const WeekView: React.FC<WeekViewProps> = ({
             {weekDays.map((day, dayIndex) => {
               const eventsStartingHere = getEventsStartingAtHour(day, hour);
               const reservationsStartingHere = getReservationsStartingAtHour(day, hour);
-              const allDayEvents = getEventsForDay(day);
-
               return (
                 <div
                   key={`day-${dayIndex}-hour-${hour}`}

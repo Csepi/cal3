@@ -4,7 +4,7 @@
  * The primary calendar component that orchestrates all calendar functionality
  */
 
-import React, { memo, useMemo, useCallback, useEffect } from 'react';
+import React, { memo, useMemo, useEffect } from 'react';
 import type { CalendarContainerProps } from '../types';
 import { CalendarHeader } from './CalendarHeader';
 import { MonthView } from './MonthView';
@@ -35,8 +35,7 @@ export const Calendar = memo<CalendarContainerProps>(({
   settings,
   className = '',
   style,
-  'data-testid': testId,
-  ...props
+  'data-testid': testId
 }) => {
   // Use default theme if none provided
   const calendarTheme = theme || CALENDAR_THEMES.default;

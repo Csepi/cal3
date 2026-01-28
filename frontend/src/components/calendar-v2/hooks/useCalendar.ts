@@ -4,7 +4,7 @@
  * Main hook for calendar state management and business logic
  */
 
-import { useState, useCallback, useMemo, useEffect } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import type { Event } from '../../types/Event';
 import type {
   CalendarState,
@@ -20,11 +20,8 @@ import {
   addDays,
   addWeeks,
   addMonths,
-  startOfWeek,
-  endOfWeek,
   startOfMonth,
-  endOfMonth,
-  WeekStartDay
+  endOfMonth
 } from '../../../utils/calendar';
 
 const initialFilter: EventFilter = {
@@ -41,8 +38,7 @@ const initialSort: EventSort = {
 
 export const useCalendar = (
   initialDate: Date = new Date(),
-  initialView: 'month' | 'week' | 'day' = 'month',
-  weekStartDay: WeekStartDay = WeekStartDay.MONDAY
+  initialView: 'month' | 'week' | 'day' = 'month'
 ): UseCalendarReturn => {
   // Core state
   const [state, setState] = useState<CalendarState>({

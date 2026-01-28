@@ -9,7 +9,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button, Input, Card, SimpleModal } from '../ui';
 import { IconPicker } from '../ui/IconPicker';
-import { getThemeConfig, THEME_COLOR_OPTIONS } from '../../constants';
+import { THEME_COLOR_OPTIONS } from '../../constants';
 import type { Event, CreateEventRequest, UpdateEventRequest, RecurrencePattern } from '../../types/Event';
 import type { Calendar as CalendarType } from '../../types/Calendar';
 import RecurrenceSelector from '../RecurrenceSelector';
@@ -32,8 +32,6 @@ export interface CalendarEventModalProps {
   selectedDate?: Date | null;
   /** Current theme color */
   themeColor: string;
-  /** Time format preference (12h/24h) */
-  timeFormat?: string;
   /** Error message to display */
   error?: string | null;
   /** Whether the form is currently submitting */
@@ -53,11 +51,9 @@ export const CalendarEventModal: React.FC<CalendarEventModalProps> = ({
   calendars,
   selectedDate,
   themeColor,
-  timeFormat = '12h',
   error,
   loading = false
 }) => {
-  const themeConfig = getThemeConfig(themeColor);
 
   // Form state
   const [eventForm, setEventForm] = useState<Partial<CreateEventRequest>>({

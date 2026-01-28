@@ -11,7 +11,6 @@ import { AgentPermission } from '../entities/agent-permission.entity';
 import { AgentKeysService } from './agent-keys.service';
 import { AgentContext } from './interfaces/agent-context.interface';
 import { AgentActionKey } from './agent-actions.registry';
-import { User } from '../entities/user.entity';
 import { FeatureFlagsService } from '../common/feature-flags.service';
 import { upgradeLegacyCalendarPermissions } from './legacy-permissions.helper';
 
@@ -24,8 +23,6 @@ export class AgentAuthorizationService {
     private readonly agentProfileRepository: Repository<AgentProfile>,
     @InjectRepository(AgentPermission)
     private readonly agentPermissionRepository: Repository<AgentPermission>,
-    @InjectRepository(User)
-    private readonly userRepository: Repository<User>,
     private readonly agentKeysService: AgentKeysService,
     private readonly featureFlagsService: FeatureFlagsService,
   ) {}

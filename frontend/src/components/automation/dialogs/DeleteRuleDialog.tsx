@@ -5,14 +5,12 @@ interface DeleteRuleDialogProps {
   rule: AutomationRuleDetailDto | AutomationRuleDto;
   onConfirm: () => Promise<void>;
   onCancel: () => void;
-  themeColor?: string;
 }
 
 export const DeleteRuleDialog: React.FC<DeleteRuleDialogProps> = ({
   rule,
   onConfirm,
   onCancel,
-  themeColor = 'blue',
 }) => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);

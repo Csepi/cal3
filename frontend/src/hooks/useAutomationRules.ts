@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback } from 'react';
-import { TriggerType } from '../types/Automation';
 import type {
   AutomationRuleDto,
   AutomationRuleDetailDto,

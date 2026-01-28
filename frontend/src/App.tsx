@@ -6,10 +6,11 @@ import { useState } from 'react'
 import { NotificationsProvider } from './hooks/useNotifications'
 
 function App() {
-  const [user, setUser] = useState<string | null>(null);
-  const [userRole, setUserRole] = useState<string>('user');
+  const [, setUser] = useState<string | null>(null);
+  const [, setUserRole] = useState<string>('user');
 
-  const handleLogin = (username: string, token?: string, role?: string, userData?: any) => {
+  const handleLogin = (username: string, token?: string, role?: string) => {
+    void token;
     setUser(username);
     setUserRole(role || 'user');
     // Redirect to main app after successful SSO login

@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import type { UpdateRecurringEventRequest } from '../services/api';
 import type { RecurrencePattern } from '../types/Event';
 
 interface RecurrenceEditDialogProps {
@@ -8,7 +7,6 @@ interface RecurrenceEditDialogProps {
   onConfirm: (scope: 'this' | 'future' | 'all', eventData?: any, recurrence?: RecurrencePattern) => void;
   eventTitle: string;
   themeColor: string;
-  isRecurring: boolean;
   editType: 'update' | 'delete';
 }
 
@@ -18,7 +16,6 @@ const RecurrenceEditDialog: React.FC<RecurrenceEditDialogProps> = ({
   onConfirm,
   eventTitle,
   themeColor,
-  isRecurring,
   editType
 }) => {
   const [selectedScope, setSelectedScope] = useState<'this' | 'future' | 'all'>('this');
@@ -71,7 +68,6 @@ const RecurrenceEditDialog: React.FC<RecurrenceEditDialogProps> = ({
   };
 
   const getScopeDescription = (scope: 'this' | 'future' | 'all') => {
-    const action = editType === 'delete' ? 'delete' : 'change';
     switch (scope) {
       case 'this':
         return editType === 'delete'

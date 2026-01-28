@@ -166,7 +166,7 @@ export class AuthService {
   }
 
   async validateGoogleUser(googleUser: any): Promise<AuthSessionResult> {
-    const { googleId, email, firstName, lastName } = googleUser;
+    const { email, firstName, lastName } = googleUser;
 
     // Check if user already exists by email
     let user = await this.userRepository.findOne({
@@ -196,8 +196,7 @@ export class AuthService {
   async validateMicrosoftUser(
     microsoftUser: any,
   ): Promise<AuthSessionResult> {
-    const { microsoftId, email, firstName, lastName, displayName } =
-      microsoftUser;
+    const { email, firstName, lastName, displayName } = microsoftUser;
 
     if (!email) {
       throw new UnauthorizedException(

@@ -227,7 +227,6 @@ export class ReservationCalendarController {
   @RequireReservationCalendarRole(ReservationCalendarRoleType.EDITOR)
   async createReservation(
     @Param('id', ParseIntPipe) reservationCalendarId: number,
-    @Body() reservationData: any, // Replace with proper DTO
     @GetUser() user: User,
   ) {
     // This endpoint would create a reservation
@@ -250,7 +249,6 @@ export class ReservationCalendarController {
   )
   async getReservations(
     @Param('id', ParseIntPipe) reservationCalendarId: number,
-    @GetUser() user: User,
   ) {
     // This endpoint would return reservations
     // Both editors and reviewers can access this

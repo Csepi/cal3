@@ -20,7 +20,6 @@ interface MobileMonthViewProps {
   events: Event[];
   selectedDate: Date | null;
   onDateClick: (date: Date) => void;
-  onEventClick: (event: Event) => void;
   weekStartDay?: number; // 0 = Sunday, 1 = Monday
   themeColor: string;
 }
@@ -30,7 +29,6 @@ export const MobileMonthView: React.FC<MobileMonthViewProps> = ({
   events,
   selectedDate,
   onDateClick,
-  onEventClick,
   weekStartDay = 1,
   themeColor,
 }) => {
@@ -112,7 +110,7 @@ export const MobileMonthView: React.FC<MobileMonthViewProps> = ({
 
       {/* Calendar Grid */}
       <div className="grid grid-cols-7 flex-1">
-        {monthDays.map((date, index) => {
+        {monthDays.map((date) => {
           const dayEvents = getEventsForDate(date);
           const eventCount = dayEvents.length;
           const maxDotsToShow = 3;

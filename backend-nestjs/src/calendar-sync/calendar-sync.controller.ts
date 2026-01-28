@@ -67,7 +67,6 @@ export class CalendarSyncController {
     @Query('code') code: string,
     @Query('state') state: string,
     @Query('userId') userId: string,
-    @Request() req,
     @Res() res: Response,
   ) {
     this.logger.log(

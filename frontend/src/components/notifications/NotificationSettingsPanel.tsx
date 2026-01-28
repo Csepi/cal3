@@ -80,7 +80,6 @@ export const NotificationSettingsPanel: React.FC<NotificationSettingsPanelProps>
     savePreferences,
     refreshPreferences,
     refreshFilters,
-    refreshCatalog,
     refreshScopeMutes,
     saveFilter,
     deleteFilter,
@@ -174,14 +173,6 @@ export const NotificationSettingsPanel: React.FC<NotificationSettingsPanelProps>
       })),
     [catalog],
   );
-
-  const channelLabelMap = useMemo(() => {
-    const map = new Map<NotificationChannel, string>();
-    channelOptions.forEach((option) => {
-      map.set(option.id as NotificationChannel, option.label);
-    });
-    return map;
-  }, [channelOptions]);
 
   type ScopeKey = 'organisation' | 'calendar' | 'reservation';
   type ScopeOption = NotificationScopeOption;

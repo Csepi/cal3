@@ -13,7 +13,6 @@ export interface RoleAssignmentModalProps {
   availableUsers: User[];
   currentMembers: MemberWithRole[];
   loading?: boolean;
-  themeColor?: string;
 }
 
 export const RoleAssignmentModal: React.FC<RoleAssignmentModalProps> = ({
@@ -23,7 +22,6 @@ export const RoleAssignmentModal: React.FC<RoleAssignmentModalProps> = ({
   availableUsers,
   currentMembers,
   loading = false,
-  themeColor = '#3b82f6',
 }) => {
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
   const [selectedRole, setSelectedRole] = useState<'admin' | 'editor' | 'user'>('user');

@@ -8,7 +8,7 @@ import {
   ValidateNested,
   IsObject,
 } from 'class-validator';
-import { Type, Transform } from 'class-transformer';
+import { Type } from 'class-transformer';
 import { RecurrenceType } from '../entities/event.entity';
 
 export enum RecurrenceEndType {

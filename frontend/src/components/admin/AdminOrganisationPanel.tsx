@@ -75,7 +75,6 @@ export const AdminOrganisationPanel: React.FC<AdminOrganisationPanelProps> = ({
 
   const {
     users: availableUsers,
-    loading: usersLoading,
     loadUsers,
   } = useAvailableUsers();
 

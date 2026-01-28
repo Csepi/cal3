@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { BASE_URL } from '../config/apiConfig';
 
 interface ResourceInfo {
@@ -35,7 +35,6 @@ interface CustomerInfo {
 
 const PublicBookingPage: React.FC = () => {
   const { token } = useParams<{ token: string }>();
-  const navigate = useNavigate();
 
   const [resource, setResource] = useState<ResourceInfo | null>(null);
   const [loading, setLoading] = useState(true);

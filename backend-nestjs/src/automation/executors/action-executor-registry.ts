@@ -1,5 +1,4 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
-import { ModuleRef } from '@nestjs/core';
 import { ActionType } from '../../entities/automation-action.entity';
 import { IActionExecutor } from './action-executor.interface';
 
@@ -12,7 +11,7 @@ export class ActionExecutorRegistry implements OnModuleInit {
   private executors = new Map<ActionType, IActionExecutor>();
   private readonly logger = new Logger(ActionExecutorRegistry.name);
 
-  constructor(private moduleRef: ModuleRef) {}
+  constructor() {}
 
   async onModuleInit() {
     // Executors will self-register when they're instantiated by NestJS

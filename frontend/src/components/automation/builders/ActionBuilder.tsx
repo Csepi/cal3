@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ActionType, TriggerType } from '../../../types/Automation';
+import { TriggerType } from '../../../types/Automation';
 import type { ActionFormData } from '../../../types/Automation';
 import { ActionRow } from './ActionRow';
 

@@ -8,7 +8,6 @@
 
 import React from 'react';
 import { Card, CardHeader, Button } from '../ui';
-import { getThemeConfig } from '../../constants';
 
 export interface Reservation {
   id: number;
@@ -80,8 +79,6 @@ export const ReservationListTable: React.FC<ReservationListTableProps> = ({
   loading = false,
   error
 }) => {
-  const themeConfig = getThemeConfig(themeColor);
-
   /**
    * Format date and time for display
    */

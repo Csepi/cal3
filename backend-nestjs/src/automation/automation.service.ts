@@ -35,7 +35,6 @@ import {
   PaginatedAuditLogsDto,
   AuditLogStatsDto,
   ConditionsResultDto,
-  ConditionEvaluationDto,
   ActionResultDto,
 } from './dto/automation-audit-log.dto';
 

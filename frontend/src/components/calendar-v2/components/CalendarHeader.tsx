@@ -4,7 +4,7 @@
  * Navigation and view controls for the calendar
  */
 
-import React, { memo, useCallback, useMemo } from 'react';
+import { memo, useCallback, useMemo } from 'react';
 import type { CalendarHeaderProps } from '../types';
 import { formatDate } from '../../../utils/calendar';
 
@@ -16,7 +16,6 @@ export const CalendarHeader = memo<CalendarHeaderProps>(({
   showViewSwitcher = true,
   showToday = true,
   customActions,
-  theme,
   className = '',
   style,
   'data-testid': testId

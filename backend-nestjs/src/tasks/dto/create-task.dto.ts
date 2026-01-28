@@ -10,7 +10,6 @@ import {
   IsString,
   Matches,
   MaxLength,
-  Min,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { TaskPriority, TaskStatus } from '../../entities/task.entity';

@@ -9,7 +9,6 @@ import {
   Query,
   UseGuards,
   Req,
-  ForbiddenException,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { ReservationAccessGuard } from '../auth/guards/reservation-access.guard';
@@ -18,7 +17,6 @@ import {
   CreateReservationDto,
   UpdateReservationDto,
 } from '../dto/reservation.dto';
-import { UserPermissionsService } from '../common/services/user-permissions.service';
 import { IdempotencyService } from '../common/services/idempotency.service';
 
 @Controller('reservations')
@@ -26,7 +24,6 @@ import { IdempotencyService } from '../common/services/idempotency.service';
 export class ReservationsController {
   constructor(
     private readonly reservationsService: ReservationsService,
-    private readonly userPermissionsService: UserPermissionsService,
     private readonly idempotencyService: IdempotencyService,
   ) {}
 

@@ -8,7 +8,7 @@ import { ConfigurationService } from '../configuration/configuration.service';
 export class MicrosoftStrategy extends PassportStrategy(Strategy, 'microsoft') {
   constructor(
     private readonly authService: AuthService,
-    private readonly configurationService: ConfigurationService,
+    configurationService: ConfigurationService,
   ) {
     const backendBaseUrl =
       configurationService.getBackendBaseUrl() || 'http://localhost:8081';
@@ -35,7 +35,6 @@ export class MicrosoftStrategy extends PassportStrategy(Strategy, 'microsoft') {
 
   async validate(
     accessToken: string,
-    refreshToken: string,
     profile: any,
     done: VerifyCallback,
   ): Promise<any> {

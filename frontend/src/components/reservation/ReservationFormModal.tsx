@@ -8,7 +8,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { Modal, Button, Input, Card } from '../ui';
-import { getThemeConfig } from '../../constants';
 
 export interface ReservationFormData {
   startTime: string;
@@ -56,8 +55,6 @@ export const ReservationFormModal: React.FC<ReservationFormModalProps> = ({
   error,
   loading = false
 }) => {
-  const themeConfig = getThemeConfig(themeColor);
-
   // Form state
   const [formData, setFormData] = useState<ReservationFormData>({
     startTime: '',

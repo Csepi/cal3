@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  UnauthorizedException,
-  Logger,
-} from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -26,7 +22,6 @@ export interface TokenMetadata {
 
 @Injectable()
 export class TokenService {
-  private readonly logger = new Logger(TokenService.name);
   private readonly accessTtlSeconds = parseInt(
     process.env.JWT_ACCESS_TTL ?? '900',
     10,

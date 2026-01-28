@@ -136,7 +136,7 @@ export class AuthController {
   @Get('google')
   @UseGuards(AuthGuard('google'))
   @ApiOperation({ summary: 'Initiate Google OAuth login' })
-  async googleAuth(@Req() req) {
+  async googleAuth() {
     // Redirect will be handled by Google OAuth strategy
   }
 
@@ -181,7 +181,7 @@ export class AuthController {
   @Get('microsoft')
   @UseGuards(AuthGuard('microsoft'))
   @ApiOperation({ summary: 'Initiate Microsoft OAuth login' })
-  async microsoftAuth(@Req() req) {
+  async microsoftAuth() {
     // Redirect will be handled by Microsoft OAuth strategy
   }
 

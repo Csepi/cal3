@@ -8,7 +8,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Resource } from '../entities/resource.entity';
 import { Reservation, ReservationStatus } from '../entities/reservation.entity';
-import { OperatingHours } from '../entities/operating-hours.entity';
 import { CreatePublicBookingDto } from '../dto/public-booking.dto';
 import { ReservationAvailabilityService } from '../common/services/reservation-availability.service';
 
@@ -57,8 +56,6 @@ export class PublicBookingService {
     private resourceRepository: Repository<Resource>,
     @InjectRepository(Reservation)
     private reservationRepository: Repository<Reservation>,
-    @InjectRepository(OperatingHours)
-    private operatingHoursRepository: Repository<OperatingHours>,
     private readonly reservationAvailabilityService: ReservationAvailabilityService,
   ) {}
 

@@ -2,7 +2,6 @@ import { Controller, Get, Post, Body, Param, Query } from '@nestjs/common';
 import { PublicBookingService } from './public-booking.service';
 import {
   CreatePublicBookingDto,
-  AvailabilityQueryDto,
 } from '../dto/public-booking.dto';
 
 /**

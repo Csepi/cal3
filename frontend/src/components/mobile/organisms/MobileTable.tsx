@@ -13,7 +13,6 @@
 import React from 'react';
 import { useScreenSize } from '../../../hooks/useScreenSize';
 import { ListItem } from '../molecules/ListItem';
-import { TouchableArea } from '../atoms/TouchableArea';
 
 export interface TableColumn<T> {
   key: keyof T | string;

@@ -32,13 +32,11 @@ import { TriggerType } from '../entities/automation-rule.entity';
 import {
   CreateAutomationRuleDto,
   UpdateAutomationRuleDto,
-  AutomationRuleDto,
   AutomationRuleDetailDto,
   PaginatedAutomationRulesDto,
 } from './dto/automation-rule.dto';
 import {
   AuditLogQueryDto,
-  AuditLogDto,
   AuditLogDetailDto,
   PaginatedAuditLogsDto,
   AuditLogStatsDto,

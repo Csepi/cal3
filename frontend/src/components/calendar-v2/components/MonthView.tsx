@@ -4,7 +4,7 @@
  * A robust, accessible month calendar view built from modular components
  */
 
-import React, { memo, useMemo, useCallback } from 'react';
+import { memo, useMemo, useCallback } from 'react';
 import type { CalendarMonthProps } from '../types';
 import { CalendarDayCell } from './CalendarDayCell';
 import {
@@ -21,13 +21,11 @@ export const MonthView = memo<CalendarMonthProps>(({
   highlightedDates = [],
   interactions,
   showOtherMonthDays = true,
-  fixedWeekCount = false,
   theme,
   settings,
   className = '',
   style,
-  'data-testid': testId,
-  ...props
+  'data-testid': testId
 }) => {
   // Generate month data
   const monthData = useMemo(() => {
@@ -108,7 +106,7 @@ export const MonthView = memo<CalendarMonthProps>(({
   }, [monthData.weeks, showOtherMonthDays]);
 
   // Handle keyboard navigation
-  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+  const handleKeyDown = useCallback(() => {
     // Keyboard navigation could be implemented here
     // Arrow keys to navigate between dates, Enter to select, etc.
   }, []);
@@ -124,7 +122,7 @@ export const MonthView = memo<CalendarMonthProps>(({
     >
       {/* Month header with day names */}
       <div className="grid grid-cols-7 border-b border-gray-200">
-        {dayNames.map((dayName, index) => (
+        {dayNames.map((dayName) => (
           <div
             key={dayName}
             className="p-3 text-center text-sm font-semibold text-gray-700 bg-gray-50 border-r border-gray-200 last:border-r-0"
@@ -138,13 +136,13 @@ export const MonthView = memo<CalendarMonthProps>(({
 
       {/* Calendar grid */}
       <div className="calendar-grid" role="rowgroup">
-        {displayWeeks.map((week, weekIndex) => (
+        {displayWeeks.map((week) => (
           <div
             key={week.weekNumber}
             className="grid grid-cols-7 border-b border-gray-200 last:border-b-0"
             role="row"
           >
-            {week.days.map((day, dayIndex) => {
+            {week.days.map((day) => {
               // Don't render other month days if showOtherMonthDays is false
               if (!showOtherMonthDays && !day.isCurrentMonth) {
                 return (

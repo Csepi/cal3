@@ -11,8 +11,6 @@ import {
   startOfWeek,
   getDayNames,
   formatTime,
-  TimeFormat,
-  isToday,
   isSameDay,
   type CalendarDate
 } from '../../../utils/calendar';
@@ -21,7 +19,6 @@ export const WeekView = memo<CalendarWeekProps>(({
   week,
   events,
   selectedDate,
-  highlightedDates = [],
   interactions,
   showTimeSlots = true,
   timeSlotHeight = 60,
@@ -31,8 +28,7 @@ export const WeekView = memo<CalendarWeekProps>(({
   settings,
   className = '',
   style,
-  'data-testid': testId,
-  ...props
+  'data-testid': testId
 }) => {
   // State for time range selection
   const [selection, setSelection] = useState<{
@@ -103,7 +99,6 @@ export const WeekView = memo<CalendarWeekProps>(({
 
   // Get all-day events for a date
   const getAllDayEvents = useCallback((date: CalendarDate) => {
-    const dateKey = `${date.year}-${date.month}-${date.day}`;
     return events.filter(event => {
       const eventDate = new Date(event.startDate);
       const isAllDay = event.isAllDay || !event.startTime;
@@ -144,7 +139,6 @@ export const WeekView = memo<CalendarWeekProps>(({
     if (selection.isSelecting && selection.startDate && selection.startHour !== undefined) {
       const endHour = selection.endHour ?? selection.startHour;
       const startHour = Math.min(selection.startHour, endHour);
-      const finalEndHour = Math.max(selection.startHour, endHour);
 
       interactions?.onTimeSlotClick?.(selection.startDate, startHour, 0);
     }

@@ -118,12 +118,7 @@ async function bootstrap() {
       process.env.BIND_ADDRESS ||
       process.env.HOST ||
       '0.0.0.0';
-    const frontendPort = process.env.FRONTEND_PORT || '8080';
     const baseUrl = process.env.BASE_URL || 'http://localhost';
-
-    // Construct frontend URL from base + port (or use explicit FRONTEND_URL if provided)
-    const frontendUrl =
-      process.env.FRONTEND_URL || `${baseUrl}:${frontendPort}`;
 
     const allowedOrigins = resolveAllowedOrigins();
     const corsOptions = buildCorsOptions(allowedOrigins);
@@ -131,6 +126,7 @@ async function bootstrap() {
     app.use(cookieParser());
     app.use(helmet(buildHelmetOptions(allowedOrigins)));
     app.use((req, res, next) => {
+      void req;
       applyPermissionsPolicy(res);
       next();
     });

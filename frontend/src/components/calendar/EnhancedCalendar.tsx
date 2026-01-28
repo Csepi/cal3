@@ -623,7 +623,7 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
     actions.editEvent(event);
   }, [actions]);
 
-  const handleTimeRangeSelect = useCallback((date: Date, startHour: number, endHour: number) => {
+  const handleTimeRangeSelect = useCallback((date: Date) => {
     // Create event with time range
     actions.createEvent(date);
   }, [actions]);

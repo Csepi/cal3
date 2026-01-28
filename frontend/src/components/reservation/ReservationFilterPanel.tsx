@@ -8,7 +8,6 @@
 
 import React from 'react';
 import { Card, CardHeader, Button, Input } from '../ui';
-import { getThemeConfig } from '../../constants';
 
 export interface ReservationFilters {
   status: string;
@@ -65,8 +64,6 @@ export const ReservationFilterPanel: React.FC<ReservationFilterPanelProps> = ({
   onClearFilters,
   onRefresh
 }) => {
-  const themeConfig = getThemeConfig(themeColor);
-
   /**
    * Handle individual filter changes
    */

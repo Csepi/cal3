@@ -1,6 +1,7 @@
 # Dependencies
 node_modules/
 */node_modules/
+/node_modules/
 
 # Package manager caches
 .npm/
@@ -12,8 +13,11 @@ package-lock.json.LOCK
 # Build outputs
 dist/
 */dist/
+/dist/
 build/
 */build/
+# Mobile build output
+/build-mobile/
 .next/
 .turbo/
 .cache/
@@ -46,6 +50,11 @@ backend-nestjs/start-dev.out
 backend-nestjs/start-dev.err
 frontend/start-dev.out
 frontend/start-dev.err
+
+# Backup/variant files
+*.backup.*
+*.original.*
+*.new.*
 
 # Runtime data
 pids/

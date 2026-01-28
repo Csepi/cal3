@@ -21,10 +21,9 @@ interface Organisation {
 }
 
 interface ResourceTypeManagementProps {
-  themeColor?: string;
 }
 
-const ResourceTypeManagement: React.FC<ResourceTypeManagementProps> = ({ themeColor = '#3b82f6' }) => {
+const ResourceTypeManagement: React.FC<ResourceTypeManagementProps> = () => {
   const [resourceTypes, setResourceTypes] = useState<ResourceType[]>([]);
   const [organisations, setOrganisations] = useState<Organisation[]>([]);
   const [loading, setLoading] = useState(false);

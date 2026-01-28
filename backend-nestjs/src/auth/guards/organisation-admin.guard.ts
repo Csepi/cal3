@@ -4,7 +4,6 @@ import {
   ExecutionContext,
   ForbiddenException,
 } from '@nestjs/common';
-import { Reflector } from '@nestjs/core';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { OrganisationAdmin } from '../../entities/organisation-admin.entity';
@@ -28,7 +27,6 @@ import { User, UserRole } from '../../entities/user.entity';
 @Injectable()
 export class OrganisationAdminGuard implements CanActivate {
   constructor(
-    private reflector: Reflector,
     @InjectRepository(OrganisationAdmin)
     private organisationAdminRepository: Repository<OrganisationAdmin>,
   ) {}

@@ -19,10 +19,9 @@ interface ResourceType {
 }
 
 interface ResourceManagementProps {
-  themeColor?: string;
 }
 
-const ResourceManagement: React.FC<ResourceManagementProps> = ({ themeColor = '#3b82f6' }) => {
+const ResourceManagement: React.FC<ResourceManagementProps> = () => {
   const [resources, setResources] = useState<Resource[]>([]);
   const [resourceTypes, setResourceTypes] = useState<ResourceType[]>([]);
   const [loading, setLoading] = useState(false);

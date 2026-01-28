@@ -317,7 +317,7 @@ export class CalendarsService {
     id: number,
     userId: number,
   ): Promise<Array<{ user: User; permission: SharePermission }>> {
-    const calendar = await this.findOne(id, userId);
+    await this.findOne(id, userId);
 
     const shares = await this.calendarShareRepository.find({
       where: { calendarId: id },
@@ -356,4 +356,3 @@ export class CalendarsService {
     return group;
   }
 }
-

@@ -3,7 +3,7 @@ import { apiService } from '../../services/api';
 import { LoadingScreen } from '../common';
 import { useLoadingProgress } from '../../hooks/useLoadingProgress';
 import { getAutomationRules } from '../../services/automationService';
-import type { AutomationRuleDto, TriggerType } from '../../types/Automation';
+import type { AutomationRuleDto } from '../../types/Automation';
 import { clientLogger } from '../../utils/clientLogger';
 
 interface CalendarSyncProps {

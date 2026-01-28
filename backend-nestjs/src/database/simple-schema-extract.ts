@@ -155,7 +155,6 @@ for (const file of entityFiles) {
   while ((relMatch = relationRegex.exec(content)) !== null) {
     const relationType = relMatch[1];
     const targetEntity = relMatch[2].trim();
-    const inverseSide = relMatch[3];
     const propertyName = relMatch[4];
 
     tableInfo.relations.push({

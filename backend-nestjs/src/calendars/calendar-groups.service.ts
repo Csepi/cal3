@@ -100,7 +100,7 @@ export class CalendarGroupsService {
     assignCalendarsDto: AssignCalendarsToGroupDto,
     userId: number,
   ): Promise<CalendarGroup & { calendars: Calendar[] }> {
-    const group = await this.getOwnedGroup(id, userId);
+    await this.getOwnedGroup(id, userId);
     const uniqueIds = Array.from(new Set(assignCalendarsDto.calendarIds));
     if (uniqueIds.length === 0) {
       return this.buildGroupWithCalendars(id, userId);

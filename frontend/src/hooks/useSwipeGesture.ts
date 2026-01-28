@@ -69,12 +69,6 @@ export function useSwipeGesture(options: SwipeGestureOptions): SwipeHandlers {
 
     const deltaX = touchEnd.current.x - touchStart.current.x;
     const deltaY = touchEnd.current.y - touchStart.current.y;
-    const deltaTime = touchEnd.current.time - touchStart.current.time;
-
-    // Calculate velocity (pixels per ms)
-    const velocityX = Math.abs(deltaX) / deltaTime;
-    const velocityY = Math.abs(deltaY) / deltaTime;
-
     // Determine if it's a horizontal or vertical swipe
     const isHorizontal = Math.abs(deltaX) > Math.abs(deltaY);
     const isVertical = Math.abs(deltaY) > Math.abs(deltaX);

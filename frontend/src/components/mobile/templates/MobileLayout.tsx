@@ -11,7 +11,7 @@
  * Works on ALL screen sizes!
  */
 
-import React, { useEffect, useRef } from 'react';
+import React, { useRef } from 'react';
 import { useScreenSize } from '../../../hooks/useScreenSize';
 
 interface MobileLayoutProps {

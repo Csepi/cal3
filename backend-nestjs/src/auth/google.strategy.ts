@@ -8,7 +8,7 @@ import { ConfigurationService } from '../configuration/configuration.service';
 export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
   constructor(
     private readonly authService: AuthService,
-    private readonly configurationService: ConfigurationService,
+    configurationService: ConfigurationService,
   ) {
     const backendBaseUrl =
       configurationService.getBackendBaseUrl() || 'http://localhost:8081';
@@ -32,7 +32,6 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
 
   async validate(
     accessToken: string,
-    refreshToken: string,
     profile: any,
     done: VerifyCallback,
   ): Promise<any> {

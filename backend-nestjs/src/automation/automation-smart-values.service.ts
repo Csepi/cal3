@@ -1,6 +1,5 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import {
-  AutomationRule,
   TriggerType,
 } from '../entities/automation-rule.entity';
 import { Event } from '../entities/event.entity';
@@ -14,8 +13,6 @@ export interface SmartValueContext {
 
 @Injectable()
 export class AutomationSmartValuesService {
-  private readonly logger = new Logger(AutomationSmartValuesService.name);
-
   /**
    * Extract all available smart values from the trigger context
    * Returns a flat object with all accessible values

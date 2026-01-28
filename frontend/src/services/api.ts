@@ -19,7 +19,6 @@ import type {
   AssignCalendarsToGroupRequest,
   ShareCalendarGroupRequest,
 } from '../types/CalendarGroup';
-import type { WeekDay } from '../components/RecurrenceSelector';
 import type {
   NotificationMessage,
   NotificationThreadSummary,
@@ -34,8 +33,6 @@ import type {
   Task,
   TaskLabel,
   TaskListResponse,
-  TaskPriority,
-  TaskStatus,
   TaskQueryParams,
   CreateTaskRequest,
   UpdateTaskRequest,
@@ -54,41 +51,6 @@ export interface UpdateRecurringEventRequest extends UpdateEventRequest {
 // Map frontend RecurrenceType to backend format (values are already lowercase)
 const mapRecurrenceType = (type: RecurrenceType): string => {
   return type; // Direct mapping since enum values match backend expectations
-};
-
-// Map frontend RecurrencePattern to backend recurrenceRule format
-const mapRecurrenceRule = (pattern: RecurrencePattern): any => {
-  if (pattern.type === RecurrenceType.NONE) {
-    return null;
-  }
-
-  const rule: any = {
-    interval: pattern.interval || 1
-  };
-
-  // Add end condition
-  if (pattern.endType === RecurrenceEndType.COUNT && pattern.count) {
-    rule.count = pattern.count;
-  } else if (pattern.endType === RecurrenceEndType.DATE && pattern.endDate) {
-    rule.until = pattern.endDate;
-  }
-
-  // Add days of week for weekly recurrence
-  if (pattern.type === RecurrenceType.WEEKLY && pattern.daysOfWeek) {
-    rule.daysOfWeek = pattern.daysOfWeek;
-  }
-
-  // Add day of month for monthly recurrence
-  if (pattern.type === RecurrenceType.MONTHLY && pattern.dayOfMonth) {
-    rule.dayOfMonth = pattern.dayOfMonth;
-  }
-
-  // Add month of year for yearly recurrence
-  if (pattern.type === RecurrenceType.YEARLY && pattern.monthOfYear) {
-    rule.monthOfYear = pattern.monthOfYear;
-  }
-
-  return rule;
 };
 
 // Import centralized API configuration

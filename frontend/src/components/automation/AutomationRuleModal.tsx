@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import {
   TriggerType,
   ConditionLogic,
-  ConditionLogicOperator,
 } from '../../types/Automation';
 import type {
   AutomationRuleDetailDto,

@@ -8,11 +8,6 @@ import {
   SharePermission,
 } from '../entities/calendar.entity';
 import { EventStatus, RecurrenceType } from '../entities/event.entity';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { User } from '../entities/user.entity';
-import { Organisation } from '../entities/organisation.entity';
-import { OrganisationUser } from '../entities/organisation-user.entity';
 
 async function seed() {
   const app = await NestFactory.createApplicationContext(AppModule);

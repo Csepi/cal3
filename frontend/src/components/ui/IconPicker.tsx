@@ -19,12 +19,6 @@ interface IconPickerProps {
   category?: 'calendar' | 'event' | 'resource' | 'all';
 }
 
-interface IconWithName {
-  icon: string;
-  name: string;
-  keywords: string[];
-}
-
 const ICON_CATEGORIES = {
   calendar: {
     label: 'Calendar Icons',
@@ -499,11 +493,6 @@ export const IconPicker: React.FC<IconPickerProps> = ({
   const [activeTab, setActiveTab] = useState<keyof typeof ICON_CATEGORIES>(
     category === 'all' ? 'calendar' : category
   );
-
-  // Get categories to display
-  const categoriesToShow = category === 'all'
-    ? Object.entries(ICON_CATEGORIES)
-    : [[category, ICON_CATEGORIES[category]]];
 
   // Filter icons based on search query
   const filteredIcons = useMemo(() => {

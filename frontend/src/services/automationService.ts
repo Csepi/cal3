@@ -1,5 +1,4 @@
 import type {
-  AutomationRuleDto,
   AutomationRuleDetailDto,
   CreateAutomationRuleDto,
   UpdateAutomationRuleDto,

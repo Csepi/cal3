@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { AuditLogStatus } from '../../types/Automation';
-import type { AuditLogDto, AuditLogQueryDto } from '../../types/Automation';
+import type { AuditLogQueryDto } from '../../types/Automation';
 import { useAuditLogs } from '../../hooks/useAuditLogs';
 import { formatRelativeTime, getStatusColor } from '../../services/automationService';
 import { AuditLogDetailModal } from './AuditLogDetailModal';
