@@ -18,6 +18,8 @@ import {
   type ConfigurationDefinition,
 } from './configuration.constants';
 
+import { logError } from '../common/errors/error-logger';
+import { buildErrorContext } from '../common/errors/error-context';
 export interface AdminConfigurationSetting {
   key: string;
   label: string;
@@ -443,6 +445,7 @@ export class ConfigurationService implements OnModuleInit {
           JSON.parse(rawValue);
           return rawValue;
         } catch (error) {
+          logError(error, buildErrorContext({ action: 'configuration.service' }));
           throw new BadRequestException(
             `Invalid JSON payload for "${definition.label}".`,
           );
@@ -468,6 +471,7 @@ export class ConfigurationService implements OnModuleInit {
       const parsed = new URL(url);
       return parsed.origin;
     } catch (error) {
+      logError(error, buildErrorContext({ action: 'configuration.service' }));
       return url.replace(/\/+$/, '');
     }
   }

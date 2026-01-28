@@ -1,6 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
+import { logError } from '../common/errors/error-logger';
+import { buildErrorContext } from '../common/errors/error-context';
 /**
  * Database Diagnostics Service
  * Provides detailed logging and diagnostics for database connections
@@ -323,6 +325,7 @@ export class DatabaseDiagnosticsService {
       this.logger.log(`✅ DNS Resolution: Success`);
       this.logger.log(`   Resolved to: ${addresses.join(', ')}`);
     } catch (error) {
+      logError(error, buildErrorContext({ action: 'database-diagnostics.service' }));
       this.logger.error(`❌ DNS Resolution: Failed`);
       this.logger.error(`   Error: ${error.message}`);
     }
@@ -351,6 +354,7 @@ export class DatabaseDiagnosticsService {
         socket.connect(parseInt(port), host);
       });
     } catch (error) {
+      logError(error, buildErrorContext({ action: 'database-diagnostics.service' }));
       this.logger.error(`❌ TCP Connection: Failed`);
       this.logger.error(`   Error: ${error.message}`);
     }

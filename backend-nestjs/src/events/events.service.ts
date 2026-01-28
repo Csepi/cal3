@@ -28,6 +28,8 @@ import { NotificationsService } from '../notifications/notifications.service';
 import { TaskCalendarBridgeService } from '../tasks/task-calendar-bridge.service';
 import { CalendarSyncService } from '../calendar-sync/calendar-sync.service';
 
+import { logError } from '../common/errors/error-logger';
+import { buildErrorContext } from '../common/errors/error-context';
 @Injectable()
 export class EventsService {
   private readonly logger = new Logger(EventsService.name);
@@ -111,6 +113,7 @@ export class EventsService {
           savedInstances = await this.eventRepository.save(instances);
         }
       } catch (error) {
+        logError(error, buildErrorContext({ action: 'events.service' }));
         console.error('Error generating recurring instances:', error);
         // Continue without instances if there's an error
       }
@@ -1021,6 +1024,7 @@ export class EventsService {
         return [savedEvent, ...savedInstances];
       }
     } catch (error) {
+      logError(error, buildErrorContext({ action: 'events.service' }));
       console.error(
         'Error generating recurring instances during conversion:',
         error,
@@ -1119,6 +1123,7 @@ export class EventsService {
         },
       });
     } catch (error) {
+      logError(error, buildErrorContext({ action: 'events.service' }));
       this.logger.error(
         `Failed to send notification for event ${event.id} (${action})`,
         error instanceof Error ? error.stack : String(error),
@@ -1179,6 +1184,7 @@ export class EventsService {
           });
       }
     } catch (error) {
+      logError(error, buildErrorContext({ action: 'events.service' }));
       console.error('Error triggering automation rules:', error);
     }
   }

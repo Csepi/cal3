@@ -9,6 +9,8 @@ import {
 import { Event } from '../entities/event.entity';
 import { AutomationService } from './automation.service';
 
+import { logError } from '../common/errors/error-logger';
+import { buildErrorContext } from '../common/errors/error-context';
 /**
  * Scheduler service for time-based automation triggers
  * Handles cron-based scheduling and event proximity checks
@@ -53,6 +55,7 @@ export class AutomationSchedulerService implements OnModuleInit {
           });
           break; // Success, exit retry loop
         } catch (dbError) {
+          logError(dbError, buildErrorContext({ action: 'automation-scheduler.service' }));
           retryCount++;
           if (retryCount >= maxRetries) {
             throw dbError; // Rethrow after max retries
@@ -75,6 +78,7 @@ export class AutomationSchedulerService implements OnModuleInit {
         await this.processTimeBasedRule(rule);
       }
     } catch (error) {
+      logError(error, buildErrorContext({ action: 'automation-scheduler.service' }));
       // Only log error if it's not a connection termination during idle time
       if (
         error.message &&
@@ -112,6 +116,7 @@ export class AutomationSchedulerService implements OnModuleInit {
           break;
       }
     } catch (error) {
+      logError(error, buildErrorContext({ action: 'automation-scheduler.service' }));
       this.logger.error(
         `Error processing time-based rule ${rule.id}: ${error.message}`,
         error.stack,
@@ -157,6 +162,7 @@ export class AutomationSchedulerService implements OnModuleInit {
         await this.executeRuleForEvent(rule, event);
       }
     } catch (error) {
+      logError(error, buildErrorContext({ action: 'automation-scheduler.service' }));
       // Gracefully handle database connection errors
       if (error.message && error.message.includes('Connection terminated')) {
         this.logger.debug(`Skipping rule ${rule.id} due to connection issue`);
@@ -202,6 +208,7 @@ export class AutomationSchedulerService implements OnModuleInit {
         await this.executeRuleForEvent(rule, event);
       }
     } catch (error) {
+      logError(error, buildErrorContext({ action: 'automation-scheduler.service' }));
       // Gracefully handle database connection errors
       if (error.message && error.message.includes('Connection terminated')) {
         this.logger.debug(`Skipping rule ${rule.id} due to connection issue`);
@@ -229,6 +236,7 @@ export class AutomationSchedulerService implements OnModuleInit {
         await this.executeRuleForEvent(rule, event);
       }
     } catch (error) {
+      logError(error, buildErrorContext({ action: 'automation-scheduler.service' }));
       // Gracefully handle database connection errors
       if (error.message && error.message.includes('Connection terminated')) {
         this.logger.debug(`Skipping rule ${rule.id} due to connection issue`);
@@ -263,6 +271,7 @@ export class AutomationSchedulerService implements OnModuleInit {
           );
         });
     } catch (error) {
+      logError(error, buildErrorContext({ action: 'automation-scheduler.service' }));
       this.logger.error(
         `Error executing rule ${rule.id} for event ${event.id}: ${error.message}`,
       );

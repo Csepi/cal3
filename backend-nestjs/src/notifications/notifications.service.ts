@@ -34,6 +34,8 @@ import {
   NotificationEventDefinition,
 } from './notification-definitions';
 
+import { logError } from '../common/errors/error-logger';
+import { buildErrorContext } from '../common/errors/error-context';
 export interface PublishNotificationOptions {
   eventType: string;
   actorId?: number | null;
@@ -119,6 +121,7 @@ export class NotificationsService implements OnModuleInit {
         },
       );
     } catch (error) {
+      logError(error, buildErrorContext({ action: 'notifications.service' }));
       this.logger.debug(
         'Digest scheduler initialisation skipped',
         error instanceof Error ? error.message : error,
@@ -678,6 +681,7 @@ export class NotificationsService implements OnModuleInit {
       const [hourStr, minuteStr] = formatted.split(':');
       return Number(hourStr) * 60 + Number(minuteStr);
     } catch (error) {
+      logError(error, buildErrorContext({ action: 'notifications.service' }));
       const now = new Date();
       return now.getUTCHours() * 60 + now.getUTCMinutes();
     }

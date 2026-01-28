@@ -20,6 +20,8 @@ import {
 } from '@modelcontextprotocol/sdk/types.js';
 import { TaskPriority, TaskStatus } from '../entities/task.entity';
 
+import { logError } from '../common/errors/error-logger';
+import { buildErrorContext } from '../common/errors/error-context';
 type ToolHandler = (parameters: Record<string, any>) => Promise<unknown>;
 
 interface McpSession {
@@ -105,6 +107,7 @@ export class AgentMcpHttpService {
         );
       }
     } catch (error) {
+      logError(error, buildErrorContext({ action: 'agent-mcp-http.service' }));
       this.logger.error(
         `MCP stream handling error for agent ${context.agent.id}: ${
           error instanceof Error ? error.message : error
@@ -167,6 +170,7 @@ export class AgentMcpHttpService {
           const result = await handler(parameters);
           return this.wrapToolResult(result);
         } catch (error) {
+          logError(error, buildErrorContext({ action: 'agent-mcp-http.service' }));
           this.logger.warn(
             `Tool execution failed for ${action}: ${
               error instanceof Error ? error.message : error
@@ -556,6 +560,7 @@ export class AgentMcpHttpService {
     try {
       return JSON.stringify(value);
     } catch (error) {
+      logError(error, buildErrorContext({ action: 'agent-mcp-http.service' }));
       return `[unserializable:${error instanceof Error ? error.message : 'unknown'}]`;
     }
   }

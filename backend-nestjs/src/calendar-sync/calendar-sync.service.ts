@@ -28,6 +28,8 @@ import {
 } from '../dto/calendar-sync.dto';
 import { ConfigurationService } from '../configuration/configuration.service';
 
+import { logError } from '../common/errors/error-logger';
+import { buildErrorContext } from '../common/errors/error-context';
 type ExternalEventsResult = {
   events: any[];
   deletedEventIds: string[];
@@ -223,6 +225,7 @@ export class CalendarSyncService {
         `[handleOAuthCallback] OAuth callback completed successfully for provider: ${provider}`,
       );
     } catch (error) {
+      logError(error, buildErrorContext({ action: 'calendar-sync.service' }));
       this.logger.error(
         `[handleOAuthCallback] Error in OAuth callback for provider ${provider}:`,
         error.stack,
@@ -380,6 +383,7 @@ export class CalendarSyncService {
       try {
         await this.performSync(connection, { triggerAutomationRules: false });
       } catch (error) {
+        logError(error, buildErrorContext({ action: 'calendar-sync.service' }));
         this.logger.error(
           `[syncAllActiveConnections] Failed syncing connection ${connection.id}:`,
           error.stack,
@@ -421,6 +425,7 @@ export class CalendarSyncService {
           event,
         );
       } catch (error) {
+        logError(error, buildErrorContext({ action: 'calendar-sync.service' }));
         this.logger.warn(
           `[handleLocalEventCreated] Failed to create external event for local event ${event.id}: ${error.message}`,
         );
@@ -467,6 +472,7 @@ export class CalendarSyncService {
           existingMapping,
         );
       } catch (error) {
+        logError(error, buildErrorContext({ action: 'calendar-sync.service' }));
         this.logger.warn(
           `[handleLocalEventUpdated] Failed to update external event for local event ${event.id}: ${error.message}`,
         );
@@ -503,6 +509,7 @@ export class CalendarSyncService {
           existingMapping.externalEventId,
         );
       } catch (error) {
+        logError(error, buildErrorContext({ action: 'calendar-sync.service' }));
         this.logger.warn(
           `[handleLocalEventDeleted] Failed to delete external event for local event ${event.id}: ${error.message}`,
         );
@@ -796,6 +803,7 @@ export class CalendarSyncService {
         );
       }
     } catch (error) {
+      logError(error, buildErrorContext({ action: 'calendar-sync.service' }));
       console.error('Error fetching external calendars:', error);
     }
 
@@ -1034,6 +1042,7 @@ export class CalendarSyncService {
         }
       }
     } catch (error) {
+      logError(error, buildErrorContext({ action: 'calendar-sync.service' }));
       console.error('Error fetching calendar name:', error);
     }
 
@@ -1082,6 +1091,7 @@ export class CalendarSyncService {
             automationSettings,
           );
         } catch (error) {
+          logError(error, buildErrorContext({ action: 'calendar-sync.service' }));
           this.logger.error(
             `[performSync] Error syncing calendar ${syncedCalendar.externalCalendarId}:`,
             error.stack,
@@ -1177,6 +1187,7 @@ export class CalendarSyncService {
             touchedLocalEventIds.add(createdEvent.id);
           }
         } catch (error) {
+          logError(error, buildErrorContext({ action: 'calendar-sync.service' }));
           this.logger.error(
             `[syncCalendarEvents] Error creating local event from external event ${externalEvent.id}:`,
             error.stack,
@@ -1206,6 +1217,7 @@ export class CalendarSyncService {
             touchedLocalEventIds.add(updatedEvent.id);
           }
         } catch (error) {
+          logError(error, buildErrorContext({ action: 'calendar-sync.service' }));
           this.logger.error(
             `[syncCalendarEvents] Error updating local event from external event ${externalEvent.id}:`,
             error.stack,
@@ -1373,6 +1385,7 @@ export class CalendarSyncService {
         }
       }
     } catch (error) {
+      logError(error, buildErrorContext({ action: 'calendar-sync.service' }));
       this.logger.error(`[fetchMicrosoftCalendarEvents] Error:`, error.stack);
     }
 
@@ -1461,6 +1474,7 @@ export class CalendarSyncService {
         }
       } while (pageToken);
     } catch (error) {
+      logError(error, buildErrorContext({ action: 'calendar-sync.service' }));
       this.logger.error(`[fetchGoogleCalendarEvents] Error:`, error.stack);
     }
 
@@ -1523,6 +1537,7 @@ export class CalendarSyncService {
             localEvent,
           );
         } catch (error) {
+          logError(error, buildErrorContext({ action: 'calendar-sync.service' }));
           this.logger.warn(
             `[syncLocalCalendarChanges] Failed to create external event for local event ${localEvent.id}: ${error.message}`,
           );
@@ -1546,6 +1561,7 @@ export class CalendarSyncService {
             mapping,
           );
         } catch (error) {
+          logError(error, buildErrorContext({ action: 'calendar-sync.service' }));
           this.logger.warn(
             `[syncLocalCalendarChanges] Failed to update external event for local event ${localEvent.id}: ${error.message}`,
           );
@@ -1565,6 +1581,7 @@ export class CalendarSyncService {
           mapping.externalEventId,
         );
       } catch (error) {
+        logError(error, buildErrorContext({ action: 'calendar-sync.service' }));
         this.logger.warn(
           `[syncLocalCalendarChanges] Failed to delete external event ${mapping.externalEventId}: ${error.message}`,
         );
@@ -1956,6 +1973,7 @@ export class CalendarSyncService {
 
       return await response.json();
     } catch (error) {
+      logError(error, buildErrorContext({ action: 'calendar-sync.service' }));
       this.logger.error(
         `[fetchMicrosoftEventDetails] Error fetching event ${eventId}:`,
         error.stack,
@@ -2183,6 +2201,7 @@ export class CalendarSyncService {
     try {
       await this.syncEventMappingRepository.save(eventMapping);
     } catch (error) {
+      logError(error, buildErrorContext({ action: 'calendar-sync.service' }));
       if (this.isUniqueConstraintViolation(error)) {
         this.logger.warn(
           `[createLocalEventFromExternal] Duplicate mapping for external event ${eventSource.id}; removing local event ${savedEvent.id}`,
@@ -2298,6 +2317,7 @@ export class CalendarSyncService {
       new Intl.DateTimeFormat('en-US', { timeZone }).format(new Date());
       return timeZone;
     } catch (error) {
+      logError(error, buildErrorContext({ action: 'calendar-sync.service' }));
       this.logger.warn(
         `[calendar-sync] Invalid user timezone "${timeZone}", falling back to ${fallback}`,
       );
@@ -2487,6 +2507,7 @@ export class CalendarSyncService {
           });
       }
     } catch (error) {
+      logError(error, buildErrorContext({ action: 'calendar-sync.service' }));
       this.logger.error(
         'Error triggering calendar import automation rules:',
         error,

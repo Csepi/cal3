@@ -9,6 +9,8 @@ import { Repository } from 'typeorm';
 import { createHash } from 'crypto';
 import { IdempotencyRecord } from '../../entities/idempotency-record.entity';
 
+import { logError } from '../errors/error-logger';
+import { buildErrorContext } from '../errors/error-context';
 export interface IdempotencyOptions<T> {
   key: string | undefined;
   scope: string;
@@ -84,6 +86,7 @@ export class IdempotencyService {
       await this.repository.save(record);
       return result;
     } catch (error) {
+      logError(error, buildErrorContext({ action: 'idempotency.service' }));
       this.logger.warn(
         `Idempotent handler for key ${key} failed: ${
           (error as Error)?.message ?? error

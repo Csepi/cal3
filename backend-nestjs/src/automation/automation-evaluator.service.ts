@@ -14,6 +14,8 @@ import {
   ConditionsResultDto,
 } from './dto/automation-audit-log.dto';
 
+import { logError } from '../common/errors/error-logger';
+import { buildErrorContext } from '../common/errors/error-context';
 @Injectable()
 export class AutomationEvaluatorService {
   /**
@@ -92,6 +94,7 @@ export class AutomationEvaluatorService {
         condition.value,
       );
     } catch (error) {
+      logError(error, buildErrorContext({ action: 'automation-evaluator.service' }));
       evaluation.error = error.message;
       evaluation.passed = false;
     }

@@ -24,6 +24,8 @@ import {
 } from '../dto/event-comment.dto';
 import { NotificationsService } from '../notifications/notifications.service';
 
+import { logError } from '../common/errors/error-logger';
+import { buildErrorContext } from '../common/errors/error-context';
 @Injectable()
 export class EventCommentsService {
   private readonly templateLibrary: Record<CommentTemplateKey, string> = {
@@ -422,6 +424,7 @@ export class EventCommentsService {
         },
       });
     } catch (error) {
+      logError(error, buildErrorContext({ action: 'event-comments.service' }));
       // Avoid blocking comment creation if notifications fail
       console.error('Failed to publish comment notification', error);
     }

@@ -20,6 +20,8 @@ import {
 } from '../dto/calendar.dto';
 import { NotificationsService } from '../notifications/notifications.service';
 
+import { logError } from '../common/errors/error-logger';
+import { buildErrorContext } from '../common/errors/error-context';
 @Injectable()
 export class CalendarsService {
   private readonly logger = new Logger(CalendarsService.name);
@@ -303,6 +305,7 @@ export class CalendarsService {
         },
       });
     } catch (error) {
+      logError(error, buildErrorContext({ action: 'calendars.service' }));
       this.logger.error(
         `Failed to send calendar ${action} notification for calendar ${calendar.id}`,
         error instanceof Error ? error.stack : String(error),

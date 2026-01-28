@@ -22,6 +22,8 @@ import { AssignOrganisationUserDto } from '../dto/organisation-user.dto';
 import { CascadeDeletionService } from '../common/services/cascade-deletion.service';
 import { NotificationsService } from '../notifications/notifications.service';
 
+import { logError } from '../common/errors/error-logger';
+import { buildErrorContext } from '../common/errors/error-context';
 @Injectable()
 export class OrganisationsService {
   private readonly logger = new Logger(OrganisationsService.name);
@@ -372,6 +374,7 @@ export class OrganisationsService {
         },
       });
     } catch (error) {
+      logError(error, buildErrorContext({ action: 'organisations.service' }));
       this.logger.error(
         `Failed to send organisation membership notification for organisation ${organisation.id}`,
         error instanceof Error ? error.stack : String(error),

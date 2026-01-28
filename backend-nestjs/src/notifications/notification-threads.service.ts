@@ -12,6 +12,8 @@ import { NotificationThreadState } from '../entities/notification-thread-state.e
 import { NotificationMessage } from '../entities/notification-message.entity';
 import { NotificationsGateway } from './notifications.gateway';
 
+import { logError } from '../common/errors/error-logger';
+import { buildErrorContext } from '../common/errors/error-context';
 export interface NotificationThreadSummary {
   id: number;
   threadKey: string;
@@ -170,6 +172,7 @@ export class NotificationThreadsService {
         ?.to(`user:${userId}`)
         .emit('thread:state', { threadId });
     } catch (error) {
+      logError(error, buildErrorContext({ action: 'notification-threads.service' }));
       this.logger.debug(
         `Failed to emit thread state for user ${userId}, thread ${threadId}: ${
           error instanceof Error ? error.message : String(error)

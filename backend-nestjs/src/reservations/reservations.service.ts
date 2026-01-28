@@ -15,6 +15,8 @@ import {
 import { NotificationsService } from '../notifications/notifications.service';
 import { ReservationAvailabilityService } from '../common/services/reservation-availability.service';
 
+import { logError } from '../common/errors/error-logger';
+import { buildErrorContext } from '../common/errors/error-context';
 @Injectable()
 export class ReservationsService {
   private readonly logger = new Logger(ReservationsService.name);
@@ -263,6 +265,7 @@ export class ReservationsService {
         },
       });
     } catch (error) {
+      logError(error, buildErrorContext({ action: 'reservations.service' }));
       this.logger.error(
         'Failed to dispatch reservation notification',
         error instanceof Error ? error.stack : String(error),

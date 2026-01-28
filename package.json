@@ -18,7 +18,15 @@
     "docker:precheck": "npm run docker:check-env && npm --prefix backend-nestjs run lint && npm --prefix backend-nestjs run test",
     "docker:build": "npm run docker:precheck && docker compose -f docker/compose.yaml --profile local build",
     "docker:up": "docker compose -f docker/compose.yaml --profile local up",
-    "docker:logs": "docker compose -f docker/compose.yaml logs -f"
+    "docker:logs": "docker compose -f docker/compose.yaml logs -f",
+    "scripts:db:check-resources": "node scripts/db/check-resources-and-hours.js",
+    "scripts:seed:populate": "node scripts/seed/populate-data.js",
+    "scripts:test:api": "node scripts/test/test-api.js",
+    "scripts:test:browser": "node scripts/test/test-browser.js",
+    "scripts:test:org-fix": "node scripts/test/test-org-fix.js",
+    "scripts:test:public-booking": "node scripts/test/test-public-booking-api.js",
+    "scripts:verify:migration": "node scripts/verify/verify-migration.js",
+    "scripts:verify:org-access": "node scripts/verify/verify-org-access.js"
   },
   "keywords": [
     "calendar",

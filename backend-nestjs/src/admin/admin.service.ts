@@ -1,3 +1,5 @@
+import { logError } from '../common/errors/error-logger';
+import { buildErrorContext } from '../common/errors/error-context';
 ﻿import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, DataSourceOptions, IsNull, Repository } from 'typeorm';
@@ -722,6 +724,7 @@ export class AdminService {
         ...results,
       };
     } catch (error: unknown) {
+      logError(error, buildErrorContext({ action: 'admin.service' }));
       const normalizedError = this.normalizeError(error);
       console.error('Error initializing public booking:', normalizedError);
       return {

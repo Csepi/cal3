@@ -9,7 +9,7 @@
   "FRONTEND_PORT": "8080",
   "BACKEND_PORT": "8081",
   "SOURCE": "backend-dotenv",
-  "GENERATED_AT": "2026-01-22T09:49:10.659Z"
+  "GENERATED_AT": "2026-01-28T11:21:04.911Z"
 };
   const target = (globalScope.ENV = globalScope.ENV || {});
   for (const [key, value] of Object.entries(env)) {

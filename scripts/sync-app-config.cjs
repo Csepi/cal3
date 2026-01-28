@@ -2,6 +2,7 @@
 const fs = require('fs');
 const path = require('path');
 const { resolveAppEnv, DEFAULTS } = require('../config/app-env');
+const { logError } = require('./lib/errors');
 
 const repoRoot = path.resolve(__dirname, '..');
 const runtimeConfigPath = path.join(
@@ -47,7 +48,7 @@ function main() {
     const env = resolveAppEnv();
     writeRuntimeConfig(env, env.source);
   } catch (error) {
-    console.error('Failed to sync runtime config:', error);
+    logError('sync-app-config', error);
     console.warn(
       'Falling back to default localhost configuration so the build can continue.',
     );

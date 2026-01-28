@@ -2,6 +2,8 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { LoggingService } from './logging.service';
 
+import { logError } from '../common/errors/error-logger';
+import { buildErrorContext } from '../common/errors/error-context';
 @Injectable()
 export class LogCleanupService {
   private readonly logger = new Logger(LogCleanupService.name);
@@ -18,6 +20,7 @@ export class LogCleanupService {
         );
       }
     } catch (error) {
+      logError(error, buildErrorContext({ action: 'log-cleanup.service' }));
       this.logger.error('Log retention job failed', error?.stack);
     }
   }

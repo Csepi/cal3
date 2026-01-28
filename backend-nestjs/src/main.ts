@@ -8,7 +8,7 @@ if (typeof globalThis.crypto === 'undefined') {
 
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { ValidationPipe, Logger } from '@nestjs/common';
+import { Logger } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { DataSource } from 'typeorm';
 import { DatabaseDiagnosticsService } from './database/database-diagnostics.service';
@@ -17,6 +17,8 @@ import { AllExceptionsFilter } from './common/filters/http-exception.filter';
 import { RequestContextService } from './common/services/request-context.service';
 import { RequestContextUserInterceptor } from './common/interceptors/request-context-user.interceptor';
 import { RequestLoggingInterceptor } from './logging/request-logging.interceptor';
+import { ResponseInterceptor } from './common/responses/response.interceptor';
+import { createApiValidationPipe } from './common/pipes/validation.pipe';
 import {
   applyPermissionsPolicy,
   buildCorsOptions,
@@ -164,23 +166,15 @@ async function bootstrap() {
     const requestContext = app.get(RequestContextService);
     app.useGlobalFilters(new AllExceptionsFilter(requestContext));
     const requestLoggingInterceptor = app.get(RequestLoggingInterceptor);
+    const responseInterceptor = new ResponseInterceptor(requestContext);
     app.useGlobalInterceptors(
       new RequestContextUserInterceptor(requestContext),
       requestLoggingInterceptor,
+      responseInterceptor,
     );
 
     // Global validation pipe
-    app.useGlobalPipes(
-      new ValidationPipe({
-        whitelist: true,
-        transform: true,
-        forbidNonWhitelisted: true,
-        stopAtFirstError: true,
-        forbidUnknownValues: true,
-        enableDebugMessages: process.env.NODE_ENV !== 'production',
-        transformOptions: { enableImplicitConversion: true },
-      }),
-    );
+    app.useGlobalPipes(createApiValidationPipe());
 
     // API global prefix
     app.setGlobalPrefix('api');

@@ -6,6 +6,8 @@ import { ResourceType } from '../../entities/resource-type.entity';
 import { Resource } from '../../entities/resource.entity';
 import { Reservation } from '../../entities/reservation.entity';
 
+import { logError } from '../errors/error-logger';
+import { buildErrorContext } from '../errors/error-context';
 export interface CascadeDeletePreview {
   resourceTypes?: number;
   resources?: number;
@@ -175,6 +177,7 @@ export class CascadeDeletionService {
         ...preview,
       };
     } catch (error) {
+      logError(error, buildErrorContext({ action: 'cascade-deletion.service' }));
       await queryRunner.rollbackTransaction();
       this.logger.error(
         `Failed to delete organisation ${organisationId}:`,
@@ -283,6 +286,7 @@ export class CascadeDeletionService {
         ...preview,
       };
     } catch (error) {
+      logError(error, buildErrorContext({ action: 'cascade-deletion.service' }));
       await queryRunner.rollbackTransaction();
       this.logger.error(
         `Failed to delete resource type ${resourceTypeId}:`,
@@ -368,6 +372,7 @@ export class CascadeDeletionService {
         ...preview,
       };
     } catch (error) {
+      logError(error, buildErrorContext({ action: 'cascade-deletion.service' }));
       await queryRunner.rollbackTransaction();
       this.logger.error(`Failed to delete resource ${resourceId}:`, error);
       throw error;

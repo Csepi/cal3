@@ -39,6 +39,8 @@ import {
   ActionResultDto,
 } from './dto/automation-audit-log.dto';
 
+import { logError } from '../common/errors/error-logger';
+import { buildErrorContext } from '../common/errors/error-context';
 @Injectable()
 export class AutomationService {
   private readonly logger = new Logger(AutomationService.name);
@@ -447,6 +449,7 @@ export class AutomationService {
       // Update rule metadata
       await this.updateRuleExecutionMetadata(rule.id);
     } catch (error) {
+      logError(error, buildErrorContext({ action: 'automation.service' }));
       // Log execution failure
       const executionTimeMs = Date.now() - startTime;
 
@@ -520,6 +523,7 @@ export class AutomationService {
         executedAt: result.executedAt,
       };
     } catch (error) {
+      logError(error, buildErrorContext({ action: 'automation.service' }));
       return {
         actionId: action.id,
         actionType: action.actionType,

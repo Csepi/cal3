@@ -17,6 +17,8 @@ import { User, UserRole, UsagePlan } from '../entities/user.entity';
 import { OrganisationAdminService } from './organisation-admin.service';
 import { CreateReservationCalendarDto, AssignRoleDto } from './dto';
 
+import { logError } from '../common/errors/error-logger';
+import { buildErrorContext } from '../common/errors/error-context';
 /**
  * ReservationCalendarService
  *
@@ -442,6 +444,7 @@ export class ReservationCalendarService {
           assignedBy,
         );
       } catch (error) {
+        logError(error, buildErrorContext({ action: 'reservation-calendar.service' }));
         // Log error but continue with other assignments
         console.warn(`Failed to assign role to user ${userId}:`, error.message);
       }
