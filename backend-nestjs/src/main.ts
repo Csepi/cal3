@@ -49,17 +49,27 @@ async function bootstrap() {
       await NestFactory.create<NestExpressApplication>(AppModule, {
         bufferLogs: true,
       });
+    dbLogger.log('NestJS application instance created.');
 
+    dbLogger.log('Configuring application logger...');
     const appLogger = app.get(AppLoggerService);
     if (process.env.LOG_JSON === 'true') {
       appLogger.setFormat('json');
     }
     app.useLogger(appLogger);
+    dbLogger.log('Application logger configured.');
+
+    dbLogger.log('Enabling shutdown hooks and proxy settings...');
     app.enableShutdownHooks();
     app.enable('trust proxy');
+    dbLogger.log('Shutdown hooks and proxy settings enabled.');
 
     // Get DataSource to monitor connection
+    dbLogger.log('Resolving DataSource from NestJS container...');
     const dataSource = app.get(DataSource);
+    dbLogger.log(
+      `DataSource resolved. Initialized: ${dataSource.isInitialized}`,
+    );
 
     if (dataSource.isInitialized) {
       const connectionDuration = Date.now() - startTime;
@@ -120,9 +130,16 @@ async function bootstrap() {
       '0.0.0.0';
     const baseUrl = process.env.BASE_URL || 'http://localhost';
 
+    dbLogger.log(
+      `Resolved server config -> host: ${backendHost}, port: ${backendPort}, baseUrl: ${baseUrl}`,
+    );
     const allowedOrigins = resolveAllowedOrigins();
     const corsOptions = buildCorsOptions(allowedOrigins);
     const allowedHeaders = getCorsAllowedHeaders();
+
+    dbLogger.log(`CORS allowed origins: ${allowedOrigins.join(', ')}`);
+    dbLogger.log(`CORS allowed headers: ${allowedHeaders.join(', ')}`);
+    dbLogger.log('Applying middleware: cookieParser, helmet, permissions policy...');
     app.use(cookieParser());
     app.use(helmet(buildHelmetOptions(allowedOrigins)));
     app.use((req, res, next) => {
@@ -130,7 +147,12 @@ async function bootstrap() {
       applyPermissionsPolicy(res);
       next();
     });
+    dbLogger.log('Middleware applied.');
+
+    dbLogger.log('Enabling CORS...');
     app.enableCors(corsOptions);
+    dbLogger.log('CORS enabled.');
+
     app.use((req, res: any, next) => {
       res.setHeader('Access-Control-Allow-Credentials', 'true');
       if (req.method === 'OPTIONS') {
@@ -159,6 +181,7 @@ async function bootstrap() {
       next();
     });
 
+    dbLogger.log('Registering global filters and interceptors...');
     const requestContext = app.get(RequestContextService);
     app.useGlobalFilters(new AllExceptionsFilter(requestContext));
     const requestLoggingInterceptor = app.get(RequestLoggingInterceptor);
@@ -168,14 +191,20 @@ async function bootstrap() {
       requestLoggingInterceptor,
       responseInterceptor,
     );
+    dbLogger.log('Global filters and interceptors registered.');
 
     // Global validation pipe
+    dbLogger.log('Registering global validation pipe...');
     app.useGlobalPipes(createApiValidationPipe());
+    dbLogger.log('Global validation pipe registered.');
 
     // API global prefix
+    dbLogger.log('Setting global API prefix to /api...');
     app.setGlobalPrefix('api');
+    dbLogger.log('Global API prefix set.');
 
     // Swagger documentation
+    dbLogger.log('Building Swagger documentation...');
     const config = new DocumentBuilder()
       .setTitle('Calendar Sharing API')
       .setDescription(
@@ -186,8 +215,11 @@ async function bootstrap() {
       .build();
     const document = SwaggerModule.createDocument(app, config);
     SwaggerModule.setup('api/docs', app, document);
+    dbLogger.log('Swagger documentation registered.');
 
+    dbLogger.log('Starting HTTP server...');
     await app.listen(backendPort, backendHost);
+    dbLogger.log('HTTP server started.');
 
     const totalStartupTime = Date.now() - startTime;
     logger.log('========================================');
