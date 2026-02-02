@@ -218,7 +218,7 @@ export const Calendar = memo<CalendarContainerProps>(({
           />
         );
 
-      case 'day':
+      case 'day': {
         // For day view, we can reuse WeekView with a single day
         const dayWeek = generateWeek(viewData.data, viewData.data);
         return (
@@ -232,6 +232,7 @@ export const Calendar = memo<CalendarContainerProps>(({
             className="day-view"
           />
         );
+      }
 
       default:
         return (

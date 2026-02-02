@@ -28,7 +28,7 @@ const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
   // Get warning theme colors based on the user's profile color
   const getWarningTheme = (color: string) => {
     // Convert user's theme color to warning variants
-    const warningThemes: Record<string, any> = {
+    const warningThemes: Record<string, unknown> = {
       '#3b82f6': { // Blue -> Red warning
         bg: 'bg-red-50',
         border: 'border-red-200',

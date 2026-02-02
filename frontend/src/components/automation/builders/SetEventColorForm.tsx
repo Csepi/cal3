@@ -3,8 +3,8 @@ import { SmartValuePicker } from '../SmartValuePicker';
 import { TriggerType } from '../../../types/Automation';
 
 interface SetEventColorFormProps {
-  config: Record<string, any>;
-  onChange: (config: Record<string, any>) => void;
+  config: Record<string, unknown>;
+  onChange: (config: Record<string, unknown>) => void;
   triggerType?: TriggerType | null;
 }
 
@@ -153,3 +153,4 @@ export const SetEventColorForm: React.FC<SetEventColorFormProps> = ({ config, on
     </div>
   );
 };
+

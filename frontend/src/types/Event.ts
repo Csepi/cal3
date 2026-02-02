@@ -12,7 +12,7 @@ export interface Event {
   icon?: string;
   status?: string;
   recurrenceType?: string;
-  recurrenceRule?: any;
+  recurrenceRule?: RecurrencePattern | Record<string, unknown>;
   notes?: string;
   createdAt: string;
   updatedAt: string;
@@ -92,7 +92,7 @@ export interface CreateEventRequest {
   icon?: string;
   calendarId?: number;
   recurrenceType?: RecurrenceType;
-  recurrenceRule?: any;
+  recurrenceRule?: RecurrencePattern | Record<string, unknown>;
 }
 
 export interface UpdateEventRequest extends CreateEventRequest {

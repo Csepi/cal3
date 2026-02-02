@@ -20,7 +20,7 @@ export class ApiError extends Error {
  */
 export async function createDetailedError(
   response: Response,
-  requestBody?: any,
+  requestBody?: unknown,
   context?: string
 ): Promise<ApiError> {
   const details: ErrorDetails = {
@@ -85,7 +85,7 @@ export async function createDetailedError(
 export function createNetworkError(
   error: Error,
   url?: string,
-  requestBody?: any,
+  requestBody?: unknown,
   context?: string
 ): ApiError {
   const details: ErrorDetails = {
@@ -175,11 +175,21 @@ export function extractErrorDetails(error: unknown): ErrorDetails {
   }
 
   if (typeof error === 'object' && error !== null) {
-    const obj = error as any;
+    const obj = error as Record<string, unknown>;
+    const message =
+      typeof obj.message === 'string'
+        ? obj.message
+        : typeof obj.error === 'string'
+          ? obj.error
+          : 'An unknown error occurred';
+    const timestamp =
+      typeof obj.timestamp === 'string'
+        ? obj.timestamp
+        : new Date().toISOString();
     return {
-      message: obj.message || obj.error || 'An unknown error occurred',
       ...obj,
-      timestamp: obj.timestamp || new Date().toISOString(),
+      message,
+      timestamp,
     };
   }
 

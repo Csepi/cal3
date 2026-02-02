@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import type { Calendar as CalendarType } from '../types/Calendar';
+import type { ReservationResource } from '../types/reservation';
 
 interface CalendarSidebarProps {
   calendars: CalendarType[];
@@ -10,7 +11,7 @@ interface CalendarSidebarProps {
   onEditCalendar: (calendar: CalendarType) => void;
   onDeleteCalendar?: (calendar: CalendarType) => void;
   themeColor: string;
-  resources?: any[];
+  resources?: ReservationResource[];
   selectedResources?: number[];
   onToggleResource?: (resourceId: number) => void;
   onSelectAllResources?: () => void;
@@ -48,7 +49,7 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
   };
   // Helper function to get theme-based colors
   const getThemeColors = (color: string) => {
-    const colorMap: Record<string, any> = {
+    const colorMap: Record<string, unknown> = {
       '#ef4444': { gradient: 'from-red-50 via-red-100 to-red-200', primary: 'red', light: 'red-100', text: 'red-700', hover: 'red-200' },
       '#f59e0b': { gradient: 'from-orange-50 via-orange-100 to-orange-200', primary: 'orange', light: 'orange-100', text: 'orange-700', hover: 'orange-200' },
       '#eab308': { gradient: 'from-yellow-50 via-yellow-100 to-yellow-200', primary: 'yellow', light: 'yellow-100', text: 'yellow-700', hover: 'yellow-200' },
@@ -124,7 +125,7 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
         {/* Reservation icons */}
         {resources.length > 0 && (
           <div className="flex-1 p-2 border-t border-gray-200 space-y-2 overflow-y-auto">
-            {resources.map((resource: any) => {
+            {resources.map((resource) => {
               const isSelected = selectedResources.includes(resource.id);
               return (
                 <button

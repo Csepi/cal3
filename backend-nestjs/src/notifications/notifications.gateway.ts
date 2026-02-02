@@ -8,15 +8,14 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import {
-  Inject,
   Logger,
   UnauthorizedException,
-  forwardRef,
 } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { NotificationsService } from './notifications.service';
+import { ModuleRef } from '@nestjs/core';
 import {
   NOTIFICATION_WS_NAMESPACE,
   NOTIFICATION_WS_PATH,
@@ -47,8 +46,7 @@ export class NotificationsGateway
   constructor(
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
-    @Inject(forwardRef(() => NotificationsService))
-    private readonly notificationsService: NotificationsService,
+    private readonly moduleRef: ModuleRef,
   ) {
     this.jwtSecret =
       this.configService.get<string>('JWT_SECRET') || 'default-secret-key';
@@ -69,7 +67,9 @@ export class NotificationsGateway
       }
       client.userId = userId;
       client.join(`user:${userId}`);
-      this.notificationsService.trackConnection(userId, client.id);
+      this.moduleRef
+        .get(NotificationsService, { strict: false })
+        ?.trackConnection(userId, client.id);
       this.logger.debug(
         `WebSocket connection established for user ${client.userId} (${client.id})`,
       );
@@ -83,7 +83,9 @@ export class NotificationsGateway
 
   async handleDisconnect(client: AuthenticatedSocket): Promise<void> {
     if (client.userId) {
-      this.notificationsService.dropConnection(client.userId, client.id);
+      this.moduleRef
+        .get(NotificationsService, { strict: false })
+        ?.dropConnection(client.userId, client.id);
       this.logger.debug(
         `WebSocket disconnected for user ${client.userId} (${client.id})`,
       );

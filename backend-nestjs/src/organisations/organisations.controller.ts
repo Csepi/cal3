@@ -8,7 +8,6 @@ import {
   Param,
   UseGuards,
   Req,
-  ForbiddenException,
   NotFoundException,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -27,6 +26,7 @@ import { UserPermissionsService } from '../common/services/user-permissions.serv
 import { OrganisationOwnershipGuard } from '../auth/guards/organisation-ownership.guard';
 import { OrganisationScope } from '../common/decorators/organisation-scope.decorator';
 import { OrganisationRoleType } from '../entities/organisation-user.entity';
+import { RequireOrgAdmin } from '../common/decorators/require-org-admin.decorator';
 
 @Controller('organisations')
 @UseGuards(JwtAuthGuard)
@@ -106,23 +106,13 @@ export class OrganisationsController {
     source: 'params',
     minimumRole: OrganisationRoleType.ADMIN,
   })
+  @RequireOrgAdmin('You do not have permission to update this organisation')
   async update(
     @Param('id') id: string,
     @Body() updateDto: UpdateOrganisationDto,
     @Req() req,
   ) {
     const organizationId = +id;
-
-    // Check if user can admin this organization
-    const canAdmin = await this.userPermissionsService.canUserAdminOrganization(
-      req.user.id,
-      organizationId,
-    );
-    if (!canAdmin) {
-      throw new ForbiddenException(
-        'You do not have permission to update this organisation',
-      );
-    }
 
     return await this.organisationsService.update(organizationId, updateDto);
   }
@@ -141,23 +131,13 @@ export class OrganisationsController {
     source: 'params',
     minimumRole: OrganisationRoleType.ADMIN,
   })
+  @RequireOrgAdmin('You do not have permission to assign users to this organisation')
   async assignUser(
     @Param('id') id: string,
     @Body() assignDto: AssignUserDto,
     @Req() req,
   ) {
     const organizationId = +id;
-
-    // Check if user can admin this organization
-    const canAdmin = await this.userPermissionsService.canUserAdminOrganization(
-      req.user.id,
-      organizationId,
-    );
-    if (!canAdmin) {
-      throw new ForbiddenException(
-        'You do not have permission to assign users to this organisation',
-      );
-    }
 
     return await this.organisationsService.assignUser(
       organizationId,
@@ -173,23 +153,13 @@ export class OrganisationsController {
     source: 'params',
     minimumRole: OrganisationRoleType.ADMIN,
   })
+  @RequireOrgAdmin('You do not have permission to remove users from this organisation')
   async removeUser(
     @Param('id') id: string,
     @Param('userId') userId: string,
     @Req() req,
   ) {
     const organizationId = +id;
-
-    // Check if user can admin this organization
-    const canAdmin = await this.userPermissionsService.canUserAdminOrganization(
-      req.user.id,
-      organizationId,
-    );
-    if (!canAdmin) {
-      throw new ForbiddenException(
-        'You do not have permission to remove users from this organisation',
-      );
-    }
 
     return await this.organisationsService.removeUser(
       organizationId,
@@ -206,23 +176,13 @@ export class OrganisationsController {
    * Body: { userId: number, role: OrganisationRoleType }
    */
   @Post(':id/users/assign')
+  @RequireOrgAdmin('You do not have permission to assign users to this organisation')
   async assignUserWithRole(
     @Param('id') id: string,
     @Body() assignDto: AssignOrganisationUserDto,
     @Req() req,
   ) {
     const organizationId = +id;
-
-    // Check if user can admin this organization
-    const canAdmin = await this.userPermissionsService.canUserAdminOrganization(
-      req.user.id,
-      organizationId,
-    );
-    if (!canAdmin) {
-      throw new ForbiddenException(
-        'You do not have permission to assign users to this organisation',
-      );
-    }
 
     return await this.organisationsService.assignUserWithRole(
       organizationId,
@@ -264,6 +224,7 @@ export class OrganisationsController {
     source: 'params',
     minimumRole: OrganisationRoleType.ADMIN,
   })
+  @RequireOrgAdmin('You do not have permission to update user roles in this organisation')
   async updateUserRole(
     @Param('id') id: string,
     @Param('userId') userId: string,
@@ -271,17 +232,6 @@ export class OrganisationsController {
     @Req() req,
   ) {
     const organizationId = +id;
-
-    // Check if user can admin this organization
-    const canAdmin = await this.userPermissionsService.canUserAdminOrganization(
-      req.user.id,
-      organizationId,
-    );
-    if (!canAdmin) {
-      throw new ForbiddenException(
-        'You do not have permission to update user roles in this organisation',
-      );
-    }
 
     return await this.organisationsService.updateUserRole(
       organizationId,
@@ -302,23 +252,13 @@ export class OrganisationsController {
     source: 'params',
     minimumRole: OrganisationRoleType.ADMIN,
   })
+  @RequireOrgAdmin('You do not have permission to remove users from this organisation')
   async removeUserFromOrganization(
     @Param('id') id: string,
     @Param('userId') userId: string,
     @Req() req,
   ) {
     const organizationId = +id;
-
-    // Check if user can admin this organization
-    const canAdmin = await this.userPermissionsService.canUserAdminOrganization(
-      req.user.id,
-      organizationId,
-    );
-    if (!canAdmin) {
-      throw new ForbiddenException(
-        'You do not have permission to remove users from this organisation',
-      );
-    }
 
     await this.organisationsService.removeUserFromOrganization(
       organizationId,
@@ -339,19 +279,9 @@ export class OrganisationsController {
     source: 'params',
     minimumRole: OrganisationRoleType.ADMIN,
   })
+  @RequireOrgAdmin('You do not have permission to view deletion preview for this organisation')
   async previewDeletion(@Param('id') id: string, @Req() req) {
     const organizationId = +id;
-
-    // Check if user can admin this organization
-    const canAdmin = await this.userPermissionsService.canUserAdminOrganization(
-      req.user.id,
-      organizationId,
-    );
-    if (!canAdmin) {
-      throw new ForbiddenException(
-        'You do not have permission to view deletion preview for this organisation',
-      );
-    }
 
     return await this.organisationsService.previewOrganizationDeletion(
       organizationId,
@@ -370,19 +300,9 @@ export class OrganisationsController {
     source: 'params',
     minimumRole: OrganisationRoleType.ADMIN,
   })
+  @RequireOrgAdmin('You do not have permission to delete this organisation')
   async deleteCascade(@Param('id') id: string, @Req() req) {
     const organizationId = +id;
-
-    // Check if user can admin this organization
-    const canAdmin = await this.userPermissionsService.canUserAdminOrganization(
-      req.user.id,
-      organizationId,
-    );
-    if (!canAdmin) {
-      throw new ForbiddenException(
-        'You do not have permission to delete this organisation',
-      );
-    }
 
     const result = await this.organisationsService.deleteOrganizationCascade(
       organizationId,
@@ -403,23 +323,13 @@ export class OrganisationsController {
     source: 'params',
     minimumRole: OrganisationRoleType.ADMIN,
   })
+  @RequireOrgAdmin('You do not have permission to update this organisation color')
   async updateColor(
     @Param('id') id: string,
     @Body() body: { color: string; cascadeToResourceTypes?: boolean },
     @Req() req,
   ) {
     const organizationId = +id;
-
-    // Check if user can admin this organization
-    const canAdmin = await this.userPermissionsService.canUserAdminOrganization(
-      req.user.id,
-      organizationId,
-    );
-    if (!canAdmin) {
-      throw new ForbiddenException(
-        'You do not have permission to update this organisation color',
-      );
-    }
 
     return await this.organisationsService.updateColor(
       organizationId,

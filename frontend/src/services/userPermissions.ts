@@ -9,6 +9,19 @@ export interface UserPermissions {
   isSuperAdmin: boolean;
 }
 
+export interface AccessibleOrganization {
+  id: number;
+  name: string;
+  description?: string;
+}
+
+export interface AccessibleReservationCalendar {
+  id: number;
+  name?: string;
+  organisationId?: number;
+  role?: string;
+}
+
 export class UserPermissionsService {
   private static permissions: UserPermissions | null = null;
   private static lastFetch: number = 0;
@@ -79,7 +92,7 @@ export class UserPermissionsService {
   /**
    * Get accessible organizations
    */
-  static async getAccessibleOrganizations(): Promise<any[]> {
+  static async getAccessibleOrganizations(): Promise<AccessibleOrganization[]> {
     try {
       return await apiService.get('/user-permissions/accessible-organizations');
     } catch (error) {
@@ -91,7 +104,7 @@ export class UserPermissionsService {
   /**
    * Get accessible reservation calendars
    */
-  static async getAccessibleReservationCalendars(): Promise<any[]> {
+  static async getAccessibleReservationCalendars(): Promise<AccessibleReservationCalendar[]> {
     try {
       return await apiService.get('/user-permissions/accessible-reservation-calendars');
     } catch (error) {

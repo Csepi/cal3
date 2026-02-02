@@ -8,6 +8,11 @@
 
 import React from 'react';
 import { Card, CardHeader, Button } from '../ui';
+import type {
+  ReservationCustomerInfo,
+  ReservationResource,
+  ReservationUserSummary,
+} from '../../types/reservation';
 
 export interface Reservation {
   id: number;
@@ -15,10 +20,10 @@ export interface Reservation {
   endTime: string;
   quantity: number;
   status: string;
-  customerInfo?: any;
+  customerInfo?: ReservationCustomerInfo;
   notes?: string;
-  resource?: any;
-  createdBy?: any;
+  resource?: ReservationResource;
+  createdBy?: ReservationUserSummary;
 }
 
 export interface ReservationListTableProps {

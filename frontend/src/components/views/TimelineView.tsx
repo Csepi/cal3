@@ -23,6 +23,11 @@ type TimelineItem = Event & {
   calendarRank: number;
 };
 
+type EventWithLegacyFields = Event & {
+  start?: string;
+  end?: string;
+};
+
 const clamp = (value: number, min: number, max: number) =>
   Math.min(max, Math.max(min, value));
 
@@ -188,15 +193,16 @@ const TimelineView: React.FC<TimelineViewProps> = ({
   const normalizedEvents = useMemo(() => {
     const mapped = events
       .map((event) => {
+        const sourceEvent = event as EventWithLegacyFields;
         const start = parseDateTime(
-          (event as any).startDate || (event as any).start,
-          (event as any).startTime,
+          sourceEvent.startDate || sourceEvent.start,
+          sourceEvent.startTime,
         );
         let end = parseDateTime(
-          (event as any).endDate ||
-            (event as any).end ||
-            (event as any).startDate,
-          (event as any).endTime,
+          sourceEvent.endDate ||
+            sourceEvent.end ||
+            sourceEvent.startDate,
+          sourceEvent.endTime,
         );
         if (!start) return null;
         if (!end) {

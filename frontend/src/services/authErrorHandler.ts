@@ -153,6 +153,11 @@ export class AuthErrorHandler {
    * Redirect to login page with reason
    */
   private redirectToLogin(statusCode: 401 | 403): void {
+    // Avoid reload loops when unauthenticated API calls fire from providers while already on login page.
+    if (window.location.pathname === '/login') {
+      return;
+    }
+
     const reason = statusCode === 401
       ? 'session_expired'
       : 'access_denied';

@@ -73,7 +73,7 @@ const PublicBookingPage: React.FC = () => {
         const data = await response.json();
         setResource(data);
         setError(null);
-      } catch (err: any) {
+      } catch (err: unknown) {
         setError(err.message || 'An error occurred while loading the resource');
       } finally {
         setLoading(false);
@@ -102,7 +102,7 @@ const PublicBookingPage: React.FC = () => {
 
         const data = await response.json();
         setAvailableSlots(data.slots || []);
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error('Error fetching availability:', err);
         setAvailableSlots([]);
       } finally {
@@ -186,7 +186,7 @@ const PublicBookingPage: React.FC = () => {
         const data = await availResponse.json();
         setAvailableSlots(data.slots || []);
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err.message || 'Failed to create booking');
       console.error('Booking error:', err);
     } finally {

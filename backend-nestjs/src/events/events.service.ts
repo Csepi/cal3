@@ -3,19 +3,13 @@ import {
   ForbiddenException,
   NotFoundException,
   BadRequestException,
-  Inject,
-  forwardRef,
   Logger,
-  Optional,
 } from '@nestjs/common';
+import { ModuleRef } from '@nestjs/core';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Event, RecurrenceType } from '../entities/event.entity';
-import {
-  Calendar,
-  SharePermission,
-  CalendarShare,
-} from '../entities/calendar.entity';
+import { Calendar } from '../entities/calendar.entity';
 import { CreateEventDto, UpdateEventDto } from '../dto/event.dto';
 import {
   CreateRecurringEventDto,
@@ -23,9 +17,11 @@ import {
   RecurrencePatternDto,
   RecurrenceEndType,
 } from '../dto/recurrence.dto';
-import { NotificationsService } from '../notifications/notifications.service';
 import { TaskCalendarBridgeService } from '../tasks/task-calendar-bridge.service';
-import { CalendarSyncService } from '../calendar-sync/calendar-sync.service';
+import { DomainEventBus } from '../common/events/domain-events';
+import { EventAccessPolicy } from './event-access.policy';
+import { EventNotificationService } from './event-notification.service';
+import { EventValidationService } from './event-validation.service';
 
 import { logError } from '../common/errors/error-logger';
 import { buildErrorContext } from '../common/errors/error-context';
@@ -38,21 +34,24 @@ export class EventsService {
     private eventRepository: Repository<Event>,
     @InjectRepository(Calendar)
     private calendarRepository: Repository<Calendar>,
-    @InjectRepository(CalendarShare)
-    private calendarShareRepository: Repository<CalendarShare>,
-    private readonly notificationsService: NotificationsService,
     private readonly taskCalendarBridgeService: TaskCalendarBridgeService,
-    @Optional()
-    @Inject(forwardRef(() => CalendarSyncService))
-    private readonly calendarSyncService?: CalendarSyncService,
-    @Optional()
-    @Inject(
-      forwardRef(
-        () => require('../automation/automation.service').AutomationService,
-      ),
-    )
-    private readonly automationService?: any,
+    private readonly domainEventBus: DomainEventBus,
+    private readonly eventAccessPolicy: EventAccessPolicy,
+    private readonly eventNotificationService: EventNotificationService,
+    private readonly eventValidationService: EventValidationService,
+    private readonly moduleRef: ModuleRef,
   ) {}
+
+  private automationService?: any;
+
+  private resolveAutomationService(): any | null {
+    try {
+      const token = require('../automation/automation.service').AutomationService;
+      return this.moduleRef.get(token, { strict: false });
+    } catch {
+      return null;
+    }
+  }
 
   async create(createEventDto: CreateEventDto, userId: number): Promise<Event> {
     const { calendarId, ...eventData } = createEventDto;
@@ -71,14 +70,21 @@ export class EventsService {
       throw new NotFoundException('Calendar not found');
     }
 
-    const hasWriteAccess = await this.checkWriteAccess(calendarId, userId);
+    const hasWriteAccess = await this.eventAccessPolicy.canWriteCalendar(
+      calendarId,
+      userId,
+    );
     if (!hasWriteAccess) {
       throw new ForbiddenException(
         'Insufficient permissions to create events in this calendar',
       );
     }
 
-    const event = this.createEventEntity(eventData, calendarId, userId);
+    const event = this.eventValidationService.createEventEntity(
+      eventData,
+      calendarId,
+      userId,
+    );
     const savedEvent = await this.eventRepository.save(event);
     let savedInstances: Event[] = [];
 
@@ -99,7 +105,7 @@ export class EventsService {
             ? JSON.parse(savedEvent.recurrenceRule)
             : savedEvent.recurrenceRule;
 
-        const recurrencePattern = this.convertRuleToPattern(
+        const recurrencePattern = this.eventValidationService.convertRuleToPattern(
           recurrenceData,
           savedEvent.recurrenceType,
         );
@@ -118,26 +124,22 @@ export class EventsService {
       }
     }
 
-    await this.notifyEventChange(savedEvent, 'created', userId);
+    await this.eventNotificationService.notifyEventChange(
+      savedEvent,
+      'created',
+      userId,
+    );
 
-    if (this.calendarSyncService) {
-      this.calendarSyncService
-        .handleLocalEventCreated(savedEvent)
-        .catch((err) =>
-          this.logger.warn(
-            `Calendar sync create failed for event ${savedEvent.id}: ${err.message}`,
-          ),
-        );
+    this.domainEventBus.emit({
+      type: 'calendar.event.created',
+      payload: savedEvent,
+    });
 
-      for (const instance of savedInstances) {
-        this.calendarSyncService
-          .handleLocalEventCreated(instance)
-          .catch((err) =>
-            this.logger.warn(
-              `Calendar sync create failed for event ${instance.id}: ${err.message}`,
-            ),
-          );
-      }
+    for (const instance of savedInstances) {
+      this.domainEventBus.emit({
+        type: 'calendar.event.created',
+        payload: instance,
+      });
     }
 
     return savedEvent;
@@ -174,7 +176,11 @@ export class EventsService {
       throw new NotFoundException('Calendar not found');
     }
 
-    const event = this.createEventEntity(eventData, calendar.id, 1);
+    const event = this.eventValidationService.createEventEntity(
+      eventData,
+      calendar.id,
+      1,
+    );
 
     return this.eventRepository.save(event);
   }
@@ -185,7 +191,8 @@ export class EventsService {
     endDate?: string,
   ): Promise<Event[]> {
     // Get all calendars user has access to
-    const accessibleCalendars = await this.getAccessibleCalendars(userId);
+    const accessibleCalendars =
+      await this.eventAccessPolicy.getAccessibleCalendars(userId);
     const calendarIds = accessibleCalendars.map((cal) => cal.id);
 
     if (calendarIds.length === 0) {
@@ -259,7 +266,10 @@ export class EventsService {
     }
 
     // Check if user has access to the calendar
-    const hasAccess = await this.checkReadAccess(event.calendarId, userId);
+    const hasAccess = await this.eventAccessPolicy.canReadCalendar(
+      event.calendarId,
+      userId,
+    );
     if (!hasAccess) {
       throw new ForbiddenException('Access denied to this event');
     }
@@ -275,7 +285,7 @@ export class EventsService {
     const event = await this.findOne(id, userId);
 
     // Check if user has write access to the current calendar
-    const hasWriteAccess = await this.checkWriteAccess(
+    const hasWriteAccess = await this.eventAccessPolicy.canWriteCalendar(
       event.calendarId,
       userId,
     );
@@ -290,7 +300,8 @@ export class EventsService {
       updateEventDto.calendarId &&
       updateEventDto.calendarId !== event.calendarId
     ) {
-      const hasNewCalendarAccess = await this.checkWriteAccess(
+      const hasNewCalendarAccess =
+        await this.eventAccessPolicy.canWriteCalendar(
         updateEventDto.calendarId,
         userId,
       );
@@ -335,17 +346,16 @@ export class EventsService {
       await this.taskCalendarBridgeService.handleEventMutation(updatedEvent);
     }
 
-    await this.notifyEventChange(updatedEvent, 'updated', userId);
+    await this.eventNotificationService.notifyEventChange(
+      updatedEvent,
+      'updated',
+      userId,
+    );
 
-    if (this.calendarSyncService) {
-      this.calendarSyncService
-        .handleLocalEventUpdated(updatedEvent)
-        .catch((err) =>
-          this.logger.warn(
-            `Calendar sync update failed for event ${updatedEvent.id}: ${err.message}`,
-          ),
-        );
-    }
+    this.domainEventBus.emit({
+      type: 'calendar.event.updated',
+      payload: updatedEvent,
+    });
 
     return updatedEvent;
   }
@@ -365,7 +375,7 @@ export class EventsService {
     }
 
     // Check if user has write access to the calendar
-    const hasWriteAccess = await this.checkWriteAccess(
+    const hasWriteAccess = await this.eventAccessPolicy.canWriteCalendar(
       event.calendarId,
       userId,
     );
@@ -380,7 +390,11 @@ export class EventsService {
       console.error('Automation trigger error:', err),
     );
 
-    await this.notifyEventChange(event, 'deleted', userId);
+    await this.eventNotificationService.notifyEventChange(
+      event,
+      'deleted',
+      userId,
+    );
 
     if (event.taskId && this.taskCalendarBridgeService) {
       await this.taskCalendarBridgeService.handleEventDeletion(event);
@@ -392,17 +406,11 @@ export class EventsService {
       await this.eventRepository.remove(event);
     }
 
-    if (
-      this.calendarSyncService &&
-      (event.recurrenceType === RecurrenceType.NONE || event.parentEventId)
-    ) {
-      this.calendarSyncService
-        .handleLocalEventDeleted(event)
-        .catch((err) =>
-          this.logger.warn(
-            `Calendar sync delete failed for event ${event.id}: ${err.message}`,
-          ),
-        );
+    if (event.recurrenceType === RecurrenceType.NONE || event.parentEventId) {
+      this.domainEventBus.emit({
+        type: 'calendar.event.deleted',
+        payload: event,
+      });
     }
   }
 
@@ -421,7 +429,10 @@ export class EventsService {
 
   async findByCalendar(calendarId: number, userId: number): Promise<Event[]> {
     // Check if user has access to the calendar
-    const hasAccess = await this.checkReadAccess(calendarId, userId);
+    const hasAccess = await this.eventAccessPolicy.canReadCalendar(
+      calendarId,
+      userId,
+    );
     if (!hasAccess) {
       throw new ForbiddenException('Access denied to this calendar');
     }
@@ -431,79 +442,6 @@ export class EventsService {
       relations: ['createdBy'],
       order: { startDate: 'ASC' },
     });
-  }
-
-  private async getAccessibleCalendars(userId: number): Promise<Calendar[]> {
-    // Get calendars owned by user
-    const ownedCalendars = await this.calendarRepository.find({
-      where: { ownerId: userId, isActive: true },
-    });
-
-    // Get calendars shared with user
-    const sharedCalendars = await this.calendarRepository
-      .createQueryBuilder('calendar')
-      .innerJoin('calendar.sharedWith', 'user')
-      .where('user.id = :userId', { userId })
-      .andWhere('calendar.isActive = true')
-      .getMany();
-
-    // Combine and remove duplicates
-    const allCalendars = [...ownedCalendars, ...sharedCalendars];
-    return allCalendars.filter(
-      (calendar, index, self) =>
-        index === self.findIndex((c) => c.id === calendar.id),
-    );
-  }
-
-  private async checkReadAccess(
-    calendarId: number,
-    userId: number,
-  ): Promise<boolean> {
-    const calendar = await this.calendarRepository.findOne({
-      where: { id: calendarId, isActive: true },
-      relations: ['sharedWith'],
-    });
-
-    if (!calendar) {
-      return false;
-    }
-
-    // Owner has access
-    if (calendar.ownerId === userId) {
-      return true;
-    }
-
-    // Check if user is in shared users
-    return calendar.sharedWith.some((user) => user.id === userId);
-  }
-
-  private async checkWriteAccess(
-    calendarId: number,
-    userId: number,
-  ): Promise<boolean> {
-    const calendar = await this.calendarRepository.findOne({
-      where: { id: calendarId, isActive: true },
-    });
-
-    if (!calendar) {
-      return false;
-    }
-
-    // Owner has write access
-    if (calendar.ownerId === userId) {
-      return true;
-    }
-
-    // Check share permissions
-    const share = await this.calendarShareRepository.findOne({
-      where: { calendarId, userId },
-    });
-
-    return (
-      !!share &&
-      (share.permission === SharePermission.WRITE ||
-        share.permission === SharePermission.ADMIN)
-    );
   }
 
   async createRecurring(
@@ -517,7 +455,7 @@ export class EventsService {
     }
 
     // Check if user has write access to the calendar
-    const hasWriteAccess = await this.checkWriteAccess(
+    const hasWriteAccess = await this.eventAccessPolicy.canWriteCalendar(
       createRecurringEventDto.calendarId,
       userId,
     );
@@ -528,14 +466,14 @@ export class EventsService {
     }
 
     // Create the parent event
-    const parentEvent = this.createEventEntity(
+    const parentEvent = this.eventValidationService.createEventEntity(
       eventData,
       createRecurringEventDto.calendarId,
       userId,
     );
     parentEvent.recurrenceType = recurrence.type;
     parentEvent.recurrenceRule = JSON.stringify(
-      this.buildRecurrenceRule(recurrence),
+      this.eventValidationService.buildRecurrenceRule(recurrence),
     );
 
     const savedParentEvent = await this.eventRepository.save(parentEvent);
@@ -547,26 +485,21 @@ export class EventsService {
     );
     const savedInstances = await this.eventRepository.save(instances);
 
-    await this.notifyEventChange(savedParentEvent, 'created', userId);
+    await this.eventNotificationService.notifyEventChange(
+      savedParentEvent,
+      'created',
+      userId,
+    );
 
-    if (this.calendarSyncService) {
-      this.calendarSyncService
-        .handleLocalEventCreated(savedParentEvent)
-        .catch((err) =>
-          this.logger.warn(
-            `Calendar sync create failed for event ${savedParentEvent.id}: ${err.message}`,
-          ),
-        );
-
-      for (const instance of savedInstances) {
-        this.calendarSyncService
-          .handleLocalEventCreated(instance)
-          .catch((err) =>
-            this.logger.warn(
-              `Calendar sync create failed for event ${instance.id}: ${err.message}`,
-            ),
-          );
-      }
+    this.domainEventBus.emit({
+      type: 'calendar.event.created',
+      payload: savedParentEvent,
+    });
+    for (const instance of savedInstances) {
+      this.domainEventBus.emit({
+        type: 'calendar.event.created',
+        payload: instance,
+      });
     }
 
     return [savedParentEvent, ...savedInstances];
@@ -589,7 +522,7 @@ export class EventsService {
     }
 
     // Check if user has write access
-    const hasWriteAccess = await this.checkWriteAccess(
+    const hasWriteAccess = await this.eventAccessPolicy.canWriteCalendar(
       event.calendarId,
       userId,
     );
@@ -610,7 +543,10 @@ export class EventsService {
         );
       } else {
         // Not converting to recurring, use regular update
-        this.sanitizeAndAssignUpdateData(event, updateData);
+        this.eventValidationService.sanitizeAndAssignUpdateData(
+          event,
+          updateData,
+        );
         return [await this.eventRepository.save(event)];
       }
     }
@@ -639,18 +575,19 @@ export class EventsService {
     }
 
     if (updatedEvents.length > 0) {
-      await this.notifyEventChange(updatedEvents[0], 'updated', userId);
+      await this.eventNotificationService.notifyEventChange(
+        updatedEvents[0],
+        'updated',
+        userId,
+      );
     }
 
-    if (this.calendarSyncService && updatedEvents.length > 0) {
+    if (updatedEvents.length > 0) {
       for (const updatedEvent of updatedEvents) {
-        this.calendarSyncService
-          .handleLocalEventUpdated(updatedEvent)
-          .catch((err) =>
-            this.logger.warn(
-              `Calendar sync update failed for event ${updatedEvent.id}: ${err.message}`,
-            ),
-          );
+        this.domainEventBus.emit({
+          type: 'calendar.event.updated',
+          payload: updatedEvent,
+        });
       }
     }
 
@@ -719,11 +656,14 @@ export class EventsService {
   ): Promise<Event[]> {
     if (event.parentEventId) {
       // This is already an instance, just update it
-      this.sanitizeAndAssignUpdateData(event, updateData);
+      this.eventValidationService.sanitizeAndAssignUpdateData(
+        event,
+        updateData,
+      );
       return [await this.eventRepository.save(event)];
     } else {
       // This is the parent, create an exception
-      const exception = this.createEventEntity(
+      const exception = this.eventValidationService.createEventEntity(
         updateData,
         event.calendarId,
         event.createdById,
@@ -758,7 +698,7 @@ export class EventsService {
     // Update parent event if modifying recurrence
     if (!event.parentEventId && newRecurrence) {
       event.recurrenceRule = JSON.stringify(
-        this.buildRecurrenceRule(newRecurrence),
+        this.eventValidationService.buildRecurrenceRule(newRecurrence),
       );
       await this.eventRepository.save(event);
     }
@@ -799,10 +739,13 @@ export class EventsService {
       throw new NotFoundException('Parent event not found');
     }
 
-    this.sanitizeAndAssignUpdateData(parentEvent, updateData);
+    this.eventValidationService.sanitizeAndAssignUpdateData(
+      parentEvent,
+      updateData,
+    );
     if (newRecurrence) {
       parentEvent.recurrenceRule = JSON.stringify(
-        this.buildRecurrenceRule(newRecurrence),
+        this.eventValidationService.buildRecurrenceRule(newRecurrence),
       );
     }
 
@@ -916,86 +859,6 @@ export class EventsService {
     return nextDate;
   }
 
-  private buildRecurrenceRule(recurrence: RecurrencePatternDto): any {
-    return {
-      frequency: recurrence.type,
-      interval: recurrence.interval || 1,
-      endType: recurrence.endType || RecurrenceEndType.NEVER,
-      count: recurrence.count,
-      endDate: recurrence.endDate,
-      daysOfWeek: recurrence.daysOfWeek,
-      dayOfMonth: recurrence.dayOfMonth,
-      monthOfYear: recurrence.monthOfYear,
-      timezone: recurrence.timezone,
-    };
-  }
-
-  private convertRuleToPattern(
-    rule: any,
-    recurrenceType: RecurrenceType,
-  ): RecurrencePatternDto {
-    const pattern = new RecurrencePatternDto();
-    pattern.type = recurrenceType;
-    pattern.interval = rule.interval || 1;
-    pattern.endType = rule.endType || RecurrenceEndType.NEVER;
-    pattern.count = rule.count;
-    pattern.endDate = rule.endDate;
-    pattern.daysOfWeek = rule.daysOfWeek;
-    pattern.dayOfMonth = rule.dayOfMonth;
-    pattern.monthOfYear = rule.monthOfYear;
-    pattern.timezone = rule.timezone;
-    return pattern;
-  }
-
-  private sanitizeAndAssignUpdateData(event: Event, updateData: any): void {
-    // Handle date fields
-    if (updateData.startDate) {
-      updateData.startDate = new Date(updateData.startDate);
-    }
-    if (updateData.endDate) {
-      updateData.endDate = new Date(updateData.endDate);
-    }
-
-    // Handle time fields - convert empty strings to undefined
-    if ('startTime' in updateData) {
-      updateData.startTime =
-        updateData.startTime && updateData.startTime !== ''
-          ? updateData.startTime
-          : undefined;
-    }
-    if ('endTime' in updateData) {
-      updateData.endTime =
-        updateData.endTime && updateData.endTime !== ''
-          ? updateData.endTime
-          : undefined;
-    }
-
-    Object.assign(event, updateData);
-  }
-
-  private createEventEntity(
-    eventData: any,
-    calendarId: number,
-    createdById: number,
-  ): Event {
-    const event = new Event();
-    Object.assign(event, eventData);
-    event.calendarId = calendarId;
-    event.createdById = createdById;
-    event.startDate = new Date(eventData.startDate);
-    if (eventData.endDate) {
-      event.endDate = new Date(eventData.endDate);
-    }
-    event.startTime =
-      eventData.startTime && eventData.startTime !== ''
-        ? eventData.startTime
-        : undefined;
-    event.endTime =
-      eventData.endTime && eventData.endTime !== ''
-        ? eventData.endTime
-        : undefined;
-    return event;
-  }
 
   private async convertToRecurringEvent(
     event: Event,
@@ -1003,11 +866,13 @@ export class EventsService {
     recurrence: RecurrencePatternDto,
   ): Promise<Event[]> {
     // Apply any basic updates to the event first
-    this.sanitizeAndAssignUpdateData(event, updateData);
+    this.eventValidationService.sanitizeAndAssignUpdateData(event, updateData);
 
     // Set up recurrence properties
     event.recurrenceType = recurrence.type;
-    event.recurrenceRule = JSON.stringify(this.buildRecurrenceRule(recurrence));
+    event.recurrenceRule = JSON.stringify(
+      this.eventValidationService.buildRecurrenceRule(recurrence),
+    );
 
     // Save the updated parent event
     const savedEvent = await this.eventRepository.save(event);
@@ -1032,102 +897,6 @@ export class EventsService {
     return [savedEvent];
   }
 
-  private async collectCalendarParticipantIds(
-    calendarId: number,
-    additional: Array<number | string | null | undefined> = [],
-  ): Promise<Set<number>> {
-    const ids = new Set<number>();
-
-    for (const candidate of additional) {
-      if (candidate === null || candidate === undefined) {
-        continue;
-      }
-      const numericId = Number(candidate);
-      if (!Number.isNaN(numericId) && numericId > 0) {
-        ids.add(numericId);
-      }
-    }
-
-    const calendar = await this.calendarRepository.findOne({
-      where: { id: calendarId },
-    });
-    if (calendar?.ownerId) {
-      ids.add(calendar.ownerId);
-    }
-
-    const shares = await this.calendarShareRepository.find({
-      where: { calendarId },
-    });
-    shares.forEach((share) => ids.add(share.userId));
-
-    return ids;
-  }
-
-  private async notifyEventChange(
-    event: Event,
-    action: 'created' | 'updated' | 'deleted',
-    actorId: number,
-  ): Promise<void> {
-    try {
-      const recipientsSet = await this.collectCalendarParticipantIds(
-        event.calendarId,
-        [event.createdById],
-      );
-
-      if (actorId) {
-        recipientsSet.delete(actorId);
-      }
-
-      const recipients = Array.from(recipientsSet);
-      if (recipients.length === 0) {
-        return;
-      }
-
-      const calendar = await this.calendarRepository.findOne({
-        where: { id: event.calendarId },
-      });
-      const calendarName = calendar?.name ?? 'Calendar';
-      const eventTitle = event.title ?? 'Untitled event';
-      const actionDescriptor =
-        action === 'created'
-          ? 'created'
-          : action === 'deleted'
-            ? 'deleted'
-            : 'updated';
-
-      let scheduleSnippet = '';
-      if (event.startDate) {
-        const when = new Date(event.startDate);
-        if (!Number.isNaN(when.getTime())) {
-          scheduleSnippet = ` Scheduled for ${when.toISOString()}`;
-        }
-      }
-
-      await this.notificationsService.publish({
-        eventType: `event.${action}`,
-        actorId,
-        recipients,
-        title: `${calendarName}: Event ${actionDescriptor}`,
-        body: `Event "${eventTitle}" was ${actionDescriptor}.${scheduleSnippet}`,
-        data: {
-          eventId: event.id,
-          calendarId: event.calendarId,
-        },
-        context: {
-          threadKey: `calendar:${event.calendarId}:event:${event.id}`,
-          contextType: 'event',
-          contextId: String(event.id),
-        },
-      });
-    } catch (error) {
-      logError(error, buildErrorContext({ action: 'events.service' }));
-      this.logger.error(
-        `Failed to send notification for event ${event.id} (${action})`,
-        error instanceof Error ? error.stack : String(error),
-      );
-    }
-  }
-
   /**
    * Trigger automation rules for event lifecycle hooks
    * Executes asynchronously without blocking the main flow
@@ -1136,6 +905,9 @@ export class EventsService {
     triggerType: string,
     event: Event,
   ): Promise<void> {
+    if (!this.automationService) {
+      this.automationService = this.resolveAutomationService();
+    }
     if (!this.automationService) {
       return; // Automation service not available (optional dependency)
     }

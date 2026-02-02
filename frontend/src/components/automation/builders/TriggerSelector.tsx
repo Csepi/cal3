@@ -4,9 +4,9 @@ import { useAutomationMetadata } from '../../../hooks/useAutomationMetadata';
 
 interface TriggerSelectorProps {
   selectedTrigger: TriggerType | null;
-  triggerConfig: Record<string, any>;
+  triggerConfig: Record<string, unknown>;
   onTriggerChange: (trigger: TriggerType) => void;
-  onConfigChange: (config: Record<string, any>) => void;
+  onConfigChange: (config: Record<string, unknown>) => void;
   disabled?: boolean;
 }
 
@@ -281,3 +281,4 @@ export const TriggerSelector: React.FC<TriggerSelectorProps> = ({
     </div>
   );
 };
+

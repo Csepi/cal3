@@ -44,7 +44,7 @@ const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({
       await onConfirm();
       // Success - modal will be closed by parent
       setConfirmText('');
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err.message || 'Failed to delete item');
       setDeleting(false);
     }

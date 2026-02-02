@@ -10,7 +10,7 @@
  * 6. Public booking links for each resource
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, memo } from 'react';
 import { apiService } from '../services/api';
 import { UserPermissionsService } from '../services/userPermissions';
 import DeleteConfirmationModal from './DeleteConfirmationModal';
@@ -62,6 +62,12 @@ interface Reservation {
   resourceId: number;
 }
 
+type DeletableItem = Organization | ResourceType | Resource | Reservation;
+type DeletionPreview = Record<string, unknown>;
+
+const getErrorMessage = (error: unknown, fallback: string): string =>
+  error instanceof Error ? error.message : fallback;
+
 const ReservationsPanel: React.FC<ReservationsPanelProps> = ({ themeColor = '#3b82f6' }) => {
   // Mobile detection
   const { isMobile } = useScreenSize();
@@ -83,8 +89,8 @@ const ReservationsPanel: React.FC<ReservationsPanelProps> = ({ themeColor = '#3b
   const [deleteModal, setDeleteModal] = useState<{
     isOpen: boolean;
     type: 'organization' | 'resourceType' | 'resource' | 'reservation' | null;
-    item: any;
-    preview: any;
+    item: DeletableItem | null;
+    preview: DeletionPreview | null;
     loading: boolean;
   }>({
     isOpen: false,
@@ -165,7 +171,7 @@ const ReservationsPanel: React.FC<ReservationsPanelProps> = ({ themeColor = '#3b
 
   // Theme configuration
   const getThemeColors = (color: string) => {
-    const colorMap: Record<string, any> = {
+    const colorMap: Record<string, unknown> = {
       '#ef4444': { gradient: 'from-red-50 via-red-100 to-red-200', primary: 'bg-red-500 hover:bg-red-600', accent: 'text-red-600', badge: 'bg-red-100 text-red-800' },
       '#f59e0b': { gradient: 'from-orange-50 via-orange-100 to-orange-200', primary: 'bg-orange-500 hover:bg-orange-600', accent: 'text-orange-600', badge: 'bg-orange-100 text-orange-800' },
       '#eab308': { gradient: 'from-yellow-50 via-yellow-100 to-yellow-200', primary: 'bg-yellow-500 hover:bg-yellow-600', accent: 'text-yellow-600', badge: 'bg-yellow-100 text-yellow-800' },
@@ -216,8 +222,10 @@ const ReservationsPanel: React.FC<ReservationsPanelProps> = ({ themeColor = '#3b
         orgs.map(async (org) => {
           try {
             // Try to get organization users to determine role
-            const users = await apiService.get(`/organisations/${org.id}/users/list`);
-            const currentUserInOrg = users.find((u: any) => u.userId === currentUserId);
+            const users = (await apiService.get(
+              `/organisations/${org.id}/users/list`,
+            )) as Array<{ userId?: number; role?: string }>;
+            const currentUserInOrg = users.find((u) => u.userId === currentUserId);
 
             // Map role from backend ('admin', 'editor', 'user') to frontend format ('ORG_ADMIN', 'EDITOR', 'USER')
             const role = currentUserInOrg?.role;
@@ -242,9 +250,9 @@ const ReservationsPanel: React.FC<ReservationsPanelProps> = ({ themeColor = '#3b
         setSelectedOrgId(orgsWithRoles[0].id);
         setSelectedOrg(orgsWithRoles[0]);
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Failed to load organizations:', err);
-      setError(err.message || 'Failed to load organizations');
+      setError(getErrorMessage(err, 'Failed to load organizations'));
     } finally {
       setLoading(false);
     }
@@ -258,27 +266,29 @@ const ReservationsPanel: React.FC<ReservationsPanelProps> = ({ themeColor = '#3b
       setError(null);
 
       // Load resource types for this organization
-      const types = await apiService.get(`/resource-types?organisationId=${selectedOrgId}`);
+      const types = (await apiService.get(
+        `/resource-types?organisationId=${selectedOrgId}`,
+      )) as ResourceType[];
       setResourceTypes(types);
 
       // Load resources for this organization
-      const resourcesData = await apiService.get('/resources');
+      const resourcesData = (await apiService.get('/resources')) as Resource[];
       const orgResources = resourcesData.filter((r: Resource) =>
         r.resourceType?.organisationId === selectedOrgId
       );
       setResources(orgResources);
 
       // Load reservations for this organization's resources
-      const reservationsData = await apiService.get('/reservations');
+      const reservationsData = (await apiService.get('/reservations')) as Reservation[];
       const orgResourceIds = orgResources.map((r: Resource) => r.id);
       const orgReservations = reservationsData.filter((res: Reservation) =>
         orgResourceIds.includes(res.resourceId)
       );
       setReservations(orgReservations);
 
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Failed to load organization data:', err);
-      setError(err.message || 'Failed to load data');
+      setError(getErrorMessage(err, 'Failed to load data'));
     } finally {
       setLoading(false);
     }
@@ -308,7 +318,7 @@ const ReservationsPanel: React.FC<ReservationsPanelProps> = ({ themeColor = '#3b
   };
 
   // Delete handlers
-  const handleDeleteClick = async (type: 'organization' | 'resourceType' | 'resource' | 'reservation', item: any) => {
+  const handleDeleteClick = async (type: 'organization' | 'resourceType' | 'resource' | 'reservation', item: DeletableItem) => {
     setDeleteModal({
       isOpen: true,
       type,
@@ -333,7 +343,7 @@ const ReservationsPanel: React.FC<ReservationsPanelProps> = ({ themeColor = '#3b
         preview,
         loading: false
       }));
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error fetching deletion preview:', err);
       setDeleteModal(prev => ({
         ...prev,
@@ -374,8 +384,8 @@ const ReservationsPanel: React.FC<ReservationsPanelProps> = ({ themeColor = '#3b
         preview: null,
         loading: false
       });
-    } catch (err: any) {
-      throw new Error(err.message || 'Failed to delete item');
+    } catch (err: unknown) {
+      throw new Error(getErrorMessage(err, 'Failed to delete item'));
     }
   };
 
@@ -397,15 +407,19 @@ const ReservationsPanel: React.FC<ReservationsPanelProps> = ({ themeColor = '#3b
 
     try {
       setLoading(true);
-      const result = await apiService.post('/admin/public-booking/initialize', {});
+      const result = (await apiService.post('/admin/public-booking/initialize', {})) as {
+        resourcesUpdated: number;
+        resourceTypesWithHours: number;
+        errors: string[];
+      };
 
       alert(`Public booking initialized successfully!\n\nResources updated: ${result.resourcesUpdated}\nResource types with hours: ${result.resourceTypesWithHours}${result.errors.length > 0 ? '\n\nErrors: ' + result.errors.join('\n') : ''}`);
 
       // Reload data to show updated tokens
       await loadOrganizationData();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Failed to initialize public booking:', err);
-      alert(`Failed to initialize public booking: ${err.message || 'Unknown error'}`);
+      alert(`Failed to initialize public booking: ${getErrorMessage(err, 'Unknown error')}`);
     } finally {
       setLoading(false);
     }
@@ -452,7 +466,7 @@ const ReservationsPanel: React.FC<ReservationsPanelProps> = ({ themeColor = '#3b
     try {
       setResourceTypeModal(prev => ({ ...prev, loading: true }));
 
-      const payload: any = {
+      const payload: Record<string, unknown> = {
         name: resourceTypeModal.name.trim(),
       };
 
@@ -498,9 +512,9 @@ const ReservationsPanel: React.FC<ReservationsPanelProps> = ({ themeColor = '#3b
         minBookingDuration: '30',
         bufferTime: '0'
       });
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(`Failed to ${resourceTypeModal.editMode ? 'update' : 'create'} resource type:`, err);
-      alert(`Failed to ${resourceTypeModal.editMode ? 'update' : 'create'} resource type: ${err.message || 'Unknown error'}`);
+      alert(`Failed to ${resourceTypeModal.editMode ? 'update' : 'create'} resource type: ${getErrorMessage(err, 'Unknown error')}`);
       setResourceTypeModal(prev => ({ ...prev, loading: false }));
     }
   };
@@ -559,7 +573,7 @@ const ReservationsPanel: React.FC<ReservationsPanelProps> = ({ themeColor = '#3b
     try {
       setResourceModal(prev => ({ ...prev, loading: true }));
 
-      const payload: any = {
+      const payload: Record<string, unknown> = {
         name: resourceModal.name.trim(),
       };
 
@@ -601,9 +615,9 @@ const ReservationsPanel: React.FC<ReservationsPanelProps> = ({ themeColor = '#3b
         capacity: '1',
         resourceTypeId: ''
       });
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(`Failed to ${resourceModal.editMode ? 'update' : 'create'} resource:`, err);
-      alert(`Failed to ${resourceModal.editMode ? 'update' : 'create'} resource: ${err.message || 'Unknown error'}`);
+      alert(`Failed to ${resourceModal.editMode ? 'update' : 'create'} resource: ${getErrorMessage(err, 'Unknown error')}`);
       setResourceModal(prev => ({ ...prev, loading: false }));
     }
   };
@@ -686,9 +700,9 @@ const ReservationsPanel: React.FC<ReservationsPanelProps> = ({ themeColor = '#3b
         notes: '',
         quantity: '1'
       });
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Failed to create reservation:', err);
-      alert(`Failed to create reservation: ${err.message || 'Unknown error'}`);
+      alert(`Failed to create reservation: ${getErrorMessage(err, 'Unknown error')}`);
       setReservationModal(prev => ({ ...prev, loading: false }));
     }
   };
@@ -811,7 +825,11 @@ const ReservationsPanel: React.FC<ReservationsPanelProps> = ({ themeColor = '#3b
                 ].map((tab) => (
                   <button
                     key={tab.key}
-                    onClick={() => setActiveView(tab.key as any)}
+                    onClick={() =>
+                      setActiveView(
+                        tab.key as 'overview' | 'types' | 'resources' | 'reservations',
+                      )
+                    }
                     className={`px-6 py-3 rounded-2xl font-medium text-sm transition-all duration-300 flex items-center gap-2 ${
                       activeView === tab.key
                         ? `${themeColors.primary} text-white shadow-lg scale-105`
@@ -1487,4 +1505,5 @@ const ReservationsPanel: React.FC<ReservationsPanelProps> = ({ themeColor = '#3b
   );
 };
 
-export default ReservationsPanel;
+export default memo(ReservationsPanel);
+

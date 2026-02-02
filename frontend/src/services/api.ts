@@ -38,6 +38,24 @@ import type {
   UpdateTaskRequest,
   CreateTaskLabelRequest,
 } from '../types/Task';
+import type { ReservationRecord } from '../types/reservation';
+
+interface UserProfile {
+  id: number;
+  username?: string;
+  email?: string;
+  firstName?: string;
+  lastName?: string;
+  role?: string;
+  [key: string]: unknown;
+}
+
+interface AuthResponse {
+  token: string;
+  user: UserProfile;
+}
+
+type JsonObject = Record<string, unknown>;
 
 export interface CreateRecurringEventRequest extends CreateEventRequest {
   recurrence: RecurrencePattern;
@@ -617,7 +635,7 @@ class ApiService {
   }
 
   // Authentication methods
-  async login(usernameOrEmail: string, password: string): Promise<{ token: string, user: any }> {
+  async login(usernameOrEmail: string, password: string): Promise<AuthResponse> {
     const response = await secureFetch(`${BASE_URL}/api/auth/login`, {
       method: 'POST',
       headers: {
@@ -638,7 +656,7 @@ class ApiService {
     return { token: data.access_token, user: data.user };
   }
 
-  async register(userData: { username: string, email: string, password: string, firstName?: string, lastName?: string }): Promise<{ token: string, user: any }> {
+  async register(userData: { username: string, email: string, password: string, firstName?: string, lastName?: string }): Promise<AuthResponse> {
     const response = await secureFetch(`${BASE_URL}/api/auth/register`, {
       method: 'POST',
       headers: {
@@ -684,7 +702,7 @@ class ApiService {
   }
 
   // User Profile methods
-  async getUserProfile(): Promise<any> {
+  async getUserProfile(): Promise<UserProfile> {
     const response = await this.secureApiFetch(`${BASE_URL}/api/user/profile`);
 
     if (!response.ok) {
@@ -697,7 +715,7 @@ class ApiService {
     return await response.json();
   }
 
-  async updateUserProfile(profileData: any): Promise<any> {
+  async updateUserProfile(profileData: Partial<UserProfile>): Promise<UserProfile> {
     const response = await this.secureApiFetch(`${BASE_URL}/api/user/profile`, {
       method: 'PATCH',
       headers: {
@@ -717,7 +735,7 @@ class ApiService {
     return await response.json();
   }
 
-  async updateUserTheme(themeColor: string): Promise<any> {
+  async updateUserTheme(themeColor: string): Promise<UserProfile> {
     const response = await this.secureApiFetch(`${BASE_URL}/api/user/theme`, {
       method: 'PATCH',
       headers: {
@@ -737,7 +755,7 @@ class ApiService {
     return await response.json();
   }
 
-  async changePassword(currentPassword: string, newPassword: string): Promise<any> {
+  async changePassword(currentPassword: string, newPassword: string): Promise<JsonObject> {
     const response = await this.secureApiFetch(`${BASE_URL}/api/user/password`, {
       method: 'PATCH',
       headers: {
@@ -755,7 +773,7 @@ class ApiService {
   }
 
   // Generic HTTP methods
-  async get(endpoint: string): Promise<any> {
+  async get(endpoint: string): Promise<unknown> {
     const response = await this.secureApiFetch(`${BASE_URL}/api${endpoint}`);
 
     if (!response.ok) {
@@ -769,7 +787,7 @@ class ApiService {
     return await response.json();
   }
 
-  async post(endpoint: string, data?: any): Promise<any> {
+  async post(endpoint: string, data?: unknown): Promise<unknown> {
     const response = await this.secureApiFetch(`${BASE_URL}/api${endpoint}`, {
       method: 'POST',
       headers: {
@@ -789,7 +807,7 @@ class ApiService {
     return await response.json();
   }
 
-  async patch(endpoint: string, data?: any): Promise<any> {
+  async patch(endpoint: string, data?: unknown): Promise<unknown> {
     const response = await this.secureApiFetch(`${BASE_URL}/api${endpoint}`, {
       method: 'PATCH',
       headers: {
@@ -809,7 +827,7 @@ class ApiService {
     return await response.json();
   }
 
-  async delete(endpoint: string): Promise<any> {
+  async delete(endpoint: string): Promise<unknown> {
     const response = await this.secureApiFetch(`${BASE_URL}/api${endpoint}`, {
       method: 'DELETE',
     });
@@ -828,7 +846,7 @@ class ApiService {
   }
 
   // Calendar Sync methods
-  async getCalendarSyncStatus(): Promise<any> {
+  async getCalendarSyncStatus(): Promise<unknown> {
     const response = await this.secureApiFetch(`${BASE_URL}/api/calendar-sync/status`);
 
     if (!response.ok) {
@@ -873,7 +891,7 @@ class ApiService {
       triggerAutomationRules?: boolean,
       selectedRuleIds?: number[]
     }>
-  }): Promise<any> {
+  }): Promise<unknown> {
     const response = await this.secureApiFetch(`${BASE_URL}/api/calendar-sync/sync`, {
       method: 'POST',
       headers: {
@@ -911,7 +929,7 @@ class ApiService {
     }
   }
 
-  async forceCalendarSync(): Promise<any> {
+  async forceCalendarSync(): Promise<unknown> {
     const response = await this.secureApiFetch(`${BASE_URL}/api/calendar-sync/force`, {
       method: 'POST',
     });
@@ -1021,7 +1039,7 @@ class ApiService {
     return (await response.json()) as Array<{ id: number; name?: string }>;
   }
 
-  async getReservations(resourceId?: string | number): Promise<any[]> {
+  async getReservations(resourceId?: string | number): Promise<ReservationRecord[]> {
     const query = resourceId !== undefined
       ? `?resourceId=${encodeURIComponent(String(resourceId))}`
       : '';
@@ -1192,7 +1210,7 @@ class ApiService {
     if (!response.ok) {
       throw new Error('Unable to load notification mutes');
     }
-    return (await response.json())?.map((mute: any) => ({
+    return (await response.json())?.map((mute: { scopeType: NotificationScopeMute['scopeType']; scopeId: string | number; isMuted: boolean; createdAt?: string; updatedAt?: string }) => ({
       scopeType: mute.scopeType,
       scopeId: String(mute.scopeId),
       isMuted: Boolean(mute.isMuted),
@@ -1268,7 +1286,7 @@ class ApiService {
     return enabled;
   }
 
-  async getAdminNotificationConfig(): Promise<any> {
+  async getAdminNotificationConfig(): Promise<JsonObject> {
     const response = await this.secureApiFetch(`${BASE_URL}/api/admin/notifications/config`);
     if (!response.ok) {
       throw new Error('Unable to load notification admin config');
@@ -1276,7 +1294,7 @@ class ApiService {
     return await response.json();
   }
 
-  async updateAdminNotificationConfig(key: string, value: string | boolean | null): Promise<any> {
+  async updateAdminNotificationConfig(key: string, value: string | boolean | null): Promise<JsonObject> {
     const response = await this.secureApiFetch(
       `${BASE_URL}/api/admin/notifications/config/${key}`,
       {

@@ -11,7 +11,7 @@ import { UsersModule } from './users/users.module';
 import { CalendarsModule } from './calendars/calendars.module';
 import { EventsModule } from './events/events.module';
 import { AdminModule } from './admin/admin.module';
-import { CalendarSyncModule } from './calendar-sync/calendar-sync.module';
+import { CalendarSyncModule } from './modules/calendar-sync/calendar-sync.module';
 import { OrganisationsModule } from './organisations/organisations.module';
 import { ResourceTypesModule } from './resource-types/resource-types.module';
 import { ResourcesModule } from './resources/resources.module';

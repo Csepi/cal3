@@ -2,6 +2,9 @@ import { useQuery } from '@tanstack/react-query';
 import type { Calendar } from '../types/Calendar';
 import type { CalendarGroupWithCalendars } from '../types/CalendarGroup';
 import type { Event } from '../types/Event';
+import { eventsApi } from '../services/eventsApi';
+import { calendarApi } from '../services/calendarApi';
+import { resourcesApi } from '../services/resourcesApi';
 import { apiService } from '../services/api';
 
 export interface ResourceType {
@@ -19,6 +22,28 @@ export interface Organization {
   resourceTypes: ResourceType[];
 }
 
+export interface ReservationResourceTypeRef {
+  id: number;
+  name?: string;
+}
+
+export interface ReservationResourceRef {
+  id: number;
+  name?: string;
+  resourceType?: ReservationResourceTypeRef;
+}
+
+export interface ReservationRecord {
+  id: number;
+  resourceId?: number;
+  startTime?: string;
+  endTime?: string;
+  description?: string;
+  status?: string;
+  customerName?: string;
+  resource?: ReservationResourceRef;
+}
+
 export const calendarQueryKeys = {
   root: ['calendar'] as const,
   events: ['calendar', 'events'] as const,
@@ -29,7 +54,7 @@ export const calendarQueryKeys = {
 
 const fetchCalendarGroups = async (): Promise<CalendarGroupWithCalendars[]> => {
   try {
-    return await apiService.getCalendarGroups();
+    return await calendarApi.getCalendarGroups();
   } catch (error) {
     console.error('Error loading calendar groups:', error);
     return [];
@@ -38,22 +63,22 @@ const fetchCalendarGroups = async (): Promise<CalendarGroupWithCalendars[]> => {
 
 const fetchOrganizationsAndReservations = async (): Promise<{
   organizations: Organization[];
-  reservations: any[];
+  reservations: ReservationRecord[];
 }> => {
   let organizations: Organization[] = [];
-  let reservations: any[] = [];
+  let reservations: ReservationRecord[] = [];
 
   try {
     const orgsData = await apiService.get(
       '/user-permissions/accessible-organizations',
-    );
+    ) as Array<{ id: number; name: string; role?: string; color?: string }>;
 
     const orgsWithResourceTypes = await Promise.all(
-      orgsData.map(async (org: any) => {
+      orgsData.map(async (org) => {
         try {
           const resourceTypes = await apiService.get(
             `/resource-types?organisationId=${org.id}`,
-          );
+          ) as ResourceType[];
           return {
             id: org.id,
             name: org.name,
@@ -75,7 +100,9 @@ const fetchOrganizationsAndReservations = async (): Promise<{
     );
 
     organizations = orgsWithResourceTypes;
-    reservations = await apiService.get('/reservations').catch(() => []);
+    reservations = await resourcesApi.getReservations().catch(
+      () => [] as ReservationRecord[],
+    );
   } catch (err) {
     console.error('Error loading organizations/reservations:', err);
   }
@@ -86,14 +113,14 @@ const fetchOrganizationsAndReservations = async (): Promise<{
 export const useCalendarData = () => {
   const eventsQuery = useQuery<Event[]>({
     queryKey: calendarQueryKeys.events,
-    queryFn: () => apiService.getAllEvents(),
+    queryFn: () => eventsApi.getEvents(),
     refetchInterval: 30000,
     refetchIntervalInBackground: false,
   });
 
   const calendarsQuery = useQuery<Calendar[]>({
     queryKey: calendarQueryKeys.calendars,
-    queryFn: () => apiService.getAllCalendars(),
+    queryFn: () => calendarApi.getCalendars(),
   });
 
   const calendarGroupsQuery = useQuery<CalendarGroupWithCalendars[]>({
@@ -103,7 +130,7 @@ export const useCalendarData = () => {
 
   const orgsQuery = useQuery<{
     organizations: Organization[];
-    reservations: any[];
+    reservations: ReservationRecord[];
   }>({
     queryKey: calendarQueryKeys.orgsAndReservations,
     queryFn: fetchOrganizationsAndReservations,

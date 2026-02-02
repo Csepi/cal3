@@ -12,7 +12,7 @@ const formatTimestamp = (iso: string): string => {
       return iso;
     }
     return dt.toLocaleString();
-  } catch (error) {
+  } catch {
     return iso;
   }
 };

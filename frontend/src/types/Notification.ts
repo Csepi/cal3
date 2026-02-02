@@ -11,13 +11,13 @@ export interface NotificationMessage {
   eventType: string;
   title?: string | null;
   body: string;
-  data?: Record<string, any> | null;
+  data?: Record<string, unknown> | null;
   isRead: boolean;
   archived: boolean;
   createdAt: string;
   threadId?: number | null;
   threadKey?: string | null;
-  metadata?: Record<string, any> | null;
+  metadata?: Record<string, unknown> | null;
 }
 
 export interface NotificationThreadSummary {
@@ -47,12 +47,12 @@ export interface NotificationPreference {
 export interface NotificationInboxRuleCondition {
   field: string;
   operator: string;
-  value?: string | number | boolean | Record<string, any> | null;
+  value?: string | number | boolean | Record<string, unknown> | null;
 }
 
 export interface NotificationInboxRuleAction {
   type: string;
-  payload?: Record<string, any> | null;
+  payload?: Record<string, unknown> | null;
 }
 
 export interface NotificationInboxRule {
@@ -80,7 +80,7 @@ export interface NotificationScopeMute {
 export interface NotificationScopeOption {
   value: string;
   label: string;
-  meta?: Record<string, any> | null;
+  meta?: Record<string, unknown> | null;
 }
 
 export interface NotificationEventDefinition {
@@ -114,6 +114,7 @@ export interface NotificationCatalog {
 
 export interface NotificationSocketEvent {
   type: string;
-  data: any;
+  data: Record<string, unknown> | null;
 }
+
 

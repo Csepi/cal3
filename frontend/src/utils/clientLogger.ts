@@ -38,11 +38,17 @@ const originalConsole: Record<ConsoleMethod, (...args: unknown[]) => void> = {
   error: console.error.bind(console),
 };
 
+interface RuntimeLogScope {
+  ENV?: { LOG_LEVEL?: unknown };
+  CONFIG?: { LOG_LEVEL?: unknown };
+}
+
 const parseEnvLevel = (): LogLevel => {
   const fallback = import.meta.env.DEV ? 'debug' : 'warn';
+  const runtimeScope = globalThis as RuntimeLogScope;
   const explicit =
-    (globalThis as any)?.ENV?.LOG_LEVEL ??
-    (globalThis as any)?.CONFIG?.LOG_LEVEL ??
+    runtimeScope.ENV?.LOG_LEVEL ??
+    runtimeScope.CONFIG?.LOG_LEVEL ??
     import.meta.env.VITE_LOG_LEVEL;
   if (typeof explicit !== 'string') {
     return fallback;
@@ -211,7 +217,6 @@ export const installClientLogger = () => {
   consolePatched = true;
 
   (Object.keys(CONSOLE_TO_LEVEL) as ConsoleMethod[]).forEach((method) => {
-    // eslint-disable-next-line no-console
     console[method] = (...args: unknown[]) => {
       const level = CONSOLE_TO_LEVEL[method];
       emit(level, ...args);

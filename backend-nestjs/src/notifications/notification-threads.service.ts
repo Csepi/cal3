@@ -1,10 +1,9 @@
 import {
-  Inject,
   Injectable,
   Logger,
   NotFoundException,
-  forwardRef,
 } from '@nestjs/common';
+import { ModuleRef } from '@nestjs/core';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { NotificationThread } from '../entities/notification-thread.entity';
@@ -36,8 +35,7 @@ export class NotificationThreadsService {
     private readonly threadStateRepository: Repository<NotificationThreadState>,
     @InjectRepository(NotificationMessage)
     private readonly messageRepository: Repository<NotificationMessage>,
-    @Inject(forwardRef(() => NotificationsGateway))
-    private readonly notificationsGateway: NotificationsGateway,
+    private readonly moduleRef: ModuleRef,
   ) {}
 
   async registerThread(
@@ -168,7 +166,10 @@ export class NotificationThreadsService {
 
   private emitThreadState(userId: number, threadId: number): void {
     try {
-      this.notificationsGateway.server
+      const gateway = this.moduleRef.get(NotificationsGateway, {
+        strict: false,
+      });
+      gateway?.server
         ?.to(`user:${userId}`)
         .emit('thread:state', { threadId });
     } catch (error) {

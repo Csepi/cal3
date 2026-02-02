@@ -8,6 +8,7 @@ import type {
   AgentDetail,
   AgentKey,
   AgentPermission,
+  AgentPermissionUpdate,
   AgentSummary,
   AgentStatus,
 } from "../../types/agent";
@@ -464,7 +465,7 @@ const AgentSettingsPage: React.FC<AgentSettingsPageProps> = ({ themeColor = "#3b
       return;
     }
 
-    const payload: Array<{ actionKey: AgentActionKey; scope: any } | { actionKey: AgentActionKey; scope: null }> = [];
+    const payload: AgentPermissionUpdate[] = [];
 
     for (const actionKey of enabledActionKeys) {
       const definition = catalog.actions.find((action) => action.key === actionKey);
@@ -500,7 +501,7 @@ const AgentSettingsPage: React.FC<AgentSettingsPageProps> = ({ themeColor = "#3b
     try {
       setSavingPermissions(true);
       const updated = await agentService.updatePermissions(selectedAgent.id, {
-        permissions: payload as any,
+        permissions: payload,
       });
 
       const detail: AgentDetail = {

@@ -11,13 +11,13 @@ import {
   Logger,
 } from '@nestjs/common';
 import type { Response } from 'express';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { CalendarSyncService } from './calendar-sync.service';
 import {
   SyncCalendarsDto,
   CalendarSyncStatusDto,
-} from '../dto/calendar-sync.dto';
-import { SyncProvider } from '../entities/calendar-sync.entity';
+} from '../../dto/calendar-sync.dto';
+import { SyncProvider } from '../../entities/calendar-sync.entity';
 
 @Controller('calendar-sync')
 export class CalendarSyncController {
@@ -183,3 +183,4 @@ export class CalendarSyncController {
     return { message: 'Sync completed successfully' };
   }
 }
+

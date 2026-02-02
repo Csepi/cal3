@@ -6,6 +6,7 @@ import type {
   AuditLogDto,
   AuditLogQueryDto,
   AuditLogStatsDto,
+  PaginationState,
 } from '../types/Automation';
 import { BASE_URL } from '../config/apiConfig';
 import { secureFetch } from './authErrorHandler';
@@ -206,7 +207,7 @@ export async function getAuditLogs(
     method: 'GET',
   });
 
-  const paginatedResponse = await handleResponse<{ data: AuditLogDto[]; pagination: any }>(response);
+  const paginatedResponse = await handleResponse<{ data: AuditLogDto[]; pagination: PaginationState }>(response);
   return paginatedResponse.data;
 }
 

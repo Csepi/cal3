@@ -3,6 +3,8 @@ import { PublicBookingService } from './public-booking.service';
 import {
   CreatePublicBookingDto,
 } from '../dto/public-booking.dto';
+import { ValidatePublicBooking } from '../common/decorators/validate-public-booking.decorator';
+import { PublicBookingAvailabilityQueryDto } from '../common/pipes/public-booking-validation.pipe';
 
 /**
  * PublicBookingController
@@ -25,6 +27,7 @@ export class PublicBookingController {
    * @example GET /api/public/booking/abc123-def456-ghi789
    */
   @Get(':token')
+  @ValidatePublicBooking()
   async getResourceByToken(@Param('token') token: string) {
     return await this.publicBookingService.getResourceByToken(token);
   }
@@ -34,15 +37,12 @@ export class PublicBookingController {
    * @example GET /api/public/booking/abc123-def456-ghi789/availability?date=2025-10-01
    */
   @Get(':token/availability')
+  @ValidatePublicBooking()
   async getAvailability(
     @Param('token') token: string,
-    @Query('date') date: string,
+    @Query() query: PublicBookingAvailabilityQueryDto,
   ) {
-    if (!date) {
-      return { error: 'Date parameter is required (format: YYYY-MM-DD)' };
-    }
-
-    return await this.publicBookingService.getAvailability(token, date);
+    return await this.publicBookingService.getAvailability(token, query.date);
   }
 
   /**
@@ -50,6 +50,7 @@ export class PublicBookingController {
    * @example POST /api/public/booking/abc123-def456-ghi789/reserve
    */
   @Post(':token/reserve')
+  @ValidatePublicBooking()
   async createBooking(
     @Param('token') token: string,
     @Body() bookingDto: CreatePublicBookingDto,

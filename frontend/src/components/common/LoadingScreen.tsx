@@ -15,7 +15,7 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({
 }) => {
   // Helper function to get theme-based colors
   const getThemeColors = (color: string) => {
-    const colorMap: Record<string, any> = {
+    const colorMap: Record<string, unknown> = {
       '#ef4444': { gradient: 'from-red-50 via-red-100 to-red-200', spinner: 'border-red-500', text: 'text-red-600' },
       '#f59e0b': { gradient: 'from-orange-50 via-orange-100 to-orange-200', spinner: 'border-orange-500', text: 'text-orange-600' },
       '#eab308': { gradient: 'from-yellow-50 via-yellow-100 to-yellow-200', spinner: 'border-yellow-500', text: 'text-yellow-600' },

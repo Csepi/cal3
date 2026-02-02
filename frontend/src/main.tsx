@@ -9,6 +9,7 @@ import './styles/animations.css';
 import './styles/mobile.css';
 import './i18n';
 import App from './App.tsx';
+import { AppContextProvider } from './context/AppContextProvider';
 
 installClientLogger();
 clientLogger.info('client', 'Logger initialised', {
@@ -20,7 +21,9 @@ bootstrapThemeAssets();
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
-      <App />
+      <AppContextProvider>
+        <App />
+      </AppContextProvider>
     </QueryClientProvider>
   </StrictMode>,
 );

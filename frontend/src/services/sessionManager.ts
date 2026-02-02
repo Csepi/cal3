@@ -28,7 +28,7 @@ interface SessionSnapshot {
 
 const EXPIRY_BUFFER_MS = 5_000;
 
-const decodeJwtPayload = (token: string): Record<string, any> | null => {
+const decodeJwtPayload = (token: string): Record<string, unknown> | null => {
   try {
     const [, payload] = token.split('.');
     if (!payload) return null;
@@ -266,3 +266,4 @@ const readErrorPayload = async (response: Response): Promise<string> => {
     return '[unavailable]';
   }
 };
+

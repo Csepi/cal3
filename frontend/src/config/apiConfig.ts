@@ -16,6 +16,37 @@ import { clientLogger } from '../utils/clientLogger';
 const DEFAULT_PROTOCOL = typeof window !== 'undefined' ? window.location.protocol : 'https:';
 const DEFAULT_BACKEND_PORT = '8081';
 
+interface RuntimeGlobalScope {
+  BASE_URL?: unknown;
+  API_URL?: unknown;
+  __BASE_URL__?: unknown;
+  __API_URL__?: unknown;
+  BACKEND_PORT?: unknown;
+  __BACKEND_PORT__?: unknown;
+  API_PORT?: unknown;
+  ENV?: {
+    BASE_URL?: unknown;
+    API_URL?: unknown;
+    BACKEND_PORT?: unknown;
+    API_PORT?: unknown;
+    LOG_LEVEL?: unknown;
+  };
+  CONFIG?: {
+    BASE_URL?: unknown;
+    API_URL?: unknown;
+    BACKEND_PORT?: unknown;
+    LOG_LEVEL?: unknown;
+  };
+  process?: {
+    env?: {
+      BASE_URL?: unknown;
+      API_URL?: unknown;
+      BACKEND_PORT?: unknown;
+      API_PORT?: unknown;
+    };
+  };
+}
+
 let lastResolutionSource: string = 'localhost fallback';
 let lastPortOverride: string | null = null;
 
@@ -63,7 +94,7 @@ const readMetaContent = (name: string): string | null => {
 };
 
 const readBackendPortOverride = (): string | null => {
-  const globalScope = globalThis as any;
+  const globalScope = globalThis as RuntimeGlobalScope;
   const candidates = [
     globalScope?.BACKEND_PORT,
     globalScope?.__BACKEND_PORT__,
@@ -87,7 +118,7 @@ const readBackendPortOverride = (): string | null => {
 };
 
 const readGlobalBaseUrl = (portOverride?: string | null): string | null => {
-  const globalScope = globalThis as any;
+  const globalScope = globalThis as RuntimeGlobalScope;
   const candidates = [
     globalScope?.BASE_URL,
     globalScope?.API_URL,

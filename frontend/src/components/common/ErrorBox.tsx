@@ -7,10 +7,10 @@ export type ErrorDetails = {
   status?: number;
   statusText?: string;
   stack?: string;
-  requestBody?: any;
-  responseBody?: any;
+  requestBody?: unknown;
+  responseBody?: unknown;
   headers?: Record<string, string>;
-  [key: string]: any;
+  [key: string]: unknown;
 };
 
 interface ErrorBoxProps {

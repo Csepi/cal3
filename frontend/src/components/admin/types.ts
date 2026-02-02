@@ -72,7 +72,7 @@ export interface Reservation {
   endTime: string;
   status: string;
   isRecurring: boolean;
-  recurrencePattern?: Record<string, any>;
+  recurrencePattern?: Record<string, unknown>;
   resource: Resource;
   createdBy: User;
   createdAt: string;
@@ -89,7 +89,7 @@ export interface DatabaseStats {
 export interface AdminApiOptions {
   endpoint: string;
   method?: string;
-  data?: any;
+  data?: unknown;
 }
 
 export interface BulkOperationResult {
@@ -261,3 +261,4 @@ export interface ConfigurationOverview {
     frontendBaseUrl: string;
   };
 }
+

@@ -3,6 +3,7 @@ import { UserPermissionsService } from '../services/userPermissions';
 import { BASE_URL } from '../config/apiConfig';
 import { secureFetch } from '../services/authErrorHandler';
 import OrganisationUserManagement from './OrganisationUserManagement';
+import type { ReservationResourceType, ReservationUserSummary } from '../types/reservation';
 
 interface Organisation {
   id: number;
@@ -12,8 +13,8 @@ interface Organisation {
   phone?: string;
   email?: string;
   isActive: boolean;
-  users?: any[];
-  resourceTypes?: any[];
+  users?: ReservationUserSummary[];
+  resourceTypes?: ReservationResourceType[];
 }
 
 interface OrganisationManagementProps {
@@ -72,7 +73,7 @@ const OrganisationManagement: React.FC<OrganisationManagementProps> = ({ themeCo
       });
 
       if (!response.ok) throw new Error('Failed to load organisations');
-      const data = await response.json();
+      const data = (await response.json()) as Organisation[];
       setOrganisations(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load organisations');

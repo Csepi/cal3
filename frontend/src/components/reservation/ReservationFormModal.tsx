@@ -8,12 +8,17 @@
 
 import React, { useState, useEffect } from 'react';
 import { Modal, Button, Input, Card } from '../ui';
+import type {
+  ReservationCustomerInfo,
+  ReservationRecord,
+  ReservationResource,
+} from '../../types/reservation';
 
 export interface ReservationFormData {
   startTime: string;
   endTime: string;
   quantity: number;
-  customerInfo: any;
+  customerInfo: ReservationCustomerInfo;
   notes: string;
   resourceId: number;
   // Multi-day fields
@@ -31,9 +36,9 @@ export interface ReservationFormModalProps {
   /** Function to save the reservation */
   onSave: (formData: ReservationFormData) => Promise<void>;
   /** Reservation being edited (null for creating new reservation) */
-  editingReservation?: any | null;
+  editingReservation?: ReservationRecord | null;
   /** Available resources for selection */
-  resources: any[];
+  resources: ReservationResource[];
   /** Current theme color */
   themeColor: string;
   /** Error message to display */
@@ -130,7 +135,10 @@ export const ReservationFormModal: React.FC<ReservationFormModalProps> = ({
   /**
    * Handle form field changes
    */
-  const handleFormChange = (field: keyof ReservationFormData, value: any) => {
+  const handleFormChange = (
+    field: keyof ReservationFormData,
+    value: ReservationFormData[keyof ReservationFormData],
+  ) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
@@ -282,7 +290,8 @@ export const ReservationFormModal: React.FC<ReservationFormModalProps> = ({
     const hasChanges = editingReservation
       ? Object.keys(formData).some(key => {
           const currentValue = formData[key as keyof ReservationFormData];
-          const originalValue = (editingReservation as any)[key];
+          const originalValue =
+            editingReservation[key as keyof ReservationRecord];
           return currentValue !== originalValue;
         })
       : Object.values(formData).some(value =>

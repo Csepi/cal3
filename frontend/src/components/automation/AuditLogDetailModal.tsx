@@ -1,4 +1,9 @@
 import React from 'react';
+import type {
+  ActionType,
+  ConditionField,
+  ConditionOperator,
+} from '../../types/Automation';
 import { useSingleAuditLog } from '../../hooks/useAuditLogs';
 import { useAutomationMetadata } from '../../hooks/useAutomationMetadata';
 import { getStatusColor } from '../../services/automationService';
@@ -175,8 +180,12 @@ export const AuditLogDetailModal: React.FC<AuditLogDetailModalProps> = ({
                         </span>
                         <div className="flex-1">
                           <p className="text-sm font-medium">
-                            {getConditionFieldLabel(evaluation.field as any)}{' '}
-                            {getOperatorLabel(evaluation.operator as any)}
+                            {getConditionFieldLabel(
+                              evaluation.field as ConditionField,
+                            )}{' '}
+                            {getOperatorLabel(
+                              evaluation.operator as ConditionOperator,
+                            )}
                           </p>
                           <div className="mt-1 text-xs space-y-1">
                             <p>
@@ -239,7 +248,7 @@ export const AuditLogDetailModal: React.FC<AuditLogDetailModalProps> = ({
                           <span className="text-lg">{action.success ? '✓' : '✗'}</span>
                           <div className="flex-1">
                             <p className="text-sm font-medium">
-                              {getActionTypeLabel(action.actionType as any)}
+                              {getActionTypeLabel(action.actionType as ActionType)}
                             </p>
                             {action.error && (
                               <p className="mt-1 text-xs text-red-700">

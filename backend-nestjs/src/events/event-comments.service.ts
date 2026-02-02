@@ -3,9 +3,8 @@ import {
   BadRequestException,
   NotFoundException,
   ForbiddenException,
-  Inject,
-  forwardRef,
 } from '@nestjs/common';
+import { ModuleRef } from '@nestjs/core';
 import { InjectRepository } from '@nestjs/typeorm';
 import { IsNull, Repository } from 'typeorm';
 import { Event } from '../entities/event.entity';
@@ -43,9 +42,12 @@ export class EventCommentsService {
     @InjectRepository(CalendarShare)
     private readonly calendarShareRepository: Repository<CalendarShare>,
     private readonly notificationsService: NotificationsService,
-    @Inject(forwardRef(() => EventsService))
-    private readonly eventsService: EventsService,
+    private readonly moduleRef: ModuleRef,
   ) {}
+
+  private getEventsService(): EventsService {
+    return this.moduleRef.get(EventsService, { strict: false });
+  }
 
   async listForEvent(
     eventId: number,
@@ -55,7 +57,7 @@ export class EventCommentsService {
     canReply: boolean;
     comments: EventCommentResponseDto[];
   }> {
-    const event = await this.eventsService.findOne(eventId, userId);
+    const event = await this.getEventsService().findOne(eventId, userId);
 
     const comments = await this.commentRepository.find({
       where: { eventId, parentCommentId: IsNull() },
@@ -79,7 +81,7 @@ export class EventCommentsService {
     dto: CreateEventCommentDto,
     userId: number,
   ): Promise<EventCommentResponseDto> {
-    const event = await this.eventsService.findOne(eventId, userId);
+    const event = await this.getEventsService().findOne(eventId, userId);
 
     let parentComment: EventComment | null = null;
     if (dto.parentCommentId) {
@@ -143,7 +145,7 @@ export class EventCommentsService {
 
     const event =
       comment.event ??
-      (await this.eventsService.findOne(comment.eventId, userId));
+      (await this.getEventsService().findOne(comment.eventId, userId));
 
     await this.ensureEditPermission(comment, event, userId);
 
@@ -165,7 +167,7 @@ export class EventCommentsService {
     userId: number,
   ): Promise<EventCommentResponseDto> {
     // Ensure user can read the event
-    await this.eventsService.findOne(eventId, userId);
+    await this.getEventsService().findOne(eventId, userId);
 
     const comment = await this.commentRepository.findOne({
       where: { id: commentId, eventId },
@@ -189,7 +191,7 @@ export class EventCommentsService {
     userId: number,
     note?: string,
   ): Promise<EventCommentResponseDto | null> {
-    const event = await this.eventsService.findOne(eventId, userId);
+    const event = await this.getEventsService().findOne(eventId, userId);
 
     const recent = await this.commentRepository.findOne({
       where: {

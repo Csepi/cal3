@@ -8,6 +8,11 @@
 
 import React from 'react';
 import { Card, CardHeader, Button, Input } from '../ui';
+import type {
+  ReservationOrganization,
+  ReservationResource,
+  ReservationResourceType,
+} from '../../types/reservation';
 
 export interface ReservationFilters {
   status: string;
@@ -24,11 +29,11 @@ export interface ReservationFilterPanelProps {
   /** Function to update filters */
   onFiltersChange: (filters: ReservationFilters) => void;
   /** Available resource types for filtering */
-  resourceTypes: any[];
+  resourceTypes: ReservationResourceType[];
   /** Available organizations for filtering */
-  organizations: any[];
+  organizations: ReservationOrganization[];
   /** Available resources for filtering */
-  resources: any[];
+  resources: ReservationResource[];
   /** Current theme color */
   themeColor: string;
   /** Loading state */

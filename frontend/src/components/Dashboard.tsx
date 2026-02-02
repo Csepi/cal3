@@ -27,15 +27,16 @@ import ReservationsPanel from './ReservationsPanel';
 import { AutomationPanel } from './automation/AutomationPanel';
 import { apiService } from '../services/api';
 import { sessionManager } from '../services/sessionManager';
-import { UserPermissionsService } from '../services/userPermissions';
-import { THEME_COLORS, getThemeConfig } from '../constants/theme';
+import { THEME_COLORS } from '../constants/theme';
 import { useFeatureFlags } from '../hooks/useFeatureFlags';
+import { useAuth } from '../hooks/useAuth';
+import { useTheme } from '../hooks/useTheme';
+import { usePermissions } from '../hooks/usePermissions';
 import { ResponsiveNavigation } from './mobile/organisms/ResponsiveNavigation';
 import { FloatingActionButton } from './mobile/organisms/FloatingActionButton';
 import { MobileLayout } from './mobile/templates/MobileLayout';
 import { useScreenSize } from '../hooks/useScreenSize';
 import type { TabId } from './mobile/organisms/BottomTabBar';
-import { useNotifications } from '../hooks/useNotifications';
 import { NotificationCenter, NotificationSettingsPanel } from './notifications';
 import { TasksWorkspace, type TasksWorkspaceHandle } from './tasks/TasksWorkspace';
 import { clientLogger } from '../utils/clientLogger';
@@ -59,67 +60,37 @@ interface DashboardProps {
   initialView?: DashboardView;
 }
 
+interface DashboardUserProfile {
+  id: number;
+  name?: string;
+  fullName?: string;
+  timezone?: string;
+  timeFormat?: string;
+  language?: string;
+  themeColor?: string;
+  hideReservationsTab?: boolean;
+}
+
 const Dashboard: React.FC<DashboardProps> = ({ initialView = 'calendar' }) => {
   // Hooks
   const { i18n } = useTranslation();
   const { flags: featureFlags, loading: featureFlagsLoading } = useFeatureFlags();
   const { isMobile } = useScreenSize();
+  const { currentUser, isAuthenticated, logout: authLogout } = useAuth();
+  const { themeColor, themeConfig, setThemeColor } = useTheme();
+  const {
+    canAccessReservations,
+    loading: permissionsLoading,
+    refreshPermissions,
+    resetPermissions,
+  } = usePermissions();
 
   // Authentication and user state
-  const [user, setUser] = useState<string | null>(null);
-  const [userRole, setUserRole] = useState<string>('user');
-
   // UI state management
   const [currentView, setCurrentView] = useState<DashboardView>(initialView);
-  const getInitialThemeColor = () => {
-    if (typeof window === 'undefined') {
-      return THEME_COLORS.BLUE;
-    }
-    return localStorage.getItem('themeColor') || THEME_COLORS.BLUE;
-  };
+  const [userProfile, setUserProfile] = useState<DashboardUserProfile | null>(null);
 
-  const [themeColor, setThemeColor] = useState<string>(getInitialThemeColor);
-  const [userProfile, setUserProfile] = useState<any>(null);
-
-  // Permissions state
-  const [canAccessReservations, setCanAccessReservations] = useState<boolean>(false);
-  const [permissionsLoading, setPermissionsLoading] = useState<boolean>(true);
-
-  const { unreadCount } = useNotifications();
   const tasksWorkspaceRef = useRef<TasksWorkspaceHandle | null>(null);
-
-  /**
-   * Handles user login and initializes user session
-   *
-   * @param username - The logged-in user's username
-   * @param token - Optional JWT authentication token
-   * @param role - User role (admin/user), defaults to 'user'
-   * @param userData - Additional user profile data including theme preferences
-   */
-  const handleLogin = (username: string, token?: string, role?: string, userData?: any) => {
-    // Update component state
-    setUser(username);
-    setUserRole(role || 'user');
-
-    // Store authentication data in localStorage for session persistence
-    localStorage.setItem('username', username);
-    localStorage.setItem('userRole', role || 'user');
-    if (token) {
-      // Token is managed via sessionManager; no browser storage required.
-    }
-
-    // Apply user's theme preference if available
-    if (userData && userData.themeColor) {
-      setThemeColor(userData.themeColor);
-      localStorage.setItem('themeColor', userData.themeColor);
-    }
-
-    // Load complete user profile from server
-    loadUserProfile();
-
-    // Load user permissions
-    loadUserPermissions();
-  };
 
   /**
    * Handles user logout and clears all session data
@@ -127,30 +98,19 @@ const Dashboard: React.FC<DashboardProps> = ({ initialView = 'calendar' }) => {
    */
   const handleLogout = async () => {
     // Reset component state to defaults
-    setUser(null);
-    setUserRole('user');
     setCurrentView('calendar');
-    setThemeColor(THEME_COLORS.BLUE);
-    localStorage.removeItem('themeColor');
     setUserProfile(null);
 
     // Reset permissions state
-    setCanAccessReservations(false);
-    setPermissionsLoading(true);
-
-    // Clear all authentication data from localStorage
-    localStorage.removeItem('username');
-    localStorage.removeItem('userRole');
-
-    // Clear permissions cache
-    UserPermissionsService.clearCache();
+    resetPermissions();
 
     // Notify API service to clear any cached tokens
     try {
-      await apiService.logout();
+      await authLogout();
     } catch (error) {
       clientLogger.warn('dashboard', 'logout request failed', error);
     }
+    setThemeColor(THEME_COLORS.BLUE);
   };
 
   /**
@@ -159,13 +119,12 @@ const Dashboard: React.FC<DashboardProps> = ({ initialView = 'calendar' }) => {
    */
   const loadUserProfile = async () => {
     try {
-      const profile = await apiService.getUserProfile();
+      const profile = await apiService.getUserProfile() as DashboardUserProfile;
       setUserProfile(profile);
 
       // Apply user's saved theme preference
       if (profile.themeColor) {
         setThemeColor(profile.themeColor);
-        localStorage.setItem('themeColor', profile.themeColor);
       }
 
       // Apply user's saved language preference
@@ -174,23 +133,6 @@ const Dashboard: React.FC<DashboardProps> = ({ initialView = 'calendar' }) => {
       }
     } catch (err) {
       clientLogger.warn('dashboard', 'failed to load user profile', err);
-    }
-  };
-
-  /**
-   * Loads user permissions from the server
-   * Called after login and when permissions need to be refreshed
-   */
-  const loadUserPermissions = async () => {
-    try {
-      setPermissionsLoading(true);
-      const hasReservationAccess = await UserPermissionsService.canAccessReservations();
-      setCanAccessReservations(hasReservationAccess);
-    } catch (err) {
-      clientLogger.warn('dashboard', 'failed to load user permissions', err);
-      setCanAccessReservations(false);
-    } finally {
-      setPermissionsLoading(false);
     }
   };
 
@@ -206,24 +148,14 @@ const Dashboard: React.FC<DashboardProps> = ({ initialView = 'calendar' }) => {
 
   // Initialize authentication state from localStorage on component mount
   useEffect(() => {
-    const storedUsername = localStorage.getItem('username');
-    const storedRole = localStorage.getItem('userRole');
-
-    if (storedUsername) {
-      setUser(storedUsername);
-      setUserRole(storedRole || 'user');
-    }
-
     if (!sessionManager.hasActiveSession()) {
-      sessionManager.refreshAccessToken().catch(() => {
-        setUser(null);
-      });
+      sessionManager.refreshAccessToken().catch(() => null);
     }
   }, []);
 
   // Load user profile and permissions on component mount if logged in
   useEffect(() => {
-    if (!user) {
+    if (!currentUser?.username) {
       return;
     }
 
@@ -236,11 +168,11 @@ const Dashboard: React.FC<DashboardProps> = ({ initialView = 'calendar' }) => {
         }
       }
       await loadUserProfile();
-      await loadUserPermissions();
+      await refreshPermissions();
     };
 
     void initialise();
-  }, [user]);
+  }, [currentUser?.username]);
 
   // Redirect to calendar if user loses access to current view
   useEffect(() => {
@@ -259,10 +191,8 @@ const Dashboard: React.FC<DashboardProps> = ({ initialView = 'calendar' }) => {
   }, [featureFlagsLoading, permissionsLoading, currentView, featureFlags, canAccessReservations]);
 
   // Get centralized theme configuration
-  const themeConfig = getThemeConfig(themeColor);
-
-  if (!user) {
-    return <Login onLogin={handleLogin} />;
+  if (!isAuthenticated || !currentUser?.username) {
+    return <Login />;
   }
 
   // Handle tab change (works for both mobile and desktop)
@@ -282,14 +212,14 @@ const Dashboard: React.FC<DashboardProps> = ({ initialView = 'calendar' }) => {
   // Refresh handler for pull-to-refresh
   const handleRefresh = async () => {
     await loadUserProfile();
-    await loadUserPermissions();
+    await refreshPermissions();
   };
 
   const activeNavigationView: TabId = (currentView === 'notification-settings'
     ? 'notifications'
     : currentView) as TabId;
 
-  const displayName = userProfile?.name || userProfile?.fullName || user || '';
+  const displayName = userProfile?.name || userProfile?.fullName || currentUser?.username || '';
   const mobileSurfaceLabel = (() => {
     switch (currentView) {
       case 'calendar':
@@ -320,16 +250,8 @@ const Dashboard: React.FC<DashboardProps> = ({ initialView = 'calendar' }) => {
       <ResponsiveNavigation
         activeTab={activeNavigationView}
         onTabChange={handleTabChange}
-          themeColor={themeColor}
-          userRole={userRole}
-          userName={user || ''}
-          onLogout={handleLogout}
-          featureFlags={featureFlags}
-          canAccessReservations={canAccessReservations}
-          hideReservationsTab={userProfile?.hideReservationsTab}
-          themeConfig={themeConfig}
-          notificationsBadge={unreadCount}
-        />
+        hideReservationsTab={userProfile?.hideReservationsTab}
+      />
 
       {/* Main Content Area with Mobile Layout Wrapper */}
       <MobileLayout
@@ -382,7 +304,7 @@ const Dashboard: React.FC<DashboardProps> = ({ initialView = 'calendar' }) => {
             <NotificationSettingsPanel onBack={() => setCurrentView('notifications')} />
           )}
           {/* Admin Panel - Only accessible to admin users */}
-          {currentView === 'admin' && userRole === 'admin' && (
+          {currentView === 'admin' && (currentUser?.role || 'user') === 'admin' && (
             <AdminPanel themeColor={themeColor} />
           )}
         </div>

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState, type ChangeEvent } from 'react';
 import { useNotifications } from '../../hooks/useNotifications';
-import { apiService } from '../../services/api';
+import { notificationsApi } from '../../services/notificationsApi';
 import type {
   NotificationPreference,
   NotificationChannel,
@@ -124,9 +124,11 @@ export const NotificationSettingsPanel: React.FC<NotificationSettingsPanelProps>
       }
     });
     notifications.forEach((notification) => {
+      const metadata = notification.metadata as Record<string, unknown> | null;
+      const data = notification.data as Record<string, unknown> | null;
       const contextType =
-        (notification.metadata as any)?.contextType ??
-        (notification.data as any)?.contextType ??
+        metadata?.contextType ??
+        data?.contextType ??
         null;
       if (contextType) {
         options.add(String(contextType));
@@ -255,7 +257,7 @@ export const NotificationSettingsPanel: React.FC<NotificationSettingsPanelProps>
     }));
 
     try {
-      const response = await apiService.getNotificationScopeOptions(scope);
+      const response = await notificationsApi.getScopeOptions(scope);
       const options: ScopeOption[] = Array.isArray(response?.[scope])
         ? response[scope].map((option) => ({
             value: option.value,
@@ -976,8 +978,8 @@ export const NotificationSettingsPanel: React.FC<NotificationSettingsPanelProps>
                         key={option.value}
                         value={option.value}
                         title={
-                          Array.isArray((option.meta as any)?.tags) && (option.meta as any).tags.length > 0
-                            ? (option.meta as any).tags.join(', ')
+                          Array.isArray(option.meta?.tags) && option.meta.tags.length > 0
+                            ? option.meta.tags.join(', ')
                             : undefined
                         }
                       >

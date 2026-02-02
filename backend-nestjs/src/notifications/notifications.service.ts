@@ -1,11 +1,9 @@
 import {
   ForbiddenException,
-  Inject,
   Injectable,
   Logger,
   NotFoundException,
   OnModuleInit,
-  forwardRef,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -36,6 +34,7 @@ import {
 
 import { logError } from '../common/errors/error-logger';
 import { buildErrorContext } from '../common/errors/error-context';
+import { ModuleRef } from '@nestjs/core';
 export interface PublishNotificationOptions {
   eventType: string;
   actorId?: number | null;
@@ -90,9 +89,19 @@ export class NotificationsService implements OnModuleInit {
     @InjectQueue(NOTIFICATIONS_DIGEST_QUEUE)
     private readonly digestQueue: Queue,
     private readonly rulesService: NotificationRulesService,
-    @Inject(forwardRef(() => NotificationThreadsService))
-    private readonly threadsService: NotificationThreadsService,
+    private readonly moduleRef: ModuleRef,
   ) {}
+
+  private threadsService?: NotificationThreadsService;
+
+  private getThreadsService(): NotificationThreadsService {
+    if (!this.threadsService) {
+      this.threadsService = this.moduleRef.get(NotificationThreadsService, {
+        strict: false,
+      });
+    }
+    return this.threadsService;
+  }
 
   async onModuleInit(): Promise<void> {
     try {
@@ -214,7 +223,7 @@ export class NotificationsService implements OnModuleInit {
 
       const threadSummary =
         options.context?.threadKey && options.context.threadKey.length > 0
-          ? await this.threadsService.registerThread(
+          ? await this.getThreadsService().registerThread(
               recipientId,
               options.context.threadKey,
               options.context.contextType,
@@ -255,7 +264,7 @@ export class NotificationsService implements OnModuleInit {
         });
 
         if (evaluation.muteThread) {
-          await this.threadsService.setThreadMuted(
+          await this.getThreadsService().setThreadMuted(
             recipientId,
             threadSummary.id,
             true,
@@ -263,7 +272,7 @@ export class NotificationsService implements OnModuleInit {
         }
 
         if (evaluation.archive) {
-          await this.threadsService.setThreadArchived(
+          await this.getThreadsService().setThreadArchived(
             recipientId,
             threadSummary.id,
             true,

@@ -1,16 +1,15 @@
 import React, { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { sessionManager } from '../../services/sessionManager';
 import { clientLogger } from '../../utils/clientLogger';
+import { useAuth } from '../../hooks/useAuth';
 
-interface AuthCallbackProps {
-  onLogin: (username: string, token?: string, role?: string) => void;
-}
-
-const AuthCallback: React.FC<AuthCallbackProps> = ({ onLogin }) => {
+const AuthCallback: React.FC = () => {
   const location = useLocation();
+  const { login } = useAuth();
 
-  const decodeTokenPayload = (jwt: string): Record<string, any> | null => {
+  type JwtPayload = { username?: string; role?: string; [key: string]: unknown };
+
+  const decodeTokenPayload = (jwt: string): JwtPayload | null => {
     if (typeof atob !== 'function') {
       return null;
     }
@@ -23,7 +22,7 @@ const AuthCallback: React.FC<AuthCallbackProps> = ({ onLogin }) => {
         '=',
       );
       const decoded = atob(padded);
-      return JSON.parse(decoded);
+      return JSON.parse(decoded) as JwtPayload;
     } catch {
       return null;
     }
@@ -47,13 +46,14 @@ const AuthCallback: React.FC<AuthCallbackProps> = ({ onLogin }) => {
       const payload = decodeTokenPayload(token);
       const username = payload?.username || `${provider}_user`;
       const role = payload?.role || 'user';
-      sessionManager.setSessionFromJwt(token, { username, role });
       clientLogger.info('auth-callback', 'session initialised from callback', {
         username,
         role,
         provider,
       });
-      onLogin(username, token, role);
+      void login({ token, username, role }).finally(() => {
+        window.location.href = '/';
+      });
     } else {
       clientLogger.warn('auth-callback', 'missing token in callback response', {
         provider,
@@ -61,7 +61,7 @@ const AuthCallback: React.FC<AuthCallbackProps> = ({ onLogin }) => {
       // Redirect to login page if no token
       window.location.href = '/';
     }
-  }, [location, onLogin]);
+  }, [location, login]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">

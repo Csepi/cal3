@@ -8,11 +8,11 @@ import { useTasks } from '../../hooks/useTasks';
 import { useTaskLabels } from '../../hooks/useTaskLabels';
 import { useTaskComposer } from '../../hooks/useTaskComposer';
 import type { Task, TaskLabel } from '../../types/Task';
+import { TaskPriority, TaskStatus } from '../../types/Task';
 import { TaskBoard } from './TaskBoard';
 import { TaskComposerPanel } from './TaskComposerPanel';
 import { TaskQuickCreateDrawer } from './TaskQuickCreateDrawer';
 import { useScreenSize } from '../../hooks/useScreenSize';
-import { TaskStatus } from '../../types/Task';
 import {
   addMonths,
   addWeeks,
@@ -125,8 +125,8 @@ export const TasksWorkspace = forwardRef<TasksWorkspaceHandle, TasksWorkspacePro
       title: string;
       dueDate?: string | null;
       labelIds?: number[];
-      priority: any;
-      status: any;
+      priority: TaskPriority;
+      status: TaskStatus;
     }) => {
       await createTask({
         title: payload.title,

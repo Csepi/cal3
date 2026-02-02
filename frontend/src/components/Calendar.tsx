@@ -43,4 +43,4 @@ const Calendar: React.FC<CalendarProps> = ({ themeColor, timeFormat = '12h', tim
   );
 };
 
-export default Calendar;
+export default React.memo(Calendar);

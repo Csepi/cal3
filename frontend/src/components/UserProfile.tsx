@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { apiService } from '../services/api';
+import { calendarApi } from '../services/calendarApi';
 import { getSimpleThemeGradient, LOADING_MESSAGES } from '../constants';
 import { Button } from './ui';
 import {
@@ -38,13 +39,28 @@ type TasksCalendarOption = {
   ownerId?: number;
 };
 
+interface UserProfileData {
+  id: number;
+  username?: string;
+  email?: string;
+  firstName?: string;
+  lastName?: string;
+  timezone?: string;
+  timeFormat?: string;
+  language?: string;
+  themeColor?: string;
+  hideReservationsTab?: boolean;
+  usagePlans?: string[];
+  defaultTasksCalendarId?: number | null;
+}
+
 const UserProfile: React.FC<UserProfileProps> = ({ onThemeChange, currentTheme }) => {
   // Hooks
   const { i18n } = useTranslation();
   const { isMobile } = useScreenSize();
 
   // Core state management
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<UserProfileData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -87,7 +103,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ onThemeChange, currentTheme }
     }
     try {
       setTasksCalendarsLoading(true);
-      const calendars = await apiService.getAllCalendars();
+      const calendars = await calendarApi.getCalendars();
       const eligible = calendars.filter((calendar) => {
         if (!calendar || calendar.isActive === false) {
           return false;
@@ -97,7 +113,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ onThemeChange, currentTheme }
         }
         if (Array.isArray(calendar.sharedWith)) {
           const shareEntry = calendar.sharedWith.find(
-            (shared: any) => shared?.id === currentUserId,
+            (shared) => shared?.id === currentUserId,
           );
           if (shareEntry?.permission) {
             const permission = String(shareEntry.permission).toLowerCase();
@@ -137,7 +153,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ onThemeChange, currentTheme }
       setLoading(true);
       setError(null);
 
-      const userData = await apiService.getUserProfile();
+      const userData = await apiService.getUserProfile() as UserProfileData;
       setUser(userData);
 
       // Populate profile form with user data

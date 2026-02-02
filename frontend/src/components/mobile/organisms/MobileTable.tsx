@@ -41,7 +41,7 @@ interface MobileTableProps<T> {
   mobileIcon?: (row: T) => string;
 }
 
-export function MobileTable<T extends Record<string, any>>({
+export function MobileTable<T extends Record<string, unknown>>({
   columns,
   data,
   keyField,
@@ -168,3 +168,4 @@ export function MobileTable<T extends Record<string, any>>({
     </div>
   );
 }
+

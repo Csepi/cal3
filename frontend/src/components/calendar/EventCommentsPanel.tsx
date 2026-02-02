@@ -5,7 +5,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { apiService } from '../../services/api';
+import { eventsApi } from '../../services/eventsApi';
 import { sessionManager } from '../../services/sessionManager';
 import type {
   CommentTemplateKey,
@@ -129,7 +129,7 @@ export const EventCommentsPanel: React.FC<EventCommentsPanelProps> = ({
     setLoading(true);
     setError(null);
     try {
-      const response = await apiService.getEventComments(eventId);
+      const response = await eventsApi.getEventComments(eventId);
       setComments(response.comments || []);
       setCommentsMeta({
         canReply: response.canReply,
@@ -173,7 +173,7 @@ export const EventCommentsPanel: React.FC<EventCommentsPanelProps> = ({
     }
 
     lastTrackedOpenRef.current = { eventId, ts: now };
-    apiService.trackEventOpen(eventId).catch((err) => {
+    eventsApi.trackEventOpen(eventId).catch((err) => {
       console.warn('Failed to track event open', err);
     });
   }, [eventId, isOpen]);
@@ -217,7 +217,7 @@ export const EventCommentsPanel: React.FC<EventCommentsPanelProps> = ({
     setSaving(true);
     setError(null);
     try {
-      const created = await apiService.addEventComment(eventId, {
+      const created = await eventsApi.addEventComment(eventId, {
         content: draft,
         templateKey: selectedTemplate,
       });
@@ -241,7 +241,7 @@ export const EventCommentsPanel: React.FC<EventCommentsPanelProps> = ({
     }
 
     try {
-      const reply = await apiService.replyToEventComment(eventId, parentId, {
+      const reply = await eventsApi.replyToEventComment(eventId, parentId, {
         content: replyText,
         templateKey: template,
       });
@@ -266,7 +266,7 @@ export const EventCommentsPanel: React.FC<EventCommentsPanelProps> = ({
   const handleEdit = async () => {
     if (!eventId || !editingId) return;
     try {
-      const updated = await apiService.updateEventComment(eventId, editingId, {
+      const updated = await eventsApi.updateEventComment(eventId, editingId, {
         content: editDraft,
       });
       mergeComment(updated);
@@ -280,7 +280,7 @@ export const EventCommentsPanel: React.FC<EventCommentsPanelProps> = ({
   const handleFlag = async (comment: EventComment) => {
     if (!eventId) return;
     try {
-      const updated = await apiService.flagEventComment(
+      const updated = await eventsApi.flagEventComment(
         eventId,
         comment.id,
         !comment.isFlagged,

@@ -1,4 +1,4 @@
-import { Module, forwardRef } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AgentProfile } from '../entities/agent-profile.entity';
 import { AgentPermission } from '../entities/agent-permission.entity';
@@ -27,10 +27,10 @@ import { TasksModule } from '../tasks/tasks.module';
       AgentApiKey,
       User,
     ]),
-    forwardRef(() => CalendarsModule),
-    forwardRef(() => EventsModule),
-    forwardRef(() => AutomationModule),
-    forwardRef(() => TasksModule),
+    CalendarsModule,
+    EventsModule,
+    AutomationModule,
+    TasksModule,
     ConfigurationModule,
   ],
   controllers: [AgentsController, AgentMcpController, AgentMcpStreamController],

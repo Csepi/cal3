@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { apiService } from '../../services/api';
+import { calendarApi } from '../../services/calendarApi';
 import { LoadingScreen } from '../common';
 import { useLoadingProgress } from '../../hooks/useLoadingProgress';
 import { getAutomationRules } from '../../services/automationService';
@@ -35,6 +35,32 @@ interface SyncStatus {
   providers: ProviderSyncStatus[];
 }
 
+interface SyncThemeColors {
+  primary: string;
+  secondary: string;
+  light: string;
+  border: string;
+  accent: string;
+  hover: string;
+  gradient: {
+    header: string;
+    today: string;
+    selected: string;
+    events: string;
+    background: string;
+  };
+  text: {
+    title: string;
+  };
+  button: string;
+  focus: string;
+  animatedGradient: {
+    circle1: string;
+    circle2: string;
+    circle3: string;
+  };
+}
+
 const CalendarSync: React.FC<CalendarSyncProps> = ({ themeColor }) => {
   const [syncStatus, setSyncStatus] = useState<SyncStatus>({
     providers: []
@@ -48,8 +74,8 @@ const CalendarSync: React.FC<CalendarSyncProps> = ({ themeColor }) => {
   const { loadingState, withProgress } = useLoadingProgress();
 
   // Helper function to get theme-based colors with gradients (matching Calendar component)
-  const getThemeColors = (color: string) => {
-    const colorMap: Record<string, any> = {
+  const getThemeColors = (color: string): SyncThemeColors => {
+    const colorMap: Record<string, SyncThemeColors> = {
       '#3b82f6': { // Blue
         primary: 'blue',
         secondary: 'indigo',
@@ -521,7 +547,7 @@ const CalendarSync: React.FC<CalendarSyncProps> = ({ themeColor }) => {
   const loadSyncStatus = async () => {
     try {
       setIsLoading(true);
-      const status = await apiService.getCalendarSyncStatus();
+      const status = await calendarApi.getCalendarSyncStatus();
 
       // Ensure we always have an array of providers
       if (!status.providers || !Array.isArray(status.providers)) {
@@ -575,7 +601,7 @@ const CalendarSync: React.FC<CalendarSyncProps> = ({ themeColor }) => {
   const handleProviderConnect = async (provider: 'google' | 'microsoft') => {
     try {
       setIsLoading(true);
-      const authUrl = await apiService.getCalendarAuthUrl(provider);
+      const authUrl = await calendarApi.getCalendarAuthUrl(provider);
       window.location.href = authUrl;
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Failed to connect to provider');
@@ -649,7 +675,7 @@ const CalendarSync: React.FC<CalendarSyncProps> = ({ themeColor }) => {
 
         updateProgress(30, `Syncing ${providerSelectedCalendars.length} calendars with ${provider}...`);
 
-        await apiService.syncCalendars({
+        await calendarApi.syncCalendars({
           provider: provider as 'google' | 'microsoft',
           calendars: providerSelectedCalendars.map(id => ({
             externalId: id,
@@ -690,7 +716,7 @@ const CalendarSync: React.FC<CalendarSyncProps> = ({ themeColor }) => {
     try {
       await withProgress(async (updateProgress) => {
         updateProgress(20, `Disconnecting from ${provider}...`);
-        await apiService.disconnectCalendarProvider(provider as 'google' | 'microsoft');
+        await calendarApi.disconnectCalendarProvider(provider as 'google' | 'microsoft');
 
         updateProgress(80, 'Refreshing sync status...');
         await loadSyncStatus();
@@ -704,7 +730,7 @@ const CalendarSync: React.FC<CalendarSyncProps> = ({ themeColor }) => {
     try {
       await withProgress(async (updateProgress) => {
         updateProgress(20, 'Initializing force sync...');
-        await apiService.forceCalendarSync();
+        await calendarApi.forceCalendarSync();
 
         updateProgress(80, 'Refreshing sync status...');
         await loadSyncStatus();

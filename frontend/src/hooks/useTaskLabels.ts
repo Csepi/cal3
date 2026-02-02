@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { apiService } from '../services/api';
+import { tasksApi } from '../services/tasksApi';
 import type { TaskLabel, CreateTaskLabelRequest } from '../types/Task';
 
 export function useTaskLabels() {
@@ -10,7 +10,7 @@ export function useTaskLabels() {
   const loadLabels = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await apiService.getTaskLabels();
+      const response = await tasksApi.getTaskLabels();
       setLabels(response);
       setError(null);
     } catch (err) {
@@ -27,7 +27,7 @@ export function useTaskLabels() {
 
   const createLabel = useCallback(
     async (payload: CreateTaskLabelRequest) => {
-      const label = await apiService.createTaskLabel(payload);
+      const label = await tasksApi.createTaskLabel(payload);
       setLabels((prev) => [...prev, label]);
       return label;
     },
@@ -36,7 +36,7 @@ export function useTaskLabels() {
 
   const updateLabel = useCallback(
     async (labelId: number, payload: CreateTaskLabelRequest) => {
-      const updated = await apiService.updateTaskLabel(labelId, payload);
+      const updated = await tasksApi.updateTaskLabel(labelId, payload);
       setLabels((prev) =>
         prev.map((label) => (label.id === updated.id ? updated : label)),
       );
@@ -46,7 +46,7 @@ export function useTaskLabels() {
   );
 
   const deleteLabel = useCallback(async (labelId: number) => {
-    await apiService.deleteTaskLabel(labelId);
+    await tasksApi.deleteTaskLabel(labelId);
     setLabels((prev) => prev.filter((label) => label.id !== labelId));
   }, []);
 

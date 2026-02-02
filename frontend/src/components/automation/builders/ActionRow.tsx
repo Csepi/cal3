@@ -4,7 +4,7 @@ import type { ActionFormData } from '../../../types/Automation';
 import { useAutomationMetadata } from '../../../hooks/useAutomationMetadata';
 import { SetEventColorForm } from './SetEventColorForm';
 import { SmartValuePicker } from '../SmartValuePicker';
-import { apiService } from '../../../services/api';
+import { calendarApi } from '../../../services/calendarApi';
 import type { Calendar } from '../../../types/Calendar';
 
 interface ActionRowProps {
@@ -12,7 +12,7 @@ interface ActionRowProps {
   onUpdate: (updates: Partial<ActionFormData>) => void;
   onDelete: () => void;
   canDelete: boolean;
-  dragHandleProps?: any;
+  dragHandleProps?: React.HTMLAttributes<HTMLDivElement>;
   triggerType?: TriggerType | null;
 }
 
@@ -42,7 +42,7 @@ export const ActionRow: React.FC<ActionRowProps> = ({
     setCalendarsLoading(true);
     setCalendarError(null);
     try {
-      const list = await apiService.getAllCalendars();
+      const list = await calendarApi.getCalendars();
       setCalendars(list);
     } catch (error) {
       console.error('Failed to load calendars for automation action:', error);
@@ -66,7 +66,7 @@ export const ActionRow: React.FC<ActionRowProps> = ({
       return;
     }
 
-    let initialConfig: Record<string, any> = {};
+    let initialConfig: Record<string, unknown> = {};
     if (newValue === ActionType.SET_EVENT_COLOR) {
       initialConfig = { color: '#3b82f6' };
     }
@@ -74,7 +74,7 @@ export const ActionRow: React.FC<ActionRowProps> = ({
     onUpdate({ actionType: newValue, actionConfig: initialConfig });
   };
 
-  const handleConfigChange = (updates: Record<string, any>) => {
+  const handleConfigChange = (updates: Record<string, unknown>) => {
     const currentConfig = { ...(action.actionConfig || {}) };
 
     Object.entries(updates).forEach(([key, value]) => {
@@ -535,3 +535,4 @@ export const ActionRow: React.FC<ActionRowProps> = ({
     </div>
   );
 };
+

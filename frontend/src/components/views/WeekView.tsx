@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import type { Event } from '../../types/Event';
+import type { ReservationRecord } from '../../types/reservation';
 import { getMeetingLinkFromEvent } from '../../utils/meetingLinks';
 
 interface WeekViewProps {
@@ -10,7 +11,7 @@ interface WeekViewProps {
   onTimeRangeSelect?: (date: Date, startHour: number, endHour: number) => void;
   weekStartDay?: number; // 0 = Sunday, 1 = Monday, defaults to 1 (Monday)
   themeColor: string;
-  reservations?: any[];
+  reservations?: ReservationRecord[];
   userTimezone?: string;
   timeFormat?: string;
 }
@@ -98,7 +99,7 @@ const WeekView: React.FC<WeekViewProps> = ({
   };
 
   // Get reservations for a specific date
-  const getReservationsForDay = (date: Date): any[] => {
+  const getReservationsForDay = (date: Date): ReservationRecord[] => {
     const dayStart = new Date(date);
     dayStart.setHours(0, 0, 0, 0);
     const dayEnd = new Date(date);
@@ -113,7 +114,7 @@ const WeekView: React.FC<WeekViewProps> = ({
   };
 
   // Get reservations that start at a specific hour
-  const getReservationsStartingAtHour = (date: Date, hour: number): any[] => {
+  const getReservationsStartingAtHour = (date: Date, hour: number): ReservationRecord[] => {
     const dayReservations = getReservationsForDay(date);
 
     return dayReservations.filter(reservation => {
@@ -123,7 +124,7 @@ const WeekView: React.FC<WeekViewProps> = ({
   };
 
   // Calculate reservation duration in hours
-  const getReservationDuration = (reservation: any): number => {
+  const getReservationDuration = (reservation: ReservationRecord): number => {
     const start = new Date(reservation.startTime);
     const end = new Date(reservation.endTime);
     const durationInMinutes = (end.getTime() - start.getTime()) / (1000 * 60);

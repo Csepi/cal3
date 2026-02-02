@@ -173,7 +173,7 @@ const OrganisationUserManagement: React.FC<OrganisationUserManagementProps> = ({
   };
 
   const getThemeColors = (color: string) => {
-    const colorMap: Record<string, any> = {
+    const colorMap: Record<string, unknown> = {
       '#ef4444': { primary: 'bg-red-500 hover:bg-red-600', border: 'border-red-200', text: 'text-red-600' },
       '#f59e0b': { primary: 'bg-orange-500 hover:bg-orange-600', border: 'border-orange-200', text: 'text-orange-600' },
       '#3b82f6': { primary: 'bg-blue-500 hover:bg-blue-600', border: 'border-blue-200', text: 'text-blue-600' },

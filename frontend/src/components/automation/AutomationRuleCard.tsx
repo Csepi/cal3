@@ -169,7 +169,7 @@ function getTriggerIcon(triggerType: string): string {
 }
 
 // Helper function to format trigger config
-function formatTriggerConfig(config: Record<string, any>): string {
+function formatTriggerConfig(config: Record<string, unknown>): string {
   if (config.minutes) {
     const hours = Math.floor(config.minutes / 60);
     const mins = config.minutes % 60;
@@ -186,3 +186,4 @@ function formatTriggerConfig(config: Record<string, any>): string {
   }
   return JSON.stringify(config);
 }
+

@@ -172,9 +172,10 @@ export const useOrganizationDetails = (orgId: number | null) => {
       }));
 
       // Map other users to members with their roles
+      type OrganizationUser = User & Partial<Pick<MemberWithRole, 'organizationRole' | 'assignedAt'>>;
       const otherMembers: MemberWithRole[] = (usersResponse.data || [])
-        .filter((user: any) => !adminUserIds.includes(user.id))
-        .map((user: any) => ({
+        .filter((user: OrganizationUser) => !adminUserIds.includes(user.id))
+        .map((user: OrganizationUser) => ({
           ...user,
           organizationRole: user.organizationRole || 'user' as const,
           assignedAt: user.assignedAt,

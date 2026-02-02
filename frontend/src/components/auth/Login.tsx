@@ -4,12 +4,9 @@ import { useFeatureFlags } from '../../hooks/useFeatureFlags';
 import { ErrorBox } from '../common/ErrorBox';
 import type { ErrorDetails } from '../common/ErrorBox';
 import { extractErrorDetails } from '../../utils/errorHandler';
+import { useAuth } from '../../hooks/useAuth';
 
-interface LoginProps {
-  onLogin: (username: string, token?: string, role?: string, userData?: any) => void;
-}
-
-const Login: React.FC<LoginProps> = ({ onLogin }) => {
+const Login: React.FC = () => {
   const [isRegistering, setIsRegistering] = useState(false);
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
@@ -17,6 +14,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [error, setError] = useState<ErrorDetails | null>(null);
+  const { login } = useAuth();
 
   // Feature flags to control OAuth visibility
   const { flags: featureFlags } = useFeatureFlags();
@@ -109,8 +107,13 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
           lastName
         });
 
-        onLogin(result.user.username, result.token, result.user.role, result.user);
-      } catch (err: any) {
+        void login({
+          token: result.token,
+          user: result.user,
+          username: result.user.username,
+          role: result.user.role,
+        });
+      } catch (err: unknown) {
         setError(extractErrorDetails(err));
       }
     } else {
@@ -128,11 +131,20 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
       try {
         const result = await apiService.login(username, password);
 
-        onLogin(result.user.username, result.token, result.user.role, result.user);
-      } catch (err: any) {
+        void login({
+          token: result.token,
+          user: result.user,
+          username: result.user.username,
+          role: result.user.role,
+        });
+      } catch (err: unknown) {
         // Fallback to demo mode
         if (password === 'demo123') {
-          onLogin(username);
+          void login({
+            token: 'demo',
+            username,
+            role: 'user',
+          });
         } else {
           const errorDetails = extractErrorDetails(err);
           errorDetails.demoModeAvailable = true;

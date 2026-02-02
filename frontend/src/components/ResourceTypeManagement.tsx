@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { BASE_URL } from '../config/apiConfig';
 import { secureFetch } from '../services/authErrorHandler';
+import type { ReservationOrganization } from '../types/reservation';
 
 interface ResourceType {
   id: number;
@@ -12,7 +13,7 @@ interface ResourceType {
   waitlistEnabled: boolean;
   recurringEnabled: boolean;
   isActive: boolean;
-  organisation?: any;
+  organisation?: ReservationOrganization;
 }
 
 interface Organisation {
@@ -57,7 +58,7 @@ const ResourceTypeManagement: React.FC<ResourceTypeManagementProps> = () => {
       });
 
       if (!response.ok) throw new Error('Failed to load resource types');
-      const data = await response.json();
+      const data = (await response.json()) as ResourceType[];
       setResourceTypes(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load resource types');
@@ -75,7 +76,7 @@ const ResourceTypeManagement: React.FC<ResourceTypeManagementProps> = () => {
       });
 
       if (!response.ok) throw new Error('Failed to load organisations');
-      const data = await response.json();
+      const data = (await response.json()) as Organisation[];
       setOrganisations(data);
     } catch (err) {
       console.error('Failed to load organisations:', err);

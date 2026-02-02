@@ -16,7 +16,8 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { Event, CreateEventRequest, UpdateEventRequest } from '../../types/Event';
 import type { Calendar as CalendarType } from '../../types/Calendar';
 import type { CalendarGroupWithCalendars } from '../../types/CalendarGroup';
-import { apiService } from '../../services/api';
+import { eventsApi } from '../../services/eventsApi';
+import { calendarApi } from '../../services/calendarApi';
 import { getThemeConfig, type ThemeConfig, LOADING_MESSAGES } from '../../constants';
 import { CalendarEventModal } from './CalendarEventModal';
 import { CalendarManager } from './CalendarManager';
@@ -31,7 +32,7 @@ import { MobileWeekView } from '../mobile/calendar/MobileWeekView';
 import { MobileCalendarHeader } from '../mobile/calendar/MobileCalendarHeader';
 import { DayDetailSheet } from '../mobile/calendar/DayDetailSheet';
 import { useCalendarData, calendarQueryKeys } from '../../hooks/useCalendarData';
-import type { Organization } from '../../hooks/useCalendarData';
+import type { Organization, ReservationRecord } from '../../hooks/useCalendarData';
 import { useScreenSize } from '../../hooks/useScreenSize';
 import { useSwipeGesture } from '../../hooks/useSwipeGesture';
 
@@ -43,7 +44,7 @@ interface CalendarState {
   calendars: CalendarType[];
   calendarGroups: CalendarGroupWithCalendars[];
   selectedCalendars: number[];
-  reservations: any[];
+  reservations: ReservationRecord[];
   organizations: Organization[];
   selectedResourceTypes: number[]; // Array of selected resource type IDs
 }
@@ -547,7 +548,7 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
 
   // Filter reservations based on selected resource types
   const filteredReservations = useMemo(() => {
-    return reservations.filter((r: any) => {
+    return reservations.filter((r) => {
       const resourceTypeId = r.resource?.resourceType?.id;
       return resourceTypeId && selectedResourceTypes.includes(resourceTypeId);
     });
@@ -562,7 +563,7 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
 
     // Convert filtered reservations to event format
     const reservationEvents = filteredReservations
-      .map((r: any) => {
+      .map((r) => {
         // Find the resource type to get its color
         const resourceTypeId = r.resource?.resourceType?.id;
         let resourceTypeColor = '#f97316'; // Default orange
@@ -826,7 +827,7 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
       setIsPersistingOrder(true);
       try {
         for (const update of updates) {
-          await apiService.updateCalendar(update.id, { rank: update.nextRank });
+        await calendarApi.updateCalendar(update.id, { rank: update.nextRank });
         }
         await actions.refreshData();
       } catch (err) {
@@ -902,7 +903,7 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
     }
     try {
       setCreatingGroup(true);
-      await apiService.createCalendarGroup({ name: name.trim(), isVisible: true });
+      await calendarApi.createCalendarGroup({ name: name.trim(), isVisible: true });
       await actions.refreshData();
     } catch (err) {
       console.error('Failed to create calendar group', err);
@@ -1316,7 +1317,7 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
                       {org.resourceTypes.map(resourceType => {
                         const isSelected = state.selectedResourceTypes.includes(resourceType.id);
                         const reservationsForType = state.reservations.filter(
-                          (r: any) => r.resource?.resourceType?.id === resourceType.id
+                          (r) => r.resource?.resourceType?.id === resourceType.id
                         );
 
                         return (
@@ -1457,7 +1458,7 @@ export const EnhancedCalendar: React.FC<EnhancedCalendarProps> = ({
 
   const createEventMutation = useMutation<Event, Error, CreateEventRequest>({
     mutationFn: (eventData: CreateEventRequest) =>
-      apiService.createEvent(eventData),
+      eventsApi.createEvent(eventData),
     onSuccess: (createdEvent, variables) => {
       const resolvedEvent = resolveEventCalendar(
         createdEvent,
@@ -1484,7 +1485,7 @@ export const EnhancedCalendar: React.FC<EnhancedCalendarProps> = ({
     }: {
       eventId: number;
       eventData: UpdateEventRequest;
-    }) => apiService.updateEvent(eventId, eventData),
+    }) => eventsApi.updateEvent(eventId, eventData),
     onSuccess: (updatedEvent, variables) => {
       queryClient.setQueryData<Event[]>(
         calendarQueryKeys.events,
@@ -1514,7 +1515,7 @@ export const EnhancedCalendar: React.FC<EnhancedCalendarProps> = ({
     number,
     { previous?: Event[] }
   >({
-    mutationFn: (eventId: number) => apiService.deleteEvent(eventId),
+    mutationFn: (eventId: number) => eventsApi.deleteEvent(eventId),
     onMutate: async (eventId: number) => {
       await queryClient.cancelQueries({ queryKey: calendarQueryKeys.events });
       const previous = queryClient.getQueryData<Event[]>(calendarQueryKeys.events);
@@ -1540,7 +1541,7 @@ export const EnhancedCalendar: React.FC<EnhancedCalendarProps> = ({
     number,
     { previous?: CalendarType[] }
   >({
-    mutationFn: (calendarId: number) => apiService.deleteCalendar(calendarId),
+    mutationFn: (calendarId: number) => calendarApi.deleteCalendar(calendarId),
     onMutate: async (calendarId: number) => {
       await queryClient.cancelQueries({ queryKey: calendarQueryKeys.calendars });
       const previous = queryClient.getQueryData<CalendarType[]>(

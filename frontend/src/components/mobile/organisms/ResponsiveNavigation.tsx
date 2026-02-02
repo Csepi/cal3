@@ -12,6 +12,11 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useScreenSize } from '../../../hooks/useScreenSize';
+import { useAuth } from '../../../hooks/useAuth';
+import { useTheme } from '../../../hooks/useTheme';
+import { usePermissions } from '../../../hooks/usePermissions';
+import { useFeatureFlags } from '../../../hooks/useFeatureFlags';
+import { useNotifications } from '../../../hooks/useNotifications';
 import { BottomTabBar } from './BottomTabBar';
 import type { TabId } from './BottomTabBar';
 
@@ -108,37 +113,23 @@ const BellIcon = (
 interface ResponsiveNavigationProps {
   activeTab: TabId;
   onTabChange: (tabId: TabId) => void;
-  themeColor: string;
-  userRole: string;
-  userName: string;
-  onLogout: () => void;
-  featureFlags: {
-    calendarSync: boolean;
-    reservations: boolean;
-    automation: boolean;
-    agents: boolean;
-    tasks: boolean;
-  };
-  canAccessReservations: boolean;
   hideReservationsTab?: boolean;
-  themeConfig: any;
-  notificationsBadge?: number;
 }
 
-export const ResponsiveNavigation: React.FC<ResponsiveNavigationProps> = ({
+export const ResponsiveNavigation: React.FC<ResponsiveNavigationProps> = React.memo(({
   activeTab,
   onTabChange,
-  themeColor,
-  userRole,
-  userName,
-  onLogout,
-  featureFlags,
-  canAccessReservations,
   hideReservationsTab,
-  themeConfig,
-  notificationsBadge = 0,
 }) => {
   const { isMobile, isTablet } = useScreenSize();
+  const { currentUser, logout } = useAuth();
+  const { themeColor, themeConfig } = useTheme();
+  const { canAccessReservations } = usePermissions();
+  const { flags: featureFlags } = useFeatureFlags();
+  const { unreadCount } = useNotifications();
+  const userRole = currentUser?.role || 'user';
+  const userName = currentUser?.username || '';
+  const notificationsBadge = unreadCount ?? 0;
   const [showFeaturesDropdown, setShowFeaturesDropdown] = useState(false);
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -393,7 +384,7 @@ export const ResponsiveNavigation: React.FC<ResponsiveNavigationProps> = ({
           </div>
           <button
             type="button"
-            onClick={onLogout}
+            onClick={logout}
             className="rounded-xl border border-red-400 bg-red-500 px-3 py-2 text-sm font-medium text-white shadow-md transition-all duration-300 hover:scale-105 hover:bg-red-600 md:px-4 md:text-base"
           >
             Sign out
@@ -402,4 +393,4 @@ export const ResponsiveNavigation: React.FC<ResponsiveNavigationProps> = ({
       </div>
     </nav>
   );
-};
+});

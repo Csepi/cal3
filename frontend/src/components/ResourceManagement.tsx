@@ -1,6 +1,11 @@
 import { useState, useEffect } from 'react';
 import { BASE_URL } from '../config/apiConfig';
 import { secureFetch } from '../services/authErrorHandler';
+import type {
+  ReservationOrganization,
+  ReservationResourceType,
+  ReservationUserSummary,
+} from '../types/reservation';
 
 interface Resource {
   id: number;
@@ -8,14 +13,14 @@ interface Resource {
   description?: string;
   capacity: number;
   isActive: boolean;
-  resourceType?: any;
-  managedBy?: any;
+  resourceType?: ReservationResourceType;
+  managedBy?: ReservationUserSummary;
 }
 
 interface ResourceType {
   id: number;
   name: string;
-  organisation: any;
+  organisation: ReservationOrganization;
 }
 
 interface ResourceManagementProps {
@@ -51,7 +56,7 @@ const ResourceManagement: React.FC<ResourceManagementProps> = () => {
       });
 
       if (!response.ok) throw new Error('Failed to load resources');
-      const data = await response.json();
+      const data = (await response.json()) as Resource[];
       setResources(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load resources');
@@ -69,7 +74,7 @@ const ResourceManagement: React.FC<ResourceManagementProps> = () => {
       });
 
       if (!response.ok) throw new Error('Failed to load resource types');
-      const data = await response.json();
+      const data = (await response.json()) as ResourceType[];
       setResourceTypes(data);
     } catch (err) {
       console.error('Failed to load resource types:', err);

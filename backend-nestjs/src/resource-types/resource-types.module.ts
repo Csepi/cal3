@@ -11,7 +11,7 @@ import { ReservationCalendarRole } from '../entities/reservation-calendar-role.e
 import { ReservationCalendar } from '../entities/reservation-calendar.entity';
 import { ResourceTypesController } from './resource-types.controller';
 import { ResourceTypesService } from './resource-types.service';
-import { UserPermissionsService } from '../common/services/user-permissions.service';
+import { CommonModule } from '../common/common.module';
 
 @Module({
   imports: [
@@ -26,9 +26,10 @@ import { UserPermissionsService } from '../common/services/user-permissions.serv
       ReservationCalendarRole,
       ReservationCalendar,
     ]),
+    CommonModule,
   ],
   controllers: [ResourceTypesController],
-  providers: [ResourceTypesService, UserPermissionsService],
+  providers: [ResourceTypesService],
   exports: [ResourceTypesService],
 })
 export class ResourceTypesModule {}

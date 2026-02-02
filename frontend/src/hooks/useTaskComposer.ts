@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from 'react';
-import { apiService } from '../services/api';
+import { tasksApi } from '../services/tasksApi';
 import type { Task, CreateTaskRequest, CreateTaskLabelRequest } from '../types/Task';
 import { TaskPriority, TaskStatus } from '../types/Task';
 
@@ -163,8 +163,8 @@ export function useTaskComposer(initialTask?: Task | null) {
         }
         const result =
           mode === 'create'
-            ? await apiService.createTask(payload)
-            : await apiService.updateTask(
+            ? await tasksApi.createTask(payload)
+            : await tasksApi.updateTask(
                 targetId as number,
                 payload,
               );

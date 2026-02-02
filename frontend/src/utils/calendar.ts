@@ -74,7 +74,7 @@ export const cloneDate = (date: Date): Date => {
 /**
  * Checks if a date is valid
  */
-export const isValidDate = (date: any): date is Date => {
+export const isValidDate = (date: unknown): date is Date => {
   return date instanceof Date && !isNaN(date.getTime());
 };
 

@@ -12,7 +12,7 @@ import { IconPicker } from '../ui/IconPicker';
 import { THEME_COLOR_OPTIONS } from '../../constants';
 import type { Calendar as CalendarType, CreateCalendarRequest, UpdateCalendarRequest } from '../../types/Calendar';
 import type { CalendarGroupWithCalendars } from '../../types/CalendarGroup';
-import { apiService } from '../../services/api';
+import { calendarApi } from '../../services/calendarApi';
 
 export interface CalendarManagerProps {
   /** Whether the calendar modal is open */
@@ -59,7 +59,7 @@ export const CalendarManager: React.FC<CalendarManagerProps> = ({
    */
   useEffect(() => {
     if (isOpen) {
-      apiService.getCalendarGroups().then(setCalendarGroups).catch(() => setCalendarGroups([]));
+      calendarApi.getCalendarGroups().then(setCalendarGroups).catch(() => setCalendarGroups([]));
 
       if (editingCalendar) {
         // Editing existing calendar
@@ -141,7 +141,7 @@ export const CalendarManager: React.FC<CalendarManagerProps> = ({
           icon: calendarForm.icon || undefined,
           groupId: calendarForm.groupId ?? null,
         };
-        await apiService.updateCalendar(editingCalendar.id, updateData);
+        await calendarApi.updateCalendar(editingCalendar.id, updateData);
       } else {
         // Create new calendar
         const createData: CreateCalendarRequest = {
@@ -151,7 +151,7 @@ export const CalendarManager: React.FC<CalendarManagerProps> = ({
           icon: calendarForm.icon || undefined,
           groupId: calendarForm.groupId,
         };
-        await apiService.createCalendar(createData);
+        await calendarApi.createCalendar(createData);
       }
 
       onCalendarChange();
@@ -178,7 +178,7 @@ export const CalendarManager: React.FC<CalendarManagerProps> = ({
 
     setLoading(true);
     try {
-      await apiService.deleteCalendar(editingCalendar.id);
+      await calendarApi.deleteCalendar(editingCalendar.id);
       onCalendarChange();
       onClose();
     } catch (err) {
@@ -193,8 +193,14 @@ export const CalendarManager: React.FC<CalendarManagerProps> = ({
    * Handle modal close with confirmation if form has changes
    */
   const handleClose = () => {
+    const editingCalendarRecord =
+      editingCalendar as unknown as Record<string, unknown> | null;
     const hasChanges = editingCalendar
-      ? Object.keys(calendarForm).some(key => calendarForm[key as keyof typeof calendarForm] !== (editingCalendar as any)[key])
+      ? Object.keys(calendarForm).some(
+          (key) =>
+            calendarForm[key as keyof typeof calendarForm] !==
+            editingCalendarRecord?.[key],
+        )
       : Object.values(calendarForm).some(value => value !== '' && value !== themeColor);
 
     if (hasChanges) {
@@ -361,8 +367,8 @@ export const CalendarManager: React.FC<CalendarManagerProps> = ({
               onClick={async () => {
                 const name = window.prompt('New group name?');
                 if (!name || name.trim().length < 2) return;
-                const created = await apiService.createCalendarGroup({ name: name.trim(), isVisible: true });
-                const groups = await apiService.getCalendarGroups().catch(() => []);
+                const created = await calendarApi.createCalendarGroup({ name: name.trim(), isVisible: true });
+                const groups = await calendarApi.getCalendarGroups().catch(() => []);
                 setCalendarGroups(groups);
                 setCalendarForm((prev) => ({ ...prev, groupId: created.id }));
               }}

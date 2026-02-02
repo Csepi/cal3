@@ -36,6 +36,9 @@ const initialSort: EventSort = {
   direction: 'asc'
 };
 
+type SortValue = number | string;
+type WeekRange = { startDate: Date; endDate: Date };
+
 export const useCalendar = (
   initialDate: Date = new Date(),
   initialView: 'month' | 'week' | 'day' = 'month'
@@ -211,8 +214,8 @@ export const useCalendar = (
     // Sort events
     const sortedEvents = [...filteredEvents].sort((a, b) => {
       const { sort } = state;
-      let aValue: any;
-      let bValue: any;
+      let aValue: SortValue;
+      let bValue: SortValue;
 
       switch (sort.field) {
         case 'startDate':
@@ -249,7 +252,7 @@ export const useCalendar = (
           return isSameDay(eventDate, date);
         });
       },
-      eventsForWeek: (week: any) => {
+      eventsForWeek: (week: WeekRange) => {
         const weekStart = week.startDate;
         const weekEnd = week.endDate;
 

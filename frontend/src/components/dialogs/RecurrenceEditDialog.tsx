@@ -4,7 +4,7 @@ import type { RecurrencePattern } from '../types/Event';
 interface RecurrenceEditDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: (scope: 'this' | 'future' | 'all', eventData?: any, recurrence?: RecurrencePattern) => void;
+  onConfirm: (scope: 'this' | 'future' | 'all', eventData?: unknown, recurrence?: RecurrencePattern) => void;
   eventTitle: string;
   themeColor: string;
   editType: 'update' | 'delete';
@@ -21,7 +21,7 @@ const RecurrenceEditDialog: React.FC<RecurrenceEditDialogProps> = ({
   const [selectedScope, setSelectedScope] = useState<'this' | 'future' | 'all'>('this');
 
   const getThemeColors = (color: string) => {
-    const colorMap: Record<string, any> = {
+    const colorMap: Record<string, unknown> = {
       '#ef4444': { button: 'bg-red-500 hover:bg-red-600', text: 'text-red-600', border: 'border-red-200' },
       '#f59e0b': { button: 'bg-orange-500 hover:bg-orange-600', text: 'text-orange-600', border: 'border-orange-200' },
       '#eab308': { button: 'bg-yellow-500 hover:bg-yellow-600', text: 'text-yellow-600', border: 'border-yellow-200' },
@@ -198,3 +198,4 @@ const RecurrenceEditDialog: React.FC<RecurrenceEditDialogProps> = ({
 };
 
 export default RecurrenceEditDialog;
+

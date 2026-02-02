@@ -151,7 +151,7 @@ export const WeekView = memo<CalendarWeekProps>(({
     interactions?.onDateClick?.(date.date);
   }, [interactions]);
 
-  const handleEventClick = useCallback((event: any, e: React.MouseEvent) => {
+  const handleEventClick = useCallback((event: (typeof events)[number], e: React.MouseEvent) => {
     e.stopPropagation();
     interactions?.onEventClick?.(event, e.nativeEvent);
   }, [interactions]);

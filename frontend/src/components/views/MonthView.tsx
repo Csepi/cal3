@@ -1,6 +1,15 @@
 import React from 'react';
 import type { Event } from '../../types/Event';
+import type {
+  ReservationOrganization,
+  ReservationRecord,
+  ReservationResourceType,
+} from '../../types/reservation';
 import { getMeetingLinkFromEvent } from '../../utils/meetingLinks';
+
+interface ReservationOrganizationWithTypes extends ReservationOrganization {
+  resourceTypes?: ReservationResourceType[];
+}
 
 interface MonthViewProps {
   currentDate: Date;
@@ -10,8 +19,8 @@ interface MonthViewProps {
   onEventClick: (event: Event) => void;
   weekStartDay: number; // 0 = Sunday, 1 = Monday
   themeColor: string;
-  reservations?: any[];
-  organizations?: any[]; // For getting resource type colors
+  reservations?: ReservationRecord[];
+  organizations?: ReservationOrganizationWithTypes[]; // For getting resource type colors
 }
 
 const MonthView: React.FC<MonthViewProps> = ({
@@ -33,12 +42,12 @@ const MonthView: React.FC<MonthViewProps> = ({
   };
 
   // Helper function to get resource type color
-  const getResourceTypeColor = (reservation: any): string => {
+  const getResourceTypeColor = (reservation: ReservationRecord): string => {
     const resourceTypeId = reservation.resource?.resourceType?.id;
     if (!resourceTypeId) return '#f97316'; // Default orange
 
     for (const org of organizations) {
-      const resourceType = org.resourceTypes?.find((rt: any) => rt.id === resourceTypeId);
+      const resourceType = org.resourceTypes?.find((rt) => rt.id === resourceTypeId);
       if (resourceType?.color) {
         return resourceType.color;
       }
@@ -105,7 +114,7 @@ const MonthView: React.FC<MonthViewProps> = ({
   };
 
   // Get reservations for a specific date
-  const getReservationsForDate = (date: Date): any[] => {
+  const getReservationsForDate = (date: Date): ReservationRecord[] => {
     const dayStart = new Date(date);
     dayStart.setHours(0, 0, 0, 0);
     const dayEnd = new Date(date);

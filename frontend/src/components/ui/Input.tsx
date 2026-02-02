@@ -27,6 +27,8 @@ export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> 
   size?: 'sm' | 'md' | 'lg';
   /** Whether input should take full width */
   fullWidth?: boolean;
+  /** Ignored compatibility flag for components that pass textarea-only props */
+  multiline?: boolean;
 }
 
 /**
@@ -43,13 +45,11 @@ export const Input: React.FC<InputProps> = ({
   iconPosition = 'left',
   size = 'md',
   fullWidth = true,
+  multiline: _multiline,
   className = '',
   id,
   ...props
 }) => {
-  // Filter out non-standard HTML attributes
-  const { multiline, ...inputProps } = props as any;
-
   // Get theme configuration
   const themeConfig = themeColor ? getThemeConfig(themeColor) : null;
 
@@ -144,7 +144,7 @@ export const Input: React.FC<InputProps> = ({
         <input
           id={inputId}
           className={inputClasses}
-          {...inputProps}
+          {...props}
         />
       </div>
 

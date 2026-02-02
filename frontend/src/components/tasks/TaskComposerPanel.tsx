@@ -1,6 +1,7 @@
 import { TaskMarkdownEditor } from './TaskMarkdownEditor';
 import { TaskLabelsSelect } from './TaskLabelsSelect';
 import type { Task, TaskLabel } from '../../types/Task';
+import { TaskPriority, TaskStatus } from '../../types/Task';
 import type { TaskComposerDraft } from '../../hooks/useTaskComposer';
 
 interface TaskComposerPanelProps {
@@ -83,7 +84,9 @@ export const TaskComposerPanel: React.FC<TaskComposerPanelProps> = ({
             </label>
             <select
               value={draft.status}
-              onChange={(event) => onChange('status', event.target.value as any)}
+              onChange={(event) =>
+                onChange('status', event.target.value as TaskStatus)
+              }
               className="rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
             >
               <option value="todo">To Do</option>
@@ -98,7 +101,7 @@ export const TaskComposerPanel: React.FC<TaskComposerPanelProps> = ({
             <select
               value={draft.priority}
               onChange={(event) =>
-                onChange('priority', event.target.value as any)
+                onChange('priority', event.target.value as TaskPriority)
               }
               className="rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
             >

@@ -18,6 +18,13 @@ import { OrganisationOwnershipGuard } from '../auth/guards/organisation-ownershi
 import { UserPermissionsService } from './services/user-permissions.service';
 import { CascadeDeletionService } from './services/cascade-deletion.service';
 import { ReservationAvailabilityService } from './services/reservation-availability.service';
+import { PermissionResolverService } from './services/permission-resolver.service';
+import { AuditLogService } from './services/audit-log.service';
+import { CacheInvalidationService } from './services/cache-invalidation.service';
+import { ResourceAccessGuard } from './guards/resource-access.guard';
+import { OrganizationAccessGuard } from './guards/organization-access.guard';
+import { PublicBookingGuard } from './guards/public-booking.guard';
+import { DomainEventBus } from './events/domain-events';
 
 @Global() // Make this module global so its exports are available everywhere
 @Module({
@@ -41,17 +48,31 @@ import { ReservationAvailabilityService } from './services/reservation-availabil
     UserPermissionsService,
     CascadeDeletionService,
     ReservationAvailabilityService,
+    PermissionResolverService,
+    AuditLogService,
+    CacheInvalidationService,
     RequestContextService,
     IdempotencyService,
     OrganisationOwnershipGuard,
+    ResourceAccessGuard,
+    OrganizationAccessGuard,
+    PublicBookingGuard,
+    DomainEventBus,
   ],
   exports: [
     UserPermissionsService,
     CascadeDeletionService,
     ReservationAvailabilityService,
+    PermissionResolverService,
+    AuditLogService,
+    CacheInvalidationService,
     RequestContextService,
     IdempotencyService,
     OrganisationOwnershipGuard,
+    ResourceAccessGuard,
+    OrganizationAccessGuard,
+    PublicBookingGuard,
+    DomainEventBus,
     TypeOrmModule,
   ],
 })

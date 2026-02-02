@@ -23,9 +23,13 @@ export const CalendarDayCell = memo<CalendarDayCellProps>(({
   'data-testid': testId
 }) => {
   // Event handlers
-  const handleClick = useCallback((e: React.MouseEvent) => {
+  const handleClick = useCallback((e: React.SyntheticEvent) => {
     if (isDisabled) return;
-    interactions?.onDateClick?.(date.date, e.nativeEvent);
+    const nativeEvent =
+      e.nativeEvent instanceof MouseEvent
+        ? e.nativeEvent
+        : new MouseEvent('click');
+    interactions?.onDateClick?.(date.date, nativeEvent);
   }, [isDisabled, interactions, date.date]);
 
   const handleDoubleClick = useCallback((e: React.MouseEvent) => {
@@ -33,7 +37,7 @@ export const CalendarDayCell = memo<CalendarDayCellProps>(({
     interactions?.onDateDoubleClick?.(date.date, e.nativeEvent);
   }, [isDisabled, interactions, date.date]);
 
-  const handleEventClick = useCallback((event: React.MouseEvent, calendarEvent: any) => {
+  const handleEventClick = useCallback((event: React.MouseEvent, calendarEvent: (typeof events)[number]) => {
     if (isDisabled) return;
     event.stopPropagation(); // Prevent day click
     interactions?.onEventClick?.(calendarEvent, event.nativeEvent);
@@ -160,7 +164,7 @@ export const CalendarDayCell = memo<CalendarDayCellProps>(({
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
-          handleClick(e as any);
+          handleClick(e);
         }
       }}
     >

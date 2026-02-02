@@ -52,7 +52,7 @@ export const CalendarHeader = memo<CalendarHeaderProps>(({
     switch (view) {
       case 'month':
         return formatDate(currentDate, { month: 'long', year: 'numeric' });
-      case 'week':
+      case 'week': {
         // For week view, show the week range
         const weekStart = new Date(currentDate);
         weekStart.setDate(currentDate.getDate() - currentDate.getDay() + 1); // Monday
@@ -64,6 +64,7 @@ export const CalendarHeader = memo<CalendarHeaderProps>(({
         } else {
           return `${formatDate(weekStart, { month: 'short', day: 'numeric' })} - ${formatDate(weekEnd, { month: 'short', day: 'numeric' })}, ${weekStart.getFullYear()}`;
         }
+      }
       case 'day':
         return formatDate(currentDate, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
       default:

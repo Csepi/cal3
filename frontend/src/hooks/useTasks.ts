@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { apiService } from '../services/api';
+import { tasksApi } from '../services/tasksApi';
 import type {
   Task,
   TaskListResponse,
@@ -33,7 +33,7 @@ export function useTasks(initialFilters: TaskQueryParams = {}) {
       setState((prev) => ({ ...prev, loading: true, error: null }));
       try {
         const params = override ?? filters;
-        const response = await apiService.getTasks(params);
+        const response = await tasksApi.getTasks(params);
         setState({
           ...response,
           loading: false,
@@ -58,7 +58,7 @@ export function useTasks(initialFilters: TaskQueryParams = {}) {
 
   const createTask = useCallback(
     async (payload: CreateTaskRequest): Promise<Task> => {
-      const task = await apiService.createTask(payload);
+      const task = await tasksApi.createTask(payload);
       await loadTasks();
       return task;
     },
@@ -67,7 +67,7 @@ export function useTasks(initialFilters: TaskQueryParams = {}) {
 
   const updateTask = useCallback(
     async (taskId: number, payload: UpdateTaskRequest): Promise<Task> => {
-      const task = await apiService.updateTask(taskId, payload);
+      const task = await tasksApi.updateTask(taskId, payload);
       await loadTasks();
       return task;
     },
@@ -76,7 +76,7 @@ export function useTasks(initialFilters: TaskQueryParams = {}) {
 
   const deleteTask = useCallback(
     async (taskId: number): Promise<void> => {
-      await apiService.deleteTask(taskId);
+      await tasksApi.deleteTask(taskId);
       await loadTasks();
     },
     [loadTasks],

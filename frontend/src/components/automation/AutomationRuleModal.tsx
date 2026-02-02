@@ -36,7 +36,7 @@ export function AutomationRuleModal({
   const [triggerType, setTriggerType] = useState<TriggerType | null>(
     rule?.triggerType || null
   );
-  const [triggerConfig, setTriggerConfig] = useState<Record<string, any>>(
+  const [triggerConfig, setTriggerConfig] = useState<Record<string, unknown>>(
     rule?.triggerConfig || {}
   );
   const [conditionLogic, setConditionLogic] = useState<ConditionLogic>(
@@ -134,7 +134,7 @@ export function AutomationRuleModal({
   };
 
   // Check if operator requires a value
-  const requiresValue = (operator: any): boolean => {
+  const requiresValue = (operator: string): boolean => {
     const noValueOperators = ['is_empty', 'is_not_empty', 'is_true', 'is_false'];
     return !noValueOperators.includes(operator);
   };
@@ -358,3 +358,4 @@ export function AutomationRuleModal({
     </div>
   );
 }
+

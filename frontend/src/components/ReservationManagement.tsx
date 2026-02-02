@@ -17,6 +17,14 @@ import React, { useState, useEffect } from 'react';
 import { getThemeConfig } from '../constants';
 import { BASE_URL } from '../config/apiConfig';
 import { secureFetch } from '../services/authErrorHandler';
+import type {
+  ReservationCustomerInfo,
+  ReservationOrganization,
+  ReservationRecord,
+  ReservationResource,
+  ReservationResourceType,
+  ReservationUserSummary,
+} from '../types/reservation';
 import {
   ReservationFilterPanel,
   ReservationFormModal,
@@ -31,16 +39,16 @@ interface Reservation {
   endTime: string;
   quantity: number;
   status: string;
-  customerInfo?: any;
+  customerInfo?: ReservationCustomerInfo;
   notes?: string;
-  resource?: any;
-  createdBy?: any;
+  resource?: ReservationResource;
+  createdBy?: ReservationUserSummary;
 }
 
 interface Resource {
   id: number;
   name: string;
-  resourceType: any;
+  resourceType: ReservationResourceType;
 }
 
 interface ReservationManagementProps {
@@ -61,8 +69,12 @@ const ReservationManagement: React.FC<ReservationManagementProps> = ({
   // Data state
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [resources, setResources] = useState<Resource[]>([]);
-  const [resourceTypes, setResourceTypes] = useState<any[]>([]);
-  const [organizations, setOrganizations] = useState<any[]>([]);
+  const [resourceTypes, setResourceTypes] = useState<ReservationResourceType[]>(
+    [],
+  );
+  const [organizations, setOrganizations] = useState<ReservationOrganization[]>(
+    [],
+  );
   const [filteredReservations, setFilteredReservations] = useState<Reservation[]>([]);
 
   // UI state
@@ -114,7 +126,7 @@ const ReservationManagement: React.FC<ReservationManagementProps> = ({
     });
 
     if (!response.ok) throw new Error('Failed to load reservations');
-    const data = await response.json();
+    const data = (await response.json()) as ReservationRecord[];
     setReservations(data);
   };
 
@@ -129,7 +141,7 @@ const ReservationManagement: React.FC<ReservationManagementProps> = ({
     });
 
     if (!response.ok) throw new Error('Failed to load resources');
-    const data = await response.json();
+    const data = (await response.json()) as Resource[];
     setResources(data);
   };
 
@@ -145,7 +157,7 @@ const ReservationManagement: React.FC<ReservationManagementProps> = ({
       });
 
       if (response.ok) {
-        const data = await response.json();
+        const data = (await response.json()) as ReservationResourceType[];
         setResourceTypes(data);
       }
     } catch (err) {
@@ -166,7 +178,7 @@ const ReservationManagement: React.FC<ReservationManagementProps> = ({
       });
 
       if (response.ok) {
-        const data = await response.json();
+        const data = (await response.json()) as ReservationOrganization[];
         setOrganizations(data);
       }
     } catch (err) {
@@ -263,7 +275,7 @@ const ReservationManagement: React.FC<ReservationManagementProps> = ({
       setError('');
 
       // Prepare the payload based on whether it's multi-day or not
-      let payload: any = {
+      const payload: Record<string, unknown> = {
         quantity: formData.quantity,
         customerInfo: formData.customerInfo,
         notes: formData.notes,

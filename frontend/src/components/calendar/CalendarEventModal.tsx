@@ -129,7 +129,10 @@ export const CalendarEventModal: React.FC<CalendarEventModalProps> = ({
   /**
    * Handle form field changes
    */
-  const handleFormChange = (field: string, value: any) => {
+  const handleFormChange = <K extends keyof CreateEventRequest>(
+    field: K,
+    value: CreateEventRequest[K],
+  ) => {
     setEventForm(prev => ({
       ...prev,
       [field]: value
@@ -250,8 +253,14 @@ export const CalendarEventModal: React.FC<CalendarEventModalProps> = ({
    * Handle modal close with confirmation if form has changes
    */
   const handleClose = () => {
+    const editingEventRecord =
+      editingEvent as unknown as Record<string, unknown> | null;
     const hasChanges = editingEvent
-      ? Object.keys(eventForm).some(key => eventForm[key as keyof typeof eventForm] !== (editingEvent as any)[key])
+      ? Object.keys(eventForm).some(
+          (key) =>
+            eventForm[key as keyof typeof eventForm] !==
+            editingEventRecord?.[key],
+        )
       : Object.values(eventForm).some(value => value !== '' && value !== false && value !== undefined);
 
     if (hasChanges) {
