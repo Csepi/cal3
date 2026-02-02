@@ -48,8 +48,8 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const toggleTheme = useCallback(() => {
-    setTheme((prev) => (prev === 'light' ? 'dark' : 'light'));
-  }, [setTheme]);
+    setTheme(theme === 'light' ? 'dark' : 'light');
+  }, [setTheme, theme]);
 
   const setThemeColor = useCallback((color: string) => {
     setThemeColorState(color);

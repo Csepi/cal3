@@ -47,6 +47,13 @@ const decodeJwtPayload = (token: string): Record<string, unknown> | null => {
   }
 };
 
+interface JwtClaims {
+  exp?: number;
+  sub?: number;
+  username?: string;
+  role?: string;
+}
+
 type SessionListener = (snapshot: SessionSnapshot) => void;
 
 class SessionManager {
@@ -134,7 +141,7 @@ class SessionManager {
   }
 
   setSessionFromJwt(token: string, fallback?: SessionUser): void {
-    const decoded = decodeJwtPayload(token);
+    const decoded = decodeJwtPayload(token) as JwtClaims | null;
     const exp =
       typeof decoded?.exp === 'number' ? decoded.exp * 1000 : undefined;
     this.applyToken(token, undefined, exp);

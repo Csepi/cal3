@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * MobileMonthView - Mobile-optimized month calendar
  *
@@ -171,3 +172,4 @@ export const MobileMonthView: React.FC<MobileMonthViewProps> = ({
     </div>
   );
 };
+

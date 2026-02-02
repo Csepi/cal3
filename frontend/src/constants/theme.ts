@@ -64,7 +64,13 @@ export interface ThemeConfig {
     today?: string;
     selected?: string;
     events?: string;
+    primary?: string;
   };
+  // Legacy aliases kept for compatibility with older components
+  gradientBg?: string;
+  gradientFrom?: string;
+  gradientTo?: string;
+  bgColor?: string;
   animatedGradient?: {
     circle1: string;
     circle2: string;
@@ -465,7 +471,18 @@ const THEME_CONFIG_MAP: Record<string, ThemeConfig> = {
  * @returns Complete theme configuration object
  */
 export function getThemeConfig(color: string): ThemeConfig {
-  return THEME_CONFIG_MAP[color] || THEME_CONFIG_MAP[THEME_COLORS.BLUE];
+  const config = THEME_CONFIG_MAP[color] || THEME_CONFIG_MAP[THEME_COLORS.BLUE];
+  return {
+    ...config,
+    gradient: {
+      ...config.gradient,
+      primary: config.gradient.background,
+    },
+    gradientBg: config.gradient.background,
+    gradientFrom: config.gradient.header?.split(' ')[0] ?? '',
+    gradientTo: config.gradient.header?.split(' ').slice(1).join(' ') ?? '',
+    bgColor: `bg-${config.light}`,
+  };
 }
 
 /**

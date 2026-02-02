@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, type ReactElement } from 'react';
 import { AuditLogStatus } from '../../types/Automation';
 import type { AuditLogQueryDto } from '../../types/Automation';
 import { useAuditLogs } from '../../hooks/useAuditLogs';
@@ -50,7 +50,7 @@ export const AuditLogViewer: React.FC<AuditLogViewerProps> = ({
   });
 
   // Get status icon
-  const getStatusIcon = (status: AuditLogStatus): JSX.Element => {
+  const getStatusIcon = (status: AuditLogStatus): ReactElement => {
     const color = getStatusColor(status);
     const icons = {
       success: '✓',

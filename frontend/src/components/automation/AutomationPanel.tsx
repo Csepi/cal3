@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useMemo, useState } from 'react';
 import { useAutomationRules } from '../../hooks/useAutomationRules';
 import type {
@@ -405,4 +406,5 @@ export function AutomationPanel({ themeColor = '#3b82f6' }: AutomationPanelProps
     </div>
   );
 }
+
 

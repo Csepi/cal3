@@ -10,7 +10,7 @@ import { getThemeConfig } from '../../constants';
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   /** Button content */
-  children: React.ReactNode;
+  children?: React.ReactNode;
   /** Visual variant of the button */
   variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger';
   /** Size of the button */

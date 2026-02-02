@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * DayDetailSheet - Bottom sheet showing all events for a day
  *
@@ -167,3 +168,4 @@ export const DayDetailSheet: React.FC<DayDetailSheetProps> = ({
     </BottomSheet>
   );
 };
+

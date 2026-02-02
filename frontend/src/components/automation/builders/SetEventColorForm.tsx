@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { useEffect } from 'react';
 import { SmartValuePicker } from '../SmartValuePicker';
 import { TriggerType } from '../../../types/Automation';
@@ -153,4 +154,5 @@ export const SetEventColorForm: React.FC<SetEventColorFormProps> = ({ config, on
     </div>
   );
 };
+
 

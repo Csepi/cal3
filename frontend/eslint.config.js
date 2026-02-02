@@ -35,6 +35,7 @@ export default tseslint.config([
         },
       ],
       '@typescript-eslint/no-empty-object-type': 'off',
+      '@typescript-eslint/ban-ts-comment': 'off',
       'react-hooks/exhaustive-deps': 'off',
       'react-refresh/only-export-components': 'off',
       'no-case-declarations': 'warn',

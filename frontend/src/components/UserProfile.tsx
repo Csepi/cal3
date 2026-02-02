@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { apiService } from '../services/api';
+import { profileApi } from '../services/profileApi';
 import { calendarApi } from '../services/calendarApi';
 import { getSimpleThemeGradient, LOADING_MESSAGES } from '../constants';
 import { Button } from './ui';
@@ -153,7 +153,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ onThemeChange, currentTheme }
       setLoading(true);
       setError(null);
 
-      const userData = await apiService.getUserProfile() as UserProfileData;
+      const userData = await profileApi.getUserProfile() as UserProfileData;
       setUser(userData);
 
       // Populate profile form with user data
@@ -286,7 +286,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ onThemeChange, currentTheme }
       setError(null);
 
       const { usagePlans, defaultTasksCalendarId, ...profileData } = profileForm;
-      await apiService.updateUserProfile({
+      await profileApi.updateUserProfile({
         ...profileData,
         defaultTasksCalendarId: defaultTasksCalendarId
           ? Number(defaultTasksCalendarId)
@@ -324,10 +324,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ onThemeChange, currentTheme }
       setPasswordLoading(true);
       setError(null);
 
-      await apiService.changePassword({
-        currentPassword: passwordForm.currentPassword,
-        newPassword: passwordForm.newPassword
-      });
+      await profileApi.changePassword(passwordForm.currentPassword, passwordForm.newPassword);
 
       setSuccess('Password changed successfully!');
       setTimeout(() => setSuccess(null), 3000);
@@ -363,7 +360,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ onThemeChange, currentTheme }
     onThemeChange(color);
 
     try {
-      await apiService.updateUserTheme(color);
+      await profileApi.updateUserTheme(color);
       setSuccess('Theme updated successfully!');
       setTimeout(() => setSuccess(null), 3000);
     } catch (err) {

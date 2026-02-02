@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import { apiService } from '../services/api';
+import { profileApi } from '../services/profileApi';
 
 export interface CalendarSettings {
   weekStartDay: number; // 0 = Sunday, 1 = Monday, etc.
@@ -41,7 +41,10 @@ export const useCalendarSettings = (): UseCalendarSettingsReturn => {
       // Load user profile settings (weekStartDay, defaultView)
       const loadUserProfile = async () => {
         try {
-          const profile = await apiService.getUserProfile();
+          const profile = await profileApi.getUserProfile() as {
+            weekStartDay?: number;
+            defaultCalendarView?: 'month' | 'week';
+          };
           setSettings(prev => ({
             ...prev,
             weekStartDay: profile.weekStartDay ?? 1,
@@ -70,7 +73,7 @@ export const useCalendarSettings = (): UseCalendarSettingsReturn => {
   // Update week start day (saves to server)
   const updateWeekStartDay = useCallback(async (day: number) => {
     try {
-      await apiService.updateUserProfile({ weekStartDay: day });
+      await profileApi.updateUserProfile({ weekStartDay: day });
       const newSettings = { ...settings, weekStartDay: day };
       setSettings(newSettings);
       saveToLocalStorage(newSettings);
@@ -108,7 +111,7 @@ export const useCalendarSettings = (): UseCalendarSettingsReturn => {
   // Save user profile settings to server
   const saveSettings = useCallback(async () => {
     try {
-      await apiService.updateUserProfile({
+      await profileApi.updateUserProfile({
         weekStartDay: settings.weekStartDay,
         defaultCalendarView: settings.defaultView
       });

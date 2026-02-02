@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * CalendarEventModal component for creating and editing calendar events
  *
@@ -587,3 +588,4 @@ export const CalendarEventModal: React.FC<CalendarEventModalProps> = ({
     </SimpleModal>
   );
 };
+

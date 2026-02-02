@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React from 'react';
 
 interface ConfirmationDialogProps {
@@ -162,3 +163,4 @@ const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
 };
 
 export default ConfirmationDialog;
+

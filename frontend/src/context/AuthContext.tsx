@@ -7,7 +7,7 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import { apiService } from '../services/api';
+import { authApi } from '../services/authApi';
 import { sessionManager } from '../services/sessionManager';
 
 export type AuthUser = {
@@ -60,7 +60,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const login = useCallback(async (input: LoginInput) => {
     if ('password' in input) {
-      const response = await apiService.login(input.username, input.password);
+      const response = await authApi.login(input.username, input.password);
       return response.user ?? null;
     }
 
@@ -74,7 +74,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const logout = useCallback(async () => {
     try {
-      await apiService.logout();
+      await authApi.logout();
     } catch {
       sessionManager.clearSession();
     }

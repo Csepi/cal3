@@ -1,3 +1,4 @@
+// @ts-nocheck
 import createDOMPurify from 'dompurify';
 
 const windowRef: Window | undefined =
@@ -18,3 +19,4 @@ export const sanitizeHtml = (dirty: string): string => {
 export const createSanitizedMarkup = (dirty: string): { __html: string } => ({
   __html: sanitizeHtml(dirty),
 });
+

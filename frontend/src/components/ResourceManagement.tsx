@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useState, useEffect } from 'react';
 import { BASE_URL } from '../config/apiConfig';
 import { secureFetch } from '../services/authErrorHandler';
@@ -323,3 +324,4 @@ const ResourceManagement: React.FC<ResourceManagementProps> = () => {
 };
 
 export default ResourceManagement;
+

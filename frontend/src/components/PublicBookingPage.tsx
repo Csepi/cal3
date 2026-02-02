@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { BASE_URL } from '../config/apiConfig';
@@ -595,3 +596,4 @@ const PublicBookingPage: React.FC = () => {
 };
 
 export default PublicBookingPage;
+

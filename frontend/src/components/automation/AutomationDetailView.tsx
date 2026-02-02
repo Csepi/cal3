@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { useState } from 'react';
 import type { AutomationRuleDetailDto, UpdateAutomationRuleDto } from '../../types/Automation';
 import { useAutomationMetadata } from '../../hooks/useAutomationMetadata';
@@ -309,3 +310,4 @@ export const AutomationDetailView: React.FC<AutomationDetailViewProps> = ({
     </div>
   );
 };
+

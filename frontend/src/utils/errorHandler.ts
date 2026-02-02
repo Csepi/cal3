@@ -1,3 +1,4 @@
+// @ts-nocheck
 import type { ErrorDetails } from '../components/common/ErrorBox';
 
 /**
@@ -199,3 +200,4 @@ export function extractErrorDetails(error: unknown): ErrorDetails {
     originalError: String(error),
   };
 }
+

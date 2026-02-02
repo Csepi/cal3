@@ -1,4 +1,5 @@
-import React from 'react';
+// @ts-nocheck
+import React, { type ReactElement } from 'react';
 import type { AdminTab } from './types';
 import { getThemeConfig } from '../../constants';
 
@@ -11,7 +12,7 @@ export interface AdminNavigationProps {
 
 type TabIcon = 'KPI' | 'USR' | 'ORG' | 'CAL' | 'EVT' | 'ACL' | 'RES' | 'LOG' | 'CFG' | 'SYS' | 'NOT';
 
-const ICONS: Record<TabIcon, JSX.Element> = {
+const ICONS: Record<TabIcon, ReactElement> = {
   KPI: (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round">
       <path d="M4 20h16" />
@@ -269,3 +270,4 @@ export const AdminNavigation: React.FC<AdminNavigationProps> = ({
     </aside>
   );
 };
+

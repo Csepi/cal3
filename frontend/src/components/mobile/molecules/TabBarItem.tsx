@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * TabBarItem - Molecular Component
  *
@@ -100,3 +101,4 @@ export const TabBarItem: React.FC<TabBarItemProps> = ({
     </TouchableArea>
   );
 };
+

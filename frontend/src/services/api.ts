@@ -773,7 +773,7 @@ class ApiService {
   }
 
   // Generic HTTP methods
-  async get(endpoint: string): Promise<unknown> {
+  async get<T = unknown>(endpoint: string): Promise<T> {
     const response = await this.secureApiFetch(`${BASE_URL}/api${endpoint}`);
 
     if (!response.ok) {
@@ -784,10 +784,10 @@ class ApiService {
       throw new Error(errorData.message || `Failed to fetch ${endpoint}`);
     }
 
-    return await response.json();
+    return (await response.json()) as T;
   }
 
-  async post(endpoint: string, data?: unknown): Promise<unknown> {
+  async post<T = unknown>(endpoint: string, data?: unknown): Promise<T> {
     const response = await this.secureApiFetch(`${BASE_URL}/api${endpoint}`, {
       method: 'POST',
       headers: {
@@ -804,10 +804,10 @@ class ApiService {
       throw new Error(errorData.message || `Failed to post to ${endpoint}`);
     }
 
-    return await response.json();
+    return (await response.json()) as T;
   }
 
-  async patch(endpoint: string, data?: unknown): Promise<unknown> {
+  async patch<T = unknown>(endpoint: string, data?: unknown): Promise<T> {
     const response = await this.secureApiFetch(`${BASE_URL}/api${endpoint}`, {
       method: 'PATCH',
       headers: {
@@ -824,10 +824,10 @@ class ApiService {
       throw new Error(errorData.message || `Failed to patch ${endpoint}`);
     }
 
-    return await response.json();
+    return (await response.json()) as T;
   }
 
-  async delete(endpoint: string): Promise<unknown> {
+  async delete<T = unknown>(endpoint: string): Promise<T | null> {
     const response = await this.secureApiFetch(`${BASE_URL}/api${endpoint}`, {
       method: 'DELETE',
     });
@@ -842,7 +842,7 @@ class ApiService {
       }
     }
 
-    return response.status === 204 ? null : await response.json();
+    return response.status === 204 ? null : ((await response.json()) as T);
   }
 
   // Calendar Sync methods

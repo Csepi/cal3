@@ -25,7 +25,8 @@ import UserProfile from './UserProfile';
 import CalendarSync from './sync/CalendarSync';
 import ReservationsPanel from './ReservationsPanel';
 import { AutomationPanel } from './automation/AutomationPanel';
-import { apiService } from '../services/api';
+import { authApi } from '../services/authApi';
+import { profileApi } from '../services/profileApi';
 import { sessionManager } from '../services/sessionManager';
 import { THEME_COLORS } from '../constants/theme';
 import { useFeatureFlags } from '../hooks/useFeatureFlags';
@@ -119,7 +120,7 @@ const Dashboard: React.FC<DashboardProps> = ({ initialView = 'calendar' }) => {
    */
   const loadUserProfile = async () => {
     try {
-      const profile = await apiService.getUserProfile() as DashboardUserProfile;
+      const profile = await profileApi.getUserProfile() as DashboardUserProfile;
       setUserProfile(profile);
 
       // Apply user's saved theme preference
@@ -160,7 +161,7 @@ const Dashboard: React.FC<DashboardProps> = ({ initialView = 'calendar' }) => {
     }
 
     const initialise = async () => {
-      if (!apiService.isAuthenticated()) {
+      if (!authApi.isAuthenticated()) {
         const refreshed = await sessionManager.refreshAccessToken();
         if (!refreshed) {
           await handleLogout();

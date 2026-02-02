@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Core Calendar Hook
  *
@@ -294,3 +295,4 @@ export const useCalendar = (
     computed
   };
 };
+

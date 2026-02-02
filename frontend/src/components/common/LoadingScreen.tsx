@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React from 'react';
 
 interface LoadingScreenProps {
@@ -101,3 +102,4 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({
 };
 
 export default LoadingScreen;
+

@@ -24,11 +24,13 @@ export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> 
   /** Position of the icon */
   iconPosition?: 'left' | 'right';
   /** Input size variant */
-  size?: 'sm' | 'md' | 'lg';
+  inputSize?: 'sm' | 'md' | 'lg';
   /** Whether input should take full width */
   fullWidth?: boolean;
   /** Ignored compatibility flag for components that pass textarea-only props */
   multiline?: boolean;
+  /** Ignored compatibility prop for textarea-like callers */
+  rows?: number;
 }
 
 /**
@@ -43,9 +45,10 @@ export const Input: React.FC<InputProps> = ({
   required = false,
   icon,
   iconPosition = 'left',
-  size = 'md',
+  inputSize = 'md',
   fullWidth = true,
   multiline: _multiline,
+  rows: _rows,
   className = '',
   id,
   ...props
@@ -96,7 +99,7 @@ export const Input: React.FC<InputProps> = ({
   // Combine all input classes
   const inputClasses = [
     baseInputClasses,
-    sizeClasses[size],
+    sizeClasses[inputSize],
     getInputClasses(),
     className
   ].join(' ');

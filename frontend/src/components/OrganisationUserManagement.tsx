@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { apiService } from '../services/api';
+import { http } from '../lib/http';
 import { UserPermissionsService } from '../services/userPermissions';
 
 interface User {
@@ -60,13 +60,13 @@ const OrganisationUserManagement: React.FC<OrganisationUserManagementProps> = ({
 
       if (permissions.isSuperAdmin) {
         // Super admins can see all organizations
-        const response = await apiService.get('/organisations');
+        const response = await http.get<Organisation[]>('/api/organisations');
         setOrganisations(response);
       } else {
         // Regular users can only see organizations they admin
         const adminOrgIds = permissions.adminOrganizationIds;
         if (adminOrgIds.length > 0) {
-          const orgPromises = adminOrgIds.map(id => apiService.get(`/organisations/${id}`));
+          const orgPromises = adminOrgIds.map(id => http.get<Organisation>(`/api/organisations/${id}`));
           const orgs = await Promise.all(orgPromises);
           setOrganisations(orgs);
         }
@@ -85,8 +85,9 @@ const OrganisationUserManagement: React.FC<OrganisationUserManagementProps> = ({
 
   const loadOrganisationUsers = async (orgId: number) => {
     try {
-      const response = await apiService.get(`/organisations/${orgId}/users`);
-      setOrgUsers(response.data || []);
+      const response = await http.get<{ data?: OrganisationUser[] } | OrganisationUser[]>(`/api/organisations/${orgId}/users`);
+      const users = Array.isArray(response) ? response : (response.data ?? []);
+      setOrgUsers(users);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load organization users');
     }
@@ -94,7 +95,7 @@ const OrganisationUserManagement: React.FC<OrganisationUserManagementProps> = ({
 
   const loadAvailableUsers = async () => {
     try {
-      const response = await apiService.get('/admin/users');
+      const response = await http.get<User[]>('/api/admin/users');
       // Filter users with Store or Enterprise plans who aren't already in the organization
       const eligibleUsers = response.filter((user: User) => {
         const hasRequiredPlan = user.usagePlans &&
@@ -113,7 +114,7 @@ const OrganisationUserManagement: React.FC<OrganisationUserManagementProps> = ({
 
     try {
       setLoading(true);
-      await apiService.post(`/organisations/${selectedOrgId}/users`, {
+      await http.post(`/api/organisations/${selectedOrgId}/users`, {
         userId: selectedUserId,
         role: selectedUserRole
       });
@@ -135,7 +136,7 @@ const OrganisationUserManagement: React.FC<OrganisationUserManagementProps> = ({
 
     try {
       setLoading(true);
-      await apiService.patch(`/organisations/${selectedOrgId}/users/${userToChangeRole.id}/role`, {
+      await http.patch(`/api/organisations/${selectedOrgId}/users/${userToChangeRole.id}/role`, {
         role: selectedUserRole
       });
 
@@ -156,7 +157,7 @@ const OrganisationUserManagement: React.FC<OrganisationUserManagementProps> = ({
 
     try {
       setLoading(true);
-      await apiService.delete(`/organisations/${selectedOrgId}/users/${userId}`);
+      await http.delete(`/api/organisations/${selectedOrgId}/users/${userId}`);
       await loadOrganisationUsers(selectedOrgId);
       await loadAvailableUsers();
     } catch (err) {
@@ -172,8 +173,8 @@ const OrganisationUserManagement: React.FC<OrganisationUserManagementProps> = ({
     setShowRoleChangeModal(true);
   };
 
-  const getThemeColors = (color: string) => {
-    const colorMap: Record<string, unknown> = {
+  const getThemeColors = (color: string): { primary: string; border: string; text: string } => {
+    const colorMap: Record<string, { primary: string; border: string; text: string }> = {
       '#ef4444': { primary: 'bg-red-500 hover:bg-red-600', border: 'border-red-200', text: 'text-red-600' },
       '#f59e0b': { primary: 'bg-orange-500 hover:bg-orange-600', border: 'border-orange-200', text: 'text-orange-600' },
       '#3b82f6': { primary: 'bg-blue-500 hover:bg-blue-600', border: 'border-blue-200', text: 'text-blue-600' },

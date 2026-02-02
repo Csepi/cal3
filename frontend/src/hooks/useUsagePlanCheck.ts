@@ -6,7 +6,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { apiService } from '../services/api';
+import { profileApi } from '../services/profileApi';
 
 export interface UsagePlanPermissions {
   /** Whether user can create and manage organizations */
@@ -65,7 +65,7 @@ export const useUsagePlanCheck = () => {
 
   const loadUserPermissions = async () => {
     try {
-      const userProfile = await apiService.getUserProfile();
+      const userProfile = (await profileApi.getUserProfile()) as { usagePlans?: string[] };
       const usagePlans = userProfile.usagePlans || ['user'];
 
       // Organization management requires store or enterprise plan

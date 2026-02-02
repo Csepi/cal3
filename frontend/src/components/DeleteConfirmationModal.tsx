@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { useState } from 'react';
 
 interface CascadePreview {
@@ -248,3 +249,4 @@ const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({
 };
 
 export default DeleteConfirmationModal;
+

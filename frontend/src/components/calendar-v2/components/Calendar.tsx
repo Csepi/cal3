@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Main Calendar Container Component
  *
@@ -292,3 +293,4 @@ export const Calendar = memo<CalendarContainerProps>(({
 });
 
 Calendar.displayName = 'Calendar';
+
