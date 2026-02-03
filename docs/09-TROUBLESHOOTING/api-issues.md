@@ -1,1 +1,13 @@
-# API Issues\n\nLast updated: 2026-02-03\n\n[‹ Troubleshooting](./README.md)\n\n401/403/404/409/429/500 diagnosis using request IDs and standardized error codes.\n
+# API Issues
+
+Last updated: 2026-02-03
+
+[Back](./README.md)
+
+API Issues documentation helps diagnose and resolve recurring production and development failures.
+
+## Operational Notes
+Start with service availability and environment wiring, then use request IDs to correlate logs.
+
+## Guidance
+Apply the smallest safe fix, rerun failing workflows, and capture validation evidence.

@@ -2,16 +2,12 @@
 
 Last updated: 2026-02-03
 
-[‹ Architecture](./README.md)
+[Back](./README.md)
 
-## Built-in Integrations
-- Google Calendar OAuth sync
-- Microsoft Calendar OAuth sync
-- Agent/MCP action interface
-- Public booking links and APIs
-- Optional notification channels
+Integrations include calendar sync providers, notifications, smart-home connectors, and MCP-capable agent tooling.
 
-## Integration Principles
-- Explicit provider adapters
-- Retries/circuit breakers on external calls
-- Structured error codes and trace IDs
+## Operational Notes
+Because these are reliability boundaries, each integration should include retries, error context, and observability hooks.
+
+## Guidance
+External system behavior changes over time, so integration docs should be reviewed regularly alongside production incidents.

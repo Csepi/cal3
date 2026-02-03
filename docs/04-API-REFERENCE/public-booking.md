@@ -2,8 +2,12 @@
 
 Last updated: 2026-02-03
 
-[‹ API Reference](./README.md)
+[Back](./README.md)
 
-- token-based resource discovery
-- slot availability endpoints
-- booking creation endpoints
+Public booking endpoints support external reservation flows with tokenized access.
+
+## Operational Notes
+Requests should be validated with typed DTOs and policy checks before service execution.
+
+## Guidance
+Clients should branch behavior by error code and status rather than parsing text messages.

@@ -2,7 +2,9 @@
 
 Last updated: 2026-02-03
 
-[‹ Docs Home](../README.md)
+[Documentation Home](../README.md)
+
+Developer guides describe implementation patterns, validation gates, and extension points for maintainers.
 
 - [Local Setup](./local-setup.md)
 - [Code Organization](./code-organization.md)

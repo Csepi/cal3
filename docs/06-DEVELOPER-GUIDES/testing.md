@@ -1,1 +1,13 @@
-# Testing\n\nLast updated: 2026-02-03\n\n[‹ Developer Guides](./README.md)\n\nBackend/frontend validation commands, API checks, and regression guidance.\n
+# Testing
+
+Last updated: 2026-02-03
+
+[Back](./README.md)
+
+Testing focuses on reliable implementation and change management for engineering teams.
+
+## Operational Notes
+Use typed contracts, narrow module responsibilities, and explicit validation to reduce regressions.
+
+## Guidance
+Validate with type checks, linting, and targeted runtime verification before merging.

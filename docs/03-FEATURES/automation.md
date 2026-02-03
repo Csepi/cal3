@@ -1,26 +1,13 @@
-# Automation Rules Engine
+# Automation
 
 Last updated: 2026-02-03
 
-[‹ Features](./README.md)
+[Back](./README.md)
 
-## Triggers
-- Event created/updated/deleted
-- Time-based schedules
-- Reservation lifecycle hooks
+Automation evaluates triggers, conditions, and actions so repetitive scheduling tasks can run without manual intervention.
 
-## Conditions
-- String matching (contains/equals/regex)
-- Time windows and date constraints
-- Resource/user/organization filters
+## Operational Notes
+Rules should be explicit, auditable, and safe under retries, especially when actions call external services.
 
-## Actions
-- Send notification
-- Create/update related items
-- Event metadata updates
-- Trigger external webhook
-
-## Best Practices
-- Keep rule conditions specific
-- Use staging before production automation
-- Monitor audit logs for failed actions
+## Guidance
+Keep automation rules focused and test new rules in controlled environments before broad rollout.

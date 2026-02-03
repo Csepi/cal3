@@ -1,9 +1,13 @@
-# Multi-Tenancy
+# Multi-tenancy
 
 Last updated: 2026-02-03
 
-[‹ Features](./README.md)
+[Back](./README.md)
 
-- Organization-scoped resources and reservations
-- Role model: global admin, org admin, editor, reviewer, user
-- Guard/policy-based access checks
+Multi-tenancy is implemented through organizations, memberships, and scoped permissions.
+
+## Operational Notes
+Every query and mutation path must enforce tenant boundaries so data is never leaked across organizations.
+
+## Guidance
+Centralized policy services reduce duplication and prevent inconsistent permission behavior.

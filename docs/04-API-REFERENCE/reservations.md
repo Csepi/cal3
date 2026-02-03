@@ -1,10 +1,13 @@
-﻿# Reservations API
+# Reservations API
 
 Last updated: 2026-02-03
 
-[Back to API Reference](./README.md)
+[Back](./README.md)
 
-- `GET /api/reservations`
-- `POST /api/reservations`
-- `PATCH /api/reservations/:id`
-- `DELETE /api/reservations/:id`
+Reservation endpoints manage booking creation, state transitions, and conflict-aware updates.
+
+## Operational Notes
+Requests should be validated with typed DTOs and policy checks before service execution.
+
+## Guidance
+Clients should branch behavior by error code and status rather than parsing text messages.

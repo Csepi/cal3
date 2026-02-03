@@ -2,34 +2,12 @@
 
 Last updated: 2026-02-03
 
-[‹ Getting Started](./README.md)
+[Back](./README.md)
 
-## Option 1: Node.js + Local DB
-1. Clone repository
-2. Install dependencies
-3. Create and configure ackend-nestjs/.env
-4. Start backend and frontend
+Installation supports local Node.js workflows, isolated Docker workflows, and full Docker Compose stacks. The best option depends on whether you are coding, debugging, or validating release behavior.
 
-`ash
-git clone <repo>
-cd cal3
-npm install
-cd backend-nestjs && npm install
-cd ../frontend && npm install
-`
+## Operational Notes
+For active development, Node.js + local database is usually fastest. Compose is best for environment parity and integration testing because service wiring is explicit and repeatable.
 
-## Option 2: Docker (single service)
-- Build and run each service container separately.
-
-## Option 3: Docker Compose (full stack)
-- Use Compose to run frontend + backend + database together.
-
-## Verification
-- Backend reachable on http://localhost:8081
-- Frontend reachable on http://localhost:8080
-- Successful login and event creation
-
-## Common Install Issues
-- DB connection refused -> verify DB host/port
-- Frontend cannot call backend -> verify runtime config and CORS
-- OAuth callback mismatch -> update callback URLs in env
+## Guidance
+Always verify login, calendar creation, and event CRUD after install. If these fail, investigate environment variable wiring and backend connectivity first.

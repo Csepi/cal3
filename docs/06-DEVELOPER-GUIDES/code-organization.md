@@ -1,1 +1,13 @@
-# Code Organization\n\nLast updated: 2026-02-03\n\n[‹ Developer Guides](./README.md)\n\nGuidelines for modules, services, DTOs, types, and shared/common utilities.\n
+# Code Organization
+
+Last updated: 2026-02-03
+
+[Back](./README.md)
+
+Code Organization focuses on reliable implementation and change management for engineering teams.
+
+## Operational Notes
+Use typed contracts, narrow module responsibilities, and explicit validation to reduce regressions.
+
+## Guidance
+Validate with type checks, linting, and targeted runtime verification before merging.

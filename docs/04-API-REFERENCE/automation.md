@@ -2,9 +2,12 @@
 
 Last updated: 2026-02-03
 
-[‹ API Reference](./README.md)
+[Back](./README.md)
 
-- rule CRUD endpoints
-- condition/action management endpoints
-- audit log and stats endpoints
-- trigger execution endpoints
+Automation endpoints manage rule lifecycle and execution control.
+
+## Operational Notes
+Requests should be validated with typed DTOs and policy checks before service execution.
+
+## Guidance
+Clients should branch behavior by error code and status rather than parsing text messages.

@@ -1,23 +1,13 @@
-# Smart Home Integration
+# Smart Home
 
 Last updated: 2026-02-03
 
-[‹ Features](./README.md)
+[Back](./README.md)
 
-## Status
-Smart home integration is supported via adapter configuration and webhook-style automation patterns.
+Smart-home integration links scheduling events to physical environment actions such as lighting or room controls.
 
-## Typical Platforms
-- Home Assistant
-- IFTTT-compatible webhooks
-- Custom bridge services
+## Operational Notes
+Rules should include strict conditions and safe scope boundaries because side effects may affect physical spaces.
 
-## Setup
-1. Enable smart home variables in environment.
-2. Configure provider endpoint/token.
-3. Create automation rules that target smart-home webhooks/actions.
-
-## Example Use Cases
-- Turn on room lights before reservation start.
-- Toggle occupancy state when meeting begins/ends.
-- Notify wall panel on schedule changes.
+## Guidance
+Always validate endpoint reachability, credentials, and timezone alignment during setup.

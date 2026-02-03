@@ -2,22 +2,12 @@
 
 Last updated: 2026-02-03
 
-[‹ Getting Started](./README.md)
+[Back](./README.md)
 
-## Startup Checklist
-- Backend started successfully
-- Frontend started successfully
-- DB connection established
+First run should validate the complete user flow, not only process startup. The minimum path is login, calendar creation, and event creation.
 
-## First Login Flow
-1. Register or login
-2. Open dashboard
-3. Create first calendar
-4. Create first event
-5. Validate reservation/public booking pages
+## Operational Notes
+Also verify reservation views, feature flags, and permission-based UI sections load correctly, because these often reveal hidden backend configuration issues.
 
-## Recommended Next Steps
-- Set timezone/theme profile
-- Configure OAuth sync
-- Create organization and resource types
-- Enable automation rules
+## Guidance
+Capture first-run results in team onboarding notes to make future setup troubleshooting faster.

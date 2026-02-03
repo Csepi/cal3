@@ -2,9 +2,12 @@
 
 Last updated: 2026-02-03
 
-[‹ Features](./README.md)
+[Back](./README.md)
 
-- Google Calendar OAuth
-- Microsoft Calendar OAuth
-- Bidirectional sync mapping (external event <-> local event)
-- Conflict and stale mapping recovery
+Sync integrations connect Cal3 data with provider APIs such as Google and iCal ecosystems.
+
+## Operational Notes
+Mapper logic must normalize provider payloads carefully, especially for timezone and recurrence behavior.
+
+## Guidance
+Use resilient retry and error reporting patterns because upstream API reliability varies over time.

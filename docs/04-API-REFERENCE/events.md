@@ -1,11 +1,13 @@
-﻿# Events API
+# Events API
 
 Last updated: 2026-02-03
 
-[Back to API Reference](./README.md)
+[Back](./README.md)
 
-- `GET /api/events`
-- `POST /api/events`
-- `PATCH /api/events/:id`
-- `DELETE /api/events/:id`
-- `GET /api/events/:id/comments`
+Event endpoints provide CRUD operations, date-range retrieval, and related collaboration features.
+
+## Operational Notes
+Requests should be validated with typed DTOs and policy checks before service execution.
+
+## Guidance
+Clients should branch behavior by error code and status rather than parsing text messages.

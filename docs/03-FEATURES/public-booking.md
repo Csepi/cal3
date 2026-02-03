@@ -2,8 +2,12 @@
 
 Last updated: 2026-02-03
 
-[‹ Features](./README.md)
+[Back](./README.md)
 
-- Share resource booking links via tokenized URLs
-- Validate booking windows and resource availability
-- Optional organization constraints and custom fields
+Public booking allows external users to create reservations through shared links without full platform login.
+
+## Operational Notes
+Input validation, rate limiting, and request tracing are essential because these endpoints are externally exposed.
+
+## Guidance
+Keep public flows simple for users while preserving internal policy controls and auditability.

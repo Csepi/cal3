@@ -1,1 +1,13 @@
-# Local Setup\n\nLast updated: 2026-02-03\n\n[‹ Developer Guides](./README.md)\n\nInstall deps, configure env, run backend/frontend, and verify API connectivity.\n
+# Local Setup
+
+Last updated: 2026-02-03
+
+[Back](./README.md)
+
+Local Setup focuses on reliable implementation and change management for engineering teams.
+
+## Operational Notes
+Use typed contracts, narrow module responsibilities, and explicit validation to reduce regressions.
+
+## Guidance
+Validate with type checks, linting, and targeted runtime verification before merging.

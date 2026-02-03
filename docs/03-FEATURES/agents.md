@@ -1,21 +1,13 @@
-# AI Agents and MCP
+# Agents
 
 Last updated: 2026-02-03
 
-[‹ Features](./README.md)
+[Back](./README.md)
 
-## Overview
-Cal3 includes agent endpoints and MCP-compatible action patterns for AI-assisted workflows.
+Agent integration enables controlled execution through MCP-compatible surfaces and scoped permissions.
 
-## Capabilities
-- Read/update calendars, events, tasks (permission-scoped)
-- Execute allowed operations via API keys or profile constraints
-- Structured tool/action output envelopes
+## Operational Notes
+Security controls should include revocable credentials, action-level authorization, and request-context logging.
 
-## Built-in Concepts
-- Agent profiles and permissions
-- MCP metadata/actions endpoints
-- Safe execution wrappers and auditing
-
-## Custom MCP Development
-See [MCP Development Guide](../06-DEVELOPER-GUIDES/mcp-development.md).
+## Guidance
+Treat agent capabilities as privileged paths and audit usage regularly.

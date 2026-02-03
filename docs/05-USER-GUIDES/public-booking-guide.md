@@ -1,1 +1,13 @@
-# Public Booking Guide\n\nLast updated: 2026-02-03\n\n[‹ User Guides](./README.md)\n\nEnable booking tokens, share public URLs, and monitor incoming reservations.\n
+# Public Booking Guide
+
+Last updated: 2026-02-03
+
+[Back](./README.md)
+
+Public Booking Guide explains how users should complete common workflows with predictable results.
+
+## Operational Notes
+Start with the simplest path, verify expected output, then add optional settings only when needed.
+
+## Guidance
+When behavior is unexpected, capture exact timestamps and visible errors before contacting support.

@@ -1,1 +1,13 @@
-# Adding API Endpoints\n\nLast updated: 2026-02-03\n\n[‹ Developer Guides](./README.md)\n\nStep-by-step: DTO -> Controller -> Service -> Types -> Tests -> Docs updates.\n
+# Adding Endpoints
+
+Last updated: 2026-02-03
+
+[Back](./README.md)
+
+Adding Endpoints focuses on reliable implementation and change management for engineering teams.
+
+## Operational Notes
+Use typed contracts, narrow module responsibilities, and explicit validation to reduce regressions.
+
+## Guidance
+Validate with type checks, linting, and targeted runtime verification before merging.

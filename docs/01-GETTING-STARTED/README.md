@@ -2,7 +2,9 @@
 
 Last updated: 2026-02-03
 
-[‹ Docs Home](../README.md)
+[Documentation Home](../README.md)
+
+Getting Started explains installation choices, runtime prerequisites, and first-run validation. Use this section to build a stable baseline before feature development.
 
 - [Prerequisites](./prerequisites.md)
 - [Installation](./installation.md)

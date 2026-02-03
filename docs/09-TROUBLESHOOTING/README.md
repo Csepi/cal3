@@ -1,1 +1,13 @@
-# 09 - Troubleshooting\n\nLast updated: 2026-02-03\n\n[‹ Docs Home](../README.md)\n\n- [Database Issues](./database-issues.md)\n- [API Issues](./api-issues.md)\n- [Smart Home Issues](./smart-home-issues.md)\n- [Performance Issues](./performance-issues.md)\n- [Logs and Debugging](./logs-debugging.md)\n
+# 09 - Troubleshooting
+
+Last updated: 2026-02-03
+
+[Documentation Home](../README.md)
+
+Troubleshooting documents use an isolate-verify-fix approach to restore service quickly and safely.
+
+- [Database Issues](./database-issues.md)
+- [API Issues](./api-issues.md)
+- [Smart Home Issues](./smart-home-issues.md)
+- [Performance Issues](./performance-issues.md)
+- [Logs and Debugging](./logs-debugging.md)

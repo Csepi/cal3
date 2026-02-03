@@ -2,18 +2,12 @@
 
 Last updated: 2026-02-03
 
-[‹ Architecture](./README.md)
+[Back](./README.md)
 
-## Main Modules
-- Auth
-- Calendars / Events / Sync
-- Organisations / Resources / Reservations
-- Tasks
-- Automation
-- Notifications
-- Admin
+Backend modules encapsulate domain concerns while shared infrastructure lives under common layers for reuse and consistency.
 
-## Common Layer
-- common/guards, common/pipes, common/filters, common/interceptors
-- common/services shared cross-module logic
-- 	ypes/* centralized backend type contracts
+## Operational Notes
+Database access, policy checks, and error handling should be centralized to avoid divergent behavior across modules.
+
+## Guidance
+During refactor work, prioritize reducing circular dependencies and keeping service responsibilities narrow.

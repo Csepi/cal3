@@ -2,8 +2,12 @@
 
 Last updated: 2026-02-03
 
-[‹ API Reference](./README.md)
+[Back](./README.md)
 
-- organization CRUD
-- user assignment/role endpoints
-- reservation calendar permissions endpoints
+Organization endpoints manage tenant boundaries, memberships, and admin capabilities.
+
+## Operational Notes
+Requests should be validated with typed DTOs and policy checks before service execution.
+
+## Guidance
+Clients should branch behavior by error code and status rather than parsing text messages.

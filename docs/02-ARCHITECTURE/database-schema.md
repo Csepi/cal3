@@ -2,26 +2,12 @@
 
 Last updated: 2026-02-03
 
-[‹ Architecture](./README.md)
+[Back](./README.md)
 
-## ER Overview
-`	ext
-users 1---* calendars 1---* events
-organisations 1---* resource_types 1---* resources 1---* reservations
-users 1---* tasks (*-* labels)
-automation_rules 1---* conditions/actions/audit_logs
-`
+The schema is centered around users, organizations, calendars, events, resources, reservations, and automation entities.
 
-## Core Tables
-- Users, RefreshTokens, UserNotificationPreferences
-- Calendars, CalendarShares, Events, EventComments
-- Organisations, OrganisationUsers, OrganisationAdmins
-- ResourceTypes, Resources, Reservations, OperatingHours
-- AutomationRules, AutomationConditions, AutomationActions, AutomationAuditLogs
-- NotificationMessages, NotificationDeliveries, NotificationThreads, PushDeviceTokens
-- Tasks, TaskLabels, TaskLabelAssignments
+## Operational Notes
+Relationships and indexes are designed for tenant-safe queries, date-range lookups, and permission-scoped access patterns.
 
-## Key Constraints
-- FK integrity across all tenant-scoped models
-- Unique constraints for identity and share mappings
-- Indexes on frequent filters: user/org/calendar/time/status
+## Guidance
+Schema evolution must be migration-driven to maintain consistency across environments.

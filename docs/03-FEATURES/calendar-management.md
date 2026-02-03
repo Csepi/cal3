@@ -2,10 +2,12 @@
 
 Last updated: 2026-02-03
 
-[‹ Features](./README.md)
+[Back](./README.md)
 
-- Multiple calendars per user
-- Calendar sharing and permissions
-- Event CRUD (single and recurring)
-- Timezone-aware display
-- Public/private/shared visibility
+Calendar management covers creating calendars, organizing events, and handling schedule updates across user workflows.
+
+## Operational Notes
+The feature should preserve timezone correctness, recurrence intent, and visibility rules when users collaborate or sync externally.
+
+## Guidance
+Use clear naming and permission boundaries to keep shared calendar workflows predictable.

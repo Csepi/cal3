@@ -1,1 +1,13 @@
-# Logs and Debugging\n\nLast updated: 2026-02-03\n\n[‹ Troubleshooting](./README.md)\n\nWhere logs live, what to grep, and how to follow startup/auth/sync traces.\n
+# Logs and Debugging
+
+Last updated: 2026-02-03
+
+[Back](./README.md)
+
+Logs and Debugging documentation helps diagnose and resolve recurring production and development failures.
+
+## Operational Notes
+Start with service availability and environment wiring, then use request IDs to correlate logs.
+
+## Guidance
+Apply the smallest safe fix, rerun failing workflows, and capture validation evidence.

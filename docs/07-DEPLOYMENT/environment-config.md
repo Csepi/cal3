@@ -1,1 +1,13 @@
-# Environment Configuration (Prod)\n\nLast updated: 2026-02-03\n\n[‹ Deployment](./README.md)\n\nProduction-safe defaults and secret handling for backend/frontend runtimes.\n
+# Environment Config
+
+Last updated: 2026-02-03
+
+[Back](./README.md)
+
+Environment Config explains operational choices required for stable deployments and recoverable releases.
+
+## Operational Notes
+Treat configuration, secrets, and service health checks as first-class deployment concerns.
+
+## Guidance
+Always plan rollback paths and validate observability before routing production traffic.

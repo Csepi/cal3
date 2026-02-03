@@ -2,9 +2,12 @@
 
 Last updated: 2026-02-03
 
-[‹ Features](./README.md)
+[Back](./README.md)
 
-- Resource types and per-resource settings
-- Capacity management
-- Public booking token generation
-- Optional manager assignment
+Resources represent bookable assets like rooms, equipment, or service slots.
+
+## Operational Notes
+Each resource should define availability constraints, operating windows, and policy boundaries used by reservation checks.
+
+## Guidance
+Clean resource metadata improves scheduling reliability and reduces user confusion.

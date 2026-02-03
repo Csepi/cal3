@@ -2,7 +2,9 @@
 
 Last updated: 2026-02-03
 
-[‹ Docs Home](../README.md)
+[Documentation Home](../README.md)
+
+Feature documentation explains what users can do and how behavior is expected to work in real workflows. Each page includes practical context, not just endpoint or file lists.
 
 - [Calendar Management](./calendar-management.md)
 - [Reservations](./reservations.md)
@@ -10,7 +12,7 @@ Last updated: 2026-02-03
 - [Automation](./automation.md)
 - [Notifications](./notifications.md)
 - [Smart Home](./smart-home.md)
-- [Agents & MCP](./agents.md)
+- [Agents](./agents.md)
 - [Public Booking](./public-booking.md)
 - [Sync Integrations](./sync-integrations.md)
-- [Multi-Tenancy](./multi-tenancy.md)
+- [Multi-tenancy](./multi-tenancy.md)

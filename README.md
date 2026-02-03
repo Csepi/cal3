@@ -1,44 +1,14 @@
-﻿# Cal3
+# Cal3
 
-Cal3 is a modern calendar, reservation, automation, and integration platform for teams and organizations.
+Cal3 is a scheduling platform that combines calendar management, reservations, automation, and integration workflows. It is designed for teams that need reliable day-to-day planning and clear operational control.
 
-## Key Features
-- Calendar and event management
-- Resource reservations and public booking
-- Multi-tenant organizations and permission controls
-- Automation rules with trigger/condition/action workflows
-- Notification delivery and tracking
-- Smart-home integrations
-- AI agent and MCP integrations
+The platform uses a React frontend and NestJS backend with typed API contracts. This design supports maintainable feature growth, safer refactors, and better incident diagnosis through standardized response and error patterns.
 
-## Getting Started
-- Quickstart: `docs/QUICKSTART.md`
-- Full documentation index: `docs/README.md`
-- Installation: `docs/01-GETTING-STARTED/installation.md`
-- Environment variables: `docs/01-GETTING-STARTED/environment-variables.md`
-
-## Documentation Navigation
-- Architecture: `docs/02-ARCHITECTURE/README.md`
-- Features: `docs/03-FEATURES/README.md`
-- API reference: `docs/04-API-REFERENCE/README.md`
-- User guides: `docs/05-USER-GUIDES/README.md`
-- Developer guides: `docs/06-DEVELOPER-GUIDES/README.md`
-- Deployment: `docs/07-DEPLOYMENT/README.md`
-- Troubleshooting: `docs/09-TROUBLESHOOTING/README.md`
-- FAQ: `docs/10-FAQ/README.md`
+## Documentation
+Use `docs/README.md` as the canonical entry point. Quickstart is intended for immediate local setup, while architecture, API, and deployment sections provide deeper guidance for contributors and operators.
 
 ## Tech Stack
-- Node.js 18+
-- NestJS 10+
-- React 18+
-- TypeScript (strict mode)
-- PostgreSQL / Azure SQL / SQLite
+Node.js 18+, NestJS 10+, React 18+, TypeScript, and PostgreSQL/Azure SQL/SQLite support.
 
 ## Contributing
-See `CONTRIBUTING.md` for contribution workflow and quality gates.
-
-## Security
-See `SECURITY.md` for disclosure and security policy.
-
-## License
-See the repository license file.
+See `CONTRIBUTING.md` for coding, validation, and documentation expectations.

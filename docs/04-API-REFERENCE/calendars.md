@@ -1,11 +1,13 @@
-﻿# Calendars API
+# Calendars API
 
 Last updated: 2026-02-03
 
-[Back to API Reference](./README.md)
+[Back](./README.md)
 
-- `GET /api/calendars`
-- `POST /api/calendars`
-- `PATCH /api/calendars/:id`
-- `DELETE /api/calendars/:id`
-- `GET /api/calendar-groups`
+Calendar endpoints manage calendar entities, grouping, and ownership-scoped updates.
+
+## Operational Notes
+Requests should be validated with typed DTOs and policy checks before service execution.
+
+## Guidance
+Clients should branch behavior by error code and status rather than parsing text messages.

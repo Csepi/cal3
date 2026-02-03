@@ -2,23 +2,12 @@
 
 Last updated: 2026-02-03
 
-[‹ Getting Started](./README.md)
+[Back](./README.md)
 
-## Single Container
-- Build backend and frontend images separately.
+Docker provides reproducible service startup and is useful when local host differences cause inconsistent behavior.
 
-## Docker Compose
-- Run full stack with one command.
+## Operational Notes
+Compose is recommended for full-stack local verification. For Portainer + Git redeploy workflows, keep compose paths stable and ensure environment injection is deterministic.
 
-`ash
-docker compose up --build
-`
-
-## Ports
-- Frontend: 8080
-- Backend: 8081
-- Database: engine-specific
-
-## Troubleshooting
-- Build cache issues -> rebuild without cache
-- Port conflicts -> check local listeners
+## Guidance
+After startup, verify backend health, frontend availability, and database readiness as separate checks.

@@ -2,8 +2,12 @@
 
 Last updated: 2026-02-03
 
-[‹ API Reference](./README.md)
+[Back](./README.md)
 
-- MCP metadata/action endpoints
-- agent profile and permission endpoints
-- API key issuance and revocation endpoints
+Agent endpoints expose metadata, action listings, and scoped execution surfaces.
+
+## Operational Notes
+Requests should be validated with typed DTOs and policy checks before service execution.
+
+## Guidance
+Clients should branch behavior by error code and status rather than parsing text messages.

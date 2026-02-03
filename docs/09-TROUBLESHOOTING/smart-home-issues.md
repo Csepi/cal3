@@ -1,1 +1,13 @@
-# Smart Home Issues\n\nLast updated: 2026-02-03\n\n[‹ Troubleshooting](./README.md)\n\nProvider auth/token issues, webhook failures, and event/action mismatch debugging.\n
+# Smart Home Issues
+
+Last updated: 2026-02-03
+
+[Back](./README.md)
+
+Smart Home Issues documentation helps diagnose and resolve recurring production and development failures.
+
+## Operational Notes
+Start with service availability and environment wiring, then use request IDs to correlate logs.
+
+## Guidance
+Apply the smallest safe fix, rerun failing workflows, and capture validation evidence.
