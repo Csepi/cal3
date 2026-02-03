@@ -1,20 +1,29 @@
-# Documentation Hub
+# Cal3 Documentation: From First Setup to Full Automation
 
 Last updated: 2026-02-03
 
-This is the main entry point for Cal3 documentation. It is structured by audience and task so that new users, developers, and operators can each find the right guide without searching through legacy content.
+This documentation is written to help you move from confusion to confidence quickly. Every guide explains why the topic matters, gives a real scenario, shows a practical path, and points to the next move.
 
-Every numbered section contains narrative documentation with practical context, expected behavior, and extension guidance. Historical material remains archived for traceability, but active work should follow this new structure.
+## Choose Your Path
+- Need momentum now? Start with `QUICKSTART.md`.
+- Setting up a real environment? Go to `01-GETTING-STARTED/`.
+- Building features? Jump to `03-FEATURES/` and `06-DEVELOPER-GUIDES/`.
+- Integrating with external tools? Use `04-API-REFERENCE/`.
+- Shipping to production? Follow `07-DEPLOYMENT/` and `09-TROUBLESHOOTING/`.
 
-- [Quickstart](./QUICKSTART.md)
-- [01 - Getting Started](./01-GETTING-STARTED/README.md)
-- [02 - Architecture](./02-ARCHITECTURE/README.md)
-- [03 - Features](./03-FEATURES/README.md)
-- [04 - API Reference](./04-API-REFERENCE/README.md)
-- [05 - User Guides](./05-USER-GUIDES/README.md)
-- [06 - Developer Guides](./06-DEVELOPER-GUIDES/README.md)
-- [07 - Deployment](./07-DEPLOYMENT/README.md)
-- [08 - Migration](./08-MIGRATION/README.md)
-- [09 - Troubleshooting](./09-TROUBLESHOOTING/README.md)
-- [10 - FAQ](./10-FAQ/general.md)
-- [Glossary](./GLOSSARY.md)
+## Why This Structure Works
+Instead of dry lists, each section tells you what transformation you get, where teams usually get stuck, and how to get a fast win.
+
+## Navigation
+- `QUICKSTART.md`
+- `01-GETTING-STARTED/`
+- `02-ARCHITECTURE/`
+- `03-FEATURES/`
+- `04-API-REFERENCE/`
+- `05-USER-GUIDES/`
+- `06-DEVELOPER-GUIDES/`
+- `07-DEPLOYMENT/`
+- `08-MIGRATION/`
+- `09-TROUBLESHOOTING/`
+- `10-FAQ/`
+- `GLOSSARY.md`

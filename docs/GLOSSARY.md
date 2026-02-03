@@ -1,16 +1,31 @@
-# Glossary
+# Glossary: Terms You Will Actually Use
 
 Last updated: 2026-02-03
 
 [Documentation Home](./README.md)
 
-This glossary keeps terminology consistent across technical and user-facing documentation. Shared language reduces confusion and makes issue triage and onboarding faster.
+This glossary is practical, not academic. Each term includes context so you know when it matters in real work.
 
-## Core Terms
-- **Organization**: Tenant boundary for users, resources, and permissions.
-- **Resource**: A bookable entity such as room, device, or service slot.
-- **Reservation**: A time-bound booking tied to a resource.
-- **Automation Rule**: Trigger-condition-action workflow definition.
-- **MCP**: Model Context Protocol integration surface for agent tooling.
-- **Public Booking**: External booking flow exposed via shareable link.
-- **Request ID**: Trace identifier linking API errors to backend logs.
+## Organization
+Tenant boundary for users, calendars, resources, and permissions. You use this term when discussing access control and data separation.
+
+## Resource
+Any bookable asset such as a room, equipment, or service slot. You use this term in availability and reservation planning.
+
+## Reservation
+A confirmed or pending booking tied to a resource and time range. You use this term in booking lifecycle and conflict handling.
+
+## Automation Rule
+A trigger-condition-action workflow that removes manual repetitive work. You use this term when designing scalable operations.
+
+## Public Booking
+External scheduling flow through shareable links. You use this term when enabling client self-service booking.
+
+## Agent / MCP Action
+Structured AI-assisted operation executed through controlled interfaces. You use this term in advanced integration and assistant workflows.
+
+## Request ID
+Trace identifier that links user-visible failures to backend logs. You use this term whenever debugging or support escalation is needed.
+
+## Why This Matters
+Shared language creates shared understanding, and shared understanding makes teams faster.
