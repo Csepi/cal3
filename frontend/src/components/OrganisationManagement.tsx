@@ -4,11 +4,9 @@ import { BASE_URL } from '../config/apiConfig';
 import { secureFetch } from '../services/authErrorHandler';
 import OrganisationUserManagement from './OrganisationUserManagement';
 import type { ReservationResourceType, ReservationUserSummary } from '../types/reservation';
+import type { Organization } from '../types';
 
-interface Organisation {
-  id: number;
-  name: string;
-  description?: string;
+interface Organisation extends Organization {
   address?: string;
   phone?: string;
   email?: string;

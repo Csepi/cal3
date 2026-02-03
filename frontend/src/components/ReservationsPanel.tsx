@@ -16,6 +16,12 @@ import { profileApi } from '../services/profileApi';
 import { UserPermissionsService } from '../services/userPermissions';
 import DeleteConfirmationModal from './DeleteConfirmationModal';
 import { useScreenSize } from '../hooks/useScreenSize';
+import type {
+  Booking,
+  Organization as DomainOrganization,
+  Resource as DomainResource,
+  ResourceType as DomainResourceType,
+} from '../types';
 
 const apiService = {
   get: <T,>(endpoint: string) => http.get<T>(`/api${endpoint}`),
@@ -29,42 +35,20 @@ interface ReservationsPanelProps {
   themeColor?: string;
 }
 
-interface Organization {
-  id: number;
-  name: string;
-  description?: string;
+interface Organization extends DomainOrganization {
   role?: 'USER' | 'EDITOR' | 'ORG_ADMIN';
-  color: string;
 }
 
-interface ResourceType {
-  id: number;
-  name: string;
-  description?: string;
-  organisationId: number;
+interface ResourceType extends DomainResourceType {
   minBookingDuration?: number;
   bufferTime?: number;
-  isActive: boolean;
-  color: string;
 }
 
-interface Resource {
-  id: number;
-  name: string;
-  description?: string;
-  capacity?: number;
-  resourceTypeId: number;
+interface Resource extends DomainResource {
   resourceType?: ResourceType;
-  publicBookingToken?: string;
-  isActive: boolean;
 }
 
-interface Reservation {
-  id: number;
-  startTime: string;
-  endTime: string;
-  quantity: number;
-  status: string;
+interface Reservation extends Booking {
   customerName?: string;
   customerEmail?: string;
   resource?: Resource;

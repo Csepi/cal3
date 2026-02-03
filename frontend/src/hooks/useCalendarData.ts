@@ -6,43 +6,9 @@ import { eventsApi } from '../services/eventsApi';
 import { calendarApi } from '../services/calendarApi';
 import { resourcesApi } from '../services/resourcesApi';
 import { http } from '../lib/http';
+import type { Booking, Organization, ResourceType } from '../types';
 
-export interface ResourceType {
-  id: number;
-  name: string;
-  organisationId: number;
-  color: string;
-}
-
-export interface Organization {
-  id: number;
-  name: string;
-  role: string;
-  color: string;
-  resourceTypes: ResourceType[];
-}
-
-export interface ReservationResourceTypeRef {
-  id: number;
-  name?: string;
-}
-
-export interface ReservationResourceRef {
-  id: number;
-  name?: string;
-  resourceType?: ReservationResourceTypeRef;
-}
-
-export interface ReservationRecord {
-  id: number;
-  resourceId?: number;
-  startTime?: string;
-  endTime?: string;
-  description?: string;
-  status?: string;
-  customerName?: string;
-  resource?: ReservationResourceRef;
-}
+export type ReservationRecord = Booking;
 
 export const calendarQueryKeys = {
   root: ['calendar'] as const,

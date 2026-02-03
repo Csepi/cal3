@@ -168,6 +168,9 @@ export class EventsService {
     return savedEvent;
   }
 
+  /**
+   * Create a public event in a provided calendar or default public calendar.
+   */
   async createPublic(createEventDto: CreateEventDto): Promise<Event> {
     const { calendarId, ...eventData } = createEventDto;
 
@@ -211,6 +214,9 @@ export class EventsService {
     return this.eventRepository.save(event);
   }
 
+  /**
+   * List events visible to a user in an optional date range.
+   */
   async findAll(
     userId: number,
     startDate?: string,
@@ -252,6 +258,9 @@ export class EventsService {
     return query.orderBy('event.startDate', 'ASC').getMany();
   }
 
+  /**
+   * List publicly visible events in an optional date range.
+   */
   async findAllPublic(startDate?: string, endDate?: string): Promise<Event[]> {
     // For testing purposes, return all events from public calendars
     let query = this.eventRepository
@@ -281,6 +290,9 @@ export class EventsService {
     return query.orderBy('event.startDate', 'ASC').getMany();
   }
 
+  /**
+   * Load one event and verify user read access.
+   */
   async findOne(id: number, userId: number): Promise<Event> {
     const event = await this.eventRepository.findOne({
       where: { id },
@@ -303,6 +315,9 @@ export class EventsService {
     return event;
   }
 
+  /**
+   * Update an existing event and trigger dependent workflows.
+   */
   async update(
     id: number,
     updateEventDto: UpdateEventDto,
@@ -390,6 +405,9 @@ export class EventsService {
     return updatedEvent;
   }
 
+  /**
+   * Delete an event with recurrence-scope support.
+   */
   async remove(
     id: number,
     userId: number,
@@ -444,6 +462,9 @@ export class EventsService {
     }
   }
 
+  /**
+   * Delete a public event by id.
+   */
   async removePublic(id: number): Promise<void> {
     const event = await this.eventRepository.findOne({
       where: { id },
@@ -457,6 +478,9 @@ export class EventsService {
     await this.eventRepository.remove(event);
   }
 
+  /**
+   * List events by calendar with access validation.
+   */
   async findByCalendar(calendarId: number, userId: number): Promise<Event[]> {
     // Check if user has access to the calendar
     const hasAccess = await this.eventAccessPolicy.canReadCalendar(
@@ -474,6 +498,9 @@ export class EventsService {
     });
   }
 
+  /**
+   * Create recurring event series from recurrence DTO.
+   */
   async createRecurring(
     createRecurringEventDto: CreateRecurringEventDto,
     userId: number,
@@ -535,6 +562,9 @@ export class EventsService {
     return [savedParentEvent, ...savedInstances];
   }
 
+  /**
+   * Update recurring event instances based on selected update mode.
+   */
   async updateRecurring(
     id: number,
     updateRecurringEventDto: UpdateRecurringEventDto,

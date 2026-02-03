@@ -9,22 +9,17 @@
 import React from 'react';
 import { Card, CardHeader, Button } from '../ui';
 import type {
+  ReservationRecord as Booking,
   ReservationCustomerInfo,
   ReservationResource,
   ReservationUserSummary,
 } from '../../types/reservation';
 
-export interface Reservation {
-  id: number;
-  startTime: string;
-  endTime: string;
-  quantity: number;
-  status: string;
+export type Reservation = Booking & {
   customerInfo?: ReservationCustomerInfo;
-  notes?: string;
   resource?: ReservationResource;
   createdBy?: ReservationUserSummary;
-}
+};
 
 export interface ReservationListTableProps {
   /** Array of reservations to display */

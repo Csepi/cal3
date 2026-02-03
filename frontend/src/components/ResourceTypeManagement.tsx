@@ -2,11 +2,9 @@ import { useState, useEffect } from 'react';
 import { BASE_URL } from '../config/apiConfig';
 import { secureFetch } from '../services/authErrorHandler';
 import type { ReservationOrganization } from '../types/reservation';
+import type { Organization, ResourceType as DomainResourceType } from '../types';
 
-interface ResourceType {
-  id: number;
-  name: string;
-  description?: string;
+interface ResourceType extends DomainResourceType {
   minBookingDuration?: number;
   bufferTime?: number;
   customerInfoFields?: string[];
@@ -16,10 +14,7 @@ interface ResourceType {
   organisation?: ReservationOrganization;
 }
 
-interface Organisation {
-  id: number;
-  name: string;
-}
+type Organisation = Organization;
 
 interface ResourceTypeManagementProps {
 }

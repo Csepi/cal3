@@ -1,25 +1,14 @@
 import { useState, useEffect } from 'react';
 import { http } from '../lib/http';
 import { UserPermissionsService } from '../services/userPermissions';
-
-interface User {
-  id: number;
-  firstName: string;
-  lastName: string;
-  email: string;
-  usagePlans: string[];
-  role: string;
-}
+import type { Organization, User } from '../types';
 
 interface OrganisationUser extends User {
   organisationRole: 'admin' | 'editor' | 'user';
   joinedAt: string;
 }
 
-interface Organisation {
-  id: number;
-  name: string;
-  description?: string;
+interface Organisation extends Organization {
   users: OrganisationUser[];
 }
 

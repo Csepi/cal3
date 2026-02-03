@@ -18,9 +18,10 @@ import { getThemeConfig } from '../constants';
 import { BASE_URL } from '../config/apiConfig';
 import { secureFetch } from '../services/authErrorHandler';
 import type {
+  Booking,
+  Resource as DomainResource,
   ReservationCustomerInfo,
   ReservationOrganization,
-  ReservationRecord,
   ReservationResource,
   ReservationResourceType,
   ReservationUserSummary,
@@ -33,21 +34,13 @@ import {
 } from './reservation';
 import type { ReservationFormData } from './reservation/ReservationFormModal';
 
-interface Reservation {
-  id: number;
-  startTime: string;
-  endTime: string;
-  quantity: number;
-  status: string;
+type Reservation = Booking & {
   customerInfo?: ReservationCustomerInfo;
-  notes?: string;
   resource?: ReservationResource;
   createdBy?: ReservationUserSummary;
-}
+};
 
-interface Resource {
-  id: number;
-  name: string;
+interface Resource extends DomainResource {
   resourceType: ReservationResourceType;
 }
 
@@ -126,7 +119,7 @@ const ReservationManagement: React.FC<ReservationManagementProps> = ({
     });
 
     if (!response.ok) throw new Error('Failed to load reservations');
-    const data = (await response.json()) as ReservationRecord[];
+    const data = (await response.json()) as Reservation[];
     setReservations(data);
   };
 

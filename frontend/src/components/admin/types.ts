@@ -5,45 +5,17 @@
  * ensuring consistency and reducing duplication in admin-related components.
  */
 
-export interface User {
-  id: number;
-  username: string;
-  email: string;
-  firstName?: string;
-  lastName?: string;
-  role: string;
-  usagePlans?: string[];
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
-}
+import type {
+  Calendar as CalendarBase,
+  Event as EventBase,
+  Organization as OrganizationBase,
+  Resource as ResourceBase,
+  User as UserBase,
+} from '../../types';
 
-export interface Calendar {
-  id: number;
-  name: string;
-  description?: string;
-  color: string;
-  visibility: string;
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
-  owner: User;
-}
-
-export interface Event {
-  id: number;
-  title: string;
-  description?: string;
-  startDate: string;
-  startTime?: string;
-  endDate: string;
-  endTime?: string;
-  isAllDay: boolean;
-  location?: string;
-  color: string;
-  calendar: Calendar;
-  createdBy: User;
-}
+export type User = UserBase;
+export type Calendar = CalendarBase;
+export type Event = EventBase;
 
 export interface CalendarShare {
   id: number;
@@ -53,11 +25,7 @@ export interface CalendarShare {
   sharedWith: User;
 }
 
-export interface Resource {
-  id: number;
-  name: string;
-  resourceType: ResourceType;
-}
+export type Resource = ResourceBase & { resourceType: ResourceType };
 
 export interface ResourceType {
   id: number;
@@ -135,17 +103,12 @@ export interface FilterState {
   endDate: string;
 }
 
-export interface Organisation {
-  id: number;
-  name: string;
-  description?: string;
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
+export type Organisation = OrganizationBase & {
+  isActive?: boolean;
   adminCount?: number;
   userCount?: number;
   calendarCount?: number;
-}
+};
 
 export interface OrganisationAdmin {
   id: number;

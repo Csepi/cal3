@@ -184,10 +184,16 @@ export class CalendarSyncService implements OnModuleInit, OnModuleDestroy {
     };
   }
 
+  /**
+   * Build provider OAuth authorization URL for a user.
+   */
   async getAuthUrl(provider: SyncProvider, userId: number): Promise<string> {
     return this.oauthService.getAuthUrl(provider, userId);
   }
 
+  /**
+   * Persist provider OAuth callback token exchange results.
+   */
   async handleOAuthCallback(
     provider: SyncProvider,
     code: string,
@@ -196,6 +202,9 @@ export class CalendarSyncService implements OnModuleInit, OnModuleDestroy {
     await this.oauthService.handleOAuthCallback(provider, code, userId);
   }
 
+  /**
+   * Create or update synced calendar mappings for a provider.
+   */
   async syncCalendars(
     userId: number,
     syncData: SyncCalendarsDto,
@@ -276,6 +285,9 @@ export class CalendarSyncService implements OnModuleInit, OnModuleDestroy {
     });
   }
 
+  /**
+   * Disconnect all active sync providers for the user.
+   */
   async disconnect(userId: number): Promise<void> {
     const syncConnections = await this.syncConnectionRepository.find({
       where: { userId },
@@ -292,6 +304,9 @@ export class CalendarSyncService implements OnModuleInit, OnModuleDestroy {
     }
   }
 
+  /**
+   * Disconnect a single provider for the user.
+   */
   async disconnectProvider(
     userId: number,
     provider: SyncProvider,
@@ -311,6 +326,9 @@ export class CalendarSyncService implements OnModuleInit, OnModuleDestroy {
     }
   }
 
+  /**
+   * Trigger immediate sync for all active user connections.
+   */
   async forceSync(userId: number): Promise<void> {
     const syncConnections = await this.syncConnectionRepository.find({
       where: { userId, status: SyncStatus.ACTIVE },
@@ -325,6 +343,9 @@ export class CalendarSyncService implements OnModuleInit, OnModuleDestroy {
     }
   }
 
+  /**
+   * Cron/maintenance entrypoint to sync every active connection.
+   */
   async syncAllActiveConnections(): Promise<void> {
     const connections = await this.syncConnectionRepository.find({
       where: { status: SyncStatus.ACTIVE },
@@ -354,6 +375,9 @@ export class CalendarSyncService implements OnModuleInit, OnModuleDestroy {
     }
   }
 
+  /**
+   * Push newly created local event to external synced calendars.
+   */
   async handleLocalEventCreated(event: Event): Promise<void> {
     if (!this.isSyncableLocalEvent(event)) {
       return;
@@ -395,6 +419,9 @@ export class CalendarSyncService implements OnModuleInit, OnModuleDestroy {
     }
   }
 
+  /**
+   * Push local event updates to external synced calendars.
+   */
   async handleLocalEventUpdated(event: Event): Promise<void> {
     if (!this.isSyncableLocalEvent(event)) {
       return;
@@ -442,6 +469,9 @@ export class CalendarSyncService implements OnModuleInit, OnModuleDestroy {
     }
   }
 
+  /**
+   * Propagate local event deletions to external synced calendars.
+   */
   async handleLocalEventDeleted(event: Event): Promise<void> {
     const syncedCalendars = await this.syncedCalendarRepository.find({
       where: { localCalendarId: event.calendarId, bidirectionalSync: true },
@@ -1123,6 +1153,8 @@ export class CalendarSyncService implements OnModuleInit, OnModuleDestroy {
       this.needsMicrosoftEventDetails(externalEvent) &&
       externalEvent?.id
     ) {
+      // Microsoft list endpoints may truncate body/subject fields for some events.
+      // Pull full event details here to avoid creating incomplete local copies.
       this.logger.warn(
         `[createLocalEventFromExternal] Missing event details for event ${externalEvent.id}; fetching full details`,
       );
@@ -1227,6 +1259,7 @@ export class CalendarSyncService implements OnModuleInit, OnModuleDestroy {
       this.needsMicrosoftEventDetails(externalEvent) &&
       externalEvent?.id
     ) {
+      // Keep update logic symmetric with create flow; otherwise fields can regress on re-sync.
       this.logger.warn(
         `[updateLocalEventFromExternal] Missing event details for event ${externalEvent.id}; fetching full details`,
       );

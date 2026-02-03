@@ -6,16 +6,12 @@ import type {
   ReservationResourceType,
   ReservationUserSummary,
 } from '../types/reservation';
+import type { Resource as DomainResource } from '../types';
 
-interface Resource {
-  id: number;
-  name: string;
-  description?: string;
-  capacity: number;
-  isActive: boolean;
+type Resource = DomainResource & {
   resourceType?: ReservationResourceType;
   managedBy?: ReservationUserSummary;
-}
+};
 
 interface ResourceType {
   id: number;
