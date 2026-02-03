@@ -1,4 +1,4 @@
-﻿import { Injectable, OnModuleInit, Logger } from '@nestjs/common';
+import { Injectable, OnModuleInit, Logger } from '@nestjs/common';
 import { Event } from '../../entities/event.entity';
 import {
   AutomationAction,
@@ -98,7 +98,7 @@ export class WebhookExecutor implements IActionExecutor, OnModuleInit {
       }
 
       const responseText = await response.text();
-      let responseBody: any;
+      let responseBody: unknown;
       try {
         responseBody = JSON.parse(responseText);
       } catch {
@@ -121,7 +121,7 @@ export class WebhookExecutor implements IActionExecutor, OnModuleInit {
         },
         executedAt,
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       const errorMessage =
         error instanceof Error ? error.message : String(error);
       this.logger.error(
@@ -166,7 +166,7 @@ export class WebhookExecutor implements IActionExecutor, OnModuleInit {
       if (!['http:', 'https:'].includes(parsedUrl.protocol)) {
         throw new Error('URL must use HTTP or HTTPS protocol');
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       throw new Error(
         `Invalid URL format: ${error instanceof Error ? error.message : String(error)}`,
       );

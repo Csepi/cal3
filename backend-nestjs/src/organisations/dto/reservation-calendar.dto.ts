@@ -1,4 +1,4 @@
-﻿import {
+import {
   IsString,
   IsOptional,
   IsArray,
@@ -36,7 +36,7 @@ export class CreateReservationCalendarDto {
 
   @IsOptional()
   @IsObject({ message: 'Reservation rules must be a valid object' })
-  reservationRules?: any;
+  reservationRules?: unknown;
 
   @IsOptional()
   @IsArray({ message: 'Editor user IDs must be an array' })
@@ -98,5 +98,5 @@ export class UpdateReservationCalendarDto {
 
   @IsOptional()
   @IsObject({ message: 'Reservation rules must be a valid object' })
-  reservationRules?: any;
+  reservationRules?: unknown;
 }

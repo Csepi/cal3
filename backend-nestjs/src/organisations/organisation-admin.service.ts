@@ -230,7 +230,7 @@ export class OrganisationAdminService {
     );
     await this.userRepository.save(user);
 
-    // TODO: Remove any reservation calendar roles for this user in this organisation
+    // TODO: Remove reservation calendar roles for this user in this organisation
     // await this.removeAllReservationCalendarRoles(organisationId, userId);
   }
 

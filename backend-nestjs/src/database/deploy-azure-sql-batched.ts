@@ -1,4 +1,4 @@
-﻿import * as sql from 'mssql';
+import * as sql from 'mssql';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -23,7 +23,7 @@ const azureConfig: sql.config = {
 };
 
 async function deploySchemaInBatches() {
-  console.log('đźš€ Starting Azure SQL Database Schema Deployment (Batched)\n');
+  console.log('🚀 Starting Azure SQL Database Schema Deployment (Batched)\n');
   console.log('Target: cal3db-server.database.windows.net');
   console.log('Database: cal3db');
   console.log('User: db_admin\n');
@@ -31,9 +31,9 @@ async function deploySchemaInBatches() {
   let pool: sql.ConnectionPool | null = null;
 
   try {
-    console.log('đź“ˇ Connecting to Azure SQL Database...');
+    console.log('📡 Connecting to Azure SQL Database...');
     pool = await sql.connect(azureConfig);
-    console.log('âś… Connected successfully!\n');
+    console.log('✅ Connected successfully!\n');
 
     const schemaFilePath = path.join(
       __dirname,
@@ -41,14 +41,14 @@ async function deploySchemaInBatches() {
       '..',
       'azure-sql-schema.sql',
     );
-    console.log(`đź“„ Reading schema file: ${schemaFilePath}`);
+    console.log(`📄 Reading schema file: ${schemaFilePath}`);
 
     if (!fs.existsSync(schemaFilePath)) {
       throw new Error(`Schema file not found: ${schemaFilePath}`);
     }
 
     const sqlScript = fs.readFileSync(schemaFilePath, 'utf-8');
-    console.log(`âś… Schema file loaded (${sqlScript.length} characters)\n`);
+    console.log(`✅ Schema file loaded (${sqlScript.length} characters)\n`);
 
     // Remove BEGIN TRANSACTION and COMMIT TRANSACTION
     const cleanedScript = sqlScript
@@ -59,8 +59,8 @@ async function deploySchemaInBatches() {
     // Split by table creation sections
     const tableBlocks = cleanedScript.split(/-- ={40,}/);
 
-    console.log(`đź“¦ Executing schema in ${tableBlocks.length} sections...\n`);
-    console.log('â”€'.repeat(80));
+    console.log(`📦 Executing schema in ${tableBlocks.length} sections...\n`);
+    console.log('─'.repeat(80));
 
     let successCount = 0;
     let errorCount = 0;
@@ -82,15 +82,15 @@ async function deploySchemaInBatches() {
         : `Section ${i}`;
 
       try {
-        console.log(`âŹł Creating ${tableName}...`);
+        console.log(`⏳ Creating ${tableName}...`);
 
         // Execute this block
         await pool.request().query(block);
 
-        console.log(`âś… ${tableName} created successfully`);
+        console.log(`✅ ${tableName} created successfully`);
         successCount++;
-      } catch (error: any) {
-        console.error(`âťŚ Error creating ${tableName}:`);
+      } catch (error: unknown) {
+        console.error(`❌ Error creating ${tableName}:`);
         console.error(`   Message: ${error.message}`);
         if (error.number) {
           console.error(`   SQL Error Number: ${error.number}`);
@@ -104,13 +104,13 @@ async function deploySchemaInBatches() {
       }
     }
 
-    console.log('â”€'.repeat(80));
-    console.log(`\nđź“Š Deployment Summary:`);
-    console.log(`   âś… Successful: ${successCount}`);
-    console.log(`   âťŚ Failed: ${errorCount}\n`);
+    console.log('─'.repeat(80));
+    console.log(`\n📊 Deployment Summary:`);
+    console.log(`   ✅ Successful: ${successCount}`);
+    console.log(`   ❌ Failed: ${errorCount}\n`);
 
     // Verify table creation
-    console.log('đź”Ť Verifying table creation...\n');
+    console.log('🔍 Verifying table creation...\n');
     const tableCheckQuery = `
       SELECT
         TABLE_NAME,
@@ -122,14 +122,14 @@ async function deploySchemaInBatches() {
 
     const result = await pool.request().query(tableCheckQuery);
 
-    console.log('đź“Š Created Tables:');
-    console.log('â”€'.repeat(80));
-    result.recordset.forEach((row: any, index: number) => {
+    console.log('📊 Created Tables:');
+    console.log('─'.repeat(80));
+    result.recordset.forEach((row: Record<string, unknown>, index: number) => {
       console.log(
         `${(index + 1).toString().padStart(2, ' ')}. ${row.TABLE_NAME.padEnd(40, ' ')} (${row.COLUMN_COUNT} columns)`,
       );
     });
-    console.log('â”€'.repeat(80));
+    console.log('─'.repeat(80));
     console.log(`\nTotal Tables: ${result.recordset.length}\n`);
 
     // Check indexes
@@ -142,7 +142,7 @@ async function deploySchemaInBatches() {
 
     const indexResult = await pool.request().query(indexCheckQuery);
     console.log(
-      `đź“ Total Indexes Created: ${indexResult.recordset[0].INDEX_COUNT}\n`,
+      `📈 Total Indexes Created: ${indexResult.recordset[0].INDEX_COUNT}\n`,
     );
 
     // Check foreign keys
@@ -152,16 +152,16 @@ async function deploySchemaInBatches() {
     `;
 
     const fkResult = await pool.request().query(fkCheckQuery);
-    console.log(`đź”— Total Foreign Keys: ${fkResult.recordset[0].FK_COUNT}\n`);
+    console.log(`🔗 Total Foreign Keys: ${fkResult.recordset[0].FK_COUNT}\n`);
 
-    console.log('â”€'.repeat(80));
+    console.log('─'.repeat(80));
     if (errorCount === 0) {
-      console.log('âś… DEPLOYMENT SUCCESSFUL!\n');
+      console.log('✅ DEPLOYMENT SUCCESSFUL!\n');
     } else {
-      console.log('âš ď¸Ź  DEPLOYMENT COMPLETED WITH ERRORS\n');
+      console.log('⚠️  DEPLOYMENT COMPLETED WITH ERRORS\n');
     }
-  } catch (error: any) {
-    console.error('\nâťŚ ERROR during deployment:\n');
+  } catch (error: unknown) {
+    console.error('\n❌ ERROR during deployment:\n');
     console.error('Error Message:', error.message);
 
     if (error.code) {
@@ -180,7 +180,7 @@ async function deploySchemaInBatches() {
   } finally {
     if (pool) {
       await pool.close();
-      console.log('\nđź“ˇ Database connection closed.');
+      console.log('\n📡 Database connection closed.');
     }
   }
 }
@@ -188,11 +188,11 @@ async function deploySchemaInBatches() {
 if (require.main === module) {
   deploySchemaInBatches()
     .then(() => {
-      console.log('\nâś… Script completed!');
+      console.log('\n✅ Script completed!');
       process.exit(0);
     })
     .catch((error) => {
-      console.error('\nâťŚ Script failed:', error.message);
+      console.error('\n❌ Script failed:', error.message);
       process.exit(1);
     });
 }

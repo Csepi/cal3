@@ -1,4 +1,4 @@
-﻿import {
+import {
   Injectable,
   NotFoundException,
   Logger,
@@ -8,6 +8,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Reservation } from '../entities/reservation.entity';
 import { Resource } from '../entities/resource.entity';
+import { User } from '../entities/user.entity';
 import {
   CreateReservationDto,
   UpdateReservationDto,
@@ -67,7 +68,7 @@ export class ReservationsService {
       endTime,
       quantity,
       resource,
-      createdBy: { id: userId } as any,
+      createdBy: { id: userId } as User,
     });
 
     const savedReservation = await this.reservationRepository.save(reservation);

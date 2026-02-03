@@ -1,4 +1,4 @@
-﻿import {
+import {
   ForbiddenException,
   Injectable,
   Logger,
@@ -77,6 +77,12 @@ interface QuietHoursConfig {
   suppressImmediate?: boolean;
 }
 
+interface QueueClientLike {
+  status?: string;
+  off?: (event: string, handler: () => void) => void;
+  once?: (event: string, handler: () => void) => void;
+}
+
 @Injectable()
 export class NotificationsService implements OnModuleInit {
   private readonly logger = new Logger(NotificationsService.name);
@@ -149,7 +155,7 @@ export class NotificationsService implements OnModuleInit {
     queue: Queue,
     timeoutMs: number,
   ): Promise<boolean> {
-    const client: any = (queue as any).client;
+    const client = (queue as Queue & { client?: QueueClientLike }).client;
     if (!client) {
       return false;
     }

@@ -20,12 +20,25 @@ import { TaskCalendarBridgeService } from '../tasks/task-calendar-bridge.service
 import { DomainEventBus } from '../common/events/domain-events';
 import { EventAccessPolicy } from './event-access.policy';
 import { EventNotificationService } from './event-notification.service';
-import { EventValidationService } from './event-validation.service';
+import {
+  EventValidationService,
+  EventMutationInput,
+} from './event-validation.service';
 
 import { logError } from '../common/errors/error-logger';
 import { buildErrorContext } from '../common/errors/error-context';
 @Injectable()
 export class EventsService {
+  private automationService?: {
+    findRulesByTrigger?: (
+      triggerType: string,
+      userId: number,
+    ) => Promise<Array<{ id: number; triggerType?: string }>>;
+    executeRuleOnEvent: (
+      rule: { id: number; triggerType?: string },
+      event: Event,
+    ) => Promise<void>;
+  };
   constructor(
     @InjectRepository(Event)
     private eventRepository: Repository<Event>,
@@ -39,15 +52,26 @@ export class EventsService {
     private readonly moduleRef: ModuleRef,
   ) {}
 
-  private automationService?: any;
-
-  private resolveAutomationService(): any | null {
+  private resolveAutomationService():
+    | {
+        findRulesByTrigger?: (
+          triggerType: string,
+          userId: number,
+        ) => Promise<Array<{ id: number; triggerType?: string }>>;
+        executeRuleOnEvent: (
+          rule: { id: number; triggerType?: string },
+          event: Event,
+        ) => Promise<void>;
+      }
+    | undefined {
     try {
       const token =
         require('../automation/automation.service').AutomationService;
-      return this.moduleRef.get(token, { strict: false });
+      return this.moduleRef.get(token as string | symbol | Function, {
+        strict: false,
+      });
     } catch {
-      return null;
+      return undefined;
     }
   }
 
@@ -156,7 +180,10 @@ export class EventsService {
     } else {
       // Find or create a default public calendar
       calendar = await this.calendarRepository.findOne({
-        where: { name: 'Default Public Calendar', visibility: 'public' as any },
+        where: {
+          name: 'Default Public Calendar',
+          visibility: 'public' as Calendar['visibility'],
+        },
       });
 
       if (!calendar) {
@@ -164,7 +191,7 @@ export class EventsService {
         calendar = this.calendarRepository.create({
           name: 'Default Public Calendar',
           description: 'Default calendar for public events',
-          visibility: 'public' as any,
+          visibility: 'public' as Calendar['visibility'],
           ownerId: 1,
         });
         calendar = await this.calendarRepository.save(calendar);
@@ -313,21 +340,25 @@ export class EventsService {
 
     // Update date fields if provided
     if (updateEventDto.startDate) {
-      updateEventDto.startDate = new Date(updateEventDto.startDate) as any;
+      updateEventDto.startDate = new Date(
+        updateEventDto.startDate,
+      ) as unknown as string;
     }
     if (updateEventDto.endDate) {
-      updateEventDto.endDate = new Date(updateEventDto.endDate) as any;
+      updateEventDto.endDate = new Date(
+        updateEventDto.endDate,
+      ) as unknown as string;
     }
 
     // Handle time fields - convert empty strings to undefined
     if ('startTime' in updateEventDto) {
-      (updateEventDto as any).startTime =
+      (updateEventDto as EventMutationInput).startTime =
         updateEventDto.startTime && updateEventDto.startTime !== ''
           ? updateEventDto.startTime
           : undefined;
     }
     if ('endTime' in updateEventDto) {
-      (updateEventDto as any).endTime =
+      (updateEventDto as EventMutationInput).endTime =
         updateEventDto.endTime && updateEventDto.endTime !== ''
           ? updateEventDto.endTime
           : undefined;
@@ -648,7 +679,7 @@ export class EventsService {
 
   private async updateSingleInstance(
     event: Event,
-    updateData: any,
+    updateData: EventMutationInput,
   ): Promise<Event[]> {
     if (event.parentEventId) {
       // This is already an instance, just update it
@@ -718,7 +749,7 @@ export class EventsService {
 
   private async updateAllInstances(
     event: Event,
-    updateData: any,
+    updateData: EventMutationInput,
     newRecurrence?: RecurrencePatternDto,
   ): Promise<Event[]> {
     const parentEventId = event.parentEventId || event.id;
@@ -857,10 +888,10 @@ export class EventsService {
 
   private async convertToRecurringEvent(
     event: Event,
-    updateData: any,
+    updateData: EventMutationInput,
     recurrence: RecurrencePatternDto,
   ): Promise<Event[]> {
-    // Apply any basic updates to the event first
+    // Apply basic updates to the event first
     this.eventValidationService.sanitizeAndAssignUpdateData(event, updateData);
 
     // Set up recurrence properties

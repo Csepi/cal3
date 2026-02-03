@@ -1,4 +1,4 @@
-﻿import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { DateTime } from 'luxon';
@@ -128,7 +128,7 @@ export class CalendarSyncProviderService {
           })) || []
         );
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       logError(error, buildErrorContext({ action: 'calendar-sync.service' }));
       console.error('Error fetching external calendars:', error);
     }
@@ -165,7 +165,7 @@ export class CalendarSyncProviderService {
           return data.name || `Calendar ${calendarId}`;
         }
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       logError(error, buildErrorContext({ action: 'calendar-sync.service' }));
       console.error('Error fetching calendar name:', error);
     }
@@ -322,7 +322,7 @@ export class CalendarSyncProviderService {
           deltaLink = sanitizeDeltaUrl(data['@odata.deltaLink']);
         }
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       logError(error, buildErrorContext({ action: 'calendar-sync.service' }));
       this.logger.error(
         `[fetchMicrosoftCalendarEvents] Error:`,
@@ -417,7 +417,7 @@ export class CalendarSyncProviderService {
           nextSyncToken = data.nextSyncToken;
         }
       } while (pageToken);
-    } catch (error: any) {
+    } catch (error: unknown) {
       logError(error, buildErrorContext({ action: 'calendar-sync.service' }));
       this.logger.error(
         `[fetchGoogleCalendarEvents] Error:`,
@@ -538,7 +538,7 @@ export class CalendarSyncProviderService {
       }
 
       return await response.json();
-    } catch (error: any) {
+    } catch (error: unknown) {
       logError(error, buildErrorContext({ action: 'calendar-sync.service' }));
       this.logger.error(
         `[fetchMicrosoftEventDetails] Error fetching event ${eventId}:`,

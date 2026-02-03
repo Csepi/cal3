@@ -7,6 +7,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Resource } from '../entities/resource.entity';
 import { ResourceType } from '../entities/resource-type.entity';
+import { User } from '../entities/user.entity';
 import { CreateResourceDto, UpdateResourceDto } from '../dto/resource.dto';
 
 @Injectable()
@@ -105,9 +106,9 @@ export class ResourcesService {
     if (updateDto.managedById !== undefined) {
       if (updateDto.managedById) {
         // In a real implementation, you'd validate the user exists
-        resource.managedBy = { id: updateDto.managedById } as any;
+        resource.managedBy = { id: updateDto.managedById } as User;
       } else {
-        resource.managedBy = null as any;
+        resource.managedBy = undefined as unknown as User;
       }
       delete updateDto.managedById;
     }
@@ -127,7 +128,7 @@ export class ResourcesService {
       throw new NotFoundException(`Resource #${id} not found`);
     }
 
-    // Check if there are any reservations for this resource
+    // Check if reservations exist for this resource
     if (resource.reservations && resource.reservations.length > 0) {
       const activeReservations = resource.reservations.filter(
         (r) => r.status !== 'cancelled' && r.status !== 'completed',

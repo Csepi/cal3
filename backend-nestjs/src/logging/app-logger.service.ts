@@ -1,4 +1,4 @@
-﻿import { ConsoleLogger, Injectable } from '@nestjs/common';
+import { ConsoleLogger, Injectable } from '@nestjs/common';
 import { LoggingService } from './logging.service';
 import { LogLevel } from '../entities/log-entry.entity';
 import { RequestContextService } from '../common/services/request-context.service';
@@ -39,31 +39,31 @@ export class AppLoggerService extends ConsoleLogger {
     this.format = format;
   }
 
-  log(message: any, context?: string) {
+  log(message: unknown, context?: string) {
     if (!this.shouldLog('log', context)) return;
     super.log(message, context);
     this.persist('log', message, context);
   }
 
-  error(message: any, stack?: string, context?: string) {
+  error(message: unknown, stack?: string, context?: string) {
     if (!this.shouldLog('error', context)) return;
     super.error(message, stack, context);
     this.persist('error', message, context, stack);
   }
 
-  warn(message: any, context?: string) {
+  warn(message: unknown, context?: string) {
     if (!this.shouldLog('warn', context)) return;
     super.warn(message, context);
     this.persist('warn', message, context);
   }
 
-  debug(message: any, context?: string) {
+  debug(message: unknown, context?: string) {
     if (!this.shouldLog('debug', context)) return;
     super.debug(message, context);
     this.persist('debug', message, context);
   }
 
-  verbose(message: any, context?: string) {
+  verbose(message: unknown, context?: string) {
     if (!this.shouldLog('verbose', context)) return;
     super.verbose(message, context);
     this.persist('verbose', message, context);
@@ -71,7 +71,7 @@ export class AppLoggerService extends ConsoleLogger {
 
   protected formatMessage(
     level: NestLogLevel,
-    message: any,
+    message: unknown,
     context?: string,
     stack?: string,
   ) {
@@ -151,7 +151,7 @@ export class AppLoggerService extends ConsoleLogger {
 
   private persist(
     level: LogLevel,
-    message: any,
+    message: unknown,
     context?: string,
     stack?: string,
   ) {
@@ -184,7 +184,7 @@ export class AppLoggerService extends ConsoleLogger {
       });
   }
 
-  private normalizeMessage(message: any): string {
+  private normalizeMessage(message: unknown): string {
     if (typeof message === 'string') {
       return message;
     }

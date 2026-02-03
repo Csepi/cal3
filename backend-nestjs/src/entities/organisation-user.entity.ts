@@ -31,7 +31,7 @@ export enum OrganisationRoleType {
  * - USER: Can view resource calendars and basic organization info
  *
  * Special Notes:
- * - Users must have Store or Enterprise plans to be assigned any role
+ * - Users must have Store or Enterprise plans to be assigned a role
  * - Users can have different roles in different organizations
  * - Organization admins (from OrganisationAdmin entity) automatically get ADMIN role here
  * - Granular permissions can further restrict access when enabled
@@ -55,7 +55,7 @@ export class OrganisationUser {
   })
   role!: OrganisationRoleType;
 
-  @Column({ nullable: true })
+  @Column({ type: 'integer', nullable: true })
   assignedById!: number | null; // Who assigned this role (org admin or Cal3 admin)
 
   @Column({ default: false })

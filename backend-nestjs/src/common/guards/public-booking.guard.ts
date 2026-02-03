@@ -1,4 +1,4 @@
-﻿import {
+import {
   BadRequestException,
   CanActivate,
   ExecutionContext,
@@ -76,7 +76,7 @@ export class PublicBookingGuard implements CanActivate, PublicBookingPolicy {
     }
   }
 
-  private toDate(value: any): Date {
+  private toDate(value: unknown): Date {
     if (
       value instanceof Date ||
       typeof value === 'string' ||

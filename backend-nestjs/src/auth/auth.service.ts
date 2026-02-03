@@ -1,4 +1,4 @@
-﻿import {
+import {
   Injectable,
   UnauthorizedException,
   ConflictException,
@@ -23,6 +23,13 @@ export interface AuthSessionResult {
   refreshToken: string;
   refreshExpiresAt: Date;
   user: User;
+}
+
+interface OAuthUserProfile {
+  email: string;
+  firstName?: string;
+  lastName?: string;
+  displayName?: string;
 }
 
 @Injectable()
@@ -161,7 +168,9 @@ export class AuthService {
     return user;
   }
 
-  async validateGoogleUser(googleUser: any): Promise<AuthSessionResult> {
+  async validateGoogleUser(
+    googleUser: OAuthUserProfile,
+  ): Promise<AuthSessionResult> {
     const { email, firstName, lastName } = googleUser;
 
     // Check if user already exists by email
@@ -189,7 +198,9 @@ export class AuthService {
     return this.createSession(user, {});
   }
 
-  async validateMicrosoftUser(microsoftUser: any): Promise<AuthSessionResult> {
+  async validateMicrosoftUser(
+    microsoftUser: OAuthUserProfile,
+  ): Promise<AuthSessionResult> {
     const { email, firstName, lastName, displayName } = microsoftUser;
 
     if (!email) {

@@ -1,4 +1,4 @@
-﻿import 'reflect-metadata';
+import 'reflect-metadata';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -8,13 +8,13 @@ const entityFiles = fs
   .readdirSync(entitiesDir)
   .filter((f) => f.endsWith('.entity.ts'));
 
-console.log('đź”Ť Analyzing TypeORM Entity Files...\n');
+console.log('🔍 Analyzing TypeORM Entity Files...\n');
 console.log(
-  `đź“‚ Found ${entityFiles.length} entity files in ${entitiesDir}\n`,
+  `📂 Found ${entityFiles.length} entity files in ${entitiesDir}\n`,
 );
 console.log('='.repeat(100) + '\n');
 
-const schemaInfo: any = {
+const schemaInfo: Record<string, unknown> = {
   totalEntities: entityFiles.length,
   tables: [],
 };
@@ -23,20 +23,20 @@ for (const file of entityFiles) {
   const filePath = path.join(entitiesDir, file);
   const content = fs.readFileSync(filePath, 'utf-8');
 
-  console.log(`\nđź“„ File: ${file}`);
-  console.log('â”€'.repeat(100));
+  console.log(`\n📄 File: ${file}`);
+  console.log('─'.repeat(100));
 
   // Extract entity decorator
   const entityMatch = content.match(/@Entity\('([^']+)'\)/);
   if (!entityMatch) {
-    console.log('  âš ď¸Ź  No @Entity decorator found');
+    console.log('  ⚠️  No @Entity decorator found');
     continue;
   }
 
   const tableName = entityMatch[1];
-  console.log(`\n  đź“¦ TABLE: ${tableName}`);
+  console.log(`\n  📦 TABLE: ${tableName}`);
 
-  const tableInfo: any = {
+  const tableInfo: Record<string, unknown> = {
     file,
     tableName,
     columns: [],
@@ -60,7 +60,7 @@ for (const file of entityFiles) {
       });
 
     tableInfo.enums.push({ name: enumName, values: enumValues });
-    console.log(`\n  đź“Ś ENUM: ${enumName}`);
+    console.log(`\n  📌 ENUM: ${enumName}`);
     enumValues.forEach((ev) => console.log(`      ${ev.key} = ${ev.value}`));
   }
 
@@ -165,7 +165,7 @@ for (const file of entityFiles) {
       property: propertyName,
     });
     console.log(
-      `      ${propertyName.padEnd(30)} ${relationType.padEnd(15)} â†’ ${targetEntity}`,
+      `      ${propertyName.padEnd(30)} ${relationType.padEnd(15)} → ${targetEntity}`,
     );
 
     // Check for cascade options
@@ -208,7 +208,7 @@ for (const file of entityFiles) {
 }
 
 console.log('='.repeat(100));
-console.log('\nđź“Š SCHEMA SUMMARY:');
+console.log('\n📊 SCHEMA SUMMARY:');
 console.log(`  Total Entity Files: ${schemaInfo.totalEntities}`);
 console.log(`  Total Tables: ${schemaInfo.tables.length}`);
 
@@ -226,14 +226,14 @@ console.log(`  Total Columns: ${totalColumns}`);
 console.log(`  Total Relations: ${totalRelations}`);
 console.log(`  Total Enums: ${totalEnums}`);
 
-console.log('\nđź“‹ TABLE LIST:');
+console.log('\n📋 TABLE LIST:');
 for (const table of schemaInfo.tables) {
   console.log(
     `  - ${table.tableName.padEnd(45)} (${table.columns.length} columns, ${table.relations.length} relations)`,
   );
 }
 
-console.log('\nâś… Schema extraction completed successfully!\n');
+console.log('\n✅ Schema extraction completed successfully!\n');
 
 // Write to JSON file for comparison
 const outputPath = path.join(
@@ -243,4 +243,4 @@ const outputPath = path.join(
   'schema-extraction-output.json',
 );
 fs.writeFileSync(outputPath, JSON.stringify(schemaInfo, null, 2));
-console.log(`đź“„ Schema data saved to: ${outputPath}\n`);
+console.log(`📄 Schema data saved to: ${outputPath}\n`);

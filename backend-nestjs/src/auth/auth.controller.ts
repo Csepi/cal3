@@ -1,4 +1,4 @@
-﻿import {
+import {
   Controller,
   Post,
   Get,
@@ -140,7 +140,7 @@ export class AuthController {
   @UseGuards(AuthGuard('google'))
   @ApiOperation({ summary: 'Google OAuth callback' })
   async googleAuthRedirect(@Req() req: RequestWithUser, @Res() res: Response) {
-    const authResult = req.user as any as AuthSessionResult;
+    const authResult = req.user as unknown as AuthSessionResult;
     console.log(
       'Google OAuth callback - authResult:',
       JSON.stringify(authResult.response, null, 2),
@@ -188,7 +188,7 @@ export class AuthController {
     @Req() req: RequestWithUser,
     @Res() res: Response,
   ) {
-    const authResult = req.user as any as AuthSessionResult;
+    const authResult = req.user as unknown as AuthSessionResult;
     console.log(
       'Microsoft OAuth callback - authResult:',
       JSON.stringify(authResult, null, 2),

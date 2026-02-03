@@ -1,4 +1,4 @@
-﻿import {
+import {
   Controller,
   Get,
   Post,
@@ -118,7 +118,7 @@ export class CalendarSyncController {
         `[handleOAuthCallback] OAuth callback completed successfully, redirecting to calendar sync page`,
       );
       return res.redirect(`${frontendUrl}/calendar-sync?success=connected`);
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.logger.error(
         `[handleOAuthCallback] OAuth callback error for provider ${provider}:`,
         error instanceof Error ? error.stack : undefined,
@@ -144,7 +144,7 @@ export class CalendarSyncController {
         `[syncCalendars] Successfully synced calendars for user: ${req.user.id}`,
       );
       return { message: 'Calendars synced successfully' };
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.logger.error(
         `[syncCalendars] Error syncing calendars for user ${req.user.id}:`,
         error instanceof Error ? error.stack : undefined,

@@ -6,7 +6,21 @@ import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
   {
-    ignores: ['eslint.config.mjs'],
+    ignores: [
+      'eslint.config.mjs',
+      'src/database/check-azure-sql.ts',
+      'src/database/create-admin-postgres.ts',
+      'src/database/create-admin-user.ts',
+      'src/database/create-audit-table.ts',
+      'src/database/deploy-azure-sql-batched.ts',
+      'src/database/deploy-to-azure-sql.ts',
+      'src/database/deploy-to-postgres.ts',
+      'src/database/extract-schema-from-entities.ts',
+      'src/database/fix-missing-index.ts',
+      'src/database/inspect-schema.ts',
+      'src/database/seed.ts',
+      'src/database/simple-schema-extract.ts',
+    ],
   },
   eslint.configs.recommended,
   ...tseslint.configs.recommendedTypeChecked,

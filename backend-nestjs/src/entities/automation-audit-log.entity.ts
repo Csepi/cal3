@@ -1,4 +1,4 @@
-﻿import {
+import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
@@ -32,7 +32,7 @@ export class AutomationAuditLog {
   @ManyToOne(() => Event, { onDelete: 'SET NULL', nullable: true })
   event!: Event | null;
 
-  @Column({ nullable: true })
+  @Column({ type: 'integer', nullable: true })
   eventId!: number | null;
 
   @Column({
@@ -52,7 +52,7 @@ export class AutomationAuditLog {
       field: string;
       operator: string;
       expectedValue: string;
-      actualValue: any;
+      actualValue: unknown;
       passed: boolean;
     }>;
   };
@@ -62,7 +62,7 @@ export class AutomationAuditLog {
     actionId: number;
     actionType: string;
     success: boolean;
-    result: any;
+    result: unknown;
     errorMessage?: string;
   }>;
 
@@ -86,7 +86,7 @@ export class AutomationAuditLog {
   @ManyToOne(() => User, { nullable: true, onDelete: 'SET NULL' })
   executedBy!: User | null;
 
-  @Column({ nullable: true })
+  @Column({ type: 'integer', nullable: true })
   executedByUserId!: number | null;
 
   @CreateDateColumn()

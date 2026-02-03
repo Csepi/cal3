@@ -1,4 +1,4 @@
-﻿import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { CalendarSyncService } from './calendar-sync.service';
 
@@ -12,7 +12,7 @@ export class CalendarSyncSchedulerService {
   async runScheduledSync(): Promise<void> {
     try {
       await this.calendarSyncService.syncAllActiveConnections();
-    } catch (error: any) {
+    } catch (error: unknown) {
       const errorMessage =
         error instanceof Error ? error.message : String(error);
       this.logger.error(

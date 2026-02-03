@@ -1,4 +1,4 @@
-﻿import {
+import {
   Injectable,
   CanActivate,
   ExecutionContext,
@@ -8,6 +8,7 @@
 import { Reflector } from '@nestjs/core';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import type { Request } from 'express';
 import {
   ReservationCalendarRole,
   ReservationCalendarRoleType,
@@ -55,7 +56,9 @@ export class ReservationCalendarGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const request = context.switchToHttp().getRequest();
+    const request = context
+      .switchToHttp()
+      .getRequest<Request & { user: User }>();
     const user: User = request.user;
 
     if (!user) {
@@ -136,7 +139,7 @@ export class ReservationCalendarGuard implements CanActivate {
    * Extract reservation calendar ID from request parameters
    * Supports various parameter names: id, reservationCalendarId, calendarId
    */
-  private getReservationCalendarIdFromRequest(request: any): string | null {
+  private getReservationCalendarIdFromRequest(request: Request): string | null {
     const params = request.params;
 
     // Try different parameter names

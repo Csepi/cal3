@@ -1,4 +1,4 @@
-﻿import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { LoggingService } from './logging.service';
 
@@ -19,7 +19,7 @@ export class LogCleanupService {
           `Log retention job removed ${deleted} expired entries.`,
         );
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       logError(error, buildErrorContext({ action: 'log-cleanup.service' }));
       const stack = error instanceof Error ? error.stack : undefined;
       this.logger.error('Log retention job failed', stack);

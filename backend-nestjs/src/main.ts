@@ -1,4 +1,4 @@
-﻿import 'dotenv/config';
+import 'dotenv/config';
 
 // Polyfill for crypto module (required for @nestjs/schedule in some Docker environments)
 import crypto from 'crypto';
@@ -110,7 +110,7 @@ async function bootstrap() {
           const queryDuration = Date.now() - queryStart;
           dbLogger.log(`Test query successful (${queryDuration}ms)`);
         }
-      } catch (queryError: any) {
+      } catch (queryError: unknown) {
         const queryErrorMessage =
           queryError instanceof Error ? queryError.message : String(queryError);
         dbLogger.error('Test query failed', queryErrorMessage);
@@ -236,7 +236,7 @@ async function bootstrap() {
     logger.log(`CORS Allowed Origins: ${allowedOrigins.join(', ')}`);
     logger.log(`Total startup time: ${totalStartupTime}ms`);
     logger.log('========================================');
-  } catch (error: any) {
+  } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     const errorName = error instanceof Error ? error.name : 'Unknown';
     const failureDuration = Date.now() - startTime;

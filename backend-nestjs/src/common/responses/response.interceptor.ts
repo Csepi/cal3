@@ -1,4 +1,4 @@
-﻿import {
+import {
   CallHandler,
   ExecutionContext,
   Injectable,
@@ -17,18 +17,18 @@ const DISABLE_ENVELOPE_HEADER = 'x-response-raw';
 /**
  * Determine whether a value is an API response envelope.
  */
-const isApiResponse = (value: any): value is ApiResponse<any> => {
+const isApiResponse = (value: unknown): value is ApiResponse<unknown> => {
   if (!value || typeof value !== 'object') {
     return false;
   }
-  const candidate = value as ApiResponse<any>;
+  const candidate = value as ApiResponse<unknown>;
   return typeof candidate.success === 'boolean';
 };
 
 /**
  * Parse a boolean-like value from headers or query params.
  */
-const parseBooleanFlag = (value: any): boolean | undefined => {
+const parseBooleanFlag = (value: unknown): boolean | undefined => {
   if (
     value !== undefined &&
     typeof value !== 'string' &&
@@ -79,7 +79,7 @@ const resolveEnvelopePreference = (request: Request): boolean => {
 export class ResponseInterceptor implements NestInterceptor {
   constructor(private readonly requestContext: RequestContextService) {}
 
-  intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
+  intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
     if (context.getType() !== 'http') {
       return next.handle();
     }

@@ -1,4 +1,4 @@
-﻿import {
+import {
   IsEnum,
   IsOptional,
   IsNumber,
@@ -76,7 +76,7 @@ export class ConditionEvaluationDto {
   expectedValue!: string;
 
   @ApiProperty({ description: 'Actual value from event' })
-  actualValue!: any;
+  actualValue!: unknown;
 
   @ApiProperty({ description: 'Whether condition passed' })
   passed!: boolean;

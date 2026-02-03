@@ -1,4 +1,4 @@
-﻿import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -30,7 +30,7 @@ export class MobilePushChannelProvider implements NotificationChannelProvider {
     return this.available;
   }
 
-  private isServiceAccount(value: any): value is ServiceAccount {
+  private isServiceAccount(value: unknown): value is ServiceAccount {
     return typeof value === 'object' && value !== null;
   }
 

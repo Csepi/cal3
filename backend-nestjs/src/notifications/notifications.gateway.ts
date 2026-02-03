@@ -1,4 +1,4 @@
-﻿import {
+import {
   ConnectedSocket,
   MessageBody,
   OnGatewayConnection,
@@ -92,8 +92,8 @@ export class NotificationsGateway
   @SubscribeMessage('ping')
   handlePing(
     @ConnectedSocket() client: AuthenticatedSocket,
-    @MessageBody() body: any,
-  ): { type: string; data: any } {
+    @MessageBody() body: unknown,
+  ): { type: string; data: unknown } {
     if (!client.userId) {
       throw new UnauthorizedException('Unauthenticated');
     }

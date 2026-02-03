@@ -1,4 +1,4 @@
-﻿import { Transform, Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
   IsArray,
   IsBoolean,
@@ -19,7 +19,7 @@ const LOG_LEVEL_VALUES: LogLevel[] = [
   'verbose',
 ];
 
-const normalizeToArray = (value: any): string[] | undefined => {
+const normalizeToArray = (value: unknown): string[] | undefined => {
   if (value === undefined || value === null || value === '') {
     return undefined;
   }

@@ -1,4 +1,4 @@
-﻿import {
+import {
   BadRequestException,
   Injectable,
   NotFoundException,
@@ -690,7 +690,7 @@ export class AgentMcpService {
     };
   }
 
-  private parseTaskPriority(value: any): TaskPriority | undefined {
+  private parseTaskPriority(value: unknown): TaskPriority | undefined {
     if (value === undefined || value === null || value === '') {
       return undefined;
     }
@@ -707,7 +707,7 @@ export class AgentMcpService {
     );
   }
 
-  private parseTaskStatus(value: any): TaskStatus | undefined {
+  private parseTaskStatus(value: unknown): TaskStatus | undefined {
     if (value === undefined || value === null || value === '') {
       return undefined;
     }
@@ -724,7 +724,7 @@ export class AgentMcpService {
     );
   }
 
-  private normalizeTaskDate(value: any): string | null | undefined {
+  private normalizeTaskDate(value: unknown): string | null | undefined {
     if (value === undefined) {
       return undefined;
     }
@@ -743,7 +743,7 @@ export class AgentMcpService {
     return date.toISOString();
   }
 
-  private normalizeHexColor(value: any): string {
+  private normalizeHexColor(value: unknown): string {
     if (!value) {
       throw new BadRequestException('Color must be a 6-digit hex string.');
     }
@@ -754,7 +754,7 @@ export class AgentMcpService {
     return hex.startsWith('#') ? hex : `#${hex}`;
   }
 
-  private parseOptionalIdArray(value: any): number[] {
+  private parseOptionalIdArray(value: unknown): number[] {
     if (!value && value !== 0) {
       return [];
     }

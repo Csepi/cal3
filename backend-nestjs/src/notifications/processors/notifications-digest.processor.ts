@@ -1,4 +1,4 @@
-﻿import { InjectQueue, Process, Processor } from '@nestjs/bull';
+import { InjectQueue, Process, Processor } from '@nestjs/bull';
 import type { Job } from 'bull';
 import { Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -17,7 +17,7 @@ interface DigestJobPayload {
   deliveryId?: number;
 }
 
-const parseReleaseAt = (value: any): number => {
+const parseReleaseAt = (value: unknown): number => {
   if (
     value instanceof Date ||
     typeof value === 'string' ||

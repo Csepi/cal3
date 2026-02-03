@@ -1,4 +1,4 @@
-﻿import * as sql from 'mssql';
+import * as sql from 'mssql';
 import * as bcrypt from 'bcryptjs';
 
 const azureConfig: sql.config = {
@@ -20,20 +20,20 @@ async function createAdminUser() {
   let pool: sql.ConnectionPool | null = null;
 
   try {
-    console.log('đźš€ Creating Admin User\n');
-    console.log('đź“ˇ Connecting to Azure SQL Database...');
+    console.log('🚀 Creating Admin User\n');
+    console.log('📡 Connecting to Azure SQL Database...');
     pool = await sql.connect(azureConfig);
-    console.log('âś… Connected successfully!\n');
+    console.log('✅ Connected successfully!\n');
 
     // Hash the password
     const password = 'enter';
     const saltRounds = 10;
-    console.log('đź” Hashing password...');
+    console.log('🔐 Hashing password...');
     const hashedPassword = await bcrypt.hash(password, saltRounds);
-    console.log('âś… Password hashed\n');
+    console.log('✅ Password hashed\n');
 
     // Check if admin user already exists
-    console.log('đź”Ť Checking for existing admin user...');
+    console.log('🔍 Checking for existing admin user...');
     const checkUserQuery = `
       SELECT id, username, email, role
       FROM users
@@ -43,12 +43,12 @@ async function createAdminUser() {
     const existingUser = await pool.request().query(checkUserQuery);
 
     if (existingUser.recordset.length > 0) {
-      console.log('âš ď¸Ź  Admin user already exists:');
+      console.log('⚠️  Admin user already exists:');
       console.log('   ID:', existingUser.recordset[0].id);
       console.log('   Username:', existingUser.recordset[0].username);
       console.log('   Email:', existingUser.recordset[0].email);
       console.log('   Role:', existingUser.recordset[0].role);
-      console.log('\nđź”„ Updating existing user...\n');
+      console.log('\n🔄 Updating existing user...\n');
 
       // Update existing user
       const updateQuery = `
@@ -70,9 +70,9 @@ async function createAdminUser() {
         .input('password', sql.NVarChar, hashedPassword)
         .query(updateQuery);
 
-      console.log('âś… Admin user updated successfully!\n');
+      console.log('✅ Admin user updated successfully!\n');
     } else {
-      console.log('âž• Creating new admin user...\n');
+      console.log('➕ Creating new admin user...\n');
 
       // Insert new admin user
       const insertQuery = `
@@ -135,11 +135,11 @@ async function createAdminUser() {
         .input('hideReservationsTab', sql.Bit, 0)
         .query(insertQuery);
 
-      console.log('âś… Admin user created successfully!\n');
+      console.log('✅ Admin user created successfully!\n');
     }
 
     // Verify the user was created/updated
-    console.log('đź”Ť Verifying admin user...\n');
+    console.log('🔍 Verifying admin user...\n');
     const verifyQuery = `
       SELECT
         id,
@@ -162,9 +162,9 @@ async function createAdminUser() {
 
     if (result.recordset.length > 0) {
       const user = result.recordset[0];
-      console.log('â”€'.repeat(80));
-      console.log('đź“‹ Admin User Details:');
-      console.log('â”€'.repeat(80));
+      console.log('─'.repeat(80));
+      console.log('📋 Admin User Details:');
+      console.log('─'.repeat(80));
       console.log(`ID:                  ${user.id}`);
       console.log(`Username:            ${user.username}`);
       console.log(`Email:               ${user.email}`);
@@ -176,16 +176,16 @@ async function createAdminUser() {
       console.log(`Timezone:            ${user.timezone}`);
       console.log(`Created:             ${user.createdAt}`);
       console.log(`Updated:             ${user.updatedAt}`);
-      console.log('â”€'.repeat(80));
-      console.log('\nâś… SUCCESS!\n');
+      console.log('─'.repeat(80));
+      console.log('\n✅ SUCCESS!\n');
       console.log('Login Credentials:');
       console.log('  Username: admin');
       console.log('  Password: enter');
       console.log('  Role:     admin (full privileges)');
-      console.log('\n' + 'â”€'.repeat(80));
+      console.log('\n' + '─'.repeat(80));
     }
-  } catch (error: any) {
-    console.error('\nâťŚ ERROR creating admin user:\n');
+  } catch (error: unknown) {
+    console.error('\n❌ ERROR creating admin user:\n');
     console.error('Error Message:', error.message);
 
     if (error.number) {
@@ -200,7 +200,7 @@ async function createAdminUser() {
   } finally {
     if (pool) {
       await pool.close();
-      console.log('\nđź“ˇ Database connection closed.');
+      console.log('\n📡 Database connection closed.');
     }
   }
 }
@@ -208,11 +208,11 @@ async function createAdminUser() {
 if (require.main === module) {
   createAdminUser()
     .then(() => {
-      console.log('\nâś… Script completed successfully!');
+      console.log('\n✅ Script completed successfully!');
       process.exit(0);
     })
     .catch((error) => {
-      console.error('\nâťŚ Script failed:', error.message);
+      console.error('\n❌ Script failed:', error.message);
       process.exit(1);
     });
 }

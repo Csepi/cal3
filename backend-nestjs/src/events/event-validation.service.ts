@@ -1,4 +1,4 @@
-﻿import { Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Event, RecurrenceType } from '../entities/event.entity';
 import {
   RecurrencePatternDto,
@@ -6,12 +6,12 @@ import {
   WeekDay,
 } from '../dto/recurrence.dto';
 
-type EventMutationInput = {
+export type EventMutationInput = {
   startDate?: string | number | Date;
   endDate?: string | number | Date;
   startTime?: string | null;
   endTime?: string | null;
-  [key: string]: any;
+  [key: string]: unknown;
 };
 
 type RecurrenceRule = {
@@ -26,7 +26,7 @@ type RecurrenceRule = {
   timezone?: string;
 };
 
-const toRecurrenceRule = (value: any): RecurrenceRule => {
+const toRecurrenceRule = (value: unknown): RecurrenceRule => {
   if (!value || typeof value !== 'object') {
     return {};
   }
@@ -99,7 +99,7 @@ export class EventValidationService {
   }
 
   convertRuleToPattern(
-    rule: any,
+    rule: unknown,
     recurrenceType: RecurrenceType,
   ): RecurrencePatternDto {
     const safeRule = toRecurrenceRule(rule);

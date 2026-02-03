@@ -1,4 +1,4 @@
-﻿import {
+import {
   CanActivate,
   ExecutionContext,
   Injectable,
@@ -8,7 +8,7 @@ import { Request } from 'express';
 import { AgentAuthorizationService } from '../agent-authorization.service';
 import { AgentContext } from '../interfaces/agent-context.interface';
 
-type AgentRequest = Request & { agentContext?: AgentContext; user?: any };
+type AgentRequest = Request & { agentContext?: AgentContext; user?: unknown };
 
 @Injectable()
 export class AgentApiKeyGuard implements CanActivate {

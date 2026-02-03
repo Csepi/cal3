@@ -1,4 +1,4 @@
-﻿import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 import type { Request, Response } from 'express';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
@@ -22,7 +22,7 @@ import { TaskPriority, TaskStatus } from '../entities/task.entity';
 
 import { logError } from '../common/errors/error-logger';
 import { buildErrorContext } from '../common/errors/error-context';
-type ToolHandler = (parameters: Record<string, unknown>) => Promise<any>;
+type ToolHandler = (parameters: Record<string, unknown>) => Promise<unknown>;
 
 interface McpSession {
   context: AgentContext;
@@ -41,7 +41,7 @@ export class AgentMcpHttpService {
     context: AgentContext,
     req: Request,
     res: Response,
-    body: any,
+    body: unknown,
   ): Promise<void> {
     const incomingSessionId = req.get('mcp-session-id')?.trim();
     let sessionId = incomingSessionId;
@@ -509,7 +509,7 @@ export class AgentMcpHttpService {
     context: AgentContext,
     action: AgentActionKey,
     parameters: Record<string, unknown>,
-  ): Promise<any> {
+  ): Promise<unknown> {
     const dto: ExecuteAgentActionDto = {
       action,
       parameters,
@@ -517,7 +517,7 @@ export class AgentMcpHttpService {
     return this.agentMcpService.executeAction(context, dto);
   }
 
-  private wrapToolResult(result: any): {
+  private wrapToolResult(result: unknown): {
     content: ContentBlock[];
     structuredContent?: Record<string, unknown>;
   } {
@@ -556,7 +556,7 @@ export class AgentMcpHttpService {
     } as ContentBlock;
   }
 
-  private safeStringify(value: any): string {
+  private safeStringify(value: unknown): string {
     try {
       return JSON.stringify(value);
     } catch (error) {

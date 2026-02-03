@@ -1,9 +1,9 @@
-﻿import type { DatabaseErrorDetails, DatabaseErrorType } from './database.types';
+import type { DatabaseErrorDetails, DatabaseErrorType } from './database.types';
 
 /**
  * Extract a database error code if present.
  */
-const getErrorCode = (error: any): string | number | undefined => {
+const getErrorCode = (error: unknown): string | number | undefined => {
   if (!error || typeof error !== 'object') {
     return undefined;
   }
@@ -20,7 +20,9 @@ const getErrorCode = (error: any): string | number | undefined => {
 /**
  * Normalize a database error into a categorized response.
  */
-export const getDatabaseErrorDetails = (error: any): DatabaseErrorDetails => {
+export const getDatabaseErrorDetails = (
+  error: unknown,
+): DatabaseErrorDetails => {
   const code = getErrorCode(error);
   const message =
     error instanceof Error

@@ -1,4 +1,4 @@
-﻿import {
+import {
   IsString,
   IsOptional,
   IsEnum,
@@ -98,7 +98,7 @@ export class CreateEventDto {
     description: 'Recurrence rule configuration (JSON)',
   })
   @IsOptional()
-  recurrenceRule?: any;
+  recurrenceRule?: unknown;
 
   @ApiPropertyOptional({
     example: '#ef4444',
@@ -108,7 +108,7 @@ export class CreateEventDto {
   @IsString()
   color?: string;
 
-  @ApiPropertyOptional({ example: 'đźŽ‰', description: 'Event icon (emoji)' })
+  @ApiPropertyOptional({ example: '🎉', description: 'Event icon (emoji)' })
   @IsOptional()
   @IsString()
   icon?: string;
@@ -219,7 +219,7 @@ export class UpdateEventDto {
     description: 'Recurrence rule configuration (JSON)',
   })
   @IsOptional()
-  recurrenceRule?: any;
+  recurrenceRule?: unknown;
 
   @ApiPropertyOptional({
     example: '#10b981',
@@ -229,7 +229,7 @@ export class UpdateEventDto {
   @IsString()
   color?: string;
 
-  @ApiPropertyOptional({ example: 'đźŽ‰', description: 'Event icon (emoji)' })
+  @ApiPropertyOptional({ example: '🎉', description: 'Event icon (emoji)' })
   @IsOptional()
   @IsString()
   icon?: string;

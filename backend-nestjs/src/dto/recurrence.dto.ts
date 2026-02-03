@@ -1,4 +1,4 @@
-﻿import {
+import {
   IsEnum,
   IsOptional,
   IsNumber,
@@ -162,7 +162,7 @@ export class RecurrenceInfoDto {
 
   @IsObject()
   @IsOptional()
-  rule?: any;
+  rule?: unknown;
 
   @IsString()
   @IsOptional()

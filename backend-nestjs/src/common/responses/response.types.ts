@@ -1,4 +1,4 @@
-﻿import type { ErrorCode } from './error.catalog';
+import type { ErrorCode } from './error.catalog';
 
 /**
  * Standard API response envelope for successful and failed requests.
@@ -41,7 +41,7 @@ export interface ApiError {
   /**
    * Optional structured error details.
    */
-  details?: any;
+  details?: unknown;
   /**
    * Request identifier used for tracing.
    */

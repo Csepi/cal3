@@ -1,4 +1,4 @@
-﻿import {
+import {
   registerDecorator,
   ValidationOptions,
   ValidationArguments,
@@ -15,7 +15,7 @@ export function IsUserExists(validationOptions?: ValidationOptions) {
       propertyName: propertyName,
       options: validationOptions,
       validator: {
-        validate(value: any) {
+        validate(value: unknown) {
           // This would need to be implemented with actual database check
           // For now, just validate it's a positive number
           return typeof value === 'number' && value > 0;
@@ -39,7 +39,7 @@ export function IsOrganisationExists(validationOptions?: ValidationOptions) {
       propertyName: propertyName,
       options: validationOptions,
       validator: {
-        validate(value: any) {
+        validate(value: unknown) {
           // This would need to be implemented with actual database check
           // For now, just validate it's a positive number
           return typeof value === 'number' && value > 0;
@@ -63,7 +63,7 @@ export function IsUniqueArray(validationOptions?: ValidationOptions) {
       propertyName: propertyName,
       options: validationOptions,
       validator: {
-        validate(value: any) {
+        validate(value: unknown) {
           if (!Array.isArray(value)) return false;
           return value.length === new Set(value).size;
         },
@@ -88,7 +88,7 @@ export function IsReservationCalendarExists(
       propertyName: propertyName,
       options: validationOptions,
       validator: {
-        validate(value: any) {
+        validate(value: unknown) {
           // This would need to be implemented with actual database check
           // For now, just validate it's a positive number
           return typeof value === 'number' && value > 0;

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useState, useCallback, useRef } from 'react';
 
 interface LoadingState {
@@ -16,6 +15,7 @@ interface UseLoadingProgressReturn {
     asyncFn: (updateProgress: (progress: number, message?: string) => void) => Promise<T>,
     initialMessage?: string
   ) => Promise<T>;
+  withQuickProgress: <T>(asyncFn: () => Promise<T>) => Promise<T>;
 }
 
 export const useLoadingProgress = (): UseLoadingProgressReturn => {
@@ -25,7 +25,7 @@ export const useLoadingProgress = (): UseLoadingProgressReturn => {
     message: 'Loading...'
   });
 
-  const timeoutRef = useRef<NodeJS.Timeout>();
+  const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
 
   const startLoading = useCallback((message = 'Loading...') => {
     setLoadingState({

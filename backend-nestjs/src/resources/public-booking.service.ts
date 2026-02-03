@@ -63,7 +63,7 @@ export class PublicBookingService {
    * Get resource information by public booking token
    * Only returns safe, public information
    */
-  async getResourceByToken(token: string): Promise<any> {
+  async getResourceByToken(token: string): Promise<unknown> {
     const resource = await this.resourceRepository.findOne({
       where: { publicBookingToken: token, isActive: true },
       relations: ['resourceType', 'resourceType.operatingHours'],
@@ -184,7 +184,7 @@ export class PublicBookingService {
   async createPublicBooking(
     token: string,
     bookingDto: CreatePublicBookingDto,
-  ): Promise<any> {
+  ): Promise<unknown> {
     const resource = await this.resourceRepository.findOne({
       where: { publicBookingToken: token, isActive: true },
       relations: ['resourceType'],
@@ -282,7 +282,7 @@ export class PublicBookingService {
       const slotStart = new Date(currentTime);
       const slotEnd = new Date(currentTime.getTime() + minDuration * 60000);
 
-      // Check if this slot conflicts with any reservation
+      // Check if this slot conflicts with an existing reservation
       const reservedQuantity = reservations.reduce((total, reservation) => {
         if (!ACTIVE_RESERVATION_STATUSES.includes(reservation.status)) {
           return total;

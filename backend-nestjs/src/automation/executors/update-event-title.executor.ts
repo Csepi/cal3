@@ -1,4 +1,4 @@
-﻿import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Injectable, OnModuleInit } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import {
@@ -81,7 +81,7 @@ export class UpdateEventTitleExecutor implements IActionExecutor, OnModuleInit {
         },
         executedAt,
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       return {
         success: false,
         actionId: action.id,

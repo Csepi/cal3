@@ -70,10 +70,10 @@ export class Event {
   @Column({ type: 'json', nullable: true })
   recurrenceRule!: string | Record<string, unknown> | null; // Store complex recurrence rules as JSON
 
-  @Column({ nullable: true })
+  @Column({ type: 'integer', nullable: true })
   parentEventId!: number | null; // Reference to the original event in a recurring series
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', length: 255, nullable: true })
   recurrenceId!: string | null; // Unique identifier for the recurring series
 
   @Column({ type: 'date', nullable: true })

@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * DayDetailSheet - Bottom sheet showing all events for a day
  *

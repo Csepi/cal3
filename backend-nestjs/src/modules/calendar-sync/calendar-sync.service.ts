@@ -36,6 +36,25 @@ import {
 import { logError } from '../../common/errors/error-logger';
 import { buildErrorContext } from '../../common/errors/error-context';
 
+type ExternalEventData = Record<string, unknown> & {
+  id?: string;
+  subject?: string;
+  summary?: string;
+  updated?: string;
+  lastModifiedDateTime?: string;
+  body?: { content?: string };
+  bodyPreview?: string;
+};
+
+type AutomationRule = { id: number; triggerType?: string };
+type AutomationServiceContract = {
+  findRulesByTrigger?: (
+    triggerType: string,
+    userId: number,
+  ) => Promise<AutomationRule[]>;
+  executeRuleOnEvent: (rule: AutomationRule, event: Event) => Promise<void>;
+};
+
 @Injectable()
 export class CalendarSyncService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(CalendarSyncService.name);
@@ -99,15 +118,17 @@ export class CalendarSyncService implements OnModuleInit, OnModuleDestroy {
     this.unsubscribeHandlers.length = 0;
   }
 
-  private automationService?: any;
+  private automationService?: AutomationServiceContract;
 
-  private resolveAutomationService(): any | null {
+  private resolveAutomationService(): AutomationServiceContract | undefined {
     try {
       const token =
         require('../../automation/automation.service').AutomationService;
-      return this.moduleRef.get(token, { strict: false });
+      return this.moduleRef.get(token as string | symbol | Function, {
+        strict: false,
+      });
     } catch {
-      return null;
+      return undefined;
     }
   }
 
@@ -904,7 +925,9 @@ export class CalendarSyncService implements OnModuleInit, OnModuleDestroy {
     }
 
     const responseText = await response.text();
-    const data = responseText ? JSON.parse(responseText) : null;
+    const data = (
+      responseText ? JSON.parse(responseText) : null
+    ) as ExternalEventData | null;
     if (!data?.id) {
       return;
     }
@@ -968,15 +991,17 @@ export class CalendarSyncService implements OnModuleInit, OnModuleDestroy {
       return;
     }
 
-    let data: any = null;
+    let data: unknown = null;
     const responseText = await response.text();
     if (responseText) {
       data = JSON.parse(responseText);
     }
 
     existingMapping.lastModifiedLocal = localEvent.updatedAt ?? new Date();
-    if (data) {
-      existingMapping.lastModifiedExternal = this.getExternalLastModified(data);
+    if (data && typeof data === 'object') {
+      existingMapping.lastModifiedExternal = this.getExternalLastModified(
+        data as ExternalEventData,
+      );
     }
     await this.syncEventMappingRepository.save(existingMapping);
   }
@@ -1033,19 +1058,24 @@ export class CalendarSyncService implements OnModuleInit, OnModuleDestroy {
     return this.mapperService.getSafeUserTimezone(user?.timezone);
   }
 
-  private getExternalLastModified(externalEvent: any): Date {
+  private getExternalLastModified(externalEvent: ExternalEventData): Date {
     const source =
       externalEvent?.lastModifiedDateTime || externalEvent?.updated || null;
     const parsed = source ? new Date(source) : new Date();
     return isNaN(parsed.getTime()) ? new Date() : parsed;
   }
 
-  private isUniqueConstraintViolation(error: any): boolean {
-    const code = error?.code || error?.driverError?.code;
+  private isUniqueConstraintViolation(error: unknown): boolean {
+    const asRecord = error as
+      | { code?: string; driverError?: { code?: string } }
+      | undefined;
+    const code = asRecord?.code || asRecord?.driverError?.code;
     return code === '23505';
   }
 
-  private needsMicrosoftEventDetails(externalEvent: any): boolean {
+  private needsMicrosoftEventDetails(
+    externalEvent: ExternalEventData,
+  ): boolean {
     if (!externalEvent) {
       return false;
     }
@@ -1075,7 +1105,7 @@ export class CalendarSyncService implements OnModuleInit, OnModuleDestroy {
   private async createLocalEventFromExternal(
     syncConnection: CalendarSyncConnection,
     syncedCalendar: SyncedCalendar,
-    externalEvent: any,
+    externalEvent: ExternalEventData,
     automationSettings?: {
       triggerAutomationRules?: boolean;
       selectedRuleIds?: number[];
@@ -1087,7 +1117,7 @@ export class CalendarSyncService implements OnModuleInit, OnModuleDestroy {
       (await this.getUserTimezone(syncConnection.userId)) ||
       'UTC';
 
-    let eventSource = externalEvent;
+    let eventSource: ExternalEventData = externalEvent;
     if (
       syncConnection.provider === SyncProvider.MICROSOFT &&
       this.needsMicrosoftEventDetails(externalEvent) &&
@@ -1103,7 +1133,7 @@ export class CalendarSyncService implements OnModuleInit, OnModuleDestroy {
         resolvedUserTimezone,
       );
       if (details) {
-        eventSource = { ...externalEvent, ...details };
+        eventSource = { ...externalEvent, ...(details as ExternalEventData) };
       }
     }
 
@@ -1171,7 +1201,7 @@ export class CalendarSyncService implements OnModuleInit, OnModuleDestroy {
   private async updateLocalEventFromExternal(
     syncConnection: CalendarSyncConnection,
     syncedCalendar: SyncedCalendar,
-    externalEvent: any,
+    externalEvent: ExternalEventData,
     existingMapping: SyncEventMapping,
     userTimezone: string,
   ): Promise<Event | null> {
@@ -1191,7 +1221,7 @@ export class CalendarSyncService implements OnModuleInit, OnModuleDestroy {
       return recreatedEvent;
     }
 
-    let eventSource = externalEvent;
+    let eventSource: ExternalEventData = externalEvent;
     if (
       syncConnection.provider === SyncProvider.MICROSOFT &&
       this.needsMicrosoftEventDetails(externalEvent) &&
@@ -1207,7 +1237,7 @@ export class CalendarSyncService implements OnModuleInit, OnModuleDestroy {
         userTimezone,
       );
       if (details) {
-        eventSource = { ...externalEvent, ...details };
+        eventSource = { ...externalEvent, ...(details as ExternalEventData) };
       }
     }
 
@@ -1226,7 +1256,7 @@ export class CalendarSyncService implements OnModuleInit, OnModuleDestroy {
 
     for (const [key, value] of Object.entries(eventData)) {
       if (value !== undefined) {
-        (localEvent as any)[key] = value as any;
+        (localEvent as unknown as Record<string, unknown>)[key] = value;
       }
     }
 
@@ -1272,7 +1302,7 @@ export class CalendarSyncService implements OnModuleInit, OnModuleDestroy {
       if (!fullEvent) return;
 
       // Collect all rules to execute
-      let allRules: any[] = [];
+      let allRules: AutomationRule[] = [];
 
       // Get event.created rules (since we're creating events during import)
       const createdRules = await this.automationService.findRulesByTrigger?.(

@@ -1,4 +1,4 @@
-﻿import {
+import {
   Injectable,
   NotFoundException,
   ForbiddenException,
@@ -447,7 +447,7 @@ export class AutomationService {
 
       // Update rule metadata
       await this.updateRuleExecutionMetadata(rule.id);
-    } catch (error: any) {
+    } catch (error: unknown) {
       logError(error, buildErrorContext({ action: 'automation.service' }));
       // Log execution failure
       const executionTimeMs = Date.now() - startTime;
@@ -521,7 +521,7 @@ export class AutomationService {
         data: result.data,
         executedAt: result.executedAt,
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       logError(error, buildErrorContext({ action: 'automation.service' }));
       return {
         actionId: action.id,
@@ -548,7 +548,7 @@ export class AutomationService {
     return this.ruleRepository.find({
       where: {
         createdById: userId,
-        triggerType: triggerType as any,
+        triggerType: triggerType as TriggerType,
         isEnabled: true,
       },
       relations: ['conditions', 'actions'],
@@ -750,7 +750,7 @@ export class AutomationService {
     log: AutomationAuditLog,
     includeRelationNames = false,
   ): AuditLogDto {
-    const dto: any = {
+    const dto: Record<string, unknown> = {
       id: log.id,
       ruleId: log.ruleId,
       eventId: log.eventId,
@@ -776,7 +776,7 @@ export class AutomationService {
       dto.eventTitle = log.event?.title;
     }
 
-    return dto as AuditLogDto;
+    return dto as unknown as AuditLogDto;
   }
 
   private mapToAuditLogDetailDto(log: AutomationAuditLog): AuditLogDetailDto {

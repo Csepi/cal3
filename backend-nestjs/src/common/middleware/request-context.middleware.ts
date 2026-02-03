@@ -1,4 +1,4 @@
-﻿import { Injectable, Logger, NestMiddleware } from '@nestjs/common';
+import { Injectable, Logger, NestMiddleware } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import { Request, Response, NextFunction } from 'express';
 import { RequestContextService } from '../services/request-context.service';
@@ -15,7 +15,7 @@ export class RequestContextMiddleware implements NestMiddleware {
     const requestId = (requestIdHeader ?? randomUUID()).trim();
 
     res.setHeader('x-request-id', requestId);
-    (req as any).requestId = requestId;
+    (req as Request & { requestId: string }).requestId = requestId;
 
     this.requestContext.run(
       {

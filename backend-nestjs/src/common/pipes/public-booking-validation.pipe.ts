@@ -1,4 +1,4 @@
-﻿import { Injectable, PipeTransform, HttpException } from '@nestjs/common';
+import { Injectable, PipeTransform, HttpException } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
 import { IsDateString, IsNotEmpty } from 'class-validator';
 import { validateSync } from 'class-validator';
@@ -11,7 +11,7 @@ export class PublicBookingAvailabilityQueryDto {
 
 @Injectable()
 export class PublicBookingValidationPipe implements PipeTransform {
-  transform(value: any) {
+  transform(value: unknown) {
     if (!value || typeof value !== 'object') {
       return value;
     }

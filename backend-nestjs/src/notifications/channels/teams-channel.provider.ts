@@ -1,4 +1,4 @@
-﻿import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import fetch from 'node-fetch';
 import {
@@ -44,7 +44,7 @@ export class TeamsChannelProvider implements NotificationChannelProvider {
           ],
         },
       ],
-    } as any;
+    } as unknown;
 
     const response = await fetch(webhook, {
       method: 'POST',

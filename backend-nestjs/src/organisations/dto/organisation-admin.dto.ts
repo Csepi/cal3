@@ -1,4 +1,4 @@
-﻿import { IsNumber, IsPositive, IsOptional } from 'class-validator';
+import { IsNumber, IsPositive, IsOptional } from 'class-validator';
 import { Transform } from 'class-transformer';
 
 /**
@@ -7,7 +7,9 @@ import { Transform } from 'class-transformer';
 export class AssignOrganisationAdminDto {
   @IsNumber({}, { message: 'User ID must be a number' })
   @IsPositive({ message: 'User ID must be a positive number' })
-  @Transform(({ value }: { value: any }) => Number.parseInt(String(value), 10))
+  @Transform(({ value }: { value: unknown }) =>
+    Number.parseInt(String(value), 10),
+  )
   userId!: number;
 }
 
@@ -17,7 +19,9 @@ export class AssignOrganisationAdminDto {
 export class AddUserToOrganisationDto {
   @IsNumber({}, { message: 'User ID must be a number' })
   @IsPositive({ message: 'User ID must be a positive number' })
-  @Transform(({ value }: { value: any }) => Number.parseInt(String(value), 10))
+  @Transform(({ value }: { value: unknown }) =>
+    Number.parseInt(String(value), 10),
+  )
   userId!: number;
 }
 
@@ -27,13 +31,15 @@ export class AddUserToOrganisationDto {
 export class CreateOrganisationDto {
   @IsNumber({}, { message: 'Organisation ID must be a number' })
   @IsPositive({ message: 'Organisation ID must be a positive number' })
-  @Transform(({ value }: { value: any }) => Number.parseInt(String(value), 10))
+  @Transform(({ value }: { value: unknown }) =>
+    Number.parseInt(String(value), 10),
+  )
   organisationId!: number;
 
   @IsOptional()
   @IsNumber({}, { message: 'Admin user ID must be a number' })
   @IsPositive({ message: 'Admin user ID must be a positive number' })
-  @Transform(({ value }: { value: any }) =>
+  @Transform(({ value }: { value: unknown }) =>
     value ? Number.parseInt(String(value), 10) : undefined,
   )
   adminUserId?: number;

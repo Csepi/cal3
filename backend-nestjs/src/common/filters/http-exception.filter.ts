@@ -1,4 +1,4 @@
-﻿import {
+import {
   ExceptionFilter,
   Catch,
   ArgumentsHost,
@@ -26,7 +26,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
   /**
    * Catch all unhandled exceptions and normalize error responses.
    */
-  catch(exception: any, host: ArgumentsHost): void {
+  catch(exception: unknown, host: ArgumentsHost): void {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
@@ -34,19 +34,19 @@ export class AllExceptionsFilter implements ExceptionFilter {
     let status: number;
     let message: string;
     let code: ErrorCode;
-    let details: any;
+    let details: unknown;
 
     if (exception instanceof HttpException) {
       status = exception.getStatus();
       const errorResponse = exception.getResponse();
 
       if (typeof errorResponse === 'object' && errorResponse !== null) {
-        const errorObj = errorResponse as any;
+        const errorObj = errorResponse as Record<string, unknown>;
         const responseMessage =
           errorObj.message || errorObj.error || exception.message;
         message = Array.isArray(responseMessage)
           ? responseMessage.join(', ')
-          : responseMessage;
+          : String(responseMessage);
         details = errorObj.details ?? errorObj.errors ?? errorObj.message;
         code =
           (errorObj.code as ErrorCode) ||

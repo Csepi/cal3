@@ -1,4 +1,4 @@
-﻿import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Cron, CronExpression } from '@nestjs/schedule';
@@ -19,7 +19,7 @@ import { buildErrorContext } from '../common/errors/error-context';
 export class AutomationSchedulerService implements OnModuleInit {
   private readonly logger = new Logger(AutomationSchedulerService.name);
 
-  private getErrorMessage(error: any): string {
+  private getErrorMessage(error: unknown): string {
     return error instanceof Error ? error.message : String(error);
   }
 
@@ -84,7 +84,7 @@ export class AutomationSchedulerService implements OnModuleInit {
       for (const rule of rules) {
         await this.processTimeBasedRule(rule);
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       logError(
         error,
         buildErrorContext({ action: 'automation-scheduler.service' }),
@@ -127,7 +127,7 @@ export class AutomationSchedulerService implements OnModuleInit {
           await this.checkScheduledTime(rule);
           break;
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       logError(
         error,
         buildErrorContext({ action: 'automation-scheduler.service' }),
@@ -179,7 +179,7 @@ export class AutomationSchedulerService implements OnModuleInit {
       for (const event of matchingEvents) {
         await this.executeRuleForEvent(rule, event);
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       logError(
         error,
         buildErrorContext({ action: 'automation-scheduler.service' }),
@@ -231,7 +231,7 @@ export class AutomationSchedulerService implements OnModuleInit {
       for (const event of matchingEvents) {
         await this.executeRuleForEvent(rule, event);
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       logError(
         error,
         buildErrorContext({ action: 'automation-scheduler.service' }),
@@ -262,7 +262,7 @@ export class AutomationSchedulerService implements OnModuleInit {
       for (const event of events) {
         await this.executeRuleForEvent(rule, event);
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       logError(
         error,
         buildErrorContext({ action: 'automation-scheduler.service' }),
@@ -295,12 +295,12 @@ export class AutomationSchedulerService implements OnModuleInit {
       // Execute rule asynchronously (don't await to avoid blocking)
       this.automationService
         .executeRuleOnEvent(rule, fullEvent)
-        .catch((error: any) => {
+        .catch((error: unknown) => {
           this.logger.error(
             `Failed to execute rule ${rule.id} on event ${event.id}: ${this.getErrorMessage(error)}`,
           );
         });
-    } catch (error: any) {
+    } catch (error: unknown) {
       logError(
         error,
         buildErrorContext({ action: 'automation-scheduler.service' }),

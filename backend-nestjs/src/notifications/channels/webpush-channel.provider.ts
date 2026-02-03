@@ -1,4 +1,4 @@
-﻿import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as webPush from 'web-push';
 import type { PushSubscription } from 'web-push';
@@ -30,7 +30,7 @@ export class WebPushChannelProvider implements NotificationChannelProvider {
     return this.isConfigured;
   }
 
-  private isPushSubscription(value: any): value is PushSubscription {
+  private isPushSubscription(value: unknown): value is PushSubscription {
     if (typeof value !== 'object' || value === null) {
       return false;
     }

@@ -1,4 +1,4 @@
-﻿import { ExternalServiceError } from './error-base';
+import { ExternalServiceError } from './error-base';
 import { buildErrorContext, type ErrorContext } from './error-context';
 
 /**
@@ -72,7 +72,7 @@ export const exponentialBackoff = async <T>(
   } = options;
 
   let attempt = 0;
-  let lastError: any;
+  let lastError: unknown;
 
   while (attempt < maxAttempts) {
     attempt += 1;
@@ -146,13 +146,13 @@ export const circuitBreaker = <T>(
  */
 export const fallback = async <T>(
   task: () => Promise<T>,
-  fallbackValue: T | ((error: any) => T | Promise<T>),
+  fallbackValue: T | ((error: unknown) => T | Promise<T>),
 ): Promise<T> => {
   try {
     return await task();
   } catch (error) {
     if (typeof fallbackValue === 'function') {
-      return await (fallbackValue as (err: any) => T | Promise<T>)(error);
+      return await (fallbackValue as (err: unknown) => T | Promise<T>)(error);
     }
     return fallbackValue;
   }

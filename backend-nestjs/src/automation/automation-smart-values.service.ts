@@ -1,4 +1,4 @@
-﻿import { Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { TriggerType } from '../entities/automation-rule.entity';
 import { Event } from '../entities/event.entity';
 
@@ -415,7 +415,7 @@ export class AutomationSmartValuesService {
   /**
    * Get nested value from object using dot notation
    */
-  private getNestedValue(obj: Record<string, unknown>, path: string): any {
+  private getNestedValue(obj: Record<string, unknown>, path: string): unknown {
     // Direct lookup first (most common case)
     if (path in obj) {
       return obj[path];
@@ -423,7 +423,7 @@ export class AutomationSmartValuesService {
 
     // Try nested path lookup
     const parts = path.split('.');
-    let value: any = obj;
+    let value: unknown = obj;
 
     for (const part of parts) {
       if (value && typeof value === 'object' && part in value) {

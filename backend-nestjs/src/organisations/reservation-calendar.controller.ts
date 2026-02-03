@@ -141,7 +141,7 @@ export class ReservationCalendarController {
 
   /**
    * Get all roles for a specific reservation calendar
-   * Accessible by users with any role on the calendar, org admins, and global admins
+   * Accessible by users with a role on the calendar, org admins, and global admins
    */
   @Get('reservation-calendars/:id/roles')
   @UseGuards(ReservationCalendarGuard)

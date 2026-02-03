@@ -1,4 +1,4 @@
-﻿import {
+import {
   CallHandler,
   ExecutionContext,
   Injectable,
@@ -17,7 +17,7 @@ export class RequestLoggingInterceptor implements NestInterceptor {
     private readonly requestContext: RequestContextService,
   ) {}
 
-  intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
+  intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
     if (context.getType() !== 'http') {
       return next.handle();
     }
@@ -42,7 +42,7 @@ export class RequestLoggingInterceptor implements NestInterceptor {
 
     return next.handle().pipe(
       tap({
-        error: (err: any) => {
+        error: (err: unknown) => {
           const duration = Date.now() - startedAt;
           const status = response.statusCode;
           const message =

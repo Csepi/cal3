@@ -1,4 +1,4 @@
-﻿import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import {
@@ -435,7 +435,7 @@ export class NotificationRulesService {
       result.calendar = Array.from(calendarMeta.values())
         .map(({ calendar, tags, meta }) => {
           const tagList = Array.from(tags);
-          const suffix = tagList.length > 0 ? ` â€˘ ${tagList.join(', ')}` : '';
+          const suffix = tagList.length > 0 ? ` • ${tagList.join(', ')}` : '';
           return {
             value: String(calendar.id),
             label: `${calendar.name ?? `Calendar #${calendar.id}`}${suffix}`,
@@ -499,7 +499,7 @@ export class NotificationRulesService {
           parts.push(`#${reservation.id}`);
           return {
             value: String(reservation.id),
-            label: parts.join(' â€˘ '),
+            label: parts.join(' • '),
             meta: {
               status: reservation.status ?? null,
               startTime: reservation.startTime ?? null,
@@ -859,14 +859,17 @@ export class NotificationRulesService {
     }
   }
 
-  private resolveFieldValue(context: RuleConditionContext, field: string): any {
+  private resolveFieldValue(
+    context: RuleConditionContext,
+    field: string,
+  ): unknown {
     const segments = field.split('.');
-    const contextRecord = context as any as Record<string, unknown>;
+    const contextRecord = context as unknown as Record<string, unknown>;
     if (segments.length === 1) {
       return contextRecord[segments[0]];
     }
 
-    let current: any;
+    let current: unknown;
     if (segments[0] === 'data') {
       current = context.data ?? null;
     } else {

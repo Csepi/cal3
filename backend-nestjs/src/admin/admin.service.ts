@@ -1,4 +1,4 @@
-﻿import { logError } from '../common/errors/error-logger';
+import { logError } from '../common/errors/error-logger';
 import { buildErrorContext } from '../common/errors/error-context';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -304,14 +304,22 @@ export class AdminService {
   }
 
   async createEvent(createEventDto: CreateEventDto): Promise<Event> {
+    const recurrenceRule =
+      typeof createEventDto.recurrenceRule === 'string' ||
+      (createEventDto.recurrenceRule &&
+        typeof createEventDto.recurrenceRule === 'object')
+        ? createEventDto.recurrenceRule
+        : undefined;
+
     const event = this.eventRepository.create({
       ...createEventDto,
       startDate: new Date(createEventDto.startDate),
       endDate: createEventDto.endDate
         ? new Date(createEventDto.endDate)
         : undefined,
+      recurrenceRule,
     });
-    return this.eventRepository.save(event);
+    return await this.eventRepository.save(event);
   }
 
   // UPDATE OPERATIONS
@@ -723,7 +731,7 @@ export class AdminService {
         message: 'Public booking initialization completed',
         ...results,
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       logError(error, buildErrorContext({ action: 'admin.service' }));
       const normalizedError = this.normalizeError(error);
       console.error('Error initializing public booking:', normalizedError);
@@ -968,7 +976,7 @@ export class AdminService {
     return systemInfo;
   }
 
-  private normalizeError(error: any): Error {
+  private normalizeError(error: unknown): Error {
     return error instanceof Error ? error : new Error(String(error));
   }
 
@@ -981,7 +989,7 @@ export class AdminService {
         parsed &&
         typeof parsed === 'object' &&
         'version' in parsed &&
-        typeof (parsed as { version?: any }).version === 'string'
+        typeof (parsed as { version?: unknown }).version === 'string'
       ) {
         return (parsed as { version: string }).version;
       }

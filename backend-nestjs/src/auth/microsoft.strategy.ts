@@ -1,4 +1,4 @@
-﻿import { Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { Strategy } from 'passport-microsoft';
 import { AuthService } from './auth.service';
@@ -46,10 +46,10 @@ export class MicrosoftStrategy extends PassportStrategy(Strategy, 'microsoft') {
   async validate(
     accessToken: string,
     profile: MicrosoftProfile,
-    done: (error: Error | null, user?: any) => void,
+    done: (error: Error | null, user?: unknown) => void,
   ): Promise<void> {
     const { id, displayName, emails } = profile;
-    const email = emails && emails[0] ? emails[0].value : null;
+    const email = emails?.[0]?.value ?? '';
 
     const user = {
       microsoftId: id,

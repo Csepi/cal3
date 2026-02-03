@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import type { Request } from 'express';
 import { OrganisationAdmin } from '../../entities/organisation-admin.entity';
 import { User, UserRole } from '../../entities/user.entity';
 
@@ -20,7 +21,7 @@ import { User, UserRole } from '../../entities/user.entity';
  * @Post('organisations/:id/some-action')
  *
  * The guard will:
- * 1. Allow global admins to access any organisation
+ * 1. Allow global admins to access every organisation
  * 2. Allow organisation admins to access only their assigned organisations
  * 3. Deny access to regular users
  */
@@ -32,7 +33,9 @@ export class OrganisationAdminGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const request = context.switchToHttp().getRequest();
+    const request = context
+      .switchToHttp()
+      .getRequest<Request & { user: User }>();
     const user: User = request.user;
 
     if (!user) {
@@ -71,7 +74,7 @@ export class OrganisationAdminGuard implements CanActivate {
    * Extract organisation ID from request parameters
    * Supports various parameter names: id, organisationId, orgId
    */
-  private getOrganisationIdFromRequest(request: any): string | null {
+  private getOrganisationIdFromRequest(request: Request): string | null {
     const params = request.params;
 
     // Try different parameter names

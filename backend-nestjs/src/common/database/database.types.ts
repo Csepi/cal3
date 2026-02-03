@@ -1,4 +1,4 @@
-﻿import type { DataSourceOptions } from 'typeorm';
+import type { DataSourceOptions } from 'typeorm';
 
 /**
  * Supported database engines for the application.
@@ -158,5 +158,5 @@ export interface DatabaseErrorDetails {
   /**
    * Original error instance for debugging.
    */
-  originalError?: any;
+  originalError?: unknown;
 }

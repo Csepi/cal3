@@ -1,4 +1,4 @@
-﻿import {
+import {
   BadRequestException,
   ValidationError,
   ValidationPipe,
@@ -21,7 +21,7 @@ export interface ValidationErrorDetail {
   /**
    * The rejected value if available.
    */
-  value?: any;
+  value?: unknown;
 }
 
 /**

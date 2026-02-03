@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Context metadata attached to errors for tracing and diagnostics.
  */
 export interface ErrorContext {
@@ -29,7 +29,7 @@ export interface ErrorContext {
  */
 export const buildErrorContext = (
   context: Partial<ErrorContext> = {},
-  error?: any,
+  error?: unknown,
 ): ErrorContext => {
   const stack = error instanceof Error ? error.stack : undefined;
 

@@ -1,4 +1,4 @@
-﻿import { Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import {
   AutomationRule,
   ConditionLogic,
@@ -93,7 +93,7 @@ export class AutomationEvaluatorService {
         evaluation.actualValue,
         condition.value,
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
       logError(
         error,
         buildErrorContext({ action: 'automation-evaluator.service' }),
@@ -113,7 +113,7 @@ export class AutomationEvaluatorService {
     field: ConditionField | string,
     event: Event | null,
     webhookData: Record<string, unknown> | null = null,
-  ): any {
+  ): unknown {
     // Handle webhook.data.* fields
     if (field.startsWith('webhook.data')) {
       if (!webhookData) {
@@ -132,11 +132,11 @@ export class AutomationEvaluatorService {
 
       // Navigate the path in webhook data
       const parts = path.split('.');
-      let value: any = webhookData;
+      let value: unknown = webhookData;
 
       for (const part of parts) {
         if (value && typeof value === 'object' && part in value) {
-          value = value[part];
+          value = (value as Record<string, unknown>)[part];
         } else {
           throw new Error(`Webhook data path "${path}" not found in payload`);
         }
@@ -170,7 +170,7 @@ export class AutomationEvaluatorService {
 
     // If not in map, try to extract using dot notation
     const parts = field.split('.');
-    let value: any = event;
+    let value: unknown = event;
 
     for (const part of parts) {
       if (
@@ -220,7 +220,7 @@ export class AutomationEvaluatorService {
    */
   private evaluateOperator(
     operator: ConditionOperator,
-    actualValue: any,
+    actualValue: unknown,
     expectedValue: string,
   ): boolean {
     // Normalize values
@@ -348,7 +348,7 @@ export class AutomationEvaluatorService {
     }
 
     const expressions = evaluations.map((e, i) => {
-      const status = e.passed ? 'âś“' : 'âś—';
+      const status = e.passed ? '✓' : '✗';
       return `${status} condition_${i + 1}`;
     });
 

@@ -1,4 +1,4 @@
-﻿import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource, In } from 'typeorm';
 import { Organisation } from '../../entities/organisation.entity';
@@ -130,7 +130,7 @@ export class CascadeDeletionService {
       const resourceTypeIds = organisation.resourceTypes.map((rt) => rt.id);
       if (resourceTypeIds.length > 0) {
         const resources = await queryRunner.manager.find(Resource, {
-          where: { resourceType: { id: In(resourceTypeIds) } } as any,
+          where: { resourceType: { id: In(resourceTypeIds) } },
           relations: ['reservations'],
         });
 

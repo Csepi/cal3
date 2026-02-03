@@ -1,4 +1,4 @@
-﻿import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Injectable, OnModuleInit } from '@nestjs/common';
 import {
   AutomationAction,
   ActionType,
@@ -11,6 +11,7 @@ import {
 import { ActionExecutorRegistry } from './action-executor-registry';
 import { AutomationSmartValuesService } from '../automation-smart-values.service';
 import { NotificationsService } from '../../notifications/notifications.service';
+import type { NotificationChannelType } from '../../notifications/notifications.constants';
 
 @Injectable()
 export class SendNotificationExecutor implements IActionExecutor, OnModuleInit {
@@ -56,7 +57,15 @@ export class SendNotificationExecutor implements IActionExecutor, OnModuleInit {
 
       const channels = Array.isArray(interpolatedConfig.channels)
         ? (interpolatedConfig.channels as string[]).filter(
-            (channel) => typeof channel === 'string' && channel.length > 0,
+            (channel): channel is NotificationChannelType =>
+              [
+                'inapp',
+                'email',
+                'webpush',
+                'mobilepush',
+                'slack',
+                'teams',
+              ].includes(channel),
           )
         : undefined;
 
@@ -68,7 +77,7 @@ export class SendNotificationExecutor implements IActionExecutor, OnModuleInit {
         recipients,
         title: title ?? `Automation Notification`,
         body: message,
-        preferredChannels: channels as any,
+        preferredChannels: channels,
         data: {
           automationActionId: action.id,
           ruleId: action.ruleId,
@@ -93,7 +102,7 @@ export class SendNotificationExecutor implements IActionExecutor, OnModuleInit {
         },
         executedAt,
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       return {
         success: false,
         actionId: action.id,
@@ -119,7 +128,7 @@ export class SendNotificationExecutor implements IActionExecutor, OnModuleInit {
         ? config.recipients
         : [];
 
-    explicitRecipients.forEach((candidate: any) => {
+    explicitRecipients.forEach((candidate: unknown) => {
       const numericId = Number(candidate);
       if (!Number.isNaN(numericId) && numericId > 0) {
         recipients.add(numericId);

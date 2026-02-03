@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * ReservationFormModal component for creating and editing reservations
  *

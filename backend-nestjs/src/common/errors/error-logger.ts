@@ -1,4 +1,4 @@
-﻿import { ERROR_CODES } from '../responses/error.catalog';
+import { ERROR_CODES } from '../responses/error.catalog';
 import type { ErrorContext } from './error-context';
 import { buildErrorContext } from './error-context';
 import { BaseError } from './error-base';
@@ -14,12 +14,12 @@ export interface StructuredErrorLog {
   message: string;
   code: string;
   context: ErrorContext;
-  details?: any;
+  details?: unknown;
   stack?: string;
-  cause?: any;
+  cause?: unknown;
 }
 
-const asRecord = (value: any): Record<string, unknown> | null => {
+const asRecord = (value: unknown): Record<string, unknown> | null => {
   if (typeof value === 'object' && value !== null) {
     return value as Record<string, unknown>;
   }
@@ -30,7 +30,7 @@ const asRecord = (value: any): Record<string, unknown> | null => {
  * Convert an error to a JSON-serializable payload.
  */
 const serializeError = (
-  error: any,
+  error: unknown,
   context: ErrorContext,
 ): StructuredErrorLog => {
   const timestamp = new Date().toISOString();
@@ -78,7 +78,7 @@ const serializeError = (
 /**
  * Safely serialize data structures containing circular references.
  */
-const safeStringify = (value: any): string => {
+const safeStringify = (value: unknown): string => {
   const seen = new WeakSet<object>();
   return JSON.stringify(value, (_key, val) => {
     if (typeof val === 'bigint') {
@@ -99,7 +99,7 @@ const safeStringify = (value: any): string => {
  * Log an error as structured JSON.
  */
 export const logError = (
-  error: any,
+  error: unknown,
   context: Partial<ErrorContext> = {},
 ): void => {
   const normalizedContext = buildErrorContext(context, error);
@@ -112,11 +112,11 @@ export const logError = (
  * Wrap an unknown error into a BaseError instance if needed.
  */
 export const wrapError = (
-  error: any,
+  error: unknown,
   message: string,
   code = ERROR_CODES.INTERNAL_ERROR,
   context: Partial<ErrorContext> = {},
-  details?: any,
+  details?: unknown,
 ): BaseError => {
   if (error instanceof BaseError) {
     return error.withContext(context);

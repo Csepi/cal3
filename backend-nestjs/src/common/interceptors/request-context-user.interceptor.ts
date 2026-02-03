@@ -1,4 +1,4 @@
-﻿import {
+import {
   CallHandler,
   ExecutionContext,
   Injectable,
@@ -13,7 +13,7 @@ import type { RequestWithUser } from '../types/request-with-user';
 export class RequestContextUserInterceptor implements NestInterceptor {
   constructor(private readonly requestContext: RequestContextService) {}
 
-  intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
+  intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
     const req = context.switchToHttp().getRequest<RequestWithUser>();
     if (req?.user?.id) {
       this.requestContext.attachUser(req.user.id);
