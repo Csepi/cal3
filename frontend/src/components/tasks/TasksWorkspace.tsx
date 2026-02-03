@@ -1,4 +1,4 @@
-import {
+﻿import {
   forwardRef,
   useEffect,
   useImperativeHandle,
@@ -23,7 +23,7 @@ import {
   startOfWeek,
 } from '../../utils/calendar';
 
-type DueDateScope = 'any' | 'week' | 'month' | 'year';
+type DueDateScope = 'all' | 'week' | 'month' | 'year';
 type DueDatePreset = 'this' | 'next' | 'custom';
 
 export interface TasksWorkspaceHandle {
@@ -61,7 +61,7 @@ export const TasksWorkspace = forwardRef<TasksWorkspaceHandle, TasksWorkspacePro
     const [selectedTask, setSelectedTask] = useState<Task | null>(null);
     const [drawerOpen, setDrawerOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState(filters.search ?? '');
-    const [dueScope, setDueScope] = useState<DueDateScope>('any');
+    const [dueScope, setDueScope] = useState<DueDateScope>('all');
     const [duePreset, setDuePreset] = useState<DueDatePreset>('this');
     const [customWeekDate, setCustomWeekDate] = useState('');
     const [customMonth, setCustomMonth] = useState('');
@@ -175,7 +175,7 @@ export const TasksWorkspace = forwardRef<TasksWorkspaceHandle, TasksWorkspacePro
         setCustomYear(options.yearValue);
       }
 
-      if (scope === 'any') {
+      if (scope === 'all') {
         setFilters((prev) => ({ ...prev, dueFrom: undefined, dueTo: undefined }));
         return;
       }
@@ -243,7 +243,7 @@ export const TasksWorkspace = forwardRef<TasksWorkspaceHandle, TasksWorkspacePro
     };
 
     const describeDueRange = (): string => {
-      if (dueScope === 'any') {
+      if (dueScope === 'all') {
         return 'Any due date';
       }
 
@@ -280,7 +280,7 @@ export const TasksWorkspace = forwardRef<TasksWorkspaceHandle, TasksWorkspacePro
     const clearFilters = () => {
       setFilters({});
       setSearchTerm('');
-      setDueScope('any');
+      setDueScope('all');
       setDuePreset('this');
       setCustomWeekDate('');
       setCustomMonth('');
@@ -393,7 +393,7 @@ export const TasksWorkspace = forwardRef<TasksWorkspaceHandle, TasksWorkspacePro
               <div className="flex flex-wrap gap-2">
                 {(
                   [
-                    { label: 'Any', value: 'any' },
+                    { label: 'All', value: 'all' },
                     { label: 'Week', value: 'week' },
                     { label: 'Month', value: 'month' },
                     { label: 'Year', value: 'year' },
@@ -416,7 +416,7 @@ export const TasksWorkspace = forwardRef<TasksWorkspaceHandle, TasksWorkspacePro
                   );
                 })}
               </div>
-              {dueScope !== 'any' && (
+              {dueScope !== 'all' && (
                 <div className="mt-2 flex flex-wrap items-center gap-2 rounded-2xl bg-white/80 px-3 py-2 shadow-inner">
                   {(
                     [
@@ -624,3 +624,4 @@ export const TasksWorkspace = forwardRef<TasksWorkspaceHandle, TasksWorkspacePro
 );
 
 TasksWorkspace.displayName = 'TasksWorkspace';
+

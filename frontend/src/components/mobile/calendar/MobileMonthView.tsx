@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * MobileMonthView - Mobile-optimized month calendar
  *

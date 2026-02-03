@@ -1,6 +1,7 @@
-import { Injectable, Logger } from '@nestjs/common';
+﻿import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as webPush from 'web-push';
+import type { PushSubscription } from 'web-push';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
@@ -27,6 +28,18 @@ export class WebPushChannelProvider implements NotificationChannelProvider {
   async canSend(): Promise<boolean> {
     await this.ensureConfigured();
     return this.isConfigured;
+  }
+
+  private isPushSubscription(value: any): value is PushSubscription {
+    if (typeof value !== 'object' || value === null) {
+      return false;
+    }
+    const candidate = value as Partial<PushSubscription>;
+    return (
+      typeof candidate.endpoint === 'string' &&
+      typeof candidate.keys === 'object' &&
+      candidate.keys !== null
+    );
   }
 
   async send({ message }: NotificationChannelContext): Promise<void> {
@@ -60,6 +73,9 @@ export class WebPushChannelProvider implements NotificationChannelProvider {
       tokens.map(async (token) => {
         try {
           const subscription = JSON.parse(token.token);
+          if (!this.isPushSubscription(subscription)) {
+            throw new Error('Invalid web push subscription payload');
+          }
           await webPush.sendNotification(subscription, payload);
         } catch (error) {
           const messageText =

@@ -1,10 +1,10 @@
-import { Injectable, Logger } from '@nestjs/common';
+﻿import { Injectable, Logger } from '@nestjs/common';
 
 export type AuditLogEntry = {
   action: string;
   actorId?: number | string;
   targetId?: number | string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
   timestamp?: Date;
 };
 

@@ -33,36 +33,36 @@ import { ResourceType } from './resource-type.entity';
 @Unique(['organisationId', 'userId', 'resourceTypeId']) // Prevent duplicate permissions
 export class OrganisationResourceTypePermission {
   @PrimaryGeneratedColumn()
-  id: number;
+  id!: number;
 
   @Column()
-  organisationId: number;
+  organisationId!: number;
 
   @Column()
-  userId: number;
+  userId!: number;
 
   @Column()
-  resourceTypeId: number;
+  resourceTypeId!: number;
 
   @Column({ default: false })
-  canEdit: boolean; // Can create, modify, delete this resource type
+  canEdit!: boolean; // Can create, modify, delete this resource type
 
   @Column({ nullable: true })
-  assignedById: number; // Organization admin who granted this permission
+  assignedById!: number | null; // Organization admin who granted this permission
 
   @CreateDateColumn()
-  assignedAt: Date;
+  assignedAt!: Date;
 
   // Relationships
   @ManyToOne(() => Organisation, { onDelete: 'CASCADE' })
-  organisation: Organisation;
+  organisation!: Organisation;
 
   @ManyToOne(() => User, { onDelete: 'CASCADE' })
-  user: User;
+  user!: User;
 
   @ManyToOne(() => ResourceType, { onDelete: 'CASCADE' })
-  resourceType: ResourceType;
+  resourceType!: ResourceType;
 
   @ManyToOne(() => User, { nullable: true })
-  assignedBy: User; // Organization admin who granted this permission
+  assignedBy!: User | null; // Organization admin who granted this permission
 }

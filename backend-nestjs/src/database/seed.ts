@@ -1,5 +1,6 @@
-import { NestFactory } from '@nestjs/core';
+﻿import { NestFactory } from '@nestjs/core';
 import { AppModule } from '../app.module';
+import { Repository } from 'typeorm';
 import { AuthService } from '../auth/auth.service';
 import { CalendarsService } from '../calendars/calendars.service';
 import { EventsService } from '../events/events.service';
@@ -8,6 +9,12 @@ import {
   SharePermission,
 } from '../entities/calendar.entity';
 import { EventStatus, RecurrenceType } from '../entities/event.entity';
+import { UsagePlan, User } from '../entities/user.entity';
+import { Organisation } from '../entities/organisation.entity';
+import { OrganisationUser } from '../entities/organisation-user.entity';
+
+const getErrorMessage = (error: any): string =>
+  error instanceof Error ? error.message : String(error);
 
 async function seed() {
   const app = await NestFactory.createApplicationContext(AppModule);
@@ -15,18 +22,22 @@ async function seed() {
   const authService = app.get(AuthService);
   const calendarsService = app.get(CalendarsService);
   const eventsService = app.get(EventsService);
-  const userRepository = app.get('UserRepository');
-  const organisationRepository = app.get('OrganisationRepository');
-  const organisationUserRepository = app.get('OrganisationUserRepository');
+  const userRepository = app.get<Repository<User>>('UserRepository');
+  const organisationRepository = app.get<Repository<Organisation>>(
+    'OrganisationRepository',
+  );
+  const organisationUserRepository = app.get<Repository<OrganisationUser>>(
+    'OrganisationUserRepository',
+  );
 
-  console.log('🌱 Starting database seeding...');
+  console.log('đźŚ± Starting database seeding...');
 
   try {
     // Create sample users
-    console.log('👥 Creating sample users...');
+    console.log('đź‘Ą Creating sample users...');
 
     // Create admin user first
-    let admin;
+    let admin: User | null = null;
     try {
       const adminResult = await authService.register({
         username: 'admin',
@@ -36,17 +47,21 @@ async function seed() {
         lastName: 'User',
       });
       admin = adminResult.user;
-      console.log(`✅ Created admin user: ${admin.username} (ID: ${admin.id})`);
-    } catch (error) {
-      if (error.message?.includes('already exists')) {
-        console.log('ℹ️  Admin user already exists, fetching...');
+      console.log(
+        `âś… Created admin user: ${admin.username} (ID: ${admin.id})`,
+      );
+    } catch (error: any) {
+      if (getErrorMessage(error).includes('already exists')) {
+        console.log('â„ąď¸Ź  Admin user already exists, fetching...');
         admin = await userRepository.findOne({ where: { username: 'admin' } });
       } else {
         throw error;
       }
     }
 
-    let alice, bob, charlie;
+    let alice: User | null = null;
+    let bob: User | null = null;
+    let charlie: User | null = null;
     try {
       const aliceResult = await authService.register({
         username: 'alice',
@@ -57,16 +72,16 @@ async function seed() {
       });
       alice = aliceResult.user;
       // Assign usage plans to Alice
-      alice.usagePlans = ['USER', 'STORE'];
+      alice.usagePlans = [UsagePlan.USER, UsagePlan.STORE];
       await userRepository.save(alice);
-      console.log(`✅ Created user: ${alice.username} (ID: ${alice.id})`);
-    } catch (error) {
-      if (error.message?.includes('already exists')) {
-        console.log('ℹ️  Alice already exists, fetching...');
+      console.log(`âś… Created user: ${alice.username} (ID: ${alice.id})`);
+    } catch (error: any) {
+      if (getErrorMessage(error).includes('already exists')) {
+        console.log('â„ąď¸Ź  Alice already exists, fetching...');
         alice = await userRepository.findOne({ where: { username: 'alice' } });
         // Update usage plans for existing user
         if (alice) {
-          alice.usagePlans = ['USER', 'STORE'];
+          alice.usagePlans = [UsagePlan.USER, UsagePlan.STORE];
           await userRepository.save(alice);
         }
       } else {
@@ -84,16 +99,16 @@ async function seed() {
       });
       bob = bobResult.user;
       // Assign usage plans to Bob
-      bob.usagePlans = ['USER', 'ENTERPRISE'];
+      bob.usagePlans = [UsagePlan.USER, UsagePlan.ENTERPRISE];
       await userRepository.save(bob);
-      console.log(`✅ Created user: ${bob.username} (ID: ${bob.id})`);
-    } catch (error) {
-      if (error.message?.includes('already exists')) {
-        console.log('ℹ️  Bob already exists, fetching...');
+      console.log(`âś… Created user: ${bob.username} (ID: ${bob.id})`);
+    } catch (error: any) {
+      if (getErrorMessage(error).includes('already exists')) {
+        console.log('â„ąď¸Ź  Bob already exists, fetching...');
         bob = await userRepository.findOne({ where: { username: 'bob' } });
         // Update usage plans for existing user
         if (bob) {
-          bob.usagePlans = ['USER', 'ENTERPRISE'];
+          bob.usagePlans = [UsagePlan.USER, UsagePlan.ENTERPRISE];
           await userRepository.save(bob);
         }
       } else {
@@ -111,18 +126,18 @@ async function seed() {
       });
       charlie = charlieResult.user;
       // Assign usage plans to Charlie
-      charlie.usagePlans = ['USER'];
+      charlie.usagePlans = [UsagePlan.USER];
       await userRepository.save(charlie);
-      console.log(`✅ Created user: ${charlie.username} (ID: ${charlie.id})`);
-    } catch (error) {
-      if (error.message?.includes('already exists')) {
-        console.log('ℹ️  Charlie already exists, fetching...');
+      console.log(`âś… Created user: ${charlie.username} (ID: ${charlie.id})`);
+    } catch (error: any) {
+      if (getErrorMessage(error).includes('already exists')) {
+        console.log('â„ąď¸Ź  Charlie already exists, fetching...');
         charlie = await userRepository.findOne({
           where: { username: 'charlie' },
         });
         // Update usage plans for existing user
         if (charlie) {
-          charlie.usagePlans = ['USER'];
+          charlie.usagePlans = [UsagePlan.USER];
           await userRepository.save(charlie);
         }
       } else {
@@ -130,8 +145,12 @@ async function seed() {
       }
     }
 
+    if (!admin || !alice || !bob || !charlie) {
+      throw new Error('Failed to resolve required seed users');
+    }
+
     // Create sample organizations
-    console.log('\n🏢 Creating sample organizations...');
+    console.log('\nđźŹ˘ Creating sample organizations...');
 
     const orgTechCorp = await organisationRepository.save(
       organisationRepository.create({
@@ -140,7 +159,7 @@ async function seed() {
       }),
     );
     console.log(
-      `✅ Created organization: ${orgTechCorp.name} (ID: ${orgTechCorp.id})`,
+      `âś… Created organization: ${orgTechCorp.name} (ID: ${orgTechCorp.id})`,
     );
 
     const orgStartupHub = await organisationRepository.save(
@@ -150,7 +169,7 @@ async function seed() {
       }),
     );
     console.log(
-      `✅ Created organization: ${orgStartupHub.name} (ID: ${orgStartupHub.id})`,
+      `âś… Created organization: ${orgStartupHub.name} (ID: ${orgStartupHub.id})`,
     );
 
     const orgConsultingGroup = await organisationRepository.save(
@@ -160,11 +179,11 @@ async function seed() {
       }),
     );
     console.log(
-      `✅ Created organization: ${orgConsultingGroup.name} (ID: ${orgConsultingGroup.id})`,
+      `âś… Created organization: ${orgConsultingGroup.name} (ID: ${orgConsultingGroup.id})`,
     );
 
     // Add users to organizations
-    console.log('\n👥 Adding users to organizations...');
+    console.log('\nđź‘Ą Adding users to organizations...');
 
     // Add Alice to TechCorp as admin
     await organisationUserRepository.save(
@@ -173,7 +192,7 @@ async function seed() {
         organisationId: orgTechCorp.id,
       }),
     );
-    console.log(`✅ Added ${alice.username} to ${orgTechCorp.name}`);
+    console.log(`âś… Added ${alice.username} to ${orgTechCorp.name}`);
 
     // Add Bob to TechCorp as regular member
     await organisationUserRepository.save(
@@ -182,7 +201,7 @@ async function seed() {
         organisationId: orgTechCorp.id,
       }),
     );
-    console.log(`✅ Added ${bob.username} to ${orgTechCorp.name}`);
+    console.log(`âś… Added ${bob.username} to ${orgTechCorp.name}`);
 
     // Add Alice to Startup Hub as well
     await organisationUserRepository.save(
@@ -191,7 +210,7 @@ async function seed() {
         organisationId: orgStartupHub.id,
       }),
     );
-    console.log(`✅ Added ${alice.username} to ${orgStartupHub.name}`);
+    console.log(`âś… Added ${alice.username} to ${orgStartupHub.name}`);
 
     // Add Charlie to Consulting Group
     await organisationUserRepository.save(
@@ -200,10 +219,10 @@ async function seed() {
         organisationId: orgConsultingGroup.id,
       }),
     );
-    console.log(`✅ Added ${charlie.username} to ${orgConsultingGroup.name}`);
+    console.log(`âś… Added ${charlie.username} to ${orgConsultingGroup.name}`);
 
     // Create sample calendars
-    console.log('\n📅 Creating sample calendars...');
+    console.log('\nđź“… Creating sample calendars...');
 
     // Alice's calendars
     const alicePersonal = await calendarsService.create(
@@ -216,7 +235,7 @@ async function seed() {
       alice.id,
     );
     console.log(
-      `✅ Created calendar: ${alicePersonal.name} (ID: ${alicePersonal.id})`,
+      `âś… Created calendar: ${alicePersonal.name} (ID: ${alicePersonal.id})`,
     );
 
     const aliceWork = await calendarsService.create(
@@ -228,7 +247,9 @@ async function seed() {
       },
       alice.id,
     );
-    console.log(`✅ Created calendar: ${aliceWork.name} (ID: ${aliceWork.id})`);
+    console.log(
+      `âś… Created calendar: ${aliceWork.name} (ID: ${aliceWork.id})`,
+    );
 
     // Bob's calendars
     const bobPersonal = await calendarsService.create(
@@ -241,7 +262,7 @@ async function seed() {
       bob.id,
     );
     console.log(
-      `✅ Created calendar: ${bobPersonal.name} (ID: ${bobPersonal.id})`,
+      `âś… Created calendar: ${bobPersonal.name} (ID: ${bobPersonal.id})`,
     );
 
     const bobWork = await calendarsService.create(
@@ -253,7 +274,7 @@ async function seed() {
       },
       bob.id,
     );
-    console.log(`✅ Created calendar: ${bobWork.name} (ID: ${bobWork.id})`);
+    console.log(`âś… Created calendar: ${bobWork.name} (ID: ${bobWork.id})`);
 
     // Public calendar
     const publicCal = await calendarsService.create(
@@ -265,10 +286,12 @@ async function seed() {
       },
       alice.id,
     );
-    console.log(`✅ Created calendar: ${publicCal.name} (ID: ${publicCal.id})`);
+    console.log(
+      `âś… Created calendar: ${publicCal.name} (ID: ${publicCal.id})`,
+    );
 
     // Share calendars
-    console.log('\n🤝 Setting up calendar sharing...');
+    console.log('\nđź¤ť Setting up calendar sharing...');
 
     // Share Alice's work calendar with Bob (write access)
     await calendarsService.shareCalendar(
@@ -279,7 +302,7 @@ async function seed() {
       },
       alice.id,
     );
-    console.log(`✅ Shared "${aliceWork.name}" with ${bob.username} (WRITE)`);
+    console.log(`âś… Shared "${aliceWork.name}" with ${bob.username} (WRITE)`);
 
     // Share Bob's team calendar with Alice and Charlie (write access)
     await calendarsService.shareCalendar(
@@ -290,7 +313,7 @@ async function seed() {
       },
       bob.id,
     );
-    console.log(`✅ Shared "${bobWork.name}" with ${alice.username} (WRITE)`);
+    console.log(`âś… Shared "${bobWork.name}" with ${alice.username} (WRITE)`);
 
     await calendarsService.shareCalendar(
       bobWork.id,
@@ -300,10 +323,10 @@ async function seed() {
       },
       bob.id,
     );
-    console.log(`✅ Shared "${bobWork.name}" with ${charlie.username} (READ)`);
+    console.log(`âś… Shared "${bobWork.name}" with ${charlie.username} (READ)`);
 
     // Create sample events
-    console.log('\n📝 Creating sample events...');
+    console.log('\nđź“ť Creating sample events...');
 
     // Alice's personal events
     await eventsService.create(
@@ -496,26 +519,26 @@ async function seed() {
       alice.id,
     );
 
-    console.log('\n✅ Sample data creation completed!');
-    console.log('\n📊 Summary:');
-    console.log('👥 Users: 4 (admin, alice, bob, charlie)');
+    console.log('\nâś… Sample data creation completed!');
+    console.log('\nđź“Š Summary:');
+    console.log('đź‘Ą Users: 4 (admin, alice, bob, charlie)');
     console.log(
-      '🏢 Organizations: 3 (TechCorp Solutions, Startup Hub, Consulting Group)',
+      'đźŹ˘ Organizations: 3 (TechCorp Solutions, Startup Hub, Consulting Group)',
     );
-    console.log('👔 Organization Members: 5 relationships across users');
-    console.log('📅 Calendars: 5 (2 personal, 2 shared, 1 public)');
-    console.log('📝 Events: 11 (various types and recurrence patterns)');
-    console.log('🤝 Shares: 3 calendar sharing relationships');
-    console.log('\n🔑 Admin login: username=admin, password=enterenter');
+    console.log('đź‘” Organization Members: 5 relationships across users');
+    console.log('đź“… Calendars: 5 (2 personal, 2 shared, 1 public)');
+    console.log('đź“ť Events: 11 (various types and recurrence patterns)');
+    console.log('đź¤ť Shares: 3 calendar sharing relationships');
+    console.log('\nđź”‘ Admin login: username=admin, password=enterenter');
 
-    console.log('\n🔗 Test URLs:');
-    console.log('• Frontend: http://localhost:8080');
-    console.log('• API Events: http://localhost:8081/api/events');
-    console.log('• API Docs: http://localhost:8081/api/docs');
-  } catch (error) {
-    console.error('❌ Error during seeding:', error);
-    if (error.message && error.message.includes('UNIQUE constraint failed')) {
-      console.log('ℹ️  Some data may already exist. This is normal.');
+    console.log('\nđź”— Test URLs:');
+    console.log('â€˘ Frontend: http://localhost:8080');
+    console.log('â€˘ API Events: http://localhost:8081/api/events');
+    console.log('â€˘ API Docs: http://localhost:8081/api/docs');
+  } catch (error: any) {
+    console.error('âťŚ Error during seeding:', error);
+    if (getErrorMessage(error).includes('UNIQUE constraint failed')) {
+      console.log('â„ąď¸Ź  Some data may already exist. This is normal.');
     }
   } finally {
     await app.close();

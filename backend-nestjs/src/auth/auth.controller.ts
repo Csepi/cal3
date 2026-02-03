@@ -1,4 +1,4 @@
-import {
+﻿import {
   Controller,
   Post,
   Get,
@@ -26,10 +26,8 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { ConfigurationService } from '../configuration/configuration.service';
 import { type Response, type Request as ExpressRequest } from 'express';
 import { Throttle } from '@nestjs/throttler';
-import {
-  AuthSessionResult,
-  AuthRequestMetadata,
-} from './auth.service';
+import type { AuthSessionResult, AuthRequestMetadata } from './auth.service';
+import type { RequestWithUser } from '../common/types/request-with-user';
 
 @ApiTags('Authentication')
 @Controller('auth')
@@ -91,7 +89,7 @@ export class AuthController {
     description: 'User profile retrieved successfully',
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async getProfile(@Request() req) {
+  async getProfile(@Request() req: RequestWithUser) {
     return this.authService.getUserProfile(req.user.id);
   }
 
@@ -103,8 +101,7 @@ export class AuthController {
     @Req() req: ExpressRequest,
     @Res({ passthrough: true }) res: Response,
   ): Promise<AuthResponseDto> {
-    const token =
-      body.refreshToken ?? (req.cookies?.cal3_refresh_token as string);
+    const token = body.refreshToken ?? this.getRefreshTokenFromCookies(req);
     const session = await this.authService.refreshSession(
       token,
       this.extractMetadata(req),
@@ -117,14 +114,13 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   async logout(
-    @Req() req: ExpressRequest,
+    @Req() req: RequestWithUser,
     @Body() body: RefreshTokenRequestDto,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const token =
-      body.refreshToken ?? (req.cookies?.cal3_refresh_token as string);
+    const token = body.refreshToken ?? this.getRefreshTokenFromCookies(req);
     await this.authService.logout(
-      (req as any).user.id,
+      req.user.id,
       token ?? null,
       this.extractMetadata(req),
     );
@@ -143,19 +139,19 @@ export class AuthController {
   @Get('google/callback')
   @UseGuards(AuthGuard('google'))
   @ApiOperation({ summary: 'Google OAuth callback' })
-  async googleAuthRedirect(@Req() req, @Res() res) {
-    const authResult = req.user as AuthSessionResult;
+  async googleAuthRedirect(@Req() req: RequestWithUser, @Res() res: Response) {
+    const authResult = req.user as any as AuthSessionResult;
     console.log(
       'Google OAuth callback - authResult:',
       JSON.stringify(authResult.response, null, 2),
     );
 
     // Check if this is a calendar sync request
-    const state = req.query.state;
-    if (state && state.includes('calendar-sync')) {
+    const state = this.getQueryString(req, 'state');
+    if (state?.includes('calendar-sync')) {
       // Extract user ID from JWT token if available
       const userId = authResult.response.user?.id;
-      const code = req.query.code;
+      const code = this.getQueryString(req, 'code');
 
       if (code && userId) {
         // This is a calendar sync request, redirect to calendar sync controller
@@ -188,19 +184,22 @@ export class AuthController {
   @Get('microsoft/callback')
   @UseGuards(AuthGuard('microsoft'))
   @ApiOperation({ summary: 'Microsoft OAuth callback' })
-  async microsoftAuthRedirect(@Req() req, @Res() res) {
-    const authResult = req.user as AuthSessionResult;
+  async microsoftAuthRedirect(
+    @Req() req: RequestWithUser,
+    @Res() res: Response,
+  ) {
+    const authResult = req.user as any as AuthSessionResult;
     console.log(
       'Microsoft OAuth callback - authResult:',
       JSON.stringify(authResult, null, 2),
     );
 
     // Check if this is a calendar sync request
-    const state = req.query.state;
-    if (state && state.includes('calendar-sync')) {
+    const state = this.getQueryString(req, 'state');
+    if (state?.includes('calendar-sync')) {
       // Extract user ID from JWT token if available
       const userId = authResult.response.user?.id;
-      const code = req.query.code;
+      const code = this.getQueryString(req, 'code');
 
       if (code && userId) {
         // This is a calendar sync request, redirect to calendar sync controller
@@ -250,5 +249,21 @@ export class AuthController {
       sameSite: 'strict',
       path: '/api/auth',
     });
+  }
+
+  private getQueryString(req: ExpressRequest, key: string): string | undefined {
+    const value = req.query[key];
+    if (typeof value === 'string') {
+      return value;
+    }
+    if (Array.isArray(value) && typeof value[0] === 'string') {
+      return value[0];
+    }
+    return undefined;
+  }
+
+  private getRefreshTokenFromCookies(req: ExpressRequest): string | undefined {
+    const cookieValue = req.cookies?.cal3_refresh_token;
+    return typeof cookieValue === 'string' ? cookieValue : undefined;
   }
 }

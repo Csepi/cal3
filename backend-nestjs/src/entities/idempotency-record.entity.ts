@@ -12,29 +12,29 @@ import { timestampTzType } from './column-types';
 @Index(['key', 'userId', 'scope'], { unique: true })
 export class IdempotencyRecord {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id!: string;
 
   @Column({ length: 128 })
-  key: string;
+  key!: string;
 
   @Column({ length: 128 })
-  scope: string;
+  scope!: string;
 
   @Column()
-  userId: number;
+  userId!: number;
 
   @Column({ length: 128 })
-  requestHash: string;
+  requestHash!: string;
 
   @Column({ type: 'text', nullable: true })
   responsePayload?: string | null;
 
   @Column({ type: timestampTzType })
-  expiresAt: Date;
+  expiresAt!: Date;
 
   @CreateDateColumn()
-  createdAt: Date;
+  createdAt!: Date;
 
   @UpdateDateColumn()
-  updatedAt: Date;
+  updatedAt!: Date;
 }

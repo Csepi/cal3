@@ -1,4 +1,4 @@
-import { InjectQueue, Process, Processor } from '@nestjs/bull';
+﻿import { InjectQueue, Process, Processor } from '@nestjs/bull';
 import type { Job } from 'bull';
 import { Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -16,6 +16,17 @@ import type { Queue } from 'bull';
 interface DigestJobPayload {
   deliveryId?: number;
 }
+
+const parseReleaseAt = (value: any): number => {
+  if (
+    value instanceof Date ||
+    typeof value === 'string' ||
+    typeof value === 'number'
+  ) {
+    return new Date(value).getTime();
+  }
+  return 0;
+};
 
 @Processor(NOTIFICATIONS_DIGEST_QUEUE)
 export class NotificationsDigestProcessor {
@@ -56,9 +67,7 @@ export class NotificationsDigestProcessor {
 
     const now = Date.now();
     for (const delivery of deliveries) {
-      const releaseAt = delivery.metadata?.releaseAt
-        ? new Date(delivery.metadata.releaseAt).getTime()
-        : 0;
+      const releaseAt = parseReleaseAt(delivery.metadata?.releaseAt);
 
       if (releaseAt && releaseAt > now) {
         await this.scheduleDelivery(delivery.id, releaseAt - now);
@@ -79,9 +88,7 @@ export class NotificationsDigestProcessor {
       return;
     }
 
-    const releaseAt = delivery.metadata?.releaseAt
-      ? new Date(delivery.metadata.releaseAt).getTime()
-      : 0;
+    const releaseAt = parseReleaseAt(delivery.metadata?.releaseAt);
     const now = Date.now();
     if (releaseAt && releaseAt > now) {
       await this.scheduleDelivery(delivery.id, releaseAt - now);

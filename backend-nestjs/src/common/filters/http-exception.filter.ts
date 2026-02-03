@@ -1,4 +1,4 @@
-import {
+﻿import {
   ExceptionFilter,
   Catch,
   ArgumentsHost,
@@ -21,14 +21,12 @@ import type { ApiResponse } from '../responses/response.types';
 export class AllExceptionsFilter implements ExceptionFilter {
   private readonly logger = new Logger(AllExceptionsFilter.name);
 
-  constructor(
-    private readonly requestContext: RequestContextService,
-  ) {}
+  constructor(private readonly requestContext: RequestContextService) {}
 
   /**
    * Catch all unhandled exceptions and normalize error responses.
    */
-  catch(exception: unknown, host: ArgumentsHost): void {
+  catch(exception: any, host: ArgumentsHost): void {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
@@ -36,7 +34,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
     let status: number;
     let message: string;
     let code: ErrorCode;
-    let details: unknown;
+    let details: any;
 
     if (exception instanceof HttpException) {
       status = exception.getStatus();
@@ -44,13 +42,17 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
       if (typeof errorResponse === 'object' && errorResponse !== null) {
         const errorObj = errorResponse as any;
-        const responseMessage = errorObj.message || errorObj.error || exception.message;
+        const responseMessage =
+          errorObj.message || errorObj.error || exception.message;
         message = Array.isArray(responseMessage)
           ? responseMessage.join(', ')
           : responseMessage;
         details = errorObj.details ?? errorObj.errors ?? errorObj.message;
-        code = (errorObj.code as ErrorCode) ||
-          (Array.isArray(errorObj.message) ? ERROR_CODES.VALIDATION_FAILED : undefined) ||
+        code =
+          (errorObj.code as ErrorCode) ||
+          (Array.isArray(errorObj.message)
+            ? ERROR_CODES.VALIDATION_FAILED
+            : undefined) ||
           STATUS_TO_ERROR_CODE[status] ||
           ERROR_CODES.INTERNAL_ERROR;
       } else {
@@ -60,7 +62,9 @@ export class AllExceptionsFilter implements ExceptionFilter {
     } else if (exception instanceof QueryFailedError) {
       // Handle database errors
       status = HttpStatus.BAD_REQUEST;
-      const dbError = getDatabaseErrorDetails(exception.driverError ?? exception);
+      const dbError = getDatabaseErrorDetails(
+        exception.driverError ?? exception,
+      );
       details = dbError;
 
       if (dbError.type === 'unique-violation') {

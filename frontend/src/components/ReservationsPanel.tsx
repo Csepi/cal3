@@ -751,7 +751,7 @@ const ReservationsPanel: React.FC<ReservationsPanelProps> = ({ themeColor = '#3b
           <div className="text-6xl mb-6">🏢</div>
           <h2 className="text-3xl font-bold text-gray-800 mb-4">No Organizations Found</h2>
           <p className="text-gray-600 mb-6">
-            You are not assigned to any organizations yet. Please contact your administrator to get access.
+            You are not assigned to organizations yet. Please contact your administrator to get access.
           </p>
           <div className={`${themeColors.badge} rounded-lg p-4`}>
             <p className="text-sm font-medium">

@@ -1,4 +1,4 @@
-import { NestFactory } from '@nestjs/core';
+﻿import { NestFactory } from '@nestjs/core';
 import { AppModule } from '../app.module';
 import { DataSource } from 'typeorm';
 
@@ -28,7 +28,7 @@ interface IndexInfo {
 }
 
 async function inspectSchema() {
-  console.log('🔍 Starting database schema inspection...\n');
+  console.log('đź”Ť Starting database schema inspection...\n');
 
   const app = await NestFactory.createApplicationContext(AppModule);
   const dataSource = app.get(DataSource);
@@ -36,7 +36,7 @@ async function inspectSchema() {
   try {
     // Get database type
     const dbType = dataSource.options.type;
-    console.log(`📊 Database Type: ${dbType}\n`);
+    console.log(`đź“Š Database Type: ${dbType}\n`);
 
     // Get all tables
     const tablesQuery = `
@@ -48,15 +48,15 @@ async function inspectSchema() {
     `;
 
     const tables = await dataSource.query(tablesQuery);
-    console.log(`📋 Found ${tables.length} tables:\n`);
+    console.log(`đź“‹ Found ${tables.length} tables:\n`);
     console.log(tables.map((t: any) => `  - ${t.table_name}`).join('\n'));
     console.log('\n' + '='.repeat(80) + '\n');
 
     // Get detailed information for each table
     for (const table of tables) {
       const tableName = table.table_name;
-      console.log(`\n📦 TABLE: ${tableName}`);
-      console.log('─'.repeat(80));
+      console.log(`\nđź“¦ TABLE: ${tableName}`);
+      console.log('â”€'.repeat(80));
 
       // Get columns
       const columnsQuery = `
@@ -135,7 +135,7 @@ async function inspectSchema() {
           console.log('    FOREIGN KEYS:');
           foreignKeys.forEach((fk) => {
             console.log(
-              `      ${fk.column_name} → ${fk.foreign_table_name}(${fk.foreign_column_name})`,
+              `      ${fk.column_name} â†’ ${fk.foreign_table_name}(${fk.foreign_column_name})`,
             );
           });
         }
@@ -194,7 +194,7 @@ async function inspectSchema() {
     }
 
     console.log('='.repeat(80));
-    console.log('\n📊 SUMMARY:');
+    console.log('\nđź“Š SUMMARY:');
     console.log(`  Total Tables: ${tables.length}`);
 
     // Count total columns
@@ -228,9 +228,9 @@ async function inspectSchema() {
     const indexCount = await dataSource.query(indexCountQuery);
     console.log(`  Total Indexes: ${indexCount[0].count}`);
 
-    console.log('\n✅ Schema inspection completed successfully!');
+    console.log('\nâś… Schema inspection completed successfully!');
   } catch (error) {
-    console.error('❌ Error inspecting schema:', error);
+    console.error('âťŚ Error inspecting schema:', error);
     throw error;
   } finally {
     await app.close();

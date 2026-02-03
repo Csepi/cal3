@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useCallback, useMemo, useState } from 'react';
 import { useNotifications } from '../../hooks/useNotifications';
 import type {

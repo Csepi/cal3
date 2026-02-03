@@ -1,4 +1,4 @@
-import {
+﻿import {
   ForbiddenException,
   Injectable,
   Logger,
@@ -41,7 +41,7 @@ export interface PublishNotificationOptions {
   recipients: number[];
   title?: string | null;
   body: string;
-  data?: Record<string, any> | null;
+  data?: Record<string, unknown> | null;
   context?: {
     threadKey?: string;
     contextType?: string | null;
@@ -68,6 +68,13 @@ export interface NotificationCatalog {
   eventTypes: NotificationEventDefinition[];
   channels: NotificationCatalogChannel[];
   scopes: NotificationCatalogScope[];
+}
+
+interface QuietHoursConfig {
+  start?: string;
+  end?: string;
+  timezone?: string;
+  suppressImmediate?: boolean;
 }
 
 @Injectable()
@@ -561,7 +568,7 @@ export class NotificationsService implements OnModuleInit {
         : this.calculateQuietHoursDelay(preference?.quietHours);
       const releaseDelay = Math.max(digestDelay, quietDelay);
 
-      const metadata: Record<string, any> = {
+      const metadata: Record<string, unknown> = {
         fallbackChain,
         position: index,
       };
@@ -632,14 +639,15 @@ export class NotificationsService implements OnModuleInit {
   }
 
   private calculateQuietHoursDelay(
-    quietHours?: Record<string, any> | null,
+    quietHours?: Record<string, unknown> | null,
   ): number {
-    if (!quietHours || quietHours.suppressImmediate === false) {
+    const config = quietHours as QuietHoursConfig | null | undefined;
+    if (!config || config.suppressImmediate === false) {
       return 0;
     }
 
-    const { start, end, timezone } = quietHours;
-    if (!start || !end) {
+    const { start, end, timezone } = config;
+    if (typeof start !== 'string' || typeof end !== 'string') {
       return 0;
     }
 
@@ -649,7 +657,9 @@ export class NotificationsService implements OnModuleInit {
       return 0;
     }
 
-    const currentMinutes = this.getLocalMinutes(timezone || 'UTC');
+    const currentMinutes = this.getLocalMinutes(
+      typeof timezone === 'string' && timezone.length > 0 ? timezone : 'UTC',
+    );
 
     const isWithinQuietHours =
       startMinutes < endMinutes

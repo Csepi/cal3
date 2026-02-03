@@ -22,9 +22,7 @@ export const RESOURCE_ACCESS_ACTION_KEY = 'resourceAccessAction';
 export const RESOURCE_ACCESS_MESSAGE_KEY = 'resourceAccessMessage';
 
 @Injectable()
-export class ResourceAccessGuard
-  implements CanActivate, ResourceAccessPolicy
-{
+export class ResourceAccessGuard implements CanActivate, ResourceAccessPolicy {
   constructor(
     private readonly reflector: Reflector,
     private readonly permissionResolver: PermissionResolverService,

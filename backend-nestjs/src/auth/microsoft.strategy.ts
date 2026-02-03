@@ -1,8 +1,18 @@
-import { Injectable } from '@nestjs/common';
+﻿import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
-import { Strategy, VerifyCallback } from 'passport-microsoft';
+import { Strategy } from 'passport-microsoft';
 import { AuthService } from './auth.service';
 import { ConfigurationService } from '../configuration/configuration.service';
+
+interface MicrosoftProfile {
+  id: string;
+  displayName?: string;
+  emails?: Array<{ value?: string }>;
+  name?: {
+    givenName?: string;
+    familyName?: string;
+  };
+}
 
 @Injectable()
 export class MicrosoftStrategy extends PassportStrategy(Strategy, 'microsoft') {
@@ -35,9 +45,9 @@ export class MicrosoftStrategy extends PassportStrategy(Strategy, 'microsoft') {
 
   async validate(
     accessToken: string,
-    profile: any,
-    done: VerifyCallback,
-  ): Promise<any> {
+    profile: MicrosoftProfile,
+    done: (error: Error | null, user?: any) => void,
+  ): Promise<void> {
     const { id, displayName, emails } = profile;
     const email = emails && emails[0] ? emails[0].value : null;
 

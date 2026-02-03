@@ -43,7 +43,10 @@ import { NotificationInboxRule } from '../../entities/notification-inbox-rule.en
 import { NotificationScopeMute } from '../../entities/notification-scope-mute.entity';
 import { RefreshToken } from '../../entities/refresh-token.entity';
 import { IdempotencyRecord } from '../../entities/idempotency-record.entity';
-import { getPoolConfigFromEnv, getPoolOptionsForEngine } from './database.connection-pool';
+import {
+  getPoolConfigFromEnv,
+  getPoolOptionsForEngine,
+} from './database.connection-pool';
 import type {
   DatabaseConfigFactoryResult,
   DatabaseEngine,
@@ -69,10 +72,7 @@ const parseBoolean = (
 /**
  * Resolve a numeric environment value.
  */
-const parseNumber = (
-  value: string | undefined,
-  fallback: number,
-): number => {
+const parseNumber = (value: string | undefined, fallback: number): number => {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : fallback;
 };
@@ -80,9 +80,7 @@ const parseNumber = (
 /**
  * Return the canonical database engine based on DB_TYPE.
  */
-const resolveDatabaseEngine = (
-  env: NodeJS.ProcessEnv,
-): DatabaseEngine => {
+const resolveDatabaseEngine = (env: NodeJS.ProcessEnv): DatabaseEngine => {
   if (env.DB_TYPE === 'postgres') return 'postgres';
   if (env.DB_TYPE === 'mssql') return 'mssql';
   return 'sqlite';
@@ -144,8 +142,7 @@ const buildRuntimeConfig = (
   env: NodeJS.ProcessEnv,
 ): DatabaseRuntimeConfig => {
   const pool = getPoolConfigFromEnv(env);
-  const logging =
-    env.NODE_ENV === 'development' || env.DB_LOGGING === 'true';
+  const logging = env.NODE_ENV === 'development' || env.DB_LOGGING === 'true';
 
   if (engine === 'sqlite') {
     return {
@@ -195,8 +192,7 @@ const logDatabaseConfig = (runtime: DatabaseRuntimeConfig): void => {
   const sslRejectUnauthorized = runtime.ssl?.rejectUnauthorized ?? true;
   const connectionTimeout = runtime.pool.connectionTimeoutMillis;
 
-  const label =
-    runtime.type === 'mssql' ? 'Azure SQL (MSSQL)' : 'PostgreSQL';
+  const label = runtime.type === 'mssql' ? 'Azure SQL (MSSQL)' : 'PostgreSQL';
 
   dbLogger.log(`${label} Connection Configuration`);
   dbLogger.log(`Host: ${runtime.host}`);
@@ -223,15 +219,18 @@ const logDatabaseConfig = (runtime: DatabaseRuntimeConfig): void => {
   if (runtime.type === 'postgres') {
     dbLogger.log('Attempting to connect to PostgreSQL...');
     process.nextTick(() => {
-      dbLogger.log(
-        `Connection attempt started at ${new Date().toISOString()}`,
-      );
+      dbLogger.log(`Connection attempt started at ${new Date().toISOString()}`);
     });
   }
 
-  if (runtime.host?.includes('azure.com') || runtime.host?.includes('amazonaws.com')) {
+  if (
+    runtime.host?.includes('azure.com') ||
+    runtime.host?.includes('amazonaws.com')
+  ) {
     dbLogger.warn('WARNING: Detected cloud database provider');
-    dbLogger.warn('WARNING: Ensure firewall rules allow connections from this IP');
+    dbLogger.warn(
+      'WARNING: Ensure firewall rules allow connections from this IP',
+    );
   }
   if (connectionTimeout < 30000) {
     dbLogger.warn(

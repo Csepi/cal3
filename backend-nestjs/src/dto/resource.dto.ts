@@ -2,7 +2,7 @@ import { IsString, IsOptional, IsBoolean, IsInt, Min } from 'class-validator';
 
 export class CreateResourceDto {
   @IsString()
-  name: string;
+  name!: string;
 
   @IsOptional()
   @IsString()
@@ -14,7 +14,7 @@ export class CreateResourceDto {
   capacity?: number;
 
   @IsInt()
-  resourceTypeId: number;
+  resourceTypeId!: number;
 
   @IsOptional()
   @IsInt()

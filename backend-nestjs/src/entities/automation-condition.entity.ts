@@ -66,47 +66,47 @@ export enum ConditionLogicOperator {
 @Entity('automation_conditions')
 export class AutomationCondition {
   @PrimaryGeneratedColumn()
-  id: number;
+  id!: number;
 
   @ManyToOne(() => AutomationRule, (rule) => rule.conditions, {
     onDelete: 'CASCADE',
   })
-  rule: AutomationRule;
+  rule!: AutomationRule;
 
   @Column()
-  ruleId: number;
+  ruleId!: number;
 
   @Column({
     type: 'varchar',
     length: 100,
   })
-  field: ConditionField;
+  field!: ConditionField;
 
   @Column({
     type: 'varchar',
     length: 50,
   })
-  operator: ConditionOperator;
+  operator!: ConditionOperator;
 
   @Column({ type: 'text' })
-  value: string;
+  value!: string;
 
   @Column({ type: 'varchar', length: 36, nullable: true })
-  groupId: string;
+  groupId!: string;
 
   @Column({
     type: 'varchar',
     length: 10,
     default: ConditionLogicOperator.AND,
   })
-  logicOperator: ConditionLogicOperator;
+  logicOperator!: ConditionLogicOperator;
 
   @Column({ default: 0 })
-  order: number;
+  order!: number;
 
   @CreateDateColumn()
-  createdAt: Date;
+  createdAt!: Date;
 
   @UpdateDateColumn()
-  updatedAt: Date;
+  updatedAt!: Date;
 }

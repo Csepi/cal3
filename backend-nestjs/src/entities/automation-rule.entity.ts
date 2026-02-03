@@ -1,4 +1,4 @@
-import {
+﻿import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
@@ -32,67 +32,67 @@ export enum ConditionLogic {
 @Entity('automation_rules')
 export class AutomationRule {
   @PrimaryGeneratedColumn()
-  id: number;
+  id!: number;
 
   @Column({ length: 200 })
-  name: string;
+  name!: string;
 
   @Column({ type: 'text', nullable: true })
-  description: string;
+  description!: string;
 
   @Column({
     type: 'varchar',
     length: 50,
   })
-  triggerType: TriggerType;
+  triggerType!: TriggerType;
 
   @Column({ type: 'json', nullable: true })
-  triggerConfig: Record<string, any>;
+  triggerConfig!: Record<string, unknown>;
 
   @Column({ default: true })
-  isEnabled: boolean;
+  isEnabled!: boolean;
 
   @Column({
     type: 'varchar',
     length: 10,
     default: ConditionLogic.AND,
   })
-  conditionLogic: ConditionLogic;
+  conditionLogic!: ConditionLogic;
 
   @Column({ type: timestampType, nullable: true })
-  lastExecutedAt: Date;
+  lastExecutedAt!: Date;
 
   @Column({ default: 0 })
-  executionCount: number;
+  executionCount!: number;
 
   @Column({ type: 'varchar', length: 64, nullable: true, unique: true })
-  webhookToken: string;
+  webhookToken!: string;
 
   @Column({ type: 'varchar', length: 128, nullable: true })
-  webhookSecret: string;
+  webhookSecret!: string;
 
   @ManyToOne(() => User, { onDelete: 'CASCADE' })
-  createdBy: User;
+  createdBy!: User;
 
   @Column()
-  createdById: number;
+  createdById!: number;
 
   @OneToMany(() => AutomationCondition, (condition) => condition.rule, {
     cascade: true,
   })
-  conditions: AutomationCondition[];
+  conditions!: AutomationCondition[];
 
   @OneToMany(() => AutomationAction, (action) => action.rule, {
     cascade: true,
   })
-  actions: AutomationAction[];
+  actions!: AutomationAction[];
 
   @OneToMany(() => AutomationAuditLog, (log) => log.rule)
-  auditLogs: AutomationAuditLog[];
+  auditLogs!: AutomationAuditLog[];
 
   @CreateDateColumn()
-  createdAt: Date;
+  createdAt!: Date;
 
   @UpdateDateColumn()
-  updatedAt: Date;
+  updatedAt!: Date;
 }

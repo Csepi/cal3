@@ -105,7 +105,7 @@ const Dashboard: React.FC<DashboardProps> = ({ initialView = 'calendar' }) => {
     // Reset permissions state
     resetPermissions();
 
-    // Notify API service to clear any cached tokens
+    // Notify API service to clear cached tokens
     try {
       await authLogout();
     } catch (error) {

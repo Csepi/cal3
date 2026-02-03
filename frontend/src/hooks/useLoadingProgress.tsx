@@ -50,7 +50,7 @@ export const useLoadingProgress = (): UseLoadingProgressReturn => {
       progress: 100
     }));
 
-    // Clear any existing timeout
+    // Clear existing timeout
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
     }

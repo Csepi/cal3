@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * CalendarEventModal component for creating and editing calendar events
  *

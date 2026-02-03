@@ -17,6 +17,7 @@ import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { QueryTasksDto } from './dto/query-tasks.dto';
 import { UpdateTaskLabelsDto } from './dto/update-task-labels.dto';
+import type { RequestWithUser } from '../common/types/request-with-user';
 
 @Controller('tasks')
 @UseGuards(JwtAuthGuard)
@@ -24,23 +25,23 @@ export class TasksController {
   constructor(private readonly tasksService: TasksService) {}
 
   @Post()
-  create(@Req() req: any, @Body() dto: CreateTaskDto) {
+  create(@Req() req: RequestWithUser, @Body() dto: CreateTaskDto) {
     return this.tasksService.create(req.user.id, dto);
   }
 
   @Get()
-  findAll(@Req() req: any, @Query() query: QueryTasksDto) {
+  findAll(@Req() req: RequestWithUser, @Query() query: QueryTasksDto) {
     return this.tasksService.findAll(req.user.id, query);
   }
 
   @Get(':id')
-  findOne(@Req() req: any, @Param('id', ParseIntPipe) id: number) {
+  findOne(@Req() req: RequestWithUser, @Param('id', ParseIntPipe) id: number) {
     return this.tasksService.findOne(req.user.id, id);
   }
 
   @Patch(':id')
   update(
-    @Req() req: any,
+    @Req() req: RequestWithUser,
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: UpdateTaskDto,
   ) {
@@ -48,13 +49,13 @@ export class TasksController {
   }
 
   @Delete(':id')
-  remove(@Req() req: any, @Param('id', ParseIntPipe) id: number) {
+  remove(@Req() req: RequestWithUser, @Param('id', ParseIntPipe) id: number) {
     return this.tasksService.remove(req.user.id, id);
   }
 
   @Post(':id/labels')
   addLabels(
-    @Req() req: any,
+    @Req() req: RequestWithUser,
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: UpdateTaskLabelsDto,
   ) {
@@ -63,7 +64,7 @@ export class TasksController {
 
   @Delete(':id/labels/:labelId')
   removeLabel(
-    @Req() req: any,
+    @Req() req: RequestWithUser,
     @Param('id', ParseIntPipe) id: number,
     @Param('labelId', ParseIntPipe) labelId: number,
   ) {

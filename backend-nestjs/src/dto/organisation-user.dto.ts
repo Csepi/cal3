@@ -3,10 +3,10 @@ import { OrganisationRoleType } from '../entities/organisation-user.entity';
 
 export class AssignOrganisationUserDto {
   @IsNumber()
-  userId: number;
+  userId!: number;
 
   @IsEnum(OrganisationRoleType)
-  role: OrganisationRoleType;
+  role!: OrganisationRoleType;
 
   @IsOptional()
   @IsNumber()
@@ -15,5 +15,5 @@ export class AssignOrganisationUserDto {
 
 export class UpdateOrganisationUserRoleDto {
   @IsEnum(OrganisationRoleType)
-  role: OrganisationRoleType;
+  role!: OrganisationRoleType;
 }

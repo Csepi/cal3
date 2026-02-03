@@ -1,4 +1,4 @@
-import * as sql from 'mssql';
+﻿import * as sql from 'mssql';
 
 const azureConfig: sql.config = {
   server: 'cal3db-server.database.windows.net',
@@ -19,12 +19,12 @@ async function createAuditTable() {
   let pool: sql.ConnectionPool | null = null;
 
   try {
-    console.log('📡 Connecting to Azure SQL Database...');
+    console.log('đź“ˇ Connecting to Azure SQL Database...');
     pool = await sql.connect(azureConfig);
-    console.log('✅ Connected!\n');
+    console.log('âś… Connected!\n');
 
     console.log(
-      '⏳ Creating automation_audit_logs table with corrected foreign keys...\n',
+      'âŹł Creating automation_audit_logs table with corrected foreign keys...\n',
     );
 
     const createTableSQL = `
@@ -49,9 +49,9 @@ async function createAuditTable() {
     `;
 
     await pool.request().query(createTableSQL);
-    console.log('✅ Table created successfully!\n');
+    console.log('âś… Table created successfully!\n');
 
-    console.log('⏳ Creating indexes...\n');
+    console.log('âŹł Creating indexes...\n');
 
     const indexes = [
       'CREATE INDEX idx_automation_audit_logs_ruleId ON automation_audit_logs(ruleId);',
@@ -62,10 +62,10 @@ async function createAuditTable() {
 
     for (const indexSQL of indexes) {
       await pool.request().query(indexSQL);
-      console.log(`✅ Index created`);
+      console.log(`âś… Index created`);
     }
 
-    console.log('\n📊 Final Verification:\n');
+    console.log('\nđź“Š Final Verification:\n');
 
     // Count all tables
     const tableResult = await pool.request().query(`
@@ -90,12 +90,12 @@ async function createAuditTable() {
     `);
     console.log(`Total Indexes: ${indexResult.recordset[0].INDEX_COUNT}`);
 
-    console.log('\n✅ DEPLOYMENT COMPLETE!\n');
-    console.log('─'.repeat(80));
+    console.log('\nâś… DEPLOYMENT COMPLETE!\n');
+    console.log('â”€'.repeat(80));
     console.log(
       'All 22 database tables have been successfully created on Azure SQL!',
     );
-    console.log('─'.repeat(80));
+    console.log('â”€'.repeat(80));
     console.log('\nNext Steps:');
     console.log(
       '1. Update backend-nestjs/.env file with Azure SQL connection:',
@@ -113,9 +113,9 @@ async function createAuditTable() {
     console.log('');
     console.log('3. Start the application:');
     console.log('   npm run start:dev');
-    console.log('─'.repeat(80));
+    console.log('â”€'.repeat(80));
   } catch (error: any) {
-    console.error('❌ ERROR:', error.message);
+    console.error('âťŚ ERROR:', error.message);
     if (error.number) {
       console.error('SQL Error Number:', error.number);
     }
@@ -129,7 +129,7 @@ async function createAuditTable() {
   } finally {
     if (pool) {
       await pool.close();
-      console.log('\n📡 Database connection closed.');
+      console.log('\nđź“ˇ Database connection closed.');
     }
   }
 }

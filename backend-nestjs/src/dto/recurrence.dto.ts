@@ -1,4 +1,4 @@
-import {
+﻿import {
   IsEnum,
   IsOptional,
   IsNumber,
@@ -29,7 +29,7 @@ export enum WeekDay {
 
 export class RecurrencePatternDto {
   @IsEnum(RecurrenceType)
-  type: RecurrenceType;
+  type!: RecurrenceType;
 
   @IsNumber()
   @IsOptional()
@@ -67,7 +67,7 @@ export class RecurrencePatternDto {
 
 export class CreateRecurringEventDto {
   @IsString()
-  title: string;
+  title!: string;
 
   @IsString()
   @IsOptional()
@@ -78,7 +78,7 @@ export class CreateRecurringEventDto {
   location?: string;
 
   @IsDateString()
-  startDate: string;
+  startDate!: string;
 
   @IsString()
   @IsOptional()
@@ -100,11 +100,11 @@ export class CreateRecurringEventDto {
   color?: string;
 
   @IsNumber()
-  calendarId: number;
+  calendarId!: number;
 
   @ValidateNested()
   @Type(() => RecurrencePatternDto)
-  recurrence: RecurrencePatternDto;
+  recurrence!: RecurrencePatternDto;
 }
 
 export class UpdateRecurringEventDto {
@@ -158,7 +158,7 @@ export class UpdateRecurringEventDto {
 
 export class RecurrenceInfoDto {
   @IsEnum(RecurrenceType)
-  type: RecurrenceType;
+  type!: RecurrenceType;
 
   @IsObject()
   @IsOptional()

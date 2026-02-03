@@ -124,7 +124,8 @@ export class UpdateProfileDto {
 
   @ApiPropertyOptional({
     example: 42,
-    description: 'Default calendar ID for mirrored Tasks events (must own a Tasks calendar)',
+    description:
+      'Default calendar ID for mirrored Tasks events (must own a Tasks calendar)',
   })
   @IsOptional()
   @IsNumber()
@@ -151,7 +152,7 @@ export class ChangePasswordDto {
     description: 'Current password',
   })
   @IsString()
-  currentPassword: string;
+  currentPassword!: string;
 
   @ApiPropertyOptional({
     example: 'newpassword123',
@@ -159,7 +160,7 @@ export class ChangePasswordDto {
   })
   @IsString()
   @MinLength(6)
-  newPassword: string;
+  newPassword!: string;
 }
 
 export class UpdateUsagePlansDto {
@@ -169,5 +170,5 @@ export class UpdateUsagePlansDto {
   })
   @IsArray()
   @IsEnum(UsagePlan, { each: true })
-  usagePlans: UsagePlan[];
+  usagePlans!: UsagePlan[];
 }

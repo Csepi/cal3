@@ -22,22 +22,22 @@ export enum AgentStatus {
 @Index(['userId', 'name'], { unique: true })
 export class AgentProfile {
   @PrimaryGeneratedColumn()
-  id: number;
+  id!: number;
 
   @Column()
-  userId: number;
+  userId!: number;
 
   @ManyToOne(() => User, (user) => user.agentProfiles, { onDelete: 'CASCADE' })
-  user: User;
+  user!: User;
 
   @Column({ length: 80 })
-  name: string;
+  name!: string;
 
   @Column('varchar', { length: 255, nullable: true })
   description?: string | null;
 
   @Column({ type: enumType, enum: AgentStatus, default: AgentStatus.ACTIVE })
-  status: AgentStatus;
+  status!: AgentStatus;
 
   @Column({ type: timestampType, nullable: true })
   lastUsedAt?: Date | null;
@@ -45,14 +45,14 @@ export class AgentProfile {
   @OneToMany(() => AgentPermission, (permission) => permission.agent, {
     cascade: true,
   })
-  permissions: AgentPermission[];
+  permissions!: AgentPermission[];
 
   @OneToMany(() => AgentApiKey, (apiKey) => apiKey.agent, { cascade: true })
-  apiKeys: AgentApiKey[];
+  apiKeys!: AgentApiKey[];
 
   @CreateDateColumn()
-  createdAt: Date;
+  createdAt!: Date;
 
   @UpdateDateColumn()
-  updatedAt: Date;
+  updatedAt!: Date;
 }

@@ -1,4 +1,4 @@
-import 'reflect-metadata';
+﻿import 'reflect-metadata';
 import { DataSource } from 'typeorm';
 import { User } from '../entities/user.entity';
 import { Calendar, CalendarShare } from '../entities/calendar.entity';
@@ -25,7 +25,7 @@ import { AutomationAction } from '../entities/automation-action.entity';
 import { AutomationAuditLog } from '../entities/automation-audit-log.entity';
 
 async function extractSchemaFromEntities() {
-  console.log('🔍 Extracting schema information from TypeORM entities...\n');
+  console.log('đź”Ť Extracting schema information from TypeORM entities...\n');
 
   // Create a temporary SQLite data source to extract metadata
   const tempDataSource = new DataSource({
@@ -62,7 +62,7 @@ async function extractSchemaFromEntities() {
 
   const entities = tempDataSource.entityMetadatas;
 
-  console.log(`📊 Found ${entities.length} entities\n`);
+  console.log(`đź“Š Found ${entities.length} entities\n`);
   console.log('='.repeat(100) + '\n');
 
   const schemaReport: any = {
@@ -74,8 +74,8 @@ async function extractSchemaFromEntities() {
     const tableName = entity.tableName;
     const entityName = entity.name;
 
-    console.log(`\n📦 TABLE: ${tableName} (Entity: ${entityName})`);
-    console.log('─'.repeat(100));
+    console.log(`\nđź“¦ TABLE: ${tableName} (Entity: ${entityName})`);
+    console.log('â”€'.repeat(100));
 
     const tableInfo: any = {
       tableName,
@@ -142,7 +142,7 @@ async function extractSchemaFromEntities() {
         tableInfo.relations.push(relationInfo);
 
         console.log(
-          `    ${relation.propertyName.padEnd(30)} ${relationType.padEnd(20)} → ${targetEntity}`,
+          `    ${relation.propertyName.padEnd(30)} ${relationType.padEnd(20)} â†’ ${targetEntity}`,
         );
         if (joinColumns) {
           console.log(`      ${''.padEnd(28)} Join Column: ${joinColumns}`);
@@ -166,7 +166,7 @@ async function extractSchemaFromEntities() {
         const onDelete = fk.onDelete || 'NO ACTION';
         const onUpdate = fk.onUpdate || 'NO ACTION';
 
-        console.log(`    ${columns} → ${refTable}(${refColumns})`);
+        console.log(`    ${columns} â†’ ${refTable}(${refColumns})`);
         console.log(`      On Delete: ${onDelete}, On Update: ${onUpdate}`);
       }
     }
@@ -206,7 +206,7 @@ async function extractSchemaFromEntities() {
   }
 
   console.log('='.repeat(100));
-  console.log('\n📊 SCHEMA SUMMARY:');
+  console.log('\nđź“Š SCHEMA SUMMARY:');
   console.log(`  Total Tables: ${schemaReport.totalTables}`);
 
   let totalColumns = 0;
@@ -227,14 +227,14 @@ async function extractSchemaFromEntities() {
   console.log(`  Total Foreign Keys: ${totalForeignKeys}`);
   console.log(`  Total Indexes: ${totalIndexes}`);
 
-  console.log('\n📋 TABLE LIST:');
+  console.log('\nđź“‹ TABLE LIST:');
   for (const table of schemaReport.tables) {
     console.log(
       `  - ${table.tableName.padEnd(40)} (${table.columns.length} columns, ${table.relations.length} relations)`,
     );
   }
 
-  console.log('\n✅ Schema extraction completed successfully!\n');
+  console.log('\nâś… Schema extraction completed successfully!\n');
 
   await tempDataSource.destroy();
 

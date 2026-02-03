@@ -25,112 +25,116 @@ export enum SyncStatus {
 @Entity('calendar_sync_connections')
 export class CalendarSyncConnection {
   @PrimaryGeneratedColumn()
-  id: number;
+  id!: number;
 
   @ManyToOne(() => User, { onDelete: 'CASCADE' })
-  user: User;
+  user!: User;
 
   @Column()
-  userId: number;
+  userId!: number;
 
   @Column()
-  provider: SyncProvider;
+  provider!: SyncProvider;
 
   @Column({ nullable: true, type: 'varchar' })
-  providerUserId: string | null;
+  providerUserId!: string | null;
 
   @Column({ nullable: true, type: 'varchar' })
-  accessToken: string | null;
+  accessToken!: string | null;
 
   @Column({ nullable: true, type: 'varchar' })
-  refreshToken: string | null;
+  refreshToken!: string | null;
 
   @Column({ nullable: true, type: timestampType })
-  tokenExpiresAt: Date | null;
+  tokenExpiresAt!: Date | null;
 
   @Column({
     default: SyncStatus.ACTIVE,
   })
-  status: SyncStatus;
+  status!: SyncStatus;
 
   @Column({ nullable: true, type: timestampType })
-  lastSyncAt: Date | null;
+  lastSyncAt!: Date | null;
 
   @CreateDateColumn()
-  createdAt: Date;
+  createdAt!: Date;
 
   @UpdateDateColumn()
-  updatedAt: Date;
+  updatedAt!: Date;
 }
 
 @Entity('synced_calendars')
 export class SyncedCalendar {
   @PrimaryGeneratedColumn()
-  id: number;
+  id!: number;
 
   @ManyToOne(() => CalendarSyncConnection, { onDelete: 'CASCADE' })
-  syncConnection: CalendarSyncConnection;
+  syncConnection!: CalendarSyncConnection;
 
   @Column()
-  syncConnectionId: number;
+  syncConnectionId!: number;
 
   @ManyToOne(() => Calendar, { onDelete: 'CASCADE' })
-  localCalendar: Calendar;
+  localCalendar!: Calendar;
 
   @Column()
-  localCalendarId: number;
+  localCalendarId!: number;
 
   @Column()
-  externalCalendarId: string;
+  externalCalendarId!: string;
 
   @Column()
-  externalCalendarName: string;
+  externalCalendarName!: string;
 
   @Column({ default: true })
-  bidirectionalSync: boolean;
+  bidirectionalSync!: boolean;
 
   @Column({ nullable: true, type: timestampType })
-  lastSyncAt: Date;
+  lastSyncAt!: Date;
 
   @Column({ nullable: true, type: 'varchar' })
-  syncToken: string | null;
+  syncToken!: string | null;
 
   @CreateDateColumn()
-  createdAt: Date;
+  createdAt!: Date;
 
   @UpdateDateColumn()
-  updatedAt: Date;
+  updatedAt!: Date;
 }
 
 @Entity('sync_event_mappings')
-@Index('IDX_sync_event_mappings_unique', ['syncedCalendarId', 'externalEventId'], {
-  unique: true,
-})
+@Index(
+  'IDX_sync_event_mappings_unique',
+  ['syncedCalendarId', 'externalEventId'],
+  {
+    unique: true,
+  },
+)
 export class SyncEventMapping {
   @PrimaryGeneratedColumn()
-  id: number;
+  id!: number;
 
   @ManyToOne(() => SyncedCalendar, { onDelete: 'CASCADE' })
-  syncedCalendar: SyncedCalendar;
+  syncedCalendar!: SyncedCalendar;
 
   @Column()
-  syncedCalendarId: number;
+  syncedCalendarId!: number;
 
   @Column()
-  localEventId: number;
+  localEventId!: number;
 
   @Column()
-  externalEventId: string;
+  externalEventId!: string;
 
   @Column({ nullable: true, type: timestampType })
-  lastModifiedLocal: Date;
+  lastModifiedLocal!: Date;
 
   @Column({ nullable: true, type: timestampType })
-  lastModifiedExternal: Date;
+  lastModifiedExternal!: Date;
 
   @CreateDateColumn()
-  createdAt: Date;
+  createdAt!: Date;
 
   @UpdateDateColumn()
-  updatedAt: Date;
+  updatedAt!: Date;
 }

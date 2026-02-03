@@ -65,7 +65,13 @@ import { DatabaseModule } from './common/database/database.module';
     NotificationsModule,
     ConfigurationModule,
     TasksModule,
-    TypeOrmModule.forFeature([User, Calendar, CalendarShare, CalendarGroup, Task]),
+    TypeOrmModule.forFeature([
+      User,
+      Calendar,
+      CalendarShare,
+      CalendarGroup,
+      Task,
+    ]),
   ],
   controllers: [
     AppController,

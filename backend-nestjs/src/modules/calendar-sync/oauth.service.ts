@@ -1,8 +1,4 @@
-import {
-  BadRequestException,
-  Injectable,
-  Logger,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import {
@@ -265,9 +261,12 @@ export class CalendarSyncOAuthService {
 
       const data = await response.json();
 
-      const userInfoResponse = await fetch('https://graph.microsoft.com/v1.0/me', {
-        headers: { Authorization: `Bearer ${data.access_token}` },
-      });
+      const userInfoResponse = await fetch(
+        'https://graph.microsoft.com/v1.0/me',
+        {
+          headers: { Authorization: `Bearer ${data.access_token}` },
+        },
+      );
 
       if (!userInfoResponse.ok) {
         const errorText = await userInfoResponse.text();

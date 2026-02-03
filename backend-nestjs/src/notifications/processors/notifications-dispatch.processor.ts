@@ -147,9 +147,7 @@ export class NotificationsDispatchProcessor {
         ? metadata.position
         : fallbackChain.indexOf(delivery.channel as NotificationChannelType);
 
-    const nextChannel = fallbackChain.find(
-      (_, index) => index > currentIndex,
-    );
+    const nextChannel = fallbackChain.find((_, index) => index > currentIndex);
     if (!nextChannel) {
       return false;
     }

@@ -18,22 +18,22 @@ import { v4 as uuidv4 } from 'uuid';
 @Entity('resources')
 export class Resource {
   @PrimaryGeneratedColumn()
-  id: number;
+  id!: number;
 
   @Column({ length: 255 })
-  name: string;
+  name!: string;
 
   @Column({ type: 'text', nullable: true })
-  description: string;
+  description!: string;
 
   @Column({ type: 'int', default: 1 })
-  capacity: number;
+  capacity!: number;
 
   @Column({ default: true })
-  isActive: boolean;
+  isActive!: boolean;
 
   @Column({ unique: true, nullable: true })
-  publicBookingToken: string;
+  publicBookingToken!: string;
 
   @BeforeInsert()
   generatePublicBookingToken() {
@@ -51,25 +51,25 @@ export class Resource {
   }
 
   @ManyToOne(() => ResourceType, (resourceType) => resourceType.resources)
-  resourceType: ResourceType;
+  resourceType!: ResourceType;
 
   @Column({ nullable: true })
-  organisationId: number;
+  organisationId!: number;
 
   @ManyToOne(() => Organisation, (organisation) => organisation.resources, {
     onDelete: 'SET NULL',
   })
-  organisation: Organisation;
+  organisation!: Organisation;
 
   @ManyToOne(() => User)
-  managedBy: User;
+  managedBy!: User;
 
   @OneToMany(() => Reservation, (reservation) => reservation.resource)
-  reservations: Reservation[];
+  reservations!: Reservation[];
 
   @CreateDateColumn()
-  createdAt: Date;
+  createdAt!: Date;
 
   @UpdateDateColumn()
-  updatedAt: Date;
+  updatedAt!: Date;
 }

@@ -572,3 +572,4 @@ const WeekView: React.FC<WeekViewProps> = ({
 };
 
 export default WeekView;
+

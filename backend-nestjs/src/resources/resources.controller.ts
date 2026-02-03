@@ -18,6 +18,7 @@ import { CascadeDeletionService } from '../common/services/cascade-deletion.serv
 import { PublicBookingService } from './public-booking.service';
 import { ConfigurationService } from '../configuration/configuration.service';
 import { RequireResourceAccess } from '../common/decorators/require-resource-access.decorator';
+import type { RequestWithUser } from '../common/types/request-with-user';
 
 @Controller('resources')
 @UseGuards(JwtAuthGuard)
@@ -37,8 +38,8 @@ export class ResourcesController {
 
   @Get()
   async findAll(
-    @Query('resourceTypeId') resourceTypeId?: string,
-    @Req() req?: any,
+    @Query('resourceTypeId') resourceTypeId: string | undefined = undefined,
+    @Req() req: RequestWithUser,
   ) {
     console.log(
       '🔍 ResourcesController.findAll called for user:',
@@ -99,7 +100,7 @@ export class ResourcesController {
     'edit',
     'You do not have permission to view deletion preview for this resource',
   )
-  async previewDeletion(@Param('id') id: string, @Req() req) {
+  async previewDeletion(@Param('id') id: string, @Req() _req: RequestWithUser) {
     const resourceId = +id;
 
     return await this.cascadeDeletionService.previewResourceDeletion(
@@ -116,7 +117,7 @@ export class ResourcesController {
     'delete',
     'You do not have permission to delete this resource',
   )
-  async deleteCascade(@Param('id') id: string, @Req() req) {
+  async deleteCascade(@Param('id') id: string, @Req() req: RequestWithUser) {
     const resourceId = +id;
 
     const result = await this.cascadeDeletionService.deleteResource(
@@ -135,7 +136,7 @@ export class ResourcesController {
     'view',
     'You do not have permission to view this resource',
   )
-  async getPublicToken(@Param('id') id: string, @Req() req) {
+  async getPublicToken(@Param('id') id: string, @Req() _req: RequestWithUser) {
     const resourceId = +id;
 
     const resource = await this.resourcesService.findOne(resourceId);
@@ -159,7 +160,7 @@ export class ResourcesController {
     'edit',
     'You do not have permission to regenerate token for this resource',
   )
-  async regenerateToken(@Param('id') id: string, @Req() req) {
+  async regenerateToken(@Param('id') id: string, @Req() _req: RequestWithUser) {
     const resourceId = +id;
 
     const resource = await this.resourcesService.findOne(resourceId);

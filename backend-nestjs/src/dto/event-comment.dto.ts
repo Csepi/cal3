@@ -50,7 +50,7 @@ export class UpdateEventCommentDto {
     description: 'Updated comment content',
   })
   @IsString()
-  content: string;
+  content!: string;
 }
 
 export class FlagCommentDto {
@@ -59,7 +59,7 @@ export class FlagCommentDto {
     description: 'Flag state to apply to the comment',
   })
   @IsBoolean()
-  isFlagged: boolean;
+  isFlagged!: boolean;
 }
 
 export class TrackEventOpenDto {
@@ -74,10 +74,10 @@ export class TrackEventOpenDto {
 
 export class EventCommentResponseDto {
   @ApiProperty({ example: 1 })
-  id: number;
+  id!: number;
 
   @ApiProperty({ example: 42 })
-  eventId: number;
+  eventId!: number;
 
   @ApiPropertyOptional({ example: 12 })
   parentCommentId?: number;
@@ -86,10 +86,10 @@ export class EventCommentResponseDto {
   templateKey?: CommentTemplateKey;
 
   @ApiProperty({ example: 'Quick note: finalizing deck' })
-  content: string;
+  content!: string;
 
   @ApiProperty({ example: false })
-  isFlagged: boolean;
+  isFlagged!: boolean;
 
   @ApiPropertyOptional({ example: '2025-11-25T12:00:00Z' })
   flaggedAt?: Date;
@@ -105,13 +105,13 @@ export class EventCommentResponseDto {
     enum: CalendarVisibility,
     description: 'Visibility inherited from the parent event/calendar',
   })
-  visibility: CalendarVisibility;
+  visibility!: CalendarVisibility;
 
   @ApiProperty({
     example: { id: 3, username: 'alice', firstName: 'Alice' },
     description: 'Reporter/author of the comment',
   })
-  reporter: {
+  reporter!: {
     id: number;
     username: string;
     firstName?: string;
@@ -119,16 +119,16 @@ export class EventCommentResponseDto {
   };
 
   @ApiProperty({ example: 'comment' })
-  context: string;
+  context!: string;
 
   @ApiProperty({ example: false })
-  isSystem: boolean;
+  isSystem!: boolean;
 
   @ApiProperty({ example: '2025-11-25T11:00:00Z' })
-  createdAt: Date;
+  createdAt!: Date;
 
   @ApiProperty({ example: '2025-11-25T11:15:00Z' })
-  updatedAt: Date;
+  updatedAt!: Date;
 
   @ApiPropertyOptional({
     type: [EventCommentResponseDto],

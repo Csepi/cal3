@@ -51,7 +51,10 @@ export class AutomationAuditService {
         `Audit log cleanup completed. Deleted ${totalDeleted} old logs.`,
       );
     } catch (error) {
-      logError(error, buildErrorContext({ action: 'automation-audit.service' }));
+      logError(
+        error,
+        buildErrorContext({ action: 'automation-audit.service' }),
+      );
       this.logger.error('Error during audit log cleanup:', error);
     }
   }
@@ -98,7 +101,10 @@ export class AutomationAuditService {
 
       return result.affected || 0;
     } catch (error) {
-      logError(error, buildErrorContext({ action: 'automation-audit.service' }));
+      logError(
+        error,
+        buildErrorContext({ action: 'automation-audit.service' }),
+      );
       this.logger.error(
         `Error enforcing circular buffer for rule ${ruleId}:`,
         error,
@@ -123,7 +129,10 @@ export class AutomationAuditService {
 
       return result.affected || 0;
     } catch (error) {
-      logError(error, buildErrorContext({ action: 'automation-audit.service' }));
+      logError(
+        error,
+        buildErrorContext({ action: 'automation-audit.service' }),
+      );
       this.logger.error('Error cleaning up old audit logs:', error);
       return 0;
     }

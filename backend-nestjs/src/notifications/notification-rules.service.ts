@@ -1,7 +1,12 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+﻿import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
-import { InboxRuleDto, InboxRuleScope } from './dto/inbox-rule.dto';
+import {
+  InboxRuleActionDto,
+  InboxRuleConditionDto,
+  InboxRuleDto,
+  InboxRuleScope,
+} from './dto/inbox-rule.dto';
 import { UserNotificationPreference } from '../entities/user-notification-preference.entity';
 import { NotificationInboxRule } from '../entities/notification-inbox-rule.entity';
 import { NotificationScopeMute } from '../entities/notification-scope-mute.entity';
@@ -18,7 +23,7 @@ export interface NotificationEvaluationInput {
   contextType?: string | null;
   contextId?: string | null;
   threadKey?: string | null;
-  data?: Record<string, any> | null;
+  data?: Record<string, unknown> | null;
 }
 
 export interface NotificationRuleEvaluationResult {
@@ -28,7 +33,7 @@ export interface NotificationRuleEvaluationResult {
   muteThread: boolean;
   suppressChannels: NotificationChannelType[];
   appliedRuleIds: number[];
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
 }
 
 export interface NotificationRuleContext {
@@ -50,7 +55,7 @@ interface RuleConditionContext {
   contextType?: string | null;
   contextId?: string | null;
   threadKey?: string | null;
-  data?: Record<string, any> | null;
+  data?: Record<string, unknown> | null;
 }
 
 interface ScopeDescriptor {
@@ -61,7 +66,7 @@ interface ScopeDescriptor {
 export interface NotificationScopeOption {
   value: string;
   label: string;
-  meta?: Record<string, any>;
+  meta?: Record<string, unknown>;
 }
 
 export type NotificationScopeType = Extract<
@@ -93,7 +98,7 @@ export interface NotificationPreferenceSummary {
   channels: Record<string, boolean>;
   digest?: string;
   fallbackOrder?: string[];
-  quietHours?: Record<string, any> | null;
+  quietHours?: Record<string, unknown> | null;
 }
 
 @Injectable()
@@ -193,8 +198,12 @@ export class NotificationRulesService {
       scopeType: rule.scopeType as InboxRuleScope,
       scopeId: rule.scopeId ?? undefined,
       isEnabled: rule.isEnabled,
-      conditions: Array.isArray(rule.conditions) ? rule.conditions : [],
-      actions: Array.isArray(rule.actions) ? rule.actions : [],
+      conditions: Array.isArray(rule.conditions)
+        ? (rule.conditions as InboxRuleConditionDto[])
+        : [],
+      actions: Array.isArray(rule.actions)
+        ? (rule.actions as InboxRuleActionDto[])
+        : [],
       continueProcessing: rule.continueProcessing,
       order: rule.order,
     }));
@@ -241,8 +250,8 @@ export class NotificationRulesService {
       scopeType: saved.scopeType as InboxRuleScope,
       scopeId: saved.scopeId ?? undefined,
       isEnabled: saved.isEnabled,
-      conditions: saved.conditions as any,
-      actions: saved.actions as any,
+      conditions: saved.conditions as InboxRuleConditionDto[],
+      actions: saved.actions as InboxRuleActionDto[],
       continueProcessing: saved.continueProcessing,
       order: saved.order,
     };
@@ -335,12 +344,16 @@ export class NotificationRulesService {
     if (isRequested('calendar')) {
       const calendarMeta = new Map<
         number,
-        { calendar: Calendar; tags: Set<string>; meta: Record<string, any> }
+        {
+          calendar: Calendar;
+          tags: Set<string>;
+          meta: Record<string, unknown>;
+        }
       >();
       const addCalendar = (
         calendar: Calendar | null | undefined,
         tag?: string,
-        extraMeta?: Record<string, any>,
+        extraMeta?: Record<string, unknown>,
       ) => {
         if (!calendar) {
           return;
@@ -422,7 +435,7 @@ export class NotificationRulesService {
       result.calendar = Array.from(calendarMeta.values())
         .map(({ calendar, tags, meta }) => {
           const tagList = Array.from(tags);
-          const suffix = tagList.length > 0 ? ` • ${tagList.join(', ')}` : '';
+          const suffix = tagList.length > 0 ? ` â€˘ ${tagList.join(', ')}` : '';
           return {
             value: String(calendar.id),
             label: `${calendar.name ?? `Calendar #${calendar.id}`}${suffix}`,
@@ -486,7 +499,7 @@ export class NotificationRulesService {
           parts.push(`#${reservation.id}`);
           return {
             value: String(reservation.id),
-            label: parts.join(' • '),
+            label: parts.join(' â€˘ '),
             meta: {
               status: reservation.status ?? null,
               startTime: reservation.startTime ?? null,
@@ -708,13 +721,13 @@ export class NotificationRulesService {
       pushScope('thread', input.threadKey);
     }
 
-    const data = input.data ?? {};
+    const data = input.data;
     if (data) {
-      pushScope('organisation', (data as any).organisationId);
-      pushScope('calendar', (data as any).calendarId);
-      pushScope('reservation', (data as any).reservationId);
-      pushScope('resource', (data as any).resourceId);
-      pushScope('event', (data as any).eventId);
+      pushScope('organisation', data['organisationId'] as string | number);
+      pushScope('calendar', data['calendarId'] as string | number);
+      pushScope('reservation', data['reservationId'] as string | number);
+      pushScope('resource', data['resourceId'] as string | number);
+      pushScope('event', data['eventId'] as string | number);
     }
 
     return scopes;
@@ -760,7 +773,9 @@ export class NotificationRulesService {
     rule: NotificationInboxRule,
     context: RuleConditionContext,
   ): boolean {
-    const conditions = Array.isArray(rule.conditions) ? rule.conditions : [];
+    const conditions = Array.isArray(rule.conditions)
+      ? (rule.conditions as Record<string, unknown>[])
+      : [];
     if (conditions.length === 0) {
       return true;
     }
@@ -770,14 +785,14 @@ export class NotificationRulesService {
   }
 
   private evaluateCondition(
-    condition: Record<string, any>,
+    condition: Record<string, unknown>,
     context: RuleConditionContext,
   ): boolean {
     const field = condition?.field;
     const operator = condition?.operator;
     const expected = condition?.value;
 
-    if (!field || !operator) {
+    if (typeof field !== 'string' || typeof operator !== 'string') {
       return false;
     }
 
@@ -846,22 +861,26 @@ export class NotificationRulesService {
 
   private resolveFieldValue(context: RuleConditionContext, field: string): any {
     const segments = field.split('.');
+    const contextRecord = context as any as Record<string, unknown>;
     if (segments.length === 1) {
-      return (context as any)[segments[0]];
+      return contextRecord[segments[0]];
     }
 
     let current: any;
     if (segments[0] === 'data') {
       current = context.data ?? null;
     } else {
-      current = (context as any)[segments[0]];
+      current = contextRecord[segments[0]];
     }
 
     for (let index = 1; index < segments.length; index += 1) {
       if (current == null) {
         return undefined;
       }
-      current = current[segments[index]];
+      if (typeof current !== 'object') {
+        return undefined;
+      }
+      current = (current as Record<string, unknown>)[segments[index]];
     }
 
     return current;
@@ -872,7 +891,9 @@ export class NotificationRulesService {
     result: NotificationRuleEvaluationResult,
     suppressChannelSet: Set<NotificationChannelType>,
   ): { stop: boolean; note?: string } {
-    const actions = Array.isArray(rule.actions) ? rule.actions : [];
+    const actions = Array.isArray(rule.actions)
+      ? (rule.actions as InboxRuleActionDto[])
+      : [];
     let stop = !rule.continueProcessing;
     let note: string | undefined;
 
@@ -884,8 +905,8 @@ export class NotificationRulesService {
           stop = true;
           break;
         case 'suppress_channels': {
-          const channels = Array.isArray(action?.payload?.channels)
-            ? action.payload.channels
+          const channels = Array.isArray(action.payload?.channels)
+            ? (action.payload.channels as NotificationChannelType[])
             : [];
           channels.forEach((channel: NotificationChannelType) => {
             const normalized = channel;

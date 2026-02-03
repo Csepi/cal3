@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { apiService } from './api';
 
 export interface UserPermissions {

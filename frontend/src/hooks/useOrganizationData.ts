@@ -27,7 +27,7 @@ export interface OrganizationData {
   members: MemberWithRole[];
   /** Loading state */
   loading: boolean;
-  /** Error message if any */
+  /** Error message if present */
   error: string | null;
 }
 

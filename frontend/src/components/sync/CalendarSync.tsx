@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React, { useState, useEffect } from 'react';
 import { calendarApi } from '../../services/calendarApi';
 import { LoadingScreen } from '../common';

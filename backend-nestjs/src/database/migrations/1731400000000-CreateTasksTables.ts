@@ -225,7 +225,9 @@ export class CreateTasksTables1731400000000 implements MigrationInterface {
     await queryRunner.query(`DROP TABLE IF EXISTS "task_labels";`);
     await queryRunner.query(`DROP TABLE IF EXISTS "tasks";`);
 
-    await queryRunner.query(`DROP INDEX IF EXISTS "IDX_calendars_owner_tasks";`);
+    await queryRunner.query(
+      `DROP INDEX IF EXISTS "IDX_calendars_owner_tasks";`,
+    );
     await queryRunner.query(`DROP INDEX IF EXISTS "IDX_task_labels_user";`);
     await queryRunner.query(`DROP INDEX IF EXISTS "IDX_tasks_calendar_event";`);
     await queryRunner.query(`DROP INDEX IF EXISTS "IDX_tasks_dueDate";`);

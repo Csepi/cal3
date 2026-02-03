@@ -3,7 +3,6 @@ import {
   ForbiddenException,
   NotFoundException,
   BadRequestException,
-  Logger,
 } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -27,8 +26,6 @@ import { logError } from '../common/errors/error-logger';
 import { buildErrorContext } from '../common/errors/error-context';
 @Injectable()
 export class EventsService {
-  private readonly logger = new Logger(EventsService.name);
-
   constructor(
     @InjectRepository(Event)
     private eventRepository: Repository<Event>,
@@ -46,7 +43,8 @@ export class EventsService {
 
   private resolveAutomationService(): any | null {
     try {
-      const token = require('../automation/automation.service').AutomationService;
+      const token =
+        require('../automation/automation.service').AutomationService;
       return this.moduleRef.get(token, { strict: false });
     } catch {
       return null;
@@ -105,10 +103,11 @@ export class EventsService {
             ? JSON.parse(savedEvent.recurrenceRule)
             : savedEvent.recurrenceRule;
 
-        const recurrencePattern = this.eventValidationService.convertRuleToPattern(
-          recurrenceData,
-          savedEvent.recurrenceType,
-        );
+        const recurrencePattern =
+          this.eventValidationService.convertRuleToPattern(
+            recurrenceData,
+            savedEvent.recurrenceType,
+          );
         const instances = this.generateRecurringInstances(
           savedEvent,
           recurrencePattern,
@@ -302,9 +301,9 @@ export class EventsService {
     ) {
       const hasNewCalendarAccess =
         await this.eventAccessPolicy.canWriteCalendar(
-        updateEventDto.calendarId,
-        userId,
-      );
+          updateEventDto.calendarId,
+          userId,
+        );
       if (!hasNewCalendarAccess) {
         throw new ForbiddenException(
           'Insufficient permissions to move event to the specified calendar',
@@ -558,10 +557,7 @@ export class EventsService {
         updatedEvents = await this.updateSingleInstance(event, updateData);
         break;
       case 'future':
-        updatedEvents = await this.updateFutureInstances(
-          event,
-          recurrence,
-        );
+        updatedEvents = await this.updateFutureInstances(event, recurrence);
         break;
       case 'all':
         updatedEvents = await this.updateAllInstances(
@@ -858,7 +854,6 @@ export class EventsService {
 
     return nextDate;
   }
-
 
   private async convertToRecurringEvent(
     event: Event,

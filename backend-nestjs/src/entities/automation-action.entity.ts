@@ -1,4 +1,4 @@
-import {
+﻿import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
@@ -23,31 +23,31 @@ export enum ActionType {
 @Entity('automation_actions')
 export class AutomationAction {
   @PrimaryGeneratedColumn()
-  id: number;
+  id!: number;
 
   @ManyToOne(() => AutomationRule, (rule) => rule.actions, {
     onDelete: 'CASCADE',
   })
-  rule: AutomationRule;
+  rule!: AutomationRule;
 
   @Column()
-  ruleId: number;
+  ruleId!: number;
 
   @Column({
     type: 'varchar',
     length: 50,
   })
-  actionType: ActionType;
+  actionType!: ActionType;
 
   @Column({ type: 'json' })
-  actionConfig: Record<string, any>;
+  actionConfig!: Record<string, unknown>;
 
   @Column({ default: 0 })
-  order: number;
+  order!: number;
 
   @CreateDateColumn()
-  createdAt: Date;
+  createdAt!: Date;
 
   @UpdateDateColumn()
-  updatedAt: Date;
+  updatedAt!: Date;
 }

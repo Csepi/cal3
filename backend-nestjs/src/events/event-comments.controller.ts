@@ -8,6 +8,7 @@ import {
   Request,
   UseGuards,
 } from '@nestjs/common';
+import type { RequestWithUser } from '../common/types/request-with-user';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -30,9 +31,7 @@ import {
 @UseGuards(JwtAuthGuard)
 @Controller('events/:eventId/comments')
 export class EventCommentsController {
-  constructor(
-    private readonly eventCommentsService: EventCommentsService,
-  ) {}
+  constructor(private readonly eventCommentsService: EventCommentsService) {}
 
   @Get()
   @ApiOperation({ summary: 'List comments for an event' })
@@ -42,7 +41,7 @@ export class EventCommentsController {
     description:
       'Comments retrieved with visibility and reply capability metadata',
   })
-  list(@Param('eventId') eventId: string, @Request() req) {
+  list(@Param('eventId') eventId: string, @Request() req: RequestWithUser) {
     return this.eventCommentsService.listForEvent(+eventId, req.user.id);
   }
 
@@ -57,7 +56,7 @@ export class EventCommentsController {
   create(
     @Param('eventId') eventId: string,
     @Body() dto: CreateEventCommentDto,
-    @Request() req,
+    @Request() req: RequestWithUser,
   ) {
     return this.eventCommentsService.createComment(+eventId, dto, req.user.id);
   }
@@ -73,7 +72,7 @@ export class EventCommentsController {
   trackOpen(
     @Param('eventId') eventId: string,
     @Body() dto: TrackEventOpenDto,
-    @Request() req,
+    @Request() req: RequestWithUser,
   ) {
     return this.eventCommentsService.trackEventOpen(
       +eventId,
@@ -95,7 +94,7 @@ export class EventCommentsController {
     @Param('eventId') eventId: string,
     @Param('commentId') commentId: string,
     @Body() dto: UpdateEventCommentDto,
-    @Request() req,
+    @Request() req: RequestWithUser,
   ) {
     return this.eventCommentsService.updateComment(
       +eventId,
@@ -118,7 +117,7 @@ export class EventCommentsController {
     @Param('eventId') eventId: string,
     @Param('commentId') commentId: string,
     @Body() dto: FlagCommentDto,
-    @Request() req,
+    @Request() req: RequestWithUser,
   ) {
     return this.eventCommentsService.flagComment(
       +eventId,
@@ -141,7 +140,7 @@ export class EventCommentsController {
     @Param('eventId') eventId: string,
     @Param('commentId') commentId: string,
     @Body() dto: CreateEventCommentDto,
-    @Request() req,
+    @Request() req: RequestWithUser,
   ) {
     return this.eventCommentsService.createComment(
       +eventId,

@@ -1,4 +1,4 @@
-import {
+﻿import {
   IsString,
   IsOptional,
   IsEnum,
@@ -18,7 +18,7 @@ export enum RecurrenceUpdateMode {
 export class CreateEventDto {
   @ApiProperty({ example: 'Team Meeting', description: 'Event title' })
   @IsString()
-  title: string;
+  title!: string;
 
   @ApiPropertyOptional({
     example: 'Weekly team sync meeting',
@@ -33,7 +33,7 @@ export class CreateEventDto {
     description: 'Event start date (YYYY-MM-DD)',
   })
   @IsDateString()
-  startDate: string;
+  startDate!: string;
 
   @ApiPropertyOptional({
     example: '10:00',
@@ -108,7 +108,7 @@ export class CreateEventDto {
   @IsString()
   color?: string;
 
-  @ApiPropertyOptional({ example: '🎉', description: 'Event icon (emoji)' })
+  @ApiPropertyOptional({ example: 'đźŽ‰', description: 'Event icon (emoji)' })
   @IsOptional()
   @IsString()
   icon?: string;
@@ -229,7 +229,7 @@ export class UpdateEventDto {
   @IsString()
   color?: string;
 
-  @ApiPropertyOptional({ example: '🎉', description: 'Event icon (emoji)' })
+  @ApiPropertyOptional({ example: 'đźŽ‰', description: 'Event icon (emoji)' })
   @IsOptional()
   @IsString()
   icon?: string;
@@ -260,10 +260,10 @@ export class UpdateEventDto {
 
 export class EventResponseDto {
   @ApiProperty({ example: 1, description: 'Event ID' })
-  id: number;
+  id!: number;
 
   @ApiProperty({ example: 'Team Meeting', description: 'Event title' })
-  title: string;
+  title!: string;
 
   @ApiProperty({
     example: 'Weekly team sync meeting',
@@ -272,7 +272,7 @@ export class EventResponseDto {
   description?: string;
 
   @ApiProperty({ example: '2025-09-20', description: 'Event start date' })
-  startDate: Date;
+  startDate!: Date;
 
   @ApiProperty({ example: '10:00', description: 'Event start time' })
   startTime?: string;
@@ -284,16 +284,16 @@ export class EventResponseDto {
   endTime?: string;
 
   @ApiProperty({ example: false, description: 'Whether event is all-day' })
-  isAllDay: boolean;
+  isAllDay!: boolean;
 
   @ApiProperty({ example: 'Conference Room A', description: 'Event location' })
   location?: string;
 
   @ApiProperty({ enum: EventStatus, description: 'Event status' })
-  status: EventStatus;
+  status!: EventStatus;
 
   @ApiProperty({ enum: RecurrenceType, description: 'Event recurrence type' })
-  recurrenceType: RecurrenceType;
+  recurrenceType!: RecurrenceType;
 
   @ApiProperty({ example: '#ef4444', description: 'Event color' })
   color?: string;
@@ -302,14 +302,14 @@ export class EventResponseDto {
   notes?: string;
 
   @ApiProperty({ description: 'Calendar information' })
-  calendar: {
+  calendar!: {
     id: number;
     name: string;
     color: string;
   };
 
   @ApiProperty({ description: 'Event creator information' })
-  createdBy: {
+  createdBy!: {
     id: number;
     username: string;
   };
@@ -318,11 +318,11 @@ export class EventResponseDto {
     example: '2025-09-15T10:00:00Z',
     description: 'Creation timestamp',
   })
-  createdAt: Date;
+  createdAt!: Date;
 
   @ApiProperty({
     example: '2025-09-15T10:00:00Z',
     description: 'Last update timestamp',
   })
-  updatedAt: Date;
+  updatedAt!: Date;
 }

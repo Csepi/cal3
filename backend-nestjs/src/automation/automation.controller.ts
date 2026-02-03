@@ -1,4 +1,4 @@
-import {
+﻿import {
   Controller,
   Get,
   Post,
@@ -41,6 +41,7 @@ import {
   PaginatedAuditLogsDto,
   AuditLogStatsDto,
 } from './dto/automation-audit-log.dto';
+import type { RequestWithUser } from '../common/types/request-with-user';
 
 @ApiTags('automation')
 @Controller('automation')
@@ -67,7 +68,7 @@ export class AutomationController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   async createRule(
     @Body() createRuleDto: CreateAutomationRuleDto,
-    @Req() req,
+    @Req() req: RequestWithUser,
   ): Promise<AutomationRuleDetailDto> {
     const userId = req.user.id;
     return this.automationService.createRule(userId, createRuleDto);
@@ -84,8 +85,8 @@ export class AutomationController {
   async listRules(
     @Query('page', ParseIntPipe) page: number = 1,
     @Query('limit', ParseIntPipe) limit: number = 20,
-    @Query('enabled') enabled?: string,
-    @Req() req?,
+    @Query('enabled') enabled: string | undefined = undefined,
+    @Req() req: RequestWithUser,
   ): Promise<PaginatedAutomationRulesDto> {
     const userId = req.user.id;
     const isEnabled =
@@ -106,7 +107,7 @@ export class AutomationController {
   @ApiResponse({ status: 403, description: 'Forbidden - not your rule' })
   async getRule(
     @Param('id', ParseIntPipe) id: number,
-    @Req() req,
+    @Req() req: RequestWithUser,
   ): Promise<AutomationRuleDetailDto> {
     const userId = req.user.id;
     return this.automationService.getRule(userId, id);
@@ -127,7 +128,7 @@ export class AutomationController {
   async updateRule(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateRuleDto: UpdateAutomationRuleDto,
-    @Req() req,
+    @Req() req: RequestWithUser,
   ): Promise<AutomationRuleDetailDto> {
     const userId = req.user.id;
     return this.automationService.updateRule(userId, id, updateRuleDto);
@@ -143,7 +144,7 @@ export class AutomationController {
   @ApiResponse({ status: 403, description: 'Forbidden - not your rule' })
   async deleteRule(
     @Param('id', ParseIntPipe) id: number,
-    @Req() req,
+    @Req() req: RequestWithUser,
   ): Promise<void> {
     const userId = req.user.id;
     await this.automationService.deleteRule(userId, id);
@@ -169,7 +170,7 @@ export class AutomationController {
   @ApiResponse({ status: 403, description: 'Forbidden - not your rule' })
   async executeRule(
     @Param('id', ParseIntPipe) id: number,
-    @Req() req,
+    @Req() req: RequestWithUser,
   ): Promise<{ message: string; executionCount: number }> {
     const userId = req.user.id;
     const executionCount = await this.automationService.executeRuleNow(
@@ -200,7 +201,7 @@ export class AutomationController {
   async getRuleAuditLogs(
     @Param('id', ParseIntPipe) id: number,
     @Query() query: AuditLogQueryDto,
-    @Req() req,
+    @Req() req: RequestWithUser,
   ): Promise<PaginatedAuditLogsDto> {
     const userId = req.user.id;
     return this.automationService.getRuleAuditLogs(userId, id, query);
@@ -219,7 +220,7 @@ export class AutomationController {
   @ApiResponse({ status: 403, description: 'Forbidden - not your audit log' })
   async getAuditLog(
     @Param('logId', ParseIntPipe) logId: number,
-    @Req() req,
+    @Req() req: RequestWithUser,
   ): Promise<AuditLogDetailDto> {
     const userId = req.user.id;
     return this.automationService.getAuditLog(userId, logId);
@@ -238,7 +239,7 @@ export class AutomationController {
   @ApiResponse({ status: 403, description: 'Forbidden - not your rule' })
   async getRuleStats(
     @Param('id', ParseIntPipe) id: number,
-    @Req() req,
+    @Req() req: RequestWithUser,
   ): Promise<AuditLogStatsDto> {
     const userId = req.user.id;
     return this.automationService.getRuleStats(userId, id);
@@ -273,7 +274,7 @@ export class AutomationController {
   })
   async handleWebhook(
     @Param('token') token: string,
-    @Body() payload: Record<string, any>,
+    @Body() payload: Record<string, unknown>,
   ): Promise<{ success: boolean; ruleId: number; message: string }> {
     return this.automationService.executeRuleFromWebhook(token, payload);
   }
@@ -296,7 +297,7 @@ export class AutomationController {
   @ApiResponse({ status: 403, description: 'Forbidden - not your rule' })
   async regenerateWebhookToken(
     @Param('id', ParseIntPipe) id: number,
-    @Req() req,
+    @Req() req: RequestWithUser,
   ): Promise<{ webhookToken: string }> {
     const userId = req.user.id;
     const webhookToken = await this.automationService.regenerateWebhookToken(

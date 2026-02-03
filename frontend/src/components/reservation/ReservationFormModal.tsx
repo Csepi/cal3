@@ -517,7 +517,7 @@ export const ReservationFormModal: React.FC<ReservationFormModalProps> = ({
             value={formData.notes}
             onChange={(e) => handleFormChange('notes', e.target.value)}
             themeColor={themeColor}
-            placeholder="Enter any additional notes or special requirements..."
+            placeholder="Enter additional notes or special requirements..."
             multiline
             rows={3}
           />

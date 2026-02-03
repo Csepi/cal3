@@ -1,4 +1,4 @@
-import {
+﻿import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
@@ -29,73 +29,73 @@ export enum RecurrenceType {
 @Entity('events')
 export class Event {
   @PrimaryGeneratedColumn()
-  id: number;
+  id!: number;
 
   @Column({ length: 300 })
-  title: string;
+  title!: string;
 
   @Column({ type: 'text', nullable: true })
-  description: string | null;
+  description!: string | null;
 
   @Column({ type: 'date' })
-  startDate: Date;
+  startDate!: Date;
 
   @Column({ type: 'time', nullable: true })
-  startTime: string | null;
+  startTime!: string | null;
 
   @Column({ type: 'date', nullable: true })
-  endDate: Date | null;
+  endDate!: Date | null;
 
   @Column({ type: 'time', nullable: true })
-  endTime: string | null;
+  endTime!: string | null;
 
   @Column({ default: false })
-  isAllDay: boolean;
+  isAllDay!: boolean;
 
   @Column({ type: 'varchar', length: 200, nullable: true })
-  location: string | null;
+  location!: string | null;
 
   @Column({
     type: 'varchar',
     default: EventStatus.CONFIRMED,
   })
-  status: EventStatus;
+  status!: EventStatus;
 
   @Column({
     type: 'varchar',
     default: RecurrenceType.NONE,
   })
-  recurrenceType: RecurrenceType;
+  recurrenceType!: RecurrenceType;
 
   @Column({ type: 'json', nullable: true })
-  recurrenceRule: any; // Store complex recurrence rules as JSON
+  recurrenceRule!: string | Record<string, unknown> | null; // Store complex recurrence rules as JSON
 
   @Column({ nullable: true })
-  parentEventId: number; // Reference to the original event in a recurring series
+  parentEventId!: number | null; // Reference to the original event in a recurring series
 
   @Column({ nullable: true })
-  recurrenceId: string; // Unique identifier for the recurring series
+  recurrenceId!: string | null; // Unique identifier for the recurring series
 
   @Column({ type: 'date', nullable: true })
-  originalDate: Date; // Original date for modified instances of recurring events
+  originalDate!: Date | null; // Original date for modified instances of recurring events
 
   @Column({ default: false })
-  isRecurrenceException: boolean; // True if this is a modified instance of a recurring event
+  isRecurrenceException!: boolean; // True if this is a modified instance of a recurring event
 
   @Column({ type: 'varchar', length: 7, nullable: true })
-  color: string | null;
+  color!: string | null;
 
-  @Column({ type: 'varchar', length: 10, nullable: true }) // Emoji/icon for event (e.g., 🎉, 📝, 🎯)
-  icon: string | null;
+  @Column({ type: 'varchar', length: 10, nullable: true }) // Emoji/icon for event (e.g., đźŽ‰, đź“ť, đźŽŻ)
+  icon!: string | null;
 
   @Column({ type: 'text', nullable: true })
-  notes: string | null;
+  notes!: string | null;
 
   @Column({ type: 'json', nullable: true })
   tags?: string[];
 
   @Column({ type: 'json', nullable: true })
-  automationTasks: Array<{
+  automationTasks!: Array<{
     title: string;
     description?: string;
     dueMinutesBefore?: number;
@@ -104,26 +104,26 @@ export class Event {
   }>;
 
   @CreateDateColumn()
-  createdAt: Date;
+  createdAt!: Date;
 
   @UpdateDateColumn()
-  updatedAt: Date;
+  updatedAt!: Date;
 
   // Many events belong to one calendar
   @ManyToOne(() => Calendar, (calendar) => calendar.events, {
     onDelete: 'CASCADE',
   })
-  calendar: Calendar;
+  calendar!: Calendar;
 
   @Column()
-  calendarId: number;
+  calendarId!: number;
 
   // Many events are created by one user
   @ManyToOne(() => User, (user) => user.createdEvents, { onDelete: 'CASCADE' })
-  createdBy: User;
+  createdBy!: User;
 
   @Column()
-  createdById: number;
+  createdById!: number;
 
   @Column({ type: 'integer', nullable: true })
   taskId?: number;

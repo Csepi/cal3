@@ -1,4 +1,5 @@
 import { Controller, Get, UseGuards, Request, Query } from '@nestjs/common';
+import type { RequestWithUser } from '../common/types/request-with-user';
 import {
   ApiTags,
   ApiOperation,
@@ -36,7 +37,7 @@ export class UsersController {
     description: 'User profile retrieved successfully',
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  getProfile(@Request() req) {
+  getProfile(@Request() req: RequestWithUser) {
     return this.usersService.findOne(req.user.id);
   }
 }

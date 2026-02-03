@@ -8,7 +8,7 @@ import {
 
 export class CreateOrganisationDto {
   @IsString()
-  name: string;
+  name!: string;
 
   @IsOptional()
   @IsString()
@@ -55,5 +55,5 @@ export class UpdateOrganisationDto {
 
 export class AssignUserDto {
   @IsNumber()
-  userId: number;
+  userId!: number;
 }

@@ -1,4 +1,4 @@
-import {
+﻿import {
   Injectable,
   CanActivate,
   ExecutionContext,
@@ -29,7 +29,7 @@ export const RequireReservationCalendarRole = (
  *
  * Verifies that the current user has the required role for the specified
  * reservation calendar. Supports checking for specific roles (editor/reviewer)
- * or any role if none specified.
+ * or every role if none is specified.
  *
  * Usage:
  * @UseGuards(JwtAuthGuard, ReservationCalendarGuard)
@@ -37,7 +37,7 @@ export const RequireReservationCalendarRole = (
  * @Post('reservation-calendars/:id/reservations')
  *
  * The guard will:
- * 1. Allow global admins to access any reservation calendar
+ * 1. Allow global admins to access every reservation calendar
  * 2. Allow organisation admins to access reservation calendars in their organisations
  * 3. Allow users with appropriate roles to access specific reservation calendars
  * 4. Deny access to users without proper roles
@@ -128,7 +128,7 @@ export class ReservationCalendarGuard implements CanActivate {
       }
     }
 
-    // If no specific roles required, any role is sufficient
+    // If no specific roles required, a role is sufficient
     return true;
   }
 

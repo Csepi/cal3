@@ -1,4 +1,4 @@
-import type { ConfigurationValueType } from '../entities/configuration-setting.entity';
+﻿import type { ConfigurationValueType } from '../entities/configuration-setting.entity';
 
 export interface ConfigurationDefinition {
   key: string;
@@ -11,7 +11,7 @@ export interface ConfigurationDefinition {
   isEditable?: boolean;
   isReadOnly?: boolean;
   options?: string[];
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export type ConfigurationCategoryKey =

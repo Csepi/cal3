@@ -1,4 +1,4 @@
-import {
+﻿import {
   Column,
   CreateDateColumn,
   Entity,
@@ -31,10 +31,10 @@ export class UserNotificationPreference {
   fallbackOrder?: string[] | null;
 
   @Column({ type: 'json', nullable: true })
-  quietHours?: Record<string, any> | null;
+  quietHours?: Record<string, unknown> | null;
 
   @Column({ type: 'json', nullable: true })
-  orgScope?: Record<string, any> | null;
+  orgScope?: Record<string, unknown> | null;
 
   @CreateDateColumn()
   createdAt!: Date;

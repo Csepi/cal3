@@ -1,9 +1,10 @@
-import 'dotenv/config';
+﻿import 'dotenv/config';
 
 // Polyfill for crypto module (required for @nestjs/schedule in some Docker environments)
 import crypto from 'crypto';
 if (typeof globalThis.crypto === 'undefined') {
-  (globalThis as any).crypto = crypto;
+  const globalScope = globalThis as typeof globalThis & { crypto?: Crypto };
+  globalScope.crypto = crypto.webcrypto as Crypto;
 }
 
 import { NestFactory } from '@nestjs/core';
@@ -29,6 +30,7 @@ import {
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 import { NestExpressApplication } from '@nestjs/platform-express';
+import { NextFunction, Request, Response } from 'express';
 
 const logger = new Logger('Bootstrap');
 const dbLogger = new Logger('DatabaseConnection');
@@ -45,10 +47,9 @@ async function bootstrap() {
 
   try {
     dbLogger.log('Creating NestJS application...');
-    const app =
-      await NestFactory.create<NestExpressApplication>(AppModule, {
-        bufferLogs: true,
-      });
+    const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+      bufferLogs: true,
+    });
     dbLogger.log('NestJS application instance created.');
 
     dbLogger.log('Configuring application logger...');
@@ -78,7 +79,11 @@ async function bootstrap() {
       dbLogger.log(`Database type: ${dataSource.options.type}`);
 
       if (dataSource.options.type === 'postgres') {
-        const pgOptions = dataSource.options as any;
+        const pgOptions = dataSource.options as {
+          host?: string;
+          port?: number | string;
+          database?: string;
+        };
         dbLogger.log(
           `Connected to ${pgOptions.host}:${pgOptions.port}/${pgOptions.database}`,
         );
@@ -106,10 +111,9 @@ async function bootstrap() {
           dbLogger.log(`Test query successful (${queryDuration}ms)`);
         }
       } catch (queryError: any) {
-        dbLogger.error(
-          'Test query failed',
-          queryError?.message ?? 'Unknown error',
-        );
+        const queryErrorMessage =
+          queryError instanceof Error ? queryError.message : String(queryError);
+        dbLogger.error('Test query failed', queryErrorMessage);
       }
 
       // Run network diagnostics if enabled
@@ -139,10 +143,12 @@ async function bootstrap() {
 
     dbLogger.log(`CORS allowed origins: ${allowedOrigins.join(', ')}`);
     dbLogger.log(`CORS allowed headers: ${allowedHeaders.join(', ')}`);
-    dbLogger.log('Applying middleware: cookieParser, helmet, permissions policy...');
+    dbLogger.log(
+      'Applying middleware: cookieParser, helmet, permissions policy...',
+    );
     app.use(cookieParser());
     app.use(helmet(buildHelmetOptions(allowedOrigins)));
-    app.use((req, res, next) => {
+    app.use((req: Request, res: Response, next: NextFunction) => {
       void req;
       applyPermissionsPolicy(res);
       next();
@@ -153,7 +159,7 @@ async function bootstrap() {
     app.enableCors(corsOptions);
     dbLogger.log('CORS enabled.');
 
-    app.use((req, res: any, next) => {
+    app.use((req: Request, res: Response, next: NextFunction) => {
       res.setHeader('Access-Control-Allow-Credentials', 'true');
       if (req.method === 'OPTIONS') {
         const origin = req.headers.origin;
@@ -231,14 +237,16 @@ async function bootstrap() {
     logger.log(`Total startup time: ${totalStartupTime}ms`);
     logger.log('========================================');
   } catch (error: any) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const errorName = error instanceof Error ? error.name : 'Unknown';
     const failureDuration = Date.now() - startTime;
     dbLogger.error('========================================');
     dbLogger.error('FATAL: Application startup failed');
     dbLogger.error(`Failed after ${failureDuration}ms`);
     dbLogger.error('========================================');
-    dbLogger.error(`Error: ${error?.message ?? 'Unknown error'}`);
-    dbLogger.error(`Type: ${error?.name ?? 'Unknown'}`);
-    if (error?.stack) {
+    dbLogger.error(`Error: ${errorMessage}`);
+    dbLogger.error(`Type: ${errorName}`);
+    if (error instanceof Error && error.stack) {
       dbLogger.error('Stack trace:');
       dbLogger.error(error.stack);
     }
@@ -246,4 +254,4 @@ async function bootstrap() {
     process.exit(1);
   }
 }
-bootstrap();
+void bootstrap();

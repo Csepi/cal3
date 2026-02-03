@@ -1,10 +1,44 @@
-import { Injectable } from '@nestjs/common';
+﻿import { Injectable } from '@nestjs/common';
 import { Event, RecurrenceType } from '../entities/event.entity';
-import { RecurrencePatternDto, RecurrenceEndType } from '../dto/recurrence.dto';
+import {
+  RecurrencePatternDto,
+  RecurrenceEndType,
+  WeekDay,
+} from '../dto/recurrence.dto';
+
+type EventMutationInput = {
+  startDate?: string | number | Date;
+  endDate?: string | number | Date;
+  startTime?: string | null;
+  endTime?: string | null;
+  [key: string]: any;
+};
+
+type RecurrenceRule = {
+  frequency?: RecurrenceType;
+  interval?: number;
+  endType?: RecurrenceEndType;
+  count?: number;
+  endDate?: string;
+  daysOfWeek?: WeekDay[];
+  dayOfMonth?: number;
+  monthOfYear?: number;
+  timezone?: string;
+};
+
+const toRecurrenceRule = (value: any): RecurrenceRule => {
+  if (!value || typeof value !== 'object') {
+    return {};
+  }
+  return value as RecurrenceRule;
+};
 
 @Injectable()
 export class EventValidationService {
-  sanitizeAndAssignUpdateData(event: Event, updateData: any): void {
+  sanitizeAndAssignUpdateData(
+    event: Event,
+    updateData: EventMutationInput,
+  ): void {
     if (updateData.startDate) {
       updateData.startDate = new Date(updateData.startDate);
     }
@@ -25,11 +59,11 @@ export class EventValidationService {
           : undefined;
     }
 
-    Object.assign(event, updateData);
+    Object.assign(event, updateData as Partial<Event>);
   }
 
   createEventEntity(
-    eventData: any,
+    eventData: EventMutationInput,
     calendarId: number,
     createdById: number,
   ): Event {
@@ -37,22 +71,20 @@ export class EventValidationService {
     Object.assign(event, eventData);
     event.calendarId = calendarId;
     event.createdById = createdById;
-    event.startDate = new Date(eventData.startDate);
+    event.startDate = new Date(eventData.startDate as string | number | Date);
     if (eventData.endDate) {
       event.endDate = new Date(eventData.endDate);
     }
     event.startTime =
       eventData.startTime && eventData.startTime !== ''
         ? eventData.startTime
-        : undefined;
+        : null;
     event.endTime =
-      eventData.endTime && eventData.endTime !== ''
-        ? eventData.endTime
-        : undefined;
+      eventData.endTime && eventData.endTime !== '' ? eventData.endTime : null;
     return event;
   }
 
-  buildRecurrenceRule(recurrence: RecurrencePatternDto): any {
+  buildRecurrenceRule(recurrence: RecurrencePatternDto): RecurrenceRule {
     return {
       frequency: recurrence.type,
       interval: recurrence.interval || 1,
@@ -70,16 +102,17 @@ export class EventValidationService {
     rule: any,
     recurrenceType: RecurrenceType,
   ): RecurrencePatternDto {
+    const safeRule = toRecurrenceRule(rule);
     const pattern = new RecurrencePatternDto();
     pattern.type = recurrenceType;
-    pattern.interval = rule.interval || 1;
-    pattern.endType = rule.endType || RecurrenceEndType.NEVER;
-    pattern.count = rule.count;
-    pattern.endDate = rule.endDate;
-    pattern.daysOfWeek = rule.daysOfWeek;
-    pattern.dayOfMonth = rule.dayOfMonth;
-    pattern.monthOfYear = rule.monthOfYear;
-    pattern.timezone = rule.timezone;
+    pattern.interval = safeRule.interval || 1;
+    pattern.endType = safeRule.endType || RecurrenceEndType.NEVER;
+    pattern.count = safeRule.count;
+    pattern.endDate = safeRule.endDate;
+    pattern.daysOfWeek = safeRule.daysOfWeek;
+    pattern.dayOfMonth = safeRule.dayOfMonth;
+    pattern.monthOfYear = safeRule.monthOfYear;
+    pattern.timezone = safeRule.timezone;
     return pattern;
   }
 }

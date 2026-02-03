@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
-import * as request from 'supertest';
+import request from 'supertest';
 import { DataSource, Repository } from 'typeorm';
 import { User, UserRole } from '../src/entities/user.entity';
 import { Organisation } from '../src/entities/organisation.entity';
@@ -30,7 +30,6 @@ describe('Security Hardening (e2e)', () => {
     process.env.JWT_REFRESH_TTL = '3600s';
     process.env.SECURITY_ALLOWED_ORIGINS = 'http://localhost:3000';
 
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
     const appModule = require('../src/app.module');
     const AppModuleClass = appModule.AppModule;
 
@@ -56,7 +55,8 @@ describe('Security Hardening (e2e)', () => {
 
   describe('Validation & Headers', () => {
     it('rejects extraneous request properties for register', async () => {
-      await request(app.getHttpServer())
+      const server = app.getHttpServer() as Parameters<typeof request>[0];
+      await request(server)
         .post('/auth/register')
         .send({
           username: 'validator',
@@ -68,7 +68,8 @@ describe('Security Hardening (e2e)', () => {
     });
 
     it('returns hardened security headers', async () => {
-      const response = await request(app.getHttpServer()).get('/');
+      const server = app.getHttpServer() as Parameters<typeof request>[0];
+      const response = await request(server).get('/');
 
       expect(response.headers['x-request-id']).toBeDefined();
       expect(response.headers['content-security-policy']).toContain(
@@ -80,7 +81,8 @@ describe('Security Hardening (e2e)', () => {
 
   describe('Multitenancy guards', () => {
     it('blocks cross-organisation reads', async () => {
-      await request(app.getHttpServer())
+      const server = app.getHttpServer() as Parameters<typeof request>[0];
+      await request(server)
         .get(`/organisations/${organisationB.id}`)
         .set('Authorization', `Bearer ${userAToken}`)
         .expect(403);

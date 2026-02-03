@@ -1,4 +1,4 @@
-import {
+﻿import {
   BadRequestException,
   CanActivate,
   ExecutionContext,
@@ -6,6 +6,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import type { Request } from 'express';
 import { Repository } from 'typeorm';
 import { Resource } from '../../entities/resource.entity';
 
@@ -22,11 +23,15 @@ export class PublicBookingGuard implements CanActivate, PublicBookingPolicy {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const request = context.switchToHttp().getRequest();
+    const request = context
+      .switchToHttp()
+      .getRequest<Request & { publicBookingResourceId?: number }>();
     const token = String(request?.params?.token ?? '');
 
     if (!token) {
-      throw new NotFoundException('Resource not found or booking link is invalid');
+      throw new NotFoundException(
+        'Resource not found or booking link is invalid',
+      );
     }
 
     const resource = await this.resourceRepository.findOne({
@@ -35,7 +40,9 @@ export class PublicBookingGuard implements CanActivate, PublicBookingPolicy {
     });
 
     if (!resource) {
-      throw new NotFoundException('Resource not found or booking link is invalid');
+      throw new NotFoundException(
+        'Resource not found or booking link is invalid',
+      );
     }
 
     request.publicBookingResourceId = resource.id;
@@ -43,8 +50,8 @@ export class PublicBookingGuard implements CanActivate, PublicBookingPolicy {
     const startTime = request?.body?.startTime;
     const endTime = request?.body?.endTime;
     if (startTime && endTime) {
-      const startDate = new Date(startTime);
-      const endDate = new Date(endTime);
+      const startDate = this.toDate(startTime);
+      const endDate = this.toDate(endTime);
       this.validateBookingDates(startDate, endDate);
     }
 
@@ -63,7 +70,20 @@ export class PublicBookingGuard implements CanActivate, PublicBookingPolicy {
 
   validateBookingResource(resourceId: number): void {
     if (!resourceId || Number.isNaN(resourceId)) {
-      throw new NotFoundException('Resource not found or booking link is invalid');
+      throw new NotFoundException(
+        'Resource not found or booking link is invalid',
+      );
     }
+  }
+
+  private toDate(value: any): Date {
+    if (
+      value instanceof Date ||
+      typeof value === 'string' ||
+      typeof value === 'number'
+    ) {
+      return new Date(value);
+    }
+    return new Date(NaN);
   }
 }

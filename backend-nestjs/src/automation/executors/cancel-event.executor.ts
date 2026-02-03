@@ -1,4 +1,4 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+﻿import { Injectable, OnModuleInit } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import {
@@ -82,18 +82,21 @@ export class CancelEventExecutor implements IActionExecutor, OnModuleInit {
         },
         executedAt,
       };
-    } catch (error) {
+    } catch (error: any) {
       return {
         success: false,
         actionId: action.id,
         actionType: this.actionType,
-        error: error.message || 'Failed to cancel event',
+        error:
+          error instanceof Error
+            ? error.message
+            : String(error) || 'Failed to cancel event',
         executedAt,
       };
     }
   }
 
-  validateConfig(actionConfig: Record<string, any>): boolean {
+  validateConfig(actionConfig: Record<string, unknown>): boolean {
     if (!actionConfig || typeof actionConfig !== 'object') {
       throw new Error('Action configuration must be an object');
     }

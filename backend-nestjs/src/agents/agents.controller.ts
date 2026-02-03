@@ -9,6 +9,7 @@ import {
   Request,
   UseGuards,
 } from '@nestjs/common';
+import type { RequestWithUser } from '../common/types/request-with-user';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { AgentsService } from './agents.service';
 import {
@@ -30,17 +31,20 @@ export class AgentsController {
   ) {}
 
   @Get()
-  async listAgents(@Request() req) {
+  async listAgents(@Request() req: RequestWithUser) {
     return this.agentsService.listAgentsForUser(req.user.id);
   }
 
   @Post()
-  async createAgent(@Request() req, @Body() dto: CreateAgentDto) {
+  async createAgent(
+    @Request() req: RequestWithUser,
+    @Body() dto: CreateAgentDto,
+  ) {
     return this.agentsService.createAgent(req.user.id, dto);
   }
 
   @Get('catalog')
-  async getActionCatalogue(@Request() req) {
+  async getActionCatalogue(@Request() req: RequestWithUser) {
     const actions = await this.agentsService.getActionCatalogue();
     const calendars = await this.calendarsService.findAll(req.user.id);
     const rulesResponse = await this.automationService.listRules(
@@ -71,13 +75,13 @@ export class AgentsController {
   }
 
   @Get(':id')
-  async getAgent(@Request() req, @Param('id') id: number) {
+  async getAgent(@Request() req: RequestWithUser, @Param('id') id: number) {
     return this.agentsService.getAgentDetail(Number(id), req.user.id);
   }
 
   @Put(':id')
   async updateAgent(
-    @Request() req,
+    @Request() req: RequestWithUser,
     @Param('id') id: number,
     @Body() dto: UpdateAgentDto,
   ) {
@@ -85,14 +89,14 @@ export class AgentsController {
   }
 
   @Delete(':id')
-  async disableAgent(@Request() req, @Param('id') id: number) {
+  async disableAgent(@Request() req: RequestWithUser, @Param('id') id: number) {
     await this.agentsService.disableAgent(Number(id), req.user.id);
     return { success: true };
   }
 
   @Put(':id/permissions')
   async updatePermissions(
-    @Request() req,
+    @Request() req: RequestWithUser,
     @Param('id') id: number,
     @Body() dto: UpdateAgentPermissionsDto,
   ) {
@@ -100,13 +104,13 @@ export class AgentsController {
   }
 
   @Get(':id/keys')
-  async listKeys(@Request() req, @Param('id') id: number) {
+  async listKeys(@Request() req: RequestWithUser, @Param('id') id: number) {
     return this.agentsService.listAgentKeys(Number(id), req.user.id);
   }
 
   @Post(':id/keys')
   async createKey(
-    @Request() req,
+    @Request() req: RequestWithUser,
     @Param('id') id: number,
     @Body() dto: CreateAgentKeyDto,
   ) {
@@ -115,7 +119,7 @@ export class AgentsController {
 
   @Delete(':id/keys/:keyId')
   async revokeKey(
-    @Request() req,
+    @Request() req: RequestWithUser,
     @Param('id') id: number,
     @Param('keyId') keyId: number,
   ) {

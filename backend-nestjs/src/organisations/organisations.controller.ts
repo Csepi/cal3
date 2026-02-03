@@ -27,6 +27,7 @@ import { OrganisationOwnershipGuard } from '../auth/guards/organisation-ownershi
 import { OrganisationScope } from '../common/decorators/organisation-scope.decorator';
 import { OrganisationRoleType } from '../entities/organisation-user.entity';
 import { RequireOrgAdmin } from '../common/decorators/require-org-admin.decorator';
+import type { RequestWithUser } from '../common/types/request-with-user';
 
 @Controller('organisations')
 @UseGuards(JwtAuthGuard)
@@ -38,7 +39,10 @@ export class OrganisationsController {
 
   @Post()
   @UseGuards(AdminGuard) // Only super admins can create organizations
-  async create(@Body() createDto: CreateOrganisationDto, @Req() req) {
+  async create(
+    @Body() createDto: CreateOrganisationDto,
+    @Req() req: RequestWithUser,
+  ) {
     // Create the organization and automatically add the creator as ORG_ADMIN
     return await this.organisationsService.createWithCreator(
       createDto,
@@ -47,7 +51,7 @@ export class OrganisationsController {
   }
 
   @Get()
-  async findAll(@Req() req) {
+  async findAll(@Req() req: RequestWithUser) {
     // Return only organizations the user has access to
     console.log(
       '🔍 OrganisationsController.findAll called for user:',
@@ -83,7 +87,7 @@ export class OrganisationsController {
   @Get(':id')
   @UseGuards(OrganisationOwnershipGuard)
   @OrganisationScope({ field: 'id', source: 'params' })
-  async findOne(@Param('id') id: string, @Req() req) {
+  async findOne(@Param('id') id: string, @Req() req: RequestWithUser) {
     const organizationId = +id;
 
     // Check if user has access to this organization
@@ -110,7 +114,7 @@ export class OrganisationsController {
   async update(
     @Param('id') id: string,
     @Body() updateDto: UpdateOrganisationDto,
-    @Req() req,
+    @Req() _req: RequestWithUser,
   ) {
     const organizationId = +id;
 
@@ -131,11 +135,13 @@ export class OrganisationsController {
     source: 'params',
     minimumRole: OrganisationRoleType.ADMIN,
   })
-  @RequireOrgAdmin('You do not have permission to assign users to this organisation')
+  @RequireOrgAdmin(
+    'You do not have permission to assign users to this organisation',
+  )
   async assignUser(
     @Param('id') id: string,
     @Body() assignDto: AssignUserDto,
-    @Req() req,
+    @Req() req: RequestWithUser,
   ) {
     const organizationId = +id;
 
@@ -153,11 +159,13 @@ export class OrganisationsController {
     source: 'params',
     minimumRole: OrganisationRoleType.ADMIN,
   })
-  @RequireOrgAdmin('You do not have permission to remove users from this organisation')
+  @RequireOrgAdmin(
+    'You do not have permission to remove users from this organisation',
+  )
   async removeUser(
     @Param('id') id: string,
     @Param('userId') userId: string,
-    @Req() req,
+    @Req() req: RequestWithUser,
   ) {
     const organizationId = +id;
 
@@ -176,11 +184,13 @@ export class OrganisationsController {
    * Body: { userId: number, role: OrganisationRoleType }
    */
   @Post(':id/users/assign')
-  @RequireOrgAdmin('You do not have permission to assign users to this organisation')
+  @RequireOrgAdmin(
+    'You do not have permission to assign users to this organisation',
+  )
   async assignUserWithRole(
     @Param('id') id: string,
     @Body() assignDto: AssignOrganisationUserDto,
-    @Req() req,
+    @Req() req: RequestWithUser,
   ) {
     const organizationId = +id;
 
@@ -196,7 +206,10 @@ export class OrganisationsController {
    * GET /api/organisations/:id/users/list
    */
   @Get(':id/users/list')
-  async getOrganizationUsers(@Param('id') id: string, @Req() req) {
+  async getOrganizationUsers(
+    @Param('id') id: string,
+    @Req() req: RequestWithUser,
+  ) {
     const organizationId = +id;
 
     // Check if user has access to this organization
@@ -224,12 +237,14 @@ export class OrganisationsController {
     source: 'params',
     minimumRole: OrganisationRoleType.ADMIN,
   })
-  @RequireOrgAdmin('You do not have permission to update user roles in this organisation')
+  @RequireOrgAdmin(
+    'You do not have permission to update user roles in this organisation',
+  )
   async updateUserRole(
     @Param('id') id: string,
     @Param('userId') userId: string,
     @Body() updateDto: UpdateOrganisationUserRoleDto,
-    @Req() req,
+    @Req() req: RequestWithUser,
   ) {
     const organizationId = +id;
 
@@ -252,11 +267,13 @@ export class OrganisationsController {
     source: 'params',
     minimumRole: OrganisationRoleType.ADMIN,
   })
-  @RequireOrgAdmin('You do not have permission to remove users from this organisation')
+  @RequireOrgAdmin(
+    'You do not have permission to remove users from this organisation',
+  )
   async removeUserFromOrganization(
     @Param('id') id: string,
     @Param('userId') userId: string,
-    @Req() req,
+    @Req() req: RequestWithUser,
   ) {
     const organizationId = +id;
 
@@ -279,8 +296,10 @@ export class OrganisationsController {
     source: 'params',
     minimumRole: OrganisationRoleType.ADMIN,
   })
-  @RequireOrgAdmin('You do not have permission to view deletion preview for this organisation')
-  async previewDeletion(@Param('id') id: string, @Req() req) {
+  @RequireOrgAdmin(
+    'You do not have permission to view deletion preview for this organisation',
+  )
+  async previewDeletion(@Param('id') id: string, @Req() _req: RequestWithUser) {
     const organizationId = +id;
 
     return await this.organisationsService.previewOrganizationDeletion(
@@ -301,7 +320,7 @@ export class OrganisationsController {
     minimumRole: OrganisationRoleType.ADMIN,
   })
   @RequireOrgAdmin('You do not have permission to delete this organisation')
-  async deleteCascade(@Param('id') id: string, @Req() req) {
+  async deleteCascade(@Param('id') id: string, @Req() req: RequestWithUser) {
     const organizationId = +id;
 
     const result = await this.organisationsService.deleteOrganizationCascade(
@@ -323,11 +342,13 @@ export class OrganisationsController {
     source: 'params',
     minimumRole: OrganisationRoleType.ADMIN,
   })
-  @RequireOrgAdmin('You do not have permission to update this organisation color')
+  @RequireOrgAdmin(
+    'You do not have permission to update this organisation color',
+  )
   async updateColor(
     @Param('id') id: string,
     @Body() body: { color: string; cascadeToResourceTypes?: boolean },
-    @Req() req,
+    @Req() _req: RequestWithUser,
   ) {
     const organizationId = +id;
 

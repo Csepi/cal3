@@ -1,4 +1,4 @@
-import { Type } from 'class-transformer';
+﻿import { Type } from 'class-transformer';
 import {
   IsArray,
   IsObject,
@@ -24,7 +24,7 @@ export class NotificationChannelPreferenceDto {
 
   @IsOptional()
   @IsObject()
-  quietHours?: Record<string, any> | null;
+  quietHours?: Record<string, unknown> | null;
 }
 
 export class UpdateNotificationPreferencesDto {

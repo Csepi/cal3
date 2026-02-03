@@ -193,3 +193,4 @@ export const MobileDayView: React.FC<MobileDayViewProps> = ({
     </div>
   );
 };
+

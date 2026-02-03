@@ -1,8 +1,9 @@
-import { Injectable, Logger } from '@nestjs/common';
+﻿import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as admin from 'firebase-admin';
+import type { ServiceAccount } from 'firebase-admin';
 import {
   NotificationChannelProvider,
   NotificationChannelContext,
@@ -27,6 +28,10 @@ export class MobilePushChannelProvider implements NotificationChannelProvider {
   async canSend(): Promise<boolean> {
     await this.ensureInitialized();
     return this.available;
+  }
+
+  private isServiceAccount(value: any): value is ServiceAccount {
+    return typeof value === 'object' && value !== null;
   }
 
   async send({ message }: NotificationChannelContext): Promise<void> {
@@ -105,11 +110,19 @@ export class MobilePushChannelProvider implements NotificationChannelProvider {
 
     try {
       const credential = JSON.parse(credentialJson);
+      if (!this.isServiceAccount(credential)) {
+        throw new Error('FCM_CLIENT_JSON is not a valid service account');
+      }
       if (!admin.apps.length) {
+        const credentialRecord = credential as Record<string, unknown>;
         admin.initializeApp({
           credential: admin.credential.cert(credential),
           projectId:
-            credential.project_id ||
+            (typeof credentialRecord.projectId === 'string'
+              ? credentialRecord.projectId
+              : typeof credentialRecord.project_id === 'string'
+                ? credentialRecord.project_id
+                : undefined) ||
             this.configService.get<string>('FCM_PROJECT_ID') ||
             undefined,
         });

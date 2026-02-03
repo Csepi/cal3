@@ -1,4 +1,4 @@
-import {
+﻿import {
   Column,
   CreateDateColumn,
   Entity,
@@ -40,7 +40,7 @@ export class NotificationDelivery {
   lastError?: string | null;
 
   @Column({ type: 'json', nullable: true })
-  metadata?: Record<string, any> | null;
+  metadata?: Record<string, unknown> | null;
 
   @CreateDateColumn()
   createdAt!: Date;

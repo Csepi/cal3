@@ -1,11 +1,11 @@
-import {
+﻿import {
   CallHandler,
   ExecutionContext,
   Injectable,
   NestInterceptor,
   StreamableFile,
 } from '@nestjs/common';
-import type { Response } from 'express';
+import type { Request, Response } from 'express';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { RequestContextService } from '../services/request-context.service';
@@ -17,20 +17,26 @@ const DISABLE_ENVELOPE_HEADER = 'x-response-raw';
 /**
  * Determine whether a value is an API response envelope.
  */
-const isApiResponse = (value: unknown): value is ApiResponse<unknown> => {
+const isApiResponse = (value: any): value is ApiResponse<any> => {
   if (!value || typeof value !== 'object') {
     return false;
   }
-  const candidate = value as ApiResponse<unknown>;
+  const candidate = value as ApiResponse<any>;
   return typeof candidate.success === 'boolean';
 };
 
 /**
  * Parse a boolean-like value from headers or query params.
  */
-const parseBooleanFlag = (
-  value: string | string[] | undefined,
-): boolean | undefined => {
+const parseBooleanFlag = (value: any): boolean | undefined => {
+  if (
+    value !== undefined &&
+    typeof value !== 'string' &&
+    !Array.isArray(value)
+  ) {
+    return undefined;
+  }
+
   if (value === undefined) return undefined;
   const raw = Array.isArray(value) ? value[0] : value;
   if (raw === undefined) return undefined;
@@ -43,9 +49,7 @@ const parseBooleanFlag = (
 /**
  * Decide whether to wrap responses based on request hints and environment settings.
  */
-const resolveEnvelopePreference = (
-  request: any,
-): boolean => {
+const resolveEnvelopePreference = (request: Request): boolean => {
   const headerPreference = parseBooleanFlag(
     request?.headers?.[RESPONSE_ENVELOPE_HEADER],
   );
@@ -75,17 +79,14 @@ const resolveEnvelopePreference = (
 export class ResponseInterceptor implements NestInterceptor {
   constructor(private readonly requestContext: RequestContextService) {}
 
-  intercept(
-    context: ExecutionContext,
-    next: CallHandler,
-  ): Observable<any> {
+  intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     if (context.getType() !== 'http') {
       return next.handle();
     }
 
     const httpContext = context.switchToHttp();
     const response = httpContext.getResponse<Response>();
-    const request = httpContext.getRequest();
+    const request = httpContext.getRequest<Request>();
     const wrapResponses = resolveEnvelopePreference(request);
 
     return next.handle().pipe(

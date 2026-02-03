@@ -18,34 +18,34 @@ import { Resource } from './resource.entity';
 @Entity('organisations')
 export class Organisation {
   @PrimaryGeneratedColumn()
-  id: number;
+  id!: number;
 
   @Column({ unique: true, length: 255 })
-  name: string;
+  name!: string;
 
   @Column({ type: 'text', nullable: true })
-  description: string;
+  description!: string;
 
   @Column({ length: 255, nullable: true })
-  address: string;
+  address!: string;
 
   @Column({ length: 50, nullable: true })
-  phone: string;
+  phone!: string;
 
   @Column({ length: 255, nullable: true })
-  email: string;
+  email!: string;
 
   @Column({ default: true })
-  isActive: boolean;
+  isActive!: boolean;
 
   @Column({ default: false })
-  useGranularResourcePermissions: boolean;
+  useGranularResourcePermissions!: boolean;
 
   @Column({ default: false })
-  useGranularCalendarPermissions: boolean;
+  useGranularCalendarPermissions!: boolean;
 
   @Column({ length: 7, default: '#f97316' })
-  color: string;
+  color!: string;
 
   @ManyToMany(() => User, (user) => user.organisations)
   @JoinTable({
@@ -53,31 +53,31 @@ export class Organisation {
     joinColumn: { name: 'organisationId', referencedColumnName: 'id' },
     inverseJoinColumn: { name: 'userId', referencedColumnName: 'id' },
   })
-  users: User[];
+  users!: User[];
 
   @OneToMany(() => ResourceType, (resourceType) => resourceType.organisation)
-  resourceTypes: ResourceType[];
+  resourceTypes!: ResourceType[];
 
   @OneToMany(() => Resource, (resource) => resource.organisation)
-  resources: Resource[];
+  resources!: Resource[];
 
   // Organisation admin relationships
   @OneToMany(() => OrganisationAdmin, (orgAdmin) => orgAdmin.organisation)
-  organisationAdmins: OrganisationAdmin[];
+  organisationAdmins!: OrganisationAdmin[];
 
   // Reservation calendar relationships
   @OneToMany(
     () => ReservationCalendar,
     (reservationCalendar) => reservationCalendar.organisation,
   )
-  reservationCalendars: ReservationCalendar[];
+  reservationCalendars!: ReservationCalendar[];
 
   @OneToMany(() => Reservation, (reservation) => reservation.organisation)
-  reservations: Reservation[];
+  reservations!: Reservation[];
 
   @CreateDateColumn()
-  createdAt: Date;
+  createdAt!: Date;
 
   @UpdateDateColumn()
-  updatedAt: Date;
+  updatedAt!: Date;
 }

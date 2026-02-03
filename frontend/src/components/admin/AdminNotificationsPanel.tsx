@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { apiService } from '../../services/api';
 
 interface ConfigurationSetting {
@@ -376,3 +376,4 @@ export const AdminNotificationsPanel = ({ themeColor = '#3b82f6' }: { themeColor
 };
 
 export default AdminNotificationsPanel;
+

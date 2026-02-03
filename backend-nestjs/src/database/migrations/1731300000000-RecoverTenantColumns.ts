@@ -118,7 +118,9 @@ export class RecoverTenantColumns1731300000000 implements MigrationInterface {
     await queryRunner.query(
       `DROP INDEX IF EXISTS "IDX_reservations_organisation"`,
     );
-    await queryRunner.query(`DROP INDEX IF EXISTS "IDX_resources_organisation"`);
+    await queryRunner.query(
+      `DROP INDEX IF EXISTS "IDX_resources_organisation"`,
+    );
     await queryRunner.query(
       `ALTER TABLE "reservations" DROP COLUMN IF EXISTS "organisationId"`,
     );
@@ -127,4 +129,3 @@ export class RecoverTenantColumns1731300000000 implements MigrationInterface {
     );
   }
 }
-

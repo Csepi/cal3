@@ -1,4 +1,4 @@
-import { sessionManager } from './sessionManager';
+﻿import { sessionManager } from './sessionManager';
 import { applyCsrfHeader } from './csrf';
 import { clientLogger } from '../utils/clientLogger';
 
@@ -97,15 +97,15 @@ export class AuthErrorHandler {
 
       // 1. Clear authentication token
       if (typeof localStorage !== 'undefined') {
-        // 2. Clear any user profile data
+        // 2. Clear user profile data
         localStorage.removeItem('userProfile');
         localStorage.removeItem('user');
 
-        // 3. Clear any cached permissions
+        // 3. Clear cached permissions
         localStorage.removeItem('userPermissions');
       }
 
-      // 4. Clear any cached API responses
+      // 4. Clear cached API responses
       this.clearCachedApiData();
 
       // 5. Clear session storage (if used)
@@ -113,7 +113,7 @@ export class AuthErrorHandler {
         sessionStorage.clear();
       }
 
-      // 6. Clear any in-memory cached data by forcing a reload
+      // 6. Clear in-memory cached data by forcing a reload
       // This ensures React components re-initialize without stale data
 
       console.info('[SECURITY] Session data cleared successfully');
@@ -268,7 +268,7 @@ export async function secureFetch(
     if (auth && (response.status === 401 || response.status === 403)) {
       if (response.status === 401 && autoRefresh) {
         clientLogger.warn(
-          `[network:${traceId}] ${method} ${requestUrl} returned 401 – attempting token refresh`,
+          `[network:${traceId}] ${method} ${requestUrl} returned 401 â€“ attempting token refresh`,
         );
         const refreshed = await sessionManager.refreshAccessToken(true);
         if (refreshed) {
@@ -316,3 +316,4 @@ export async function secureFetch(
  * Export singleton instance for convenience
  */
 export const authErrorHandler = AuthErrorHandler.getInstance();
+

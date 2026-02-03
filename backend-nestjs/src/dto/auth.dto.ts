@@ -12,14 +12,14 @@ export class RegisterDto {
   @ApiProperty({ example: 'john_doe', description: 'Unique username' })
   @IsString()
   @MinLength(3)
-  username: string;
+  username!: string;
 
   @ApiProperty({
     example: 'john@example.com',
     description: 'User email address',
   })
   @IsEmail()
-  email: string;
+  email!: string;
 
   @ApiProperty({
     example: 'password123',
@@ -27,7 +27,7 @@ export class RegisterDto {
   })
   @IsString()
   @MinLength(6)
-  password: string;
+  password!: string;
 
   @ApiPropertyOptional({ example: 'John', description: 'User first name' })
   @IsOptional()
@@ -55,11 +55,11 @@ export class LoginDto {
     description: 'Username or email',
   })
   @IsString()
-  username: string;
+  username!: string;
 
   @ApiProperty({ example: 'password123', description: 'User password' })
   @IsString()
-  password: string;
+  password!: string;
 }
 
 export class AuthResponseDto {
@@ -67,31 +67,31 @@ export class AuthResponseDto {
     example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
     description: 'JWT access token',
   })
-  access_token: string;
+  access_token!: string;
 
   @ApiProperty({ example: 'Bearer', description: 'Token type' })
-  token_type: string;
+  token_type!: string;
 
   @ApiProperty({
     example: 3600,
     description: 'Token expiration time in seconds',
   })
-  expires_in: number;
+  expires_in!: number;
 
   @ApiProperty({
     example: '2025-11-07T21:00:00.000Z',
     description: 'Refresh token expiration timestamp (ISO8601)',
   })
-  refresh_expires_at: string;
+  refresh_expires_at!: string;
 
   @ApiProperty({
     example: '2025-11-07T20:00:00.000Z',
     description: 'Access token issued timestamp (ISO8601)',
   })
-  issued_at: string;
+  issued_at!: string;
 
   @ApiProperty({ description: 'User information' })
-  user: {
+  user!: {
     id: number;
     username: string;
     email: string;
@@ -104,8 +104,7 @@ export class AuthResponseDto {
 
 export class RefreshTokenRequestDto {
   @ApiPropertyOptional({
-    description:
-      'Refresh token (optional when HttpOnly cookie is present).',
+    description: 'Refresh token (optional when HttpOnly cookie is present).',
   })
   @IsOptional()
   @IsString()

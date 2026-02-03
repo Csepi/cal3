@@ -1,4 +1,4 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+﻿import { Injectable, OnModuleInit } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Event } from '../../entities/event.entity';
@@ -69,7 +69,7 @@ export class SetEventColorExecutor implements IActionExecutor, OnModuleInit {
       // Validate configuration (after interpolation)
       this.validateConfig(interpolatedConfig);
 
-      const color = interpolatedConfig.color;
+      const color = String(interpolatedConfig.color);
       const previousColor = context.event.color;
 
       // Update event color
@@ -88,12 +88,12 @@ export class SetEventColorExecutor implements IActionExecutor, OnModuleInit {
         },
         executedAt,
       };
-    } catch (error) {
+    } catch (error: any) {
       return {
         success: false,
         actionId: action.id,
         actionType: this.actionType,
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
         executedAt,
       };
     }
@@ -105,7 +105,7 @@ export class SetEventColorExecutor implements IActionExecutor, OnModuleInit {
    * @returns True if valid
    * @throws Error if invalid
    */
-  validateConfig(actionConfig: Record<string, any>): boolean {
+  validateConfig(actionConfig: Record<string, unknown>): boolean {
     if (!actionConfig || typeof actionConfig !== 'object') {
       throw new Error('Action configuration must be an object');
     }

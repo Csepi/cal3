@@ -19,6 +19,7 @@ import {
 } from '../dto/resource-type.dto';
 import { UserPermissionsService } from '../common/services/user-permissions.service';
 import { CascadeDeletionService } from '../common/services/cascade-deletion.service';
+import type { RequestWithUser } from '../common/types/request-with-user';
 
 @Controller('resource-types')
 @UseGuards(JwtAuthGuard)
@@ -36,8 +37,8 @@ export class ResourceTypesController {
 
   @Get()
   async findAll(
-    @Query('organisationId') organisationId?: string,
-    @Req() req?: any,
+    @Query('organisationId') organisationId: string | undefined = undefined,
+    @Req() req: RequestWithUser,
   ) {
     console.log(
       '🔍 ResourceTypesController.findAll called for user:',
@@ -107,7 +108,7 @@ export class ResourceTypesController {
    * GET /api/resource-types/:id/deletion-preview
    */
   @Get(':id/deletion-preview')
-  async previewDeletion(@Param('id') id: string, @Req() req) {
+  async previewDeletion(@Param('id') id: string, @Req() req: RequestWithUser) {
     const resourceTypeId = +id;
 
     // Get the resource type to check organization access
@@ -138,7 +139,7 @@ export class ResourceTypesController {
    * DELETE /api/resource-types/:id/cascade
    */
   @Delete(':id/cascade')
-  async deleteCascade(@Param('id') id: string, @Req() req) {
+  async deleteCascade(@Param('id') id: string, @Req() req: RequestWithUser) {
     const resourceTypeId = +id;
 
     // Get the resource type to check organization access
@@ -175,7 +176,7 @@ export class ResourceTypesController {
   async updateColor(
     @Param('id') id: string,
     @Body() body: { color: string },
-    @Req() req,
+    @Req() req: RequestWithUser,
   ) {
     const resourceTypeId = +id;
 

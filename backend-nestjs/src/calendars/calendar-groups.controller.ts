@@ -9,6 +9,7 @@ import {
   Request,
   UseGuards,
 } from '@nestjs/common';
+import type { RequestWithUser } from '../common/types/request-with-user';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -31,9 +32,7 @@ import {
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
 export class CalendarGroupsController {
-  constructor(
-    private readonly calendarGroupsService: CalendarGroupsService,
-  ) {}
+  constructor(private readonly calendarGroupsService: CalendarGroupsService) {}
 
   @Post()
   @ApiOperation({ summary: 'Create a new calendar group' })
@@ -44,17 +43,19 @@ export class CalendarGroupsController {
   })
   create(
     @Body() createCalendarGroupDto: CreateCalendarGroupDto,
-    @Request() req,
+    @Request() req: RequestWithUser,
   ) {
-    return this.calendarGroupsService.create(createCalendarGroupDto, req.user.id);
+    return this.calendarGroupsService.create(
+      createCalendarGroupDto,
+      req.user.id,
+    );
   }
 
   @Get()
   @ApiOperation({
-    summary:
-      'List calendar groups for the user with calendars they can access',
+    summary: 'List calendar groups for the user with calendars they can access',
   })
-  findAll(@Request() req) {
+  findAll(@Request() req: RequestWithUser) {
     return this.calendarGroupsService.findAll(req.user.id);
   }
 
@@ -64,7 +65,7 @@ export class CalendarGroupsController {
   update(
     @Param('id') id: string,
     @Body() updateCalendarGroupDto: UpdateCalendarGroupDto,
-    @Request() req,
+    @Request() req: RequestWithUser,
   ) {
     return this.calendarGroupsService.update(
       +id,
@@ -75,11 +76,10 @@ export class CalendarGroupsController {
 
   @Delete(':id')
   @ApiOperation({
-    summary:
-      'Delete a calendar group without deleting the calendars inside it',
+    summary: 'Delete a calendar group without deleting the calendars inside it',
   })
   @ApiParam({ name: 'id', description: 'Group ID', type: 'number' })
-  remove(@Param('id') id: string, @Request() req) {
+  remove(@Param('id') id: string, @Request() req: RequestWithUser) {
     return this.calendarGroupsService.remove(+id, req.user.id);
   }
 
@@ -89,7 +89,7 @@ export class CalendarGroupsController {
   assignCalendars(
     @Param('id') id: string,
     @Body() assignCalendarsDto: AssignCalendarsToGroupDto,
-    @Request() req,
+    @Request() req: RequestWithUser,
   ) {
     return this.calendarGroupsService.assignCalendars(
       +id,
@@ -104,7 +104,7 @@ export class CalendarGroupsController {
   unassignCalendars(
     @Param('id') id: string,
     @Body() assignCalendarsDto: AssignCalendarsToGroupDto,
-    @Request() req,
+    @Request() req: RequestWithUser,
   ) {
     return this.calendarGroupsService.unassignCalendars(
       +id,
@@ -121,7 +121,7 @@ export class CalendarGroupsController {
   shareGroup(
     @Param('id') id: string,
     @Body() shareCalendarGroupDto: ShareCalendarGroupDto,
-    @Request() req,
+    @Request() req: RequestWithUser,
   ) {
     return this.calendarGroupsService.shareGroup(
       +id,
@@ -138,7 +138,7 @@ export class CalendarGroupsController {
   unshareGroup(
     @Param('id') id: string,
     @Body() body: { userIds: number[] },
-    @Request() req,
+    @Request() req: RequestWithUser,
   ) {
     return this.calendarGroupsService.unshareGroup(
       +id,

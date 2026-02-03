@@ -1,4 +1,4 @@
-import {
+﻿import {
   BadRequestException,
   Injectable,
   NotFoundException,
@@ -21,6 +21,8 @@ import { UpdateTaskDto } from '../tasks/dto/update-task.dto';
 import { TaskPriority, TaskStatus } from '../entities/task.entity';
 import { CreateTaskLabelDto } from '../tasks/dto/create-task-label.dto';
 import { UpdateTaskLabelDto } from '../tasks/dto/update-task-label.dto';
+import { CreateEventDto, UpdateEventDto } from '../dto/event.dto';
+import { Event } from '../entities/event.entity';
 
 @Injectable()
 export class AgentMcpService {
@@ -52,6 +54,22 @@ export class AgentMcpService {
         };
       })
       .filter(Boolean);
+  }
+
+  private toCreateEventDto(
+    eventInput: Record<string, unknown>,
+    calendarId: number,
+  ): CreateEventDto {
+    return {
+      ...(eventInput as Partial<CreateEventDto>),
+      calendarId,
+    } as CreateEventDto;
+  }
+
+  private toUpdateEventDto(
+    updatePayload: Record<string, unknown>,
+  ): UpdateEventDto {
+    return updatePayload as UpdateEventDto;
   }
 
   async executeAction(context: AgentContext, dto: ExecuteAgentActionDto) {
@@ -130,7 +148,7 @@ export class AgentMcpService {
 
   private async listCalendars(
     context: AgentContext,
-    parameters: Record<string, any> = {},
+    parameters: Record<string, unknown> = {},
   ) {
     this.agentAuthorization.ensureActionAllowed(
       context,
@@ -173,7 +191,7 @@ export class AgentMcpService {
 
   private async readCalendarEvents(
     context: AgentContext,
-    parameters: Record<string, any> = {},
+    parameters: Record<string, unknown> = {},
   ) {
     const calendarId = Number(parameters.calendarId);
     if (!calendarId || Number.isNaN(calendarId)) {
@@ -201,7 +219,7 @@ export class AgentMcpService {
 
   private async createCalendarEvent(
     context: AgentContext,
-    parameters: Record<string, any> = {},
+    parameters: Record<string, unknown> = {},
   ) {
     const eventInput = parameters.event;
     if (!eventInput || typeof eventInput !== 'object') {
@@ -210,7 +228,10 @@ export class AgentMcpService {
       );
     }
 
-    const calendarId = Number(eventInput.calendarId ?? parameters.calendarId);
+    const eventInputRecord = eventInput as Record<string, unknown>;
+    const calendarId = Number(
+      eventInputRecord.calendarId ?? parameters.calendarId,
+    );
     if (!calendarId || Number.isNaN(calendarId)) {
       throw new BadRequestException(
         'calendarId is required to create an event.',
@@ -224,7 +245,7 @@ export class AgentMcpService {
     );
 
     const created = await this.eventsService.create(
-      { ...eventInput, calendarId },
+      this.toCreateEventDto(eventInputRecord, calendarId),
       context.user.id,
     );
     return this.mapEvent(created);
@@ -232,11 +253,13 @@ export class AgentMcpService {
 
   private async updateCalendarEvent(
     context: AgentContext,
-    parameters: Record<string, any> = {},
+    parameters: Record<string, unknown> = {},
   ) {
-    const eventId = Number(
-      parameters.eventId ?? parameters.id ?? parameters.event?.id,
-    );
+    const eventRef =
+      typeof parameters.event === 'object' && parameters.event !== null
+        ? (parameters.event as Record<string, unknown>)
+        : null;
+    const eventId = Number(parameters.eventId ?? parameters.id ?? eventRef?.id);
     if (!eventId || Number.isNaN(eventId)) {
       throw new BadRequestException('eventId is required to update an event.');
     }
@@ -252,7 +275,7 @@ export class AgentMcpService {
       existing.calendarId,
     );
 
-    const updatePayload = parameters.event || {};
+    const updatePayload = (parameters.event || {}) as Record<string, unknown>;
     if (Object.prototype.hasOwnProperty.call(updatePayload, 'calendarId')) {
       const nextCalendarId = Number(updatePayload.calendarId);
       if (!nextCalendarId || Number.isNaN(nextCalendarId)) {
@@ -269,7 +292,7 @@ export class AgentMcpService {
 
     const updated = await this.eventsService.update(
       eventId,
-      updatePayload,
+      this.toUpdateEventDto(updatePayload),
       context.user.id,
     );
 
@@ -283,7 +306,7 @@ export class AgentMcpService {
 
   private async deleteCalendarEvent(
     context: AgentContext,
-    parameters: Record<string, any> = {},
+    parameters: Record<string, unknown> = {},
   ) {
     const eventId = Number(parameters.eventId ?? parameters.id);
     if (!eventId || Number.isNaN(eventId)) {
@@ -307,7 +330,7 @@ export class AgentMcpService {
 
   private async listAutomationRules(
     context: AgentContext,
-    parameters: Record<string, any> = {},
+    parameters: Record<string, unknown> = {},
   ) {
     this.agentAuthorization.ensureActionAllowed(
       context,
@@ -353,7 +376,7 @@ export class AgentMcpService {
 
   private async triggerAutomationRule(
     context: AgentContext,
-    parameters: Record<string, any> = {},
+    parameters: Record<string, unknown> = {},
   ) {
     const ruleId = Number(parameters.ruleId);
     if (!ruleId || Number.isNaN(ruleId)) {
@@ -380,7 +403,7 @@ export class AgentMcpService {
 
   private async listTasks(
     context: AgentContext,
-    parameters: Record<string, any> = {},
+    parameters: Record<string, unknown> = {},
   ) {
     this.agentAuthorization.ensureActionAllowed(
       context,
@@ -419,7 +442,7 @@ export class AgentMcpService {
 
   private async createTask(
     context: AgentContext,
-    parameters: Record<string, any> = {},
+    parameters: Record<string, unknown> = {},
   ) {
     this.agentAuthorization.ensureActionAllowed(
       context,
@@ -436,10 +459,14 @@ export class AgentMcpService {
     };
 
     if (parameters.body !== undefined) {
-      payload.body = parameters.body ?? null;
+      payload.body =
+        parameters.body === null || parameters.body === undefined
+          ? null
+          : String(parameters.body);
     }
     if (parameters.bodyFormat) {
-      payload.bodyFormat = parameters.bodyFormat;
+      payload.bodyFormat =
+        parameters.bodyFormat === 'markdown' ? 'markdown' : undefined;
     }
     if (parameters.color) {
       payload.color = this.normalizeHexColor(parameters.color);
@@ -462,9 +489,7 @@ export class AgentMcpService {
     }
     if (parameters.dueTimezone !== undefined) {
       payload.dueTimezone =
-        parameters.dueTimezone === null
-          ? null
-          : String(parameters.dueTimezone);
+        parameters.dueTimezone === null ? null : String(parameters.dueTimezone);
     }
     if (parameters.assigneeId !== undefined) {
       payload.assigneeId =
@@ -482,7 +507,7 @@ export class AgentMcpService {
 
   private async updateTask(
     context: AgentContext,
-    parameters: Record<string, any> = {},
+    parameters: Record<string, unknown> = {},
   ) {
     this.agentAuthorization.ensureActionAllowed(
       context,
@@ -503,10 +528,14 @@ export class AgentMcpService {
       payload.title = title;
     }
     if ('body' in parameters) {
-      payload.body = parameters.body ?? null;
+      payload.body =
+        parameters.body === null || parameters.body === undefined
+          ? null
+          : String(parameters.body);
     }
     if ('bodyFormat' in parameters) {
-      payload.bodyFormat = parameters.bodyFormat;
+      payload.bodyFormat =
+        parameters.bodyFormat === 'markdown' ? 'markdown' : undefined;
     }
     if ('color' in parameters) {
       payload.color = parameters.color
@@ -531,9 +560,7 @@ export class AgentMcpService {
     }
     if ('dueTimezone' in parameters) {
       payload.dueTimezone =
-        parameters.dueTimezone === null
-          ? null
-          : String(parameters.dueTimezone);
+        parameters.dueTimezone === null ? null : String(parameters.dueTimezone);
     }
     if ('assigneeId' in parameters) {
       payload.assigneeId =
@@ -551,7 +578,7 @@ export class AgentMcpService {
 
   private async deleteTask(
     context: AgentContext,
-    parameters: Record<string, any> = {},
+    parameters: Record<string, unknown> = {},
   ) {
     this.agentAuthorization.ensureActionAllowed(
       context,
@@ -577,7 +604,7 @@ export class AgentMcpService {
 
   private async createTaskLabel(
     context: AgentContext,
-    parameters: Record<string, any> = {},
+    parameters: Record<string, unknown> = {},
   ) {
     this.agentAuthorization.ensureActionAllowed(
       context,
@@ -599,7 +626,7 @@ export class AgentMcpService {
 
   private async updateTaskLabel(
     context: AgentContext,
-    parameters: Record<string, any> = {},
+    parameters: Record<string, unknown> = {},
   ) {
     this.agentAuthorization.ensureActionAllowed(
       context,
@@ -630,7 +657,7 @@ export class AgentMcpService {
 
   private async deleteTaskLabel(
     context: AgentContext,
-    parameters: Record<string, any> = {},
+    parameters: Record<string, unknown> = {},
   ) {
     this.agentAuthorization.ensureActionAllowed(
       context,
@@ -646,7 +673,7 @@ export class AgentMcpService {
     return { success: true };
   }
 
-  private mapEvent(event: any) {
+  private mapEvent(event: Event) {
     return {
       id: event.id,
       calendarId: event.calendarId,
@@ -655,7 +682,7 @@ export class AgentMcpService {
       startDate: event.startDate,
       endDate: event.endDate,
       location: event.location,
-      allDay: event.allDay,
+      allDay: event.isAllDay,
       recurrenceType: event.recurrenceType,
       recurrenceRule: event.recurrenceRule,
       createdAt: event.createdAt,
@@ -704,7 +731,12 @@ export class AgentMcpService {
     if (value === null || value === '') {
       return null;
     }
-    const date = new Date(value);
+    const date =
+      value instanceof Date ||
+      typeof value === 'string' ||
+      typeof value === 'number'
+        ? new Date(value)
+        : new Date(NaN);
     if (Number.isNaN(date.getTime())) {
       throw new BadRequestException('Invalid date value. Use ISO8601 strings.');
     }

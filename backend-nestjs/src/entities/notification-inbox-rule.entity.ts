@@ -1,4 +1,4 @@
-import {
+﻿import {
   Column,
   CreateDateColumn,
   Entity,
@@ -35,10 +35,10 @@ export class NotificationInboxRule {
   continueProcessing!: boolean;
 
   @Column({ type: 'json' })
-  conditions!: Record<string, any>;
+  conditions!: unknown[];
 
   @Column({ type: 'json' })
-  actions!: Record<string, any>;
+  actions!: unknown[];
 
   @CreateDateColumn()
   createdAt!: Date;

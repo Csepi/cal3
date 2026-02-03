@@ -1,4 +1,3 @@
-// @ts-nocheck
 import type { ErrorDetails } from '../components/common/ErrorBox';
 
 /**

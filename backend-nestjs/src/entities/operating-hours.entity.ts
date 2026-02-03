@@ -12,32 +12,36 @@ import { ResourceType } from './resource-type.entity';
 @Entity('operating_hours')
 export class OperatingHours {
   @PrimaryGeneratedColumn()
-  id: number;
+  id!: number;
 
   @Column({ type: 'int' })
-  dayOfWeek: number;
+  dayOfWeek!: number;
 
   @Column({ type: 'time' })
-  openTime: string;
+  openTime!: string;
 
   @Column({ type: 'time' })
-  closeTime: string;
+  closeTime!: string;
 
   @Column({ default: true })
-  isActive: boolean;
+  isActive!: boolean;
 
   @Column()
-  resourceTypeId: number;
+  resourceTypeId!: number;
 
-  @ManyToOne(() => ResourceType, (resourceType) => resourceType.operatingHours, {
-    onDelete: 'CASCADE',
-  })
+  @ManyToOne(
+    () => ResourceType,
+    (resourceType) => resourceType.operatingHours,
+    {
+      onDelete: 'CASCADE',
+    },
+  )
   @JoinColumn({ name: 'resourceTypeId' })
-  resourceType: ResourceType;
+  resourceType!: ResourceType;
 
   @CreateDateColumn()
-  createdAt: Date;
+  createdAt!: Date;
 
   @UpdateDateColumn()
-  updatedAt: Date;
+  updatedAt!: Date;
 }

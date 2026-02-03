@@ -55,4 +55,4 @@ async function addIsEnabledColumn() {
   }
 }
 
-addIsEnabledColumn();
+void addIsEnabledColumn();

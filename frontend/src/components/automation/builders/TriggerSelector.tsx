@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React from 'react';
 import { TriggerType } from '../../../types/Automation';
 import { useAutomationMetadata } from '../../../hooks/useAutomationMetadata';

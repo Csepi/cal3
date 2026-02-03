@@ -14,53 +14,53 @@ import { OperatingHours } from './operating-hours.entity';
 @Entity('resource_types')
 export class ResourceType {
   @PrimaryGeneratedColumn()
-  id: number;
+  id!: number;
 
   @Column({ length: 255 })
-  name: string;
+  name!: string;
 
   @Column({ type: 'text', nullable: true })
-  description: string;
+  description!: string;
 
   @Column({ type: 'int', default: 30 })
-  minBookingDuration: number;
+  minBookingDuration!: number;
 
   @Column({ type: 'int', default: 0 })
-  bufferTime: number;
+  bufferTime!: number;
 
   @Column({ type: 'json', default: () => '\'["name", "phone", "email"]\'' })
-  customerInfoFields: string[];
+  customerInfoFields!: string[];
 
   @Column({ default: false })
-  waitlistEnabled: boolean;
+  waitlistEnabled!: boolean;
 
   @Column({ default: false })
-  recurringEnabled: boolean;
+  recurringEnabled!: boolean;
 
   @Column({ default: true })
-  isActive: boolean;
+  isActive!: boolean;
 
   @Column({ length: 7, default: '#f97316' })
-  color: string;
+  color!: string;
 
   @Column({ length: 10, nullable: true }) // Emoji/icon for resource type (e.g., 🏢, 🚗, 📦)
-  icon: string;
+  icon!: string;
 
   @Column()
-  organisationId: number;
+  organisationId!: number;
 
   @ManyToOne(() => Organisation, (organisation) => organisation.resourceTypes)
-  organisation: Organisation;
+  organisation!: Organisation;
 
   @OneToMany(() => Resource, (resource) => resource.resourceType)
-  resources: Resource[];
+  resources!: Resource[];
 
   @OneToMany(() => OperatingHours, (hours) => hours.resourceType)
-  operatingHours: OperatingHours[];
+  operatingHours!: OperatingHours[];
 
   @CreateDateColumn()
-  createdAt: Date;
+  createdAt!: Date;
 
   @UpdateDateColumn()
-  updatedAt: Date;
+  updatedAt!: Date;
 }

@@ -9,7 +9,7 @@ import {
 
 export class CreateResourceTypeDto {
   @IsString()
-  name: string;
+  name!: string;
 
   @IsOptional()
   @IsString()
@@ -47,7 +47,7 @@ export class CreateResourceTypeDto {
   icon?: string;
 
   @IsInt()
-  organisationId: number;
+  organisationId!: number;
 }
 
 export class UpdateResourceTypeDto {

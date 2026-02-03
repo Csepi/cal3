@@ -1,6 +1,6 @@
-import { logError } from '../common/errors/error-logger';
+﻿import { logError } from '../common/errors/error-logger';
 import { buildErrorContext } from '../common/errors/error-context';
-﻿import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, DataSourceOptions, IsNull, Repository } from 'typeorm';
 import { User, UserRole, UsagePlan } from '../entities/user.entity';
@@ -723,7 +723,7 @@ export class AdminService {
         message: 'Public booking initialization completed',
         ...results,
       };
-    } catch (error: unknown) {
+    } catch (error: any) {
       logError(error, buildErrorContext({ action: 'admin.service' }));
       const normalizedError = this.normalizeError(error);
       console.error('Error initializing public booking:', normalizedError);
@@ -968,7 +968,7 @@ export class AdminService {
     return systemInfo;
   }
 
-  private normalizeError(error: unknown): Error {
+  private normalizeError(error: any): Error {
     return error instanceof Error ? error : new Error(String(error));
   }
 
@@ -976,12 +976,12 @@ export class AdminService {
     try {
       const packageJsonPath = join(process.cwd(), 'package.json');
       const packageRaw = readFileSync(packageJsonPath, 'utf8');
-      const parsed = JSON.parse(packageRaw) as unknown;
+      const parsed = JSON.parse(packageRaw);
       if (
         parsed &&
         typeof parsed === 'object' &&
         'version' in parsed &&
-        typeof (parsed as { version?: unknown }).version === 'string'
+        typeof (parsed as { version?: any }).version === 'string'
       ) {
         return (parsed as { version: string }).version;
       }

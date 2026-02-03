@@ -10,6 +10,7 @@ import {
   Request,
   Query,
 } from '@nestjs/common';
+import type { RequestWithUser } from '../common/types/request-with-user';
 import {
   ApiTags,
   ApiOperation,
@@ -46,7 +47,10 @@ export class EventsController {
   })
   @ApiResponse({ status: 400, description: 'Invalid input data' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  create(@Body() createEventDto: CreateEventDto, @Request() req) {
+  create(
+    @Body() createEventDto: CreateEventDto,
+    @Request() req: RequestWithUser,
+  ) {
     return this.eventsService.create(createEventDto, req.user.id);
   }
 
@@ -63,7 +67,7 @@ export class EventsController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   createRecurring(
     @Body() createRecurringEventDto: CreateRecurringEventDto,
-    @Request() req,
+    @Request() req: RequestWithUser,
   ) {
     return this.eventsService.createRecurring(
       createRecurringEventDto,
@@ -92,7 +96,7 @@ export class EventsController {
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   findAll(
-    @Request() req,
+    @Request() req: RequestWithUser,
     @Query('startDate') startDate?: string,
     @Query('endDate') endDate?: string,
   ) {
@@ -112,7 +116,7 @@ export class EventsController {
   @ApiResponse({ status: 404, description: 'Event not found' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Access denied' })
-  findOne(@Param('id') id: string, @Request() req) {
+  findOne(@Param('id') id: string, @Request() req: RequestWithUser) {
     return this.eventsService.findOne(+id, req.user.id);
   }
 
@@ -132,7 +136,7 @@ export class EventsController {
   update(
     @Param('id') id: string,
     @Body() updateEventDto: UpdateEventDto,
-    @Request() req,
+    @Request() req: RequestWithUser,
   ) {
     return this.eventsService.update(+id, updateEventDto, req.user.id);
   }
@@ -146,7 +150,7 @@ export class EventsController {
   @ApiResponse({ status: 404, description: 'Event not found' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Insufficient permissions' })
-  remove(@Param('id') id: string, @Request() req) {
+  remove(@Param('id') id: string, @Request() req: RequestWithUser) {
     return this.eventsService.remove(+id, req.user.id);
   }
 
@@ -166,7 +170,7 @@ export class EventsController {
   updateRecurring(
     @Param('id') id: string,
     @Body() updateRecurringEventDto: UpdateRecurringEventDto,
-    @Request() req,
+    @Request() req: RequestWithUser,
   ) {
     return this.eventsService.updateRecurring(
       +id,
@@ -185,7 +189,10 @@ export class EventsController {
   })
   @ApiResponse({ status: 403, description: 'Access denied to calendar' })
   @ApiResponse({ status: 404, description: 'Calendar not found' })
-  findByCalendar(@Param('calendarId') calendarId: string, @Request() req) {
+  findByCalendar(
+    @Param('calendarId') calendarId: string,
+    @Request() req: RequestWithUser,
+  ) {
     return this.eventsService.findByCalendar(+calendarId, req.user.id);
   }
 }

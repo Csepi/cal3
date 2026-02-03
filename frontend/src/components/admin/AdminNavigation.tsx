@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React, { type ReactElement } from 'react';
 import type { AdminTab } from './types';
 import { getThemeConfig } from '../../constants';

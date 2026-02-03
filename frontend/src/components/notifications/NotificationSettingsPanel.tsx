@@ -1,5 +1,4 @@
-// @ts-nocheck
-import { useCallback, useEffect, useMemo, useState, type ChangeEvent } from 'react';
+﻿import { useCallback, useEffect, useMemo, useState, type ChangeEvent } from 'react';
 import { useNotifications } from '../../hooks/useNotifications';
 import { notificationsApi } from '../../services/notificationsApi';
 import type {
@@ -736,7 +735,7 @@ export const NotificationSettingsPanel: React.FC<NotificationSettingsPanelProps>
         if (Array.isArray(value)) {
           const labels = value.map((item) => getEventLabel(String(item))).join(', ');
           return condition.operator === 'in'
-            ? `Event type is any of ${labels}`
+            ? `Event type is one of ${labels}`
             : `Event type ${condition.operator} ${labels}`;
         }
         return condition.operator === 'equals'
@@ -747,7 +746,7 @@ export const NotificationSettingsPanel: React.FC<NotificationSettingsPanelProps>
         if (Array.isArray(value)) {
           const labels = value.map((item) => String(item)).join(', ');
           return condition.operator === 'in'
-            ? `Context is any of ${labels}`
+            ? `Context is one of ${labels}`
             : `Context ${condition.operator} ${labels}`;
         }
         return condition.operator === 'equals'
@@ -1050,7 +1049,7 @@ export const NotificationSettingsPanel: React.FC<NotificationSettingsPanelProps>
                   ))}
                 </select>
                 <p className="text-xs text-gray-500">
-                  Leave empty to match any event type. Hold Ctrl/Cmd to select multiple.
+                  Leave empty to match all event types. Hold Ctrl/Cmd to select multiple.
                 </p>
               </label>
 
@@ -1071,7 +1070,7 @@ export const NotificationSettingsPanel: React.FC<NotificationSettingsPanelProps>
                   ))}
                 </select>
                 <p className="text-xs text-gray-500">
-                  Leave empty to match any context. Hold Ctrl/Cmd to select multiple.
+                  Leave empty to match all contexts. Hold Ctrl/Cmd to select multiple.
                 </p>
               </label>
             </div>
@@ -1356,6 +1355,7 @@ export const NotificationSettingsPanel: React.FC<NotificationSettingsPanelProps>
 };
 
 export default NotificationSettingsPanel;
+
 
 
 

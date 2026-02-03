@@ -13,26 +13,26 @@ import { Calendar } from './calendar.entity';
 @Entity('calendar_groups')
 export class CalendarGroup {
   @PrimaryGeneratedColumn()
-  id: number;
+  id!: number;
 
   @Column({ length: 200 })
-  name: string;
+  name!: string;
 
   @Column({ default: true })
-  isVisible: boolean;
+  isVisible!: boolean;
 
   @Column()
-  ownerId: number;
+  ownerId!: number;
 
   @ManyToOne(() => User, (user) => user.id, { onDelete: 'CASCADE' })
-  owner: User;
+  owner!: User;
 
   @OneToMany(() => Calendar, (calendar) => calendar.group)
-  calendars: Calendar[];
+  calendars!: Calendar[];
 
   @CreateDateColumn()
-  createdAt: Date;
+  createdAt!: Date;
 
   @UpdateDateColumn()
-  updatedAt: Date;
+  updatedAt!: Date;
 }

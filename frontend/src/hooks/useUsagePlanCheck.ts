@@ -1,4 +1,4 @@
-/**
+﻿/**
  * useUsagePlanCheck hook - Check user permissions based on usage plans
  *
  * This hook provides utilities to check if a user has the necessary usage plans
@@ -21,7 +21,7 @@ export interface UsagePlanPermissions {
   usagePlans: string[];
   /** Whether data is loading */
   loading: boolean;
-  /** Error message if any */
+  /** Error message if present */
   error: string | null;
 }
 
@@ -39,7 +39,7 @@ export interface RolePermissions {
 }
 
 /**
- * Check if user has any of the required usage plans
+ * Check if user has one of the required usage plans
  */
 const hasRequiredPlan = (userPlans: string[], requiredPlans: string[]): boolean => {
   return requiredPlans.some(plan => userPlans.includes(plan));
@@ -166,3 +166,4 @@ export const useUsagePlanCheck = () => {
 };
 
 export default useUsagePlanCheck;
+

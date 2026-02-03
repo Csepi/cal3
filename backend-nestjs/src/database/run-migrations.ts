@@ -6,7 +6,8 @@ import * as path from 'path';
 dotenv.config({ path: path.join(__dirname, '../../.env') });
 
 const sslEnabled = process.env.DB_SSL === 'true';
-const sslRejectUnauthorized = process.env.DB_SSL_REJECT_UNAUTHORIZED !== 'false';
+const sslRejectUnauthorized =
+  process.env.DB_SSL_REJECT_UNAUTHORIZED !== 'false';
 
 const dataSource = new DataSource({
   type: 'postgres',
@@ -68,16 +69,25 @@ const calendarGroupsMissing = async (): Promise<boolean> => {
 
 const baselineMigrations = async (): Promise<void> => {
   await ensureMigrationTable();
-  const existingRows = await dataSource.query(
+  const existingRowsRaw = await dataSource.query(
     `SELECT name FROM "${MIGRATION_TABLE}"`,
   );
-  const existingNames = new Set<string>(
-    existingRows.map((row: { name?: string }) => row.name).filter(Boolean),
-  );
+  const existingRows = Array.isArray(existingRowsRaw)
+    ? (existingRowsRaw as Array<{ name?: string }>)
+    : [];
+  const existingNamesList: string[] = [];
+  for (const row of existingRows) {
+    if (typeof row.name === 'string') {
+      existingNamesList.push(row.name);
+    }
+  }
+  const existingNames = new Set<string>(existingNamesList);
 
   const skipCalendarGroups = await calendarGroupsMissing();
   const migrations = (
-    dataSource.migrations as Array<{ name?: string; constructor?: { name?: string } } | Function>
+    dataSource.migrations as Array<
+      { name?: string; constructor?: { name?: string } } | Function
+    >
   )
     .map((migration) => {
       if (typeof migration === 'function') {
@@ -113,7 +123,9 @@ const baselineMigrations = async (): Promise<void> => {
 
 async function runMigrations() {
   if (process.env.DB_TYPE && process.env.DB_TYPE !== 'postgres') {
-    throw new Error(`DB_TYPE must be postgres to run migrations, got: ${process.env.DB_TYPE}`);
+    throw new Error(
+      `DB_TYPE must be postgres to run migrations, got: ${process.env.DB_TYPE}`,
+    );
   }
 
   await dataSource.initialize();

@@ -1,4 +1,4 @@
-import {
+﻿import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
@@ -13,25 +13,25 @@ import { AgentProfile } from './agent-profile.entity';
 @Unique(['agentId', 'actionKey'])
 export class AgentPermission {
   @PrimaryGeneratedColumn()
-  id: number;
+  id!: number;
 
   @Column()
-  agentId: number;
+  agentId!: number;
 
   @ManyToOne(() => AgentProfile, (agent) => agent.permissions, {
     onDelete: 'CASCADE',
   })
-  agent: AgentProfile;
+  agent!: AgentProfile;
 
   @Column({ length: 120 })
-  actionKey: string;
+  actionKey!: string;
 
   @Column({ type: 'simple-json', nullable: true })
-  scope?: Record<string, any> | null;
+  scope?: Record<string, unknown> | null;
 
   @CreateDateColumn()
-  createdAt: Date;
+  createdAt!: Date;
 
   @UpdateDateColumn()
-  updatedAt: Date;
+  updatedAt!: Date;
 }

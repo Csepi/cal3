@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * EventListItem - Touch-friendly event card
  *

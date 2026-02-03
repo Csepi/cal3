@@ -30,53 +30,53 @@ export enum SharePermission {
 @Entity('calendars')
 export class Calendar {
   @PrimaryGeneratedColumn()
-  id: number;
+  id!: number;
 
   @Column({ length: 200 })
-  name: string;
+  name!: string;
 
   @Column({ length: 500, nullable: true })
-  description: string;
+  description!: string;
 
   @Column({ length: 7, default: '#3b82f6' }) // Default blue color
-  color: string;
+  color!: string;
 
   @Column({ length: 10, nullable: true }) // Emoji/icon for calendar (e.g., 📅, 🎉, 📝)
-  icon: string;
+  icon!: string;
 
   @Column({
     type: 'varchar',
     default: CalendarVisibility.PRIVATE,
   })
-  visibility: CalendarVisibility;
+  visibility!: CalendarVisibility;
 
   @Column({ default: true })
-  isActive: boolean;
+  isActive!: boolean;
 
   @Column({ default: false })
-  isReservationCalendar: boolean; // Indicates if this is a reservation calendar
+  isReservationCalendar!: boolean; // Indicates if this is a reservation calendar
 
   @Column({ default: false })
-  isTasksCalendar: boolean;
+  isTasksCalendar!: boolean;
 
   @Column({ type: 'int', default: 0 })
-  rank: number;
+  rank!: number;
 
   @Column({ nullable: true })
-  organisationId: number; // For reservation calendars, links to organisation
+  organisationId!: number; // For reservation calendars, links to organisation
 
   @CreateDateColumn()
-  createdAt: Date;
+  createdAt!: Date;
 
   @UpdateDateColumn()
-  updatedAt: Date;
+  updatedAt!: Date;
 
   // Many calendars belong to one owner (user)
   @ManyToOne(() => User, (user) => user.ownedCalendars, { onDelete: 'CASCADE' })
-  owner: User;
+  owner!: User;
 
   @Column()
-  ownerId: number;
+  ownerId!: number;
 
   @ManyToOne(() => CalendarGroup, (group) => group.calendars, {
     onDelete: 'SET NULL',
@@ -97,44 +97,44 @@ export class Calendar {
     joinColumn: { name: 'calendarId', referencedColumnName: 'id' },
     inverseJoinColumn: { name: 'userId', referencedColumnName: 'id' },
   })
-  sharedWith: User[];
+  sharedWith!: User[];
 
   // One calendar has many events
   @OneToMany(() => Event, (event) => event.calendar, { cascade: true })
-  events: Event[];
+  events!: Event[];
 
   // Reservation calendar configuration (one-to-one relationship)
   @OneToMany(
     () => ReservationCalendar,
     (reservationCalendar) => reservationCalendar.calendar,
   )
-  reservationCalendarConfig: ReservationCalendar[];
+  reservationCalendarConfig!: ReservationCalendar[];
 }
 
 // Separate entity for calendar sharing permissions
 @Entity('calendar_shares')
 export class CalendarShare {
   @PrimaryGeneratedColumn()
-  id: number;
+  id!: number;
 
   @Column()
-  calendarId: number;
+  calendarId!: number;
 
   @Column()
-  userId: number;
+  userId!: number;
 
   @Column({
     type: 'varchar',
     default: SharePermission.READ,
   })
-  permission: SharePermission;
+  permission!: SharePermission;
 
   @CreateDateColumn()
-  sharedAt: Date;
+  sharedAt!: Date;
 
   @ManyToOne(() => Calendar, { onDelete: 'CASCADE' })
-  calendar: Calendar;
+  calendar!: Calendar;
 
   @ManyToOne(() => User, { onDelete: 'CASCADE' })
-  user: User;
+  user!: User;
 }

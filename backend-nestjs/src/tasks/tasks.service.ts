@@ -112,8 +112,7 @@ export class TasksService {
       qb.setParameter('priorityHigh', TaskPriority.HIGH);
       qb.setParameter('priorityMedium', TaskPriority.MEDIUM);
 
-      qb
-        .orderBy(priorityRankAlias, 'ASC')
+      qb.orderBy(priorityRankAlias, 'ASC')
         .addOrderBy(dueDateNullAlias, 'ASC')
         .addOrderBy('task.dueDate', 'ASC')
         .addOrderBy('task.createdAt', 'DESC');
@@ -197,11 +196,7 @@ export class TasksService {
     return { success: true };
   }
 
-  async addLabels(
-    ownerId: number,
-    taskId: number,
-    dto: UpdateTaskLabelsDto,
-  ) {
+  async addLabels(ownerId: number, taskId: number, dto: UpdateTaskLabelsDto) {
     const task = await this.tasksRepository.findOne({
       where: { id: taskId, ownerId },
       relations: ['labels'],

@@ -28,8 +28,7 @@ import { TasksModule } from '../tasks/tasks.module';
       useFactory: async (configService: ConfigService) => ({
         secret: configService.get<string>('JWT_SECRET') || 'default-secret-key',
         signOptions: {
-          expiresIn:
-            configService.get<string>('JWT_ACCESS_TTL') || '15m',
+          expiresIn: configService.get<string>('JWT_ACCESS_TTL') || '15m',
           issuer: configService.get<string>('JWT_ISSUER') || 'cal3-backend',
           audience: configService.get<string>('JWT_AUDIENCE') || 'cal3-users',
         },

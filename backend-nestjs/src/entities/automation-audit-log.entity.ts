@@ -1,4 +1,4 @@
-import {
+﻿import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
@@ -19,33 +19,33 @@ export enum AuditLogStatus {
 @Entity('automation_audit_logs')
 export class AutomationAuditLog {
   @PrimaryGeneratedColumn()
-  id: number;
+  id!: number;
 
   @ManyToOne(() => AutomationRule, (rule) => rule.auditLogs, {
     onDelete: 'CASCADE',
   })
-  rule: AutomationRule;
+  rule!: AutomationRule;
 
   @Column()
-  ruleId: number;
+  ruleId!: number;
 
   @ManyToOne(() => Event, { onDelete: 'SET NULL', nullable: true })
-  event: Event;
+  event!: Event | null;
 
   @Column({ nullable: true })
-  eventId: number;
+  eventId!: number | null;
 
   @Column({
     type: 'varchar',
     length: 50,
   })
-  triggerType: TriggerType;
+  triggerType!: TriggerType;
 
   @Column({ type: 'json', nullable: true })
-  triggerContext: Record<string, any>;
+  triggerContext!: Record<string, unknown> | null;
 
   @Column({ type: 'json' })
-  conditionsResult: {
+  conditionsResult!: {
     passed: boolean;
     evaluations: Array<{
       conditionId: number;
@@ -58,7 +58,7 @@ export class AutomationAuditLog {
   };
 
   @Column({ type: 'json', nullable: true })
-  actionResults: Array<{
+  actionResults!: Array<{
     actionId: number;
     actionType: string;
     success: boolean;
@@ -70,13 +70,13 @@ export class AutomationAuditLog {
     type: 'varchar',
     length: 20,
   })
-  status: AuditLogStatus;
+  status!: AuditLogStatus;
 
   @Column({ type: 'text', nullable: true })
-  errorMessage: string;
+  errorMessage!: string | null;
 
   @Column({ default: 0 })
-  duration_ms: number;
+  duration_ms!: number;
 
   // Alias for API compatibility
   get executionTimeMs(): number {
@@ -84,11 +84,11 @@ export class AutomationAuditLog {
   }
 
   @ManyToOne(() => User, { nullable: true, onDelete: 'SET NULL' })
-  executedBy: User;
+  executedBy!: User | null;
 
   @Column({ nullable: true })
-  executedByUserId: number;
+  executedByUserId!: number | null;
 
   @CreateDateColumn()
-  executedAt: Date;
+  executedAt!: Date;
 }

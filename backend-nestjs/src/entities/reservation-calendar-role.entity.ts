@@ -37,38 +37,38 @@ export enum ReservationCalendarRoleType {
 @Unique(['reservationCalendarId', 'userId']) // Prevent duplicate role assignments
 export class ReservationCalendarRole {
   @PrimaryGeneratedColumn()
-  id: number;
+  id!: number;
 
   @Column()
-  reservationCalendarId: number;
+  reservationCalendarId!: number;
 
   @Column()
-  userId: number;
+  userId!: number;
 
   @Column({
     type: 'varchar',
     enum: ReservationCalendarRoleType,
   })
-  role: ReservationCalendarRoleType;
+  role!: ReservationCalendarRoleType;
 
   @Column({ nullable: true })
-  assignedById: number; // Organisation admin who assigned this role
+  assignedById!: number | null; // Organisation admin who assigned this role
 
   @Column({ default: false })
-  isOrganisationAdmin: boolean; // True if this role is auto-assigned due to org admin status
+  isOrganisationAdmin!: boolean; // True if this role is auto-assigned due to org admin status
 
   @CreateDateColumn()
-  assignedAt: Date;
+  assignedAt!: Date;
 
   // Relationships
   @ManyToOne(() => ReservationCalendar, (calendar) => calendar.roles, {
     onDelete: 'CASCADE',
   })
-  reservationCalendar: ReservationCalendar;
+  reservationCalendar!: ReservationCalendar;
 
   @ManyToOne(() => User, { onDelete: 'CASCADE' })
-  user: User;
+  user!: User;
 
   @ManyToOne(() => User, { nullable: true })
-  assignedBy: User; // Organisation admin who assigned this role
+  assignedBy!: User | null; // Organisation admin who assigned this role
 }

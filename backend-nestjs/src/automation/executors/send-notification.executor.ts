@@ -1,4 +1,4 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+﻿import { Injectable, OnModuleInit } from '@nestjs/common';
 import {
   AutomationAction,
   ActionType,
@@ -61,7 +61,9 @@ export class SendNotificationExecutor implements IActionExecutor, OnModuleInit {
         : undefined;
 
       await this.notificationsService.publish({
-        eventType: interpolatedConfig.eventType || 'automation.notification',
+        eventType: String(
+          interpolatedConfig.eventType ?? 'automation.notification',
+        ),
         actorId: context.event?.createdById ?? null,
         recipients,
         title: title ?? `Automation Notification`,
@@ -91,19 +93,22 @@ export class SendNotificationExecutor implements IActionExecutor, OnModuleInit {
         },
         executedAt,
       };
-    } catch (error) {
+    } catch (error: any) {
       return {
         success: false,
         actionId: action.id,
         actionType: this.actionType,
-        error: error.message || 'Failed to send notification',
+        error:
+          error instanceof Error
+            ? error.message
+            : String(error) || 'Failed to send notification',
         executedAt,
       };
     }
   }
 
   private resolveRecipients(
-    config: Record<string, any>,
+    config: Record<string, unknown>,
     context: ActionExecutionContext,
   ): number[] {
     const recipients = new Set<number>();
@@ -132,7 +137,7 @@ export class SendNotificationExecutor implements IActionExecutor, OnModuleInit {
     return Array.from(recipients);
   }
 
-  validateConfig(actionConfig: Record<string, any>): boolean {
+  validateConfig(actionConfig: Record<string, unknown>): boolean {
     if (!actionConfig || typeof actionConfig !== 'object') {
       throw new Error('Action configuration must be an object');
     }

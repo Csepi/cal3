@@ -14,7 +14,7 @@ export class CreateCalendarGroupDto {
   @ApiProperty({ example: 'Family', description: 'Group name' })
   @IsString()
   @MinLength(2)
-  name: string;
+  name!: string;
 
   @ApiPropertyOptional({
     example: true,
@@ -26,7 +26,10 @@ export class CreateCalendarGroupDto {
 }
 
 export class UpdateCalendarGroupDto {
-  @ApiPropertyOptional({ example: 'Friends', description: 'Updated group name' })
+  @ApiPropertyOptional({
+    example: 'Friends',
+    description: 'Updated group name',
+  })
   @IsOptional()
   @IsString()
   @MinLength(2)
@@ -48,7 +51,7 @@ export class AssignCalendarsToGroupDto {
   })
   @IsArray()
   @IsNumber({}, { each: true })
-  calendarIds: number[];
+  calendarIds!: number[];
 }
 
 export class ShareCalendarGroupDto {
@@ -58,7 +61,7 @@ export class ShareCalendarGroupDto {
   })
   @IsArray()
   @IsNumber({}, { each: true })
-  userIds: number[];
+  userIds!: number[];
 
   @ApiProperty({
     enum: SharePermission,
@@ -66,19 +69,19 @@ export class ShareCalendarGroupDto {
     description: 'Permission to grant for each calendar in the group',
   })
   @IsEnum(SharePermission)
-  permission: SharePermission;
+  permission!: SharePermission;
 }
 
 export class CalendarGroupResponseDto {
   @ApiProperty({ example: 5, description: 'Group ID' })
-  id: number;
+  id!: number;
 
   @ApiProperty({ example: 'Work', description: 'Group name' })
-  name: string;
+  name!: string;
 
   @ApiProperty({ example: true, description: 'Whether the group is visible' })
-  isVisible: boolean;
+  isVisible!: boolean;
 
   @ApiProperty({ example: 1, description: 'Group owner ID' })
-  ownerId: number;
+  ownerId!: number;
 }

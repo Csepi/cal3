@@ -11,27 +11,27 @@ import {
 export class CreatePublicBookingDto {
   @IsDateString()
   @IsNotEmpty()
-  startTime: string;
+  startTime!: string;
 
   @IsDateString()
   @IsNotEmpty()
-  endTime: string;
+  endTime!: string;
 
   @IsInt()
   @Min(1)
-  quantity: number;
+  quantity!: number;
 
   @IsString()
   @IsNotEmpty()
-  customerName: string;
+  customerName!: string;
 
   @IsEmail()
   @IsNotEmpty()
-  customerEmail: string;
+  customerEmail!: string;
 
   @IsString()
   @IsNotEmpty()
-  customerPhone: string;
+  customerPhone!: string;
 
   @IsOptional()
   @IsString()
@@ -40,5 +40,5 @@ export class CreatePublicBookingDto {
 
 export class AvailabilityQueryDto {
   @IsDateString()
-  date: string; // YYYY-MM-DD format
+  date!: string; // YYYY-MM-DD format
 }

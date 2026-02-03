@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+﻿import { Injectable, Logger } from '@nestjs/common';
 import { DateTime } from 'luxon';
 import { Event, RecurrenceType } from '../../entities/event.entity';
 import { SyncProvider } from '../../entities/calendar-sync.entity';
@@ -27,7 +27,7 @@ export class CalendarSyncMapperService {
 
       if (externalEvent.start) {
         if (externalEvent.isAllDay) {
-          eventData.startDate = new Date(
+          eventData.startDate = this.toDate(
             externalEvent.start.dateTime || externalEvent.start.date,
           );
           eventData.startTime = null;
@@ -53,13 +53,14 @@ export class CalendarSyncMapperService {
       if (externalEvent.seriesMasterId) {
         eventData.recurrenceId = externalEvent.seriesMasterId;
         if (externalEvent.originalStart) {
-          eventData.originalDate = new Date(externalEvent.originalStart);
+          eventData.originalDate = this.toDate(externalEvent.originalStart);
         }
       }
 
       if (externalEvent.end) {
         if (externalEvent.isAllDay) {
-          const rawEndDate = externalEvent.end.dateTime || externalEvent.end.date;
+          const rawEndDate =
+            externalEvent.end.dateTime || externalEvent.end.date;
           eventData.endDate = this.normalizeAllDayEndDate(rawEndDate);
           eventData.endTime = null;
         } else {
@@ -90,8 +91,8 @@ export class CalendarSyncMapperService {
       if (externalEvent.recurringEventId) {
         eventData.recurrenceId = externalEvent.recurringEventId;
         if (externalEvent.originalStartTime) {
-          eventData.originalDate = new Date(
-            externalEvent.originalStartTime.dateTime ||
+          eventData.originalDate = this.toDate(
+            externalEvent.originalStartTime.dateTime ??
               externalEvent.originalStartTime.date,
           );
         }
@@ -100,7 +101,7 @@ export class CalendarSyncMapperService {
       if (externalEvent.start) {
         if (externalEvent.start.date) {
           eventData.isAllDay = true;
-          eventData.startDate = new Date(externalEvent.start.date);
+          eventData.startDate = this.toDate(externalEvent.start.date);
           eventData.startTime = null;
         } else if (externalEvent.start.dateTime) {
           eventData.isAllDay = false;
@@ -118,7 +119,9 @@ export class CalendarSyncMapperService {
 
       if (externalEvent.end) {
         if (externalEvent.end.date) {
-          eventData.endDate = this.normalizeAllDayEndDate(externalEvent.end.date);
+          eventData.endDate = this.normalizeAllDayEndDate(
+            externalEvent.end.date,
+          );
           eventData.endTime = null;
         } else if (externalEvent.end.dateTime) {
           const end = this.convertToUserDateTime(
@@ -137,21 +140,21 @@ export class CalendarSyncMapperService {
     return eventData;
   }
 
-  normalizeAllDayEndDate(rawDate: string | Date | undefined): Date | null {
+  normalizeAllDayEndDate(rawDate: any): Date | null {
     if (!rawDate) {
       return null;
     }
-    const parsed = rawDate instanceof Date ? new Date(rawDate) : new Date(rawDate);
-    if (Number.isNaN(parsed.getTime())) {
+    const parsed = this.toDate(rawDate);
+    if (!parsed) {
       return null;
     }
     parsed.setDate(parsed.getDate() - 1);
     return parsed;
   }
 
-  getSafeUserTimezone(timeZone?: string): string {
+  getSafeUserTimezone(timeZone?: any): string {
     const fallback = 'UTC';
-    if (!timeZone) return fallback;
+    if (typeof timeZone !== 'string' || !timeZone) return fallback;
 
     try {
       new Intl.DateTimeFormat('en-US', { timeZone }).format(new Date());
@@ -165,8 +168,8 @@ export class CalendarSyncMapperService {
     }
   }
 
-  getMicrosoftTimeZone(timeZone: string): string | undefined {
-    if (!timeZone) return undefined;
+  getMicrosoftTimeZone(timeZone: any): string | undefined {
+    if (typeof timeZone !== 'string' || !timeZone) return undefined;
     const trimmed = timeZone.trim();
     if (!trimmed) return undefined;
 
@@ -182,13 +185,15 @@ export class CalendarSyncMapperService {
     return undefined;
   }
 
-  resolveTimeZone(timeZone?: string): string | undefined {
-    if (!timeZone) return undefined;
+  resolveTimeZone(timeZone?: any): string | undefined {
+    if (typeof timeZone !== 'string' || !timeZone) return undefined;
     const trimmed = timeZone.trim();
     const mapped = this.mapWindowsToIana(trimmed);
     const candidate = mapped || trimmed;
     try {
-      new Intl.DateTimeFormat('en-US', { timeZone: candidate }).format(new Date());
+      new Intl.DateTimeFormat('en-US', { timeZone: candidate }).format(
+        new Date(),
+      );
       return candidate;
     } catch {
       return undefined;
@@ -196,11 +201,11 @@ export class CalendarSyncMapperService {
   }
 
   convertToUserDateTime(
-    rawDateTime: string | undefined,
+    rawDateTime: any,
     userTimezone: string,
-    preferredSourceTimezones: (string | undefined)[],
+    preferredSourceTimezones: any[],
   ): { datePart: string; timePart: string } | null {
-    if (!rawDateTime) return null;
+    if (typeof rawDateTime !== 'string' || !rawDateTime) return null;
 
     const sourceZone =
       preferredSourceTimezones
@@ -227,6 +232,17 @@ export class CalendarSyncMapperService {
       datePart: userDateTime.toISODate(),
       timePart: userDateTime.toFormat('HH:mm'),
     };
+  }
+
+  private toDate(value: any): Date | null {
+    if (value instanceof Date) {
+      return Number.isNaN(value.getTime()) ? null : new Date(value);
+    }
+    if (typeof value === 'string' || typeof value === 'number') {
+      const parsed = new Date(value);
+      return Number.isNaN(parsed.getTime()) ? null : parsed;
+    }
+    return null;
   }
 
   mapWindowsToIana(timeZone: string): string | undefined {

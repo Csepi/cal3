@@ -1,4 +1,4 @@
-import { All, Body, Controller, Req, Res, UseGuards } from '@nestjs/common';
+﻿import { All, Body, Controller, Req, Res, UseGuards } from '@nestjs/common';
 import type { Request, Response } from 'express';
 import { AgentApiKeyGuard } from './guards/agent-api-key.guard';
 import { AgentMcpHttpService } from './agent-mcp-http.service';
@@ -15,7 +15,7 @@ export class AgentMcpStreamController {
   async handleRequest(
     @Req() req: AgentRequest,
     @Res({ passthrough: false }) res: Response,
-    @Body() body: unknown,
+    @Body() body: any,
   ): Promise<void> {
     const payload = req.method === 'POST' ? body : undefined;
     await this.httpService.handleStreamRequest(

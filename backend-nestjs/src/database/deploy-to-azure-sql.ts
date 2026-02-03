@@ -1,4 +1,4 @@
-import * as sql from 'mssql';
+﻿import * as sql from 'mssql';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -24,7 +24,7 @@ const azureConfig: sql.config = {
 };
 
 async function deploySchema() {
-  console.log('🚀 Starting Azure SQL Database Schema Deployment\n');
+  console.log('đźš€ Starting Azure SQL Database Schema Deployment\n');
   console.log('Target: cal3db-server.database.windows.net');
   console.log('Database: cal3db');
   console.log('User: db_admin\n');
@@ -33,9 +33,9 @@ async function deploySchema() {
 
   try {
     // Connect to Azure SQL
-    console.log('📡 Connecting to Azure SQL Database...');
+    console.log('đź“ˇ Connecting to Azure SQL Database...');
     pool = await sql.connect(azureConfig);
-    console.log('✅ Connected successfully!\n');
+    console.log('âś… Connected successfully!\n');
 
     // Read SQL schema file
     const schemaFilePath = path.join(
@@ -44,26 +44,26 @@ async function deploySchema() {
       '..',
       'azure-sql-schema.sql',
     );
-    console.log(`📄 Reading schema file: ${schemaFilePath}`);
+    console.log(`đź“„ Reading schema file: ${schemaFilePath}`);
 
     if (!fs.existsSync(schemaFilePath)) {
       throw new Error(`Schema file not found: ${schemaFilePath}`);
     }
 
     const sqlScript = fs.readFileSync(schemaFilePath, 'utf-8');
-    console.log(`✅ Schema file loaded (${sqlScript.length} characters)\n`);
+    console.log(`âś… Schema file loaded (${sqlScript.length} characters)\n`);
 
-    console.log(`📦 Executing schema in 1 batch...\n`);
-    console.log('─'.repeat(80));
+    console.log(`đź“¦ Executing schema in 1 batch...\n`);
+    console.log('â”€'.repeat(80));
 
     // Execute the main transaction
     const request = pool.request();
     await request.query(sqlScript);
 
-    console.log('✅ Schema deployment completed successfully!\n');
+    console.log('âś… Schema deployment completed successfully!\n');
 
     // Verify table creation
-    console.log('🔍 Verifying table creation...\n');
+    console.log('đź”Ť Verifying table creation...\n');
     const tableCheckQuery = `
       SELECT
         TABLE_NAME,
@@ -75,14 +75,14 @@ async function deploySchema() {
 
     const result = await pool.request().query(tableCheckQuery);
 
-    console.log('📊 Created Tables:');
-    console.log('─'.repeat(80));
+    console.log('đź“Š Created Tables:');
+    console.log('â”€'.repeat(80));
     result.recordset.forEach((row: any, index: number) => {
       console.log(
         `${(index + 1).toString().padStart(2, ' ')}. ${row.TABLE_NAME.padEnd(40, ' ')} (${row.COLUMN_COUNT} columns)`,
       );
     });
-    console.log('─'.repeat(80));
+    console.log('â”€'.repeat(80));
     console.log(`\nTotal Tables: ${result.recordset.length}\n`);
 
     // Check indexes
@@ -95,7 +95,7 @@ async function deploySchema() {
 
     const indexResult = await pool.request().query(indexCheckQuery);
     console.log(
-      `📈 Total Indexes Created: ${indexResult.recordset[0].INDEX_COUNT}\n`,
+      `đź“ Total Indexes Created: ${indexResult.recordset[0].INDEX_COUNT}\n`,
     );
 
     // Check foreign keys
@@ -105,10 +105,10 @@ async function deploySchema() {
     `;
 
     const fkResult = await pool.request().query(fkCheckQuery);
-    console.log(`🔗 Total Foreign Keys: ${fkResult.recordset[0].FK_COUNT}\n`);
+    console.log(`đź”— Total Foreign Keys: ${fkResult.recordset[0].FK_COUNT}\n`);
 
-    console.log('─'.repeat(80));
-    console.log('✅ DEPLOYMENT SUCCESSFUL!\n');
+    console.log('â”€'.repeat(80));
+    console.log('âś… DEPLOYMENT SUCCESSFUL!\n');
     console.log('Next Steps:');
     console.log('1. Update backend-nestjs/.env file:');
     console.log('   DB_TYPE=mssql');
@@ -127,9 +127,9 @@ async function deploySchema() {
     console.log('');
     console.log('4. Start the application:');
     console.log('   npm run start:dev');
-    console.log('─'.repeat(80));
+    console.log('â”€'.repeat(80));
   } catch (error: any) {
-    console.error('\n❌ ERROR during deployment:\n');
+    console.error('\nâťŚ ERROR during deployment:\n');
     console.error('Error Message:', error.message);
 
     if (error.code) {
@@ -163,7 +163,7 @@ async function deploySchema() {
     // Close connection
     if (pool) {
       await pool.close();
-      console.log('\n📡 Database connection closed.');
+      console.log('\nđź“ˇ Database connection closed.');
     }
   }
 }
@@ -172,11 +172,11 @@ async function deploySchema() {
 if (require.main === module) {
   deploySchema()
     .then(() => {
-      console.log('\n✅ Script completed successfully!');
+      console.log('\nâś… Script completed successfully!');
       process.exit(0);
     })
     .catch((error) => {
-      console.error('\n❌ Script failed:', error.message);
+      console.error('\nâťŚ Script failed:', error.message);
       process.exit(1);
     });
 }

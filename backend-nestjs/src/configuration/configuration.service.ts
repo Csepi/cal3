@@ -1,4 +1,4 @@
-import {
+﻿import {
   BadRequestException,
   Injectable,
   Logger,
@@ -31,7 +31,7 @@ export interface AdminConfigurationSetting {
   isEditable: boolean;
   isReadOnly: boolean;
   options?: string[] | null;
-  metadata?: Record<string, any> | null;
+  metadata?: Record<string, unknown> | null;
   updatedAt?: string | null;
 }
 
@@ -445,7 +445,10 @@ export class ConfigurationService implements OnModuleInit {
           JSON.parse(rawValue);
           return rawValue;
         } catch (error) {
-          logError(error, buildErrorContext({ action: 'configuration.service' }));
+          logError(
+            error,
+            buildErrorContext({ action: 'configuration.service' }),
+          );
           throw new BadRequestException(
             `Invalid JSON payload for "${definition.label}".`,
           );

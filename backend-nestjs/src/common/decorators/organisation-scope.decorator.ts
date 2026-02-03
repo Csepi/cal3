@@ -9,6 +9,5 @@ export interface OrganisationScopeOptions {
 
 export const ORGANISATION_SCOPE_KEY = 'organisation-scope';
 
-export const OrganisationScope = (
-  options: OrganisationScopeOptions = {},
-) => SetMetadata(ORGANISATION_SCOPE_KEY, options);
+export const OrganisationScope = (options: OrganisationScopeOptions = {}) =>
+  SetMetadata(ORGANISATION_SCOPE_KEY, options);

@@ -7,6 +7,7 @@ import {
   Request,
   ConflictException,
 } from '@nestjs/common';
+import type { RequestWithUser } from '../common/types/request-with-user';
 import {
   ApiTags,
   ApiOperation,
@@ -53,7 +54,7 @@ export class UserProfileController {
   @ApiOperation({ summary: 'Get user profile' })
   @ApiResponse({ status: 200, description: 'Profile retrieved successfully' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async getProfile(@Request() req) {
+  async getProfile(@Request() req: RequestWithUser) {
     const user = await this.userRepository.findOne({
       where: { id: req.user.id },
       select: [
@@ -89,7 +90,7 @@ export class UserProfileController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 409, description: 'Username or email already exists' })
   async updateProfile(
-    @Request() req,
+    @Request() req: RequestWithUser,
     @Body() updateProfileDto: UpdateProfileDto,
   ) {
     const userId = req.user.id;
@@ -182,8 +183,7 @@ export class UserProfileController {
     }
 
     const defaultCalendarChanged =
-      defaultTasksCalendarId !== undefined &&
-      defaultTasksCalendarId !== null;
+      defaultTasksCalendarId !== undefined && defaultTasksCalendarId !== null;
 
     await this.userRepository.update(userId, updatePayload);
 
@@ -231,7 +231,10 @@ export class UserProfileController {
   @ApiOperation({ summary: 'Update user theme color' })
   @ApiResponse({ status: 200, description: 'Theme updated successfully' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async updateTheme(@Request() req, @Body() updateThemeDto: UpdateThemeDto) {
+  async updateTheme(
+    @Request() req: RequestWithUser,
+    @Body() updateThemeDto: UpdateThemeDto,
+  ) {
     const userId = req.user.id;
 
     await this.userRepository.update(userId, {
@@ -275,7 +278,7 @@ export class UserProfileController {
     description: 'Unauthorized or invalid current password',
   })
   async changePassword(
-    @Request() req,
+    @Request() req: RequestWithUser,
     @Body() changePasswordDto: ChangePasswordDto,
   ) {
     const userId = req.user.id;

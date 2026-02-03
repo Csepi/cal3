@@ -1,4 +1,4 @@
-import {
+﻿import {
   BadRequestException,
   ForbiddenException,
   Injectable,
@@ -348,7 +348,7 @@ export class AgentsService {
 
   private normalizePermissionInput(input: AgentPermissionInputDto): {
     actionKey: AgentActionKey;
-    scope: Record<string, any> | null;
+    scope: Record<string, unknown> | null;
   } {
     const definition = getAgentActionDefinition(input.actionKey);
     if (!definition) {
@@ -394,7 +394,7 @@ export class AgentsService {
   }
 
   private extractIdArray(
-    scope: Record<string, any>,
+    scope: Record<string, unknown>,
     property: string,
     required: boolean,
   ): number[] {

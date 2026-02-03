@@ -23,27 +23,27 @@ import { Organisation } from './organisation.entity';
 @Unique(['organisationId', 'userId']) // Prevent duplicate admin assignments
 export class OrganisationAdmin {
   @PrimaryGeneratedColumn()
-  id: number;
+  id!: number;
 
   @Column()
-  organisationId: number;
+  organisationId!: number;
 
   @Column()
-  userId: number;
+  userId!: number;
 
   @Column({ nullable: true })
-  assignedById: number; // Global admin who assigned this role
+  assignedById!: number | null; // Global admin who assigned this role
 
   @CreateDateColumn()
-  assignedAt: Date;
+  assignedAt!: Date;
 
   // Relationships
   @ManyToOne(() => Organisation, { onDelete: 'CASCADE' })
-  organisation: Organisation;
+  organisation!: Organisation;
 
   @ManyToOne(() => User, { onDelete: 'CASCADE' })
-  user: User;
+  user!: User;
 
   @ManyToOne(() => User, { nullable: true })
-  assignedBy: User; // Global admin who assigned this role
+  assignedBy!: User | null; // Global admin who assigned this role
 }

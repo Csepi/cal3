@@ -9,7 +9,15 @@ import {
 import { Reflector } from '@nestjs/core';
 import { UserPermissionsService } from '../../common/services/user-permissions.service';
 import { OrganisationRoleType } from '../../entities/organisation-user.entity';
-import { OrganisationScopeOptions, ORGANISATION_SCOPE_KEY } from '../../common/decorators/organisation-scope.decorator';
+import {
+  OrganisationScopeOptions,
+  ORGANISATION_SCOPE_KEY,
+} from '../../common/decorators/organisation-scope.decorator';
+import { RequestWithUser } from '../../common/types/request-with-user';
+
+type ScopedRequest = RequestWithUser & {
+  organisationId?: number;
+};
 
 @Injectable()
 export class OrganisationOwnershipGuard implements CanActivate {
@@ -28,7 +36,7 @@ export class OrganisationOwnershipGuard implements CanActivate {
       return true;
     }
 
-    const request = context.switchToHttp().getRequest();
+    const request = context.switchToHttp().getRequest<ScopedRequest>();
     const user = request.user;
     if (!user) {
       throw new UnauthorizedException();
@@ -60,7 +68,7 @@ export class OrganisationOwnershipGuard implements CanActivate {
   }
 
   private resolveOrganisationId(
-    request: any,
+    request: ScopedRequest,
     scope: OrganisationScopeOptions,
   ): number | null {
     const source = scope.source ?? 'params';

@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  Logger,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -169,11 +165,12 @@ export class NotificationThreadsService {
       const gateway = this.moduleRef.get(NotificationsGateway, {
         strict: false,
       });
-      gateway?.server
-        ?.to(`user:${userId}`)
-        .emit('thread:state', { threadId });
+      gateway?.server?.to(`user:${userId}`).emit('thread:state', { threadId });
     } catch (error) {
-      logError(error, buildErrorContext({ action: 'notification-threads.service' }));
+      logError(
+        error,
+        buildErrorContext({ action: 'notification-threads.service' }),
+      );
       this.logger.debug(
         `Failed to emit thread state for user ${userId}, thread ${threadId}: ${
           error instanceof Error ? error.message : String(error)

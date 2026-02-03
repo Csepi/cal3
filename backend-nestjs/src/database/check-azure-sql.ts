@@ -1,4 +1,4 @@
-import * as sql from 'mssql';
+﻿import * as sql from 'mssql';
 
 const azureConfig: sql.config = {
   server: 'cal3db-server.database.windows.net',
@@ -19,9 +19,9 @@ async function checkDatabase() {
   let pool: sql.ConnectionPool | null = null;
 
   try {
-    console.log('📡 Connecting to Azure SQL Database...\n');
+    console.log('đź“ˇ Connecting to Azure SQL Database...\n');
     pool = await sql.connect(azureConfig);
-    console.log('✅ Connected successfully!\n');
+    console.log('âś… Connected successfully!\n');
 
     // Check existing tables
     const tableQuery = `
@@ -34,14 +34,14 @@ async function checkDatabase() {
 
     const result = await pool.request().query(tableQuery);
 
-    console.log('📊 Existing Tables:');
-    console.log('─'.repeat(80));
+    console.log('đź“Š Existing Tables:');
+    console.log('â”€'.repeat(80));
     result.recordset.forEach((row: any, index: number) => {
       console.log(
         `${(index + 1).toString().padStart(2, ' ')}. ${row.TABLE_NAME.padEnd(40, ' ')} (${row.COLUMN_COUNT} columns)`,
       );
     });
-    console.log('─'.repeat(80));
+    console.log('â”€'.repeat(80));
     console.log(`\nTotal Tables: ${result.recordset.length}\n`);
 
     // Check for recent errors
@@ -60,12 +60,12 @@ async function checkDatabase() {
     try {
       const errorResult = await pool.request().query(errorQuery);
       if (errorResult.recordset.length > 0) {
-        console.log('📋 Relevant Error Messages:');
-        console.log('─'.repeat(80));
+        console.log('đź“‹ Relevant Error Messages:');
+        console.log('â”€'.repeat(80));
         errorResult.recordset.forEach((row: any) => {
           console.log(`Error ${row.error_number}: ${row.message}`);
         });
-        console.log('─'.repeat(80) + '\n');
+        console.log('â”€'.repeat(80) + '\n');
       }
     } catch (e) {
       // Error query might fail, that's okay
@@ -83,16 +83,18 @@ async function checkDatabase() {
     `;
 
     const constraintResult = await pool.request().query(constraintQuery);
-    console.log(`🔗 Total Constraints: ${constraintResult.recordset.length}\n`);
+    console.log(
+      `đź”— Total Constraints: ${constraintResult.recordset.length}\n`,
+    );
   } catch (error: any) {
-    console.error('❌ ERROR:', error.message);
+    console.error('âťŚ ERROR:', error.message);
     if (error.number) {
       console.error('SQL Error Number:', error.number);
     }
   } finally {
     if (pool) {
       await pool.close();
-      console.log('📡 Database connection closed.');
+      console.log('đź“ˇ Database connection closed.');
     }
   }
 }

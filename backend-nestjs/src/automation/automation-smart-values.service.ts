@@ -1,12 +1,10 @@
-import { Injectable } from '@nestjs/common';
-import {
-  TriggerType,
-} from '../entities/automation-rule.entity';
+﻿import { Injectable } from '@nestjs/common';
+import { TriggerType } from '../entities/automation-rule.entity';
 import { Event } from '../entities/event.entity';
 
 export interface SmartValueContext {
   event?: Event | null;
-  webhookData?: Record<string, any> | null;
+  webhookData?: Record<string, unknown> | null;
   triggerType: TriggerType;
   executedAt?: Date;
 }
@@ -17,8 +15,8 @@ export class AutomationSmartValuesService {
    * Extract all available smart values from the trigger context
    * Returns a flat object with all accessible values
    */
-  extractSmartValues(context: SmartValueContext): Record<string, any> {
-    const values: Record<string, any> = {};
+  extractSmartValues(context: SmartValueContext): Record<string, unknown> {
+    const values: Record<string, unknown> = {};
 
     // Add timestamp values (available for all triggers)
     const now = context.executedAt || new Date();
@@ -103,13 +101,16 @@ export class AutomationSmartValuesService {
     const smartValues = this.extractSmartValues(context);
 
     // Replace {{field.path}} syntax
-    let result = text.replace(/\{\{([^}]+)\}\}/g, (match, path) => {
-      const value = this.getNestedValue(smartValues, path.trim());
-      return value !== undefined ? String(value) : match;
-    });
+    let result = text.replace(
+      /\{\{([^}]+)\}\}/g,
+      (match: string, path: string) => {
+        const value = this.getNestedValue(smartValues, path.trim());
+        return value !== undefined ? String(value) : match;
+      },
+    );
 
     // Replace ${field.path} syntax
-    result = result.replace(/\$\{([^}]+)\}/g, (match, path) => {
+    result = result.replace(/\$\{([^}]+)\}/g, (match: string, path: string) => {
       const value = this.getNestedValue(smartValues, path.trim());
       return value !== undefined ? String(value) : match;
     });
@@ -122,14 +123,14 @@ export class AutomationSmartValuesService {
    * Used for action configurations
    */
   interpolateObjectValues(
-    obj: Record<string, any>,
+    obj: Record<string, unknown>,
     context: SmartValueContext,
-  ): Record<string, any> {
+  ): Record<string, unknown> {
     if (!obj || typeof obj !== 'object') {
       return obj;
     }
 
-    const result: Record<string, any> = {};
+    const result: Record<string, unknown> = {};
 
     for (const [key, value] of Object.entries(obj)) {
       if (typeof value === 'string') {
@@ -139,11 +140,17 @@ export class AutomationSmartValuesService {
           typeof item === 'string'
             ? this.interpolateSmartValues(item, context)
             : typeof item === 'object'
-              ? this.interpolateObjectValues(item, context)
+              ? this.interpolateObjectValues(
+                  item as Record<string, unknown>,
+                  context,
+                )
               : item,
         );
       } else if (typeof value === 'object' && value !== null) {
-        result[key] = this.interpolateObjectValues(value, context);
+        result[key] = this.interpolateObjectValues(
+          value as Record<string, unknown>,
+          context,
+        );
       } else {
         result[key] = value;
       }
@@ -352,8 +359,9 @@ export class AutomationSmartValuesService {
     if (triggerType === TriggerType.WEBHOOK_INCOMING) {
       fields.push({
         field: 'webhook.data.*',
-        label: 'Webhook Data (any field)',
-        description: 'Access any field from webhook JSON using dot notation',
+        label: 'Webhook Data (arbitrary field)',
+        description:
+          'Access arbitrary fields from webhook JSON using dot notation',
         category: 'Webhook',
       });
     }
@@ -365,9 +373,9 @@ export class AutomationSmartValuesService {
    * Flatten nested object for smart value extraction
    */
   private flattenObject(
-    obj: Record<string, any>,
+    obj: Record<string, unknown>,
     prefix: string,
-    result: Record<string, any>,
+    result: Record<string, unknown>,
     maxDepth: number = 10,
     currentDepth: number = 0,
   ): void {
@@ -382,7 +390,13 @@ export class AutomationSmartValuesService {
         result[fullKey] = '';
       } else if (typeof value === 'object' && !Array.isArray(value)) {
         // Recursively flatten nested objects
-        this.flattenObject(value, fullKey, result, maxDepth, currentDepth + 1);
+        this.flattenObject(
+          value as Record<string, unknown>,
+          fullKey,
+          result,
+          maxDepth,
+          currentDepth + 1,
+        );
       } else if (Array.isArray(value)) {
         // Store array as JSON string
         result[fullKey] = JSON.stringify(value);
@@ -401,7 +415,7 @@ export class AutomationSmartValuesService {
   /**
    * Get nested value from object using dot notation
    */
-  private getNestedValue(obj: Record<string, any>, path: string): any {
+  private getNestedValue(obj: Record<string, unknown>, path: string): any {
     // Direct lookup first (most common case)
     if (path in obj) {
       return obj[path];
@@ -413,7 +427,7 @@ export class AutomationSmartValuesService {
 
     for (const part of parts) {
       if (value && typeof value === 'object' && part in value) {
-        value = value[part];
+        value = (value as Record<string, unknown>)[part];
       } else {
         return undefined;
       }

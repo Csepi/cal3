@@ -6,6 +6,7 @@ import {
   Request,
   UseGuards,
 } from '@nestjs/common';
+import type { RequestWithUser } from '../common/types/request-with-user';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { NotificationThreadsService } from './notification-threads.service';
 
@@ -17,33 +18,33 @@ export class NotificationThreadsController {
   ) {}
 
   @Get()
-  list(@Request() req) {
+  list(@Request() req: RequestWithUser) {
     return this.notificationThreadsService.listThreads(req.user.id);
   }
 
   @Patch(':id/mute')
-  mute(@Request() req, @Param('id') id: string) {
+  mute(@Request() req: RequestWithUser, @Param('id') id: string) {
     return this.notificationThreadsService
       .setThreadMuted(req.user.id, +id, true)
       .then(() => ({ success: true }));
   }
 
   @Patch(':id/unmute')
-  unmute(@Request() req, @Param('id') id: string) {
+  unmute(@Request() req: RequestWithUser, @Param('id') id: string) {
     return this.notificationThreadsService
       .setThreadMuted(req.user.id, +id, false)
       .then(() => ({ success: true }));
   }
 
   @Patch(':id/archive')
-  archive(@Request() req, @Param('id') id: string) {
+  archive(@Request() req: RequestWithUser, @Param('id') id: string) {
     return this.notificationThreadsService
       .setThreadArchived(req.user.id, +id, true)
       .then(() => ({ success: true }));
   }
 
   @Patch(':id/unarchive')
-  unarchive(@Request() req, @Param('id') id: string) {
+  unarchive(@Request() req: RequestWithUser, @Param('id') id: string) {
     return this.notificationThreadsService
       .setThreadArchived(req.user.id, +id, false)
       .then(() => ({ success: true }));

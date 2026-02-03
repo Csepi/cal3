@@ -21,12 +21,13 @@ const SUPPORTED_BODY_FORMATS = ['markdown'] as const;
 export class CreateTaskDto {
   @IsString()
   @MaxLength(240)
-  title: string;
+  title!: string;
 
   @IsOptional()
   @IsString()
   @MaxLength(8000, {
-    message: 'Markdown body is limited to 8k characters to keep sync payloads small.',
+    message:
+      'Markdown body is limited to 8k characters to keep sync payloads small.',
   })
   body?: string | null;
 
@@ -35,7 +36,9 @@ export class CreateTaskDto {
   bodyFormat?: (typeof SUPPORTED_BODY_FORMATS)[number];
 
   @IsOptional()
-  @Matches(HEX_COLOR_REGEX, { message: 'Color must be a valid 6-digit hex value.' })
+  @Matches(HEX_COLOR_REGEX, {
+    message: 'Color must be a valid 6-digit hex value.',
+  })
   color?: string;
 
   @IsOptional()

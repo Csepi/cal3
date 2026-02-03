@@ -1,4 +1,4 @@
-import {
+﻿import {
   Column,
   CreateDateColumn,
   Entity,
@@ -36,7 +36,7 @@ export class NotificationMessage {
   body!: string;
 
   @Column({ type: 'json', nullable: true })
-  data?: Record<string, any> | null;
+  data?: Record<string, unknown> | null;
 
   @Column({ type: 'boolean', default: false })
   isRead!: boolean;
@@ -61,7 +61,7 @@ export class NotificationMessage {
   threadKey?: string | null;
 
   @Column({ type: 'json', nullable: true })
-  metadata?: Record<string, any> | null;
+  metadata?: Record<string, unknown> | null;
 
   @CreateDateColumn()
   createdAt!: Date;

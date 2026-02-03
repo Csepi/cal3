@@ -1,4 +1,4 @@
-import { ConsoleLogger, Injectable } from '@nestjs/common';
+﻿import { ConsoleLogger, Injectable } from '@nestjs/common';
 import { LoggingService } from './logging.service';
 import { LogLevel } from '../entities/log-entry.entity';
 import { RequestContextService } from '../common/services/request-context.service';
@@ -80,7 +80,7 @@ export class AppLoggerService extends ConsoleLogger {
     const requestContext = this.requestContext.getContext();
 
     if (this.format === 'json') {
-      const payload: Record<string, any> = {
+      const payload: Record<string, unknown> = {
         level,
         message: normalized,
         context: context ?? null,

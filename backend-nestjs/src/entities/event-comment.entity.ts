@@ -22,21 +22,21 @@ export enum CommentTemplateKey {
 @Entity('event_comments')
 export class EventComment {
   @PrimaryGeneratedColumn()
-  id: number;
+  id!: number;
 
   @Column()
-  eventId: number;
+  eventId!: number;
 
   @ManyToOne(() => Event, (event) => event.comments, { onDelete: 'CASCADE' })
-  event: Event;
+  event!: Event;
 
   @Column()
-  reporterId: number;
+  reporterId!: number;
 
   @ManyToOne(() => User, (user) => user.eventComments, {
     onDelete: 'CASCADE',
   })
-  reporter: User;
+  reporter!: User;
 
   @Column({ type: 'integer', nullable: true })
   parentCommentId?: number;
@@ -53,10 +53,10 @@ export class EventComment {
   templateKey?: CommentTemplateKey;
 
   @Column({ type: 'text' })
-  content: string;
+  content!: string;
 
   @Column({ default: false })
-  isFlagged: boolean;
+  isFlagged!: boolean;
 
   @Column({ type: 'integer', nullable: true })
   flaggedById?: number;
@@ -65,21 +65,21 @@ export class EventComment {
   flaggedAt?: Date;
 
   @Column({ type: 'varchar', length: 32, default: 'comment' })
-  context: string;
+  context!: string;
 
   @Column({
     type: 'varchar',
     length: 16,
     default: 'private',
   })
-  visibility: CalendarVisibility;
+  visibility!: CalendarVisibility;
 
   @Column({ default: false })
-  isSystem: boolean;
+  isSystem!: boolean;
 
   @CreateDateColumn()
-  createdAt: Date;
+  createdAt!: Date;
 
   @UpdateDateColumn()
-  updatedAt: Date;
+  updatedAt!: Date;
 }

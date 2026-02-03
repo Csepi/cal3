@@ -1,4 +1,4 @@
-import type { DatabaseEngine, DatabasePoolConfig } from './database.types';
+﻿import type { DatabaseEngine, DatabasePoolConfig } from './database.types';
 
 const DEFAULT_POOL: DatabasePoolConfig = {
   max: 10,

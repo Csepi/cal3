@@ -28,69 +28,69 @@ export enum TaskStatus {
 @Entity('tasks')
 export class Task {
   @PrimaryGeneratedColumn()
-  id: number;
+  id!: number;
 
   @Column({ length: 240 })
-  title: string;
+  title!: string;
 
   @Column({ type: 'text', nullable: true })
-  body: string | null;
+  body!: string | null;
 
   @Column({ length: 20, default: 'markdown' })
-  bodyFormat: string;
+  bodyFormat!: string;
 
   @Column({ length: 7, default: '#eab308' })
-  color: string;
+  color!: string;
 
   @Column({
     type: 'varchar',
     length: 16,
     default: TaskPriority.MEDIUM,
   })
-  priority: TaskPriority;
+  priority!: TaskPriority;
 
   @Column({
     type: 'varchar',
     length: 16,
     default: TaskStatus.TODO,
   })
-  status: TaskStatus;
+  status!: TaskStatus;
 
   @Column({ type: 'varchar', length: 255, nullable: true })
-  place: string | null;
+  place!: string | null;
 
   @Column({ type: timestampTzType, nullable: true })
-  dueDate: Date | null;
+  dueDate!: Date | null;
 
   @Column({ type: timestampTzType, nullable: true })
-  dueEnd: Date | null;
+  dueEnd!: Date | null;
 
   @Column({ type: 'varchar', length: 100, nullable: true })
-  dueTimezone: string | null;
+  dueTimezone!: string | null;
 
   @Column({ type: timestampTzType, nullable: true })
-  lastSyncedAt: Date | null;
+  lastSyncedAt!: Date | null;
 
   @ManyToOne(() => User, (user) => user.tasks, { onDelete: 'CASCADE' })
-  owner: User;
+  owner!: User;
 
   @Column()
-  ownerId: number;
+  ownerId!: number;
 
   @ManyToOne(() => User, (user) => user.assignedTasks, {
     nullable: true,
     onDelete: 'SET NULL',
   })
-  assignee: User | null;
+  assignee!: User | null;
 
   @Column({ type: 'integer', nullable: true })
-  assigneeId: number | null;
+  assigneeId!: number | null;
 
   @ManyToOne(() => Event, { nullable: true, onDelete: 'SET NULL' })
-  mirroredEvent: Event | null;
+  mirroredEvent!: Event | null;
 
   @Column({ type: 'integer', nullable: true })
-  calendarEventId: number | null;
+  calendarEventId!: number | null;
 
   @ManyToMany(() => TaskLabel, (label) => label.tasks, {
     cascade: true,
@@ -100,11 +100,11 @@ export class Task {
     joinColumn: { name: 'taskId', referencedColumnName: 'id' },
     inverseJoinColumn: { name: 'labelId', referencedColumnName: 'id' },
   })
-  labels: TaskLabel[];
+  labels!: TaskLabel[];
 
   @CreateDateColumn()
-  createdAt: Date;
+  createdAt!: Date;
 
   @UpdateDateColumn()
-  updatedAt: Date;
+  updatedAt!: Date;
 }

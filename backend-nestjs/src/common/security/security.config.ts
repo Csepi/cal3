@@ -18,11 +18,7 @@ const DEFAULT_DIRECTIVES: Record<string, Iterable<string>> = {
   formAction: ["'self'"],
 };
 
-const TRUSTED_LOCAL_HOSTS = new Set([
-  'localhost',
-  '127.0.0.1',
-  '[::1]',
-]);
+const TRUSTED_LOCAL_HOSTS = new Set(['localhost', '127.0.0.1', '[::1]']);
 type CoopPolicy = 'same-origin' | 'same-origin-allow-popups' | 'unsafe-none';
 const ALLOWED_COOP_POLICIES: Set<CoopPolicy> = new Set([
   'same-origin',
@@ -36,7 +32,7 @@ export function resolveAllowedOrigins(): string[] {
     .map((origin) => origin.trim())
     .filter(Boolean);
 
-const derived = [
+  const derived = [
     process.env.FRONTEND_URL,
     process.env.PUBLIC_APP_URL,
     process.env.BASE_URL,
@@ -48,7 +44,7 @@ const derived = [
     ),
   ].filter(Boolean) as string[];
 
-const localDefaults = [
+  const localDefaults = [
     'http://localhost:3000',
     'http://localhost:4200',
     'http://localhost:5173',
@@ -66,9 +62,7 @@ const localDefaults = [
   return Array.from(unique);
 }
 
-export function buildHelmetOptions(
-  allowedOrigins: string[],
-): HelmetOptions {
+export function buildHelmetOptions(allowedOrigins: string[]): HelmetOptions {
   const connectSrc = Array.from(
     new Set([...allowedOrigins, "'self'"].filter(Boolean)),
   );
@@ -83,9 +77,7 @@ export function buildHelmetOptions(
       },
     },
     crossOriginEmbedderPolicy: true,
-    crossOriginOpenerPolicy: coopEnabled
-      ? { policy: coopPolicy }
-      : false,
+    crossOriginOpenerPolicy: coopEnabled ? { policy: coopPolicy } : false,
     referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
     hsts: {
       includeSubDomains: true,
@@ -111,9 +103,7 @@ export function getCorsAllowedHeaders(): string[] {
   return [...BASE_ALLOWED_HEADERS];
 }
 
-export function buildCorsOptions(
-  allowedOrigins: string[],
-): CorsOptions {
+export function buildCorsOptions(allowedOrigins: string[]): CorsOptions {
   const exactOrigins = allowedOrigins.filter((origin) => !origin.includes('*'));
   const wildcardOrigins = allowedOrigins
     .filter((origin) => origin.includes('*'))
@@ -174,10 +164,7 @@ function normalizeOrigin(origin: string): string {
   }
 }
 
-function deriveOriginWithPort(
-  origin?: string,
-  port?: string,
-): string | null {
+function deriveOriginWithPort(origin?: string, port?: string): string | null {
   if (!origin) {
     return null;
   }

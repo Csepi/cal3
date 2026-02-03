@@ -429,7 +429,7 @@ const OrganisationUserManagement: React.FC<OrganisationUserManagementProps> = ({
 
       {organisations.length === 0 && !loading && (
         <div className="text-center py-8 text-gray-500">
-          You don't have admin access to any organizations.
+          You don't have admin access to organizations.
         </div>
       )}
     </div>

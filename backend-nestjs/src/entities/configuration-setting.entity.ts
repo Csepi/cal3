@@ -1,4 +1,4 @@
-import {
+﻿import {
   Column,
   CreateDateColumn,
   Entity,
@@ -24,7 +24,7 @@ export class ConfigurationSetting {
   key!: string;
 
   @Column({ type: 'text', nullable: true })
-  value: string | null;
+  value!: string | null;
 
   @Column({ type: 'varchar', length: 200, nullable: true })
   label?: string | null;
@@ -33,25 +33,25 @@ export class ConfigurationSetting {
   description?: string | null;
 
   @Column({ type: 'varchar', length: 60, default: 'string' })
-  valueType: ConfigurationValueType;
+  valueType!: ConfigurationValueType;
 
   @Column({ type: 'varchar', length: 80, default: 'general' })
-  category: string;
+  category!: string;
 
   @Column({ type: 'boolean', default: false })
-  isSensitive: boolean;
+  isSensitive!: boolean;
 
   @Column({ type: 'boolean', default: true })
-  isEditable: boolean;
+  isEditable!: boolean;
 
   @Column({ type: 'boolean', default: false })
-  isReadOnly: boolean;
+  isReadOnly!: boolean;
 
   @Column({ type: 'simple-json', nullable: true })
   options?: string[];
 
   @Column({ type: 'simple-json', nullable: true })
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 
   @CreateDateColumn()
   createdAt!: Date;

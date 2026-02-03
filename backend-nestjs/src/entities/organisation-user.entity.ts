@@ -40,39 +40,39 @@ export enum OrganisationRoleType {
 @Unique(['organisationId', 'userId']) // Prevent duplicate role assignments
 export class OrganisationUser {
   @PrimaryGeneratedColumn()
-  id: number;
+  id!: number;
 
   @Column()
-  organisationId: number;
+  organisationId!: number;
 
   @Column()
-  userId: number;
+  userId!: number;
 
   @Column({
     type: 'varchar',
     enum: OrganisationRoleType,
     default: OrganisationRoleType.USER,
   })
-  role: OrganisationRoleType;
+  role!: OrganisationRoleType;
 
   @Column({ nullable: true })
-  assignedById: number; // Who assigned this role (org admin or Cal3 admin)
+  assignedById!: number | null; // Who assigned this role (org admin or Cal3 admin)
 
   @Column({ default: false })
-  isOrganisationAdmin: boolean; // True if this user is also an OrganisationAdmin
+  isOrganisationAdmin!: boolean; // True if this user is also an OrganisationAdmin
 
   @CreateDateColumn()
-  assignedAt: Date;
+  assignedAt!: Date;
 
   // Relationships
   @ManyToOne(() => Organisation, (organisation) => organisation.users, {
     onDelete: 'CASCADE',
   })
-  organisation: Organisation;
+  organisation!: Organisation;
 
   @ManyToOne(() => User, { onDelete: 'CASCADE' })
-  user: User;
+  user!: User;
 
   @ManyToOne(() => User, { nullable: true })
-  assignedBy: User; // Who assigned this role
+  assignedBy!: User | null; // Who assigned this role
 }

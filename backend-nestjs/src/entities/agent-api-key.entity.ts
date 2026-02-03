@@ -14,30 +14,30 @@ import { AgentProfile } from './agent-profile.entity';
 @Index(['agentId', 'isActive'])
 export class AgentApiKey {
   @PrimaryGeneratedColumn()
-  id: number;
+  id!: number;
 
   @Column()
-  agentId: number;
+  agentId!: number;
 
   @ManyToOne(() => AgentProfile, (agent) => agent.apiKeys, {
     onDelete: 'CASCADE',
   })
-  agent: AgentProfile;
+  agent!: AgentProfile;
 
   @Column({ unique: true, length: 36 })
-  tokenId: string;
+  tokenId!: string;
 
   @Column({ length: 80 })
-  name: string;
+  name!: string;
 
   @Column({ length: 255 })
-  hashedKey: string;
+  hashedKey!: string;
 
   @Column({ length: 4 })
-  lastFour: string;
+  lastFour!: string;
 
   @Column({ default: true })
-  isActive: boolean;
+  isActive!: boolean;
 
   @Column({ type: timestampType, nullable: true })
   lastUsedAt?: Date | null;
@@ -46,8 +46,8 @@ export class AgentApiKey {
   revokedAt?: Date | null;
 
   @CreateDateColumn()
-  createdAt: Date;
+  createdAt!: Date;
 
   @UpdateDateColumn()
-  updatedAt: Date;
+  updatedAt!: Date;
 }

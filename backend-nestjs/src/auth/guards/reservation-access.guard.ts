@@ -5,6 +5,7 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { UserPermissionsService } from '../../common/services/user-permissions.service';
+import { RequestWithUser } from '../../common/types/request-with-user';
 
 /**
  * Guard that checks if a user has access to reservation features
@@ -15,7 +16,7 @@ export class ReservationAccessGuard implements CanActivate {
   constructor(private userPermissionsService: UserPermissionsService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const request = context.switchToHttp().getRequest();
+    const request = context.switchToHttp().getRequest<RequestWithUser>();
     const user = request.user;
 
     if (!user) {

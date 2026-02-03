@@ -14,7 +14,7 @@ import {
 export class CreateCalendarDto {
   @ApiProperty({ example: 'Work Calendar', description: 'Calendar name' })
   @IsString()
-  name: string;
+  name!: string;
 
   @ApiPropertyOptional({
     example: 'My work-related events',
@@ -126,7 +126,7 @@ export class ShareCalendarDto {
   })
   @IsArray()
   @IsNumber({}, { each: true })
-  userIds: number[];
+  userIds!: number[];
 
   @ApiProperty({
     enum: SharePermission,
@@ -134,15 +134,15 @@ export class ShareCalendarDto {
     description: 'Permission level for shared users',
   })
   @IsEnum(SharePermission)
-  permission: SharePermission;
+  permission!: SharePermission;
 }
 
 export class CalendarResponseDto {
   @ApiProperty({ example: 1, description: 'Calendar ID' })
-  id: number;
+  id!: number;
 
   @ApiProperty({ example: 'Work Calendar', description: 'Calendar name' })
-  name: string;
+  name!: string;
 
   @ApiProperty({
     example: 'My work-related events',
@@ -151,19 +151,19 @@ export class CalendarResponseDto {
   description?: string;
 
   @ApiProperty({ example: '#3b82f6', description: 'Calendar color' })
-  color: string;
+  color!: string;
 
   @ApiPropertyOptional({ example: '📅', description: 'Calendar icon' })
   icon?: string;
 
   @ApiProperty({ enum: CalendarVisibility, description: 'Calendar visibility' })
-  visibility: CalendarVisibility;
+  visibility!: CalendarVisibility;
 
   @ApiProperty({ example: true, description: 'Whether calendar is active' })
-  isActive: boolean;
+  isActive!: boolean;
 
   @ApiProperty({ description: 'Calendar owner information' })
-  owner: {
+  owner!: {
     id: number;
     username: string;
     email: string;
@@ -180,13 +180,13 @@ export class CalendarResponseDto {
     example: '2025-09-15T10:00:00Z',
     description: 'Creation timestamp',
   })
-  createdAt: Date;
+  createdAt!: Date;
 
   @ApiProperty({
     example: '2025-09-15T10:00:00Z',
     description: 'Last update timestamp',
   })
-  updatedAt: Date;
+  updatedAt!: Date;
 
   @ApiPropertyOptional({
     example: 3,

@@ -14,6 +14,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { TaskLabelsService } from './task-labels.service';
 import { CreateTaskLabelDto } from './dto/create-task-label.dto';
 import { UpdateTaskLabelDto } from './dto/update-task-label.dto';
+import type { RequestWithUser } from '../common/types/request-with-user';
 
 @Controller(['tasks/labels', 'task-labels'])
 @UseGuards(JwtAuthGuard)
@@ -21,18 +22,18 @@ export class TaskLabelsController {
   constructor(private readonly taskLabelsService: TaskLabelsService) {}
 
   @Get()
-  findAll(@Req() req: any) {
+  findAll(@Req() req: RequestWithUser) {
     return this.taskLabelsService.findAll(req.user.id);
   }
 
   @Post()
-  create(@Req() req: any, @Body() dto: CreateTaskLabelDto) {
+  create(@Req() req: RequestWithUser, @Body() dto: CreateTaskLabelDto) {
     return this.taskLabelsService.create(req.user.id, dto);
   }
 
   @Patch(':id')
   update(
-    @Req() req: any,
+    @Req() req: RequestWithUser,
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: UpdateTaskLabelDto,
   ) {
@@ -40,7 +41,7 @@ export class TaskLabelsController {
   }
 
   @Delete(':id')
-  remove(@Req() req: any, @Param('id', ParseIntPipe) id: number) {
+  remove(@Req() req: RequestWithUser, @Param('id', ParseIntPipe) id: number) {
     return this.taskLabelsService.remove(req.user.id, id);
   }
 }

@@ -164,7 +164,9 @@ export class TaskCalendarBridgeService {
     });
   }
 
-  private async resolveTasksCalendarId(ownerId: number): Promise<number | null> {
+  private async resolveTasksCalendarId(
+    ownerId: number,
+  ): Promise<number | null> {
     const user = await this.userRepository.findOne({
       where: { id: ownerId },
       select: ['id', 'defaultTasksCalendarId'],

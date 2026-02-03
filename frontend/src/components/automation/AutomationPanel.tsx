@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useMemo, useState } from 'react';
 import { useAutomationRules } from '../../hooks/useAutomationRules';
 import type {

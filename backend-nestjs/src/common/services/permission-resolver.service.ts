@@ -3,7 +3,9 @@ import { UserPermissionsService } from './user-permissions.service';
 
 @Injectable()
 export class PermissionResolverService {
-  constructor(private readonly userPermissionsService: UserPermissionsService) {}
+  constructor(
+    private readonly userPermissionsService: UserPermissionsService,
+  ) {}
 
   canUserAccessOrganization(userId: number, organizationId: number) {
     return this.userPermissionsService.canUserAccessOrganization(

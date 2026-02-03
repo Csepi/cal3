@@ -1,4 +1,4 @@
-import { ERROR_CODES } from '../responses/error.catalog';
+﻿import { ERROR_CODES } from '../responses/error.catalog';
 import type { ErrorContext } from './error-context';
 import { buildErrorContext } from './error-context';
 import { BaseError } from './error-base';
@@ -14,16 +14,23 @@ export interface StructuredErrorLog {
   message: string;
   code: string;
   context: ErrorContext;
-  details?: unknown;
+  details?: any;
   stack?: string;
-  cause?: unknown;
+  cause?: any;
 }
+
+const asRecord = (value: any): Record<string, unknown> | null => {
+  if (typeof value === 'object' && value !== null) {
+    return value as Record<string, unknown>;
+  }
+  return null;
+};
 
 /**
  * Convert an error to a JSON-serializable payload.
  */
 const serializeError = (
-  error: unknown,
+  error: any,
   context: ErrorContext,
 ): StructuredErrorLog => {
   const timestamp = new Date().toISOString();
@@ -42,15 +49,18 @@ const serializeError = (
       context: mergedContext,
       details: error.details,
       stack: error.stack,
-      cause: (error as any).cause,
+      cause: asRecord(error)?.cause,
     };
   }
 
-  const message =
-    error instanceof Error ? error.message : 'Unknown error';
+  const message = error instanceof Error ? error.message : 'Unknown error';
   const name = error instanceof Error ? error.name : 'Error';
   const stack = error instanceof Error ? error.stack : undefined;
-  const code = (error as any)?.code ?? ERROR_CODES.INTERNAL_ERROR;
+  const errorRecord = asRecord(error);
+  const code =
+    typeof errorRecord?.code === 'string'
+      ? errorRecord.code
+      : ERROR_CODES.INTERNAL_ERROR;
 
   return {
     level: 'error',
@@ -59,26 +69,27 @@ const serializeError = (
     message,
     code,
     context: buildErrorContext(context, error),
-    details: (error as any)?.details,
+    details: errorRecord?.details,
     stack,
-    cause: (error as any)?.cause,
+    cause: errorRecord?.cause,
   };
 };
 
 /**
  * Safely serialize data structures containing circular references.
  */
-const safeStringify = (value: unknown): string => {
-  const seen = new WeakSet();
+const safeStringify = (value: any): string => {
+  const seen = new WeakSet<object>();
   return JSON.stringify(value, (_key, val) => {
     if (typeof val === 'bigint') {
       return val.toString();
     }
     if (typeof val === 'object' && val !== null) {
-      if (seen.has(val)) {
+      const objectVal = val as object;
+      if (seen.has(objectVal)) {
         return '[Circular]';
       }
-      seen.add(val);
+      seen.add(objectVal);
     }
     return val;
   });
@@ -88,7 +99,7 @@ const safeStringify = (value: unknown): string => {
  * Log an error as structured JSON.
  */
 export const logError = (
-  error: unknown,
+  error: any,
   context: Partial<ErrorContext> = {},
 ): void => {
   const normalizedContext = buildErrorContext(context, error);
@@ -101,11 +112,11 @@ export const logError = (
  * Wrap an unknown error into a BaseError instance if needed.
  */
 export const wrapError = (
-  error: unknown,
+  error: any,
   message: string,
   code = ERROR_CODES.INTERNAL_ERROR,
   context: Partial<ErrorContext> = {},
-  details?: unknown,
+  details?: any,
 ): BaseError => {
   if (error instanceof BaseError) {
     return error.withContext(context);

@@ -1,4 +1,4 @@
-import {
+﻿import {
   CallHandler,
   ExecutionContext,
   Injectable,
@@ -42,7 +42,7 @@ export class RequestLoggingInterceptor implements NestInterceptor {
 
     return next.handle().pipe(
       tap({
-        error: (err: unknown) => {
+        error: (err: any) => {
           const duration = Date.now() - startedAt;
           const status = response.statusCode;
           const message =

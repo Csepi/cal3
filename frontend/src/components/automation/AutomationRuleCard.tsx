@@ -1,4 +1,3 @@
-// @ts-nocheck
 import type { AutomationRuleDto } from '../../types/Automation';
 import { useAutomationMetadata } from '../../hooks/useAutomationMetadata';
 import { formatRelativeTime } from '../../services/automationService';

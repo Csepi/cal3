@@ -1,7 +1,6 @@
 import {
   Injectable,
   NotFoundException,
-  BadRequestException,
   Logger,
   OnModuleInit,
   OnModuleDestroy,
@@ -68,27 +67,27 @@ export class CalendarSyncService implements OnModuleInit, OnModuleDestroy {
     this.automationService = this.resolveAutomationService();
     this.unsubscribeHandlers.push(
       this.domainEventBus.on('calendar.event.created', (event: Event) => {
-        this.handleLocalEventCreated(event).catch((err) =>
+        this.handleLocalEventCreated(event).catch((err: unknown) =>
           this.logger.warn(
-            `Calendar sync create failed for event ${event.id}: ${err.message}`,
+            `Calendar sync create failed for event ${event.id}: ${this.getErrorMessage(err)}`,
           ),
         );
       }),
     );
     this.unsubscribeHandlers.push(
       this.domainEventBus.on('calendar.event.updated', (event: Event) => {
-        this.handleLocalEventUpdated(event).catch((err) =>
+        this.handleLocalEventUpdated(event).catch((err: unknown) =>
           this.logger.warn(
-            `Calendar sync update failed for event ${event.id}: ${err.message}`,
+            `Calendar sync update failed for event ${event.id}: ${this.getErrorMessage(err)}`,
           ),
         );
       }),
     );
     this.unsubscribeHandlers.push(
       this.domainEventBus.on('calendar.event.deleted', (event: Event) => {
-        this.handleLocalEventDeleted(event).catch((err) =>
+        this.handleLocalEventDeleted(event).catch((err: unknown) =>
           this.logger.warn(
-            `Calendar sync delete failed for event ${event.id}: ${err.message}`,
+            `Calendar sync delete failed for event ${event.id}: ${this.getErrorMessage(err)}`,
           ),
         );
       }),
@@ -104,7 +103,8 @@ export class CalendarSyncService implements OnModuleInit, OnModuleDestroy {
 
   private resolveAutomationService(): any | null {
     try {
-      const token = require('../../automation/automation.service').AutomationService;
+      const token =
+        require('../../automation/automation.service').AutomationService;
       return this.moduleRef.get(token, { strict: false });
     } catch {
       return null;
@@ -188,15 +188,14 @@ export class CalendarSyncService implements OnModuleInit, OnModuleDestroy {
     }
 
     for (const calendarData of syncData.calendars) {
-      const existingSyncedCalendar = await this.syncedCalendarRepository.findOne(
-        {
+      const existingSyncedCalendar =
+        await this.syncedCalendarRepository.findOne({
           where: {
             syncConnectionId: syncConnection.id,
             externalCalendarId: calendarData.externalId,
           },
           relations: ['localCalendar'],
-        },
-      );
+        });
 
       if (existingSyncedCalendar) {
         existingSyncedCalendar.bidirectionalSync =
@@ -234,10 +233,11 @@ export class CalendarSyncService implements OnModuleInit, OnModuleDestroy {
         syncConnectionId: syncConnection.id,
         localCalendarId: savedLocalCalendar.id,
         externalCalendarId: calendarData.externalId,
-        externalCalendarName: await this.providerService.getExternalCalendarName(
-          syncConnection,
-          calendarData.externalId,
-        ),
+        externalCalendarName:
+          await this.providerService.getExternalCalendarName(
+            syncConnection,
+            calendarData.externalId,
+          ),
         bidirectionalSync: calendarData.bidirectionalSync ?? true,
       });
 
@@ -327,7 +327,7 @@ export class CalendarSyncService implements OnModuleInit, OnModuleDestroy {
         logError(error, buildErrorContext({ action: 'calendar-sync.service' }));
         this.logger.error(
           `[syncAllActiveConnections] Failed syncing connection ${connection.id}:`,
-          error.stack,
+          this.getErrorStack(error),
         );
       }
     }
@@ -368,7 +368,7 @@ export class CalendarSyncService implements OnModuleInit, OnModuleDestroy {
       } catch (error) {
         logError(error, buildErrorContext({ action: 'calendar-sync.service' }));
         this.logger.warn(
-          `[handleLocalEventCreated] Failed to create external event for local event ${event.id}: ${error.message}`,
+          `[handleLocalEventCreated] Failed to create external event for local event ${event.id}: ${this.getErrorMessage(error)}`,
         );
       }
     }
@@ -415,7 +415,7 @@ export class CalendarSyncService implements OnModuleInit, OnModuleDestroy {
       } catch (error) {
         logError(error, buildErrorContext({ action: 'calendar-sync.service' }));
         this.logger.warn(
-          `[handleLocalEventUpdated] Failed to update external event for local event ${event.id}: ${error.message}`,
+          `[handleLocalEventUpdated] Failed to update external event for local event ${event.id}: ${this.getErrorMessage(error)}`,
         );
       }
     }
@@ -452,7 +452,7 @@ export class CalendarSyncService implements OnModuleInit, OnModuleDestroy {
       } catch (error) {
         logError(error, buildErrorContext({ action: 'calendar-sync.service' }));
         this.logger.warn(
-          `[handleLocalEventDeleted] Failed to delete external event for local event ${event.id}: ${error.message}`,
+          `[handleLocalEventDeleted] Failed to delete external event for local event ${event.id}: ${this.getErrorMessage(error)}`,
         );
       } finally {
         await this.syncEventMappingRepository.delete({
@@ -586,10 +586,13 @@ export class CalendarSyncService implements OnModuleInit, OnModuleDestroy {
             automationSettings,
           );
         } catch (error) {
-          logError(error, buildErrorContext({ action: 'calendar-sync.service' }));
+          logError(
+            error,
+            buildErrorContext({ action: 'calendar-sync.service' }),
+          );
           this.logger.error(
             `[performSync] Error syncing calendar ${syncedCalendar.externalCalendarId}:`,
-            error.stack,
+            this.getErrorStack(error),
           );
         }
       }
@@ -639,8 +642,11 @@ export class CalendarSyncService implements OnModuleInit, OnModuleDestroy {
       );
     }
 
-    const { events: externalEvents, deletedEventIds, nextSyncToken } =
-      externalResult;
+    const {
+      events: externalEvents,
+      deletedEventIds,
+      nextSyncToken,
+    } = externalResult;
 
     this.logger.log(
       `[syncCalendarEvents] Found ${externalEvents.length} external events (${deletedEventIds.length} deletions)`,
@@ -656,18 +662,20 @@ export class CalendarSyncService implements OnModuleInit, OnModuleDestroy {
     );
 
     for (const deletedEventId of deletedEventIds) {
-      const mapping = mappingByExternalId.get(deletedEventId);
+      const externalId = String(deletedEventId);
+      const mapping = mappingByExternalId.get(externalId);
       if (!mapping) {
         continue;
       }
 
       await this.deleteLocalEventFromExternal(mapping);
       touchedLocalEventIds.add(mapping.localEventId);
-      mappingByExternalId.delete(deletedEventId);
+      mappingByExternalId.delete(externalId);
     }
 
     for (const externalEvent of externalEvents) {
-      const mapping = mappingByExternalId.get(externalEvent.id);
+      const externalEventId = String(externalEvent.id);
+      const mapping = mappingByExternalId.get(externalEventId);
 
       if (!mapping) {
         try {
@@ -682,10 +690,13 @@ export class CalendarSyncService implements OnModuleInit, OnModuleDestroy {
             touchedLocalEventIds.add(createdEvent.id);
           }
         } catch (error) {
-          logError(error, buildErrorContext({ action: 'calendar-sync.service' }));
+          logError(
+            error,
+            buildErrorContext({ action: 'calendar-sync.service' }),
+          );
           this.logger.error(
             `[syncCalendarEvents] Error creating local event from external event ${externalEvent.id}:`,
-            error.stack,
+            this.getErrorStack(error),
           );
         }
       } else {
@@ -712,10 +723,13 @@ export class CalendarSyncService implements OnModuleInit, OnModuleDestroy {
             touchedLocalEventIds.add(updatedEvent.id);
           }
         } catch (error) {
-          logError(error, buildErrorContext({ action: 'calendar-sync.service' }));
+          logError(
+            error,
+            buildErrorContext({ action: 'calendar-sync.service' }),
+          );
           this.logger.error(
             `[syncCalendarEvents] Error updating local event from external event ${externalEvent.id}:`,
-            error.stack,
+            this.getErrorStack(error),
           );
         }
       }
@@ -788,9 +802,12 @@ export class CalendarSyncService implements OnModuleInit, OnModuleDestroy {
             localEvent,
           );
         } catch (error) {
-          logError(error, buildErrorContext({ action: 'calendar-sync.service' }));
+          logError(
+            error,
+            buildErrorContext({ action: 'calendar-sync.service' }),
+          );
           this.logger.warn(
-            `[syncLocalCalendarChanges] Failed to create external event for local event ${localEvent.id}: ${error.message}`,
+            `[syncLocalCalendarChanges] Failed to create external event for local event ${localEvent.id}: ${this.getErrorMessage(error)}`,
           );
         }
         continue;
@@ -800,10 +817,7 @@ export class CalendarSyncService implements OnModuleInit, OnModuleDestroy {
       const lastExternalSync = mapping.lastModifiedExternal ?? new Date(0);
       const localUpdatedAt = localEvent.updatedAt ?? localEvent.createdAt;
 
-      if (
-        localUpdatedAt > lastLocalSync &&
-        localUpdatedAt > lastExternalSync
-      ) {
+      if (localUpdatedAt > lastLocalSync && localUpdatedAt > lastExternalSync) {
         try {
           await this.updateExternalEventFromLocal(
             syncConnection,
@@ -812,9 +826,12 @@ export class CalendarSyncService implements OnModuleInit, OnModuleDestroy {
             mapping,
           );
         } catch (error) {
-          logError(error, buildErrorContext({ action: 'calendar-sync.service' }));
+          logError(
+            error,
+            buildErrorContext({ action: 'calendar-sync.service' }),
+          );
           this.logger.warn(
-            `[syncLocalCalendarChanges] Failed to update external event for local event ${localEvent.id}: ${error.message}`,
+            `[syncLocalCalendarChanges] Failed to update external event for local event ${localEvent.id}: ${this.getErrorMessage(error)}`,
           );
         }
       }
@@ -834,7 +851,7 @@ export class CalendarSyncService implements OnModuleInit, OnModuleDestroy {
       } catch (error) {
         logError(error, buildErrorContext({ action: 'calendar-sync.service' }));
         this.logger.warn(
-          `[syncLocalCalendarChanges] Failed to delete external event ${mapping.externalEventId}: ${error.message}`,
+          `[syncLocalCalendarChanges] Failed to delete external event ${mapping.externalEventId}: ${this.getErrorMessage(error)}`,
         );
       } finally {
         await this.syncEventMappingRepository.delete({ id: mapping.id });
@@ -866,13 +883,17 @@ export class CalendarSyncService implements OnModuleInit, OnModuleDestroy {
         ? `https://www.googleapis.com/calendar/v3/calendars/${encodedCalendarId}/events`
         : `https://graph.microsoft.com/v1.0/me/calendars/${encodedCalendarId}/events`;
 
-    const response = await this.providerService.fetchWithAuth(syncConnection, url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    const response = await this.providerService.fetchWithAuth(
+      syncConnection,
+      url,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
       },
-      body: JSON.stringify(payload),
-    });
+    );
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -927,13 +948,17 @@ export class CalendarSyncService implements OnModuleInit, OnModuleDestroy {
         ? `https://www.googleapis.com/calendar/v3/calendars/${encodedCalendarId}/events/${encodedExternalEventId}`
         : `https://graph.microsoft.com/v1.0/me/calendars/${encodedCalendarId}/events/${encodedExternalEventId}`;
 
-    const response = await this.providerService.fetchWithAuth(syncConnection, url, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
+    const response = await this.providerService.fetchWithAuth(
+      syncConnection,
+      url,
+      {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
       },
-      body: JSON.stringify(payload),
-    });
+    );
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -970,9 +995,13 @@ export class CalendarSyncService implements OnModuleInit, OnModuleDestroy {
         ? `https://www.googleapis.com/calendar/v3/calendars/${encodedCalendarId}/events/${encodedExternalEventId}`
         : `https://graph.microsoft.com/v1.0/me/calendars/${encodedCalendarId}/events/${encodedExternalEventId}`;
 
-    const response = await this.providerService.fetchWithAuth(syncConnection, url, {
-      method: 'DELETE',
-    });
+    const response = await this.providerService.fetchWithAuth(
+      syncConnection,
+      url,
+      {
+        method: 'DELETE',
+      },
+    );
 
     if (!response.ok && response.status !== 404) {
       const errorText = await response.text();
@@ -1105,9 +1134,7 @@ export class CalendarSyncService implements OnModuleInit, OnModuleDestroy {
       syncedCalendarId: syncedCalendar.id,
       localEventId: savedEvent.id,
       externalEventId: eventSource.id,
-      lastModifiedExternal: new Date(
-        this.getExternalLastModified(eventSource),
-      ),
+      lastModifiedExternal: new Date(this.getExternalLastModified(eventSource)),
       lastModifiedLocal: savedEvent.updatedAt ?? new Date(),
     });
 
@@ -1205,9 +1232,8 @@ export class CalendarSyncService implements OnModuleInit, OnModuleDestroy {
 
     await this.eventRepository.save(localEvent);
 
-    existingMapping.lastModifiedExternal = this.getExternalLastModified(
-      externalEvent,
-    );
+    existingMapping.lastModifiedExternal =
+      this.getExternalLastModified(externalEvent);
     existingMapping.lastModifiedLocal = localEvent.updatedAt ?? new Date();
     await this.syncEventMappingRepository.save(existingMapping);
 
@@ -1299,6 +1325,12 @@ export class CalendarSyncService implements OnModuleInit, OnModuleDestroy {
       );
     }
   }
+
+  private getErrorMessage(error: unknown): string {
+    return error instanceof Error ? error.message : String(error);
+  }
+
+  private getErrorStack(error: unknown): string | undefined {
+    return error instanceof Error ? error.stack : undefined;
+  }
 }
-
-

@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Main Calendar Container Component
  *

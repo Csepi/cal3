@@ -1,0 +1,169 @@
+src/components/admin/AdminNavigation.tsx(151,7): error TS2741: Property 'NOT' is missing in type '{ KPI: string; USR: string; ORG: string; CAL: string; EVT: string; ACL: string; RES: string; LOG: string; CFG: string; SYS: string; }' but required in type 'Record<TabIcon, string>'.
+src/components/admin/AdminOrganisationPanel.tsx(306,9): error TS2322: Type '{ isOpen: boolean; onClose: () => void; onAssign: (userId: number, role: "admin" | "user" | "editor") => Promise<void>; availableUsers: User[]; currentMembers: MemberWithRole[]; loading: boolean; themeColor: string; }' is not assignable to type 'IntrinsicAttributes & RoleAssignmentModalProps'.
+src/components/agent/AgentSettingsPage.tsx(236,101): error TS2345: Argument of type '{}' is not assignable to parameter of type 'Record<AgentActionKey, PermissionDraft> | (() => Record<AgentActionKey, PermissionDraft>)'.
+src/components/automation/AutomationDetailView.tsx(306,11): error TS2322: Type '{ rule: AutomationRuleDetailDto; onConfirm: () => Promise<void>; onCancel: () => void; themeColor: string; }' is not assignable to type 'IntrinsicAttributes & DeleteRuleDialogProps'.
+src/components/automation/AutomationPanel.tsx(85,9): error TS1345: An expression of type 'void' cannot be tested for truthiness.
+src/components/automation/AutomationPanel.tsx(164,9): error TS2322: Type '(ruleId: number, updateData: UpdateAutomationRuleDto) => Promise<AutomationRuleDetailDto>' is not assignable to type '(ruleId: number, ruleData: UpdateAutomationRuleDto) => Promise<void>'.
+src/components/automation/AutomationPanel.tsx(402,11): error TS2322: Type '{ rule: AutomationRuleDetailDto; onConfirm: () => Promise<void>; onCancel: () => void; themeColor: string; }' is not assignable to type 'IntrinsicAttributes & DeleteRuleDialogProps'.
+src/components/automation/AutomationRuleCard.tsx(174,30): error TS2362: The left-hand side of an arithmetic operation must be of type 'any', 'number', 'bigint' or an enum type.
+src/components/automation/AutomationRuleCard.tsx(175,18): error TS2362: The left-hand side of an arithmetic operation must be of type 'any', 'number', 'bigint' or an enum type.
+src/components/automation/AutomationRuleCard.tsx(185,5): error TS2322: Type 'unknown' is not assignable to type 'string'.
+src/components/automation/builders/ActionRow.tsx(105,11): error TS2322: Type 'unknown' is not assignable to type 'string | number | readonly string[]'.
+src/components/automation/builders/ActionRow.tsx(133,11): error TS2322: Type 'unknown' is not assignable to type 'string | number | readonly string[]'.
+src/components/automation/builders/ActionRow.tsx(148,11): error TS2322: Type 'unknown' is not assignable to type 'string | number | readonly string[]'.
+src/components/automation/builders/ActionRow.tsx(158,11): error TS2322: Type 'unknown' is not assignable to type 'string | number | readonly string[]'.
+src/components/automation/builders/ActionRow.tsx(182,11): error TS2322: Type 'unknown' is not assignable to type 'string | number | readonly string[]'.
+src/components/automation/builders/ActionRow.tsx(191,11): error TS2322: Type 'unknown' is not assignable to type 'string | number | readonly string[]'.
+src/components/automation/builders/ActionRow.tsx(214,11): error TS2322: Type 'unknown' is not assignable to type 'string | number | readonly string[]'.
+src/components/automation/builders/ActionRow.tsx(224,11): error TS2322: Type 'unknown' is not assignable to type 'string | number | readonly string[]'.
+src/components/automation/builders/ActionRow.tsx(247,11): error TS2322: Type 'unknown' is not assignable to type 'string | number | readonly string[]'.
+src/components/automation/builders/ActionRow.tsx(285,9): error TS2322: Type 'unknown' is not assignable to type 'string | number | readonly string[]'.
+src/components/automation/builders/ActionRow.tsx(309,11): error TS2322: Type 'unknown' is not assignable to type 'string | number | readonly string[]'.
+src/components/automation/builders/ActionRow.tsx(324,11): error TS2322: Type 'unknown' is not assignable to type 'string | number | readonly string[]'.
+src/components/automation/builders/ActionRow.tsx(338,11): error TS2322: Type 'unknown' is not assignable to type 'string | number | readonly string[]'.
+src/components/automation/builders/ActionRow.tsx(373,11): error TS2322: Type 'unknown' is not assignable to type 'string | number | readonly string[]'.
+src/components/automation/builders/ActionRow.tsx(384,11): error TS2322: Type 'unknown' is not assignable to type 'boolean'.
+src/components/automation/builders/ActionRow.tsx(400,11): error TS2322: Type 'unknown' is not assignable to type 'string | number | readonly string[]'.
+src/components/automation/builders/SetEventColorForm.tsx(70,26): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'string'.
+src/components/automation/builders/SetEventColorForm.tsx(73,15): error TS2322: Type 'unknown' is not assignable to type 'string | number | readonly string[]'.
+src/components/automation/builders/SetEventColorForm.tsx(73,38): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'string'.
+src/components/automation/builders/SetEventColorForm.tsx(80,13): error TS2322: Type 'unknown' is not assignable to type 'string | number | readonly string[]'.
+src/components/automation/builders/SetEventColorForm.tsx(85,26): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'string'.
+src/components/automation/builders/SetEventColorForm.tsx(88,24): error TS2322: Type 'unknown' is not assignable to type 'BackgroundColor'.
+src/components/automation/builders/SetEventColorForm.tsx(88,57): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'string'.
+src/components/automation/builders/SetEventColorForm.tsx(93,27): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'string'.
+src/components/automation/builders/SetEventColorForm.tsx(93,59): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'string'.
+src/components/automation/builders/SetEventColorForm.tsx(96,23): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'string'.
+src/components/automation/builders/SetEventColorForm.tsx(115,31): error TS2339: Property 'toLowerCase' does not exist on type 'unknown'.
+src/components/automation/builders/SetEventColorForm.tsx(142,22): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'string'.
+src/components/automation/builders/SetEventColorForm.tsx(147,22): error TS2322: Type 'unknown' is not assignable to type 'BackgroundColor'.
+src/components/automation/builders/SetEventColorForm.tsx(147,55): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'string'.
+src/components/automation/builders/TriggerSelector.tsx(79,19): error TS2322: Type 'unknown' is not assignable to type 'string | number | readonly string[]'.
+src/components/automation/builders/TriggerSelector.tsx(142,19): error TS2322: Type 'unknown' is not assignable to type 'string | number | readonly string[]'.
+src/components/automation/builders/TriggerSelector.tsx(197,17): error TS2322: Type 'unknown' is not assignable to type 'string | number | readonly string[]'.
+src/components/calendar-v2/components/Calendar.tsx(55,71): error TS2554: Expected 0-2 arguments, but got 3.
+src/components/calendar-v2/hooks/useCalendar.ts(8,28): error TS2307: Cannot find module '../../types/Event' or its corresponding type declarations.
+src/components/calendar-v2/types.ts(7,28): error TS2307: Cannot find module '../types/Event' or its corresponding type declarations.
+src/components/calendar/CalendarEventModal.tsx(98,26): error TS2339: Property 'recurrencePattern' does not exist on type 'Event'.
+src/components/calendar/CalendarEventModal.tsx(99,45): error TS2339: Property 'recurrencePattern' does not exist on type 'Event'.
+src/components/calendar/CalendarEventModal.tsx(151,20): error TS2345: Argument of type '(prev: Partial<CreateEventRequest>) => { endDate: string | number | boolean | Record<string, unknown> | RecurrencePattern; ... 11 more ...; recurrenceRule?: Record<...> | RecurrencePattern; }' is not assignable to parameter of type 'SetStateAction<Partial<CreateEventRequest>>'.
+src/components/calendar/EnhancedCalendar.tsx(238,15): error TS2304: Cannot find name 'apiService'.
+src/components/calendar/EnhancedCalendar.tsx(252,15): error TS2304: Cannot find name 'apiService'.
+src/components/calendar/EnhancedCalendar.tsx(647,11): error TS2322: Type '(Event | { id: string; title: string; start: string; end: string; startDate: string; endDate: string; startTime: string; endTime: string; color: string; isAllDay: boolean; notes: string; calendar: { ...; }; isReservation: boolean; reservationData: ReservationRecord; })[]' is not assignable to type 'Event[]'.
+src/components/calendar/EnhancedCalendar.tsx(665,11): error TS2322: Type '(Event | { id: string; title: string; start: string; end: string; startDate: string; endDate: string; startTime: string; endTime: string; color: string; isAllDay: boolean; notes: string; calendar: { ...; }; isReservation: boolean; reservationData: ReservationRecord; })[]' is not assignable to type 'Event[]'.
+src/components/calendar/EnhancedCalendar.tsx(687,11): error TS2322: Type '(Event | { id: string; title: string; start: string; end: string; startDate: string; endDate: string; startTime: string; endTime: string; color: string; isAllDay: boolean; notes: string; calendar: { ...; }; isReservation: boolean; reservationData: ReservationRecord; })[]' is not assignable to type 'Event[]'.
+src/components/calendar/EnhancedCalendar.tsx(703,9): error TS2322: Type '(Event | { id: string; title: string; start: string; end: string; startDate: string; endDate: string; startTime: string; endTime: string; color: string; isAllDay: boolean; notes: string; calendar: { ...; }; isReservation: boolean; reservationData: ReservationRecord; })[]' is not assignable to type 'Event[]'.
+src/components/calendar/EnhancedCalendar.tsx(709,9): error TS2322: Type 'import("C:/Users/ThinkPad/cal3/frontend/src/hooks/useCalendarData").ReservationRecord[]' is not assignable to type 'import("C:/Users/ThinkPad/cal3/frontend/src/types/reservation").ReservationRecord[]'.
+src/components/calendar/EnhancedCalendar.tsx(717,9): error TS2322: Type '(Event | { id: string; title: string; start: string; end: string; startDate: string; endDate: string; startTime: string; endTime: string; color: string; isAllDay: boolean; notes: string; calendar: { ...; }; isReservation: boolean; reservationData: ReservationRecord; })[]' is not assignable to type 'Event[]'.
+src/components/calendar/EnhancedCalendar.tsx(723,9): error TS2322: Type 'import("C:/Users/ThinkPad/cal3/frontend/src/hooks/useCalendarData").ReservationRecord[]' is not assignable to type 'import("C:/Users/ThinkPad/cal3/frontend/src/types/reservation").ReservationRecord[]'.
+src/components/calendar/EnhancedCalendar.tsx(1677,77): error TS2339: Property 'length' does not exist on type '{ readonly CALENDARS: "Loading calendars..."; readonly EVENTS: "Loading events..."; readonly PROFILE: "Loading user profile..."; readonly RESERVATIONS: "Loading reservations..."; readonly SYNC: "Syncing calendars..."; readonly SAVING: "Saving..."; readonly DELETING: "Deleting..."; readonly READY: "Ready!"; }'.
+src/components/calendar/EnhancedCalendar.tsx(1817,11): error TS2322: Type '(date: any) => void' is not assignable to type '() => void'.
+src/components/calendar/EnhancedCalendar.tsx(1835,9): error TS2322: Type '{ isOpen: boolean; onClose: () => void; onSave: (eventData: CreateEventRequest | UpdateEventRequest) => Promise<void>; onDelete: (eventId: number) => Promise<...>; ... 6 more ...; loading: boolean; }' is not assignable to type 'IntrinsicAttributes & CalendarEventModalProps'.
+src/components/calendar/EnhancedCalendar.tsx(1855,9): error TS2322: Type '{ isOpen: boolean; onClose: () => void; onConfirm: () => void; title: string; message: string; themeColor: string; }' is not assignable to type 'IntrinsicAttributes & ConfirmationDialogProps'.
+src/components/CalendarSidebar.tsx(142,71): error TS2339: Property 'color' does not exist on type 'ReservationResource'.
+src/components/CalendarSidebar.tsx(142,90): error TS2339: Property 'color' does not exist on type 'ReservationResource'.
+src/components/CalendarSidebar.tsx(143,56): error TS2339: Property 'color' does not exist on type 'ReservationResource'.
+src/components/CalendarSidebar.tsx(184,37): error TS2339: Property 'light' does not exist on type 'unknown'.
+src/components/CalendarSidebar.tsx(184,63): error TS2339: Property 'text' does not exist on type 'unknown'.
+src/components/CalendarSidebar.tsx(184,92): error TS2339: Property 'hover' does not exist on type 'unknown'.
+src/components/CalendarSidebar.tsx(302,29): error TS2339: Property 'eventCount' does not exist on type 'Calendar'.
+src/components/CalendarSidebar.tsx(306,33): error TS2339: Property 'eventCount' does not exist on type 'Calendar'.
+src/components/CalendarSidebar.tsx(341,41): error TS2339: Property 'light' does not exist on type 'unknown'.
+src/components/CalendarSidebar.tsx(341,67): error TS2339: Property 'text' does not exist on type 'unknown'.
+src/components/CalendarSidebar.tsx(341,96): error TS2339: Property 'hover' does not exist on type 'unknown'.
+src/components/common/LoadingScreen.tsx(43,86): error TS2339: Property 'gradient' does not exist on type 'unknown'.
+src/components/common/LoadingScreen.tsx(53,88): error TS2339: Property 'spinner' does not exist on type 'unknown'.
+src/components/common/LoadingScreen.tsx(58,71): error TS2339: Property 'gradient' does not exist on type 'unknown'.
+src/components/common/LoadingScreen.tsx(66,65): error TS2339: Property 'text' does not exist on type 'unknown'.
+src/components/common/LoadingScreen.tsx(67,63): error TS2339: Property 'text' does not exist on type 'unknown'.
+src/components/common/LoadingScreen.tsx(71,52): error TS2339: Property 'light' does not exist on type 'unknown'.
+src/components/common/LoadingScreen.tsx(74,65): error TS2339: Property 'gradient' does not exist on type 'unknown'.
+src/components/common/LoadingScreen.tsx(88,52): error TS2339: Property 'primary' does not exist on type 'unknown'.
+src/components/DeleteConfirmationModal.tsx(48,20): error TS2339: Property 'message' does not exist on type 'unknown'.
+src/components/dialogs/ConfirmationDialog.tsx(115,41): error TS2339: Property 'bg' does not exist on type 'unknown'.
+src/components/dialogs/ConfirmationDialog.tsx(115,60): error TS2339: Property 'border' does not exist on type 'unknown'.
+src/components/dialogs/ConfirmationDialog.tsx(117,45): error TS2339: Property 'icon' does not exist on type 'unknown'.
+src/components/dialogs/ConfirmationDialog.tsx(120,66): error TS2339: Property 'text' does not exist on type 'unknown'.
+src/components/dialogs/ConfirmationDialog.tsx(128,71): error TS2339: Property 'accent' does not exist on type 'unknown'.
+src/components/dialogs/ConfirmationDialog.tsx(133,54): error TS2339: Property 'bg' does not exist on type 'unknown'.
+src/components/dialogs/ConfirmationDialog.tsx(133,73): error TS2339: Property 'border' does not exist on type 'unknown'.
+src/components/dialogs/ConfirmationDialog.tsx(135,50): error TS2339: Property 'icon' does not exist on type 'unknown'.
+src/components/dialogs/ConfirmationDialog.tsx(136,70): error TS2339: Property 'accent' does not exist on type 'unknown'.
+src/components/dialogs/ConfirmationDialog.tsx(148,101): error TS2339: Property 'cancelBtn' does not exist on type 'unknown'.
+src/components/dialogs/ConfirmationDialog.tsx(154,112): error TS2339: Property 'confirmBtn' does not exist on type 'unknown'.
+src/components/dialogs/RecurrenceEditDialog.tsx(2,40): error TS2307: Cannot find module '../types/Event' or its corresponding type declarations.
+src/components/dialogs/RecurrenceEditDialog.tsx(100,67): error TS2339: Property 'text' does not exist on type 'unknown'.
+src/components/dialogs/RecurrenceEditDialog.tsx(129,36): error TS2339: Property 'border' does not exist on type 'unknown'.
+src/components/dialogs/RecurrenceEditDialog.tsx(189,31): error TS2339: Property 'button' does not exist on type 'unknown'.
+src/components/index.ts(18,15): error TS1149: File name 'C:/Users/ThinkPad/cal3/frontend/src/components/calendar.tsx' differs from already included file name 'C:/Users/ThinkPad/cal3/frontend/src/components/Calendar.tsx' only in casing.
+src/components/index.ts(24,1): error TS2308: Module './admin' has already exported a member named 'Reservation'. Consider explicitly re-exporting to resolve the ambiguity.
+src/components/mobile/calendar/DayDetailSheet.tsx(91,13): error TS2322: Type '{ children: Element; onClick: () => void; className: string; style: { backgroundColor: string; }; minSize: "lg"; }' is not assignable to type 'IntrinsicAttributes & TouchableAreaProps'.
+src/components/mobile/calendar/DayDetailSheet.tsx(157,15): error TS2322: Type '{ children: Element; onClick: () => void; className: string; style: { backgroundColor: string; }; }' is not assignable to type 'IntrinsicAttributes & TouchableAreaProps'.
+src/components/mobile/calendar/EventListItem.tsx(51,7): error TS2322: Type '{ children: Element; onClick: () => void; className: string; style: { borderLeftColor: string; }; minSize: "lg"; }' is not assignable to type 'IntrinsicAttributes & TouchableAreaProps'.
+src/components/mobile/calendar/MobileCalendarHeader.tsx(158,17): error TS2322: Type '{ children: string; key: "month" | "week" | "timeline"; onClick: () => void; className: string; minSize: "sm"; ariaLabel: string; style: { backgroundColor: string; color: string; border: string; }; }' is not assignable to type 'IntrinsicAttributes & TouchableAreaProps'.
+src/components/mobile/calendar/MobileMonthView.tsx(158,21): error TS2322: Type '{ key: string; variant: "primary"; dot: true; size: "sm"; className: string; style: { backgroundColor: string; }; }' is not assignable to type 'IntrinsicAttributes & BadgeProps'.
+src/components/mobile/molecules/TabBarItem.tsx(70,16): error TS2741: Property 'children' is missing in type '{ variant: "danger"; dot: true; size: "sm"; }' but required in type 'BadgeProps'.
+src/components/notifications/NotificationCenter.tsx(154,26): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'string | number'.
+src/components/notifications/NotificationCenter.tsx(155,29): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'string | number'.
+src/components/notifications/NotificationCenter.tsx(156,30): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'string | number'.
+src/components/notifications/NotificationCenter.tsx(157,26): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'string | number'.
+src/components/notifications/NotificationCenter.tsx(465,49): error TS2339: Property 'scopeMuted' does not exist on type 'unknown'.
+src/components/notifications/NotificationCenter.tsx(470,49): error TS2339: Property 'notes' does not exist on type 'unknown'.
+src/components/notifications/NotificationCenter.tsx(470,87): error TS2339: Property 'notes' does not exist on type 'unknown'.
+src/components/notifications/NotificationCenter.tsx(470,112): error TS2339: Property 'notes' does not exist on type 'unknown'.
+src/components/notifications/NotificationCenter.tsx(472,53): error TS2339: Property 'notes' does not exist on type 'unknown'.
+src/components/notifications/NotificationSettingsPanel.tsx(229,17): error TS2345: Argument of type '"organisation" | "calendar" | "reservation" | "resource" | "thread"' is not assignable to parameter of type 'ScopeKey'.
+src/components/notifications/NotificationSettingsPanel.tsx(364,25): error TS2345: Argument of type '(prev: NotificationPreference[]) => (NotificationPreference | { channels: Record<string, boolean>; fallbackOrder: NotificationChannel[]; eventType: string; digest?: "daily" | ... 1 more ... | "hourly"; quietHours?: { ...; }; })[]' is not assignable to parameter of type 'SetStateAction<NotificationPreference[]>'.
+src/components/notifications/NotificationSettingsPanel.tsx(591,9): error TS2322: Type 'string[]' is not assignable to type 'string | number | boolean | Record<string, unknown>'.
+src/components/notifications/NotificationSettingsPanel.tsx(605,9): error TS2322: Type 'string[]' is not assignable to type 'string | number | boolean | Record<string, unknown>'.
+src/components/notifications/NotificationSettingsPanel.tsx(718,59): error TS2339: Property 'map' does not exist on type 'unknown'.
+src/components/notifications/NotificationSettingsPanel.tsx(999,37): error TS2322: Type 'unknown' is not assignable to type 'string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<...>'.
+src/components/PublicBookingPage.tsx(77,22): error TS2339: Property 'message' does not exist on type 'unknown'.
+src/components/PublicBookingPage.tsx(190,20): error TS2339: Property 'message' does not exist on type 'unknown'.
+src/components/RecurrenceSelector.tsx(122,49): error TS2339: Property 'border' does not exist on type 'unknown'.
+src/components/RecurrenceSelector.tsx(191,48): error TS2339: Property 'button' does not exist on type 'unknown'.
+src/components/reservation/ReservationFormModal.tsx(499,17): error TS2322: Type 'unknown' is not assignable to type 'string | number | readonly string[]'.
+src/components/ReservationsPanel.tsx(255,24): error TS2345: Argument of type '{ role: string; id: number; name: string; description?: string; }[]' is not assignable to parameter of type 'SetStateAction<Organization[]>'.
+src/components/ReservationsPanel.tsx(260,24): error TS2345: Argument of type '{ role: string; id: number; name: string; description?: string; }' is not assignable to parameter of type 'SetStateAction<Organization>'.
+src/components/ReservationsPanel.tsx(377,36): error TS2554: Expected 0 arguments, but got 1.
+src/components/ReservationsPanel.tsx(381,36): error TS2554: Expected 0 arguments, but got 1.
+src/components/ReservationsPanel.tsx(385,36): error TS2554: Expected 0 arguments, but got 1.
+src/components/ReservationsPanel.tsx(737,69): error TS2339: Property 'gradient' does not exist on type 'unknown'.
+src/components/ReservationsPanel.tsx(748,69): error TS2339: Property 'gradient' does not exist on type 'unknown'.
+src/components/ReservationsPanel.tsx(755,42): error TS2339: Property 'badge' does not exist on type 'unknown'.
+src/components/ReservationsPanel.tsx(766,96): error TS2339: Property 'gradient' does not exist on type 'unknown'.
+src/components/ReservationsPanel.tsx(803,38): error TS2339: Property 'primary' does not exist on type 'unknown'.
+src/components/ReservationsPanel.tsx(844,42): error TS2339: Property 'primary' does not exist on type 'unknown'.
+src/components/ReservationsPanel.tsx(845,42): error TS2339: Property 'accent' does not exist on type 'unknown'.
+src/components/ReservationsPanel.tsx(928,53): error TS2339: Property 'primary' does not exist on type 'unknown'.
+src/components/ReservationsPanel.tsx(985,51): error TS2339: Property 'primary' does not exist on type 'unknown'.
+src/components/ReservationsPanel.tsx(1061,51): error TS2339: Property 'primary' does not exist on type 'unknown'.
+src/components/ReservationsPanel.tsx(1215,60): error TS2339: Property 'primary' does not exist on type 'unknown'.
+src/components/ReservationsPanel.tsx(1244,45): error TS2339: Property 'primary' does not exist on type 'unknown'.
+src/components/ReservationsPanel.tsx(1323,64): error TS2339: Property 'primary' does not exist on type 'unknown'.
+src/components/ReservationsPanel.tsx(1344,37): error TS2339: Property 'name' does not exist on type 'DeletableItem'.
+src/components/ResourceManagement.tsx(214,117): error TS2551: Property 'organisation' does not exist on type 'ReservationResourceType'. Did you mean 'organisationId'?
+src/components/sync/CalendarSync.tsx(553,19): error TS2339: Property 'providers' does not exist on type 'unknown'.
+src/components/sync/CalendarSync.tsx(553,54): error TS2339: Property 'providers' does not exist on type 'unknown'.
+src/components/sync/CalendarSync.tsx(562,23): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'SetStateAction<SyncStatus>'.
+src/components/sync/CalendarSync.tsx(566,27): error TS2339: Property 'providers' does not exist on type 'unknown'.
+src/components/tasks/TaskMarkdownEditor.tsx(16,31): error TS2345: Argument of type 'string | Promise<string>' is not assignable to parameter of type 'string | Node'.
+src/components/tasks/TaskQuickCreateDrawer.tsx(28,58): error TS1361: 'TaskPriority' cannot be used as a value because it was imported using 'import type'.
+src/components/tasks/TaskQuickCreateDrawer.tsx(29,52): error TS1361: 'TaskStatus' cannot be used as a value because it was imported using 'import type'.
+src/components/tasks/TaskQuickCreateDrawer.tsx(37,19): error TS1361: 'TaskPriority' cannot be used as a value because it was imported using 'import type'.
+src/components/tasks/TaskQuickCreateDrawer.tsx(38,17): error TS1361: 'TaskStatus' cannot be used as a value because it was imported using 'import type'.
+src/components/views/MonthView.tsx(441,36): error TS2339: Property 'description' does not exist on type 'ReservationRecord'.
+src/components/views/MonthView.tsx(443,68): error TS2339: Property 'description' does not exist on type 'ReservationRecord'.
+src/hooks/useCalendarData.ts(103,5): error TS2740: Type '{}' is missing the following properties from type 'ReservationRecord[]': length, pop, push, concat, and 29 more.
+src/hooks/useLoadingProgress.tsx(27,22): error TS2554: Expected 1 arguments, but got 0.
+src/hooks/useLoadingProgress.tsx(120,5): error TS2561: Object literal may only specify known properties, but 'withQuickProgress' does not exist in type 'UseLoadingProgressReturn'. Did you mean to write 'withProgress'?
+src/lib/http.ts(68,12): error TS2347: Untyped function calls may not accept type arguments.
+src/lib/http.ts(72,12): error TS2347: Untyped function calls may not accept type arguments.
+src/lib/http.ts(80,12): error TS2347: Untyped function calls may not accept type arguments.
+src/lib/http.ts(88,12): error TS2347: Untyped function calls may not accept type arguments.
+src/services/notificationsApi.ts(33,5): error TS2322: Type 'Promise<NotificationScopeOption[] | { id: string; name: string; }[] | (Record<string, NotificationScopeOption[]> & any[])>' is not assignable to type 'Promise<{ id: string; name: string; }[]>'.
+src/services/userPermissions.ts(43,7): error TS2740: Type '{}' is missing the following properties from type 'UserPermissions': canAccessReservations, accessibleOrganizationIds, adminOrganizationIds, editableReservationCalendarIds, and 2 more.
+src/services/userPermissions.ts(45,7): error TS2740: Type '{}' is missing the following properties from type 'UserPermissions': canAccessReservations, accessibleOrganizationIds, adminOrganizationIds, editableReservationCalendarIds, and 2 more.
+src/utils/errorHandler.ts(41,48): error TS2339: Property 'message' does not exist on type 'unknown'.
+src/utils/errorHandler.ts(41,80): error TS2339: Property 'error' does not exist on type 'unknown'.
+src/utils/sanitizeHtml.ts(5,46): error TS2345: Argument of type 'Window' is not assignable to parameter of type 'WindowLike'.

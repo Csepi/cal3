@@ -1,4 +1,4 @@
-import {
+﻿import {
   BadRequestException,
   ConflictException,
   Injectable,
@@ -96,7 +96,7 @@ export class IdempotencyService {
     }
   }
 
-  private hashPayload(payload: unknown): string {
+  private hashPayload(payload: any): string {
     return createHash('sha256')
       .update(JSON.stringify(payload ?? {}))
       .digest('hex');

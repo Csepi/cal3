@@ -1,4 +1,4 @@
-import { ExternalServiceError } from './error-base';
+﻿import { ExternalServiceError } from './error-base';
 import { buildErrorContext, type ErrorContext } from './error-context';
 
 /**
@@ -72,7 +72,7 @@ export const exponentialBackoff = async <T>(
   } = options;
 
   let attempt = 0;
-  let lastError: unknown;
+  let lastError: any;
 
   while (attempt < maxAttempts) {
     attempt += 1;
@@ -87,9 +87,7 @@ export const exponentialBackoff = async <T>(
       const exponent = Math.pow(2, attempt - 1);
       const delay = Math.min(baseDelayMs * exponent, maxDelayMs);
       const jitterValue = jitter ? Math.random() * delay * 0.2 : 0;
-      await new Promise((resolve) =>
-        setTimeout(resolve, delay + jitterValue),
-      );
+      await new Promise((resolve) => setTimeout(resolve, delay + jitterValue));
     }
   }
 
@@ -103,12 +101,7 @@ export const circuitBreaker = <T>(
   task: () => Promise<T>,
   options: CircuitBreakerOptions,
 ): (() => Promise<T>) => {
-  const {
-    failureThreshold,
-    successThreshold,
-    timeoutMs,
-    context,
-  } = options;
+  const { failureThreshold, successThreshold, timeoutMs, context } = options;
 
   let failures = 0;
   let successes = 0;
@@ -153,13 +146,13 @@ export const circuitBreaker = <T>(
  */
 export const fallback = async <T>(
   task: () => Promise<T>,
-  fallbackValue: T | ((error: unknown) => T | Promise<T>),
+  fallbackValue: T | ((error: any) => T | Promise<T>),
 ): Promise<T> => {
   try {
     return await task();
   } catch (error) {
     if (typeof fallbackValue === 'function') {
-      return await (fallbackValue as (err: unknown) => T | Promise<T>)(error);
+      return await (fallbackValue as (err: any) => T | Promise<T>)(error);
     }
     return fallbackValue;
   }

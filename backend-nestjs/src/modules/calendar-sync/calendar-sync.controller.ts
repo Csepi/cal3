@@ -1,4 +1,4 @@
-import {
+﻿import {
   Controller,
   Get,
   Post,
@@ -10,6 +10,7 @@ import {
   Query,
   Logger,
 } from '@nestjs/common';
+import type { RequestWithUser } from '../../common/types/request-with-user';
 import type { Response } from 'express';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { CalendarSyncService } from './calendar-sync.service';
@@ -27,7 +28,9 @@ export class CalendarSyncController {
 
   @Get('status')
   @UseGuards(JwtAuthGuard)
-  async getSyncStatus(@Request() req): Promise<CalendarSyncStatusDto> {
+  async getSyncStatus(
+    @Request() req: RequestWithUser,
+  ): Promise<CalendarSyncStatusDto> {
     this.logger.log(`[getSyncStatus] Request from user: ${req.user.id}`);
     const result = await this.calendarSyncService.getSyncStatus(req.user.id);
     this.logger.log(
@@ -40,7 +43,7 @@ export class CalendarSyncController {
   @UseGuards(JwtAuthGuard)
   async getAuthUrl(
     @Param('provider') provider: string,
-    @Request() req,
+    @Request() req: RequestWithUser,
   ): Promise<{ authUrl: string }> {
     this.logger.log(
       `[getAuthUrl] Request from user: ${req.user.id} for provider: ${provider}`,
@@ -115,13 +118,13 @@ export class CalendarSyncController {
         `[handleOAuthCallback] OAuth callback completed successfully, redirecting to calendar sync page`,
       );
       return res.redirect(`${frontendUrl}/calendar-sync?success=connected`);
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error(
         `[handleOAuthCallback] OAuth callback error for provider ${provider}:`,
-        error.stack,
+        error instanceof Error ? error.stack : undefined,
       );
       return res.redirect(
-        `${frontendUrl}/calendar-sync?error=sync_failed&details=${encodeURIComponent(error.message)}`,
+        `${frontendUrl}/calendar-sync?error=sync_failed&details=${encodeURIComponent(error instanceof Error ? error.message : String(error))}`,
       );
     }
   }
@@ -129,7 +132,7 @@ export class CalendarSyncController {
   @Post('sync')
   @UseGuards(JwtAuthGuard)
   async syncCalendars(
-    @Request() req,
+    @Request() req: RequestWithUser,
     @Body() syncData: SyncCalendarsDto,
   ): Promise<{ message: string }> {
     this.logger.log(
@@ -141,10 +144,10 @@ export class CalendarSyncController {
         `[syncCalendars] Successfully synced calendars for user: ${req.user.id}`,
       );
       return { message: 'Calendars synced successfully' };
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error(
         `[syncCalendars] Error syncing calendars for user ${req.user.id}:`,
-        error.stack,
+        error instanceof Error ? error.stack : undefined,
       );
       throw error;
     }
@@ -152,7 +155,9 @@ export class CalendarSyncController {
 
   @Post('disconnect')
   @UseGuards(JwtAuthGuard)
-  async disconnect(@Request() req): Promise<{ message: string }> {
+  async disconnect(
+    @Request() req: RequestWithUser,
+  ): Promise<{ message: string }> {
     await this.calendarSyncService.disconnect(req.user.id);
     return { message: 'All calendar providers disconnected successfully' };
   }
@@ -161,7 +166,7 @@ export class CalendarSyncController {
   @UseGuards(JwtAuthGuard)
   async disconnectProvider(
     @Param('provider') provider: string,
-    @Request() req,
+    @Request() req: RequestWithUser,
   ): Promise<{ message: string }> {
     if (provider !== 'google' && provider !== 'microsoft') {
       throw new Error('Invalid provider');
@@ -178,9 +183,10 @@ export class CalendarSyncController {
 
   @Post('force')
   @UseGuards(JwtAuthGuard)
-  async forceSync(@Request() req): Promise<{ message: string }> {
+  async forceSync(
+    @Request() req: RequestWithUser,
+  ): Promise<{ message: string }> {
     await this.calendarSyncService.forceSync(req.user.id);
     return { message: 'Sync completed successfully' };
   }
 }
-

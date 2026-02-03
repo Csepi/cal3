@@ -11,6 +11,7 @@ import {
   Request,
   UseGuards,
 } from '@nestjs/common';
+import type { RequestWithUser } from '../common/types/request-with-user';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { NotificationsService } from './notifications.service';
 import {
@@ -31,39 +32,42 @@ export class NotificationsController {
   ) {}
 
   @Get()
-  list(@Request() req, @Query() query: ListNotificationsQueryDto) {
+  list(
+    @Request() req: RequestWithUser,
+    @Query() query: ListNotificationsQueryDto,
+  ) {
     return this.notificationsService.listMessages(req.user.id, query);
   }
 
   @Patch(':id/read')
-  markRead(@Request() req, @Param('id') id: string) {
+  markRead(@Request() req: RequestWithUser, @Param('id') id: string) {
     return this.notificationsService
       .markMessageRead(req.user.id, +id)
       .then(() => ({ success: true }));
   }
 
   @Patch(':id/unread')
-  markUnread(@Request() req, @Param('id') id: string) {
+  markUnread(@Request() req: RequestWithUser, @Param('id') id: string) {
     return this.notificationsService
       .markMessageUnread(req.user.id, +id)
       .then(() => ({ success: true }));
   }
 
   @Post('read-all')
-  markAllRead(@Request() req) {
+  markAllRead(@Request() req: RequestWithUser) {
     return this.notificationsService
       .markAllRead(req.user.id)
       .then(() => ({ success: true }));
   }
 
   @Get('catalog')
-  getCatalog(@Request() req) {
+  getCatalog(@Request() req: RequestWithUser) {
     return this.notificationsService.getCatalog(req.user.id);
   }
 
   @Get('scopes')
   getScopeCatalog(
-    @Request() req,
+    @Request() req: RequestWithUser,
     @Query('type') type?: string,
   ): Promise<NotificationScopeMap> {
     const scopes = type
@@ -79,13 +83,13 @@ export class NotificationsController {
   }
 
   @Get('preferences')
-  getPreferences(@Request() req) {
+  getPreferences(@Request() req: RequestWithUser) {
     return this.notificationRulesService.getUserPreferences(req.user.id);
   }
 
   @Put('preferences')
   updatePreferences(
-    @Request() req,
+    @Request() req: RequestWithUser,
     @Body() body: UpdateNotificationPreferencesDto,
   ) {
     return this.notificationRulesService.updateUserPreferences(
@@ -95,7 +99,10 @@ export class NotificationsController {
   }
 
   @Post('devices')
-  registerDevice(@Request() req, @Body() body: RegisterDeviceDto) {
+  registerDevice(
+    @Request() req: RequestWithUser,
+    @Body() body: RegisterDeviceDto,
+  ) {
     return this.notificationsService.registerDevice(
       req.user.id,
       body.platform,
@@ -105,24 +112,30 @@ export class NotificationsController {
   }
 
   @Delete('devices/:deviceId')
-  deleteDevice(@Request() req, @Param('deviceId') deviceId: string) {
+  deleteDevice(
+    @Request() req: RequestWithUser,
+    @Param('deviceId') deviceId: string,
+  ) {
     return this.notificationsService
       .removeDevice(req.user.id, +deviceId)
       .then(() => ({ success: true }));
   }
 
   @Get('filters')
-  getFilters(@Request() req) {
+  getFilters(@Request() req: RequestWithUser) {
     return this.notificationRulesService.getUserInboxRules(req.user.id);
   }
 
   @Post('filters')
-  saveFilter(@Request() req, @Body() filter: InboxRuleDto) {
+  saveFilter(@Request() req: RequestWithUser, @Body() filter: InboxRuleDto) {
     return this.notificationRulesService.upsertRule(req.user.id, filter);
   }
 
   @Patch('filters')
-  reorderFilters(@Request() req, @Body() payload: UpdateInboxRulesDto) {
+  reorderFilters(
+    @Request() req: RequestWithUser,
+    @Body() payload: UpdateInboxRulesDto,
+  ) {
     return this.notificationRulesService.reorderRules(
       req.user.id,
       payload.rules,
@@ -130,7 +143,7 @@ export class NotificationsController {
   }
 
   @Delete('filters/:id')
-  removeFilter(@Request() req, @Param('id') id: string) {
+  removeFilter(@Request() req: RequestWithUser, @Param('id') id: string) {
     return this.notificationRulesService.deleteRule(req.user.id, +id);
   }
 
@@ -139,17 +152,20 @@ export class NotificationsController {
    * former "rules" terminology.
    */
   @Get('rules')
-  getRules(@Request() req) {
+  getRules(@Request() req: RequestWithUser) {
     return this.notificationRulesService.getUserInboxRules(req.user.id);
   }
 
   @Post('rules')
-  saveRule(@Request() req, @Body() payload: InboxRuleDto) {
+  saveRule(@Request() req: RequestWithUser, @Body() payload: InboxRuleDto) {
     return this.notificationRulesService.upsertRule(req.user.id, payload);
   }
 
   @Patch('rules')
-  reorderRulesAlias(@Request() req, @Body() payload: UpdateInboxRulesDto) {
+  reorderRulesAlias(
+    @Request() req: RequestWithUser,
+    @Body() payload: UpdateInboxRulesDto,
+  ) {
     return this.notificationRulesService.reorderRules(
       req.user.id,
       payload.rules,
@@ -157,7 +173,7 @@ export class NotificationsController {
   }
 
   @Delete('rules/:id')
-  removeRule(@Request() req, @Param('id') id: string) {
+  removeRule(@Request() req: RequestWithUser, @Param('id') id: string) {
     return this.notificationRulesService.deleteRule(req.user.id, +id);
   }
 }

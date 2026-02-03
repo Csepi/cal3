@@ -12,10 +12,10 @@ import { SyncProvider } from '../entities/calendar-sync.entity';
 
 export class CalendarSyncDto {
   @IsString()
-  externalId: string;
+  externalId!: string;
 
   @IsString()
-  localName: string;
+  localName!: string;
 
   @IsOptional()
   @IsBoolean()
@@ -33,38 +33,38 @@ export class CalendarSyncDto {
 
 export class SyncCalendarsDto {
   @IsEnum(SyncProvider)
-  provider: SyncProvider;
+  provider!: SyncProvider;
 
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => CalendarSyncDto)
-  calendars: CalendarSyncDto[];
+  calendars!: CalendarSyncDto[];
 }
 
 export class ProviderSyncStatusDto {
-  provider: SyncProvider;
-  isConnected: boolean;
-  calendars: ExternalCalendarDto[];
-  syncedCalendars: SyncedCalendarInfoDto[];
+  provider!: SyncProvider;
+  isConnected!: boolean;
+  calendars!: ExternalCalendarDto[];
+  syncedCalendars!: SyncedCalendarInfoDto[];
 }
 
 export class CalendarSyncStatusDto {
-  providers: ProviderSyncStatusDto[];
+  providers!: ProviderSyncStatusDto[];
 }
 
 export class ExternalCalendarDto {
-  id: string;
-  name: string;
+  id!: string;
+  name!: string;
   description?: string;
   primary?: boolean;
   accessRole?: string;
 }
 
 export class SyncedCalendarInfoDto {
-  localName: string;
-  externalId: string;
-  externalName: string;
-  provider: string;
-  lastSync: string;
-  bidirectionalSync: boolean;
+  localName!: string;
+  externalId!: string;
+  externalName!: string;
+  provider!: string;
+  lastSync!: string;
+  bidirectionalSync!: boolean;
 }

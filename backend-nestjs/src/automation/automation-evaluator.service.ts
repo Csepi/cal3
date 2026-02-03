@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+﻿import { Injectable } from '@nestjs/common';
 import {
   AutomationRule,
   ConditionLogic,
@@ -28,7 +28,7 @@ export class AutomationEvaluatorService {
   async evaluateConditions(
     rule: AutomationRule,
     event: Event | null = null,
-    webhookData: Record<string, any> | null = null,
+    webhookData: Record<string, unknown> | null = null,
   ): Promise<ConditionsResultDto> {
     const evaluations: ConditionEvaluationDto[] = [];
     const conditions = rule.conditions || [];
@@ -68,7 +68,7 @@ export class AutomationEvaluatorService {
   private async evaluateCondition(
     condition: AutomationCondition,
     event: Event | null,
-    webhookData: Record<string, any> | null = null,
+    webhookData: Record<string, unknown> | null = null,
   ): Promise<ConditionEvaluationDto> {
     const evaluation: ConditionEvaluationDto = {
       conditionId: condition.id,
@@ -93,9 +93,12 @@ export class AutomationEvaluatorService {
         evaluation.actualValue,
         condition.value,
       );
-    } catch (error) {
-      logError(error, buildErrorContext({ action: 'automation-evaluator.service' }));
-      evaluation.error = error.message;
+    } catch (error: any) {
+      logError(
+        error,
+        buildErrorContext({ action: 'automation-evaluator.service' }),
+      );
+      evaluation.error = error instanceof Error ? error.message : String(error);
       evaluation.passed = false;
     }
 
@@ -109,7 +112,7 @@ export class AutomationEvaluatorService {
   private extractFieldValue(
     field: ConditionField | string,
     event: Event | null,
-    webhookData: Record<string, any> | null = null,
+    webhookData: Record<string, unknown> | null = null,
   ): any {
     // Handle webhook.data.* fields
     if (field.startsWith('webhook.data')) {
@@ -148,7 +151,7 @@ export class AutomationEvaluatorService {
     }
 
     // Map of supported field paths
-    const fieldMap = {
+    const fieldMap: Record<string, unknown> = {
       [ConditionField.EVENT_TITLE]: event.title,
       [ConditionField.EVENT_DESCRIPTION]: event.description || '',
       [ConditionField.EVENT_LOCATION]: event.location || '',
@@ -170,8 +173,12 @@ export class AutomationEvaluatorService {
     let value: any = event;
 
     for (const part of parts) {
-      if (value && typeof value === 'object' && part in value) {
-        value = value[part];
+      if (
+        value &&
+        typeof value === 'object' &&
+        part in (value as Record<string, unknown>)
+      ) {
+        value = (value as Record<string, unknown>)[part];
       } else {
         throw new Error(`Field path "${field}" not found in event`);
       }
@@ -341,12 +348,11 @@ export class AutomationEvaluatorService {
     }
 
     const expressions = evaluations.map((e, i) => {
-      const status = e.passed ? '✓' : '✗';
+      const status = e.passed ? 'âś“' : 'âś—';
       return `${status} condition_${i + 1}`;
     });
 
     const operator = logic === ConditionLogic.AND ? ' AND ' : ' OR ';
     return expressions.join(operator);
   }
-
 }

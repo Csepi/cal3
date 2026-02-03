@@ -1,8 +1,6 @@
 import { Controller, Get, Post, Body, Param, Query } from '@nestjs/common';
 import { PublicBookingService } from './public-booking.service';
-import {
-  CreatePublicBookingDto,
-} from '../dto/public-booking.dto';
+import { CreatePublicBookingDto } from '../dto/public-booking.dto';
 import { ValidatePublicBooking } from '../common/decorators/validate-public-booking.decorator';
 import { PublicBookingAvailabilityQueryDto } from '../common/pipes/public-booking-validation.pipe';
 

@@ -1,4 +1,4 @@
-import {
+﻿import {
   IsArray,
   IsEnum,
   IsNotEmpty,
@@ -18,7 +18,7 @@ export class CreateAgentDto {
   @IsString()
   @IsNotEmpty()
   @MaxLength(80)
-  name: string;
+  name!: string;
 
   @IsOptional()
   @IsString()
@@ -46,39 +46,39 @@ export class AgentPermissionInputDto {
   @IsString()
   @IsNotEmpty()
   @IsIn(Object.values(AgentActionKey))
-  actionKey: AgentActionKey;
+  actionKey!: AgentActionKey;
 
   @IsOptional()
   @IsObject()
-  scope?: Record<string, any>;
+  scope?: Record<string, unknown>;
 }
 
 export class UpdateAgentPermissionsDto {
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => AgentPermissionInputDto)
-  permissions: AgentPermissionInputDto[];
+  permissions!: AgentPermissionInputDto[];
 }
 
 export class CreateAgentKeyDto {
   @IsString()
   @IsNotEmpty()
   @MaxLength(80)
-  label: string;
+  label!: string;
 }
 
 export class RevokeAgentKeyDto {
   @IsUUID()
-  keyTokenId: string;
+  keyTokenId!: string;
 }
 
 export class ExecuteAgentActionDto {
   @IsString()
   @IsNotEmpty()
   @IsIn(Object.values(AgentActionKey))
-  action: AgentActionKey;
+  action!: AgentActionKey;
 
   @IsOptional()
   @IsObject()
-  parameters?: Record<string, any>;
+  parameters?: Record<string, unknown>;
 }

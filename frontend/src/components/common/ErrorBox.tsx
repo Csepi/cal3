@@ -101,7 +101,7 @@ export const ErrorBox: React.FC<ErrorBoxProps> = ({
       log.push(errorDetails.stack);
     }
 
-    // Add any other custom properties
+    // Add other custom properties
     const standardKeys = ['message', 'timestamp', 'url', 'status', 'statusText', 'stack', 'requestBody', 'responseBody', 'headers'];
     const customKeys = Object.keys(errorDetails).filter(key => !standardKeys.includes(key));
     if (customKeys.length > 0) {

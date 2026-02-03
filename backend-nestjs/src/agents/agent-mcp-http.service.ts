@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+﻿import { Injectable, Logger } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 import type { Request, Response } from 'express';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
@@ -22,7 +22,7 @@ import { TaskPriority, TaskStatus } from '../entities/task.entity';
 
 import { logError } from '../common/errors/error-logger';
 import { buildErrorContext } from '../common/errors/error-context';
-type ToolHandler = (parameters: Record<string, any>) => Promise<unknown>;
+type ToolHandler = (parameters: Record<string, unknown>) => Promise<any>;
 
 interface McpSession {
   context: AgentContext;
@@ -41,7 +41,7 @@ export class AgentMcpHttpService {
     context: AgentContext,
     req: Request,
     res: Response,
-    body: unknown,
+    body: any,
   ): Promise<void> {
     const incomingSessionId = req.get('mcp-session-id')?.trim();
     let sessionId = incomingSessionId;
@@ -170,7 +170,10 @@ export class AgentMcpHttpService {
           const result = await handler(parameters);
           return this.wrapToolResult(result);
         } catch (error) {
-          logError(error, buildErrorContext({ action: 'agent-mcp-http.service' }));
+          logError(
+            error,
+            buildErrorContext({ action: 'agent-mcp-http.service' }),
+          );
           this.logger.warn(
             `Tool execution failed for ${action}: ${
               error instanceof Error ? error.message : error
@@ -375,11 +378,8 @@ export class AgentMcpHttpService {
       this.execute(context, AgentActionKey.TASKS_DELETE, params),
     );
 
-    registerTool(
-      AgentActionKey.TASK_LABELS_LIST,
-      undefined,
-      (params) =>
-        this.execute(context, AgentActionKey.TASK_LABELS_LIST, params),
+    registerTool(AgentActionKey.TASK_LABELS_LIST, undefined, (params) =>
+      this.execute(context, AgentActionKey.TASK_LABELS_LIST, params),
     );
 
     const createLabelSchema: ZodRawShape = {
@@ -508,8 +508,8 @@ export class AgentMcpHttpService {
   private async execute(
     context: AgentContext,
     action: AgentActionKey,
-    parameters: Record<string, any>,
-  ): Promise<unknown> {
+    parameters: Record<string, unknown>,
+  ): Promise<any> {
     const dto: ExecuteAgentActionDto = {
       action,
       parameters,
@@ -517,7 +517,7 @@ export class AgentMcpHttpService {
     return this.agentMcpService.executeAction(context, dto);
   }
 
-  private wrapToolResult(result: unknown): {
+  private wrapToolResult(result: any): {
     content: ContentBlock[];
     structuredContent?: Record<string, unknown>;
   } {
@@ -556,7 +556,7 @@ export class AgentMcpHttpService {
     } as ContentBlock;
   }
 
-  private safeStringify(value: unknown): string {
+  private safeStringify(value: any): string {
     try {
       return JSON.stringify(value);
     } catch (error) {

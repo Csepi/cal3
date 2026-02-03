@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * MobileCalendarHeader - Mobile Navigation Header
  *

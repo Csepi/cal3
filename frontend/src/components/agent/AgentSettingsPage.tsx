@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useEffect, useMemo, useState } from "react";
 import { agentService } from "../../services/agentService";
 import { BASE_URL } from "../../config/apiConfig";

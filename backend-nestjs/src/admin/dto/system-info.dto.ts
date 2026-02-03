@@ -4,7 +4,7 @@
  */
 
 export class DatabaseInfoDto {
-  type: string;
+  type!: string;
   host?: string;
   port?: number;
   database?: string;
@@ -16,54 +16,54 @@ export class DatabaseInfoDto {
 }
 
 export class ServerInfoDto {
-  nodeVersion: string;
-  platform: string;
-  architecture: string;
-  uptime: number;
-  memoryUsage: {
+  nodeVersion!: string;
+  platform!: string;
+  architecture!: string;
+  uptime!: number;
+  memoryUsage!: {
     heapUsed: number;
     heapTotal: number;
     external: number;
     rss: number;
   };
-  cpuUsage: {
+  cpuUsage!: {
     user: number;
     system: number;
   };
 }
 
 export class EnvironmentInfoDto {
-  nodeEnv: string;
-  port: number;
-  baseUrl: string;
-  frontendUrl: string;
-  backendUrl: string;
+  nodeEnv!: string;
+  port!: number;
+  baseUrl!: string;
+  frontendUrl!: string;
+  backendUrl!: string;
 }
 
 export class FeatureFlagsDto {
-  googleOAuthEnabled: boolean;
-  microsoftOAuthEnabled: boolean;
-  calendarSyncEnabled: boolean;
-  automationEnabled: boolean;
-  reservationsEnabled: boolean;
-  organisationsEnabled: boolean;
+  googleOAuthEnabled!: boolean;
+  microsoftOAuthEnabled!: boolean;
+  calendarSyncEnabled!: boolean;
+  automationEnabled!: boolean;
+  reservationsEnabled!: boolean;
+  organisationsEnabled!: boolean;
 }
 
 export class DatabaseStatsDto {
-  users: number;
-  calendars: number;
-  events: number;
-  reservations: number;
-  automationRules: number;
-  organisations: number;
+  users!: number;
+  calendars!: number;
+  events!: number;
+  reservations!: number;
+  automationRules!: number;
+  organisations!: number;
 }
 
 export class SystemInfoDto {
-  server: ServerInfoDto;
-  database: DatabaseInfoDto;
-  environment: EnvironmentInfoDto;
-  features: FeatureFlagsDto;
-  stats: DatabaseStatsDto;
-  timestamp: string;
-  version: string;
+  server!: ServerInfoDto;
+  database!: DatabaseInfoDto;
+  environment!: EnvironmentInfoDto;
+  features!: FeatureFlagsDto;
+  stats!: DatabaseStatsDto;
+  timestamp!: string;
+  version!: string;
 }

@@ -1,4 +1,4 @@
-import {
+﻿import {
   IsEnum,
   IsOptional,
   IsNumber,
@@ -64,22 +64,22 @@ export class AuditLogQueryDto {
 // Response DTO for condition evaluation result
 export class ConditionEvaluationDto {
   @ApiProperty({ description: 'Condition ID' })
-  conditionId: number;
+  conditionId!: number;
 
   @ApiProperty({ description: 'Field being evaluated' })
-  field: string;
+  field!: string;
 
   @ApiProperty({ description: 'Operator used' })
-  operator: string;
+  operator!: string;
 
   @ApiProperty({ description: 'Expected value' })
-  expectedValue: string;
+  expectedValue!: string;
 
   @ApiProperty({ description: 'Actual value from event' })
-  actualValue: any;
+  actualValue!: any;
 
   @ApiProperty({ description: 'Whether condition passed' })
-  passed: boolean;
+  passed!: boolean;
 
   @ApiPropertyOptional({ description: 'Error message if evaluation failed' })
   error?: string;
@@ -88,13 +88,13 @@ export class ConditionEvaluationDto {
 // Response DTO for conditions result
 export class ConditionsResultDto {
   @ApiProperty({ description: 'Overall conditions passed' })
-  passed: boolean;
+  passed!: boolean;
 
   @ApiProperty({
     description: 'Individual condition evaluations',
     type: [ConditionEvaluationDto],
   })
-  evaluations: ConditionEvaluationDto[];
+  evaluations!: ConditionEvaluationDto[];
 
   @ApiPropertyOptional({ description: 'Logic expression evaluated' })
   logicExpression?: string;
@@ -103,31 +103,31 @@ export class ConditionsResultDto {
 // Response DTO for action execution result
 export class ActionResultDto {
   @ApiProperty({ description: 'Action ID' })
-  actionId: number;
+  actionId!: number;
 
   @ApiProperty({ description: 'Action type executed' })
-  actionType: string;
+  actionType!: string;
 
   @ApiProperty({ description: 'Whether action succeeded' })
-  success: boolean;
+  success!: boolean;
 
   @ApiPropertyOptional({ description: 'Error message if action failed' })
   error?: string;
 
   @ApiPropertyOptional({ description: 'Additional result data' })
-  data?: Record<string, any>;
+  data?: Record<string, unknown>;
 
   @ApiProperty({ description: 'Action execution timestamp' })
-  executedAt: Date;
+  executedAt!: Date;
 }
 
 // Response DTO for audit log entry (summary)
 export class AuditLogDto {
   @ApiProperty({ description: 'Audit log entry ID' })
-  id: number;
+  id!: number;
 
   @ApiProperty({ description: 'Rule ID that was executed' })
-  ruleId: number;
+  ruleId!: number;
 
   @ApiPropertyOptional({
     description: 'Rule name (included when loading list)',
@@ -135,7 +135,7 @@ export class AuditLogDto {
   ruleName?: string;
 
   @ApiProperty({ description: 'Event ID that triggered the rule' })
-  eventId: number;
+  eventId!: number;
 
   @ApiPropertyOptional({
     description: 'Event title (included when loading list)',
@@ -143,10 +143,10 @@ export class AuditLogDto {
   eventTitle?: string;
 
   @ApiProperty({ description: 'Execution status', enum: AuditLogStatus })
-  status: AuditLogStatus;
+  status!: AuditLogStatus;
 
   @ApiProperty({ description: 'Conditions evaluation result' })
-  conditionsResult: ConditionsResultDto;
+  conditionsResult!: ConditionsResultDto;
 
   @ApiPropertyOptional({
     description: 'Action execution results',
@@ -163,23 +163,23 @@ export class AuditLogDto {
   executedByUserId?: number;
 
   @ApiProperty({ description: 'Execution timestamp' })
-  executedAt: Date;
+  executedAt!: Date;
 
   @ApiProperty({ description: 'Total execution time in milliseconds' })
-  executionTimeMs: number;
+  executionTimeMs!: number;
 }
 
 // Response DTO for detailed audit log with related entities
 export class AuditLogDetailDto extends AuditLogDto {
   @ApiProperty({ description: 'Rule details' })
-  rule: {
+  rule!: {
     id: number;
     name: string;
     triggerType: string;
   };
 
   @ApiProperty({ description: 'Event details' })
-  event: {
+  event!: {
     id: number;
     title: string;
     startTime: string | null;
@@ -196,10 +196,10 @@ export class AuditLogDetailDto extends AuditLogDto {
 // Paginated response for audit logs
 export class PaginatedAuditLogsDto {
   @ApiProperty({ description: 'Audit log entries', type: [AuditLogDto] })
-  data: AuditLogDto[];
+  data!: AuditLogDto[];
 
   @ApiProperty({ description: 'Pagination metadata' })
-  pagination: {
+  pagination!: {
     page: number;
     limit: number;
     total: number;
@@ -210,23 +210,23 @@ export class PaginatedAuditLogsDto {
 // Statistics DTO for audit logs
 export class AuditLogStatsDto {
   @ApiProperty({ description: 'Total executions' })
-  totalExecutions: number;
+  totalExecutions!: number;
 
   @ApiProperty({ description: 'Successful executions' })
-  successCount: number;
+  successCount!: number;
 
   @ApiProperty({ description: 'Failed executions' })
-  failureCount: number;
+  failureCount!: number;
 
   @ApiProperty({ description: 'Skipped executions (conditions not met)' })
-  skippedCount: number;
+  skippedCount!: number;
 
   @ApiProperty({ description: 'Partial success executions' })
-  partialSuccessCount: number;
+  partialSuccessCount!: number;
 
   @ApiProperty({ description: 'Average execution time in milliseconds' })
-  avgExecutionTimeMs: number;
+  avgExecutionTimeMs!: number;
 
   @ApiProperty({ description: 'Last execution timestamp' })
-  lastExecutedAt: Date | null;
+  lastExecutedAt!: Date | null;
 }

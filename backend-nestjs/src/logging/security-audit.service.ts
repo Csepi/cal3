@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+﻿import { Injectable } from '@nestjs/common';
 import { LoggingService } from './logging.service';
 
 export type SecurityAuditEvent =

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import createDOMPurify from 'dompurify';
 
 const windowRef: Window | undefined =

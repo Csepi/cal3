@@ -8,7 +8,10 @@ import { ModuleRef } from '@nestjs/core';
 import { InjectRepository } from '@nestjs/typeorm';
 import { IsNull, Repository } from 'typeorm';
 import { Event } from '../entities/event.entity';
-import { EventComment, CommentTemplateKey } from '../entities/event-comment.entity';
+import {
+  EventComment,
+  CommentTemplateKey,
+} from '../entities/event-comment.entity';
 import {
   Calendar,
   CalendarShare,
@@ -66,8 +69,7 @@ export class EventCommentsService {
     });
 
     const canReply = await this.canReplyToEvent(event);
-    const visibility =
-      event.calendar?.visibility ?? CalendarVisibility.PRIVATE;
+    const visibility = event.calendar?.visibility ?? CalendarVisibility.PRIVATE;
 
     return {
       visibility,
@@ -140,7 +142,9 @@ export class EventCommentsService {
     }
 
     if (comment.isSystem) {
-      throw new ForbiddenException('System-generated comments cannot be edited');
+      throw new ForbiddenException(
+        'System-generated comments cannot be edited',
+      );
     }
 
     const event =
@@ -314,7 +318,9 @@ export class EventCommentsService {
         share.permission === SharePermission.ADMIN);
 
     if (!hasWriteAccess) {
-      throw new ForbiddenException('You do not have permission to edit comment');
+      throw new ForbiddenException(
+        'You do not have permission to edit comment',
+      );
     }
   }
 
@@ -340,9 +346,7 @@ export class EventCommentsService {
     response.content = entity.content;
     response.isFlagged = entity.isFlagged;
     response.flaggedAt = entity.flaggedAt ?? undefined;
-    response.flaggedBy = entity.flaggedById
-      ? { id: entity.flaggedById }
-      : null;
+    response.flaggedBy = entity.flaggedById ? { id: entity.flaggedById } : null;
     response.visibility = entity.visibility;
     response.reporter = entity.reporter
       ? {

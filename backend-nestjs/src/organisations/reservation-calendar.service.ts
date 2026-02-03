@@ -1,4 +1,4 @@
-import {
+﻿import {
   Injectable,
   NotFoundException,
   BadRequestException,
@@ -245,7 +245,7 @@ export class ReservationCalendarService {
   async getUserReservationCalendars(
     userId: number,
   ): Promise<ReservationCalendar[]> {
-    console.log('🔍 getUserReservationCalendars called for user:', userId);
+    console.log('đź”Ť getUserReservationCalendars called for user:', userId);
 
     // Get user to check permissions
     const user = await this.userRepository.findOne({
@@ -254,11 +254,11 @@ export class ReservationCalendarService {
     });
 
     if (!user) {
-      console.log('⚠️  User not found');
+      console.log('âš ď¸Ź  User not found');
       return [];
     }
 
-    console.log('👤 User details:', {
+    console.log('đź‘¤ User details:', {
       id: user.id,
       role: user.role,
       usagePlans: user.usagePlans,
@@ -271,7 +271,7 @@ export class ReservationCalendarService {
 
     if (!hasReservationAccess) {
       console.log(
-        '⚠️  User does not have reservation access (needs Store or Enterprise plan)',
+        'âš ď¸Ź  User does not have reservation access (needs Store or Enterprise plan)',
       );
       return [];
     }
@@ -280,7 +280,7 @@ export class ReservationCalendarService {
 
     // For super admin, get all reservation calendars
     if (user.role === UserRole.ADMIN) {
-      console.log('🌟 Super admin - getting all reservation calendars');
+      console.log('đźŚź Super admin - getting all reservation calendars');
       accessibleCalendars = await this.reservationCalendarRepository.find({
         relations: ['calendar', 'organisation', 'createdBy'],
       });
@@ -294,7 +294,7 @@ export class ReservationCalendarService {
           'reservationCalendar.organisation',
         ],
       });
-      console.log('📋 Explicit roles found:', explicitRoles.length);
+      console.log('đź“‹ Explicit roles found:', explicitRoles.length);
 
       // Get accessible organization IDs
       const memberOrgIds = user.organisations?.map((org) => org.id) || [];
@@ -302,7 +302,7 @@ export class ReservationCalendarService {
         user.organisationAdminRoles?.map((role) => role.organisationId) || [];
       const accessibleOrgIds = [...new Set([...memberOrgIds, ...adminOrgIds])];
 
-      console.log('📋 User accessible organization IDs:', accessibleOrgIds);
+      console.log('đź“‹ User accessible organization IDs:', accessibleOrgIds);
 
       // Get reservation calendars from accessible organizations
       let orgBasedCalendars: ReservationCalendar[] = [];
@@ -312,7 +312,7 @@ export class ReservationCalendarService {
           relations: ['calendar', 'organisation', 'createdBy'],
         });
         console.log(
-          '📋 Organization-based calendars found:',
+          'đź“‹ Organization-based calendars found:',
           orgBasedCalendars.length,
         );
       }
@@ -331,7 +331,7 @@ export class ReservationCalendarService {
     }
 
     console.log(
-      '📋 Final accessible reservation calendars:',
+      'đź“‹ Final accessible reservation calendars:',
       accessibleCalendars.map(
         (c) => `${c.id}:${c.calendar.name} (org: ${c.organisationId})`,
       ),
@@ -443,10 +443,16 @@ export class ReservationCalendarService {
           { userId, role },
           assignedBy,
         );
-      } catch (error) {
-        logError(error, buildErrorContext({ action: 'reservation-calendar.service' }));
+      } catch (error: any) {
+        logError(
+          error,
+          buildErrorContext({ action: 'reservation-calendar.service' }),
+        );
         // Log error but continue with other assignments
-        console.warn(`Failed to assign role to user ${userId}:`, error.message);
+        console.warn(
+          `Failed to assign role to user ${userId}:`,
+          error instanceof Error ? error.message : String(error),
+        );
       }
     }
   }

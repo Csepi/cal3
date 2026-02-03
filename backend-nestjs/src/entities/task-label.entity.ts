@@ -13,28 +13,28 @@ import { Task } from './task.entity';
 @Entity('task_labels')
 export class TaskLabel {
   @PrimaryGeneratedColumn()
-  id: number;
+  id!: number;
 
   @Column({ length: 64 })
-  name: string;
+  name!: string;
 
   @Column({ length: 7, default: '#3b82f6' })
-  color: string;
+  color!: string;
 
   @ManyToOne(() => User, (user) => user.taskLabels, {
     onDelete: 'CASCADE',
   })
-  user: User;
+  user!: User;
 
   @Column()
-  userId: number;
+  userId!: number;
 
   @ManyToMany(() => Task, (task) => task.labels)
-  tasks: Task[];
+  tasks!: Task[];
 
   @CreateDateColumn()
-  createdAt: Date;
+  createdAt!: Date;
 
   @UpdateDateColumn()
-  updatedAt: Date;
+  updatedAt!: Date;
 }

@@ -7,6 +7,7 @@ import {
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { UserPermissionsService } from '../common/services/user-permissions.service';
+import type { RequestWithUser } from '../common/types/request-with-user';
 
 @ApiTags('User Permissions')
 @Controller('user-permissions')
@@ -23,7 +24,7 @@ export class UserPermissionsController {
     status: 200,
     description: 'User permissions retrieved successfully',
   })
-  async getUserPermissions(@Req() req) {
+  async getUserPermissions(@Req() req: RequestWithUser) {
     const permissions = await this.userPermissionsService.getUserPermissions(
       req.user.id,
     );
@@ -47,7 +48,7 @@ export class UserPermissionsController {
     status: 200,
     description: 'Accessible organizations retrieved successfully',
   })
-  async getAccessibleOrganizations(@Req() req) {
+  async getAccessibleOrganizations(@Req() req: RequestWithUser) {
     return await this.userPermissionsService.getUserAccessibleOrganizations(
       req.user.id,
     );
@@ -61,7 +62,7 @@ export class UserPermissionsController {
     status: 200,
     description: 'Accessible reservation calendars retrieved successfully',
   })
-  async getAccessibleReservationCalendars(@Req() req) {
+  async getAccessibleReservationCalendars(@Req() req: RequestWithUser) {
     return await this.userPermissionsService.getUserAccessibleReservationCalendars(
       req.user.id,
     );

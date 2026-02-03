@@ -1,4 +1,4 @@
-import {
+﻿import {
   ForbiddenException,
   Injectable,
   UnauthorizedException,
@@ -171,7 +171,7 @@ export class AgentAuthorizationService {
     if (!permission) {
       return [];
     }
-    const scope = (permission.scope as Record<string, any> | null) || {};
+    const scope = (permission.scope as Record<string, unknown> | null) || {};
     const raw = scope[resourceKey];
     if (!Array.isArray(raw)) {
       return [];

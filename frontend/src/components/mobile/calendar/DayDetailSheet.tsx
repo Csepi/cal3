@@ -147,7 +147,7 @@ export const DayDetailSheet: React.FC<DayDetailSheetProps> = ({
             <div className="text-6xl mb-4">📅</div>
             <h3 className="text-lg font-semibold text-gray-900 mb-2">No events</h3>
             <p className="text-sm text-gray-600 mb-6 px-8">
-              You don't have any events scheduled for this day
+              You don't have events scheduled for this day
             </p>
             <TouchableArea
               onClick={() => {

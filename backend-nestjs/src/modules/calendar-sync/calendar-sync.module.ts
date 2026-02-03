@@ -47,4 +47,3 @@ import { ConfigurationModule } from '../../configuration/configuration.module';
   ],
 })
 export class CalendarSyncModule {}
-

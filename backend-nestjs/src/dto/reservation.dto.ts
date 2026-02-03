@@ -1,4 +1,4 @@
-import {
+﻿import {
   IsString,
   IsOptional,
   IsInt,
@@ -11,10 +11,10 @@ import { ReservationStatus } from '../entities/reservation.entity';
 
 export class CreateReservationDto {
   @IsDateString()
-  startTime: Date;
+  startTime!: Date;
 
   @IsDateString()
-  endTime: Date;
+  endTime!: Date;
 
   @IsOptional()
   @IsInt()
@@ -23,14 +23,14 @@ export class CreateReservationDto {
 
   @IsOptional()
   @IsObject()
-  customerInfo?: Record<string, any>;
+  customerInfo?: Record<string, unknown>;
 
   @IsOptional()
   @IsString()
   notes?: string;
 
   @IsInt()
-  resourceId: number;
+  resourceId!: number;
 }
 
 export class UpdateReservationDto {
@@ -49,7 +49,7 @@ export class UpdateReservationDto {
 
   @IsOptional()
   @IsObject()
-  customerInfo?: Record<string, any>;
+  customerInfo?: Record<string, unknown>;
 
   @IsOptional()
   @IsEnum(ReservationStatus)
@@ -62,10 +62,10 @@ export class UpdateReservationDto {
 
 export class CreateRecurringReservationDto {
   @IsDateString()
-  startTime: Date;
+  startTime!: Date;
 
   @IsDateString()
-  endTime: Date;
+  endTime!: Date;
 
   @IsOptional()
   @IsInt()
@@ -74,17 +74,17 @@ export class CreateRecurringReservationDto {
 
   @IsOptional()
   @IsObject()
-  customerInfo?: Record<string, any>;
+  customerInfo?: Record<string, unknown>;
 
   @IsOptional()
   @IsString()
   notes?: string;
 
   @IsInt()
-  resourceId: number;
+  resourceId!: number;
 
   @IsObject()
-  recurrencePattern: {
+  recurrencePattern!: {
     frequency: 'daily' | 'weekly' | 'monthly';
     interval: number;
     endDate?: Date;

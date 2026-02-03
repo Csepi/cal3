@@ -1,4 +1,4 @@
-import { Injectable, OnModuleInit, Logger } from '@nestjs/common';
+﻿import { Injectable, OnModuleInit, Logger } from '@nestjs/common';
 import { Event } from '../../entities/event.entity';
 import {
   AutomationAction,
@@ -57,9 +57,10 @@ export class WebhookExecutor implements IActionExecutor, OnModuleInit {
 
       const { url, includeEventData, headers, customPayload } =
         interpolatedConfig;
+      const webhookUrl = String(url);
 
       // Prepare payload (support custom payload with smart values)
-      let payload: Record<string, any>;
+      let payload: Record<string, unknown>;
       if (customPayload) {
         // Use custom payload if provided (already interpolated)
         payload =
@@ -82,7 +83,7 @@ export class WebhookExecutor implements IActionExecutor, OnModuleInit {
       };
 
       // Send webhook request
-      const response = await fetch(url, {
+      const response = await fetch(webhookUrl, {
         method: 'POST',
         headers: requestHeaders,
         body: JSON.stringify(payload),
@@ -105,7 +106,7 @@ export class WebhookExecutor implements IActionExecutor, OnModuleInit {
       }
 
       this.logger.log(
-        `Webhook sent successfully to ${url} (${response.status})`,
+        `Webhook sent successfully to ${webhookUrl} (${response.status})`,
       );
 
       return {
@@ -113,24 +114,26 @@ export class WebhookExecutor implements IActionExecutor, OnModuleInit {
         actionId: action.id,
         actionType: this.actionType,
         data: {
-          url,
+          url: webhookUrl,
           includedEventData: includeEventData,
           statusCode: response.status,
           responseBody,
         },
         executedAt,
       };
-    } catch (error) {
+    } catch (error: any) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
       this.logger.error(
-        `Webhook execution failed: ${error.message}`,
-        error.stack,
+        `Webhook execution failed: ${errorMessage}`,
+        error instanceof Error ? error.stack : undefined,
       );
 
       return {
         success: false,
         actionId: action.id,
         actionType: this.actionType,
-        error: error.message || 'Webhook request failed',
+        error: errorMessage || 'Webhook request failed',
         executedAt,
       };
     }
@@ -142,7 +145,7 @@ export class WebhookExecutor implements IActionExecutor, OnModuleInit {
    * @returns True if valid
    * @throws Error if invalid
    */
-  validateConfig(actionConfig: Record<string, any>): boolean {
+  validateConfig(actionConfig: Record<string, unknown>): boolean {
     if (!actionConfig || typeof actionConfig !== 'object') {
       throw new Error('Action configuration must be an object');
     }
@@ -163,8 +166,10 @@ export class WebhookExecutor implements IActionExecutor, OnModuleInit {
       if (!['http:', 'https:'].includes(parsedUrl.protocol)) {
         throw new Error('URL must use HTTP or HTTPS protocol');
       }
-    } catch (error) {
-      throw new Error(`Invalid URL format: ${error.message}`);
+    } catch (error: any) {
+      throw new Error(
+        `Invalid URL format: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
 
     // Validate includeEventData if present
@@ -193,7 +198,7 @@ export class WebhookExecutor implements IActionExecutor, OnModuleInit {
    * @param event The event to extract data from
    * @returns Payload object with event details
    */
-  private buildEventPayload(event: Event): Record<string, any> {
+  private buildEventPayload(event: Event): Record<string, unknown> {
     return {
       event: {
         id: event.id,

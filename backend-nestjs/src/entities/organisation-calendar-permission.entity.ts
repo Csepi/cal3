@@ -37,39 +37,39 @@ import { ReservationCalendar } from './reservation-calendar.entity';
 @Unique(['organisationId', 'userId', 'reservationCalendarId']) // Prevent duplicate permissions
 export class OrganisationCalendarPermission {
   @PrimaryGeneratedColumn()
-  id: number;
+  id!: number;
 
   @Column()
-  organisationId: number;
+  organisationId!: number;
 
   @Column()
-  userId: number;
+  userId!: number;
 
   @Column()
-  reservationCalendarId: number;
+  reservationCalendarId!: number;
 
   @Column({ default: false })
-  canView: boolean; // Can see calendar and reservations
+  canView!: boolean; // Can see calendar and reservations
 
   @Column({ default: false })
-  canEdit: boolean; // Can create, modify, delete reservations (implies canView)
+  canEdit!: boolean; // Can create, modify, delete reservations (implies canView)
 
   @Column({ nullable: true })
-  assignedById: number; // Organization admin who granted this permission
+  assignedById!: number | null; // Organization admin who granted this permission
 
   @CreateDateColumn()
-  assignedAt: Date;
+  assignedAt!: Date;
 
   // Relationships
   @ManyToOne(() => Organisation, { onDelete: 'CASCADE' })
-  organisation: Organisation;
+  organisation!: Organisation;
 
   @ManyToOne(() => User, { onDelete: 'CASCADE' })
-  user: User;
+  user!: User;
 
   @ManyToOne(() => ReservationCalendar, { onDelete: 'CASCADE' })
-  reservationCalendar: ReservationCalendar;
+  reservationCalendar!: ReservationCalendar;
 
   @ManyToOne(() => User, { nullable: true })
-  assignedBy: User; // Organization admin who granted this permission
+  assignedBy!: User | null; // Organization admin who granted this permission
 }

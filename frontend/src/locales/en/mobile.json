@@ -26,7 +26,7 @@
     "eventCount": "{{count}} event(s)",
     "allDayEvents": "All-day events",
     "scheduledEvents": "Scheduled events",
-    "emptyDay": "You don't have any events scheduled for this day",
+    "emptyDay": "You don't have events scheduled for this day",
     "createEvent": "Create Event",
     "allDay": "All day",
     "tapToCreate": "Tap to create event"

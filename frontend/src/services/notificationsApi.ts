@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { apiService } from './api';
 import { http } from '../lib/http';
 import type {

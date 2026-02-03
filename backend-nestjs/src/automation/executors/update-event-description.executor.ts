@@ -1,4 +1,4 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+﻿import { Injectable, OnModuleInit } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import {
@@ -51,11 +51,12 @@ export class UpdateEventDescriptionExecutor
         );
       this.validateConfig(interpolatedConfig);
 
-      const mode: DescriptionMode =
-        (interpolatedConfig.mode as DescriptionMode) &&
-        ['replace', 'append', 'prepend'].includes(interpolatedConfig.mode)
-          ? (interpolatedConfig.mode as DescriptionMode)
-          : 'replace';
+      const modeValue = String(interpolatedConfig.mode ?? '');
+      const mode: DescriptionMode = ['replace', 'append', 'prepend'].includes(
+        modeValue,
+      )
+        ? (modeValue as DescriptionMode)
+        : 'replace';
       const newDescription = String(interpolatedConfig.newDescription).trim();
 
       const event = context.event;
@@ -88,18 +89,21 @@ export class UpdateEventDescriptionExecutor
         },
         executedAt,
       };
-    } catch (error) {
+    } catch (error: any) {
       return {
         success: false,
         actionId: action.id,
         actionType: this.actionType,
-        error: error.message || 'Failed to update event description',
+        error:
+          error instanceof Error
+            ? error.message
+            : String(error) || 'Failed to update event description',
         executedAt,
       };
     }
   }
 
-  validateConfig(actionConfig: Record<string, any>): boolean {
+  validateConfig(actionConfig: Record<string, unknown>): boolean {
     if (!actionConfig || typeof actionConfig !== 'object') {
       throw new Error('Action configuration must be an object');
     }

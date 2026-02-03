@@ -1,4 +1,4 @@
-import {
+﻿import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
@@ -24,54 +24,54 @@ export enum ReservationStatus {
 @Entity('reservations')
 export class Reservation {
   @PrimaryGeneratedColumn()
-  id: number;
+  id!: number;
 
   @Column({ type: timestampType })
-  startTime: Date;
+  startTime!: Date;
 
   @Column({ type: timestampType })
-  endTime: Date;
+  endTime!: Date;
 
   @Column({ type: 'int', default: 1 })
-  quantity: number;
+  quantity!: number;
 
   @Column({ type: 'json', nullable: true })
-  customerInfo: Record<string, any>;
+  customerInfo!: Record<string, unknown>;
 
   @Column({
     type: 'varchar',
     default: ReservationStatus.PENDING,
   })
-  status: ReservationStatus;
+  status!: ReservationStatus;
 
   @Column({ type: 'text', nullable: true })
-  notes: string;
+  notes!: string;
 
   @Column({ type: 'int', nullable: true })
-  parentReservationId: number;
+  parentReservationId!: number;
 
   @Column({ type: 'json', nullable: true })
-  recurrencePattern: Record<string, any>;
+  recurrencePattern!: Record<string, unknown>;
 
   @ManyToOne(() => Resource, (resource) => resource.reservations)
-  resource: Resource;
+  resource!: Resource;
 
   @Column({ nullable: true })
-  organisationId: number;
+  organisationId!: number;
 
   @ManyToOne(() => Organisation, (organisation) => organisation.reservations, {
     onDelete: 'SET NULL',
   })
-  organisation: Organisation;
+  organisation!: Organisation;
 
   @ManyToOne(() => User, { nullable: true })
-  createdBy: User;
+  createdBy!: User;
 
   @CreateDateColumn()
-  createdAt: Date;
+  createdAt!: Date;
 
   @UpdateDateColumn()
-  updatedAt: Date;
+  updatedAt!: Date;
 
   @BeforeInsert()
   @BeforeUpdate()

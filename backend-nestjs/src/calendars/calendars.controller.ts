@@ -9,6 +9,7 @@ import {
   UseGuards,
   Request,
 } from '@nestjs/common';
+import type { RequestWithUser } from '../common/types/request-with-user';
 import {
   ApiTags,
   ApiOperation,
@@ -48,7 +49,10 @@ export class CalendarsController {
     type: CalendarResponseDto,
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  create(@Body() createCalendarDto: CreateCalendarDto, @Request() req) {
+  create(
+    @Body() createCalendarDto: CreateCalendarDto,
+    @Request() req: RequestWithUser,
+  ) {
     return this.calendarsService.create(createCalendarDto, req.user.id);
   }
 
@@ -60,7 +64,7 @@ export class CalendarsController {
     type: [CalendarResponseDto],
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  findAll(@Request() req) {
+  findAll(@Request() req: RequestWithUser) {
     return this.calendarsService.findAll(req.user.id);
   }
 
@@ -74,7 +78,7 @@ export class CalendarsController {
   })
   @ApiResponse({ status: 404, description: 'Calendar not found' })
   @ApiResponse({ status: 403, description: 'Access denied' })
-  findOne(@Param('id') id: string, @Request() req) {
+  findOne(@Param('id') id: string, @Request() req: RequestWithUser) {
     return this.calendarsService.findOne(+id, req.user.id);
   }
 
@@ -91,7 +95,7 @@ export class CalendarsController {
   update(
     @Param('id') id: string,
     @Body() updateCalendarDto: UpdateCalendarDto,
-    @Request() req,
+    @Request() req: RequestWithUser,
   ) {
     return this.calendarsService.update(+id, updateCalendarDto, req.user.id);
   }
@@ -102,7 +106,7 @@ export class CalendarsController {
   @ApiResponse({ status: 200, description: 'Calendar deleted successfully' })
   @ApiResponse({ status: 403, description: 'Only owner can delete calendar' })
   @ApiResponse({ status: 404, description: 'Calendar not found' })
-  remove(@Param('id') id: string, @Request() req) {
+  remove(@Param('id') id: string, @Request() req: RequestWithUser) {
     return this.calendarsService.remove(+id, req.user.id);
   }
 
@@ -118,7 +122,7 @@ export class CalendarsController {
   shareCalendar(
     @Param('id') id: string,
     @Body() shareCalendarDto: ShareCalendarDto,
-    @Request() req,
+    @Request() req: RequestWithUser,
   ) {
     return this.calendarsService.shareCalendar(
       +id,
@@ -138,7 +142,7 @@ export class CalendarsController {
   unshareCalendar(
     @Param('id') id: string,
     @Body() body: { userIds: number[] },
-    @Request() req,
+    @Request() req: RequestWithUser,
   ) {
     return this.calendarsService.unshareCalendar(
       +id,
@@ -155,17 +159,16 @@ export class CalendarsController {
     description: 'Shared users retrieved successfully',
   })
   @ApiResponse({ status: 404, description: 'Calendar not found' })
-  getSharedUsers(@Param('id') id: string, @Request() req) {
+  getSharedUsers(@Param('id') id: string, @Request() req: RequestWithUser) {
     return this.calendarsService.getSharedUsers(+id, req.user.id);
   }
 
   // Calendar Groups (alias under calendars prefix for clients expecting /calendars/...)
   @Get('groups')
   @ApiOperation({
-    summary:
-      'List calendar groups for the user with calendars they can access',
+    summary: 'List calendar groups for the user with calendars they can access',
   })
-  findAllGroups(@Request() req) {
+  findAllGroups(@Request() req: RequestWithUser) {
     return this.calendarGroupsService.findAll(req.user.id);
   }
 
@@ -178,8 +181,11 @@ export class CalendarsController {
   })
   createGroup(
     @Body() createCalendarGroupDto: CreateCalendarGroupDto,
-    @Request() req,
+    @Request() req: RequestWithUser,
   ) {
-    return this.calendarGroupsService.create(createCalendarGroupDto, req.user.id);
+    return this.calendarGroupsService.create(
+      createCalendarGroupDto,
+      req.user.id,
+    );
   }
 }

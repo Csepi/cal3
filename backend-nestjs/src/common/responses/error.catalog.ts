@@ -18,7 +18,7 @@ export const ERROR_CODES = {
 /**
  * Union type of all supported error codes.
  */
-export type ErrorCode = typeof ERROR_CODES[keyof typeof ERROR_CODES];
+export type ErrorCode = (typeof ERROR_CODES)[keyof typeof ERROR_CODES];
 
 /**
  * Map HTTP status codes to default error codes.

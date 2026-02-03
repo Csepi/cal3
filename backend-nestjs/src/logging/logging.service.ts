@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+﻿import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { LessThan, Repository } from 'typeorm';
 import { LogEntry, LogLevel } from '../entities/log-entry.entity';
@@ -164,7 +164,10 @@ export class LoggingService {
 
   private redactSecrets(input: string): string {
     let output = input;
-    output = output.replace(/Bearer\s+[A-Za-z0-9\-._~+/]+=*/gi, 'Bearer [REDACTED]');
+    output = output.replace(
+      /Bearer\s+[A-Za-z0-9\-._~+/]+=*/gi,
+      'Bearer [REDACTED]',
+    );
     output = output.replace(/("password"\s*:\s*")([^"]+)/gi, '$1[REDACTED]');
     output = output.replace(/(api[_-]?key"?\s*:\s*")([^"]+)/gi, '$1[REDACTED]');
     return output;

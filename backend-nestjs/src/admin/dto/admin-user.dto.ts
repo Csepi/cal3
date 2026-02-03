@@ -17,14 +17,14 @@ export class AdminCreateUserDto {
   @ApiProperty({ example: 'jane.doe', description: 'Unique username' })
   @IsString()
   @MinLength(3)
-  username: string;
+  username!: string;
 
   @ApiProperty({
     example: 'jane@example.com',
     description: 'User email address',
   })
   @IsEmail()
-  email: string;
+  email!: string;
 
   @ApiProperty({
     example: 'superSecret123',
@@ -32,7 +32,7 @@ export class AdminCreateUserDto {
   })
   @IsString()
   @MinLength(6)
-  password: string;
+  password!: string;
 
   @ApiPropertyOptional({ example: 'Jane', description: 'First name' })
   @IsOptional()
@@ -110,13 +110,13 @@ export class UpdateUserRoleDto {
     description: 'New role that should be assigned to the user',
   })
   @IsEnum(UserRole)
-  role: UserRole;
+  role!: UserRole;
 }
 
 export class AddUserToOrganisationRoleDto {
   @ApiProperty({ example: 42, description: 'User identifier' })
   @IsNumber()
-  userId: number;
+  userId!: number;
 
   @ApiProperty({
     enum: OrganisationRoleType,
@@ -124,5 +124,5 @@ export class AddUserToOrganisationRoleDto {
     description: 'Role the user should assume within the organisation',
   })
   @IsEnum(OrganisationRoleType)
-  role: OrganisationRoleType;
+  role!: OrganisationRoleType;
 }

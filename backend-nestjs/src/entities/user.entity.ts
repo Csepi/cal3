@@ -1,4 +1,4 @@
-import {
+﻿import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
@@ -34,120 +34,120 @@ export enum UsagePlan {
 @Entity('users')
 export class User {
   @PrimaryGeneratedColumn()
-  id: number;
+  id!: number;
 
   @Column({ unique: true, length: 255 })
-  username: string;
+  username!: string;
 
   @Column({ unique: true, length: 255 })
-  email: string;
+  email!: string;
 
   @Column({ length: 255 })
   @Exclude()
-  password: string;
+  password!: string;
 
   @Column({ length: 100, nullable: true })
-  firstName: string;
+  firstName!: string;
 
   @Column({ length: 100, nullable: true })
-  lastName: string;
+  lastName!: string;
 
   @Column({ default: true })
-  isActive: boolean;
+  isActive!: boolean;
 
   @Column({
     type: 'varchar',
     default: UserRole.USER,
   })
-  role: UserRole;
+  role!: UserRole;
 
   @Column({ length: 7, default: '#3b82f6' })
-  themeColor: string;
+  themeColor!: string;
 
   @Column({ default: 1 }) // 0 = Sunday, 1 = Monday, 2 = Tuesday, etc.
-  weekStartDay: number;
+  weekStartDay!: number;
 
   @Column({ default: 'month' }) // 'month' or 'week'
-  defaultCalendarView: string;
+  defaultCalendarView!: string;
 
   @Column({ default: 'UTC' }) // User's timezone (e.g., 'America/New_York', 'Europe/London', 'UTC')
-  timezone: string;
+  timezone!: string;
 
   @Column({ default: '24h' }) // '12h' or '24h'
-  timeFormat: string;
+  timeFormat!: string;
 
   @Column({ default: 'en' }) // User's preferred language (e.g., 'en', 'de', 'fr', 'es', 'hu')
-  language: string;
+  language!: string;
 
   @Column({ type: 'int', nullable: true })
-  defaultTasksCalendarId: number | null;
+  defaultTasksCalendarId!: number | null;
 
   @Column({ type: 'json', nullable: true })
-  tasksSettings: Record<string, unknown> | null;
+  tasksSettings!: Record<string, unknown> | null;
 
   @Column({ type: 'json', default: () => '\'["user"]\'' }) // Array of usage plans
-  usagePlans: UsagePlan[];
+  usagePlans!: UsagePlan[];
 
   @Column({ default: false }) // Hide the Reservations tab in the UI
-  hideReservationsTab: boolean;
+  hideReservationsTab!: boolean;
 
   @Column({ type: 'json', nullable: true }) // Array of resource IDs to hide in calendar view
-  hiddenResourceIds: number[];
+  hiddenResourceIds!: number[];
 
   @Column({ type: 'json', nullable: true }) // Array of calendar IDs visible in calendar view (null = all visible)
-  visibleCalendarIds: number[];
+  visibleCalendarIds!: number[];
 
   @Column({ type: 'json', nullable: true }) // Array of resource type IDs visible in calendar view (null = all visible)
-  visibleResourceTypeIds: number[];
+  visibleResourceTypeIds!: number[];
 
   @CreateDateColumn()
-  createdAt: Date;
+  createdAt!: Date;
 
   @UpdateDateColumn()
-  updatedAt: Date;
+  updatedAt!: Date;
 
   // One user owns many calendars
   @OneToMany(() => Calendar, (calendar) => calendar.owner, { cascade: true })
-  ownedCalendars: Calendar[];
+  ownedCalendars!: Calendar[];
 
   // Many users can have access to many calendars (shared calendars)
   @ManyToMany(() => Calendar, (calendar) => calendar.sharedWith)
-  sharedCalendars: Calendar[];
+  sharedCalendars!: Calendar[];
 
   // One user creates many events
   @OneToMany(() => Event, (event) => event.createdBy, { cascade: true })
-  createdEvents: Event[];
+  createdEvents!: Event[];
 
   // Many users can belong to many organisations
   @ManyToMany(() => Organisation, (organisation) => organisation.users)
-  organisations: Organisation[];
+  organisations!: Organisation[];
 
   // Organisation admin relationships
   @OneToMany(() => OrganisationAdmin, (orgAdmin) => orgAdmin.user)
-  organisationAdminRoles: OrganisationAdmin[];
+  organisationAdminRoles!: OrganisationAdmin[];
 
   @OneToMany(() => OrganisationAdmin, (orgAdmin) => orgAdmin.assignedBy)
-  assignedOrganisationAdminRoles: OrganisationAdmin[];
+  assignedOrganisationAdminRoles!: OrganisationAdmin[];
 
   // Reservation calendar role relationships
   @OneToMany(() => ReservationCalendarRole, (role) => role.user)
-  reservationCalendarRoles: ReservationCalendarRole[];
+  reservationCalendarRoles!: ReservationCalendarRole[];
 
   @OneToMany(() => ReservationCalendarRole, (role) => role.assignedBy)
-  assignedReservationCalendarRoles: ReservationCalendarRole[];
+  assignedReservationCalendarRoles!: ReservationCalendarRole[];
 
   @OneToMany(() => AgentProfile, (agent) => agent.user)
-  agentProfiles: AgentProfile[];
+  agentProfiles!: AgentProfile[];
 
   @OneToMany(() => Task, (task) => task.owner)
-  tasks: Task[];
+  tasks!: Task[];
 
   @OneToMany(() => Task, (task) => task.assignee)
-  assignedTasks: Task[];
+  assignedTasks!: Task[];
 
   @OneToMany(() => TaskLabel, (label) => label.user)
-  taskLabels: TaskLabel[];
+  taskLabels!: TaskLabel[];
 
   @OneToMany(() => EventComment, (comment) => comment.reporter)
-  eventComments: EventComment[];
+  eventComments!: EventComment[];
 }

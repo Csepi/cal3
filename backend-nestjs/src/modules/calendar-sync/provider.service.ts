@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+﻿import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { DateTime } from 'luxon';
@@ -14,7 +14,7 @@ import { buildErrorContext } from '../../common/errors/error-context';
 import { Event } from '../../entities/event.entity';
 
 export type ExternalEventsResult = {
-  events: any[];
+  events: Array<Record<string, unknown>>;
   deletedEventIds: string[];
   nextSyncToken?: string;
 };
@@ -78,7 +78,15 @@ export class CalendarSyncProviderService {
           return [];
         }
 
-        const data = await response.json();
+        const data = (await response.json()) as {
+          items?: Array<{
+            id: string;
+            summary: string;
+            description?: string;
+            primary?: boolean;
+            accessRole?: string;
+          }>;
+        };
         return (
           data.items?.map((calendar) => ({
             id: calendar.id,
@@ -103,7 +111,14 @@ export class CalendarSyncProviderService {
           return [];
         }
 
-        const data = await response.json();
+        const data = (await response.json()) as {
+          value?: Array<{
+            id: string;
+            name: string;
+            description?: string;
+            isDefaultCalendar?: boolean;
+          }>;
+        };
         return (
           data.value?.map((calendar) => ({
             id: calendar.id,
@@ -113,7 +128,7 @@ export class CalendarSyncProviderService {
           })) || []
         );
       }
-    } catch (error) {
+    } catch (error: any) {
       logError(error, buildErrorContext({ action: 'calendar-sync.service' }));
       console.error('Error fetching external calendars:', error);
     }
@@ -150,7 +165,7 @@ export class CalendarSyncProviderService {
           return data.name || `Calendar ${calendarId}`;
         }
       }
-    } catch (error) {
+    } catch (error: any) {
       logError(error, buildErrorContext({ action: 'calendar-sync.service' }));
       console.error('Error fetching calendar name:', error);
     }
@@ -166,7 +181,7 @@ export class CalendarSyncProviderService {
   ): Promise<ExternalEventsResult> {
     const { startDate, endDate } = this.getMicrosoftSyncWindow();
     const deletedEventIds: string[] = [];
-    const events: any[] = [];
+    const events: Array<Record<string, unknown>> = [];
 
     const hasTopParam = (value?: string | null): boolean =>
       !!value && /(\$top=|%24top=)/i.test(value);
@@ -183,10 +198,7 @@ export class CalendarSyncProviderService {
         }
         return value;
       } catch {
-        const cleaned = value.replace(
-          /([?&])(?:%24|\$)top=[^&]*&?/gi,
-          '$1',
-        );
+        const cleaned = value.replace(/([?&])(?:%24|\$)top=[^&]*&?/gi, '$1');
         return cleaned.replace(/[?&]$/, '');
       }
     };
@@ -231,7 +243,8 @@ export class CalendarSyncProviderService {
     let nextUrl: string | undefined =
       effectiveSyncToken || `${baseUrl}?${initialParams.toString()}`;
     let deltaLink: string | undefined;
-    const preferTimeZone = this.mapperService.getMicrosoftTimeZone(userTimezone);
+    const preferTimeZone =
+      this.mapperService.getMicrosoftTimeZone(userTimezone);
     const preferParts = [
       'odata.maxpagesize=1000',
       'outlook.body-content-type="text"',
@@ -288,11 +301,17 @@ export class CalendarSyncProviderService {
           break;
         }
 
-        const data = await response.json();
+        const data = (await response.json()) as {
+          value?: Array<Record<string, unknown>>;
+          '@odata.nextLink'?: string;
+          '@odata.deltaLink'?: string;
+        };
         const values = data.value || [];
         for (const item of values) {
-          if (item['@removed']) {
-            deletedEventIds.push(item.id);
+          const removed = item['@removed'];
+          const itemId = typeof item.id === 'string' ? item.id : undefined;
+          if (removed && itemId) {
+            deletedEventIds.push(itemId);
             continue;
           }
           events.push(item);
@@ -303,9 +322,12 @@ export class CalendarSyncProviderService {
           deltaLink = sanitizeDeltaUrl(data['@odata.deltaLink']);
         }
       }
-    } catch (error) {
+    } catch (error: any) {
       logError(error, buildErrorContext({ action: 'calendar-sync.service' }));
-      this.logger.error(`[fetchMicrosoftCalendarEvents] Error:`, error.stack);
+      this.logger.error(
+        `[fetchMicrosoftCalendarEvents] Error:`,
+        error instanceof Error ? error.stack : undefined,
+      );
     }
 
     if (events.length > 0 || deletedEventIds.length > 0) {
@@ -327,7 +349,7 @@ export class CalendarSyncProviderService {
     syncToken?: string | null,
   ): Promise<ExternalEventsResult> {
     const { startDate, endDate } = this.getSyncWindow();
-    const events: any[] = [];
+    const events: Array<Record<string, unknown>> = [];
     const deletedEventIds: string[] = [];
     let pageToken: string | undefined;
     let nextSyncToken: string | undefined;
@@ -373,12 +395,18 @@ export class CalendarSyncProviderService {
           break;
         }
 
-        const data = await response.json();
+        const data = (await response.json()) as {
+          items?: Array<Record<string, unknown>>;
+          nextPageToken?: string;
+          nextSyncToken?: string;
+        };
         const items = data.items || [];
 
         for (const item of items) {
-          if (item.status === 'cancelled') {
-            deletedEventIds.push(item.id);
+          const status = typeof item.status === 'string' ? item.status : '';
+          const itemId = typeof item.id === 'string' ? item.id : undefined;
+          if (status === 'cancelled' && itemId) {
+            deletedEventIds.push(itemId);
             continue;
           }
           events.push(item);
@@ -389,9 +417,12 @@ export class CalendarSyncProviderService {
           nextSyncToken = data.nextSyncToken;
         }
       } while (pageToken);
-    } catch (error) {
+    } catch (error: any) {
       logError(error, buildErrorContext({ action: 'calendar-sync.service' }));
-      this.logger.error(`[fetchGoogleCalendarEvents] Error:`, error.stack);
+      this.logger.error(
+        `[fetchGoogleCalendarEvents] Error:`,
+        error instanceof Error ? error.stack : undefined,
+      );
     }
 
     if (events.length > 0 || deletedEventIds.length > 0) {
@@ -407,7 +438,7 @@ export class CalendarSyncProviderService {
     provider: SyncProvider,
     localEvent: Event,
     userTimezone: string,
-  ): Record<string, any> | null {
+  ): Record<string, unknown> | null {
     const { startDateTime, endDateTime, startDate, endDate } =
       this.buildEventDateRange(localEvent, userTimezone);
 
@@ -436,7 +467,7 @@ export class CalendarSyncProviderService {
     if (provider === SyncProvider.MICROSOFT) {
       const microsoftTimezone =
         this.mapperService.getMicrosoftTimeZone(userTimezone) || userTimezone;
-      const payload: any = {
+      const payload: Record<string, unknown> = {
         subject: localEvent.title,
         body: {
           contentType: 'HTML',
@@ -466,7 +497,7 @@ export class CalendarSyncProviderService {
     calendarId: string,
     eventId: string,
     userTimezone: string,
-  ): Promise<any | null> {
+  ): Promise<Record<string, unknown> | null> {
     const encodedCalendarId = encodeURIComponent(calendarId);
     const encodedEventId = encodeURIComponent(eventId);
     const selectFields = [
@@ -485,7 +516,8 @@ export class CalendarSyncProviderService {
 
     const url = `https://graph.microsoft.com/v1.0/me/calendars/${encodedCalendarId}/events/${encodedEventId}?$select=${selectFields.join(',')}`;
     const preferParts: string[] = ['outlook.body-content-type="text"'];
-    const preferTimeZone = this.mapperService.getMicrosoftTimeZone(userTimezone);
+    const preferTimeZone =
+      this.mapperService.getMicrosoftTimeZone(userTimezone);
     if (preferTimeZone) {
       preferParts.unshift(`outlook.timezone="${preferTimeZone}"`);
     }
@@ -506,11 +538,11 @@ export class CalendarSyncProviderService {
       }
 
       return await response.json();
-    } catch (error) {
+    } catch (error: any) {
       logError(error, buildErrorContext({ action: 'calendar-sync.service' }));
       this.logger.error(
         `[fetchMicrosoftEventDetails] Error fetching event ${eventId}:`,
-        error.stack,
+        error instanceof Error ? error.stack : undefined,
       );
       return null;
     }
@@ -595,7 +627,11 @@ export class CalendarSyncProviderService {
       return syncConnection;
     }
 
-    const data = await response.json();
+    const data = (await response.json()) as {
+      access_token?: string;
+      refresh_token?: string;
+      expires_in?: number;
+    };
     if (!data.access_token) {
       this.logger.error(
         `[refreshAccessToken] Missing access token in refresh response for connection ${syncConnection.id}`,
@@ -707,7 +743,7 @@ export class CalendarSyncProviderService {
       });
     }
 
-    let endBase = localEvent.endDate || localEvent.startDate;
+    const endBase = localEvent.endDate || localEvent.startDate;
     let end = DateTime.fromJSDate(endBase, { zone: userTimezone });
     if (endTime) {
       end = end.set({

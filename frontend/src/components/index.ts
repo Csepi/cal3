@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Components barrel export
  *

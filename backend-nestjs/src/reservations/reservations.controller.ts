@@ -18,6 +18,7 @@ import {
   UpdateReservationDto,
 } from '../dto/reservation.dto';
 import { IdempotencyService } from '../common/services/idempotency.service';
+import type { RequestWithUser } from '../common/types/request-with-user';
 
 @Controller('reservations')
 @UseGuards(JwtAuthGuard, ReservationAccessGuard) // Require both authentication and reservation access
@@ -28,7 +29,10 @@ export class ReservationsController {
   ) {}
 
   @Post()
-  async create(@Body() createDto: CreateReservationDto, @Req() req) {
+  async create(
+    @Body() createDto: CreateReservationDto,
+    @Req() req: RequestWithUser,
+  ) {
     const key =
       (req.headers['idempotency-key'] as string) ||
       (req.headers['x-idempotency-key'] as string);
@@ -59,13 +63,13 @@ export class ReservationsController {
   async update(
     @Param('id') id: string,
     @Body() updateDto: UpdateReservationDto,
-    @Req() req,
+    @Req() req: RequestWithUser,
   ) {
     return await this.reservationsService.update(+id, updateDto, req.user.id);
   }
 
   @Delete(':id')
-  async remove(@Param('id') id: string, @Req() req) {
+  async remove(@Param('id') id: string, @Req() req: RequestWithUser) {
     await this.reservationsService.remove(+id, req.user.id);
     return { message: 'Reservation deleted successfully' };
   }

@@ -4,6 +4,10 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 import { ConfigService } from '@nestjs/config';
 import { AuthService } from './auth.service';
 
+interface JwtPayload {
+  sub: number | string;
+}
+
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
@@ -20,8 +24,13 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  async validate(payload: any) {
-    const user = await this.authService.validateUser(payload.sub);
+  async validate(payload: JwtPayload) {
+    const userId = Number(payload.sub);
+    if (!Number.isInteger(userId)) {
+      throw new UnauthorizedException();
+    }
+
+    const user = await this.authService.validateUser(userId);
     if (!user) {
       throw new UnauthorizedException();
     }

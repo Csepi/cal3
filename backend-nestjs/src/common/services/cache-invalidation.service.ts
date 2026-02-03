@@ -1,9 +1,9 @@
-import { Injectable, Logger } from '@nestjs/common';
+﻿import { Injectable, Logger } from '@nestjs/common';
 
 export type CacheInvalidationRequest = {
   scope: string;
   keys?: string[];
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 };
 
 @Injectable()

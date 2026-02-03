@@ -261,3 +261,4 @@ export const MobileWeekView: React.FC<MobileWeekViewProps> = ({
     </div>
   );
 };
+

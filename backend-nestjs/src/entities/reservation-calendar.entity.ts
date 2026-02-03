@@ -30,44 +30,44 @@ import { ReservationCalendarRole } from './reservation-calendar-role.entity';
 @Entity('reservation_calendars')
 export class ReservationCalendar {
   @PrimaryGeneratedColumn()
-  id: number;
+  id!: number;
 
   @Column()
-  calendarId: number; // FK to the base Calendar entity
+  calendarId!: number; // FK to the base Calendar entity
 
   @Column()
-  organisationId: number;
+  organisationId!: number;
 
   @Column({ nullable: true })
-  createdById: number;
+  createdById!: number;
 
   @Column({ type: 'text', nullable: true })
-  reservationRules: string; // JSON string for reservation-specific rules
+  reservationRules!: string | null; // JSON string for reservation-specific rules
 
   @Column({ default: true })
-  isActive: boolean;
+  isActive!: boolean;
 
   @CreateDateColumn()
-  createdAt: Date;
+  createdAt!: Date;
 
   @UpdateDateColumn()
-  updatedAt: Date;
+  updatedAt!: Date;
 
   // Relationships
   @OneToOne(() => Calendar, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'calendarId' })
-  calendar: Calendar;
+  calendar!: Calendar;
 
   @ManyToOne(() => Organisation, { onDelete: 'CASCADE' })
-  organisation: Organisation;
+  organisation!: Organisation;
 
   @ManyToOne(() => User, { nullable: true })
-  createdBy: User;
+  createdBy!: User;
 
   @OneToMany(
     () => ReservationCalendarRole,
     (role) => role.reservationCalendar,
     { cascade: true },
   )
-  roles: ReservationCalendarRole[];
+  roles!: ReservationCalendarRole[];
 }

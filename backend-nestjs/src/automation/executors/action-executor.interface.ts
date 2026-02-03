@@ -1,4 +1,4 @@
-import { Event } from '../../entities/event.entity';
+﻿import { Event } from '../../entities/event.entity';
 import {
   AutomationAction,
   ActionType,
@@ -13,7 +13,7 @@ export interface ActionExecutionResult {
   actionId: number;
   actionType: ActionType;
   error?: string;
-  data?: Record<string, any>;
+  data?: Record<string, unknown>;
   executedAt: Date;
 }
 
@@ -22,7 +22,7 @@ export interface ActionExecutionResult {
  */
 export interface ActionExecutionContext {
   event?: Event | null;
-  webhookData?: Record<string, any> | null;
+  webhookData?: Record<string, unknown> | null;
   triggerType: TriggerType;
   executedAt?: Date;
 }
@@ -53,5 +53,5 @@ export interface IActionExecutor {
    * @param actionConfig The configuration to validate
    * @returns True if valid, throws error if invalid
    */
-  validateConfig(actionConfig: Record<string, any>): boolean;
+  validateConfig(actionConfig: Record<string, unknown>): boolean;
 }

@@ -1,4 +1,4 @@
-import { Type } from 'class-transformer';
+﻿import { Type } from 'class-transformer';
 import {
   IsArray,
   IsBoolean,
@@ -23,7 +23,7 @@ export class InboxRuleConditionDto {
   operator!: string;
 
   @IsOptional()
-  value?: string | number | boolean | Record<string, any> | null;
+  value?: string | number | boolean | Record<string, unknown> | null;
 }
 
 export class InboxRuleActionDto {
@@ -31,7 +31,7 @@ export class InboxRuleActionDto {
   type!: string;
 
   @IsOptional()
-  payload?: Record<string, any> | null;
+  payload?: Record<string, unknown> | null;
 }
 
 export class InboxRuleDto {

@@ -1,4 +1,4 @@
-import * as sql from 'mssql';
+﻿import * as sql from 'mssql';
 
 const azureConfig: sql.config = {
   server: 'cal3db-server.database.windows.net',
@@ -19,9 +19,9 @@ async function fixMissingIndex() {
   let pool: sql.ConnectionPool | null = null;
 
   try {
-    console.log('📡 Connecting to Azure SQL Database...');
+    console.log('đź“ˇ Connecting to Azure SQL Database...');
     pool = await sql.connect(azureConfig);
-    console.log('✅ Connected!\n');
+    console.log('âś… Connected!\n');
 
     // First, check if automation_audit_logs table exists
     const tableCheck = await pool.request().query(`
@@ -32,7 +32,7 @@ async function fixMissingIndex() {
 
     if (tableCheck.recordset.length === 0) {
       console.log(
-        '⚠️  automation_audit_logs table does not exist. Creating it first...\n',
+        'âš ď¸Ź  automation_audit_logs table does not exist. Creating it first...\n',
       );
 
       const createTable = `
@@ -57,9 +57,9 @@ async function fixMissingIndex() {
       `;
 
       await pool.request().query(createTable);
-      console.log('✅ automation_audit_logs table created\n');
+      console.log('âś… automation_audit_logs table created\n');
     } else {
-      console.log('✅ automation_audit_logs table exists\n');
+      console.log('âś… automation_audit_logs table exists\n');
     }
 
     // Check existing indexes
@@ -74,8 +74,8 @@ async function fixMissingIndex() {
       ORDER BY i.name, ic.index_column_id
     `);
 
-    console.log('📊 Existing Indexes on automation_audit_logs:');
-    console.log('─'.repeat(80));
+    console.log('đź“Š Existing Indexes on automation_audit_logs:');
+    console.log('â”€'.repeat(80));
     if (indexCheck.recordset.length === 0) {
       console.log('  (none)');
     } else {
@@ -83,7 +83,7 @@ async function fixMissingIndex() {
         console.log(`  ${row.INDEX_NAME}: ${row.COLUMN_NAME}`);
       });
     }
-    console.log('─'.repeat(80) + '\n');
+    console.log('â”€'.repeat(80) + '\n');
 
     // Create missing indexes one by one
     const indexes = [
@@ -95,21 +95,21 @@ async function fixMissingIndex() {
 
     for (const index of indexes) {
       try {
-        console.log(`⏳ Creating index ${index.name}...`);
+        console.log(`âŹł Creating index ${index.name}...`);
         await pool.request().query(`
           CREATE INDEX ${index.name} ON automation_audit_logs(${index.columns})
         `);
-        console.log(`✅ Index ${index.name} created`);
+        console.log(`âś… Index ${index.name} created`);
       } catch (error: any) {
         if (error.message.includes('already an object')) {
-          console.log(`ℹ️  Index ${index.name} already exists`);
+          console.log(`â„ąď¸Ź  Index ${index.name} already exists`);
         } else {
-          console.error(`❌ Error creating ${index.name}: ${error.message}`);
+          console.error(`âťŚ Error creating ${index.name}: ${error.message}`);
         }
       }
     }
 
-    console.log('\n✅ All indexes verified/created!\n');
+    console.log('\nâś… All indexes verified/created!\n');
 
     // Final verification
     const finalCheck = await pool.request().query(`
@@ -120,8 +120,8 @@ async function fixMissingIndex() {
       ORDER BY TABLE_NAME
     `);
 
-    console.log('📊 Final Database Status:');
-    console.log('─'.repeat(80));
+    console.log('đź“Š Final Database Status:');
+    console.log('â”€'.repeat(80));
     console.log(`Total Tables: ${finalCheck.recordset.length}`);
 
     const fkResult = await pool
@@ -136,14 +136,14 @@ async function fixMissingIndex() {
       AND is_primary_key = 0
     `);
     console.log(`Total Indexes: ${indexResult.recordset[0].INDEX_COUNT}`);
-    console.log('─'.repeat(80));
+    console.log('â”€'.repeat(80));
   } catch (error: any) {
-    console.error('❌ ERROR:', error.message);
+    console.error('âťŚ ERROR:', error.message);
     throw error;
   } finally {
     if (pool) {
       await pool.close();
-      console.log('\n📡 Database connection closed.');
+      console.log('\nđź“ˇ Database connection closed.');
     }
   }
 }

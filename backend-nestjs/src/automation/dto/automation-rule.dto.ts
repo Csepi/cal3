@@ -1,4 +1,4 @@
-import {
+﻿import {
   IsString,
   IsEnum,
   IsOptional,
@@ -28,11 +28,11 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 export class CreateConditionDto {
   @ApiProperty({ enum: ConditionField, description: 'Event field to check' })
   @IsEnum(ConditionField)
-  field: ConditionField;
+  field!: ConditionField;
 
   @ApiProperty({ enum: ConditionOperator, description: 'Comparison operator' })
   @IsEnum(ConditionOperator)
-  operator: ConditionOperator;
+  operator!: ConditionOperator;
 
   @ApiProperty({
     description: 'Expected value (stored as string)',
@@ -40,7 +40,7 @@ export class CreateConditionDto {
   })
   @IsString()
   @MaxLength(1000)
-  value: string;
+  value!: string;
 
   @ApiPropertyOptional({ description: 'Group UUID for nested logic (future)' })
   @IsOptional()
@@ -53,7 +53,7 @@ export class CreateConditionDto {
     default: ConditionLogicOperator.AND,
   })
   @IsEnum(ConditionLogicOperator)
-  logicOperator: ConditionLogicOperator;
+  logicOperator!: ConditionLogicOperator;
 
   @ApiPropertyOptional({ description: 'Evaluation order', default: 0 })
   @IsOptional()
@@ -65,14 +65,14 @@ export class CreateConditionDto {
 export class CreateActionDto {
   @ApiProperty({ enum: ActionType, description: 'Type of action to execute' })
   @IsEnum(ActionType)
-  actionType: ActionType;
+  actionType!: ActionType;
 
   @ApiProperty({
     description: 'Action-specific configuration (JSON)',
     example: { color: '#3b82f6' },
   })
   @IsOptional()
-  actionConfig: Record<string, any>;
+  actionConfig!: Record<string, unknown>;
 
   @ApiPropertyOptional({ description: 'Execution order', default: 0 })
   @IsOptional()
@@ -90,7 +90,7 @@ export class CreateAutomationRuleDto {
   @IsString()
   @MinLength(1)
   @MaxLength(200)
-  name: string;
+  name!: string;
 
   @ApiPropertyOptional({ description: 'Optional description', maxLength: 1000 })
   @IsOptional()
@@ -103,14 +103,14 @@ export class CreateAutomationRuleDto {
     description: 'Trigger that starts the rule',
   })
   @IsEnum(TriggerType)
-  triggerType: TriggerType;
+  triggerType!: TriggerType;
 
   @ApiPropertyOptional({
     description: 'Trigger-specific configuration (JSON)',
     example: { minutes: 30 },
   })
   @IsOptional()
-  triggerConfig?: Record<string, any>;
+  triggerConfig?: Record<string, unknown>;
 
   @ApiPropertyOptional({ description: 'Whether rule is active', default: true })
   @IsOptional()
@@ -146,7 +146,7 @@ export class CreateAutomationRuleDto {
   @Type(() => CreateActionDto)
   @ArrayMinSize(1)
   @ArrayMaxSize(5)
-  actions: CreateActionDto[];
+  actions!: CreateActionDto[];
 }
 
 // DTO for updating an automation rule
@@ -175,7 +175,7 @@ export class UpdateAutomationRuleDto {
 
   @ApiPropertyOptional({ description: 'Trigger-specific configuration' })
   @IsOptional()
-  triggerConfig?: Record<string, any>;
+  triggerConfig?: Record<string, unknown>;
 
   @ApiPropertyOptional({
     enum: ConditionLogic,
@@ -212,99 +212,99 @@ export class UpdateAutomationRuleDto {
 // Response DTO for condition
 export class ConditionDto {
   @ApiProperty()
-  id: number;
+  id!: number;
 
   @ApiProperty({ enum: ConditionField })
-  field: ConditionField;
+  field!: ConditionField;
 
   @ApiProperty({ enum: ConditionOperator })
-  operator: ConditionOperator;
+  operator!: ConditionOperator;
 
   @ApiProperty()
-  value: string;
+  value!: string;
 
   @ApiPropertyOptional()
-  groupId: string | null;
+  groupId!: string | null;
 
   @ApiProperty({ enum: ConditionLogicOperator })
-  logicOperator: ConditionLogicOperator;
+  logicOperator!: ConditionLogicOperator;
 
   @ApiProperty()
-  order: number;
+  order!: number;
 }
 
 // Response DTO for action
 export class ActionDto {
   @ApiProperty()
-  id: number;
+  id!: number;
 
   @ApiProperty({ enum: ActionType })
-  actionType: ActionType;
+  actionType!: ActionType;
 
   @ApiProperty()
-  actionConfig: Record<string, any>;
+  actionConfig!: Record<string, unknown>;
 
   @ApiProperty()
-  order: number;
+  order!: number;
 }
 
 // Response DTO for automation rule (summary)
 export class AutomationRuleDto {
   @ApiProperty()
-  id: number;
+  id!: number;
 
   @ApiProperty()
-  name: string;
+  name!: string;
 
   @ApiPropertyOptional()
-  description: string | null;
+  description!: string | null;
 
   @ApiProperty({ enum: TriggerType })
-  triggerType: TriggerType;
+  triggerType!: TriggerType;
 
   @ApiPropertyOptional()
-  triggerConfig: Record<string, any> | null;
+  triggerConfig!: Record<string, unknown> | null;
 
   @ApiProperty()
-  isEnabled: boolean;
+  isEnabled!: boolean;
 
   @ApiProperty({ enum: ConditionLogic })
-  conditionLogic: ConditionLogic;
+  conditionLogic!: ConditionLogic;
 
   @ApiPropertyOptional()
-  lastExecutedAt: Date | null;
+  lastExecutedAt!: Date | null;
 
   @ApiProperty()
-  executionCount: number;
+  executionCount!: number;
 
   @ApiPropertyOptional({
     description: 'Webhook token for webhook.incoming triggers',
   })
-  webhookToken: string | null;
+  webhookToken!: string | null;
 
   @ApiProperty()
-  createdAt: Date;
+  createdAt!: Date;
 
   @ApiProperty()
-  updatedAt: Date;
+  updatedAt!: Date;
 }
 
 // Response DTO for automation rule with full details
 export class AutomationRuleDetailDto extends AutomationRuleDto {
   @ApiProperty({ type: [ConditionDto] })
-  conditions: ConditionDto[];
+  conditions!: ConditionDto[];
 
   @ApiProperty({ type: [ActionDto] })
-  actions: ActionDto[];
+  actions!: ActionDto[];
 }
 
 // Pagination response
 export class PaginatedAutomationRulesDto {
   @ApiProperty({ type: [AutomationRuleDto] })
-  data: AutomationRuleDto[];
+  data!: AutomationRuleDto[];
 
   @ApiProperty()
-  pagination: {
+  pagination!: {
     page: number;
     limit: number;
     total: number;

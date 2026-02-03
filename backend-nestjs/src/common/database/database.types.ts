@@ -1,4 +1,4 @@
-import type { DataSourceOptions } from 'typeorm';
+﻿import type { DataSourceOptions } from 'typeorm';
 
 /**
  * Supported database engines for the application.
@@ -110,9 +110,7 @@ export interface ServerRuntimeConfig extends DatabaseRuntimeBase {
 /**
  * Runtime database configuration resolved from environment variables.
  */
-export type DatabaseRuntimeConfig =
-  | SqliteRuntimeConfig
-  | ServerRuntimeConfig;
+export type DatabaseRuntimeConfig = SqliteRuntimeConfig | ServerRuntimeConfig;
 
 /**
  * Combined output for building TypeORM data source options plus runtime metadata.
@@ -160,5 +158,5 @@ export interface DatabaseErrorDetails {
   /**
    * Original error instance for debugging.
    */
-  originalError?: unknown;
+  originalError?: any;
 }

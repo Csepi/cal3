@@ -1,4 +1,4 @@
-import {
+﻿import {
   IsString,
   IsOptional,
   IsArray,
@@ -22,7 +22,7 @@ export class CreateReservationCalendarDto {
   @MinLength(1, { message: 'Name cannot be empty' })
   @MaxLength(100, { message: 'Name cannot exceed 100 characters' })
   @Transform(({ value }) => value?.trim())
-  name: string;
+  name!: string;
 
   @IsOptional()
   @IsString({ message: 'Description must be a string' })
@@ -64,13 +64,15 @@ export class CreateReservationCalendarDto {
 export class AssignRoleDto {
   @IsNumber({}, { message: 'User ID must be a number' })
   @IsPositive({ message: 'User ID must be a positive number' })
-  @Transform(({ value }) => parseInt(value))
-  userId: number;
+  @Transform(({ value }) =>
+    typeof value === 'number' ? value : parseInt(String(value ?? ''), 10),
+  )
+  userId!: number;
 
   @IsEnum(ReservationCalendarRoleType, {
     message: 'Role must be either "editor" or "reviewer"',
   })
-  role: ReservationCalendarRoleType;
+  role!: ReservationCalendarRoleType;
 }
 
 /**

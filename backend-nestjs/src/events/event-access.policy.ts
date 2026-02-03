@@ -1,7 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Calendar, CalendarShare, SharePermission } from '../entities/calendar.entity';
+import {
+  Calendar,
+  CalendarShare,
+  SharePermission,
+} from '../entities/calendar.entity';
 
 @Injectable()
 export class EventAccessPolicy {

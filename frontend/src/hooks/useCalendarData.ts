@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useQuery } from '@tanstack/react-query';
 import type { Calendar } from '../types/Calendar';
 import type { CalendarGroupWithCalendars } from '../types/CalendarGroup';

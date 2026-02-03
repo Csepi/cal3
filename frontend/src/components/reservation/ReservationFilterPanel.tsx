@@ -80,7 +80,7 @@ export const ReservationFilterPanel: React.FC<ReservationFilterPanelProps> = ({
   };
 
   /**
-   * Check if any filters are active
+   * Check if filters are active
    */
   const hasActiveFilters = Object.values(filters).some(value => value !== '');
 

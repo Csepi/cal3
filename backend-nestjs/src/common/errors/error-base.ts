@@ -1,5 +1,9 @@
-import { ERROR_CODES, type ErrorCode } from '../responses/error.catalog';
-import { buildErrorContext, type ErrorContext, mergeErrorContext } from './error-context';
+﻿import { ERROR_CODES, type ErrorCode } from '../responses/error.catalog';
+import {
+  buildErrorContext,
+  type ErrorContext,
+  mergeErrorContext,
+} from './error-context';
 
 /**
  * Base error class used for consistent error handling.
@@ -31,7 +35,7 @@ export class BaseError extends Error {
     this.details = details;
     this.context = buildErrorContext(context, this);
     if (cause !== undefined) {
-      (this as any).cause = cause;
+      (this as Error & { cause?: unknown }).cause = cause;
     }
   }
 

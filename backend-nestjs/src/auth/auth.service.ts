@@ -1,4 +1,4 @@
-import {
+﻿import {
   Injectable,
   UnauthorizedException,
   ConflictException,
@@ -7,11 +7,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcryptjs';
 import { User, UserRole } from '../entities/user.entity';
-import {
-  RegisterDto,
-  LoginDto,
-  AuthResponseDto,
-} from '../dto/auth.dto';
+import { RegisterDto, LoginDto, AuthResponseDto } from '../dto/auth.dto';
 import { TokenService, TokenIssueResult } from './token.service';
 import { SecurityAuditService } from '../logging/security-audit.service';
 import { LoginAttemptService } from './services/login-attempt.service';
@@ -193,9 +189,7 @@ export class AuthService {
     return this.createSession(user, {});
   }
 
-  async validateMicrosoftUser(
-    microsoftUser: any,
-  ): Promise<AuthSessionResult> {
+  async validateMicrosoftUser(microsoftUser: any): Promise<AuthSessionResult> {
     const { email, firstName, lastName, displayName } = microsoftUser;
 
     if (!email) {
@@ -237,8 +231,10 @@ export class AuthService {
       throw new UnauthorizedException('Refresh token missing');
     }
 
-    const { user, ...tokens } =
-      await this.tokenService.rotateRefreshToken(refreshToken, metadata);
+    const { user, ...tokens } = await this.tokenService.rotateRefreshToken(
+      refreshToken,
+      metadata,
+    );
     await this.securityAudit.log('auth.refresh', {
       userId: user.id,
       ip: metadata.ip,
@@ -276,10 +272,7 @@ export class AuthService {
     };
   }
 
-  private buildResponse(
-    user: User,
-    tokens: TokenIssueResult,
-  ): AuthResponseDto {
+  private buildResponse(user: User, tokens: TokenIssueResult): AuthResponseDto {
     return {
       access_token: tokens.accessToken,
       token_type: 'Bearer',

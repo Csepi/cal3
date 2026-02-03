@@ -1,4 +1,4 @@
-import {
+﻿import {
   Injectable,
   NotFoundException,
   ForbiddenException,
@@ -360,7 +360,7 @@ export class AutomationService {
     rule: AutomationRule,
     event: Event | null = null,
     executedByUserId?: number,
-    webhookData: Record<string, any> | null = null,
+    webhookData: Record<string, unknown> | null = null,
   ): Promise<void> {
     const startTime = Date.now();
     const executedAt = new Date();
@@ -447,7 +447,7 @@ export class AutomationService {
 
       // Update rule metadata
       await this.updateRuleExecutionMetadata(rule.id);
-    } catch (error) {
+    } catch (error: any) {
       logError(error, buildErrorContext({ action: 'automation.service' }));
       // Log execution failure
       const executionTimeMs = Date.now() - startTime;
@@ -462,7 +462,7 @@ export class AutomationService {
         conditionsResult: { passed: false, evaluations: [] },
         actionResults: undefined,
         status: AuditLogStatus.FAILURE,
-        errorMessage: error.message,
+        errorMessage: error instanceof Error ? error.message : String(error),
         executedByUserId,
         duration_ms: executionTimeMs,
         executedAt,
@@ -497,7 +497,7 @@ export class AutomationService {
   private async executeAction(
     action: AutomationAction,
     event: Event | null,
-    webhookData: Record<string, any> | null,
+    webhookData: Record<string, unknown> | null,
     triggerType: TriggerType,
   ): Promise<ActionResultDto> {
     try {
@@ -521,13 +521,13 @@ export class AutomationService {
         data: result.data,
         executedAt: result.executedAt,
       };
-    } catch (error) {
+    } catch (error: any) {
       logError(error, buildErrorContext({ action: 'automation.service' }));
       return {
         actionId: action.id,
         actionType: action.actionType,
         success: false,
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
         executedAt: new Date(),
       };
     }
@@ -650,7 +650,7 @@ export class AutomationService {
       throw new ForbiddenException('You do not have access to this rule');
     }
 
-    const stats = await this.auditLogRepository
+    const stats = (await this.auditLogRepository
       .createQueryBuilder('log')
       .select('COUNT(*)', 'totalExecutions')
       .addSelect(
@@ -678,17 +678,28 @@ export class AutomationService {
         skipped: AuditLogStatus.SKIPPED,
         partial: AuditLogStatus.PARTIAL_SUCCESS,
       })
-      .getRawOne();
+      .getRawOne()) as {
+      totalExecutions?: string;
+      successCount?: string;
+      failureCount?: string;
+      skippedCount?: string;
+      partialSuccessCount?: string;
+      avgExecutionTimeMs?: string;
+      lastExecutedAt?: string | Date | null;
+    } | null;
+
+    const safeStats = stats ?? {};
 
     return {
-      totalExecutions: parseInt(stats.totalExecutions) || 0,
-      successCount: parseInt(stats.successCount) || 0,
-      failureCount: parseInt(stats.failureCount) || 0,
-      skippedCount: parseInt(stats.skippedCount) || 0,
-      partialSuccessCount: parseInt(stats.partialSuccessCount) || 0,
-      avgExecutionTimeMs: parseFloat(stats.avgExecutionTimeMs) || 0,
-      lastExecutedAt: stats.lastExecutedAt
-        ? new Date(stats.lastExecutedAt)
+      totalExecutions: parseInt(safeStats.totalExecutions ?? '0', 10) || 0,
+      successCount: parseInt(safeStats.successCount ?? '0', 10) || 0,
+      failureCount: parseInt(safeStats.failureCount ?? '0', 10) || 0,
+      skippedCount: parseInt(safeStats.skippedCount ?? '0', 10) || 0,
+      partialSuccessCount:
+        parseInt(safeStats.partialSuccessCount ?? '0', 10) || 0,
+      avgExecutionTimeMs: parseFloat(safeStats.avgExecutionTimeMs ?? '0') || 0,
+      lastExecutedAt: safeStats.lastExecutedAt
+        ? new Date(safeStats.lastExecutedAt)
         : null,
     };
   }
@@ -769,6 +780,20 @@ export class AutomationService {
   }
 
   private mapToAuditLogDetailDto(log: AutomationAuditLog): AuditLogDetailDto {
+    const event = log.event
+      ? {
+          id: log.event.id,
+          title: log.event.title,
+          startTime: log.event.startTime ?? null,
+          endTime: log.event.endTime ?? null,
+        }
+      : {
+          id: log.eventId ?? 0,
+          title: '(event unavailable)',
+          startTime: null,
+          endTime: null,
+        };
+
     return {
       ...this.mapToAuditLogDto(log),
       rule: {
@@ -776,12 +801,7 @@ export class AutomationService {
         name: log.rule.name,
         triggerType: log.rule.triggerType,
       },
-      event: {
-        id: log.event.id,
-        title: log.event.title,
-        startTime: log.event.startTime ?? null,
-        endTime: log.event.endTime ?? null,
-      },
+      event,
       executedBy: log.executedBy
         ? {
             id: log.executedBy.id,
@@ -802,7 +822,7 @@ export class AutomationService {
    */
   async executeRuleFromWebhook(
     webhookToken: string,
-    webhookData: Record<string, any>,
+    webhookData: Record<string, unknown>,
   ): Promise<{ success: boolean; ruleId: number; message: string }> {
     this.logger.log(`Webhook received for token: ${webhookToken}`);
 

@@ -1,4 +1,4 @@
-import {
+﻿import {
   ConnectedSocket,
   MessageBody,
   OnGatewayConnection,
@@ -7,10 +7,7 @@ import {
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
-import {
-  Logger,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Logger, UnauthorizedException } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
@@ -66,7 +63,7 @@ export class NotificationsGateway
         throw new UnauthorizedException('Invalid token payload');
       }
       client.userId = userId;
-      client.join(`user:${userId}`);
+      await client.join(`user:${userId}`);
       this.moduleRef
         .get(NotificationsService, { strict: false })
         ?.trackConnection(userId, client.id);
@@ -95,8 +92,8 @@ export class NotificationsGateway
   @SubscribeMessage('ping')
   handlePing(
     @ConnectedSocket() client: AuthenticatedSocket,
-    @MessageBody() body: unknown,
-  ): { type: string; data: unknown } {
+    @MessageBody() body: any,
+  ): { type: string; data: any } {
     if (!client.userId) {
       throw new UnauthorizedException('Unauthenticated');
     }

@@ -1,4 +1,4 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+﻿import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource, In } from 'typeorm';
 import { Organisation } from '../../entities/organisation.entity';
@@ -175,7 +175,10 @@ export class CascadeDeletionService {
         ...preview,
       };
     } catch (error) {
-      logError(error, buildErrorContext({ action: 'cascade-deletion.service' }));
+      logError(
+        error,
+        buildErrorContext({ action: 'cascade-deletion.service' }),
+      );
       await queryRunner.rollbackTransaction();
       this.logger.error(
         `Failed to delete organisation ${organisationId}:`,
@@ -284,7 +287,10 @@ export class CascadeDeletionService {
         ...preview,
       };
     } catch (error) {
-      logError(error, buildErrorContext({ action: 'cascade-deletion.service' }));
+      logError(
+        error,
+        buildErrorContext({ action: 'cascade-deletion.service' }),
+      );
       await queryRunner.rollbackTransaction();
       this.logger.error(
         `Failed to delete resource type ${resourceTypeId}:`,
@@ -370,7 +376,10 @@ export class CascadeDeletionService {
         ...preview,
       };
     } catch (error) {
-      logError(error, buildErrorContext({ action: 'cascade-deletion.service' }));
+      logError(
+        error,
+        buildErrorContext({ action: 'cascade-deletion.service' }),
+      );
       await queryRunner.rollbackTransaction();
       this.logger.error(`Failed to delete resource ${resourceId}:`, error);
       throw error;

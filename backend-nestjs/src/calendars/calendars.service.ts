@@ -350,7 +350,9 @@ export class CalendarsService {
     });
 
     if (!group) {
-      throw new ForbiddenException('Calendar group not found or not accessible');
+      throw new ForbiddenException(
+        'Calendar group not found or not accessible',
+      );
     }
 
     return group;

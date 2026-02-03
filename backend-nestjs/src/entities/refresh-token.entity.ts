@@ -14,25 +14,25 @@ import { User } from './user.entity';
 @Index(['tokenHash'], { unique: true })
 export class RefreshToken {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id!: string;
 
   @Column()
-  userId: number;
+  userId!: number;
 
   @ManyToOne(() => User, { onDelete: 'CASCADE' })
-  user: User;
+  user!: User;
 
   @Column({ length: 64 })
-  jti: string;
+  jti!: string;
 
   @Column({ length: 128 })
-  tokenHash: string;
+  tokenHash!: string;
 
   @Column({ type: timestampTzType })
-  expiresAt: Date;
+  expiresAt!: Date;
 
   @Column({ default: false })
-  revoked: boolean;
+  revoked!: boolean;
 
   @Column({ type: timestampTzType, nullable: true })
   revokedAt?: Date | null;
@@ -50,8 +50,8 @@ export class RefreshToken {
   userAgent?: string | null;
 
   @CreateDateColumn()
-  createdAt: Date;
+  createdAt!: Date;
 
   @UpdateDateColumn()
-  updatedAt: Date;
+  updatedAt!: Date;
 }

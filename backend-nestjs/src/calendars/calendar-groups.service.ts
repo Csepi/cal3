@@ -41,15 +41,17 @@ export class CalendarGroupsService {
   ): Promise<Array<CalendarGroup & { calendars: Calendar[] }>> {
     // Start from calendars the user can access so we only expose permitted data
     const accessibleCalendars = await this.calendarsService.findAll(userId);
-    const groups = new Map<number, { group: CalendarGroup; calendars: Calendar[] }>();
+    const groups = new Map<
+      number,
+      { group: CalendarGroup; calendars: Calendar[] }
+    >();
 
     for (const calendar of accessibleCalendars) {
       if (calendar.group) {
-        const existing =
-          groups.get(calendar.group.id) ?? {
-            group: calendar.group,
-            calendars: [],
-          };
+        const existing = groups.get(calendar.group.id) ?? {
+          group: calendar.group,
+          calendars: [],
+        };
         existing.calendars.push(calendar);
         groups.set(calendar.group.id, existing);
       }
@@ -178,18 +180,12 @@ export class CalendarGroupsService {
     });
 
     if (calendars.length === 0) {
-      throw new NotFoundException(
-        'No calendars found in this group to share',
-      );
+      throw new NotFoundException('No calendars found in this group to share');
     }
 
     const sharedCalendarIds: number[] = [];
     for (const calendar of calendars) {
-      await this.calendarsService.shareCalendar(
-        calendar.id,
-        shareDto,
-        userId,
-      );
+      await this.calendarsService.shareCalendar(calendar.id, shareDto, userId);
       sharedCalendarIds.push(calendar.id);
     }
 
@@ -220,11 +216,7 @@ export class CalendarGroupsService {
 
     const unsharedCalendarIds: number[] = [];
     for (const calendar of calendars) {
-      await this.calendarsService.unshareCalendar(
-        calendar.id,
-        targets,
-        userId,
-      );
+      await this.calendarsService.unshareCalendar(calendar.id, targets, userId);
       unsharedCalendarIds.push(calendar.id);
     }
 

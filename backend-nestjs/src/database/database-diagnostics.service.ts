@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+﻿import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 import { logError } from '../common/errors/error-logger';
@@ -17,31 +17,40 @@ export class DatabaseDiagnosticsService {
    * Log all database configuration details (with password redacted)
    */
   logDatabaseConfig(): void {
-    const dbType = this.configService.get('DB_TYPE');
+    const dbType = this.configService.get<string>('DB_TYPE');
 
     this.logger.log('========================================');
     this.logger.log('DATABASE CONNECTION CONFIGURATION');
     this.logger.log('========================================');
 
     if (dbType === 'postgres') {
-      const host = this.configService.get('DB_HOST', 'localhost');
-      const port = this.configService.get('DB_PORT', '5432');
-      const username = this.configService.get('DB_USERNAME', 'postgres');
-      const database = this.configService.get('DB_NAME', 'cal3');
-      const ssl = this.configService.get('DB_SSL', 'false');
+      const host = this.configService.get<string>('DB_HOST', 'localhost');
+      const port = this.configService.get<string>('DB_PORT', '5432');
+      const username = this.configService.get<string>(
+        'DB_USERNAME',
+        'postgres',
+      );
+      const database = this.configService.get<string>('DB_NAME', 'cal3');
+      const ssl = this.configService.get<string>('DB_SSL', 'false');
       const sslRejectUnauthorized = this.configService.get(
         'DB_SSL_REJECT_UNAUTHORIZED',
         'true',
       );
-      const connectionTimeout = this.configService.get(
+      const connectionTimeout = this.configService.get<string>(
         'DB_CONNECTION_TIMEOUT',
         '10000',
       );
-      const idleTimeout = this.configService.get('DB_IDLE_TIMEOUT', '30000');
-      const poolMax = this.configService.get('DB_POOL_MAX', '10');
-      const poolMin = this.configService.get('DB_POOL_MIN', '2');
-      const synchronize = this.configService.get('DB_SYNCHRONIZE', 'false');
-      const logging = this.configService.get('DB_LOGGING', 'false');
+      const idleTimeout = this.configService.get<string>(
+        'DB_IDLE_TIMEOUT',
+        '30000',
+      );
+      const poolMax = this.configService.get<string>('DB_POOL_MAX', '10');
+      const poolMin = this.configService.get<string>('DB_POOL_MIN', '2');
+      const synchronize = this.configService.get<string>(
+        'DB_SYNCHRONIZE',
+        'false',
+      );
+      const logging = this.configService.get<string>('DB_LOGGING', 'false');
 
       this.logger.log(`Database Type: PostgreSQL`);
       this.logger.log(`Host: ${host}`);
@@ -69,13 +78,13 @@ export class DatabaseDiagnosticsService {
       // Warnings
       if (host.includes('azure.com') || host.includes('amazonaws.com')) {
         this.logger.warn(
-          '⚠️  Detected cloud database provider - ensure firewall rules allow this IP',
+          'âš ď¸Ź  Detected cloud database provider - ensure firewall rules allow this IP',
         );
       }
 
-      if (parseInt(connectionTimeout) < 30000) {
+      if (parseInt(connectionTimeout, 10) < 30000) {
         this.logger.warn(
-          '⚠️  Connection timeout is less than 30 seconds - may be insufficient for cloud databases',
+          'âš ď¸Ź  Connection timeout is less than 30 seconds - may be insufficient for cloud databases',
         );
       }
 
@@ -84,7 +93,7 @@ export class DatabaseDiagnosticsService {
         (host.includes('azure.com') || host.includes('amazonaws.com'))
       ) {
         this.logger.warn(
-          '⚠️  SSL is not enabled but connecting to cloud database - this may fail',
+          'âš ď¸Ź  SSL is not enabled but connecting to cloud database - this may fail',
         );
       }
     } else {
@@ -102,7 +111,7 @@ export class DatabaseDiagnosticsService {
   logConnectionAttempt(attemptNumber: number = 1): void {
     const timestamp = new Date().toISOString();
     this.logger.log(
-      `[${timestamp}] 🔌 Connection Attempt #${attemptNumber} - Starting...`,
+      `[${timestamp}] đź”Ś Connection Attempt #${attemptNumber} - Starting...`,
     );
   }
 
@@ -112,7 +121,7 @@ export class DatabaseDiagnosticsService {
   logConnectionSuccess(duration: number): void {
     const timestamp = new Date().toISOString();
     this.logger.log(
-      `[${timestamp}] ✅ Connection Successful! (took ${duration}ms)`,
+      `[${timestamp}] âś… Connection Successful! (took ${duration}ms)`,
     );
   }
 
@@ -126,7 +135,7 @@ export class DatabaseDiagnosticsService {
   ): void {
     const timestamp = new Date().toISOString();
     this.logger.error(
-      `[${timestamp}] ❌ Connection Failed - Attempt #${attemptNumber}`,
+      `[${timestamp}] âťŚ Connection Failed - Attempt #${attemptNumber}`,
     );
     this.logger.error(`Error Type: ${error.name || 'Unknown'}`);
     this.logger.error(`Error Message: ${error.message || 'No message'}`);
@@ -138,157 +147,159 @@ export class DatabaseDiagnosticsService {
     // Provide specific diagnostics based on error type
     if (error.message?.includes('timeout')) {
       this.logger.error(
-        '┌─────────────────────────────────────────────────────────┐',
+        'â”Śâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”',
       );
       this.logger.error(
-        '│ DIAGNOSIS: CONNECTION TIMEOUT                           │',
+        'â”‚ DIAGNOSIS: CONNECTION TIMEOUT                           â”‚',
       );
       this.logger.error(
-        '├─────────────────────────────────────────────────────────┤',
+        'â”śâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤',
       );
       this.logger.error(
-        '│ Most common causes:                                     │',
+        'â”‚ Most common causes:                                     â”‚',
       );
       this.logger.error(
-        '│ 1. Firewall blocking connection (Azure/AWS)            │',
+        'â”‚ 1. Firewall blocking connection (Azure/AWS)            â”‚',
       );
       this.logger.error(
-        '│ 2. Database server is down or unreachable              │',
+        'â”‚ 2. Database server is down or unreachable              â”‚',
       );
       this.logger.error(
-        '│ 3. Network routing issue                                │',
+        'â”‚ 3. Network routing issue                                â”‚',
       );
       this.logger.error(
-        '│ 4. Incorrect host/port configuration                    │',
+        'â”‚ 4. Incorrect host/port configuration                    â”‚',
       );
       this.logger.error(
-        '├─────────────────────────────────────────────────────────┤',
+        'â”śâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤',
       );
       this.logger.error(
-        '│ Solutions:                                              │',
+        'â”‚ Solutions:                                              â”‚',
       );
       this.logger.error(
-        '│ • Add your IP to database firewall rules               │',
+        'â”‚ â€˘ Add your IP to database firewall rules               â”‚',
       );
       this.logger.error(
-        '│ • Verify DB_HOST and DB_PORT are correct               │',
+        'â”‚ â€˘ Verify DB_HOST and DB_PORT are correct               â”‚',
       );
       this.logger.error(
-        '│ • Test connection: nc -zv <host> <port>                │',
+        'â”‚ â€˘ Test connection: nc -zv <host> <port>                â”‚',
       );
       this.logger.error(
-        '│ • Check container can reach internet: ping 8.8.8.8     │',
+        'â”‚ â€˘ Check container can reach internet: ping 8.8.8.8     â”‚',
       );
       this.logger.error(
-        '└─────────────────────────────────────────────────────────┘',
+        'â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”',
       );
     } else if (error.message?.includes('password')) {
       this.logger.error(
-        '┌─────────────────────────────────────────────────────────┐',
+        'â”Śâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”',
       );
       this.logger.error(
-        '│ DIAGNOSIS: AUTHENTICATION FAILED                        │',
+        'â”‚ DIAGNOSIS: AUTHENTICATION FAILED                        â”‚',
       );
       this.logger.error(
-        '├─────────────────────────────────────────────────────────┤',
+        'â”śâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤',
       );
       this.logger.error(
-        '│ • Verify DB_USERNAME is correct                         │',
+        'â”‚ â€˘ Verify DB_USERNAME is correct                         â”‚',
       );
       this.logger.error(
-        '│ • Verify DB_PASSWORD is correct                         │',
+        'â”‚ â€˘ Verify DB_PASSWORD is correct                         â”‚',
       );
       this.logger.error(
-        '│ • Check password for special characters                 │',
+        'â”‚ â€˘ Check password for special characters                 â”‚',
       );
       this.logger.error(
-        '└─────────────────────────────────────────────────────────┘',
+        'â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”',
       );
     } else if (
       error.message?.includes('ENOTFOUND') ||
       error.message?.includes('getaddrinfo')
     ) {
       this.logger.error(
-        '┌─────────────────────────────────────────────────────────┐',
+        'â”Śâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”',
       );
       this.logger.error(
-        '│ DIAGNOSIS: DNS RESOLUTION FAILED                        │',
+        'â”‚ DIAGNOSIS: DNS RESOLUTION FAILED                        â”‚',
       );
       this.logger.error(
-        '├─────────────────────────────────────────────────────────┤',
+        'â”śâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤',
       );
       this.logger.error(
-        '│ • Cannot resolve hostname to IP address                 │',
+        'â”‚ â€˘ Cannot resolve hostname to IP address                 â”‚',
       );
       this.logger.error(
-        '│ • Test DNS: nslookup <hostname>                         │',
+        'â”‚ â€˘ Test DNS: nslookup <hostname>                         â”‚',
       );
       this.logger.error(
-        '│ • Verify DB_HOST is spelled correctly                   │',
+        'â”‚ â€˘ Verify DB_HOST is spelled correctly                   â”‚',
       );
       this.logger.error(
-        '│ • Check container has DNS access                        │',
+        'â”‚ â€˘ Check container has DNS access                        â”‚',
       );
       this.logger.error(
-        '└─────────────────────────────────────────────────────────┘',
+        'â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”',
       );
     } else if (error.message?.includes('ECONNREFUSED')) {
       this.logger.error(
-        '┌─────────────────────────────────────────────────────────┐',
+        'â”Śâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”',
       );
       this.logger.error(
-        '│ DIAGNOSIS: CONNECTION REFUSED                           │',
+        'â”‚ DIAGNOSIS: CONNECTION REFUSED                           â”‚',
       );
       this.logger.error(
-        '├─────────────────────────────────────────────────────────┤',
+        'â”śâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤',
       );
       this.logger.error(
-        '│ • Database server is not accepting connections          │',
+        'â”‚ â€˘ Database server is not accepting connections          â”‚',
       );
       this.logger.error(
-        '│ • Wrong port number                                     │',
+        'â”‚ â€˘ Wrong port number                                     â”‚',
       );
       this.logger.error(
-        '│ • Database service is not running                       │',
+        'â”‚ â€˘ Database service is not running                       â”‚',
       );
       this.logger.error(
-        '└─────────────────────────────────────────────────────────┘',
+        'â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”',
       );
     } else if (
       error.message?.includes('SSL') ||
       error.message?.includes('ssl')
     ) {
       this.logger.error(
-        '┌─────────────────────────────────────────────────────────┐',
+        'â”Śâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”',
       );
       this.logger.error(
-        '│ DIAGNOSIS: SSL/TLS ERROR                                │',
+        'â”‚ DIAGNOSIS: SSL/TLS ERROR                                â”‚',
       );
       this.logger.error(
-        '├─────────────────────────────────────────────────────────┤',
+        'â”śâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤',
       );
       this.logger.error(
-        '│ • SSL configuration mismatch                            │',
+        'â”‚ â€˘ SSL configuration mismatch                            â”‚',
       );
       this.logger.error(
-        '│ • Try DB_SSL=true or DB_SSL=false                       │',
+        'â”‚ â€˘ Try DB_SSL=true or DB_SSL=false                       â”‚',
       );
       this.logger.error(
-        '│ • Try DB_SSL_REJECT_UNAUTHORIZED=false                  │',
+        'â”‚ â€˘ Try DB_SSL_REJECT_UNAUTHORIZED=false                  â”‚',
       );
       this.logger.error(
-        '└─────────────────────────────────────────────────────────┘',
+        'â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”',
       );
     }
 
     if (willRetry) {
-      this.logger.warn(`⏳ Will retry connection...`);
+      this.logger.warn(`âŹł Will retry connection...`);
     } else {
-      this.logger.error('🛑 No more retries - application will fail to start');
+      this.logger.error(
+        'đź›‘ No more retries - application will fail to start',
+      );
     }
 
     this.logger.error(
-      '────────────────────────────────────────────────────────────',
+      'â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€',
     );
   }
 
@@ -299,7 +310,7 @@ export class DatabaseDiagnosticsService {
     if (this.configService.get('DB_LOGGING') === 'true') {
       const timestamp = new Date().toISOString();
       const durationStr = duration ? ` (${duration}ms)` : '';
-      this.logger.debug(`[${timestamp}] 📝 Query${durationStr}: ${query}`);
+      this.logger.debug(`[${timestamp}] đź“ť Query${durationStr}: ${query}`);
       if (parameters && parameters.length > 0) {
         this.logger.debug(`Parameters: ${JSON.stringify(parameters)}`);
       }
@@ -310,8 +321,8 @@ export class DatabaseDiagnosticsService {
    * Test network connectivity to database host
    */
   async testNetworkConnectivity(): Promise<void> {
-    const host = this.configService.get('DB_HOST', 'localhost');
-    const port = this.configService.get('DB_PORT', '5432');
+    const host = this.configService.get<string>('DB_HOST', 'localhost');
+    const port = this.configService.get<string>('DB_PORT', '5432');
 
     this.logger.log('========================================');
     this.logger.log('NETWORK CONNECTIVITY TEST');
@@ -322,12 +333,17 @@ export class DatabaseDiagnosticsService {
       this.logger.log(`Testing DNS resolution for ${host}...`);
       const dns = require('dns').promises;
       const addresses = await dns.resolve4(host);
-      this.logger.log(`✅ DNS Resolution: Success`);
+      this.logger.log(`âś… DNS Resolution: Success`);
       this.logger.log(`   Resolved to: ${addresses.join(', ')}`);
-    } catch (error) {
-      logError(error, buildErrorContext({ action: 'database-diagnostics.service' }));
-      this.logger.error(`❌ DNS Resolution: Failed`);
-      this.logger.error(`   Error: ${error.message}`);
+    } catch (error: any) {
+      logError(
+        error,
+        buildErrorContext({ action: 'database-diagnostics.service' }),
+      );
+      this.logger.error(`âťŚ DNS Resolution: Failed`);
+      this.logger.error(
+        `   Error: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
 
     // Test 2: TCP Connection
@@ -339,7 +355,7 @@ export class DatabaseDiagnosticsService {
       await new Promise((resolve, reject) => {
         socket.setTimeout(10000);
         socket.on('connect', () => {
-          this.logger.log(`✅ TCP Connection: Success`);
+          this.logger.log(`âś… TCP Connection: Success`);
           socket.destroy();
           resolve(true);
         });
@@ -347,16 +363,21 @@ export class DatabaseDiagnosticsService {
           socket.destroy();
           reject(new Error('Connection timeout'));
         });
-        socket.on('error', (err) => {
+        socket.on('error', (err: Error) => {
           socket.destroy();
           reject(err);
         });
-        socket.connect(parseInt(port), host);
+        socket.connect(parseInt(port, 10), host);
       });
-    } catch (error) {
-      logError(error, buildErrorContext({ action: 'database-diagnostics.service' }));
-      this.logger.error(`❌ TCP Connection: Failed`);
-      this.logger.error(`   Error: ${error.message}`);
+    } catch (error: any) {
+      logError(
+        error,
+        buildErrorContext({ action: 'database-diagnostics.service' }),
+      );
+      this.logger.error(`âťŚ TCP Connection: Failed`);
+      this.logger.error(
+        `   Error: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
 
     this.logger.log('========================================');
