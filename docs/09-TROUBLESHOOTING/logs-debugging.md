@@ -1,0 +1,1 @@
+# Logs and Debugging\n\nLast updated: 2026-02-03\n\n[‹ Troubleshooting](./README.md)\n\nWhere logs live, what to grep, and how to follow startup/auth/sync traces.\n

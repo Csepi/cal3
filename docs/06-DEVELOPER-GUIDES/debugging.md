@@ -1,0 +1,1 @@
+# Debugging\n\nLast updated: 2026-02-03\n\n[‹ Developer Guides](./README.md)\n\nHow to inspect startup logs, request IDs, DB connectivity, and sync failures.\n

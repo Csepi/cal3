@@ -1,0 +1,1 @@
+# User Troubleshooting\n\nLast updated: 2026-02-03\n\n[‹ User Guides](./README.md)\n\nCommon user-facing problems and quick fixes (login loops, missing events, sync mismatch).\n

@@ -1,0 +1,1 @@
+# Migration from Legacy Datacenter\n\nLast updated: 2026-02-03\n\n[‹ Migration](./README.md)\n\nAssessment checklist, phased cutover, rollback strategy, post-cutover validation.\n

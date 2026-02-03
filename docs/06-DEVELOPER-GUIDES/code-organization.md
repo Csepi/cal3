@@ -1,0 +1,1 @@
+# Code Organization\n\nLast updated: 2026-02-03\n\n[‹ Developer Guides](./README.md)\n\nGuidelines for modules, services, DTOs, types, and shared/common utilities.\n

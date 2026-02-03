@@ -1,0 +1,1 @@
+# Docker Compose Deployment\n\nLast updated: 2026-02-03\n\n[‹ Deployment](./README.md)\n\nReference compose deployment flow with service readiness and health checks.\n

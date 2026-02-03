@@ -1,0 +1,1 @@
+# 09 - Troubleshooting\n\nLast updated: 2026-02-03\n\n[‹ Docs Home](../README.md)\n\n- [Database Issues](./database-issues.md)\n- [API Issues](./api-issues.md)\n- [Smart Home Issues](./smart-home-issues.md)\n- [Performance Issues](./performance-issues.md)\n- [Logs and Debugging](./logs-debugging.md)\n

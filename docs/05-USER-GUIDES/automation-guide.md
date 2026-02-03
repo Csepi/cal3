@@ -1,0 +1,1 @@
+# Automation Guide\n\nLast updated: 2026-02-03\n\n[‹ User Guides](./README.md)\n\nCreate trigger-condition-action rules and validate outcomes in audit logs.\n

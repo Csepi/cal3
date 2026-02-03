@@ -1,0 +1,1 @@
+# Reservations Guide\n\nLast updated: 2026-02-03\n\n[‹ User Guides](./README.md)\n\nHow to create resources, configure booking windows, and manage reservation statuses.\n

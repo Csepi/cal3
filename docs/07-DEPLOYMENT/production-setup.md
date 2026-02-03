@@ -1,0 +1,1 @@
+# Production Setup\n\nLast updated: 2026-02-03\n\n[‹ Deployment](./README.md)\n\nPreflight checklist for secrets, DB, TLS, health checks, and observability.\n

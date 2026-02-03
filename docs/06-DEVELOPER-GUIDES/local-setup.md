@@ -1,0 +1,1 @@
+# Local Setup\n\nLast updated: 2026-02-03\n\n[‹ Developer Guides](./README.md)\n\nInstall deps, configure env, run backend/frontend, and verify API connectivity.\n

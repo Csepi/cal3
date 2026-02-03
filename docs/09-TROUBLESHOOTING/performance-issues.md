@@ -1,0 +1,1 @@
+# Performance Issues\n\nLast updated: 2026-02-03\n\n[‹ Troubleshooting](./README.md)\n\nSlow queries, API latency, frontend bundle size, and scaling bottleneck triage.\n

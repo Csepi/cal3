@@ -1,0 +1,1 @@
+# Smart Home Guide\n\nLast updated: 2026-02-03\n\n[‹ User Guides](./README.md)\n\nConnect your provider bridge and map automation rules to smart-home actions.\n

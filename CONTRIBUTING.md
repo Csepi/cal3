@@ -1,31 +1,48 @@
-# Contributing
+﻿# Contributing to Cal3
 
-## Code Style
-- TypeScript strict mode required.
-- Prefer centralized types from `backend-nestjs/src/types` and `frontend/src/types`.
-- Keep controllers thin; place business logic in services.
+Last updated: 2026-02-03
 
-## Naming Conventions
-- `*.service.ts` for domain/service logic
-- `*.controller.ts` for HTTP handlers
-- `*.dto.ts` for transport contracts
-- `*.types.ts` for shared type contracts
+## Development Setup
+1. Clone the repository.
+2. Install dependencies in root, `backend-nestjs`, and `frontend`.
+3. Configure environment variables (`backend-nestjs/.env` and frontend runtime config).
+4. Start backend and frontend locally.
 
-## Commit Format
-- Conventional style preferred:
-  - `feat(scope): ...`
-  - `fix(scope): ...`
-  - `refactor(scope): ...`
-  - `docs(scope): ...`
+## Branching Model
+- `main`: production-ready branch
+- `develop`: integration branch (if used)
+- `feature/<name>`: feature work
+- `fix/<name>`: bug fixes
 
-## PR Checklist
-- [ ] Typecheck passes (backend + frontend)
-- [ ] Lint passes (backend + frontend)
-- [ ] Build passes (backend + frontend)
-- [ ] API/contract changes documented
-- [ ] New/changed behavior covered by tests or manual validation notes
+## Commit Message Format
+Use clear, scoped commit messages.
+
+Examples:
+- `feat(docs): create unified docs hierarchy and quickstart`
+- `refactor(types): remove implicit any in frontend services`
+- `fix(auth): prevent login refresh loop on expired session`
+
+## Pull Request Checklist
+- Explain what changed and why.
+- Link related issue/task.
+- Include validation output (`tsc`, lint, tests/build).
+- Update docs when API, behavior, or configuration changes.
+- Keep diffs focused and avoid unrelated changes.
 
 ## Testing Requirements
-- Run critical commands before merge:
-  - `backend-nestjs: npx tsc --noEmit && npm run lint && npm run build`
-  - `frontend: npx tsc --noEmit && npm run lint && npm run build`
+Run as applicable:
+- `npx tsc --noEmit`
+- `npm run lint`
+- `npm run test`
+- `npm run build`
+
+## Documentation Requirements
+- New features must include docs in `docs/`.
+- Keep links relative and valid.
+- Update environment variable docs when config changes.
+- Archive superseded docs under `docs/archives/`.
+
+## Code Style Notes
+- Keep behavior stable when doing refactors.
+- Avoid introducing `any` as a shortcut.
+- Prefer clear, explicit types and narrow interfaces.

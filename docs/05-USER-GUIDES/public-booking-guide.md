@@ -1,0 +1,1 @@
+# Public Booking Guide\n\nLast updated: 2026-02-03\n\n[‹ User Guides](./README.md)\n\nEnable booking tokens, share public URLs, and monitor incoming reservations.\n

@@ -1,0 +1,1 @@
+# Security\n\nLast updated: 2026-02-03\n\n[‹ Deployment](./README.md)\n\nJWT/session controls, CORS, secret rotation, OAuth callback hardening, least privilege.\n

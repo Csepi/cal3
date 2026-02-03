@@ -1,0 +1,1 @@
+# Scaling\n\nLast updated: 2026-02-03\n\n[‹ Deployment](./README.md)\n\nHorizontal scaling approach, DB pooling, stateless API concerns, cache strategy.\n

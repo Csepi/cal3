@@ -1,0 +1,1 @@
+# FAQ - General\n\nLast updated: 2026-02-03\n\n[‹ Docs Home](../README.md)\n\nCommon product and usage questions.\n

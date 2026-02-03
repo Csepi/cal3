@@ -1,0 +1,1 @@
+# Data Import\n\nLast updated: 2026-02-03\n\n[‹ Migration](./README.md)\n\nImport mapping patterns for calendars/events/resources/reservations/tasks.\n

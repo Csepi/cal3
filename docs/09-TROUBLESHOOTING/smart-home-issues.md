@@ -1,0 +1,1 @@
+# Smart Home Issues\n\nLast updated: 2026-02-03\n\n[‹ Troubleshooting](./README.md)\n\nProvider auth/token issues, webhook failures, and event/action mismatch debugging.\n

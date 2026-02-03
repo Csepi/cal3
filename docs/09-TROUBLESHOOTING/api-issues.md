@@ -1,0 +1,1 @@
+# API Issues\n\nLast updated: 2026-02-03\n\n[‹ Troubleshooting](./README.md)\n\n401/403/404/409/429/500 diagnosis using request IDs and standardized error codes.\n

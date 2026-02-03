@@ -1,0 +1,1 @@
+# Database Migrations\n\nLast updated: 2026-02-03\n\n[‹ Developer Guides](./README.md)\n\nTypeORM migration workflow, rollback strategy, and production safety checklist.\n

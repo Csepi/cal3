@@ -1,0 +1,1 @@
+# Kubernetes Deployment\n\nLast updated: 2026-02-03\n\n[‹ Deployment](./README.md)\n\nNamespace, secrets/configmaps, ingress, readiness/liveness, autoscaling.\n

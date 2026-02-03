@@ -1,0 +1,1 @@
+# Sharing and Permissions\n\nLast updated: 2026-02-03\n\n[‹ User Guides](./README.md)\n\nHow to share calendars and assign roles in organizations and reservation calendars.\n

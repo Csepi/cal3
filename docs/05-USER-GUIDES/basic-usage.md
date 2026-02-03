@@ -1,0 +1,1 @@
+# Basic Usage\n\nLast updated: 2026-02-03\n\n[‹ User Guides](./README.md)\n\nCreate calendars, add events, switch views, and manage profile preferences (timezone/theme/time format).\n

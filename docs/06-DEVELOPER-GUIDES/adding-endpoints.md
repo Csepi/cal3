@@ -1,0 +1,1 @@
+# Adding API Endpoints\n\nLast updated: 2026-02-03\n\n[‹ Developer Guides](./README.md)\n\nStep-by-step: DTO -> Controller -> Service -> Types -> Tests -> Docs updates.\n

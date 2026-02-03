@@ -1,0 +1,1 @@
+# Monitoring\n\nLast updated: 2026-02-03\n\n[‹ Deployment](./README.md)\n\nHealth endpoints, structured logs, request IDs, and alerting recommendations.\n

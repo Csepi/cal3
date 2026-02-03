@@ -1,0 +1,1 @@
+# Database Issues\n\nLast updated: 2026-02-03\n\n[‹ Troubleshooting](./README.md)\n\nConnection failures, auth errors, pool exhaustion, migration drift fixes.\n

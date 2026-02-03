@@ -1,0 +1,1 @@
+# Environment Configuration (Prod)\n\nLast updated: 2026-02-03\n\n[‹ Deployment](./README.md)\n\nProduction-safe defaults and secret handling for backend/frontend runtimes.\n
