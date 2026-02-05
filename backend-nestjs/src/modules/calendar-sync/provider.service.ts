@@ -19,6 +19,18 @@ export type ExternalEventsResult = {
   nextSyncToken?: string;
 };
 
+export class CalendarSyncAuthError extends Error {
+  constructor(
+    message: string,
+    readonly provider: SyncProvider,
+    readonly connectionId: number,
+    readonly statusCode?: number,
+  ) {
+    super(message);
+    this.name = 'CalendarSyncAuthError';
+  }
+}
+
 @Injectable()
 export class CalendarSyncProviderService {
   private readonly logger = new Logger(CalendarSyncProviderService.name);
@@ -47,7 +59,12 @@ export class CalendarSyncProviderService {
     }
 
     if (!currentConnection.refreshToken) {
-      return response;
+      throw new CalendarSyncAuthError(
+        `[fetchWithAuth] Received 401 with no refresh token for connection ${currentConnection.id}`,
+        currentConnection.provider,
+        currentConnection.id,
+        response.status,
+      );
     }
 
     const refreshed = await this.refreshAccessToken(currentConnection);
@@ -56,7 +73,17 @@ export class CalendarSyncProviderService {
       Authorization: `Bearer ${refreshed.accessToken}`,
     };
 
-    return fetch(url, { ...init, headers: retryHeaders });
+    const retryResponse = await fetch(url, { ...init, headers: retryHeaders });
+    if (retryResponse.status === 401) {
+      throw new CalendarSyncAuthError(
+        `[fetchWithAuth] Received 401 after refresh for connection ${currentConnection.id}`,
+        currentConnection.provider,
+        currentConnection.id,
+        retryResponse.status,
+      );
+    }
+
+    return retryResponse;
   }
 
   async getExternalCalendars(
@@ -295,10 +322,16 @@ export class CalendarSyncProviderService {
               userTimezone,
             );
           }
-          this.logger.error(
-            `[fetchMicrosoftCalendarEvents] Failed to fetch events: ${response.status} - ${response.statusText}${errorSuffix}`,
-          );
-          break;
+          const message = `[fetchMicrosoftCalendarEvents] Failed to fetch events: ${response.status} - ${response.statusText}${errorSuffix}`;
+          if (response.status === 401) {
+            throw new CalendarSyncAuthError(
+              message,
+              syncConnection.provider,
+              syncConnection.id,
+              response.status,
+            );
+          }
+          throw new Error(message);
         }
 
         const data = (await response.json()) as {
@@ -323,11 +356,15 @@ export class CalendarSyncProviderService {
         }
       }
     } catch (error: unknown) {
+      if (error instanceof CalendarSyncAuthError) {
+        throw error;
+      }
       logError(error, buildErrorContext({ action: 'calendar-sync.service' }));
       this.logger.error(
         `[fetchMicrosoftCalendarEvents] Error:`,
         error instanceof Error ? error.stack : undefined,
       );
+      throw error instanceof Error ? error : new Error(String(error));
     }
 
     if (events.length > 0 || deletedEventIds.length > 0) {
@@ -389,10 +426,16 @@ export class CalendarSyncProviderService {
         }
 
         if (!response.ok) {
-          this.logger.error(
-            `[fetchGoogleCalendarEvents] Failed to fetch events: ${response.status} - ${response.statusText}`,
-          );
-          break;
+          const message = `[fetchGoogleCalendarEvents] Failed to fetch events: ${response.status} - ${response.statusText}`;
+          if (response.status === 401) {
+            throw new CalendarSyncAuthError(
+              message,
+              syncConnection.provider,
+              syncConnection.id,
+              response.status,
+            );
+          }
+          throw new Error(message);
         }
 
         const data = (await response.json()) as {
@@ -418,11 +461,15 @@ export class CalendarSyncProviderService {
         }
       } while (pageToken);
     } catch (error: unknown) {
+      if (error instanceof CalendarSyncAuthError) {
+        throw error;
+      }
       logError(error, buildErrorContext({ action: 'calendar-sync.service' }));
       this.logger.error(
         `[fetchGoogleCalendarEvents] Error:`,
         error instanceof Error ? error.stack : undefined,
       );
+      throw error instanceof Error ? error : new Error(String(error));
     }
 
     if (events.length > 0 || deletedEventIds.length > 0) {
@@ -621,6 +668,16 @@ export class CalendarSyncProviderService {
 
     if (!response.ok) {
       const errorText = await response.text();
+      const shouldReconnect =
+        response.status === 400 && errorText.includes('invalid_grant');
+      if (shouldReconnect) {
+        throw new CalendarSyncAuthError(
+          `[refreshAccessToken] Refresh token revoked for connection ${syncConnection.id}`,
+          syncConnection.provider,
+          syncConnection.id,
+          response.status,
+        );
+      }
       this.logger.error(
         `[refreshAccessToken] Failed to refresh tokens for connection ${syncConnection.id}: ${response.status} - ${errorText}`,
       );

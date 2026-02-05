@@ -29,6 +29,7 @@ import { ModuleRef } from '@nestjs/core';
 import { CalendarSyncOAuthService } from './oauth.service';
 import { CalendarSyncMapperService } from './mapper.service';
 import {
+  CalendarSyncAuthError,
   CalendarSyncProviderService,
   ExternalEventsResult,
 } from './provider.service';
@@ -626,6 +627,10 @@ export class CalendarSyncService implements OnModuleInit, OnModuleDestroy {
         `[performSync] Found ${syncedCalendars.length} synced calendars`,
       );
 
+      let successfulCalendars = 0;
+      let failedCalendars = 0;
+      let requiresReconnect = false;
+
       for (const syncedCalendar of syncedCalendars) {
         try {
           this.logger.log(
@@ -636,7 +641,12 @@ export class CalendarSyncService implements OnModuleInit, OnModuleDestroy {
             syncedCalendar,
             automationSettings,
           );
+          successfulCalendars += 1;
         } catch (error) {
+          failedCalendars += 1;
+          if (error instanceof CalendarSyncAuthError) {
+            requiresReconnect = true;
+          }
           logError(
             error,
             buildErrorContext({ action: 'calendar-sync.service' }),
@@ -648,10 +658,27 @@ export class CalendarSyncService implements OnModuleInit, OnModuleDestroy {
         }
       }
 
+      if (requiresReconnect) {
+        syncConnection.status = SyncStatus.ERROR;
+        syncConnection.lastSyncAt = null;
+        await this.syncConnectionRepository.save(syncConnection);
+        this.logger.warn(
+          `[performSync] Marked ${syncConnection.provider} connection ${syncConnection.id} as error (re-authentication required)`,
+        );
+        return;
+      }
+
+      if (failedCalendars > 0 && successfulCalendars === 0) {
+        this.logger.warn(
+          `[performSync] All calendars failed for provider ${syncConnection.provider}; keeping previous lastSyncAt for retry`,
+        );
+        return;
+      }
+
       syncConnection.lastSyncAt = new Date();
       await this.syncConnectionRepository.save(syncConnection);
       this.logger.log(
-        `[performSync] Sync completed for provider: ${syncConnection.provider}`,
+        `[performSync] Sync completed for provider: ${syncConnection.provider} (success=${successfulCalendars}, failed=${failedCalendars})`,
       );
     } finally {
       this.activeSyncConnectionIds.delete(lockKey);
