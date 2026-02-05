@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import type { Event } from '../../types/Event';
+import type { Calendar } from '../../types/Calendar';
 import { getMeetingLinkFromEvent } from '../../utils/meetingLinks';
 
 interface TimelineViewProps {
@@ -11,6 +12,11 @@ interface TimelineViewProps {
   isMobile?: boolean;
   timeFormat?: '12' | '24';
   timezone?: string;
+  focusMode?: boolean;
+  onToggleFocusMode?: () => void;
+  calendars?: Calendar[];
+  selectedCalendars?: number[];
+  onToggleCalendar?: (calendarId: number) => void;
 }
 
 type TimelineItem = Event & {
@@ -156,6 +162,11 @@ const TimelineView: React.FC<TimelineViewProps> = ({
   isMobile = false,
   timeFormat = '12',
   timezone,
+  focusMode = false,
+  onToggleFocusMode,
+  calendars = [],
+  selectedCalendars = [],
+  onToggleCalendar,
 }) => {
   const resolvedTimezone = useMemo(
     () => timezone || Intl.DateTimeFormat().resolvedOptions().timeZone,
@@ -163,8 +174,11 @@ const TimelineView: React.FC<TimelineViewProps> = ({
   );
   const [now, setNow] = useState(() => getZonedDate(new Date(), resolvedTimezone));
   const [focusEventId, setFocusEventId] = useState<number | null>(null);
+  const [showCalendarFilters, setShowCalendarFilters] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
   const focusColor = accentColor || '#06b6d4';
+  const hasCalendarControls = calendars.length > 0 && !!onToggleCalendar;
+  const activeCalendarsCount = selectedCalendars.length;
 
   useEffect(() => {
     const updateNow = () => setNow(getZonedDate(new Date(), resolvedTimezone));
@@ -172,6 +186,12 @@ const TimelineView: React.FC<TimelineViewProps> = ({
     updateNow();
     return () => clearInterval(timer);
   }, [resolvedTimezone]);
+
+  useEffect(() => {
+    if (!focusMode) {
+      setShowCalendarFilters(false);
+    }
+  }, [focusMode]);
 
   const zonedCurrentDate = useMemo(
     () => getZonedDate(currentDate, resolvedTimezone),
@@ -610,6 +630,71 @@ const TimelineView: React.FC<TimelineViewProps> = ({
 
   return (
     <div className={`h-full bg-gray-50 p-4 md:p-6 space-y-4`}>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <p className="text-xs font-semibold text-gray-500 uppercase tracking-[0.2em]">
+          Timeline workspace
+        </p>
+        <div className="flex flex-wrap items-center gap-2">
+          {hasCalendarControls && (
+            <button
+              type="button"
+              onClick={() => setShowCalendarFilters((prev) => !prev)}
+              className="inline-flex items-center rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-sm transition hover:border-slate-300"
+            >
+              Calendars {activeCalendarsCount}/{calendars.length}
+            </button>
+          )}
+          {onToggleFocusMode && (
+            <button
+              type="button"
+              onClick={onToggleFocusMode}
+              className={`inline-flex items-center rounded-full border px-3 py-1.5 text-xs font-semibold shadow-sm transition ${
+                focusMode
+                  ? 'border-emerald-300 bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
+                  : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300'
+              }`}
+            >
+              {focusMode ? 'Exit clean focus' : 'Clean focus mode'}
+            </button>
+          )}
+        </div>
+      </div>
+
+      {showCalendarFilters && hasCalendarControls && (
+        <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
+          <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+            Show or hide calendars
+          </p>
+          <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+            {calendars.map((calendar) => {
+              const isSelected = selectedCalendars.includes(calendar.id);
+              return (
+                <label
+                  key={calendar.id}
+                  className={`flex cursor-pointer items-center gap-2 rounded-lg border px-2 py-1.5 text-sm transition ${
+                    isSelected
+                      ? 'border-slate-300 bg-slate-50 text-slate-800'
+                      : 'border-slate-200 bg-white text-slate-600'
+                  }`}
+                >
+                  <input
+                    type="checkbox"
+                    checked={isSelected}
+                    onChange={() => onToggleCalendar?.(calendar.id)}
+                    className="h-4 w-4 rounded border-slate-300 text-sky-500 focus:ring-sky-500"
+                  />
+                  <span
+                    className="h-2.5 w-2.5 rounded-full"
+                    style={{ backgroundColor: calendar.color || '#0ea5e9' }}
+                  />
+                  <span className="truncate">{calendar.name}</span>
+                </label>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* Live focus header */}
       <div
         className="rounded-3xl p-4 md:p-6 text-white shadow-xl border border-white/20 relative overflow-hidden"
@@ -751,8 +836,8 @@ const TimelineView: React.FC<TimelineViewProps> = ({
       </div>
 
       {/* Time-scaled timeline and context kit (4:1) */}
-      <div className="grid md:grid-cols-5 gap-4">
-        <div className="md:col-span-4 relative bg-white rounded-3xl shadow-sm border border-gray-100 p-4 md:p-6 overflow-hidden">
+      <div className={`grid gap-4 ${focusMode ? 'grid-cols-1' : 'md:grid-cols-5'}`}>
+        <div className={`${focusMode ? '' : 'md:col-span-4'} relative bg-white rounded-3xl shadow-sm border border-gray-100 p-4 md:p-6 overflow-hidden`}>
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <div className="text-xs font-semibold text-gray-500 uppercase tracking-[0.2em]">
@@ -1024,53 +1109,55 @@ const TimelineView: React.FC<TimelineViewProps> = ({
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 flex flex-col gap-3 md:col-span-1">
-          <div className="flex items-center justify-between">
-            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-              Context switch kit
+        {!focusMode && (
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 flex flex-col gap-3 md:col-span-1">
+            <div className="flex items-center justify-between">
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                Context switch kit
+              </p>
+              <span
+                className={`text-[10px] px-2 py-0.5 rounded-full bg-amber-50 text-amber-700`}
+              >
+                Focus
+              </span>
+            </div>
+            <p className="text-sm text-gray-700">
+              Quick actions to keep you on track for the current or next event.
             </p>
-            <span
-              className={`text-[10px] px-2 py-0.5 rounded-full bg-amber-50 text-amber-700`}
-            >
-              Focus
-            </span>
+            <div className="flex flex-col gap-2">
+              <button
+                onClick={handleLogCurrentEvent}
+                className="w-full text-left px-3 py-2 rounded-lg border border-gray-200 hover:border-blue-400 hover:bg-blue-50 text-sm font-semibold"
+              >
+                Log what I'm doing (comment on current)
+              </button>
+              <button
+                onClick={handleFollowUp}
+                className="w-full text-left px-3 py-2 rounded-lg border border-gray-200 hover:border-blue-400 hover:bg-blue-50 text-sm font-semibold"
+              >
+                Create follow-up meeting
+              </button>
+              <button
+                onClick={handleBreak}
+                className="w-full text-left px-3 py-2 rounded-lg border border-gray-200 hover:border-blue-400 hover:bg-blue-50 text-sm font-semibold"
+              >
+                Block a 10-min decompression break
+              </button>
+              <button
+                onClick={handleBlockers}
+                className="w-full text-left px-3 py-2 rounded-lg border border-gray-200 hover:border-blue-400 hover:bg-blue-50 text-sm font-semibold"
+              >
+                Capture blockers/decisions in this meeting
+              </button>
+              <button
+                onClick={handlePrepNext}
+                className="w-full text-left px-3 py-2 rounded-lg border border-gray-200 hover:border-blue-400 hover:bg-blue-50 text-sm font-semibold"
+              >
+                Prep the next meeting
+              </button>
+            </div>
           </div>
-          <p className="text-sm text-gray-700">
-            Quick actions to keep you on track for the current or next event.
-          </p>
-          <div className="flex flex-col gap-2">
-            <button
-              onClick={handleLogCurrentEvent}
-              className="w-full text-left px-3 py-2 rounded-lg border border-gray-200 hover:border-blue-400 hover:bg-blue-50 text-sm font-semibold"
-            >
-              Log what I'm doing (comment on current)
-            </button>
-            <button
-              onClick={handleFollowUp}
-              className="w-full text-left px-3 py-2 rounded-lg border border-gray-200 hover:border-blue-400 hover:bg-blue-50 text-sm font-semibold"
-            >
-              Create follow-up meeting
-            </button>
-            <button
-              onClick={handleBreak}
-              className="w-full text-left px-3 py-2 rounded-lg border border-gray-200 hover:border-blue-400 hover:bg-blue-50 text-sm font-semibold"
-            >
-              Block a 10-min decompression break
-            </button>
-            <button
-              onClick={handleBlockers}
-              className="w-full text-left px-3 py-2 rounded-lg border border-gray-200 hover:border-blue-400 hover:bg-blue-50 text-sm font-semibold"
-            >
-              Capture blockers/decisions in this meeting
-            </button>
-            <button
-              onClick={handlePrepNext}
-              className="w-full text-left px-3 py-2 rounded-lg border border-gray-200 hover:border-blue-400 hover:bg-blue-50 text-sm font-semibold"
-            >
-              Prep the next meeting
-            </button>
-          </div>
-        </div>
+        )}
       </div>
     </div>
   );

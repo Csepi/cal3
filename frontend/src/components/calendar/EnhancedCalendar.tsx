@@ -18,6 +18,7 @@ import type { Calendar as CalendarType } from '../../types/Calendar';
 import type { CalendarGroupWithCalendars } from '../../types/CalendarGroup';
 import { eventsApi } from '../../services/eventsApi';
 import { calendarApi } from '../../services/calendarApi';
+import { profileApi } from '../../services/profileApi';
 import { getThemeConfig, type ThemeConfig, LOADING_MESSAGES } from '../../constants';
 import { CalendarEventModal } from './CalendarEventModal';
 import { CalendarManager } from './CalendarManager';
@@ -112,10 +113,59 @@ function useCalendarState(themeColor: string, initialView: CalendarState['curren
   const [currentView, setCurrentView] =
     useState<CalendarState['currentView']>(initialView);
   const [selectedCalendars, setSelectedCalendars] = useState<number[]>([]);
+  const [storedVisibleCalendarIds, setStoredVisibleCalendarIds] = useState<number[] | null>(null);
+  const [calendarPreferenceLoaded, setCalendarPreferenceLoaded] = useState(false);
   const [selectedResourceTypes, setSelectedResourceTypes] = useState<number[]>([]);
 
   const previousCalendarIdsRef = useRef<number[]>([]);
   const hasInitializedSelectionRef = useRef(false);
+  const lastSavedVisibleCalendarsRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    let isActive = true;
+
+    const loadCalendarPreference = async () => {
+      try {
+        const profile = (await profileApi.getUserProfile()) as {
+          visibleCalendarIds?: number[] | null;
+        };
+
+        if (!isActive) return;
+
+        if (Array.isArray(profile.visibleCalendarIds)) {
+          const normalized = Array.from(
+            new Set(
+              profile.visibleCalendarIds.filter((id): id is number =>
+                Number.isFinite(id),
+              ),
+            ),
+          );
+          setStoredVisibleCalendarIds(normalized);
+          lastSavedVisibleCalendarsRef.current = JSON.stringify(
+            [...normalized].sort((a, b) => a - b),
+          );
+        } else {
+          setStoredVisibleCalendarIds(null);
+          lastSavedVisibleCalendarsRef.current = null;
+        }
+      } catch (error) {
+        if (isActive) {
+          console.warn('Failed to load visible calendar preference:', error);
+          setStoredVisibleCalendarIds(null);
+        }
+      } finally {
+        if (isActive) {
+          setCalendarPreferenceLoaded(true);
+        }
+      }
+    };
+
+    loadCalendarPreference();
+
+    return () => {
+      isActive = false;
+    };
+  }, []);
 
   useEffect(() => {
     if (calendars.length === 0) {
@@ -123,10 +173,25 @@ function useCalendarState(themeColor: string, initialView: CalendarState['curren
       return;
     }
 
+    if (!hasInitializedSelectionRef.current && !calendarPreferenceLoaded) {
+      return;
+    }
+
     const nextIds = calendars.map((calendar) => calendar.id);
     setSelectedCalendars((prev) => {
       if (!hasInitializedSelectionRef.current) {
         hasInitializedSelectionRef.current = true;
+
+        if (Array.isArray(storedVisibleCalendarIds)) {
+          const validStoredIds = storedVisibleCalendarIds.filter((id) =>
+            nextIds.includes(id),
+          );
+          if (storedVisibleCalendarIds.length > 0 && validStoredIds.length === 0) {
+            return nextIds;
+          }
+          return validStoredIds;
+        }
+
         return nextIds;
       }
 
@@ -141,7 +206,35 @@ function useCalendarState(themeColor: string, initialView: CalendarState['curren
     });
 
     previousCalendarIdsRef.current = nextIds;
-  }, [calendars]);
+  }, [calendars, calendarPreferenceLoaded, storedVisibleCalendarIds]);
+
+  useEffect(() => {
+    if (!calendarPreferenceLoaded || !hasInitializedSelectionRef.current) {
+      return;
+    }
+
+    const normalized = Array.from(
+      new Set(
+        selectedCalendars.filter((id): id is number => Number.isFinite(id)),
+      ),
+    ).sort((a, b) => a - b);
+    const serialized = JSON.stringify(normalized);
+
+    if (serialized === lastSavedVisibleCalendarsRef.current) {
+      return;
+    }
+
+    const timer = window.setTimeout(async () => {
+      try {
+        await profileApi.updateUserProfile({ visibleCalendarIds: normalized });
+        lastSavedVisibleCalendarsRef.current = serialized;
+      } catch (error) {
+        console.warn('Failed to save visible calendar preference:', error);
+      }
+    }, 500);
+
+    return () => window.clearTimeout(timer);
+  }, [selectedCalendars, calendarPreferenceLoaded]);
 
   // Modal states
   const [modals, setModals] = useState({
@@ -529,6 +622,8 @@ interface CalendarGridProps {
   themeConfig: ThemeConfig;
   timeFormat: string;
   accentColor: string;
+  timelineFocusMode: boolean;
+  onToggleTimelineFocusMode: () => void;
   isMobile?: boolean;
   onShowDayDetails?: (date: Date) => void;
   timezone?: string;
@@ -540,6 +635,8 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
   themeConfig,
   timeFormat,
   accentColor,
+  timelineFocusMode,
+  onToggleTimelineFocusMode,
   isMobile = false,
   onShowDayDetails,
   timezone,
@@ -648,6 +745,11 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
           onEventClick={handleEventClick}
           onCreateEvent={(date) => actions.createEvent(date)}
           accentColor={accentColor}
+          focusMode={timelineFocusMode}
+          onToggleFocusMode={isMobile ? undefined : onToggleTimelineFocusMode}
+          calendars={state.calendars}
+          selectedCalendars={state.selectedCalendars}
+          onToggleCalendar={actions.toggleCalendar}
           isMobile={isMobile}
           timeFormat={timeFormat === '12h' ? '12' : '24'}
           timezone={timezone}
@@ -1420,11 +1522,20 @@ export const EnhancedCalendar: React.FC<EnhancedCalendarProps> = ({
     isInitialLoading,
     isRefreshing,
     loadError,
-  } = useCalendarState(themeColor, isMobile ? 'timeline' : 'month');
+  } = useCalendarState(themeColor, 'timeline');
+  const [timelineFocusMode, setTimelineFocusMode] = useState(false);
   const resolvedTimezone = useMemo(
     () => timezone || Intl.DateTimeFormat().resolvedOptions().timeZone,
     [timezone],
   );
+  const isTimelineFocusActive =
+    !isMobile && state.currentView === 'timeline' && timelineFocusMode;
+
+  useEffect(() => {
+    if (state.currentView !== 'timeline' && timelineFocusMode) {
+      setTimelineFocusMode(false);
+    }
+  }, [state.currentView, timelineFocusMode]);
 
   const queryClient = useQueryClient();
 
@@ -1723,7 +1834,7 @@ export const EnhancedCalendar: React.FC<EnhancedCalendarProps> = ({
           onOpenCalendarSelector={() => setModals(prev => ({ ...prev, mobileDrawer: true }))}
           themeColor={themeConfig.primary}
         />
-      ) : (
+      ) : !isTimelineFocusActive ? (
         <CalendarHeader
           state={state}
           actions={actions}
@@ -1736,12 +1847,12 @@ export const EnhancedCalendar: React.FC<EnhancedCalendarProps> = ({
           onToggleMobileDrawer={() => setModals(prev => ({ ...prev, mobileDrawer: true }))}
           isMobile={isMobile}
         />
-      )}
+      ) : null}
 
       {/* Main Content */}
       <div className="flex">
         {/* Sidebar - Hidden on mobile */}
-        {!isMobile && (
+        {!isMobile && !isTimelineFocusActive && (
           <CalendarSidebar
             state={state}
             actions={actions}
@@ -1787,6 +1898,8 @@ export const EnhancedCalendar: React.FC<EnhancedCalendarProps> = ({
             themeConfig={themeConfig}
             timeFormat={timeFormat}
             accentColor={themeColor}
+            timelineFocusMode={isTimelineFocusActive}
+            onToggleTimelineFocusMode={() => setTimelineFocusMode((prev) => !prev)}
             isMobile={isMobile}
             timezone={resolvedTimezone}
             onShowDayDetails={(date) => {
