@@ -40,6 +40,17 @@ export default {
     extend: {
       fontFamily: {
         sans: ["Inter Variable", "Inter", ...defaultTheme.fontFamily.sans],
+        display: ['"Space Grotesk"', 'Manrope', ...defaultTheme.fontFamily.sans],
+        marketing: ['Manrope', ...defaultTheme.fontFamily.sans],
+      },
+      colors: {
+        prime: {
+          primary: '#3B82F6',
+          secondary: '#8B5CF6',
+          accent: '#10B981',
+          dark: '#1F2937',
+          light: '#F9FAFB',
+        },
       },
     },
   },

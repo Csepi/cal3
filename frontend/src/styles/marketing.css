@@ -1,0 +1,130 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap');
+
+:root {
+  --prime-primary: #3b82f6;
+  --prime-secondary: #8b5cf6;
+  --prime-accent: #10b981;
+  --prime-dark: #1f2937;
+  --prime-light: #f9fafb;
+  --prime-ink: #0f172a;
+}
+
+.marketing-shell {
+  background: transparent;
+  color: var(--prime-ink);
+  font-family: 'Manrope', 'Segoe UI', sans-serif;
+}
+
+.marketing-container {
+  margin: 0 auto;
+  max-width: 1200px;
+  padding: 0 1.25rem;
+}
+
+.marketing-display {
+  font-family: 'Space Grotesk', 'Manrope', sans-serif;
+  letter-spacing: -0.02em;
+}
+
+.marketing-glass {
+  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+}
+
+.marketing-gradient-text {
+  background: linear-gradient(
+    120deg,
+    var(--prime-primary) 0%,
+    var(--prime-secondary) 55%,
+    var(--prime-accent) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.marketing-dot-grid {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: radial-gradient(circle, rgba(59, 130, 246, 0.22) 1px, transparent 1.2px);
+  background-size: 18px 18px;
+  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.8), transparent 85%);
+}
+
+.marketing-card {
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid rgba(203, 213, 225, 0.55);
+  box-shadow: 0 22px 40px -34px rgba(15, 23, 42, 0.35);
+}
+
+.marketing-card-strong {
+  background: linear-gradient(150deg, #ffffff 0%, #eef6ff 100%);
+  border: 1px solid rgba(59, 130, 246, 0.25);
+}
+
+.marketing-pill {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  border: 1px solid rgba(59, 130, 246, 0.28);
+  background: rgba(59, 130, 246, 0.1);
+  color: #1e40af;
+  font-size: 0.79rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0.33rem 0.72rem;
+}
+
+.marketing-link {
+  position: relative;
+  color: #1e3a8a;
+  transition: color 180ms ease;
+}
+
+.marketing-link::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -0.16rem;
+  height: 2px;
+  transform: scaleX(0);
+  transform-origin: left;
+  background: linear-gradient(90deg, var(--prime-primary), var(--prime-secondary));
+  transition: transform 160ms ease;
+}
+
+.marketing-link:hover {
+  color: #111827;
+}
+
+.marketing-link:hover::after {
+  transform: scaleX(1);
+}
+
+.marketing-input {
+  width: 100%;
+  border-radius: 0.8rem;
+  border: 1px solid rgba(148, 163, 184, 0.45);
+  background: rgba(255, 255, 255, 0.92);
+  padding: 0.7rem 0.9rem;
+  font-size: 0.95rem;
+  outline: none;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.marketing-input:focus {
+  border-color: rgba(59, 130, 246, 0.6);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.18);
+}
+
+@media (max-width: 768px) {
+  .marketing-container {
+    padding: 0 1rem;
+  }
+}

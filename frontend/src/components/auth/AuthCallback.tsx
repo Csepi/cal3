@@ -52,14 +52,14 @@ const AuthCallback: React.FC = () => {
         provider,
       });
       void login({ token, username, role }).finally(() => {
-        window.location.href = '/';
+        window.location.href = '/app';
       });
     } else {
       clientLogger.warn('auth-callback', 'missing token in callback response', {
         provider,
       });
       // Redirect to login page if no token
-      window.location.href = '/';
+      window.location.href = '/app';
     }
   }, [location, login]);
 
