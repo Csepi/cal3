@@ -630,35 +630,37 @@ const TimelineView: React.FC<TimelineViewProps> = ({
 
   return (
     <div className={`h-full bg-gray-50 p-4 md:p-6 space-y-4`}>
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="text-xs font-semibold text-gray-500 uppercase tracking-[0.2em]">
-          Timeline workspace
-        </p>
-        <div className="flex flex-wrap items-center gap-2">
-          {hasCalendarControls && (
-            <button
-              type="button"
-              onClick={() => setShowCalendarFilters((prev) => !prev)}
-              className="inline-flex items-center rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-sm transition hover:border-slate-300"
-            >
-              Calendars {activeCalendarsCount}/{calendars.length}
-            </button>
-          )}
-          {onToggleFocusMode && (
-            <button
-              type="button"
-              onClick={onToggleFocusMode}
-              className={`inline-flex items-center rounded-full border px-3 py-1.5 text-xs font-semibold shadow-sm transition ${
-                focusMode
-                  ? 'border-emerald-300 bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
-                  : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300'
-              }`}
-            >
-              {focusMode ? 'Exit clean focus' : 'Clean focus mode'}
-            </button>
-          )}
+      {!focusMode && (
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <p className="text-xs font-semibold text-gray-500 uppercase tracking-[0.2em]">
+            Timeline workspace
+          </p>
+          <div className="flex flex-wrap items-center gap-2">
+            {hasCalendarControls && (
+              <button
+                type="button"
+                onClick={() => setShowCalendarFilters((prev) => !prev)}
+                className="inline-flex items-center rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-sm transition hover:border-slate-300"
+              >
+                Calendars {activeCalendarsCount}/{calendars.length}
+              </button>
+            )}
+            {onToggleFocusMode && (
+              <button
+                type="button"
+                onClick={onToggleFocusMode}
+                className={`inline-flex items-center rounded-full border px-3 py-1.5 text-xs font-semibold shadow-sm transition ${
+                  focusMode
+                    ? 'border-emerald-300 bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
+                    : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300'
+                }`}
+              >
+                {focusMode ? 'Exit clean focus' : 'Clean focus mode'}
+              </button>
+            )}
+          </div>
         </div>
-      </div>
+      )}
 
       {showCalendarFilters && hasCalendarControls && (
         <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
@@ -751,6 +753,28 @@ const TimelineView: React.FC<TimelineViewProps> = ({
           </div>
 
           <div className="text-right space-y-2 min-w-[180px]">
+            {focusMode && (
+              <div className="flex flex-wrap justify-end gap-2">
+                {hasCalendarControls && (
+                  <button
+                    type="button"
+                    onClick={() => setShowCalendarFilters((prev) => !prev)}
+                    className="inline-flex items-center rounded-full border border-white/40 bg-white/15 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-white/20"
+                  >
+                    Calendars {activeCalendarsCount}/{calendars.length}
+                  </button>
+                )}
+                {onToggleFocusMode && (
+                  <button
+                    type="button"
+                    onClick={onToggleFocusMode}
+                    className="inline-flex items-center rounded-full border border-white/40 bg-white/15 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-white/20"
+                  >
+                    Exit clean focus
+                  </button>
+                )}
+              </div>
+            )}
             <div className="text-3xl font-bold tracking-tight">
               {formatTime(now, timeFormat, resolvedTimezone)}
             </div>

@@ -1,4 +1,4 @@
-﻿import { useState } from 'react';
+import { useState } from 'react';
 import { apiService } from '../../services/api';
 import { useFeatureFlags } from '../../hooks/useFeatureFlags';
 import { ErrorBox } from '../common/ErrorBox';
@@ -167,7 +167,7 @@ const Login: React.FC = () => {
       <div className="relative z-10 bg-white/80 backdrop-blur-xl border border-blue-200 rounded-3xl shadow-2xl p-10 w-full max-w-md hover:bg-white/90 transition-all duration-300">
         <div className="primecal-hero mb-10">
           <div className="primecal-brand">
-            <img src="/primecal-icon.svg" alt="PrimeCal logo" className="primecal-logo" />
+            <img src="/primecal-icon.png" alt="PrimeCal logo" className="primecal-logo" />
             <h1 className="hero-title">
               Prime<span className="highlight">Cal</span>
             </h1>

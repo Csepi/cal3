@@ -224,17 +224,20 @@ function useCalendarState(themeColor: string, initialView: CalendarState['curren
       return;
     }
 
-    const timer = window.setTimeout(async () => {
+    const shouldStoreAll = normalized.length === calendars.length;
+    const payload = shouldStoreAll ? null : normalized;
+
+    const persistSelection = async () => {
       try {
-        await profileApi.updateUserProfile({ visibleCalendarIds: normalized });
+        await profileApi.updateUserProfile({ visibleCalendarIds: payload });
         lastSavedVisibleCalendarsRef.current = serialized;
       } catch (error) {
         console.warn('Failed to save visible calendar preference:', error);
       }
-    }, 500);
+    };
 
-    return () => window.clearTimeout(timer);
-  }, [selectedCalendars, calendarPreferenceLoaded]);
+    void persistSelection();
+  }, [selectedCalendars, calendarPreferenceLoaded, calendars.length]);
 
   // Modal states
   const [modals, setModals] = useState({

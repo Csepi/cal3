@@ -1,4 +1,4 @@
-﻿import { useState } from 'react';
+import { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import CTA from './CTA';
 import { useMarketing } from '../../hooks/useMarketing';
@@ -23,7 +23,7 @@ export function Navbar() {
     <header className="sticky top-0 z-40 border-b border-slate-200/70 bg-white/80 backdrop-blur-md">
       <div className="marketing-container flex h-16 items-center justify-between">
         <NavLink to="/" className="flex items-center gap-3">
-          <img src="/primecal-icon.svg" alt="PrimeCal logo" className="h-10 w-10" />
+          <img src="/primecal-icon.png" alt="PrimeCal logo" className="h-10 w-10" />
           <div className="leading-tight">
             <p className="hero-title hero-title-nav">
               Prime<span className="highlight">Cal</span>

@@ -256,7 +256,7 @@ export const ResponsiveNavigation: React.FC<ResponsiveNavigationProps> = React.m
       <div className="mx-auto flex max-w-7xl items-center gap-6 px-4 py-3 md:px-6 md:py-4">
         {/* Brand */}
         <div className="flex items-center gap-3 shrink-0">
-          <img src="/primecal-icon.svg" alt="PrimeCal logo" className="h-10 w-10" />
+          <img src="/primecal-icon.png" alt="PrimeCal logo" className="h-10 w-10" />
           <div className="leading-tight">
             <p className="text-lg font-semibold text-gray-900">PrimeCal</p>
             <p className="text-xs uppercase tracking-[0.3em] text-gray-500">Be in sync with reality</p>
