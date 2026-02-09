@@ -17,7 +17,7 @@ const idleClass = 'text-slate-600 hover:text-slate-900';
 export function Navbar() {
   const [open, setOpen] = useState(false);
   const { appUrl, isExternalAppUrl } = useMarketing();
-  const loginUrl = 'https://app.primecal.com';
+  const loginUrl = 'https://app.primecal.eu';
 
   return (
     <header className="sticky top-0 z-40 border-b border-slate-200/70 bg-white/80 backdrop-blur-md">

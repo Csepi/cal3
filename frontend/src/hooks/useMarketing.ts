@@ -545,7 +545,7 @@ export function useMarketing(): MarketingData {
       setAppUrl(configured);
       return;
     }
-    setAppUrl(import.meta.env.DEV ? '/app' : 'https://app.primecal.com');
+    setAppUrl(import.meta.env.DEV ? '/app' : 'https://app.primecal.eu');
   }, []);
 
   return useMemo(
