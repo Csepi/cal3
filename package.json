@@ -1,16 +1,21 @@
 {
-  "name": "calendar-mvp",
+  "name": "cal3",
   "version": "1.1.0",
-  "description": "Calendar MVP static frontend",
-  "main": "server.js",
+  "description": "CAL3 application workspace",
   "engines": {
     "node": "18.x",
     "npm": "10.x"
   },
   "scripts": {
-    "start": "node dist/server.js",
-    "dev": "nodemon --exec ts-node src/server.ts",
-    "build": "tsc",
+    "start": "node scripts/run-app.cjs start",
+    "start:backend": "npm --prefix backend-nestjs run start:prod",
+    "start:frontend": "npm --prefix frontend run preview -- --host 0.0.0.0 --port 8080 --strictPort",
+    "dev": "node scripts/run-app.cjs dev",
+    "dev:backend": "npm --prefix backend-nestjs run start:dev",
+    "dev:frontend": "npm --prefix frontend run dev -- --host 0.0.0.0 --port 5173",
+    "build": "npm run build:backend && npm run build:frontend",
+    "build:backend": "npm --prefix backend-nestjs run build",
+    "build:frontend": "npm --prefix frontend run build",
     "prestart": "npm run build",
     "postinstall": "echo 'Dependencies installed successfully'",
     "test": "echo \"No tests specified\"",
@@ -29,9 +34,9 @@
     "scripts:verify:org-access": "node scripts/verify/verify-org-access.js"
   },
   "keywords": [
+    "cal3",
     "calendar",
-    "mvp",
-    "static"
+    "app"
   ],
   "author": "",
   "license": "MIT",

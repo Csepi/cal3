@@ -1,5 +1,5 @@
 #!/bin/bash
-echo "Starting Calendar MVP deployment..."
+echo "Starting CAL3 app deployment..."
 
 # Navigate to app directory
 cd /home/site/wwwroot
@@ -11,5 +11,5 @@ if [ ! -d "node_modules" ]; then
 fi
 
 # Start the application
-echo "Starting server..."
+echo "Starting application services..."
 npm start

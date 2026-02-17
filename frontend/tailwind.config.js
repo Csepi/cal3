@@ -41,7 +41,6 @@ export default {
       fontFamily: {
         sans: ["Inter Variable", "Inter", ...defaultTheme.fontFamily.sans],
         display: ['"Space Grotesk"', 'Manrope', ...defaultTheme.fontFamily.sans],
-        marketing: ['Manrope', ...defaultTheme.fontFamily.sans],
       },
       colors: {
         prime: {
