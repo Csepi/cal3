@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       image_tag:
-        description: Optional image tag override (default: short SHA)
+        description: "Optional image tag override (default: short SHA)"
         required: false
         type: string
 
