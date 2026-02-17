@@ -18,14 +18,17 @@ const DEFAULT_BACKEND_PORT = '8081';
 
 interface RuntimeGlobalScope {
   BASE_URL?: unknown;
+  BACKEND_URL?: unknown;
   API_URL?: unknown;
   __BASE_URL__?: unknown;
+  __BACKEND_URL__?: unknown;
   __API_URL__?: unknown;
   BACKEND_PORT?: unknown;
   __BACKEND_PORT__?: unknown;
   API_PORT?: unknown;
   ENV?: {
     BASE_URL?: unknown;
+    BACKEND_URL?: unknown;
     API_URL?: unknown;
     BACKEND_PORT?: unknown;
     API_PORT?: unknown;
@@ -33,6 +36,7 @@ interface RuntimeGlobalScope {
   };
   CONFIG?: {
     BASE_URL?: unknown;
+    BACKEND_URL?: unknown;
     API_URL?: unknown;
     BACKEND_PORT?: unknown;
     LOG_LEVEL?: unknown;
@@ -40,6 +44,7 @@ interface RuntimeGlobalScope {
   process?: {
     env?: {
       BASE_URL?: unknown;
+      BACKEND_URL?: unknown;
       API_URL?: unknown;
       BACKEND_PORT?: unknown;
       API_PORT?: unknown;
@@ -117,19 +122,52 @@ const readBackendPortOverride = (): string | null => {
   return null;
 };
 
+const readGlobalApiUrl = (): string | null => {
+  const globalScope = globalThis as RuntimeGlobalScope;
+  const candidates = [
+    globalScope?.BACKEND_URL,
+    globalScope?.API_URL,
+    globalScope?.__BACKEND_URL__,
+    globalScope?.__API_URL__,
+    globalScope?.ENV?.BACKEND_URL,
+    globalScope?.ENV?.API_URL,
+    globalScope?.CONFIG?.BACKEND_URL,
+    globalScope?.CONFIG?.API_URL,
+    globalScope?.process?.env?.BACKEND_URL,
+    globalScope?.process?.env?.API_URL,
+  ];
+
+  for (const candidate of candidates) {
+    if (isNonEmptyString(candidate)) {
+      // Explicit API URLs must be trusted as-is; do not force a port on them.
+      return normaliseBase(candidate, null);
+    }
+  }
+
+  return null;
+};
+
+const readMetaApiUrl = (): string | null => {
+  const candidates = [readMetaContent('primecal-backend-url'), readMetaContent('primecal-api-url')];
+
+  for (const candidate of candidates) {
+    if (candidate) {
+      // Explicit API URLs must be trusted as-is; do not force a port on them.
+      return normaliseBase(candidate, null);
+    }
+  }
+
+  return null;
+};
+
 const readGlobalBaseUrl = (portOverride?: string | null): string | null => {
   const globalScope = globalThis as RuntimeGlobalScope;
   const candidates = [
     globalScope?.BASE_URL,
-    globalScope?.API_URL,
     globalScope?.__BASE_URL__,
-    globalScope?.__API_URL__,
     globalScope?.ENV?.BASE_URL,
-    globalScope?.ENV?.API_URL,
     globalScope?.CONFIG?.BASE_URL,
-    globalScope?.CONFIG?.API_URL,
     globalScope?.process?.env?.BASE_URL,
-    globalScope?.process?.env?.API_URL,
   ];
 
   for (const candidate of candidates) {
@@ -142,16 +180,9 @@ const readGlobalBaseUrl = (portOverride?: string | null): string | null => {
 };
 
 const readMetaBaseUrl = (portOverride?: string | null): string | null => {
-  const candidates = [
-    readMetaContent('primecal-backend-url'),
-    readMetaContent('primecal-api-url'),
-    readMetaContent('primecal-base-url'),
-  ];
-
-  for (const candidate of candidates) {
-    if (candidate) {
-      return normaliseBase(candidate, portOverride);
-    }
+  const candidate = readMetaContent('primecal-base-url');
+  if (candidate) {
+    return normaliseBase(candidate, portOverride);
   }
 
   return null;
@@ -161,16 +192,28 @@ const resolveBaseUrl = (): string => {
   const portOverride = readBackendPortOverride();
   lastPortOverride = portOverride;
 
-  const globalOverride = readGlobalBaseUrl(portOverride);
-  if (globalOverride) {
-    lastResolutionSource = 'global override';
-    return globalOverride;
+  const globalApiOverride = readGlobalApiUrl();
+  if (globalApiOverride) {
+    lastResolutionSource = 'global api override';
+    return globalApiOverride;
   }
 
-  const metaOverride = readMetaBaseUrl(portOverride);
-  if (metaOverride) {
-    lastResolutionSource = 'meta tag override';
-    return metaOverride;
+  const metaApiOverride = readMetaApiUrl();
+  if (metaApiOverride) {
+    lastResolutionSource = 'meta api override';
+    return metaApiOverride;
+  }
+
+  const globalBaseOverride = readGlobalBaseUrl(portOverride);
+  if (globalBaseOverride) {
+    lastResolutionSource = 'global base override';
+    return globalBaseOverride;
+  }
+
+  const metaBaseOverride = readMetaBaseUrl(portOverride);
+  if (metaBaseOverride) {
+    lastResolutionSource = 'meta base override';
+    return metaBaseOverride;
   }
 
   if (typeof window !== 'undefined') {

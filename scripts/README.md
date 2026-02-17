@@ -7,6 +7,7 @@ Central place for operational scripts used for setup, checks, verification, and 
 - `scripts:db:*` - database diagnostics and migration helpers
 - `scripts:test:*` - script-level functional checks
 - `scripts:verify:*` - deployment/migration verification scripts
+- `scripts/azure/*` - Azure deployment helpers (SWA + Container Apps)
 
 ## Usage Pattern
 ```bash

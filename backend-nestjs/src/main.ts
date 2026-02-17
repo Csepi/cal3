@@ -187,6 +187,21 @@ async function bootstrap() {
       next();
     });
 
+    // Keep root URL explicit for uptime checks and humans; API routes stay under /api.
+    app.use((req: Request, res: Response, next: NextFunction) => {
+      if (req.method === 'GET' && req.path === '/') {
+        res.status(200).json({
+          status: 'ok',
+          service: 'primecal-backend',
+          health: '/api/health',
+          docs: '/api/docs',
+          timestamp: new Date().toISOString(),
+        });
+        return;
+      }
+      next();
+    });
+
     dbLogger.log('Registering global filters and interceptors...');
     const requestContext = app.get(RequestContextService);
     app.useGlobalFilters(new AllExceptionsFilter(requestContext));

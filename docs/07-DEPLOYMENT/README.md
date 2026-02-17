@@ -35,3 +35,4 @@ If behavior is unexpected, check configuration, permissions, and request logs be
 ## Next Steps
 - `../README.md`
 - `../09-TROUBLESHOOTING/README.md`
+- `./azure-swa-containerapps.md`

@@ -1,0 +1,72 @@
+name: Deploy Azure Backend (Container App)
+
+on:
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: Optional image tag override (default: short SHA)
+        required: false
+        type: string
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  deploy_backend:
+    runs-on: ubuntu-latest
+    name: Build and Deploy Backend to Container Apps
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Azure login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Resolve image tag
+        id: image_tag
+        shell: bash
+        run: |
+          if [[ -n "${{ github.event.inputs.image_tag }}" ]]; then
+            echo "tag=${{ github.event.inputs.image_tag }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "tag=${GITHUB_SHA::12}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Deploy backend container app
+        shell: bash
+        env:
+          IMAGE_TAG: ${{ steps.image_tag.outputs.tag }}
+          AZ_SUBSCRIPTION_ID: ${{ vars.AZ_SUBSCRIPTION_ID }}
+          AZ_RESOURCE_GROUP: ${{ vars.AZ_RESOURCE_GROUP }}
+          AZ_CONTAINERAPP_NAME: ${{ vars.AZ_CONTAINERAPP_NAME }}
+          AZ_ACR_NAME: ${{ vars.AZ_ACR_NAME }}
+          AZ_ACR_IMAGE_REPO: ${{ vars.AZ_ACR_IMAGE_REPO }}
+          NODE_ENV: production
+          FRONTEND_URL: ${{ vars.CAL3_FRONTEND_URL }}
+          BACKEND_URL: ${{ vars.CAL3_BACKEND_URL }}
+          API_URL: ${{ vars.CAL3_BACKEND_URL }}
+          BASE_URL: ${{ vars.CAL3_BACKEND_URL }}
+          PORT: "8081"
+          BACKEND_PORT: "8081"
+          FRONTEND_PORT: "443"
+          FRONTEND_HOST_PORT: "443"
+          BACKEND_HOST_PORT: "443"
+          SECURITY_ALLOWED_ORIGINS: ${{ vars.CAL3_FRONTEND_URL }}
+          DB_HOST: ${{ vars.CAL3_DB_HOST }}
+          DB_PORT: ${{ vars.CAL3_DB_PORT }}
+          DB_USERNAME: ${{ vars.CAL3_DB_USERNAME }}
+          DB_PASSWORD: ${{ secrets.CAL3_DB_PASSWORD }}
+          DB_NAME: ${{ vars.CAL3_DB_NAME }}
+          DB_SSL: ${{ vars.CAL3_DB_SSL }}
+          DB_SSL_REJECT_UNAUTHORIZED: ${{ vars.CAL3_DB_SSL_REJECT_UNAUTHORIZED }}
+          DB_CONNECTION_TIMEOUT: "60000"
+          DB_IDLE_TIMEOUT: "60000"
+          WAIT_FOR_DB: "true"
+          WAIT_FOR_DB_MAX_ATTEMPTS: "60"
+          WAIT_FOR_DB_INTERVAL: "2"
+          JWT_SECRET: ${{ secrets.CAL3_JWT_SECRET }}
+        run: |
+          chmod +x scripts/azure/update-backend-containerapp.sh
+          scripts/azure/update-backend-containerapp.sh
