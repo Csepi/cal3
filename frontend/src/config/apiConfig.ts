@@ -140,7 +140,7 @@ const readGlobalApiUrl = (): string | null => {
   for (const candidate of candidates) {
     if (isNonEmptyString(candidate)) {
       // Explicit API URLs must be trusted as-is; do not force a port on them.
-      return normaliseBase(candidate, null);
+      return trimTrailingSlash(toAbsoluteUrl(candidate));
     }
   }
 
@@ -153,7 +153,7 @@ const readMetaApiUrl = (): string | null => {
   for (const candidate of candidates) {
     if (candidate) {
       // Explicit API URLs must be trusted as-is; do not force a port on them.
-      return normaliseBase(candidate, null);
+      return trimTrailingSlash(toAbsoluteUrl(candidate));
     }
   }
 
