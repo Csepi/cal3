@@ -14,6 +14,12 @@ export interface TokenIssueResult {
   jti: string;
 }
 
+export interface WidgetTokenIssueResult {
+  widgetToken: string;
+  widgetExpiresIn: number;
+  widgetExpiresAt: Date;
+}
+
 export interface TokenMetadata {
   ip?: string;
   userAgent?: string;
@@ -30,6 +36,10 @@ export class TokenService {
     process.env.JWT_REFRESH_TTL ?? '1209600',
     10,
   ); // 14 days default
+  private readonly widgetTtlSeconds = parseInt(
+    process.env.JWT_WIDGET_TTL ?? '86400',
+    10,
+  ); // 24 hours default
   private readonly issuer = process.env.JWT_ISSUER ?? 'cal3-backend';
   private readonly audience = process.env.JWT_AUDIENCE ?? 'cal3-users';
 
@@ -141,6 +151,31 @@ export class TokenService {
         revocationReason: reason,
       },
     );
+  }
+
+  async issueWidgetToken(user: User): Promise<WidgetTokenIssueResult> {
+    const jti = randomUUID();
+    const widgetToken = await this.jwtService.signAsync(
+      {
+        sub: user.id,
+        username: user.username,
+        role: user.role,
+        scope: 'widget',
+        jti,
+      },
+      {
+        expiresIn: `${this.widgetTtlSeconds}s`,
+        issuer: this.issuer,
+        audience: this.audience,
+      },
+    );
+    const widgetExpiresAt = new Date(Date.now() + this.widgetTtlSeconds * 1000);
+
+    return {
+      widgetToken,
+      widgetExpiresIn: this.widgetTtlSeconds,
+      widgetExpiresAt,
+    };
   }
 
   private createRefreshToken(): string {

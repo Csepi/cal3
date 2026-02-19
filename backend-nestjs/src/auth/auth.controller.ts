@@ -128,6 +128,20 @@ export class AuthController {
     return { success: true };
   }
 
+  @Post('widget-token')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Issue a widget token for Android home-screen widget sync' })
+  async issueWidgetToken(@Req() req: RequestWithUser) {
+    const token = await this.authService.issueWidgetToken(req.user.id);
+    return {
+      widget_token: token.widgetToken,
+      expires_in: token.widgetExpiresIn,
+      expires_at: token.widgetExpiresAt.toISOString(),
+      token_type: 'Bearer',
+    };
+  }
+
   // Google OAuth routes
   @Get('google')
   @UseGuards(AuthGuard('google'))

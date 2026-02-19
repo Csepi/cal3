@@ -8,7 +8,11 @@ import { Repository } from 'typeorm';
 import * as bcrypt from 'bcryptjs';
 import { User, UserRole } from '../entities/user.entity';
 import { RegisterDto, LoginDto, AuthResponseDto } from '../dto/auth.dto';
-import { TokenService, TokenIssueResult } from './token.service';
+import {
+  TokenService,
+  TokenIssueResult,
+  WidgetTokenIssueResult,
+} from './token.service';
 import { SecurityAuditService } from '../logging/security-audit.service';
 import { LoginAttemptService } from './services/login-attempt.service';
 import { UserBootstrapService } from '../tasks/user-bootstrap.service';
@@ -268,6 +272,11 @@ export class AuthService {
       userId,
       ip: metadata.ip,
     });
+  }
+
+  async issueWidgetToken(userId: number): Promise<WidgetTokenIssueResult> {
+    const user = await this.validateUser(userId);
+    return this.tokenService.issueWidgetToken(user);
   }
 
   private async createSession(

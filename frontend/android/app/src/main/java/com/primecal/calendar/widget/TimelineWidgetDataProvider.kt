@@ -28,7 +28,7 @@ class TimelineWidgetDataProvider(private val context: Context) {
         rangeWindow: TimelineRangeWindow,
         entryLimit: Int,
     ): TimelineFetchOutcome = withContext(Dispatchers.IO) {
-        val token = obtainAccessToken()
+        val token = obtainAuthorizationToken()
         if (token.isNullOrBlank()) {
             val fallback = queryContentProvider(entryLimit)
             return@withContext if (fallback.isNotEmpty()) {
@@ -70,6 +70,7 @@ class TimelineWidgetDataProvider(private val context: Context) {
             synchronized(tokenLock) {
                 cachedAccessToken = null
             }
+            clearNativeWidgetToken()
         }
 
         val fallback = queryContentProvider(entryLimit)
@@ -83,7 +84,15 @@ class TimelineWidgetDataProvider(private val context: Context) {
         )
     }
 
-    private fun obtainAccessToken(): String? {
+    private fun obtainAuthorizationToken(): String? {
+        val nativeToken = loadTokenFromNativeStorage()
+        if (!nativeToken.isNullOrBlank()) {
+            synchronized(tokenLock) {
+                cachedAccessToken = nativeToken
+            }
+            return nativeToken
+        }
+
         synchronized(tokenLock) {
             if (!cachedAccessToken.isNullOrBlank()) {
                 return cachedAccessToken
@@ -119,6 +128,36 @@ class TimelineWidgetDataProvider(private val context: Context) {
             cachedAccessToken = token
         }
         return token
+    }
+
+    private fun loadTokenFromNativeStorage(): String? {
+        val prefs = context.getSharedPreferences(
+            WidgetAuthStoragePlugin.PREFS_NAME,
+            Context.MODE_PRIVATE,
+        )
+        val token = prefs.getString(WidgetAuthStoragePlugin.KEY_TOKEN, null)
+        val expiresAt = prefs.getLong(WidgetAuthStoragePlugin.KEY_EXPIRES_AT, 0L)
+        if (token.isNullOrBlank()) {
+            return null
+        }
+        if (expiresAt > 0L && System.currentTimeMillis() >= expiresAt) {
+            prefs.edit()
+                .remove(WidgetAuthStoragePlugin.KEY_TOKEN)
+                .remove(WidgetAuthStoragePlugin.KEY_EXPIRES_AT)
+                .apply()
+            return null
+        }
+        return token
+    }
+
+    private fun clearNativeWidgetToken() {
+        context.getSharedPreferences(
+            WidgetAuthStoragePlugin.PREFS_NAME,
+            Context.MODE_PRIVATE,
+        ).edit()
+            .remove(WidgetAuthStoragePlugin.KEY_TOKEN)
+            .remove(WidgetAuthStoragePlugin.KEY_EXPIRES_AT)
+            .apply()
     }
 
     private fun gatherCookies(): String? {
@@ -184,12 +223,7 @@ class TimelineWidgetDataProvider(private val context: Context) {
         val root = runCatching { JSONTokener(rawBody).nextValue() }.getOrNull() ?: return emptyList()
         val sourceArray = when (root) {
             is JSONArray -> root
-            is JSONObject -> {
-                when (val data = root.opt("data")) {
-                    is JSONArray -> data
-                    else -> root.optJSONArray("events") ?: JSONArray()
-                }
-            }
+            is JSONObject -> extractArrayFromPayload(root)
             else -> JSONArray()
         }
 
@@ -240,6 +274,23 @@ class TimelineWidgetDataProvider(private val context: Context) {
             )
         }
         return parsed
+    }
+
+    private fun extractArrayFromPayload(payload: JSONObject): JSONArray {
+        (payload.opt("data") as? JSONArray)?.let { return it }
+        payload.optJSONArray("events")?.let { return it }
+        payload.optJSONArray("entries")?.let { return it }
+        payload.optJSONArray("items")?.let { return it }
+
+        val nestedData = payload.optJSONObject("data")
+        if (nestedData != null) {
+            nestedData.optJSONArray("events")?.let { return it }
+            nestedData.optJSONArray("entries")?.let { return it }
+            nestedData.optJSONArray("items")?.let { return it }
+            nestedData.optJSONArray("data")?.let { return it }
+        }
+
+        return JSONArray()
     }
 
     private fun executeRequest(

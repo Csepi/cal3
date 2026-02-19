@@ -1,6 +1,7 @@
 import { BASE_URL } from '../config/apiConfig';
 import { applyCsrfHeader, clearCsrfToken, ensureCsrfToken } from './csrf';
 import { clientLogger } from '../utils/clientLogger';
+import { clearWidgetToken, syncWidgetToken } from './widgetAuthStorage';
 
 interface SessionUser {
   id?: number;
@@ -137,6 +138,7 @@ class SessionManager {
       userId: payload.user?.id ?? null,
       expiresIn: payload.expires_in,
     });
+    void syncWidgetToken(payload.access_token);
     this.notify();
   }
 
@@ -160,6 +162,7 @@ class SessionManager {
       username: resolvedUser.username,
       expiresAt: exp ? new Date(exp).toISOString() : null,
     });
+    void syncWidgetToken(token);
     this.notify();
   }
 
@@ -255,6 +258,7 @@ class SessionManager {
       localStorage.removeItem('themeColor');
     }
     clearCsrfToken();
+    void clearWidgetToken();
     this.notify();
   }
 

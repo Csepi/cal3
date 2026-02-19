@@ -2,14 +2,14 @@
 // Do not edit manually. Update backend-nestjs/.env or Docker env vars instead.
 (function bootstrapRuntimeConfig(globalScope){
   const env = {
-  "BASE_URL": "http://localhost",
-  "FRONTEND_URL": "http://localhost:8080",
-  "BACKEND_URL": "http://localhost:8081",
-  "API_URL": "http://localhost:8081",
-  "FRONTEND_PORT": "8080",
-  "BACKEND_PORT": "8081",
+  "BASE_URL": "https://app.primecal.eu",
+  "FRONTEND_URL": "https://app.primecal.eu",
+  "BACKEND_URL": "https://api.primecal.eu",
+  "API_URL": "https://api.primecal.eu",
+  "FRONTEND_PORT": "443",
+  "BACKEND_PORT": "443",
   "SOURCE": "backend-dotenv",
-  "GENERATED_AT": "2026-02-03T11:57:22.174Z"
+  "GENERATED_AT": "2026-02-19T10:21:26.302Z"
 };
   const target = (globalScope.ENV = globalScope.ENV || {});
   for (const [key, value] of Object.entries(env)) {
