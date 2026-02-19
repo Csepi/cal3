@@ -61,7 +61,7 @@ npm install @capacitor/core @capacitor/cli @capacitor/android
 ### 2. Initialize Capacitor
 
 ```bash
-npx cap init "Cal3 Calendar" "com.cal3.calendar" --web-dir=dist
+npx cap init "PrimeCal Calendar" "com.primecal.calendar" --web-dir=dist
 ```
 
 This creates `capacitor.config.ts` with the app configuration.
@@ -164,29 +164,29 @@ cd frontend/android
 
 ```bash
 # Uninstall old version (if exists)
-adb uninstall com.cal3.calendar
+adb uninstall com.primecal.calendar
 
 # Install new APK
 adb install frontend/android/app/build/outputs/apk/debug/app-debug.apk
 
 # Launch app
-adb shell am start -n com.cal3.calendar/.MainActivity
+adb shell am start -n com.primecal.calendar/.MainActivity
 ```
 
 ### View Logs
 
 ```bash
 # Real-time logs
-adb logcat | grep -i cal3
+adb logcat | grep -i primecal
 
 # Recent logs
-adb logcat -d -t 200 | grep -i cal3
+adb logcat -d -t 200 | grep -i primecal
 
 # Error logs only
-adb logcat -d *:E | grep -i cal3
+adb logcat -d *:E | grep -i primecal
 
 # Check if app is running
-adb shell ps -A | grep cal3
+adb shell ps -A | grep primecal
 ```
 
 ## Configuration
@@ -197,11 +197,13 @@ adb shell ps -A | grep cal3
 import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.cal3.calendar',
-  appName: 'Cal3 Calendar',
+  appId: 'com.primecal.calendar',
+  appName: 'PrimeCal Calendar',
   webDir: 'dist',
   server: {
-    androidScheme: 'https'
+    url: 'https://app.primecal.eu',
+    allowNavigation: ['app.primecal.eu', 'api.primecal.eu', 'primecal.eu', '*.primecal.eu'],
+    androidScheme: 'https',
   }
 };
 
@@ -427,6 +429,36 @@ See [Capacitor Plugins](https://capacitorjs.com/docs/plugins) for complete list.
 - [Android Developer Guide](https://developer.android.com/guide)
 - [Capacitor Android Configuration](https://capacitorjs.com/docs/android/configuration)
 - [Gradle Build Tool](https://gradle.org/guides/)
+
+## Timeline Home Screen Widget
+
+The Android app now includes a configurable timeline widget (`TimelineWidgetProvider`) with small/medium/large layouts.
+
+### Key files
+
+- `frontend/android/app/src/main/java/com/primecal/calendar/widget/TimelineWidgetProvider.kt`
+- `frontend/android/app/src/main/java/com/primecal/calendar/widget/TimelineWidgetConfigActivity.kt`
+- `frontend/android/app/src/main/java/com/primecal/calendar/widget/TimelineWidgetRemoteViewsService.kt`
+- `frontend/android/app/src/main/java/com/primecal/calendar/widget/TimelineWidgetRepository.kt`
+- `frontend/android/app/src/main/java/com/primecal/calendar/widget/TimelineWidgetDataProvider.kt`
+- `frontend/android/app/src/main/res/xml/timeline_widget_info.xml`
+
+### User flow
+
+1. Long-press Android home screen and add **PrimeCal Timeline** widget.
+2. Configure date range, entry count, color scheme, refresh interval, and click behavior.
+3. Widget loads timeline entries and supports:
+   - Refresh button
+   - Previous/next range navigation
+   - Quick add action
+   - Tap entry to open PrimeCal at the selected item/day
+
+### Update behavior
+
+- Manual refresh from widget
+- Periodic refresh through WorkManager (minimum every 15 minutes)
+- Refresh on boot/timezone/time changes
+- External app-triggered refresh broadcast: `com.primecal.calendar.widget.ACTION_TIMELINE_DATA_CHANGED`
 
 ## Support
 

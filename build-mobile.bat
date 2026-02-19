@@ -1,12 +1,13 @@
 @echo off
-REM Cal3 Mobile App Build Script
+REM PrimeCal Mobile App Build Script
 REM This script builds the Android APK without installation
 
 REM Add Node.js to PATH
 set "PATH=C:\Program Files\nodejs;%PATH%"
+set "CAPACITOR_SERVER_URL=https://app.primecal.eu"
 
 echo ========================================
-echo Cal3 Mobile App Builder
+echo PrimeCal Mobile App Builder
 echo ========================================
 echo.
 

@@ -3,10 +3,14 @@
 	"appName": "PrimeCal Calendar",
 	"webDir": "dist",
 	"server": {
-		"url": "http://localhost:8080",
-		"cleartext": true,
+		"url": "https://app.primecal.eu",
+		"cleartext": false,
 		"allowNavigation": [
-			"localhost"
-		]
+			"app.primecal.eu",
+			"api.primecal.eu",
+			"primecal.eu",
+			"*.primecal.eu"
+		],
+		"androidScheme": "https"
 	}
 }

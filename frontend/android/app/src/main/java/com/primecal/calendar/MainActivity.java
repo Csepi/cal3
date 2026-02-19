@@ -1,4 +1,4 @@
-package com.cal3.calendar;
+package com.primecal.calendar;
 
 import com.getcapacitor.BridgeActivity;
 

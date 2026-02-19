@@ -2,6 +2,50 @@
 <resources>
     <string name="app_name">PrimeCal Calendar</string>
     <string name="title_activity_main">PrimeCal Calendar</string>
-    <string name="package_name">com.cal3.calendar</string>
-    <string name="custom_url_scheme">com.cal3.calendar</string>
+    <string name="package_name">com.primecal.calendar</string>
+    <string name="custom_url_scheme">com.primecal.calendar</string>
+
+    <string name="widget_timeline_description">PrimeCal timeline overview widget</string>
+    <string name="widget_title">Timeline</string>
+    <string name="widget_last_updated">Updated %1$s</string>
+    <string name="widget_last_updated_never">Not updated yet</string>
+    <string name="widget_state_loading">Loading timeline…</string>
+    <string name="widget_state_empty">No timeline entries found</string>
+    <string name="widget_state_error_retry">Unable to load data. Tap refresh to retry.</string>
+    <string name="widget_error_auth">Sign in to PrimeCal in the app to load timeline data.</string>
+    <string name="widget_error_auth_cached">Showing cached entries. Open PrimeCal to refresh session.</string>
+    <string name="widget_error_generic">Unable to load timeline data.</string>
+    <string name="widget_untitled_event">(Untitled event)</string>
+
+    <string name="widget_action_refresh">Refresh timeline</string>
+    <string name="widget_action_previous">Previous range</string>
+    <string name="widget_action_next">Next range</string>
+    <string name="widget_action_add">Quick add</string>
+
+    <string name="widget_config_title">Configure Timeline Widget</string>
+    <string name="widget_config_subtitle">Choose what the widget displays and how often it refreshes.</string>
+    <string name="widget_field_date_range">Date range</string>
+    <string name="widget_field_entries">Entries shown</string>
+    <string name="widget_field_color_scheme">Color scheme</string>
+    <string name="widget_field_refresh_frequency">Refresh frequency</string>
+    <string name="widget_field_click_behavior">Entry click behavior</string>
+    <string name="widget_save">Save</string>
+    <string name="widget_cancel">Cancel</string>
+    <string name="widget_entries_option">%1$d entries</string>
+
+    <string name="widget_range_today">Today</string>
+    <string name="widget_range_week">This week</string>
+    <string name="widget_range_month">This month</string>
+
+    <string name="widget_color_system">System default</string>
+    <string name="widget_color_light">Light</string>
+    <string name="widget_color_dark">Dark</string>
+
+    <string name="widget_refresh_15m">Every 15 minutes</string>
+    <string name="widget_refresh_30m">Every 30 minutes</string>
+    <string name="widget_refresh_1h">Every hour</string>
+    <string name="widget_refresh_3h">Every 3 hours</string>
+
+    <string name="widget_click_event">Open event detail</string>
+    <string name="widget_click_day">Open day view</string>
 </resources>

@@ -1,12 +1,13 @@
 @echo off
-REM Cal3 Mobile App Build and Install Script
+REM PrimeCal Mobile App Build and Install Script
 REM This script builds the Android APK and optionally installs it on a connected device
 
 REM Add Node.js to PATH
 set "PATH=C:\Program Files\nodejs;%PATH%"
+set "CAPACITOR_SERVER_URL=https://app.primecal.eu"
 
 echo ========================================
-echo Cal3 Mobile App Builder ^& Installer
+echo PrimeCal Mobile App Builder ^& Installer
 echo ========================================
 echo.
 
@@ -89,8 +90,8 @@ if errorlevel 1 goto :launch
 
 :launch
 echo.
-echo Launching Cal3 Calendar...
-adb shell am start -n com.cal3.calendar/.MainActivity
+echo Launching PrimeCal Calendar...
+adb shell am start -n com.primecal.calendar/.MainActivity
 echo + App launched!
 goto :end
 
