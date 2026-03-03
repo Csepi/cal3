@@ -678,12 +678,13 @@ class ApiService {
   }
 
   async logout(): Promise<void> {
+    const refreshToken = sessionManager.peekRefreshToken();
     await secureFetch(`${BASE_URL}/api/auth/logout`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({}),
+      body: JSON.stringify(refreshToken ? { refreshToken } : {}),
     });
     sessionManager.clearSession();
   }

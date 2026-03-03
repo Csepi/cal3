@@ -54,8 +54,13 @@ export class AuthController {
       registerDto,
       this.extractMetadata(req),
     );
-    this.setRefreshCookie(res, session.refreshToken, session.refreshExpiresAt);
-    return session.response;
+    this.setRefreshCookie(
+      req,
+      res,
+      session.refreshToken,
+      session.refreshExpiresAt,
+    );
+    return this.buildAuthResponse(session, req);
   }
 
   @Post('login')
@@ -76,8 +81,13 @@ export class AuthController {
       loginDto,
       this.extractMetadata(req),
     );
-    this.setRefreshCookie(res, session.refreshToken, session.refreshExpiresAt);
-    return session.response;
+    this.setRefreshCookie(
+      req,
+      res,
+      session.refreshToken,
+      session.refreshExpiresAt,
+    );
+    return this.buildAuthResponse(session, req);
   }
 
   @Get('profile')
@@ -106,8 +116,13 @@ export class AuthController {
       token,
       this.extractMetadata(req),
     );
-    this.setRefreshCookie(res, session.refreshToken, session.refreshExpiresAt);
-    return session.response;
+    this.setRefreshCookie(
+      req,
+      res,
+      session.refreshToken,
+      session.refreshExpiresAt,
+    );
+    return this.buildAuthResponse(session, req);
   }
 
   @Post('logout')
@@ -124,7 +139,7 @@ export class AuthController {
       token ?? null,
       this.extractMetadata(req),
     );
-    this.clearRefreshCookie(res);
+    this.clearRefreshCookie(req, res);
     return { success: true };
   }
 
@@ -177,6 +192,7 @@ export class AuthController {
     // Regular auth flow
     const frontendUrl = this.configurationService.getFrontendBaseUrl();
     this.setRefreshCookie(
+      req,
       res,
       authResult.refreshToken,
       authResult.refreshExpiresAt,
@@ -225,6 +241,7 @@ export class AuthController {
     // Regular auth flow
     const frontendUrl = this.configurationService.getFrontendBaseUrl();
     this.setRefreshCookie(
+      req,
       res,
       authResult.refreshToken,
       authResult.refreshExpiresAt,
@@ -242,25 +259,53 @@ export class AuthController {
     };
   }
 
+  private buildAuthResponse(
+    session: AuthSessionResult,
+    req: ExpressRequest,
+  ): AuthResponseDto {
+    const response: AuthResponseDto = {
+      ...session.response,
+    };
+    if (this.isNativeClientRequest(req)) {
+      response.refresh_token = session.refreshToken;
+    }
+    return response;
+  }
+
+  private isNativeClientRequest(req: ExpressRequest): boolean {
+    const header = req.headers['x-primecal-client'];
+    const value = Array.isArray(header) ? header[0] : header;
+    return typeof value === 'string' && value.toLowerCase() === 'mobile-native';
+  }
+
+  private resolveCookieSameSite(req: ExpressRequest): 'strict' | 'none' {
+    return this.isNativeClientRequest(req) ? 'none' : 'strict';
+  }
+
   private setRefreshCookie(
+    req: ExpressRequest,
     res: Response,
     token: string,
     expiresAt: Date,
   ): void {
-    const secure = process.env.NODE_ENV !== 'development';
+    const sameSite = this.resolveCookieSameSite(req);
+    const secure = process.env.NODE_ENV !== 'development' || sameSite === 'none';
     res.cookie('cal3_refresh_token', token, {
       httpOnly: true,
       secure,
-      sameSite: 'strict',
+      sameSite,
       expires: expiresAt,
       path: '/api/auth',
     });
   }
 
-  private clearRefreshCookie(res: Response): void {
+  private clearRefreshCookie(req: ExpressRequest, res: Response): void {
+    const sameSite = this.resolveCookieSameSite(req);
+    const secure = process.env.NODE_ENV !== 'development' || sameSite === 'none';
     res.clearCookie('cal3_refresh_token', {
       httpOnly: true,
-      sameSite: 'strict',
+      secure,
+      sameSite,
       path: '/api/auth',
     });
   }

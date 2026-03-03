@@ -90,6 +90,13 @@ export class AuthResponseDto {
   })
   issued_at!: string;
 
+  @ApiPropertyOptional({
+    example: 'g3-r5f...refresh-token...',
+    description:
+      'Refresh token for native clients (omitted for browser-based clients).',
+  })
+  refresh_token?: string;
+
   @ApiProperty({ description: 'User information' })
   user!: {
     id: number;

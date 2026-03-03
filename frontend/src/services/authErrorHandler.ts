@@ -1,6 +1,11 @@
-﻿import { sessionManager } from './sessionManager';
+import { sessionManager } from './sessionManager';
 import { applyCsrfHeader } from './csrf';
 import { clientLogger } from '../utils/clientLogger';
+import {
+  isNativeClient,
+  NATIVE_CLIENT_HEADER,
+  NATIVE_CLIENT_VALUE,
+} from './clientPlatform';
 
 const MUTATING_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
 const generateTraceId = (): string =>
@@ -252,6 +257,10 @@ export async function secureFetch(
     }
   }
 
+  if (isNativeClient()) {
+    headers.set(NATIVE_CLIENT_HEADER, NATIVE_CLIENT_VALUE);
+  }
+
   const shouldAttachCsrf =
     typeof csrf === 'boolean' ? csrf : MUTATING_METHODS.has(method);
   if (shouldAttachCsrf) {
@@ -268,7 +277,7 @@ export async function secureFetch(
     if (auth && (response.status === 401 || response.status === 403)) {
       if (response.status === 401 && autoRefresh) {
         clientLogger.warn(
-          `[network:${traceId}] ${method} ${requestUrl} returned 401 â€“ attempting token refresh`,
+          `[network:${traceId}] ${method} ${requestUrl} returned 401 - attempting token refresh`,
         );
         const refreshed = await sessionManager.refreshAccessToken(true);
         if (refreshed) {

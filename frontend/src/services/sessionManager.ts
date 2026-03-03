@@ -2,6 +2,11 @@ import { BASE_URL } from '../config/apiConfig';
 import { applyCsrfHeader, clearCsrfToken, ensureCsrfToken } from './csrf';
 import { clientLogger } from '../utils/clientLogger';
 import { clearWidgetToken, syncWidgetToken } from './widgetAuthStorage';
+import {
+  isNativeClient,
+  NATIVE_CLIENT_HEADER,
+  NATIVE_CLIENT_VALUE,
+} from './clientPlatform';
 
 interface SessionUser {
   id?: number;
@@ -14,6 +19,7 @@ interface SessionUser {
 
 export interface AuthSessionPayload {
   access_token: string;
+  refresh_token?: string;
   expires_in?: number;
   token_type?: string;
   refresh_expires_at?: string;
@@ -28,6 +34,18 @@ interface SessionSnapshot {
 }
 
 const EXPIRY_BUFFER_MS = 5_000;
+const STORAGE_ACCESS_TOKEN_KEY = 'cal3_access_token';
+const STORAGE_ACCESS_TOKEN_EXPIRY_KEY = 'cal3_access_token_expires_at';
+const STORAGE_REFRESH_TOKEN_KEY = 'cal3_refresh_token';
+const STORAGE_SESSION_USER_KEY = 'cal3_session_user';
+
+function runSafeJsonParse<T>(raw: string): T | null {
+  try {
+    return JSON.parse(raw) as T;
+  } catch {
+    return null;
+  }
+}
 
 const decodeJwtPayload = (token: string): Record<string, unknown> | null => {
   try {
@@ -60,18 +78,14 @@ type SessionListener = (snapshot: SessionSnapshot) => void;
 class SessionManager {
   private accessToken: string | null = null;
   private accessTokenExpiresAt = 0;
+  private refreshToken: string | null = null;
   private currentUser: SessionUser | null = null;
   private refreshPromise: Promise<string | null> | null = null;
   private listeners = new Set<SessionListener>();
 
   constructor() {
     if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
-      const username = localStorage.getItem('username') ?? undefined;
-      const role = localStorage.getItem('userRole') ?? undefined;
-      const themeColor = localStorage.getItem('themeColor') ?? undefined;
-      if (username || role || themeColor) {
-        this.currentUser = { username, role, themeColor };
-      }
+      this.restorePersistedSession();
       ensureCsrfToken();
     }
   }
@@ -96,18 +110,95 @@ class SessionManager {
   }
 
   private persistUserMetadata(user?: SessionUser | null): void {
-      if (typeof localStorage === 'undefined' || !user) {
-        return;
+    if (typeof localStorage === 'undefined') {
+      return;
+    }
+    if (!user) {
+      localStorage.removeItem('username');
+      localStorage.removeItem('userRole');
+      localStorage.removeItem('themeColor');
+      localStorage.removeItem(STORAGE_SESSION_USER_KEY);
+      return;
+    }
+    if (user.username) {
+      localStorage.setItem('username', user.username);
+    }
+    if (user.role) {
+      localStorage.setItem('userRole', user.role);
+    }
+    if (user.themeColor) {
+      localStorage.setItem('themeColor', user.themeColor);
+    }
+    localStorage.setItem(STORAGE_SESSION_USER_KEY, JSON.stringify(user));
+  }
+
+  private restorePersistedSession(): void {
+    if (typeof localStorage === 'undefined') {
+      return;
+    }
+
+    const persistedUserRaw = localStorage.getItem(STORAGE_SESSION_USER_KEY);
+    if (persistedUserRaw) {
+      const parsedUser = runSafeJsonParse<SessionUser>(persistedUserRaw);
+      if (parsedUser) {
+        this.currentUser = parsedUser;
       }
-      if (user.username) {
-        localStorage.setItem('username', user.username);
+    }
+
+    if (!this.currentUser) {
+      const username = localStorage.getItem('username') ?? undefined;
+      const role = localStorage.getItem('userRole') ?? undefined;
+      const themeColor = localStorage.getItem('themeColor') ?? undefined;
+      if (username || role || themeColor) {
+        this.currentUser = { username, role, themeColor };
       }
-      if (user.role) {
-        localStorage.setItem('userRole', user.role);
-      }
-      if (user.themeColor) {
-        localStorage.setItem('themeColor', user.themeColor);
-      }
+    }
+
+    const persistedToken = localStorage.getItem(STORAGE_ACCESS_TOKEN_KEY);
+    const persistedExpiryRaw = localStorage.getItem(STORAGE_ACCESS_TOKEN_EXPIRY_KEY);
+    const persistedExpiry = persistedExpiryRaw ? Number.parseInt(persistedExpiryRaw, 10) : 0;
+    if (
+      persistedToken &&
+      Number.isFinite(persistedExpiry) &&
+      persistedExpiry > Date.now() + EXPIRY_BUFFER_MS
+    ) {
+      this.accessToken = persistedToken;
+      this.accessTokenExpiresAt = persistedExpiry;
+      void syncWidgetToken(persistedToken);
+    } else {
+      this.accessToken = null;
+      this.accessTokenExpiresAt = 0;
+      localStorage.removeItem(STORAGE_ACCESS_TOKEN_KEY);
+      localStorage.removeItem(STORAGE_ACCESS_TOKEN_EXPIRY_KEY);
+    }
+
+    const persistedRefreshToken = localStorage.getItem(STORAGE_REFRESH_TOKEN_KEY);
+    this.refreshToken = persistedRefreshToken && persistedRefreshToken.trim()
+      ? persistedRefreshToken
+      : null;
+  }
+
+  private persistSessionState(): void {
+    if (typeof localStorage === 'undefined') {
+      return;
+    }
+
+    if (this.accessToken && this.accessTokenExpiresAt > 0) {
+      localStorage.setItem(STORAGE_ACCESS_TOKEN_KEY, this.accessToken);
+      localStorage.setItem(
+        STORAGE_ACCESS_TOKEN_EXPIRY_KEY,
+        String(this.accessTokenExpiresAt),
+      );
+    } else {
+      localStorage.removeItem(STORAGE_ACCESS_TOKEN_KEY);
+      localStorage.removeItem(STORAGE_ACCESS_TOKEN_EXPIRY_KEY);
+    }
+
+    if (this.refreshToken) {
+      localStorage.setItem(STORAGE_REFRESH_TOKEN_KEY, this.refreshToken);
+    } else {
+      localStorage.removeItem(STORAGE_REFRESH_TOKEN_KEY);
+    }
   }
 
   private applyToken(
@@ -129,14 +220,17 @@ class SessionManager {
 
   setSessionFromResponse(payload: AuthSessionPayload): void {
     this.applyToken(payload.access_token, payload.expires_in);
+    this.refreshToken = payload.refresh_token ?? null;
     if (payload.user) {
       this.currentUser = { ...this.currentUser, ...payload.user };
       this.persistUserMetadata(this.currentUser);
     }
+    this.persistSessionState();
     ensureCsrfToken();
     clientLogger.debug('[session] set session from response', {
       userId: payload.user?.id ?? null,
       expiresIn: payload.expires_in,
+      hasRefreshToken: Boolean(this.refreshToken),
     });
     void syncWidgetToken(payload.access_token);
     this.notify();
@@ -155,7 +249,9 @@ class SessionManager {
       id: decoded?.sub ?? fallback?.id ?? this.currentUser?.id,
     };
     this.currentUser = resolvedUser;
+    this.refreshToken = null;
     this.persistUserMetadata(resolvedUser);
+    this.persistSessionState();
     ensureCsrfToken();
     clientLogger.debug('[session] set session from JWT', {
       userId: resolvedUser.id ?? null,
@@ -179,6 +275,10 @@ class SessionManager {
 
   peekAccessToken(): string | null {
     return this.accessToken;
+  }
+
+  peekRefreshToken(): string | null {
+    return this.refreshToken;
   }
 
   async getAccessToken(): Promise<string | null> {
@@ -207,16 +307,23 @@ class SessionManager {
       const headers = new Headers({
         'Content-Type': 'application/json',
       });
+      if (isNativeClient()) {
+        headers.set(NATIVE_CLIENT_HEADER, NATIVE_CLIENT_VALUE);
+      }
       applyCsrfHeader(headers, true);
+      const refreshPayload = this.refreshToken
+        ? { refreshToken: this.refreshToken }
+        : {};
       try {
         clientLogger.debug('[session] requesting refresh token rotation', {
           force,
+          hasRefreshToken: Boolean(this.refreshToken),
         });
         const response = await fetch(`${BASE_URL}/api/auth/refresh`, {
           method: 'POST',
           credentials: 'include',
           headers,
-          body: JSON.stringify({}),
+          body: JSON.stringify(refreshPayload),
         });
         if (!response.ok) {
           const errorBody = await readErrorPayload(response);
@@ -250,13 +357,11 @@ class SessionManager {
     clientLogger.debug('[session] clearing session state');
     this.accessToken = null;
     this.accessTokenExpiresAt = 0;
+    this.refreshToken = null;
     this.refreshPromise = null;
     this.currentUser = null;
-    if (typeof localStorage !== 'undefined') {
-      localStorage.removeItem('username');
-      localStorage.removeItem('userRole');
-      localStorage.removeItem('themeColor');
-    }
+    this.persistUserMetadata(null);
+    this.persistSessionState();
     clearCsrfToken();
     void clearWidgetToken();
     this.notify();

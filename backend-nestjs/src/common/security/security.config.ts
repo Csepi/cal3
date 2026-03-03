@@ -97,6 +97,7 @@ const BASE_ALLOWED_HEADERS = [
   'X-Organisation-Id',
   'X-Idempotency-Key',
   'X-CSRF-Token',
+  'X-PrimeCal-Client',
 ] as const;
 
 export function getCorsAllowedHeaders(): string[] {

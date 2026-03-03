@@ -36,6 +36,17 @@ export const syncWidgetToken = async (accessToken: string | null | undefined): P
     return;
   }
 
+  // Persist a short-lived token immediately so widget refreshes can succeed
+  // even before the widget-token exchange completes.
+  try {
+    await widgetAuthStorage.setWidgetToken({
+      token: accessToken,
+      expiresAt: Date.now() + FALLBACK_WIDGET_TOKEN_TTL_MS,
+    });
+  } catch (error) {
+    clientLogger.warn('[widget-auth] Failed to persist immediate fallback widget token', error);
+  }
+
   try {
     const response = await fetch(`${BASE_URL}/api/auth/widget-token`, {
       method: 'POST',
@@ -64,20 +75,11 @@ export const syncWidgetToken = async (accessToken: string | null | undefined): P
       return;
     }
 
-    clientLogger.warn('[widget-auth] Widget token endpoint failed, using short-lived fallback token', {
+    clientLogger.warn('[widget-auth] Widget token endpoint failed, continuing with short-lived fallback token', {
       status: response.status,
     });
   } catch (error) {
-    clientLogger.warn('[widget-auth] Widget token sync failed, using short-lived fallback token', error);
-  }
-
-  try {
-    await widgetAuthStorage.setWidgetToken({
-      token: accessToken,
-      expiresAt: Date.now() + FALLBACK_WIDGET_TOKEN_TTL_MS,
-    });
-  } catch (error) {
-    clientLogger.warn('[widget-auth] Failed to persist fallback widget token', error);
+    clientLogger.warn('[widget-auth] Widget token sync failed, continuing with short-lived fallback token', error);
   }
 };
 
@@ -91,4 +93,3 @@ export const clearWidgetToken = async (): Promise<void> => {
     clientLogger.warn('[widget-auth] Failed to clear widget token', error);
   }
 };
-
