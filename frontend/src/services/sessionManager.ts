@@ -99,6 +99,9 @@ class SessionManager {
     if (!this.accessToken && !this.refreshToken) {
       return;
     }
+    if (this.clearExpiredWebSessionIfNeeded()) {
+      return;
+    }
     this.recordActivity();
   };
   private readonly handleVisibilityChange = () => {
