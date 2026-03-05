@@ -34,10 +34,20 @@ interface SessionSnapshot {
 }
 
 const EXPIRY_BUFFER_MS = 5_000;
+const WEB_IDLE_TIMEOUT_MS = 24 * 60 * 60 * 1000;
+const ACTIVITY_PERSIST_THROTTLE_MS = 15_000;
 const STORAGE_ACCESS_TOKEN_KEY = 'cal3_access_token';
 const STORAGE_ACCESS_TOKEN_EXPIRY_KEY = 'cal3_access_token_expires_at';
 const STORAGE_REFRESH_TOKEN_KEY = 'cal3_refresh_token';
 const STORAGE_SESSION_USER_KEY = 'cal3_session_user';
+const STORAGE_LAST_ACTIVITY_KEY = 'cal3_last_activity_at';
+const WEB_ACTIVITY_EVENTS = [
+  'pointerdown',
+  'keydown',
+  'touchstart',
+  'scroll',
+  'focus',
+] as const;
 
 function runSafeJsonParse<T>(raw: string): T | null {
   try {
@@ -82,11 +92,32 @@ class SessionManager {
   private currentUser: SessionUser | null = null;
   private refreshPromise: Promise<string | null> | null = null;
   private listeners = new Set<SessionListener>();
+  private lastActivityAt = 0;
+  private lastPersistedActivityAt = 0;
+  private activityTrackingStarted = false;
+  private readonly handleWebActivity = () => {
+    if (!this.accessToken && !this.refreshToken) {
+      return;
+    }
+    this.recordActivity();
+  };
+  private readonly handleVisibilityChange = () => {
+    if (typeof document === 'undefined') {
+      return;
+    }
+    if (document.visibilityState === 'visible') {
+      this.handleWebActivity();
+    }
+  };
 
   constructor() {
     if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
       this.restorePersistedSession();
+      this.startWebActivityTracking();
       ensureCsrfToken();
+      if (this.hasActiveSession()) {
+        this.recordActivity(Date.now(), true);
+      }
     }
   }
 
@@ -107,6 +138,77 @@ class SessionManager {
       user: this.currentUser,
       expiresAt: this.accessTokenExpiresAt,
     };
+  }
+
+  private shouldEnforceWebIdleTimeout(): boolean {
+    return !isNativeClient();
+  }
+
+  private startWebActivityTracking(): void {
+    if (
+      this.activityTrackingStarted ||
+      !this.shouldEnforceWebIdleTimeout() ||
+      typeof window === 'undefined' ||
+      typeof document === 'undefined'
+    ) {
+      return;
+    }
+
+    for (const eventName of WEB_ACTIVITY_EVENTS) {
+      window.addEventListener(eventName, this.handleWebActivity, {
+        passive: true,
+      });
+    }
+    document.addEventListener('visibilitychange', this.handleVisibilityChange);
+    this.activityTrackingStarted = true;
+  }
+
+  private recordActivity(timestamp = Date.now(), forcePersist = false): void {
+    if (!this.shouldEnforceWebIdleTimeout()) {
+      return;
+    }
+    this.lastActivityAt = timestamp;
+    this.persistActivityTimestamp(forcePersist);
+  }
+
+  private persistActivityTimestamp(force = false): void {
+    if (
+      typeof localStorage === 'undefined' ||
+      !this.shouldEnforceWebIdleTimeout()
+    ) {
+      return;
+    }
+    if (this.lastActivityAt <= 0) {
+      localStorage.removeItem(STORAGE_LAST_ACTIVITY_KEY);
+      this.lastPersistedActivityAt = 0;
+      return;
+    }
+
+    if (
+      force ||
+      this.lastPersistedActivityAt <= 0 ||
+      this.lastActivityAt - this.lastPersistedActivityAt >=
+        ACTIVITY_PERSIST_THROTTLE_MS
+    ) {
+      localStorage.setItem(STORAGE_LAST_ACTIVITY_KEY, String(this.lastActivityAt));
+      this.lastPersistedActivityAt = this.lastActivityAt;
+    }
+  }
+
+  private isWebSessionExpiredByInactivity(referenceTime = Date.now()): boolean {
+    if (!this.shouldEnforceWebIdleTimeout() || this.lastActivityAt <= 0) {
+      return false;
+    }
+    return referenceTime - this.lastActivityAt >= WEB_IDLE_TIMEOUT_MS;
+  }
+
+  private clearExpiredWebSessionIfNeeded(): boolean {
+    if (!this.isWebSessionExpiredByInactivity()) {
+      return false;
+    }
+    clientLogger.info('[session] web session expired after inactivity window');
+    this.clearSession();
+    return true;
   }
 
   private persistUserMetadata(user?: SessionUser | null): void {
@@ -154,6 +256,17 @@ class SessionManager {
       }
     }
 
+    if (this.shouldEnforceWebIdleTimeout()) {
+      const persistedActivityRaw = localStorage.getItem(STORAGE_LAST_ACTIVITY_KEY);
+      const persistedActivity = persistedActivityRaw
+        ? Number.parseInt(persistedActivityRaw, 10)
+        : 0;
+      if (Number.isFinite(persistedActivity) && persistedActivity > 0) {
+        this.lastActivityAt = persistedActivity;
+        this.lastPersistedActivityAt = persistedActivity;
+      }
+    }
+
     const persistedToken = localStorage.getItem(STORAGE_ACCESS_TOKEN_KEY);
     const persistedExpiryRaw = localStorage.getItem(STORAGE_ACCESS_TOKEN_EXPIRY_KEY);
     const persistedExpiry = persistedExpiryRaw ? Number.parseInt(persistedExpiryRaw, 10) : 0;
@@ -176,6 +289,18 @@ class SessionManager {
     this.refreshToken = persistedRefreshToken && persistedRefreshToken.trim()
       ? persistedRefreshToken
       : null;
+
+    if (this.clearExpiredWebSessionIfNeeded()) {
+      return;
+    }
+
+    if (
+      this.shouldEnforceWebIdleTimeout() &&
+      (this.accessToken || this.refreshToken) &&
+      this.lastActivityAt <= 0
+    ) {
+      this.recordActivity(Date.now(), true);
+    }
   }
 
   private persistSessionState(): void {
@@ -199,6 +324,12 @@ class SessionManager {
     } else {
       localStorage.removeItem(STORAGE_REFRESH_TOKEN_KEY);
     }
+
+    if (!this.accessToken && !this.refreshToken) {
+      this.lastActivityAt = 0;
+      this.lastPersistedActivityAt = 0;
+    }
+    this.persistActivityTimestamp(true);
   }
 
   private applyToken(
@@ -221,6 +352,7 @@ class SessionManager {
   setSessionFromResponse(payload: AuthSessionPayload): void {
     this.applyToken(payload.access_token, payload.expires_in);
     this.refreshToken = payload.refresh_token ?? null;
+    this.recordActivity(Date.now(), true);
     if (payload.user) {
       this.currentUser = { ...this.currentUser, ...payload.user };
       this.persistUserMetadata(this.currentUser);
@@ -241,6 +373,7 @@ class SessionManager {
     const exp =
       typeof decoded?.exp === 'number' ? decoded.exp * 1000 : undefined;
     this.applyToken(token, undefined, exp);
+    this.recordActivity(Date.now(), true);
     const resolvedUser: SessionUser = {
       ...fallback,
       ...this.currentUser,
@@ -266,6 +399,9 @@ class SessionManager {
     if (!this.accessToken) {
       return false;
     }
+    if (this.isWebSessionExpiredByInactivity()) {
+      return false;
+    }
     return Date.now() < this.accessTokenExpiresAt - EXPIRY_BUFFER_MS;
   }
 
@@ -283,7 +419,11 @@ class SessionManager {
 
   async getAccessToken(): Promise<string | null> {
     if (this.hasActiveSession()) {
+      this.recordActivity();
       return this.accessToken;
+    }
+    if (this.clearExpiredWebSessionIfNeeded()) {
+      return null;
     }
     return this.refreshAccessToken();
   }
@@ -297,17 +437,22 @@ class SessionManager {
   }
 
   async refreshAccessToken(force = false): Promise<string | null> {
-    if (this.refreshPromise && !force) {
+    if (this.refreshPromise) {
       return this.refreshPromise;
     }
     const attempt = async (): Promise<string | null> => {
       if (typeof fetch === 'undefined') {
         return null;
       }
+      if (this.clearExpiredWebSessionIfNeeded()) {
+        return null;
+      }
+
+      const nativeClient = isNativeClient();
       const headers = new Headers({
         'Content-Type': 'application/json',
       });
-      if (isNativeClient()) {
+      if (nativeClient) {
         headers.set(NATIVE_CLIENT_HEADER, NATIVE_CLIENT_VALUE);
       }
       applyCsrfHeader(headers, true);
@@ -331,7 +476,9 @@ class SessionManager {
             status: response.status,
             body: errorBody,
           });
-          this.clearSession();
+          if (!nativeClient) {
+            this.clearSession();
+          }
           return null;
         }
         const data: AuthSessionPayload = await response.json();
@@ -342,7 +489,9 @@ class SessionManager {
         return this.accessToken;
       } catch (error) {
         clientLogger.error('[session] failed to refresh access token', error);
-        this.clearSession();
+        if (!nativeClient) {
+          this.clearSession();
+        }
         return null;
       }
     };
@@ -360,6 +509,8 @@ class SessionManager {
     this.refreshToken = null;
     this.refreshPromise = null;
     this.currentUser = null;
+    this.lastActivityAt = 0;
+    this.lastPersistedActivityAt = 0;
     this.persistUserMetadata(null);
     this.persistSessionState();
     clearCsrfToken();

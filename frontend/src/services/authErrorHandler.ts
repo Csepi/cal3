@@ -71,6 +71,15 @@ export class AuthErrorHandler {
       return;
     }
 
+    if (isNativeClient()) {
+      console.warn('[SECURITY] Native auth error detected; preserving session state', {
+        endpoint,
+        statusCode,
+        timestamp: new Date().toISOString(),
+      });
+      return;
+    }
+
     this.isHandlingAuthError = true;
 
     // Log the security event (in production, send to monitoring service)
@@ -158,6 +167,10 @@ export class AuthErrorHandler {
    * Redirect to login page with reason
    */
   private redirectToLogin(statusCode: 401 | 403): void {
+    if (isNativeClient()) {
+      return;
+    }
+
     // Avoid reload loops when unauthenticated API calls fire from providers while already on login page.
     if (window.location.pathname === '/login') {
       return;
@@ -279,7 +292,7 @@ export async function secureFetch(
         clientLogger.warn(
           `[network:${traceId}] ${method} ${requestUrl} returned 401 - attempting token refresh`,
         );
-        const refreshed = await sessionManager.refreshAccessToken(true);
+        const refreshed = await sessionManager.refreshAccessToken();
         if (refreshed) {
           headers.set('Authorization', `Bearer ${refreshed}`);
           const retryInit: RequestInit = {
@@ -311,7 +324,7 @@ export async function secureFetch(
       `[network:${traceId}] ${method} ${requestUrl} request failed`,
       error,
     );
-    if (auth && !authHandler.hasValidTokenFormat()) {
+    if (auth && !authHandler.hasValidTokenFormat() && !isNativeClient()) {
       authHandler.handleAuthError(
         401,
         typeof input === 'string' ? input : undefined,
