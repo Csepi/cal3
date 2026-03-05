@@ -138,19 +138,7 @@ const Login: React.FC = () => {
           role: result.user.role,
         });
       } catch (err: unknown) {
-        // Fallback to demo mode
-        if (password === 'demo123') {
-          void login({
-            token: 'demo',
-            username,
-            role: 'user',
-          });
-        } else {
-          const errorDetails = extractErrorDetails(err);
-          errorDetails.demoModeAvailable = true;
-          errorDetails.message = errorDetails.message + '\n\nTip: Use password "demo123" for demo mode';
-          setError(errorDetails);
-        }
+        setError(extractErrorDetails(err));
       }
     }
   };

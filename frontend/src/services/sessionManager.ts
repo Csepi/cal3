@@ -2,11 +2,7 @@ import { BASE_URL } from '../config/apiConfig';
 import { applyCsrfHeader, clearCsrfToken, ensureCsrfToken } from './csrf';
 import { clientLogger } from '../utils/clientLogger';
 import { clearWidgetToken, syncWidgetToken } from './widgetAuthStorage';
-import {
-  isNativeClient,
-  NATIVE_CLIENT_HEADER,
-  NATIVE_CLIENT_VALUE,
-} from './clientPlatform';
+import { isNativeClient } from './clientPlatform';
 
 interface SessionUser {
   id?: number;
@@ -455,9 +451,6 @@ class SessionManager {
       const headers = new Headers({
         'Content-Type': 'application/json',
       });
-      if (nativeClient) {
-        headers.set(NATIVE_CLIENT_HEADER, NATIVE_CLIENT_VALUE);
-      }
       applyCsrfHeader(headers, true);
       const refreshPayload = this.refreshToken
         ? { refreshToken: this.refreshToken }

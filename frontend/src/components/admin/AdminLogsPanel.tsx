@@ -109,6 +109,9 @@ const computeRange = (filters: FilterDraft): { from?: string; to?: string } => {
   }
 };
 
+const areStringArraysEqual = (left: string[], right: string[]): boolean =>
+  left.length === right.length && left.every((value, index) => value === right[index]);
+
 export const AdminLogsPanel: React.FC<AdminLogsPanelProps> = ({ themeColor = '#3b82f6', isActive = false }) => {
 const [filters, setFilters] = useState<FilterDraft>(defaultFilters);
 const [appliedFilters, setAppliedFilters] = useState<FilterDraft>(defaultFilters);
@@ -171,14 +174,26 @@ useEffect(() => {
       );
       const sortedContexts = Array.from(contextSet).sort();
       setAvailableContexts(sortedContexts);
-      setFilters((prev) => ({
-        ...prev,
-        contexts: prev.contexts.filter((ctx) => contextSet.has(ctx)),
-      }));
-      setAppliedFilters((prev) => ({
-        ...prev,
-        contexts: prev.contexts.filter((ctx) => contextSet.has(ctx)),
-      }));
+      setFilters((prev) => {
+        const nextContexts = prev.contexts.filter((ctx) => contextSet.has(ctx));
+        if (areStringArraysEqual(prev.contexts, nextContexts)) {
+          return prev;
+        }
+        return {
+          ...prev,
+          contexts: nextContexts,
+        };
+      });
+      setAppliedFilters((prev) => {
+        const nextContexts = prev.contexts.filter((ctx) => contextSet.has(ctx));
+        if (areStringArraysEqual(prev.contexts, nextContexts)) {
+          return prev;
+        }
+        return {
+          ...prev,
+          contexts: nextContexts,
+        };
+      });
 
       if (response.settings) {
         setSettings(response.settings);

@@ -1,11 +1,7 @@
 import { sessionManager } from './sessionManager';
 import { applyCsrfHeader } from './csrf';
 import { clientLogger } from '../utils/clientLogger';
-import {
-  isNativeClient,
-  NATIVE_CLIENT_HEADER,
-  NATIVE_CLIENT_VALUE,
-} from './clientPlatform';
+import { isNativeClient } from './clientPlatform';
 
 const MUTATING_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
 const generateTraceId = (): string =>
@@ -268,10 +264,6 @@ export async function secureFetch(
     if (token) {
       headers.set('Authorization', `Bearer ${token}`);
     }
-  }
-
-  if (isNativeClient()) {
-    headers.set(NATIVE_CLIENT_HEADER, NATIVE_CLIENT_VALUE);
   }
 
   const shouldAttachCsrf =

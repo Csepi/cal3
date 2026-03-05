@@ -180,6 +180,7 @@ export const ErrorBox: React.FC<ErrorBoxProps> = ({
 
         {onClose && (
           <button
+            type="button"
             onClick={onClose}
             className="text-red-400 hover:text-red-600 transition-colors ml-4"
             aria-label="Close error message"
@@ -194,6 +195,7 @@ export const ErrorBox: React.FC<ErrorBoxProps> = ({
       {/* Action Buttons */}
       <div className="mt-4 flex flex-wrap gap-3">
         <button
+          type="button"
           onClick={() => setShowDebug(!showDebug)}
           className="flex items-center px-4 py-2 bg-red-100 hover:bg-red-200 text-red-800 rounded-lg text-sm font-medium transition-colors"
         >
@@ -204,6 +206,7 @@ export const ErrorBox: React.FC<ErrorBoxProps> = ({
         </button>
 
         <button
+          type="button"
           onClick={handleCopyDebugLog}
           className="flex items-center px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-sm font-medium transition-colors shadow-md"
         >
