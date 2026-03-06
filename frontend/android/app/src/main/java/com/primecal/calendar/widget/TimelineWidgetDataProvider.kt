@@ -99,7 +99,7 @@ class TimelineWidgetDataProvider(private val context: Context) {
             }
         }
 
-        val cookies = gatherCookies()
+        val cookies = runCatching { gatherCookies() }.getOrNull()
         if (cookies.isNullOrBlank()) {
             return null
         }
@@ -184,7 +184,9 @@ class TimelineWidgetDataProvider(private val context: Context) {
 
     private fun queryContentProvider(limit: Int): List<TimelineEntry> {
         val resolver = context.contentResolver
-        val cursor = resolver.query(TimelineContentProvider.TIMELINE_URI, null, null, null, null) ?: return emptyList()
+        val cursor = runCatching {
+            resolver.query(TimelineContentProvider.TIMELINE_URI, null, null, null, null)
+        }.getOrNull() ?: return emptyList()
         cursor.use { c ->
             if (c.count <= 0) {
                 return emptyList()
@@ -199,19 +201,23 @@ class TimelineWidgetDataProvider(private val context: Context) {
             val iconIndex = c.getColumnIndex("icon")
             val statusIndex = c.getColumnIndex("status")
 
+            if (idIndex < 0 || titleIndex < 0 || startIndex < 0) {
+                return emptyList()
+            }
+
             val entries = mutableListOf<TimelineEntry>()
             while (c.moveToNext() && entries.size < limit) {
                 entries.add(
                     TimelineEntry(
                         id = c.getLong(idIndex),
                         title = c.getString(titleIndex) ?: "",
-                        description = c.getString(descriptionIndex),
+                        description = if (descriptionIndex >= 0) c.getString(descriptionIndex) else null,
                         startAtMillis = c.getLong(startIndex),
-                        endAtMillis = c.getLong(endIndex).takeIf { it > 0L },
-                        category = c.getString(categoryIndex),
-                        colorHex = c.getString(colorIndex),
-                        icon = c.getString(iconIndex),
-                        status = c.getString(statusIndex),
+                        endAtMillis = if (endIndex >= 0) c.getLong(endIndex).takeIf { it > 0L } else null,
+                        category = if (categoryIndex >= 0) c.getString(categoryIndex) else null,
+                        colorHex = if (colorIndex >= 0) c.getString(colorIndex) else null,
+                        icon = if (iconIndex >= 0) c.getString(iconIndex) else null,
+                        status = if (statusIndex >= 0) c.getString(statusIndex) else null,
                     ),
                 )
             }

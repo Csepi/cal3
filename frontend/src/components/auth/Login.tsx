@@ -8,6 +8,7 @@ import { useAuth } from '../../hooks/useAuth';
 
 const Login: React.FC = () => {
   const [isRegistering, setIsRegistering] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -84,6 +85,9 @@ const Login: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) {
+      return;
+    }
     setError(null);
 
     if (isRegistering) {
@@ -99,6 +103,7 @@ const Login: React.FC = () => {
       }
 
       try {
+        setIsSubmitting(true);
         const result = await apiService.register({
           username,
           email,
@@ -107,7 +112,7 @@ const Login: React.FC = () => {
           lastName
         });
 
-        void login({
+        await login({
           token: result.token,
           user: result.user,
           username: result.user.username,
@@ -115,6 +120,7 @@ const Login: React.FC = () => {
         });
       } catch (err: unknown) {
         setError(extractErrorDetails(err));
+        setIsSubmitting(false);
       }
     } else {
       // Login validation
@@ -129,9 +135,10 @@ const Login: React.FC = () => {
       }
 
       try {
+        setIsSubmitting(true);
         const result = await apiService.login(username, password);
 
-        void login({
+        await login({
           token: result.token,
           user: result.user,
           username: result.user.username,
@@ -139,12 +146,17 @@ const Login: React.FC = () => {
         });
       } catch (err: unknown) {
         setError(extractErrorDetails(err));
+        setIsSubmitting(false);
       }
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-100 to-blue-200 flex items-center justify-center relative overflow-hidden">
+    <div
+      className={`min-h-screen bg-gradient-to-br from-blue-50 via-indigo-100 to-blue-200 flex items-center justify-center relative overflow-hidden transition-opacity duration-300 ${
+        isSubmitting ? 'opacity-80' : 'opacity-100'
+      }`}
+    >
       {/* Animated Background */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-r from-blue-300 to-indigo-300 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse"></div>
@@ -152,7 +164,10 @@ const Login: React.FC = () => {
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-60 h-60 bg-gradient-to-r from-purple-300 to-blue-300 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse animation-delay-4000"></div>
       </div>
 
-      <div className="relative z-10 bg-white/80 backdrop-blur-xl border border-blue-200 rounded-3xl shadow-2xl p-10 w-full max-w-md hover:bg-white/90 transition-all duration-300">
+      <div
+        className="relative z-10 bg-white/80 backdrop-blur-xl border border-blue-200 rounded-3xl shadow-2xl p-10 w-full max-w-md hover:bg-white/90 transition-all duration-300"
+        aria-busy={isSubmitting}
+      >
         <div className="primecal-hero mb-10">
           <div className="primecal-brand">
             <img src="/primecal-icon.png" alt="PrimeCal logo" className="primecal-logo" />
@@ -163,7 +178,10 @@ const Login: React.FC = () => {
           <p className="brand-motto">Be in sync with Reality</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form
+          onSubmit={handleSubmit}
+          className={`space-y-6 transition-opacity duration-200 ${isSubmitting ? 'pointer-events-none' : ''}`}
+        >
           {isRegistering && (
             <>
               <div className="grid grid-cols-2 gap-4">
@@ -176,6 +194,7 @@ const Login: React.FC = () => {
                     id="firstName"
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
+                    disabled={isSubmitting}
                     className="w-full px-4 py-3 bg-white border border-blue-300 text-gray-800 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-300 placeholder:text-gray-500"
                     placeholder="First name"
                   />
@@ -189,6 +208,7 @@ const Login: React.FC = () => {
                     id="lastName"
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
+                    disabled={isSubmitting}
                     className="w-full px-4 py-3 bg-white border border-blue-300 text-gray-800 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-300 placeholder:text-gray-500"
                     placeholder="Last name"
                   />
@@ -204,6 +224,7 @@ const Login: React.FC = () => {
                   id="username"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
+                  disabled={isSubmitting}
                   className="w-full px-4 py-3 bg-white border border-blue-300 text-gray-800 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-300 placeholder:text-gray-500"
                   placeholder="Choose a username"
                   required
@@ -219,6 +240,7 @@ const Login: React.FC = () => {
                   id="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  disabled={isSubmitting}
                   className="w-full px-4 py-3 bg-white border border-blue-300 text-gray-800 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-300 placeholder:text-gray-500"
                   placeholder="Enter your email"
                   required
@@ -237,6 +259,7 @@ const Login: React.FC = () => {
                 id="username"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
+                disabled={isSubmitting}
                 className="w-full px-5 py-4 bg-white border border-blue-300 text-gray-800 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-300 placeholder:text-gray-500"
                 placeholder="Enter your email or username"
               />
@@ -252,6 +275,7 @@ const Login: React.FC = () => {
               id="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              disabled={isSubmitting}
               className={`w-full px-5 py-4 bg-white border border-blue-300 text-gray-800 ${isRegistering ? 'rounded-xl' : 'rounded-2xl'} focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-300 placeholder:text-gray-500`}
               placeholder={isRegistering ? "Choose a secure password (min 6 chars)" : "Enter your password"}
               required
@@ -268,16 +292,20 @@ const Login: React.FC = () => {
 
           <button
             type="submit"
-            className={`w-full text-white py-4 px-6 ${isRegistering ? 'rounded-xl' : 'rounded-2xl'} font-medium transition-all duration-300 hover:scale-105 focus:ring-2 focus:ring-blue-500 outline-none shadow-lg flex items-center justify-center gap-2 ${isRegistering ? 'bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700' : 'bg-blue-500 hover:bg-blue-600'}`}
+            disabled={isSubmitting}
+            className={`w-full text-white py-4 px-6 ${isRegistering ? 'rounded-xl' : 'rounded-2xl'} font-medium transition-all duration-300 hover:scale-105 focus:ring-2 focus:ring-blue-500 outline-none shadow-lg flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:scale-100 ${isRegistering ? 'bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700' : 'bg-blue-500 hover:bg-blue-600'}`}
           >
-            {isRegistering ? 'Create Account' : 'Sign In'}
+            {isSubmitting
+              ? (isRegistering ? 'Creating Account...' : 'Signing In...')
+              : (isRegistering ? 'Create Account' : 'Sign In')}
           </button>
 
           <div className="text-center">
             <button
               type="button"
+              disabled={isSubmitting}
               onClick={() => setIsRegistering(!isRegistering)}
-              className="text-blue-600 hover:text-blue-500 font-medium transition-colors duration-200"
+              className="text-blue-600 hover:text-blue-500 font-medium transition-colors duration-200 disabled:opacity-70 disabled:cursor-not-allowed"
             >
               {isRegistering ? "Already have an account? Sign In" : "Don't have an account? Sign Up"}
             </button>
@@ -299,7 +327,8 @@ const Login: React.FC = () => {
                 <button
                   type="button"
                   onClick={handleGoogleLogin}
-                  className="w-full inline-flex justify-center py-3 px-4 border border-gray-300 rounded-xl shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 transition-all duration-300"
+                  disabled={isSubmitting}
+                  className="w-full inline-flex justify-center py-3 px-4 border border-gray-300 rounded-xl shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed"
                 >
                   <svg className="w-5 h-5" viewBox="0 0 24 24">
                     <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -313,7 +342,8 @@ const Login: React.FC = () => {
                 <button
                   type="button"
                   onClick={handleMicrosoftLogin}
-                  className="w-full inline-flex justify-center py-3 px-4 border border-gray-300 rounded-xl shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 transition-all duration-300"
+                  disabled={isSubmitting}
+                  className="w-full inline-flex justify-center py-3 px-4 border border-gray-300 rounded-xl shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed"
                 >
                   <svg className="w-5 h-5" viewBox="0 0 24 24">
                     <path fill="#f25022" d="M0 0h11.377v11.372H0z"/>
@@ -328,6 +358,17 @@ const Login: React.FC = () => {
           )}
         </form>
       </div>
+
+      {isSubmitting && (
+        <div className="absolute inset-0 z-20 flex items-center justify-center bg-white/35 backdrop-blur-sm transition-opacity duration-300">
+          <div className="flex items-center gap-3 rounded-2xl border border-blue-200 bg-white/90 px-4 py-3 shadow-lg">
+            <span className="h-5 w-5 animate-spin rounded-full border-2 border-blue-500 border-t-transparent" />
+            <span className="text-sm font-medium text-blue-800">
+              {isRegistering ? 'Creating account...' : 'Signing in...'}
+            </span>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

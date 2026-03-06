@@ -206,7 +206,12 @@ class TimelineWidgetProvider : AppWidgetProvider() {
             val serviceIntent = Intent(context, TimelineWidgetRemoteViewsService::class.java).apply {
                 putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
                 putExtra(EXTRA_ENTRY_LIMIT, entryLimit)
-                data = Uri.parse(toUri(Intent.URI_INTENT_SCHEME))
+                data = Uri.Builder()
+                    .scheme(WIDGET_ADAPTER_URI_SCHEME)
+                    .authority(WIDGET_ADAPTER_URI_AUTHORITY)
+                    .appendPath(appWidgetId.toString())
+                    .appendQueryParameter(EXTRA_ENTRY_LIMIT, entryLimit.toString())
+                    .build()
             }
             setRemoteAdapter(R.id.widgetTimelineList, serviceIntent)
 
@@ -312,6 +317,8 @@ class TimelineWidgetProvider : AppWidgetProvider() {
         const val EXTRA_ENTRY_START_MILLIS = "extra_entry_start_millis"
 
         private const val APP_BASE_URL = "https://app.primecal.eu"
+        private const val WIDGET_ADAPTER_URI_SCHEME = "primecal-widget"
+        private const val WIDGET_ADAPTER_URI_AUTHORITY = "timeline"
 
         fun refreshAllWidgets(context: Context, forceRefresh: Boolean) {
             val manager = AppWidgetManager.getInstance(context)
@@ -382,4 +389,3 @@ private data class WidgetPalette(
         }
     }
 }
-

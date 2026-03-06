@@ -19,55 +19,70 @@ private class TimelineWidgetRemoteViewsFactory(
     private val context: android.content.Context,
     private val intent: Intent,
 ) : RemoteViewsService.RemoteViewsFactory {
-    private val appWidgetId = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID)
-    private val requestedLimit = intent.getIntExtra(TimelineWidgetProvider.EXTRA_ENTRY_LIMIT, 5).coerceIn(1, 20)
+    private val fallbackRequestedLimit =
+        intent.getIntExtra(TimelineWidgetProvider.EXTRA_ENTRY_LIMIT, 5).coerceIn(1, 20)
     private val repository = TimelineWidgetRepository(context)
     private var entries: List<TimelineEntry> = emptyList()
 
     override fun onCreate() = Unit
 
     override fun onDataSetChanged() {
+        val appWidgetId = resolveWidgetId()
         if (appWidgetId == AppWidgetManager.INVALID_APPWIDGET_ID) {
             entries = emptyList()
             return
         }
 
-        val config = TimelineWidgetPreferences.loadConfig(context, appWidgetId)
-        val offset = TimelineWidgetPreferences.loadDateOffset(context, appWidgetId)
-        val range = TimelineWidgetDateUtils.resolveRangeWindow(config.dateRange, offset)
-        val forceRefresh = TimelineWidgetPreferences.consumeForceRefresh(context, appWidgetId)
-
+        val previousState = TimelineWidgetPreferences.loadState(context, appWidgetId)
         TimelineWidgetPreferences.saveState(
             context,
             appWidgetId,
-            TimelineWidgetState(
+            previousState.copy(
                 isLoading = true,
                 entryCount = entries.size,
-                lastUpdatedAt = TimelineWidgetPreferences.loadState(context, appWidgetId).lastUpdatedAt,
                 lastError = null,
-            ),
+            )
         )
+        runCatching {
+            val config = TimelineWidgetPreferences.loadConfig(context, appWidgetId)
+            val offset = TimelineWidgetPreferences.loadDateOffset(context, appWidgetId)
+            val range = TimelineWidgetDateUtils.resolveRangeWindow(config.dateRange, offset)
+            val forceRefresh = TimelineWidgetPreferences.consumeForceRefresh(context, appWidgetId)
+            val requestedLimit = resolveEntryLimit().coerceAtMost(config.entryLimit.coerceIn(1, 20))
 
-        val result = runBlocking {
-            repository.loadEntries(
-                config = config,
-                rangeWindow = range,
-                limit = requestedLimit.coerceAtMost(config.entryLimit.coerceIn(1, 20)),
-                forceRefresh = forceRefresh,
+            val result = runBlocking {
+                repository.loadEntries(
+                    config = config,
+                    rangeWindow = range,
+                    limit = requestedLimit,
+                    forceRefresh = forceRefresh,
+                )
+            }
+
+            entries = result.entries
+            TimelineWidgetPreferences.saveState(
+                context,
+                appWidgetId,
+                TimelineWidgetState(
+                    isLoading = false,
+                    entryCount = entries.size,
+                    lastUpdatedAt = result.lastUpdatedAt,
+                    lastError = result.errorMessage,
+                ),
+            )
+        }.onFailure {
+            entries = emptyList()
+            TimelineWidgetPreferences.saveState(
+                context,
+                appWidgetId,
+                TimelineWidgetState(
+                    isLoading = false,
+                    entryCount = 0,
+                    lastUpdatedAt = previousState.lastUpdatedAt,
+                    lastError = context.getString(R.string.widget_error_generic),
+                ),
             )
         }
-
-        entries = result.entries
-        TimelineWidgetPreferences.saveState(
-            context,
-            appWidgetId,
-            TimelineWidgetState(
-                isLoading = false,
-                entryCount = entries.size,
-                lastUpdatedAt = result.lastUpdatedAt,
-                lastError = result.errorMessage,
-            ),
-        )
 
         val updateIntent = Intent(context, TimelineWidgetProvider::class.java).apply {
             action = TimelineWidgetProvider.ACTION_DATA_RENDERED
@@ -130,9 +145,47 @@ private class TimelineWidgetRemoteViewsFactory(
 
     override fun hasStableIds(): Boolean = true
 
+    private fun resolveWidgetId(): Int {
+        val fromExtra =
+            intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID)
+        if (fromExtra != AppWidgetManager.INVALID_APPWIDGET_ID) {
+            return fromExtra
+        }
+
+        val fromPath = intent.data?.lastPathSegment?.toIntOrNull()
+        if (fromPath != null && fromPath != AppWidgetManager.INVALID_APPWIDGET_ID) {
+            return fromPath
+        }
+
+        val fromQuery = intent.data
+            ?.getQueryParameter(AppWidgetManager.EXTRA_APPWIDGET_ID)
+            ?.toIntOrNull()
+        if (fromQuery != null && fromQuery != AppWidgetManager.INVALID_APPWIDGET_ID) {
+            return fromQuery
+        }
+
+        return TimelineWidgetPreferences.configuredWidgetIds(context).firstOrNull()
+            ?: AppWidgetManager.INVALID_APPWIDGET_ID
+    }
+
+    private fun resolveEntryLimit(): Int {
+        val fromExtra = intent.getIntExtra(TimelineWidgetProvider.EXTRA_ENTRY_LIMIT, -1)
+        if (fromExtra > 0) {
+            return fromExtra.coerceIn(1, 20)
+        }
+
+        val fromQuery = intent.data
+            ?.getQueryParameter(TimelineWidgetProvider.EXTRA_ENTRY_LIMIT)
+            ?.toIntOrNull()
+        if (fromQuery != null && fromQuery > 0) {
+            return fromQuery.coerceIn(1, 20)
+        }
+
+        return fallbackRequestedLimit
+    }
+
     private fun parseColorSafe(value: String?, fallback: Int): Int {
         if (value.isNullOrBlank()) return fallback
         return runCatching { Color.parseColor(value) }.getOrDefault(fallback)
     }
 }
-

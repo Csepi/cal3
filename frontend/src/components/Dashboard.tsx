@@ -90,6 +90,7 @@ const Dashboard: React.FC<DashboardProps> = ({ initialView = 'calendar' }) => {
   // UI state management
   const [currentView, setCurrentView] = useState<DashboardView>(initialView);
   const [userProfile, setUserProfile] = useState<DashboardUserProfile | null>(null);
+  const [isScreenVisible, setIsScreenVisible] = useState(false);
 
   const tasksWorkspaceRef = useRef<TasksWorkspaceHandle | null>(null);
 
@@ -152,6 +153,11 @@ const Dashboard: React.FC<DashboardProps> = ({ initialView = 'calendar' }) => {
     if (!sessionManager.hasActiveSession()) {
       sessionManager.refreshAccessToken().catch(() => null);
     }
+  }, []);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => setIsScreenVisible(true), 10);
+    return () => window.clearTimeout(timer);
   }, []);
 
   // Load user profile and permissions on component mount if logged in
@@ -246,7 +252,11 @@ const Dashboard: React.FC<DashboardProps> = ({ initialView = 'calendar' }) => {
   })();
 
   return (
-    <div className={`min-h-screen ${isMobile ? 'bg-white' : `bg-gradient-to-br ${themeConfig.gradient.background}`}`}>
+    <div
+      className={`min-h-screen transition-opacity duration-300 ${isScreenVisible ? 'opacity-100' : 'opacity-0'} ${
+        isMobile ? 'bg-white' : `bg-gradient-to-br ${themeConfig.gradient.background}`
+      }`}
+    >
       {/* Responsive Navigation - Adapts to screen size */}
       <ResponsiveNavigation
         activeTab={activeNavigationView}
