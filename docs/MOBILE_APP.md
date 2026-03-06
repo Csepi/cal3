@@ -61,7 +61,7 @@ npm install @capacitor/core @capacitor/cli @capacitor/android
 ### 2. Initialize Capacitor
 
 ```bash
-npx cap init "PrimeCal Calendar" "com.primecal.calendar" --web-dir=dist
+npx cap init "PrimeCal" "com.primecal.calendar" --web-dir=dist
 ```
 
 This creates `capacitor.config.ts` with the app configuration.
@@ -198,7 +198,7 @@ import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'com.primecal.calendar',
-  appName: 'PrimeCal Calendar',
+  appName: 'PrimeCal',
   webDir: 'dist',
   server: {
     url: 'https://app.primecal.eu',
@@ -473,3 +473,4 @@ For issues or questions:
 **Last Updated**: October 24, 2025
 **Version**: 1.0.0
 **Status**: Production Ready
+

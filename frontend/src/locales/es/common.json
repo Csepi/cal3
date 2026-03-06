@@ -1,6 +1,6 @@
 {
   "app": {
-    "title": "PrimeCal Calendario",
+    "title": "PrimeCal",
     "welcome": "Bienvenido,",
     "loading": "Cargando...",
     "saving": "Guardando...",
@@ -156,3 +156,4 @@
     "enterprise": "Empresa"
   }
 }
+

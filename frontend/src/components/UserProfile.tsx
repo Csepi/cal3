@@ -12,6 +12,10 @@ import {
   type PasswordFormData
 } from './profile';
 import { useScreenSize } from '../hooks/useScreenSize';
+import {
+  clearWidgetDiagnosticsLog,
+  getWidgetDiagnosticsLog,
+} from '../services/widgetDiagnostics';
 
 /**
  * UserProfile component - Main user profile management interface
@@ -96,6 +100,8 @@ const UserProfile: React.FC<UserProfileProps> = ({ onThemeChange, currentTheme }
   const [isThemeSaving, setIsThemeSaving] = useState(false);
   const [tasksCalendars, setTasksCalendars] = useState<TasksCalendarOption[]>([]);
   const [tasksCalendarsLoading, setTasksCalendarsLoading] = useState(false);
+  const [widgetLogBusy, setWidgetLogBusy] = useState(false);
+  const [widgetLogStatus, setWidgetLogStatus] = useState<string | null>(null);
 
   const loadTasksCalendars = async (currentUserId?: number) => {
     if (!currentUserId) {
@@ -372,6 +378,33 @@ const UserProfile: React.FC<UserProfileProps> = ({ onThemeChange, currentTheme }
     }
   };
 
+  const handleCopyWidgetDiagnostics = async () => {
+    setWidgetLogBusy(true);
+    setWidgetLogStatus(null);
+    const diagnosticsLog = await getWidgetDiagnosticsLog();
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(diagnosticsLog);
+        setWidgetLogStatus('Widget diagnostics copied to clipboard.');
+      } else {
+        setWidgetLogStatus(diagnosticsLog);
+      }
+    } catch (err) {
+      console.error('Failed to copy widget diagnostics:', err);
+      setWidgetLogStatus(diagnosticsLog);
+    } finally {
+      setWidgetLogBusy(false);
+    }
+  };
+
+  const handleClearWidgetDiagnostics = async () => {
+    setWidgetLogBusy(true);
+    setWidgetLogStatus(null);
+    await clearWidgetDiagnosticsLog();
+    setWidgetLogStatus('Widget diagnostics log cleared.');
+    setWidgetLogBusy(false);
+  };
+
   // Load user data on component mount
   useEffect(() => {
     loadUserData();
@@ -497,6 +530,40 @@ const UserProfile: React.FC<UserProfileProps> = ({ onThemeChange, currentTheme }
               onThemeChange={handleThemeChange}
               isSaving={isThemeSaving}
             />
+
+            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+              <div className="flex flex-col gap-3">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-800">Widget Diagnostics</h3>
+                  <p className="text-sm text-gray-600 mt-1">
+                    Copy Android widget logs to troubleshoot loading issues quickly.
+                  </p>
+                </div>
+                <div className={`flex ${isMobile ? 'flex-col' : 'flex-row'} gap-3`}>
+                  <Button
+                    variant="outline"
+                    themeColor={currentTheme}
+                    onClick={handleCopyWidgetDiagnostics}
+                    disabled={widgetLogBusy}
+                    className={isMobile ? 'w-full' : ''}
+                  >
+                    {widgetLogBusy ? 'Working...' : 'Copy Widget Log'}
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    themeColor={currentTheme}
+                    onClick={handleClearWidgetDiagnostics}
+                    disabled={widgetLogBusy}
+                    className={isMobile ? 'w-full' : ''}
+                  >
+                    Clear Widget Log
+                  </Button>
+                </div>
+                {widgetLogStatus && (
+                  <p className="text-xs text-gray-600 whitespace-pre-wrap break-words">{widgetLogStatus}</p>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       </main>

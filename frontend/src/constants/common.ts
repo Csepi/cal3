@@ -1,5 +1,5 @@
-﻿/**
- * Common constants used throughout the PrimeCal Calendar application
+/**
+ * Common constants used throughout the PrimeCal application
  *
  * This file contains shared constants for:
  * - Usage plan definitions
@@ -153,5 +153,6 @@ export const LOADING_MESSAGES = {
   DELETING: 'Deleting...',
   READY: 'Ready!'
 } as const;
+
 
 

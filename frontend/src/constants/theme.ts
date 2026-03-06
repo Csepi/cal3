@@ -1,5 +1,5 @@
 /**
- * Theme constants and color definitions for the PrimeCal Calendar application
+ * Theme constants and color definitions for the PrimeCal application
  *
  * This file contains all theme-related constants including:
  * - Color palette definitions
@@ -516,3 +516,4 @@ export function getThemeColors(color: string) {
 
 // Default theme color
 export const DEFAULT_THEME_COLOR = THEME_COLORS.BLUE;
+

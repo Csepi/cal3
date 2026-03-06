@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">PrimeCal Calendar</string>
-    <string name="title_activity_main">PrimeCal Calendar</string>
+    <string name="app_name">PrimeCal</string>
+    <string name="title_activity_main">PrimeCal</string>
     <string name="package_name">com.primecal.calendar</string>
     <string name="custom_url_scheme">com.primecal.calendar</string>
 
@@ -49,3 +49,4 @@
     <string name="widget_click_event">Open event detail</string>
     <string name="widget_click_day">Open day view</string>
 </resources>
+

@@ -19,6 +19,12 @@ class TimelineWidgetProvider : AppWidgetProvider() {
         appWidgetManager: AppWidgetManager,
         appWidgetIds: IntArray,
     ) {
+        TimelineWidgetDebugLogger.log(
+            context,
+            stage = "provider.onUpdate",
+            message = "Widget update requested",
+            details = mapOf("count" to appWidgetIds.size),
+        )
         appWidgetIds.forEach { appWidgetId ->
             if (appWidgetId == AppWidgetManager.INVALID_APPWIDGET_ID) return@forEach
             val config = TimelineWidgetPreferences.loadConfig(context, appWidgetId)
@@ -34,19 +40,41 @@ class TimelineWidgetProvider : AppWidgetProvider() {
         appWidgetId: Int,
         newOptions: android.os.Bundle,
     ) {
+        TimelineWidgetDebugLogger.log(
+            context,
+            stage = "provider.optionsChanged",
+            message = "Widget options changed",
+            appWidgetId = appWidgetId,
+        )
         requestDataRefresh(context, appWidgetManager, appWidgetId, forceRefresh = false)
     }
 
     override fun onEnabled(context: Context) {
+        TimelineWidgetDebugLogger.log(
+            context,
+            stage = "provider.onEnabled",
+            message = "First widget enabled",
+        )
         TimelineWidgetUpdateScheduler.schedulePeriodic(context)
     }
 
     override fun onDisabled(context: Context) {
+        TimelineWidgetDebugLogger.log(
+            context,
+            stage = "provider.onDisabled",
+            message = "All widgets disabled",
+        )
         TimelineWidgetUpdateScheduler.cancelPeriodic(context)
     }
 
     override fun onDeleted(context: Context, appWidgetIds: IntArray) {
         super.onDeleted(context, appWidgetIds)
+        TimelineWidgetDebugLogger.log(
+            context,
+            stage = "provider.onDeleted",
+            message = "Widgets deleted",
+            details = mapOf("count" to appWidgetIds.size),
+        )
         appWidgetIds.forEach { TimelineWidgetPreferences.deleteWidget(context, it) }
         if (allWidgetIds(context).isEmpty()) {
             TimelineWidgetUpdateScheduler.cancelPeriodic(context)
@@ -61,6 +89,12 @@ class TimelineWidgetProvider : AppWidgetProvider() {
         when (intent.action) {
             ACTION_REFRESH -> {
                 val id = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID)
+                TimelineWidgetDebugLogger.log(
+                    context,
+                    stage = "provider.actionRefresh",
+                    message = "Refresh action received",
+                    appWidgetId = if (id == AppWidgetManager.INVALID_APPWIDGET_ID) null else id,
+                )
                 if (id == AppWidgetManager.INVALID_APPWIDGET_ID) {
                     refreshAllWidgets(context, forceRefresh = true)
                 } else {
@@ -73,6 +107,13 @@ class TimelineWidgetProvider : AppWidgetProvider() {
                 if (id != AppWidgetManager.INVALID_APPWIDGET_ID) {
                     val current = TimelineWidgetPreferences.loadDateOffset(context, id)
                     TimelineWidgetPreferences.saveDateOffset(context, id, current - 1)
+                    TimelineWidgetDebugLogger.log(
+                        context,
+                        stage = "provider.actionPrevious",
+                        message = "Navigate previous range",
+                        appWidgetId = id,
+                        details = mapOf("offset" to (current - 1)),
+                    )
                     requestDataRefresh(context, appWidgetManager, id, forceRefresh = true)
                 }
             }
@@ -82,6 +123,13 @@ class TimelineWidgetProvider : AppWidgetProvider() {
                 if (id != AppWidgetManager.INVALID_APPWIDGET_ID) {
                     val current = TimelineWidgetPreferences.loadDateOffset(context, id)
                     TimelineWidgetPreferences.saveDateOffset(context, id, current + 1)
+                    TimelineWidgetDebugLogger.log(
+                        context,
+                        stage = "provider.actionNext",
+                        message = "Navigate next range",
+                        appWidgetId = id,
+                        details = mapOf("offset" to (current + 1)),
+                    )
                     requestDataRefresh(context, appWidgetManager, id, forceRefresh = true)
                 }
             }
@@ -116,6 +164,11 @@ class TimelineWidgetProvider : AppWidgetProvider() {
             }
 
             ACTION_TIMELINE_DATA_CHANGED -> {
+                TimelineWidgetDebugLogger.log(
+                    context,
+                    stage = "provider.actionDataChanged",
+                    message = "Timeline data changed broadcast received",
+                )
                 refreshAllWidgets(context, forceRefresh = true)
             }
         }
@@ -128,6 +181,13 @@ class TimelineWidgetProvider : AppWidgetProvider() {
         forceRefresh: Boolean,
     ) {
         if (appWidgetId == AppWidgetManager.INVALID_APPWIDGET_ID) return
+        TimelineWidgetDebugLogger.log(
+            context,
+            stage = "provider.requestRefresh",
+            message = "Requesting widget data refresh",
+            appWidgetId = appWidgetId,
+            details = mapOf("forceRefresh" to forceRefresh),
+        )
         val state = TimelineWidgetPreferences.loadState(context, appWidgetId)
         TimelineWidgetPreferences.saveState(
             context,
@@ -136,7 +196,7 @@ class TimelineWidgetProvider : AppWidgetProvider() {
         )
         TimelineWidgetPreferences.markForceRefresh(context, appWidgetId, forceRefresh)
 
-        val views = buildRemoteViews(context, appWidgetManager, appWidgetId)
+        val views = buildRemoteViews(context, appWidgetManager, appWidgetId, bindAdapter = true)
         appWidgetManager.updateAppWidget(appWidgetId, views)
         appWidgetManager.notifyAppWidgetViewDataChanged(appWidgetId, R.id.widgetTimelineList)
     }
@@ -146,7 +206,19 @@ class TimelineWidgetProvider : AppWidgetProvider() {
         appWidgetManager: AppWidgetManager,
         appWidgetId: Int,
     ) {
-        val views = buildRemoteViews(context, appWidgetManager, appWidgetId)
+        val state = TimelineWidgetPreferences.loadState(context, appWidgetId)
+        TimelineWidgetDebugLogger.log(
+            context,
+            stage = "provider.renderState",
+            message = "Rendering widget from latest state",
+            appWidgetId = appWidgetId,
+            details = mapOf(
+                "isLoading" to state.isLoading,
+                "entryCount" to state.entryCount,
+                "hasError" to !state.lastError.isNullOrBlank(),
+            ),
+        )
+        val views = buildRemoteViews(context, appWidgetManager, appWidgetId, bindAdapter = false)
         appWidgetManager.updateAppWidget(appWidgetId, views)
     }
 
@@ -154,6 +226,7 @@ class TimelineWidgetProvider : AppWidgetProvider() {
         context: Context,
         manager: AppWidgetManager,
         appWidgetId: Int,
+        bindAdapter: Boolean = true,
     ): RemoteViews {
         val config = TimelineWidgetPreferences.loadConfig(context, appWidgetId)
         val state = TimelineWidgetPreferences.loadState(context, appWidgetId)
@@ -203,17 +276,19 @@ class TimelineWidgetProvider : AppWidgetProvider() {
 
             setEmptyView(R.id.widgetTimelineList, R.id.widgetStateText)
 
-            val serviceIntent = Intent(context, TimelineWidgetRemoteViewsService::class.java).apply {
-                putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
-                putExtra(EXTRA_ENTRY_LIMIT, entryLimit)
-                data = Uri.Builder()
-                    .scheme(WIDGET_ADAPTER_URI_SCHEME)
-                    .authority(WIDGET_ADAPTER_URI_AUTHORITY)
-                    .appendPath(appWidgetId.toString())
-                    .appendQueryParameter(EXTRA_ENTRY_LIMIT, entryLimit.toString())
-                    .build()
+            if (bindAdapter) {
+                val serviceIntent = Intent(context, TimelineWidgetRemoteViewsService::class.java).apply {
+                    putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
+                    putExtra(EXTRA_ENTRY_LIMIT, entryLimit)
+                    data = Uri.Builder()
+                        .scheme(WIDGET_ADAPTER_URI_SCHEME)
+                        .authority(WIDGET_ADAPTER_URI_AUTHORITY)
+                        .appendPath(appWidgetId.toString())
+                        .appendQueryParameter(EXTRA_ENTRY_LIMIT, entryLimit.toString())
+                        .build()
+                }
+                setRemoteAdapter(R.id.widgetTimelineList, serviceIntent)
             }
-            setRemoteAdapter(R.id.widgetTimelineList, serviceIntent)
 
             val itemTemplateIntent = Intent(context, TimelineWidgetProvider::class.java).apply {
                 action = ACTION_OPEN_ENTRY

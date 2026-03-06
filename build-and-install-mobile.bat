@@ -90,7 +90,7 @@ if errorlevel 1 goto :launch
 
 :launch
 echo.
-echo Launching PrimeCal Calendar...
+echo Launching PrimeCal...
 adb shell am start -n com.primecal.calendar/.MainActivity
 echo + App launched!
 goto :end
@@ -107,3 +107,4 @@ echo ========================================
 echo Done!
 echo ========================================
 pause
+

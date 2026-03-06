@@ -1,6 +1,6 @@
 {
 	"appId": "com.primecal.calendar",
-	"appName": "PrimeCal Calendar",
+	"appName": "PrimeCal",
 	"webDir": "dist",
 	"server": {
 		"url": "https://app.primecal.eu",
@@ -14,3 +14,4 @@
 		"androidScheme": "https"
 	}
 }
+

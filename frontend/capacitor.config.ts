@@ -62,7 +62,7 @@ const allowNavigation = (() => {
 
 const config: CapacitorConfig = {
   appId: 'com.primecal.calendar',
-  appName: 'PrimeCal Calendar',
+  appName: 'PrimeCal',
   webDir: 'dist',
   server: {
     url: serverUrl,
@@ -73,3 +73,4 @@ const config: CapacitorConfig = {
 };
 
 export default config;
+

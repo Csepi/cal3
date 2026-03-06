@@ -28,10 +28,31 @@ class TimelineWidgetDataProvider(private val context: Context) {
         rangeWindow: TimelineRangeWindow,
         entryLimit: Int,
     ): TimelineFetchOutcome = withContext(Dispatchers.IO) {
+        TimelineWidgetDebugLogger.log(
+            context,
+            stage = "provider.fetch.start",
+            message = "Fetching timeline entries",
+            details = mapOf(
+                "startDate" to rangeWindow.startDateIso,
+                "endDate" to rangeWindow.endDateIso,
+                "limit" to entryLimit,
+            ),
+        )
         val token = obtainAuthorizationToken()
         if (token.isNullOrBlank()) {
+            TimelineWidgetDebugLogger.log(
+                context,
+                stage = "provider.fetch.auth",
+                message = "No authorization token available",
+            )
             val fallback = queryContentProvider(entryLimit)
             return@withContext if (fallback.isNotEmpty()) {
+                TimelineWidgetDebugLogger.log(
+                    context,
+                    stage = "provider.fetch.fallback",
+                    message = "Using cached entries because auth token is missing",
+                    details = mapOf("entries" to fallback.size),
+                )
                 TimelineFetchOutcome(
                     entries = fallback,
                     errorMessage = context.getString(R.string.widget_error_auth_cached),
@@ -57,9 +78,21 @@ class TimelineWidgetDataProvider(private val context: Context) {
             ),
             body = null,
         )
+        TimelineWidgetDebugLogger.log(
+            context,
+            stage = "provider.fetch.http",
+            message = "Timeline API response received",
+            details = mapOf("statusCode" to response.statusCode),
+        )
 
         if (response.statusCode in 200..299) {
             val parsed = parseTimelineEntries(response.body).sortedBy { it.startAtMillis }.take(entryLimit)
+            TimelineWidgetDebugLogger.log(
+                context,
+                stage = "provider.fetch.parse",
+                message = "Timeline entries parsed",
+                details = mapOf("entries" to parsed.size),
+            )
             if (parsed.isEmpty()) {
                 return@withContext TimelineFetchOutcome(entries = emptyList())
             }
@@ -71,9 +104,24 @@ class TimelineWidgetDataProvider(private val context: Context) {
                 cachedAccessToken = null
             }
             clearNativeWidgetToken()
+            TimelineWidgetDebugLogger.log(
+                context,
+                stage = "provider.fetch.auth",
+                message = "Authorization rejected; token cache cleared",
+                details = mapOf("statusCode" to response.statusCode),
+            )
         }
 
         val fallback = queryContentProvider(entryLimit)
+        TimelineWidgetDebugLogger.log(
+            context,
+            stage = "provider.fetch.fallback",
+            message = "Using fallback entries after API failure",
+            details = mapOf(
+                "statusCode" to response.statusCode,
+                "entries" to fallback.size,
+            ),
+        )
         val message = when (response.statusCode) {
             401, 403 -> context.getString(R.string.widget_error_auth)
             else -> context.getString(R.string.widget_error_generic)
@@ -90,17 +138,32 @@ class TimelineWidgetDataProvider(private val context: Context) {
             synchronized(tokenLock) {
                 cachedAccessToken = nativeToken
             }
+            TimelineWidgetDebugLogger.log(
+                context,
+                stage = "provider.auth.token",
+                message = "Using native widget token",
+            )
             return nativeToken
         }
 
         synchronized(tokenLock) {
             if (!cachedAccessToken.isNullOrBlank()) {
+                TimelineWidgetDebugLogger.log(
+                    context,
+                    stage = "provider.auth.token",
+                    message = "Using cached in-memory token",
+                )
                 return cachedAccessToken
             }
         }
 
         val cookies = runCatching { gatherCookies() }.getOrNull()
         if (cookies.isNullOrBlank()) {
+            TimelineWidgetDebugLogger.log(
+                context,
+                stage = "provider.auth.cookies",
+                message = "No browser cookies available for refresh-token exchange",
+            )
             return null
         }
 
@@ -120,6 +183,12 @@ class TimelineWidgetDataProvider(private val context: Context) {
         )
 
         if (refreshResponse.statusCode !in 200..299) {
+            TimelineWidgetDebugLogger.log(
+                context,
+                stage = "provider.auth.refresh",
+                message = "Refresh-token exchange failed",
+                details = mapOf("statusCode" to refreshResponse.statusCode),
+            )
             return null
         }
 
@@ -127,6 +196,15 @@ class TimelineWidgetDataProvider(private val context: Context) {
         synchronized(tokenLock) {
             cachedAccessToken = token
         }
+        TimelineWidgetDebugLogger.log(
+            context,
+            stage = "provider.auth.refresh",
+            message = if (token.isNullOrBlank()) {
+                "Refresh succeeded but no access token found"
+            } else {
+                "Access token acquired from refresh"
+            },
+        )
         return token
     }
 
@@ -186,9 +264,21 @@ class TimelineWidgetDataProvider(private val context: Context) {
         val resolver = context.contentResolver
         val cursor = runCatching {
             resolver.query(TimelineContentProvider.TIMELINE_URI, null, null, null, null)
-        }.getOrNull() ?: return emptyList()
+        }.getOrNull() ?: run {
+            TimelineWidgetDebugLogger.log(
+                context,
+                stage = "provider.fallback.query",
+                message = "Content provider query failed",
+            )
+            return emptyList()
+        }
         cursor.use { c ->
             if (c.count <= 0) {
+                TimelineWidgetDebugLogger.log(
+                    context,
+                    stage = "provider.fallback.query",
+                    message = "Content provider returned no rows",
+                )
                 return emptyList()
             }
             val idIndex = c.getColumnIndex("_id")
@@ -202,6 +292,11 @@ class TimelineWidgetDataProvider(private val context: Context) {
             val statusIndex = c.getColumnIndex("status")
 
             if (idIndex < 0 || titleIndex < 0 || startIndex < 0) {
+                TimelineWidgetDebugLogger.log(
+                    context,
+                    stage = "provider.fallback.query",
+                    message = "Required columns missing in content provider response",
+                )
                 return emptyList()
             }
 
@@ -221,6 +316,12 @@ class TimelineWidgetDataProvider(private val context: Context) {
                     ),
                 )
             }
+            TimelineWidgetDebugLogger.log(
+                context,
+                stage = "provider.fallback.query",
+                message = "Loaded fallback entries from content provider",
+                details = mapOf("entries" to entries.size),
+            )
             return entries
         }
     }
@@ -328,7 +429,17 @@ class TimelineWidgetDataProvider(private val context: Context) {
                 BufferedReader(input.reader(Charsets.UTF_8)).use { it.readText() }
             } ?: ""
             HttpResult(code, responseBody)
-        } catch (_: Exception) {
+        } catch (exception: Exception) {
+            TimelineWidgetDebugLogger.log(
+                context,
+                stage = "provider.http.error",
+                message = "HTTP request failed",
+                details = mapOf(
+                    "method" to method,
+                    "endpoint" to endpoint,
+                    "reason" to (exception.message ?: exception.javaClass.simpleName),
+                ),
+            )
             HttpResult(-1, "")
         } finally {
             connection.disconnect()

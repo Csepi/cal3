@@ -29,10 +29,38 @@ private class TimelineWidgetRemoteViewsFactory(
     override fun onDataSetChanged() {
         val appWidgetId = resolveWidgetId()
         if (appWidgetId == AppWidgetManager.INVALID_APPWIDGET_ID) {
+            TimelineWidgetDebugLogger.log(
+                context,
+                stage = "factory.onDataSetChanged",
+                message = "Unable to resolve widget ID; clearing loading state for configured widgets",
+            )
+            TimelineWidgetPreferences.configuredWidgetIds(context).forEach { configuredId ->
+                val previous = TimelineWidgetPreferences.loadState(context, configuredId)
+                TimelineWidgetPreferences.saveState(
+                    context,
+                    configuredId,
+                    previous.copy(
+                        isLoading = false,
+                        lastError = context.getString(R.string.widget_error_generic),
+                    ),
+                )
+                context.sendBroadcast(
+                    Intent(context, TimelineWidgetProvider::class.java).apply {
+                        action = TimelineWidgetProvider.ACTION_DATA_RENDERED
+                        putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, configuredId)
+                    },
+                )
+            }
             entries = emptyList()
             return
         }
 
+        TimelineWidgetDebugLogger.log(
+            context,
+            stage = "factory.onDataSetChanged",
+            message = "Refreshing widget dataset",
+            appWidgetId = appWidgetId,
+        )
         val previousState = TimelineWidgetPreferences.loadState(context, appWidgetId)
         TimelineWidgetPreferences.saveState(
             context,
@@ -49,6 +77,18 @@ private class TimelineWidgetRemoteViewsFactory(
             val range = TimelineWidgetDateUtils.resolveRangeWindow(config.dateRange, offset)
             val forceRefresh = TimelineWidgetPreferences.consumeForceRefresh(context, appWidgetId)
             val requestedLimit = resolveEntryLimit().coerceAtMost(config.entryLimit.coerceIn(1, 20))
+            TimelineWidgetDebugLogger.log(
+                context,
+                stage = "factory.fetch",
+                message = "Loading entries from repository",
+                appWidgetId = appWidgetId,
+                details = mapOf(
+                    "dateRange" to config.dateRange.value,
+                    "offset" to offset,
+                    "requestedLimit" to requestedLimit,
+                    "forceRefresh" to forceRefresh,
+                ),
+            )
 
             val result = runBlocking {
                 repository.loadEntries(
@@ -70,6 +110,17 @@ private class TimelineWidgetRemoteViewsFactory(
                     lastError = result.errorMessage,
                 ),
             )
+            TimelineWidgetDebugLogger.log(
+                context,
+                stage = "factory.fetch.result",
+                message = "Repository load finished",
+                appWidgetId = appWidgetId,
+                details = mapOf(
+                    "entries" to entries.size,
+                    "fromCache" to result.fromCache,
+                    "hasError" to !result.errorMessage.isNullOrBlank(),
+                ),
+            )
         }.onFailure {
             entries = emptyList()
             TimelineWidgetPreferences.saveState(
@@ -81,6 +132,13 @@ private class TimelineWidgetRemoteViewsFactory(
                     lastUpdatedAt = previousState.lastUpdatedAt,
                     lastError = context.getString(R.string.widget_error_generic),
                 ),
+            )
+            TimelineWidgetDebugLogger.log(
+                context,
+                stage = "factory.fetch.error",
+                message = "Widget dataset refresh failed",
+                appWidgetId = appWidgetId,
+                details = mapOf("reason" to (it.message ?: "unknown")),
             )
         }
 

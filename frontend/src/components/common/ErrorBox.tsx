@@ -60,7 +60,7 @@ export const ErrorBox: React.FC<ErrorBoxProps> = ({
     const log: string[] = [];
 
     log.push('='.repeat(60));
-    log.push('PrimeCal Calendar - Error Debug Log');
+    log.push('PrimeCal - Error Debug Log');
     log.push('='.repeat(60));
     log.push('');
     log.push(`Timestamp: ${errorDetails.timestamp}`);
@@ -243,3 +243,4 @@ export const ErrorBox: React.FC<ErrorBoxProps> = ({
 
 // Export both named and default for compatibility
 export default ErrorBox;
+

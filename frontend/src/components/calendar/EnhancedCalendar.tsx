@@ -749,7 +749,7 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
           onCreateEvent={(date) => actions.createEvent(date)}
           accentColor={accentColor}
           focusMode={timelineFocusMode}
-          onToggleFocusMode={isMobile ? undefined : onToggleTimelineFocusMode}
+          onToggleFocusMode={onToggleTimelineFocusMode}
           calendars={state.calendars}
           selectedCalendars={state.selectedCalendars}
           onToggleCalendar={actions.toggleCalendar}
@@ -1532,7 +1532,7 @@ export const EnhancedCalendar: React.FC<EnhancedCalendarProps> = ({
     [timezone],
   );
   const isTimelineFocusActive =
-    !isMobile && state.currentView === 'timeline' && timelineFocusMode;
+    state.currentView === 'timeline' && timelineFocusMode;
 
   useEffect(() => {
     if (state.currentView !== 'timeline' && timelineFocusMode) {
