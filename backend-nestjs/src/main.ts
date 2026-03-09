@@ -22,6 +22,7 @@ import { ResponseInterceptor } from './common/responses/response.interceptor';
 import { createApiValidationPipe } from './common/pipes/validation.pipe';
 import {
   applyPermissionsPolicy,
+  applyCertificateTransparencyPolicy,
   buildCorsOptions,
   buildHelmetOptions,
   getCorsAllowedHeaders,
@@ -151,6 +152,7 @@ async function bootstrap() {
     app.use((req: Request, res: Response, next: NextFunction) => {
       void req;
       applyPermissionsPolicy(res);
+      applyCertificateTransparencyPolicy(res);
       next();
     });
     dbLogger.log('Middleware applied.');

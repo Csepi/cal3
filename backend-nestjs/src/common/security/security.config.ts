@@ -9,13 +9,18 @@ const DEFAULT_DIRECTIVES: Record<string, Iterable<string>> = {
   frameSrc: ["'none'"],
   frameAncestors: ["'none'"],
   scriptSrc: ["'self'"],
+  scriptSrcAttr: ["'none'"],
   connectSrc: ["'self'"],
   imgSrc: ["'self'", 'data:'],
   styleSrc: ["'self'"],
+  styleSrcAttr: ["'none'"],
   fontSrc: ["'self'", 'data:'],
+  workerSrc: ["'self'"],
   objectSrc: ["'none'"],
   baseUri: ["'self'"],
   formAction: ["'self'"],
+  upgradeInsecureRequests: [],
+  blockAllMixedContent: [],
 };
 
 const TRUSTED_LOCAL_HOSTS = new Set(['localhost', '127.0.0.1', '[::1]']);
@@ -66,15 +71,20 @@ export function buildHelmetOptions(allowedOrigins: string[]): HelmetOptions {
   const connectSrc = Array.from(
     new Set([...allowedOrigins, "'self'"].filter(Boolean)),
   );
+  const cspReportUri = process.env.SECURITY_CSP_REPORT_URI?.trim();
+  const directives: Record<string, Iterable<string>> = {
+    ...DEFAULT_DIRECTIVES,
+    connectSrc,
+  };
+  if (cspReportUri) {
+    directives.reportUri = [cspReportUri];
+  }
   const coopEnabled = shouldEnableCrossOriginOpenerPolicy(allowedOrigins);
   const coopPolicy = resolveCoopPolicy(process.env.SECURITY_COOP_POLICY);
 
   return {
     contentSecurityPolicy: {
-      directives: {
-        ...DEFAULT_DIRECTIVES,
-        connectSrc,
-      },
+      directives,
     },
     crossOriginEmbedderPolicy: true,
     crossOriginOpenerPolicy: coopEnabled ? { policy: coopPolicy } : false,
@@ -151,9 +161,39 @@ export function applyPermissionsPolicy(res: {
       'payment=()',
       'usb=()',
       'bluetooth=()',
+      'accelerometer=()',
+      'gyroscope=()',
+      'magnetometer=()',
+      'display-capture=()',
       'fullscreen=(self)',
     ].join(', '),
   );
+}
+
+export function applyCertificateTransparencyPolicy(res: {
+  setHeader: (key: string, value: string) => void;
+}): void {
+  const enabled = process.env.SECURITY_CT_ENABLED?.toLowerCase() !== 'false';
+  if (!enabled) {
+    return;
+  }
+
+  const maxAge = parseInt(process.env.SECURITY_CT_MAX_AGE ?? '86400', 10);
+  const mode = process.env.SECURITY_CT_MODE?.toLowerCase() === 'report-only'
+    ? ''
+    : 'enforce';
+  const reportUri =
+    process.env.SECURITY_CT_REPORT_URI?.trim() ||
+    '/api/security/reports/ct';
+
+  const parts = [`max-age=${Number.isFinite(maxAge) ? maxAge : 86400}`];
+  if (mode) {
+    parts.push(mode);
+  }
+  if (reportUri) {
+    parts.push(`report-uri="${reportUri}"`);
+  }
+  res.setHeader('Expect-CT', parts.join(', '));
 }
 
 function normalizeOrigin(origin: string): string {

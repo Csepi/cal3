@@ -28,6 +28,11 @@ import { type Response, type Request as ExpressRequest } from 'express';
 import { Throttle } from '@nestjs/throttler';
 import type { AuthSessionResult, AuthRequestMetadata } from './auth.service';
 import type { RequestWithUser } from '../common/types/request-with-user';
+import {
+  TokenFingerprintService,
+  DEVICE_FINGERPRINT_COOKIE,
+  DEVICE_FINGERPRINT_HEADER,
+} from './services/token-fingerprint.service';
 
 @ApiTags('Authentication')
 @Controller('auth')
@@ -35,6 +40,7 @@ export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly configurationService: ConfigurationService,
+    private readonly tokenFingerprintService: TokenFingerprintService,
   ) {}
 
   @Post('register')
@@ -50,9 +56,10 @@ export class AuthController {
     @Req() req: ExpressRequest,
     @Res({ passthrough: true }) res: Response,
   ): Promise<AuthResponseDto> {
+    const fingerprintContext = this.ensureRequestFingerprint(req, res);
     const session = await this.authService.register(
       registerDto,
-      this.extractMetadata(req),
+      this.extractMetadata(req, fingerprintContext.fingerprintHash),
     );
     this.setRefreshCookie(
       req,
@@ -77,9 +84,10 @@ export class AuthController {
     @Req() req: ExpressRequest,
     @Res({ passthrough: true }) res: Response,
   ): Promise<AuthResponseDto> {
+    const fingerprintContext = this.ensureRequestFingerprint(req, res);
     const session = await this.authService.login(
       loginDto,
-      this.extractMetadata(req),
+      this.extractMetadata(req, fingerprintContext.fingerprintHash),
     );
     this.setRefreshCookie(
       req,
@@ -111,10 +119,11 @@ export class AuthController {
     @Req() req: ExpressRequest,
     @Res({ passthrough: true }) res: Response,
   ): Promise<AuthResponseDto> {
+    const fingerprintContext = this.ensureRequestFingerprint(req, res);
     const token = body.refreshToken ?? this.getRefreshTokenFromCookies(req);
     const session = await this.authService.refreshSession(
       token,
-      this.extractMetadata(req),
+      this.extractMetadata(req, fingerprintContext.fingerprintHash),
     );
     this.setRefreshCookie(
       req,
@@ -137,7 +146,10 @@ export class AuthController {
     await this.authService.logout(
       req.user.id,
       token ?? null,
-      this.extractMetadata(req),
+      {
+        ...this.extractMetadata(req),
+        accessToken: this.getAccessTokenFromAuthorization(req),
+      },
     );
     this.clearRefreshCookie(req, res);
     return { success: true };
@@ -252,10 +264,14 @@ export class AuthController {
     return res.redirect(redirectUrl);
   }
 
-  private extractMetadata(req: ExpressRequest): AuthRequestMetadata {
+  private extractMetadata(
+    req: ExpressRequest,
+    fingerprintHash?: string,
+  ): AuthRequestMetadata {
     return {
       ip: req.ip,
       userAgent: req.headers['user-agent'],
+      fingerprintHash,
     };
   }
 
@@ -282,6 +298,30 @@ export class AuthController {
     return this.isNativeClientRequest(req) ? 'none' : 'strict';
   }
 
+  private ensureRequestFingerprint(
+    req: ExpressRequest,
+    res: Response,
+  ): { fingerprint: string; fingerprintHash: string } {
+    const existing = this.tokenFingerprintService.extractFingerprint(req);
+    if (existing) {
+      return {
+        fingerprint: existing,
+        fingerprintHash: this.tokenFingerprintService.hashFingerprint(existing),
+      };
+    }
+
+    const fingerprint = this.tokenFingerprintService.createFingerprint();
+    this.setFingerprintCookie(req, res, fingerprint);
+    if (this.isNativeClientRequest(req)) {
+      res.setHeader(DEVICE_FINGERPRINT_HEADER, fingerprint);
+    }
+
+    return {
+      fingerprint,
+      fingerprintHash: this.tokenFingerprintService.hashFingerprint(fingerprint),
+    };
+  }
+
   private setRefreshCookie(
     req: ExpressRequest,
     res: Response,
@@ -299,6 +339,22 @@ export class AuthController {
     });
   }
 
+  private setFingerprintCookie(
+    req: ExpressRequest,
+    res: Response,
+    fingerprint: string,
+  ): void {
+    const sameSite = this.resolveCookieSameSite(req);
+    const secure = process.env.NODE_ENV !== 'development' || sameSite === 'none';
+    res.cookie(DEVICE_FINGERPRINT_COOKIE, fingerprint, {
+      httpOnly: true,
+      secure,
+      sameSite,
+      path: '/api',
+      maxAge: 365 * 24 * 60 * 60 * 1000,
+    });
+  }
+
   private clearRefreshCookie(req: ExpressRequest, res: Response): void {
     const sameSite = this.resolveCookieSameSite(req);
     const secure = process.env.NODE_ENV !== 'development' || sameSite === 'none';
@@ -308,6 +364,20 @@ export class AuthController {
       sameSite,
       path: '/api/auth',
     });
+  }
+
+  private getAccessTokenFromAuthorization(
+    req: ExpressRequest,
+  ): string | undefined {
+    const header = req.headers.authorization;
+    if (!header || typeof header !== 'string') {
+      return undefined;
+    }
+    const [scheme, token] = header.split(' ');
+    if (scheme?.toLowerCase() !== 'bearer' || !token) {
+      return undefined;
+    }
+    return token;
   }
 
   private getQueryString(req: ExpressRequest, key: string): string | undefined {

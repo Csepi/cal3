@@ -8,5 +8,7 @@ export interface RequestWithUser extends Request {
   user: User & {
     userId?: number;
     organisationId?: number;
+    tokenJti?: string;
+    sessionId?: string;
   };
 }

@@ -1,10 +1,12 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { randomBytes, randomUUID, createHash } from 'crypto';
 import { User } from '../entities/user.entity';
 import { RefreshToken } from '../entities/refresh-token.entity';
+import { RefreshTokenFamilyService } from './services/refresh-token-family.service';
+import type { TokenMetadata } from './token.types';
 
 export interface TokenIssueResult {
   accessToken: string;
@@ -12,6 +14,8 @@ export interface TokenIssueResult {
   accessExpiresIn: number;
   refreshExpiresAt: Date;
   jti: string;
+  sessionId: string;
+  refreshTokenId: string;
 }
 
 export interface WidgetTokenIssueResult {
@@ -20,22 +24,20 @@ export interface WidgetTokenIssueResult {
   widgetExpiresAt: Date;
 }
 
-export interface TokenMetadata {
-  ip?: string;
-  userAgent?: string;
-  replacedTokenId?: string;
-}
-
 @Injectable()
 export class TokenService {
   private readonly accessTtlSeconds = parseInt(
     process.env.JWT_ACCESS_TTL ?? '900',
     10,
   );
-  private readonly refreshTtlSeconds = parseInt(
-    process.env.JWT_REFRESH_TTL ?? '1209600',
+  private readonly refreshSlidingTtlSeconds = parseInt(
+    process.env.JWT_REFRESH_SLIDING_TTL ?? process.env.JWT_REFRESH_TTL ?? '1209600',
     10,
-  ); // 14 days default
+  );
+  private readonly refreshAbsoluteTtlSeconds = parseInt(
+    process.env.JWT_REFRESH_ABSOLUTE_TTL ?? '2592000',
+    10,
+  ); // 30 days default
   private readonly widgetTtlSeconds = parseInt(
     process.env.JWT_WIDGET_TTL ?? '86400',
     10,
@@ -47,20 +49,25 @@ export class TokenService {
     private readonly jwtService: JwtService,
     @InjectRepository(RefreshToken)
     private readonly refreshRepository: Repository<RefreshToken>,
+    private readonly refreshTokenFamilyService: RefreshTokenFamilyService,
   ) {}
 
   async issueTokens(
     user: User,
     metadata: TokenMetadata = {},
   ): Promise<TokenIssueResult> {
+    const sessionId = metadata.familyId ?? randomUUID();
     const jti = randomUUID();
+    const accessClaims = {
+      sub: user.id,
+      username: user.username,
+      role: user.role,
+      jti,
+      sid: sessionId,
+      ...(metadata.fingerprintHash ? { fph: metadata.fingerprintHash } : {}),
+    };
     const accessToken = await this.jwtService.signAsync(
-      {
-        sub: user.id,
-        username: user.username,
-        role: user.role,
-        jti,
-      },
+      accessClaims,
       {
         expiresIn: `${this.accessTtlSeconds}s`,
         issuer: this.issuer,
@@ -69,27 +76,26 @@ export class TokenService {
     );
 
     const refreshTokenValue = this.createRefreshToken();
+    const familyExpiry = this.resolveFamilyExpiration(metadata);
+    const refreshExpiry = this.resolveRefreshExpiration(familyExpiry);
     const refreshTokenEntity = this.refreshRepository.create({
       userId: user.id,
       user,
       jti: randomUUID(),
       tokenHash: this.hashToken(refreshTokenValue),
-      expiresAt: new Date(Date.now() + this.refreshTtlSeconds * 1000),
+      familyId: sessionId,
+      parentTokenId: metadata.parentTokenId ?? null,
+      fingerprintHash: metadata.fingerprintHash ?? null,
+      expiresAt: refreshExpiry,
+      familyExpiresAt: familyExpiry,
       ipAddress: metadata.ip,
       userAgent: metadata.userAgent,
+      consumedAt: null,
+      lastUsedAt: new Date(),
       replacedByTokenId: null,
     });
 
     const savedToken = await this.refreshRepository.save(refreshTokenEntity);
-
-    if (metadata.replacedTokenId) {
-      await this.refreshRepository.update(metadata.replacedTokenId, {
-        replacedByTokenId: savedToken.id,
-        revoked: true,
-        revokedAt: new Date(),
-        revocationReason: 'rotated',
-      });
-    }
 
     return {
       accessToken,
@@ -97,6 +103,8 @@ export class TokenService {
       accessExpiresIn: this.accessTtlSeconds,
       refreshExpiresAt: savedToken.expiresAt,
       jti,
+      sessionId,
+      refreshTokenId: savedToken.id,
     };
   }
 
@@ -104,25 +112,25 @@ export class TokenService {
     token: string,
     metadata: TokenMetadata = {},
   ): Promise<{ user: User } & TokenIssueResult> {
-    const existing = await this.refreshRepository.findOne({
-      where: { tokenHash: this.hashToken(token) },
-      relations: ['user'],
-    });
+    const validation = await this.refreshTokenFamilyService.validateForRotation(
+      this.hashToken(token),
+      metadata.fingerprintHash,
+    );
+    this.refreshTokenFamilyService.assertValidRotation(validation);
 
-    if (
-      !existing ||
-      existing.revoked ||
-      existing.expiresAt.getTime() < Date.now()
-    ) {
-      throw new UnauthorizedException('Invalid refresh token');
-    }
-
-    const result = await this.issueTokens(existing.user, {
+    const currentToken = validation.token;
+    const result = await this.issueTokens(currentToken.user, {
       ...metadata,
-      replacedTokenId: existing.id,
+      familyId: currentToken.familyId,
+      parentTokenId: currentToken.id,
+      familyExpiresAt: currentToken.familyExpiresAt,
     });
+    await this.refreshTokenFamilyService.markTokenRotated(
+      currentToken.id,
+      result.refreshTokenId,
+    );
 
-    return { user: existing.user, ...result };
+    return { user: currentToken.user, ...result };
   }
 
   async revokeToken(token: string | null, reason = 'logout'): Promise<void> {
@@ -143,14 +151,11 @@ export class TokenService {
   }
 
   async revokeAllForUser(userId: number, reason = 'logout'): Promise<void> {
-    await this.refreshRepository.update(
-      { userId },
-      {
-        revoked: true,
-        revokedAt: new Date(),
-        revocationReason: reason,
-      },
-    );
+    await this.refreshTokenFamilyService.revokeUserFamilies(userId, reason);
+  }
+
+  async revokeTokenFamily(familyId: string, reason = 'security_event'): Promise<void> {
+    await this.refreshTokenFamilyService.revokeFamily(familyId, reason);
   }
 
   async issueWidgetToken(user: User): Promise<WidgetTokenIssueResult> {
@@ -184,5 +189,21 @@ export class TokenService {
 
   private hashToken(token: string): string {
     return createHash('sha256').update(token).digest('hex');
+  }
+
+  private resolveFamilyExpiration(metadata: TokenMetadata): Date {
+    if (metadata.familyExpiresAt) {
+      return metadata.familyExpiresAt;
+    }
+    return new Date(Date.now() + this.refreshAbsoluteTtlSeconds * 1000);
+  }
+
+  private resolveRefreshExpiration(familyExpiresAt: Date): Date {
+    const slidingExpiry = new Date(
+      Date.now() + this.refreshSlidingTtlSeconds * 1000,
+    );
+    return slidingExpiry.getTime() <= familyExpiresAt.getTime()
+      ? slidingExpiry
+      : familyExpiresAt;
   }
 }

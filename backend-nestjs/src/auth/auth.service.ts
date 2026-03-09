@@ -16,10 +16,13 @@ import {
 import { SecurityAuditService } from '../logging/security-audit.service';
 import { LoginAttemptService } from './services/login-attempt.service';
 import { UserBootstrapService } from '../tasks/user-bootstrap.service';
+import { JwtRevocationService } from './services/jwt-revocation.service';
 
 export interface AuthRequestMetadata {
   ip?: string;
   userAgent?: string;
+  fingerprintHash?: string;
+  accessToken?: string;
 }
 
 export interface AuthSessionResult {
@@ -45,6 +48,7 @@ export class AuthService {
     private readonly securityAudit: SecurityAuditService,
     private readonly loginAttemptService: LoginAttemptService,
     private readonly userBootstrapService: UserBootstrapService,
+    private readonly jwtRevocationService: JwtRevocationService,
   ) {}
 
   async register(
@@ -268,6 +272,7 @@ export class AuthService {
     metadata: AuthRequestMetadata = {},
   ): Promise<void> {
     await this.tokenService.revokeToken(refreshToken, 'logout');
+    await this.jwtRevocationService.revokeToken(metadata.accessToken);
     await this.securityAudit.log('auth.logout', {
       userId,
       ip: metadata.ip,

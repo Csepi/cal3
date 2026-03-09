@@ -7,6 +7,7 @@ export type SecurityAuditEvent =
   | 'auth.logout'
   | 'auth.register'
   | 'auth.refresh'
+  | 'auth.refresh.suspicious'
   | 'webhook.received'
   | 'automation.invocation';
 

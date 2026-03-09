@@ -25,6 +25,10 @@ import { ResourceAccessGuard } from './guards/resource-access.guard';
 import { OrganizationAccessGuard } from './guards/organization-access.guard';
 import { PublicBookingGuard } from './guards/public-booking.guard';
 import { DomainEventBus } from './events/domain-events';
+import { RbacPermissionService } from './authorization/rbac-permission.service';
+import { RbacAuthorizationGuard } from './authorization/rbac-authorization.guard';
+import { RlsSessionService } from './database/rls-session.service';
+import { SecurityReportsController } from './security/security-reports.controller';
 
 @Global() // Make this module global so its exports are available everywhere
 @Module({
@@ -44,6 +48,7 @@ import { DomainEventBus } from './events/domain-events';
       IdempotencyRecord,
     ]),
   ],
+  controllers: [SecurityReportsController],
   providers: [
     UserPermissionsService,
     CascadeDeletionService,
@@ -58,6 +63,9 @@ import { DomainEventBus } from './events/domain-events';
     OrganizationAccessGuard,
     PublicBookingGuard,
     DomainEventBus,
+    RbacPermissionService,
+    RbacAuthorizationGuard,
+    RlsSessionService,
   ],
   exports: [
     UserPermissionsService,
@@ -73,6 +81,9 @@ import { DomainEventBus } from './events/domain-events';
     OrganizationAccessGuard,
     PublicBookingGuard,
     DomainEventBus,
+    RbacPermissionService,
+    RbacAuthorizationGuard,
+    RlsSessionService,
     TypeOrmModule,
   ],
 })

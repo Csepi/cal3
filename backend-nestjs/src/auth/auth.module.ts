@@ -15,6 +15,9 @@ import { RefreshToken } from '../entities/refresh-token.entity';
 import { LoginAttemptService } from './services/login-attempt.service';
 import { LoggingModule } from '../logging/logging.module';
 import { TasksModule } from '../tasks/tasks.module';
+import { RefreshTokenFamilyService } from './services/refresh-token-family.service';
+import { JwtRevocationService } from './services/jwt-revocation.service';
+import { TokenFingerprintService } from './services/token-fingerprint.service';
 
 @Module({
   imports: [
@@ -43,6 +46,9 @@ import { TasksModule } from '../tasks/tasks.module';
     MicrosoftStrategy,
     TokenService,
     LoginAttemptService,
+    RefreshTokenFamilyService,
+    JwtRevocationService,
+    TokenFingerprintService,
   ],
   controllers: [AuthController],
   exports: [AuthService],
