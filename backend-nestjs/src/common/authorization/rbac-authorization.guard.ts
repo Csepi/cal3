@@ -3,6 +3,7 @@ import {
   ExecutionContext,
   ForbiddenException,
   Injectable,
+  Optional,
   UnauthorizedException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
@@ -26,7 +27,7 @@ export class RbacAuthorizationGuard implements CanActivate {
   constructor(
     private readonly reflector: Reflector,
     private readonly permissionService: RbacPermissionService,
-    private readonly auditTrailService: AuditTrailService,
+    @Optional() private readonly auditTrailService?: AuditTrailService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -53,7 +54,7 @@ export class RbacAuthorizationGuard implements CanActivate {
     if (requiredRoles.length > 0) {
       const roleSatisfied = await this.hasAnyRequiredRole(req, requiredRoles);
       if (!roleSatisfied) {
-        void this.auditTrailService.logPermissionCheck({
+        void this.auditTrailService?.logPermissionCheck({
           action: 'rbac.role.requirement',
           allowed: false,
           userId: user.id,
@@ -71,7 +72,7 @@ export class RbacAuthorizationGuard implements CanActivate {
         contextData,
       );
       if (!allowed) {
-        void this.auditTrailService.logPermissionCheck({
+        void this.auditTrailService?.logPermissionCheck({
           action: 'rbac.permission.requirement',
           allowed: false,
           userId: user.id,
@@ -80,7 +81,7 @@ export class RbacAuthorizationGuard implements CanActivate {
         });
         throw new ForbiddenException('Required permission is missing');
       }
-      void this.auditTrailService.logPermissionCheck({
+      void this.auditTrailService?.logPermissionCheck({
         action: 'rbac.permission.requirement',
         allowed: true,
         userId: user.id,
