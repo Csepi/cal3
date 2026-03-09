@@ -41,11 +41,11 @@ export class LoggingService {
     metadata?: Record<string, unknown> | null,
   ): Promise<void> {
     const entry = this.logRepository.create({
-      level,
+      level: this.normalizeLevel(level),
       message: this.redactSecrets(message),
       context,
-      stack,
-      metadata,
+      stack: stack ? this.redactSecrets(stack) : null,
+      metadata: metadata ? this.redactObject(metadata) : null,
     });
 
     await this.logRepository.save(entry);
@@ -120,6 +120,10 @@ export class LoggingService {
         id: 1,
         retentionDays: this.defaultRetentionDays,
         autoCleanupEnabled: true,
+        realtimeCriticalAlertsEnabled: true,
+        errorRateAlertThresholdPerMinute: 25,
+        p95LatencyAlertThresholdMs: 1500,
+        metricsRetentionHours: 72,
       });
       await this.settingsRepository.save(settings);
     }
@@ -128,7 +132,17 @@ export class LoggingService {
   }
 
   async updateSettings(
-    partial: Partial<Pick<LogSettings, 'retentionDays' | 'autoCleanupEnabled'>>,
+    partial: Partial<
+      Pick<
+        LogSettings,
+        | 'retentionDays'
+        | 'autoCleanupEnabled'
+        | 'realtimeCriticalAlertsEnabled'
+        | 'errorRateAlertThresholdPerMinute'
+        | 'p95LatencyAlertThresholdMs'
+        | 'metricsRetentionHours'
+      >
+    >,
   ): Promise<LogSettings> {
     const settings = await this.getSettings();
 
@@ -141,6 +155,24 @@ export class LoggingService {
 
     if (typeof partial.autoCleanupEnabled === 'boolean') {
       settings.autoCleanupEnabled = partial.autoCleanupEnabled;
+    }
+
+    if (typeof partial.realtimeCriticalAlertsEnabled === 'boolean') {
+      settings.realtimeCriticalAlertsEnabled =
+        partial.realtimeCriticalAlertsEnabled;
+    }
+
+    if (typeof partial.errorRateAlertThresholdPerMinute === 'number') {
+      settings.errorRateAlertThresholdPerMinute =
+        partial.errorRateAlertThresholdPerMinute;
+    }
+
+    if (typeof partial.p95LatencyAlertThresholdMs === 'number') {
+      settings.p95LatencyAlertThresholdMs = partial.p95LatencyAlertThresholdMs;
+    }
+
+    if (typeof partial.metricsRetentionHours === 'number') {
+      settings.metricsRetentionHours = partial.metricsRetentionHours;
     }
 
     return this.settingsRepository.save(settings);
@@ -171,6 +203,77 @@ export class LoggingService {
     );
     output = output.replace(/("password"\s*:\s*")([^"]+)/gi, '$1[REDACTED]');
     output = output.replace(/(api[_-]?key"?\s*:\s*")([^"]+)/gi, '$1[REDACTED]');
+    output = output.replace(
+      /(refresh[_-]?token"?\s*:\s*")([^"]+)/gi,
+      '$1[REDACTED]',
+    );
+    output = output.replace(
+      /(access[_-]?token"?\s*:\s*")([^"]+)/gi,
+      '$1[REDACTED]',
+    );
+    return output;
+  }
+
+  private normalizeLevel(level: LogLevel): LogLevel {
+    if (level === 'log') {
+      return 'info';
+    }
+    if (level === 'verbose') {
+      return 'trace';
+    }
+    return level;
+  }
+
+  private redactObject(
+    value: Record<string, unknown>,
+  ): Record<string, unknown> {
+    const output: Record<string, unknown> = {};
+
+    for (const [key, raw] of Object.entries(value)) {
+      const lowered = key.toLowerCase();
+      if (
+        lowered.includes('password') ||
+        lowered.includes('token') ||
+        lowered.includes('secret') ||
+        lowered.includes('authorization') ||
+        lowered.includes('cookie')
+      ) {
+        output[key] = '[REDACTED]';
+        continue;
+      }
+
+      if (typeof raw === 'string') {
+        output[key] = this.redactSecrets(raw);
+        continue;
+      }
+
+      if (
+        raw &&
+        typeof raw === 'object' &&
+        !Array.isArray(raw) &&
+        !(raw instanceof Date)
+      ) {
+        output[key] = this.redactObject(raw as Record<string, unknown>);
+        continue;
+      }
+
+      if (Array.isArray(raw)) {
+        output[key] = raw.map((entry) =>
+          typeof entry === 'string'
+            ? this.redactSecrets(entry)
+            : entry &&
+                typeof entry === 'object' &&
+                !Array.isArray(entry) &&
+                !(entry instanceof Date)
+              ? this.redactObject(entry as Record<string, unknown>)
+              : entry,
+        );
+        continue;
+      }
+
+      output[key] = raw;
+    }
+
     return output;
   }
 }

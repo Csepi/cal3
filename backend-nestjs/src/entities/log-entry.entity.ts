@@ -6,7 +6,14 @@
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
-export type LogLevel = 'log' | 'error' | 'warn' | 'debug' | 'verbose';
+export type LogLevel =
+  | 'log'
+  | 'info'
+  | 'error'
+  | 'warn'
+  | 'debug'
+  | 'verbose'
+  | 'trace';
 
 @Entity({ name: 'app_logs' })
 export class LogEntry {

@@ -20,6 +20,8 @@ import { RequestContextUserInterceptor } from './common/interceptors/request-con
 import { RequestLoggingInterceptor } from './logging/request-logging.interceptor';
 import { ResponseInterceptor } from './common/responses/response.interceptor';
 import { createApiValidationPipe } from './common/pipes/validation.pipe';
+import { AuditTrailService } from './logging/audit-trail.service';
+import { MetricsInterceptor } from './monitoring/metrics.interceptor';
 import {
   applyPermissionsPolicy,
   applyCertificateTransparencyPolicy,
@@ -57,8 +59,10 @@ async function bootstrap() {
 
     dbLogger.log('Configuring application logger...');
     const appLogger = app.get(AppLoggerService);
-    if (process.env.LOG_JSON === 'true') {
+    if (process.env.LOG_JSON !== 'false') {
       appLogger.setFormat('json');
+    } else {
+      appLogger.setFormat('text');
     }
     app.useLogger(appLogger);
     dbLogger.log('Application logger configured.');
@@ -228,12 +232,17 @@ async function bootstrap() {
 
     dbLogger.log('Registering global filters and interceptors...');
     const requestContext = app.get(RequestContextService);
-    app.useGlobalFilters(new AllExceptionsFilter(requestContext));
+    const auditTrail = app.get(AuditTrailService);
+    app.useGlobalFilters(
+      new AllExceptionsFilter(requestContext, appLogger, auditTrail),
+    );
     const requestLoggingInterceptor = app.get(RequestLoggingInterceptor);
+    const metricsInterceptor = app.get(MetricsInterceptor);
     const responseInterceptor = new ResponseInterceptor(requestContext);
     app.useGlobalInterceptors(
       new RequestContextUserInterceptor(requestContext),
       requestLoggingInterceptor,
+      metricsInterceptor,
       responseInterceptor,
     );
     dbLogger.log('Global filters and interceptors registered.');

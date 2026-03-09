@@ -43,6 +43,7 @@ import { NotificationInboxRule } from '../../entities/notification-inbox-rule.en
 import { NotificationScopeMute } from '../../entities/notification-scope-mute.entity';
 import { RefreshToken } from '../../entities/refresh-token.entity';
 import { IdempotencyRecord } from '../../entities/idempotency-record.entity';
+import { AuditEvent } from '../../entities/audit-event.entity';
 import {
   getPoolConfigFromEnv,
   getPoolOptionsForEngine,
@@ -132,6 +133,7 @@ export const getDatabaseEntities = (): DataSourceOptions['entities'] => [
   NotificationScopeMute,
   RefreshToken,
   IdempotencyRecord,
+  AuditEvent,
 ];
 
 /**

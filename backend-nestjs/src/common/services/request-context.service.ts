@@ -7,6 +7,9 @@ export interface RequestContext {
   path?: string;
   ip?: string;
   userId?: number;
+  organisationId?: number;
+  resourceType?: string;
+  resourceId?: string;
 }
 
 @Injectable()
@@ -21,6 +24,27 @@ export class RequestContextService {
     const store = this.storage.getStore();
     if (store && typeof userId === 'number') {
       store.userId = userId;
+    }
+  }
+
+  attachMetadata(metadata: {
+    organisationId?: number | null;
+    resourceType?: string | null;
+    resourceId?: string | number | null;
+  }): void {
+    const store = this.storage.getStore();
+    if (!store) return;
+    if (typeof metadata.organisationId === 'number') {
+      store.organisationId = metadata.organisationId;
+    }
+    if (typeof metadata.resourceType === 'string') {
+      store.resourceType = metadata.resourceType;
+    }
+    if (
+      typeof metadata.resourceId === 'string' ||
+      typeof metadata.resourceId === 'number'
+    ) {
+      store.resourceId = String(metadata.resourceId);
     }
   }
 

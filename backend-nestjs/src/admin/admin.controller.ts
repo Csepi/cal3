@@ -24,6 +24,7 @@ import { SystemInfoDto } from './dto/system-info.dto';
 import { LogQueryDto, UpdateLogSettingsDto } from './dto/logs.dto';
 import { ConfigurationService } from '../configuration/configuration.service';
 import { UpdateConfigurationValueDto } from './dto/configuration.dto';
+import { AuditEventQueryDto } from './dto/audit-events.dto';
 import {
   AdminCreateUserDto,
   AdminUpdateUserDto,
@@ -187,6 +188,28 @@ export class AdminController {
   })
   updateLogSettings(@Body() updateLogSettingsDto: UpdateLogSettingsDto) {
     return this.adminService.updateLogSettings(updateLogSettingsDto);
+  }
+
+  @Get('audit/events')
+  @ApiOperation({ summary: 'Query audit/error events (Admin only)' })
+  @ApiResponse({
+    status: 200,
+    description: 'Audit events retrieved successfully',
+  })
+  getAuditEvents(@Query() query: AuditEventQueryDto) {
+    return this.adminService.getAuditEvents(query);
+  }
+
+  @Get('audit/error-summary')
+  @ApiOperation({ summary: 'Get error summary trends (Admin only)' })
+  @ApiResponse({
+    status: 200,
+    description: 'Error summary retrieved successfully',
+  })
+  getErrorSummary(@Query('hours') hours?: string) {
+    const parsed = Number(hours);
+    const rangeHours = Number.isFinite(parsed) && parsed > 0 ? parsed : 24;
+    return this.adminService.getErrorSummary(rangeHours);
   }
 
   @Patch('users/:id/role')

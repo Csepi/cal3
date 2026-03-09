@@ -6,3 +6,5 @@
  */
 
 export { default as LoadingScreen } from './LoadingScreen';
+export { default as AppErrorBoundary } from './AppErrorBoundary';
+export { default as RouteErrorFallback } from './RouteErrorFallback';

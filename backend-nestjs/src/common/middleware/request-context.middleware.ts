@@ -14,6 +14,23 @@ export class RequestContextMiddleware implements NestMiddleware {
       req.headers['x-requestid']) as string | undefined;
     const requestId = (requestIdHeader ?? randomUUID()).trim();
 
+    const orgHeader = req.headers['x-org-id'] ?? req.headers['x-organisation-id'];
+    const orgIdRaw = Array.isArray(orgHeader) ? orgHeader[0] : orgHeader;
+    const parsedOrgId = Number(orgIdRaw);
+    const organisationId = Number.isFinite(parsedOrgId) ? parsedOrgId : undefined;
+
+    const resourceTypeHeader = req.headers['x-resource-type'];
+    const resourceTypeRaw = Array.isArray(resourceTypeHeader)
+      ? resourceTypeHeader[0]
+      : resourceTypeHeader;
+    const resourceIdHeader = req.headers['x-resource-id'];
+    const resourceIdRaw = Array.isArray(resourceIdHeader)
+      ? resourceIdHeader[0]
+      : resourceIdHeader;
+
+    const pathResourceId =
+      typeof req.params?.id === 'string' ? req.params.id : undefined;
+
     res.setHeader('x-request-id', requestId);
     (req as Request & { requestId: string }).requestId = requestId;
 
@@ -23,6 +40,13 @@ export class RequestContextMiddleware implements NestMiddleware {
         method: req.method,
         path: req.originalUrl ?? req.url,
         ip: req.ip,
+        organisationId,
+        resourceType:
+          typeof resourceTypeRaw === 'string' ? resourceTypeRaw : undefined,
+        resourceId:
+          typeof resourceIdRaw === 'string'
+            ? resourceIdRaw
+            : pathResourceId,
       },
       () => {
         res.on('finish', () => {

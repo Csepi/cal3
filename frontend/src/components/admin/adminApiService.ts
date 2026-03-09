@@ -9,6 +9,10 @@ import type {
   AdminApiOptions,
   BulkOperationResult,
   LogLevel,
+  AuditCategory,
+  AuditOutcome,
+  AuditSeverity,
+  AuditEventResponse,
   ConfigurationOverview,
   ConfigurationSettingSummary,
 } from './types';
@@ -130,7 +134,14 @@ export const fetchAdminLogs = async (params: LogQueryParams = {}) => {
   });
 };
 
-export const updateLogRetentionSettings = async (data: { retentionDays?: number; autoCleanupEnabled?: boolean }) => {
+export const updateLogRetentionSettings = async (data: {
+  retentionDays?: number;
+  autoCleanupEnabled?: boolean;
+  realtimeCriticalAlertsEnabled?: boolean;
+  errorRateAlertThresholdPerMinute?: number;
+  p95LatencyAlertThresholdMs?: number;
+  metricsRetentionHours?: number;
+}) => {
   return adminApiCall({
     endpoint: '/admin/logs/settings',
     method: 'PATCH',
@@ -151,6 +162,53 @@ export const runAdminLogRetention = async () => {
   return adminApiCall({
     endpoint: '/admin/logs/purge',
     method: 'POST',
+  });
+};
+
+interface AuditQueryParams {
+  categories?: AuditCategory[];
+  severities?: AuditSeverity[];
+  outcomes?: AuditOutcome[];
+  search?: string;
+  from?: string;
+  to?: string;
+  limit?: number;
+  offset?: number;
+}
+
+export const fetchAdminAuditEvents = async (
+  params: AuditQueryParams = {},
+): Promise<AuditEventResponse> => {
+  const query = buildQueryString({
+    categories: params.categories?.length ? params.categories : undefined,
+    severities: params.severities?.length ? params.severities : undefined,
+    outcomes: params.outcomes?.length ? params.outcomes : undefined,
+    search: params.search,
+    from: params.from,
+    to: params.to,
+    limit: params.limit,
+    offset: params.offset,
+  });
+
+  return adminApiCall({
+    endpoint: `/admin/audit/events${query}`,
+  });
+};
+
+export const fetchAdminErrorSummary = async (
+  hours = 24,
+): Promise<{
+  success: boolean;
+  data: {
+    criticalCount: number;
+    failureCount: number;
+    topErrorCodes: Array<{ code: string; count: number }>;
+    trend: Array<{ hour: string; count: number }>;
+  };
+}> => {
+  const query = buildQueryString({ hours });
+  return adminApiCall({
+    endpoint: `/admin/audit/error-summary${query}`,
   });
 };
 

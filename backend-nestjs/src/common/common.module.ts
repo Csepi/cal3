@@ -31,6 +31,7 @@ import { RlsSessionService } from './database/rls-session.service';
 import { SecurityReportsController } from './security/security-reports.controller';
 import { CsrfService } from './security/csrf.service';
 import { ParameterizedQueryService } from './database/parameterized-query.service';
+import { ErrorRecoveryService } from './exceptions/error-recovery.service';
 
 @Global() // Make this module global so its exports are available everywhere
 @Module({
@@ -70,6 +71,7 @@ import { ParameterizedQueryService } from './database/parameterized-query.servic
     RlsSessionService,
     CsrfService,
     ParameterizedQueryService,
+    ErrorRecoveryService,
   ],
   exports: [
     UserPermissionsService,
@@ -90,6 +92,7 @@ import { ParameterizedQueryService } from './database/parameterized-query.servic
     RlsSessionService,
     CsrfService,
     ParameterizedQueryService,
+    ErrorRecoveryService,
     TypeOrmModule,
   ],
 })

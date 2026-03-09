@@ -3,6 +3,7 @@ import Dashboard from './components/Dashboard';
 import PublicBookingPage from './components/PublicBookingPage';
 import AuthCallback from './components/auth/AuthCallback';
 import AppLayout from './components/layout/AppLayout';
+import RouteErrorFallback from './components/common/RouteErrorFallback';
 import DashboardPage from './pages/app/Dashboard';
 import CalendarPage from './pages/app/Calendar';
 
@@ -11,7 +12,7 @@ export const router = createBrowserRouter(
     <>
       <Route path="/" element={<Navigate to="/app" replace />} />
 
-      <Route element={<AppLayout />}>
+      <Route element={<AppLayout />} errorElement={<RouteErrorFallback />}>
         <Route path="app" element={<DashboardPage />} />
         <Route path="app/calendar" element={<CalendarPage />} />
         <Route path="app/sync" element={<Dashboard initialView="sync" />} />

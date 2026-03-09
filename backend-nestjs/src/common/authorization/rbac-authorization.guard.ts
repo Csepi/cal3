@@ -19,12 +19,14 @@ import type {
 } from './permission.types';
 import type { RequestWithUser } from '../types/request-with-user';
 import { UserRole } from '../../entities/user.entity';
+import { AuditTrailService } from '../../logging/audit-trail.service';
 
 @Injectable()
 export class RbacAuthorizationGuard implements CanActivate {
   constructor(
     private readonly reflector: Reflector,
     private readonly permissionService: RbacPermissionService,
+    private readonly auditTrailService: AuditTrailService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -51,6 +53,12 @@ export class RbacAuthorizationGuard implements CanActivate {
     if (requiredRoles.length > 0) {
       const roleSatisfied = await this.hasAnyRequiredRole(req, requiredRoles);
       if (!roleSatisfied) {
+        void this.auditTrailService.logPermissionCheck({
+          action: 'rbac.role.requirement',
+          allowed: false,
+          userId: user.id,
+          metadata: { requiredRoles },
+        });
         throw new ForbiddenException('Required role is missing');
       }
     }
@@ -63,8 +71,22 @@ export class RbacAuthorizationGuard implements CanActivate {
         contextData,
       );
       if (!allowed) {
+        void this.auditTrailService.logPermissionCheck({
+          action: 'rbac.permission.requirement',
+          allowed: false,
+          userId: user.id,
+          organisationId: contextData.organisationId,
+          metadata: { permission: permission.permission },
+        });
         throw new ForbiddenException('Required permission is missing');
       }
+      void this.auditTrailService.logPermissionCheck({
+        action: 'rbac.permission.requirement',
+        allowed: true,
+        userId: user.id,
+        organisationId: contextData.organisationId,
+        metadata: { permission: permission.permission },
+      });
     }
 
     return true;
@@ -146,4 +168,3 @@ export class RbacAuthorizationGuard implements CanActivate {
     return undefined;
   }
 }
-

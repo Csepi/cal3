@@ -13,10 +13,12 @@ import type { LogLevel } from '../../entities/log-entry.entity';
 
 const LOG_LEVEL_VALUES: LogLevel[] = [
   'log',
+  'info',
   'error',
   'warn',
   'debug',
   'verbose',
+  'trace',
 ];
 
 const normalizeToArray = (value: unknown): string[] | undefined => {
@@ -105,4 +107,30 @@ export class UpdateLogSettingsDto {
   @Type(() => Boolean)
   @IsBoolean()
   autoCleanupEnabled?: boolean;
+
+  @IsOptional()
+  @Type(() => Boolean)
+  @IsBoolean()
+  realtimeCriticalAlertsEnabled?: boolean;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(10000)
+  errorRateAlertThresholdPerMinute?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(50)
+  @Max(60000)
+  p95LatencyAlertThresholdMs?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(24 * 30)
+  metricsRetentionHours?: number;
 }

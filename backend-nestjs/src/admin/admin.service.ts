@@ -36,6 +36,8 @@ import { ConfigurationService } from '../configuration/configuration.service';
 import { AdminCreateUserDto, AdminUpdateUserDto } from './dto/admin-user.dto';
 import { CreateCalendarDto, UpdateCalendarDto } from '../dto/calendar.dto';
 import { CreateEventDto, UpdateEventDto } from '../dto/event.dto';
+import { AuditTrailService } from '../logging/audit-trail.service';
+import { AuditEventQueryDto } from './dto/audit-events.dto';
 
 export interface DatabaseStatsOverview {
   users: {
@@ -128,6 +130,7 @@ export class AdminService {
     private automationRuleRepository: Repository<AutomationRule>,
     private dataSource: DataSource,
     private readonly loggingService: LoggingService,
+    private readonly auditTrailService: AuditTrailService,
     private readonly configurationService: ConfigurationService,
   ) {}
 
@@ -752,7 +755,13 @@ export class AdminService {
     const { levels, contexts, search, limit, offset, from, to } = query;
 
     const normalizedLevels = Array.isArray(levels)
-      ? levels.filter(Boolean)
+      ? levels
+          .filter(Boolean)
+          .map((level) => {
+            if (level === 'log') return 'info';
+            if (level === 'verbose') return 'trace';
+            return level;
+          })
       : [];
     const normalizedContexts = Array.isArray(contexts)
       ? contexts.filter(Boolean)
@@ -806,6 +815,32 @@ export class AdminService {
     return {
       success: true,
       settings,
+    };
+  }
+
+  async getAuditEvents(query: AuditEventQueryDto) {
+    const result = await this.auditTrailService.query({
+      categories: query.categories,
+      severities: query.severities,
+      outcomes: query.outcomes,
+      search: query.search,
+      from: this.parseDate(query.from),
+      to: this.parseDate(query.to),
+      limit: query.limit,
+      offset: query.offset,
+    });
+
+    return {
+      success: true,
+      ...result,
+    };
+  }
+
+  async getErrorSummary(hours = 24) {
+    const summary = await this.auditTrailService.getErrorSummary(hours);
+    return {
+      success: true,
+      data: summary,
     };
   }
 

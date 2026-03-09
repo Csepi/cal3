@@ -1,10 +1,20 @@
-import { Controller, Get } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import {
+  Controller,
+  Get,
+  ServiceUnavailableException,
+} from '@nestjs/common';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { DataSource } from 'typeorm';
 import { AppService } from './app.service';
+import { ParameterizedQueryService } from './common/database/parameterized-query.service';
 
 @Controller()
 export class AppController {
-  constructor(private readonly appService: AppService) {}
+  constructor(
+    private readonly appService: AppService,
+    private readonly dataSource: DataSource,
+    private readonly parameterizedQueryService: ParameterizedQueryService,
+  ) {}
 
   @Get()
   getHello(): string {
@@ -25,7 +35,7 @@ export class AppController {
 
   @Get('health')
   @ApiTags('Health')
-  @ApiOperation({ summary: 'Health check endpoint for Docker and monitoring' })
+  @ApiOperation({ summary: 'Liveness probe endpoint' })
   @ApiResponse({ status: 200, description: 'Service is healthy' })
   getHealth() {
     return this.buildHealthResponse();
@@ -33,9 +43,51 @@ export class AppController {
 
   @Get('healthz')
   @ApiTags('Health')
-  @ApiOperation({ summary: 'Kubernetes-style health probe' })
+  @ApiOperation({ summary: 'Legacy liveness endpoint' })
   @ApiResponse({ status: 200, description: 'Service is healthy' })
   getHealthz() {
     return this.buildHealthResponse();
+  }
+
+  @Get('ready')
+  @ApiTags('Health')
+  @ApiOperation({
+    summary: 'Readiness probe endpoint (checks database connectivity)',
+  })
+  @ApiResponse({ status: 200, description: 'Service is ready' })
+  @ApiResponse({ status: 503, description: 'Service is not ready' })
+  async getReady() {
+    const diagnostics = {
+      databaseInitialized: this.dataSource.isInitialized,
+      databaseReachable: false,
+    };
+
+    if (!this.dataSource.isInitialized) {
+      throw new ServiceUnavailableException({
+        message: 'Database connection is not initialized.',
+        diagnostics,
+      });
+    }
+
+    try {
+      await this.parameterizedQueryService.query('SELECT 1', [], {
+        statementKey: 'ready_probe',
+      });
+      diagnostics.databaseReachable = true;
+    } catch (error) {
+      throw new ServiceUnavailableException({
+        message: 'Database readiness probe failed.',
+        diagnostics: {
+          ...diagnostics,
+          error: error instanceof Error ? error.message : String(error),
+        },
+      });
+    }
+
+    return {
+      status: 'ready',
+      timestamp: new Date().toISOString(),
+      diagnostics,
+    };
   }
 }

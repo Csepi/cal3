@@ -4,6 +4,7 @@ import { clientLogger } from '../utils/clientLogger';
 import { isNativeClient } from './clientPlatform';
 
 const MUTATING_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
+const IDEMPOTENT_METHODS = new Set(['GET', 'HEAD', 'OPTIONS']);
 const generateTraceId = (): string =>
   Math.random().toString(36).substring(2, 8);
 
@@ -28,6 +29,26 @@ const now = (): number =>
   typeof performance !== 'undefined' && performance.now
     ? performance.now()
     : Date.now();
+
+const delay = async (ms: number) => {
+  await new Promise((resolve) => setTimeout(resolve, ms));
+};
+
+const isRetriableNetworkError = (error: unknown): boolean => {
+  if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+    return false;
+  }
+  if (!(error instanceof Error)) {
+    return false;
+  }
+  const message = error.message.toLowerCase();
+  return (
+    message.includes('failed to fetch') ||
+    message.includes('networkerror') ||
+    message.includes('network request failed') ||
+    message.includes('load failed')
+  );
+};
 
 export interface SecureFetchOptions extends RequestInit {
   auth?: boolean;
@@ -272,7 +293,7 @@ export async function secureFetch(
     applyCsrfHeader(headers, true);
   }
 
-  const execute = async (): Promise<Response> => {
+  const executeOnce = async (): Promise<Response> => {
     const response = await fetch(input, requestInit);
     const duration = Math.round(now() - startedAt);
     clientLogger.debug(
@@ -308,8 +329,39 @@ export async function secureFetch(
     return response;
   };
 
+  const executeWithNetworkRetry = async (): Promise<Response> => {
+    const maxAttempts = IDEMPOTENT_METHODS.has(method) ? 3 : 1;
+    let attempt = 0;
+    let lastError: unknown;
+
+    while (attempt < maxAttempts) {
+      attempt += 1;
+      try {
+        return await executeOnce();
+      } catch (error) {
+        lastError = error;
+        const canRetry =
+          attempt < maxAttempts && isRetriableNetworkError(error);
+        if (!canRetry) {
+          break;
+        }
+        const backoffMs = 200 * Math.pow(2, attempt - 1);
+        clientLogger.warn(
+          `[network:${traceId}] retrying ${method} ${requestUrl} after transient network failure`,
+          {
+            attempt,
+            backoffMs,
+          },
+        );
+        await delay(backoffMs);
+      }
+    }
+
+    throw lastError instanceof Error ? lastError : new Error(String(lastError));
+  };
+
   try {
-    return await execute();
+    return await executeWithNetworkRetry();
   } catch (error) {
     // If it's a network error, check if we still have a valid token
     clientLogger.error(

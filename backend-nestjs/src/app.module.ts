@@ -37,6 +37,7 @@ import { DatabaseModule } from './common/database/database.module';
 import { RequestSanitizationMiddleware } from './common/middleware/request-sanitization.middleware';
 import { StrictOriginMiddleware } from './common/middleware/strict-origin.middleware';
 import { CsrfProtectionMiddleware } from './common/middleware/csrf-protection.middleware';
+import { MonitoringModule } from './monitoring/monitoring.module';
 
 @Module({
   imports: [
@@ -68,6 +69,7 @@ import { CsrfProtectionMiddleware } from './common/middleware/csrf-protection.mi
     NotificationsModule,
     ConfigurationModule,
     TasksModule,
+    MonitoringModule,
     TypeOrmModule.forFeature([
       User,
       Calendar,

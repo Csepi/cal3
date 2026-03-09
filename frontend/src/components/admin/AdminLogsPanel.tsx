@@ -13,17 +13,21 @@ type RangePreset = '5m' | '15m' | '1h' | '24h' | '7d' | '30d' | 'custom';
 const LEVEL_OPTIONS: { value: LogLevel; label: string; description: string }[] = [
   { value: 'error', label: 'Errors', description: 'Unhandled failures and critical exceptions' },
   { value: 'warn', label: 'Warnings', description: 'Recoverable issues that need attention' },
-  { value: 'log', label: 'Information', description: 'Key lifecycle and status messages' },
+  { value: 'info', label: 'Information', description: 'Key lifecycle and status messages' },
   { value: 'debug', label: 'Debug', description: 'Detailed diagnostics for investigation' },
-  { value: 'verbose', label: 'Verbose', description: 'Highly granular tracing output' },
+  { value: 'trace', label: 'Trace', description: 'Highly granular tracing output' },
+  { value: 'log', label: 'Legacy Info', description: 'Backward-compatible info level records' },
+  { value: 'verbose', label: 'Legacy Trace', description: 'Backward-compatible trace records' },
 ];
 
 const LEVEL_BADGES: Record<LogLevel, { label: string; classes: string }> = {
   error: { label: 'Error', classes: 'bg-red-100 text-red-700 border border-red-200' },
   warn: { label: 'Warning', classes: 'bg-amber-100 text-amber-700 border border-amber-200' },
-  log: { label: 'Info', classes: 'bg-blue-100 text-blue-700 border border-blue-200' },
+  info: { label: 'Info', classes: 'bg-blue-100 text-blue-700 border border-blue-200' },
   debug: { label: 'Debug', classes: 'bg-purple-100 text-purple-700 border border-purple-200' },
-  verbose: { label: 'Verbose', classes: 'bg-slate-100 text-slate-700 border border-slate-200' },
+  trace: { label: 'Trace', classes: 'bg-slate-100 text-slate-700 border border-slate-200' },
+  log: { label: 'Legacy Info', classes: 'bg-cyan-100 text-cyan-700 border border-cyan-200' },
+  verbose: { label: 'Legacy Trace', classes: 'bg-zinc-100 text-zinc-700 border border-zinc-200' },
 };
 
 const RANGE_PRESETS: Array<{ value: RangePreset; label: string }> = [
@@ -123,9 +127,20 @@ const [isLoading, setIsLoading] = useState(false);
 const [isSavingSettings, setIsSavingSettings] = useState(false);
 const [isClearing, setIsClearing] = useState(false);
 const [isRunningCleanup, setIsRunningCleanup] = useState(false);
-const [retentionDraft, setRetentionDraft] = useState<{ retentionDays: number; autoCleanupEnabled: boolean }>({
+const [retentionDraft, setRetentionDraft] = useState<{
+  retentionDays: number;
+  autoCleanupEnabled: boolean;
+  realtimeCriticalAlertsEnabled: boolean;
+  errorRateAlertThresholdPerMinute: number;
+  p95LatencyAlertThresholdMs: number;
+  metricsRetentionHours: number;
+}>({
   retentionDays: 30,
   autoCleanupEnabled: true,
+  realtimeCriticalAlertsEnabled: true,
+  errorRateAlertThresholdPerMinute: 25,
+  p95LatencyAlertThresholdMs: 1500,
+  metricsRetentionHours: 72,
 });
 const [error, setError] = useState<string | null>(null);
 const [status, setStatus] = useState<string | null>(null);
@@ -200,6 +215,13 @@ useEffect(() => {
         setRetentionDraft({
           retentionDays: response.settings.retentionDays,
           autoCleanupEnabled: response.settings.autoCleanupEnabled,
+          realtimeCriticalAlertsEnabled:
+            response.settings.realtimeCriticalAlertsEnabled,
+          errorRateAlertThresholdPerMinute:
+            response.settings.errorRateAlertThresholdPerMinute,
+          p95LatencyAlertThresholdMs:
+            response.settings.p95LatencyAlertThresholdMs,
+          metricsRetentionHours: response.settings.metricsRetentionHours,
         });
       }
       setStatus(null);
@@ -217,7 +239,15 @@ useEffect(() => {
   }, [isActive, loadLogs]);
 
   const levelStats = useMemo(() => {
-    const tally: Record<LogLevel, number> = { error: 0, warn: 0, log: 0, debug: 0, verbose: 0 };
+    const tally: Record<LogLevel, number> = {
+      error: 0,
+      warn: 0,
+      info: 0,
+      debug: 0,
+      trace: 0,
+      log: 0,
+      verbose: 0,
+    };
     logs.forEach((log) => {
       tally[log.level] += 1;
     });
@@ -283,6 +313,20 @@ const clearContexts = () => {
       const payload = {
         retentionDays: Math.max(0, Number(retentionDraft.retentionDays)),
         autoCleanupEnabled: retentionDraft.autoCleanupEnabled,
+        realtimeCriticalAlertsEnabled:
+          retentionDraft.realtimeCriticalAlertsEnabled,
+        errorRateAlertThresholdPerMinute: Math.max(
+          1,
+          Number(retentionDraft.errorRateAlertThresholdPerMinute),
+        ),
+        p95LatencyAlertThresholdMs: Math.max(
+          50,
+          Number(retentionDraft.p95LatencyAlertThresholdMs),
+        ),
+        metricsRetentionHours: Math.max(
+          1,
+          Number(retentionDraft.metricsRetentionHours),
+        ),
       };
       const response = await updateLogRetentionSettings(payload);
       setSettings(response.settings);
@@ -556,8 +600,8 @@ const clearContexts = () => {
       </div>
 
       <div className="px-6 py-5 border-b border-gray-200">
-        <h3 className="text-sm font-semibold text-gray-700 mb-3">Retention Policy</h3>
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+        <h3 className="text-sm font-semibold text-gray-700 mb-3">Retention and Alert Policy</h3>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
           <label className="flex flex-col gap-1 text-sm text-gray-600">
             Keep logs for (days)
             <input
@@ -589,6 +633,71 @@ const clearContexts = () => {
             Enable automatic cleanup
           </label>
 
+          <label className="flex flex-col gap-1 text-sm text-gray-600">
+            Metrics retention (hours)
+            <input
+              type="number"
+              min={1}
+              value={retentionDraft.metricsRetentionHours}
+              onChange={(event) =>
+                setRetentionDraft((prev) => ({
+                  ...prev,
+                  metricsRetentionHours: Number(event.target.value || 1),
+                }))
+              }
+              className="rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+            />
+          </label>
+
+          <label className="flex flex-col gap-1 text-sm text-gray-600">
+            Error-rate alert threshold (per min)
+            <input
+              type="number"
+              min={1}
+              value={retentionDraft.errorRateAlertThresholdPerMinute}
+              onChange={(event) =>
+                setRetentionDraft((prev) => ({
+                  ...prev,
+                  errorRateAlertThresholdPerMinute: Number(
+                    event.target.value || 1,
+                  ),
+                }))
+              }
+              className="rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+            />
+          </label>
+
+          <label className="flex flex-col gap-1 text-sm text-gray-600">
+            P95 latency alert threshold (ms)
+            <input
+              type="number"
+              min={50}
+              value={retentionDraft.p95LatencyAlertThresholdMs}
+              onChange={(event) =>
+                setRetentionDraft((prev) => ({
+                  ...prev,
+                  p95LatencyAlertThresholdMs: Number(event.target.value || 50),
+                }))
+              }
+              className="rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+            />
+          </label>
+
+          <label className="flex items-center gap-2 text-sm text-gray-600 mt-2 md:mt-6">
+            <input
+              type="checkbox"
+              checked={retentionDraft.realtimeCriticalAlertsEnabled}
+              onChange={(event) =>
+                setRetentionDraft((prev) => ({
+                  ...prev,
+                  realtimeCriticalAlertsEnabled: event.target.checked,
+                }))
+              }
+              className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+            />
+            Enable realtime critical alerts
+          </label>
+
           <div className="flex items-end">
             <button
               type="button"
@@ -604,6 +713,11 @@ const clearContexts = () => {
           <p className="text-xs text-gray-500 mt-2">
             Last updated {formatDateTime(settings.updatedAt)}. Logs older than{' '}
             <span className="font-medium">{settings.retentionDays} days</span> are removed automatically when retention is enabled.
+            {' '}Critical alerting is{' '}
+            <span className="font-medium">
+              {settings.realtimeCriticalAlertsEnabled ? 'enabled' : 'disabled'}
+            </span>
+            .
           </p>
         )}
       </div>

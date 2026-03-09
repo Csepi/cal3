@@ -42,6 +42,7 @@ import { NotificationCenter, NotificationSettingsPanel } from './notifications';
 import { TasksWorkspace, type TasksWorkspaceHandle } from './tasks/TasksWorkspace';
 import { clientLogger } from '../utils/clientLogger';
 import { isNativeClient } from '../services/clientPlatform';
+import AppErrorBoundary from './common/AppErrorBoundary';
 import {
   hasOfflineTimelineSnapshot,
   isNavigatorOffline,
@@ -97,6 +98,7 @@ const Dashboard: React.FC<DashboardProps> = ({ initialView = 'calendar' }) => {
   const [userProfile, setUserProfile] = useState<DashboardUserProfile | null>(null);
   const [isScreenVisible, setIsScreenVisible] = useState(false);
   const [isOfflineReadOnlyMode, setIsOfflineReadOnlyMode] = useState(false);
+  const [globalErrorMessage, setGlobalErrorMessage] = useState<string | null>(null);
 
   const tasksWorkspaceRef = useRef<TasksWorkspaceHandle | null>(null);
 
@@ -129,6 +131,7 @@ const Dashboard: React.FC<DashboardProps> = ({ initialView = 'calendar' }) => {
     try {
       const profile = await profileApi.getUserProfile() as DashboardUserProfile;
       setUserProfile(profile);
+      setGlobalErrorMessage(null);
 
       // Apply user's saved theme preference
       if (profile.themeColor) {
@@ -141,6 +144,9 @@ const Dashboard: React.FC<DashboardProps> = ({ initialView = 'calendar' }) => {
       }
     } catch (err) {
       clientLogger.warn('dashboard', 'failed to load user profile', err);
+      setGlobalErrorMessage(
+        'Unable to load profile data from the server. Some features may be unavailable until connectivity is restored.',
+      );
     }
   };
 
@@ -257,7 +263,14 @@ const Dashboard: React.FC<DashboardProps> = ({ initialView = 'calendar' }) => {
         }
       }
       await loadUserProfile();
-      await refreshPermissions();
+      try {
+        await refreshPermissions();
+      } catch (error) {
+        clientLogger.warn('dashboard', 'failed to refresh permissions', error);
+        setGlobalErrorMessage(
+          'Unable to refresh permissions right now. Access checks may be stale.',
+        );
+      }
     };
 
     void initialise();
@@ -313,6 +326,7 @@ const Dashboard: React.FC<DashboardProps> = ({ initialView = 'calendar' }) => {
     if (isOfflineReadOnlyMode) {
       return;
     }
+    setGlobalErrorMessage(null);
     await loadUserProfile();
     await refreshPermissions();
   };
@@ -375,50 +389,87 @@ const Dashboard: React.FC<DashboardProps> = ({ initialView = 'calendar' }) => {
         userName={displayName}
       >
         <div className={isMobile ? '' : 'relative'}>
+          {globalErrorMessage && (
+            <div className="mb-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+              <div className="flex items-start justify-between gap-4">
+                <p>{globalErrorMessage}</p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setGlobalErrorMessage(null);
+                    void handleRefresh();
+                  }}
+                  className="rounded-md border border-amber-300 px-2 py-1 text-xs font-medium hover:bg-amber-100"
+                >
+                  Retry
+                </button>
+              </div>
+            </div>
+          )}
           {currentView === 'calendar' && (
-            <Calendar
-              themeColor={themeColor}
-              timeFormat={userProfile?.timeFormat || '12h'}
-              timezone={userProfile?.timezone}
-              offlineMode={isOfflineReadOnlyMode}
-            />
+            <AppErrorBoundary fallbackTitle="Calendar module failed" inline>
+              <Calendar
+                themeColor={themeColor}
+                timeFormat={userProfile?.timeFormat || '12h'}
+                timezone={userProfile?.timezone}
+                offlineMode={isOfflineReadOnlyMode}
+              />
+            </AppErrorBoundary>
           )}
           {currentView === 'tasks' && featureFlags.tasks && (
-            <TasksWorkspace
-              ref={tasksWorkspaceRef}
-              themeColor={themeColor}
-              timeFormat={userProfile?.timeFormat}
-              timezone={userProfile?.timezone}
-              locale={userProfile?.language}
-            />
+            <AppErrorBoundary fallbackTitle="Tasks module failed" inline>
+              <TasksWorkspace
+                ref={tasksWorkspaceRef}
+                themeColor={themeColor}
+                timeFormat={userProfile?.timeFormat}
+                timezone={userProfile?.timezone}
+                locale={userProfile?.language}
+              />
+            </AppErrorBoundary>
           )}
           {currentView === 'profile' && (
-            <UserProfile
-              onThemeChange={handleThemeChange}
-              currentTheme={themeColor}
-            />
+            <AppErrorBoundary fallbackTitle="Profile module failed" inline>
+              <UserProfile
+                onThemeChange={handleThemeChange}
+                currentTheme={themeColor}
+              />
+            </AppErrorBoundary>
           )}
           {currentView === 'sync' && featureFlags.calendarSync && (
-            <CalendarSync themeColor={themeColor} />
+            <AppErrorBoundary fallbackTitle="Calendar sync module failed" inline>
+              <CalendarSync themeColor={themeColor} />
+            </AppErrorBoundary>
           )}
           {currentView === 'automation' && featureFlags.automation && (
-            <AutomationPanel themeColor={themeColor} />
+            <AppErrorBoundary fallbackTitle="Automation module failed" inline>
+              <AutomationPanel themeColor={themeColor} />
+            </AppErrorBoundary>
           )}
           {currentView === 'agent' && featureFlags.agents && (
-            <AgentSettingsPage themeColor={themeColor} />
+            <AppErrorBoundary fallbackTitle="Agent module failed" inline>
+              <AgentSettingsPage themeColor={themeColor} />
+            </AppErrorBoundary>
           )}
           {currentView === 'reservations' && featureFlags.reservations && canAccessReservations && !userProfile?.hideReservationsTab && (
-            <ReservationsPanel themeColor={themeColor} />
+            <AppErrorBoundary fallbackTitle="Reservations module failed" inline>
+              <ReservationsPanel themeColor={themeColor} />
+            </AppErrorBoundary>
           )}
           {currentView === 'notifications' && (
-            <NotificationCenter onOpenSettings={() => setCurrentView('notification-settings')} />
+            <AppErrorBoundary fallbackTitle="Notifications module failed" inline>
+              <NotificationCenter onOpenSettings={() => setCurrentView('notification-settings')} />
+            </AppErrorBoundary>
           )}
           {currentView === 'notification-settings' && (
-            <NotificationSettingsPanel onBack={() => setCurrentView('notifications')} />
+            <AppErrorBoundary fallbackTitle="Notification settings failed" inline>
+              <NotificationSettingsPanel onBack={() => setCurrentView('notifications')} />
+            </AppErrorBoundary>
           )}
           {/* Admin Panel - Only accessible to admin users */}
           {currentView === 'admin' && (currentUser?.role || 'user') === 'admin' && (
-            <AdminPanel themeColor={themeColor} />
+            <AppErrorBoundary fallbackTitle="Admin panel failed" inline>
+              <AdminPanel themeColor={themeColor} />
+            </AppErrorBoundary>
           )}
         </div>
       </MobileLayout>

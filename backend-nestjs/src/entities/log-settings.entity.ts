@@ -16,6 +16,18 @@ export class LogSettings {
   @Column({ type: 'boolean', default: true })
   autoCleanupEnabled!: boolean;
 
+  @Column({ type: 'boolean', default: true })
+  realtimeCriticalAlertsEnabled!: boolean;
+
+  @Column({ type: 'int', default: 25 })
+  errorRateAlertThresholdPerMinute!: number;
+
+  @Column({ type: 'int', default: 1500 })
+  p95LatencyAlertThresholdMs!: number;
+
+  @Column({ type: 'int', default: 72 })
+  metricsRetentionHours!: number;
+
   @UpdateDateColumn()
   updatedAt!: Date;
 }

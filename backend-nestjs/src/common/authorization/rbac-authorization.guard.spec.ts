@@ -14,9 +14,13 @@ describe('RbacAuthorizationGuard', () => {
     hasPermission: jest.fn(),
     hasRequiredRole: jest.fn(),
   };
+  const auditTrailService = {
+    logPermissionCheck: jest.fn(async () => undefined),
+  };
   const guard = new RbacAuthorizationGuard(
     reflector,
     permissionService as never,
+    auditTrailService as never,
   );
 
   beforeEach(() => {
@@ -59,6 +63,7 @@ describe('RbacAuthorizationGuard', () => {
     await expect(guard.canActivate(context as never)).rejects.toThrow(
       ForbiddenException,
     );
+    expect(auditTrailService.logPermissionCheck).toHaveBeenCalled();
   });
 });
 
@@ -71,4 +76,3 @@ function buildContext(request: Record<string, unknown>) {
     }),
   };
 }
-

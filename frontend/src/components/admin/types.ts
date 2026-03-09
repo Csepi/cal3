@@ -88,7 +88,8 @@ export type AdminTab =
   | 'configuration'
   | 'notifications'
   | 'system-info'
-  | 'logs';
+  | 'logs'
+  | 'errors';
 
 export interface ConfirmDialogState {
   isOpen: boolean;
@@ -165,7 +166,24 @@ export interface MemberWithRole extends User {
   isOrgAdmin?: boolean;
 }
 
-export type LogLevel = 'log' | 'error' | 'warn' | 'debug' | 'verbose';
+export type LogLevel =
+  | 'log'
+  | 'info'
+  | 'error'
+  | 'warn'
+  | 'debug'
+  | 'verbose'
+  | 'trace';
+
+export type AuditSeverity = 'info' | 'warn' | 'critical';
+export type AuditOutcome = 'success' | 'failure' | 'denied';
+export type AuditCategory =
+  | 'security'
+  | 'permission'
+  | 'mutation'
+  | 'api_error'
+  | 'frontend_error'
+  | 'system';
 
 export interface LogEntry {
   id: number;
@@ -181,6 +199,10 @@ export interface LogSettings {
   id: number;
   retentionDays: number;
   autoCleanupEnabled: boolean;
+  realtimeCriticalAlertsEnabled: boolean;
+  errorRateAlertThresholdPerMinute: number;
+  p95LatencyAlertThresholdMs: number;
+  metricsRetentionHours: number;
   updatedAt: string;
 }
 
@@ -188,6 +210,32 @@ export interface LogResponse {
   items: LogEntry[];
   count: number;
   settings: LogSettings;
+}
+
+export interface AuditEvent {
+  id: number;
+  createdAt: string;
+  category: AuditCategory;
+  action: string;
+  severity: AuditSeverity;
+  outcome: AuditOutcome;
+  requestId?: string | null;
+  userId?: number | null;
+  organisationId?: number | null;
+  resourceType?: string | null;
+  resourceId?: string | null;
+  ip?: string | null;
+  method?: string | null;
+  path?: string | null;
+  errorCode?: string | null;
+  errorMessage?: string | null;
+  metadata?: Record<string, unknown> | null;
+}
+
+export interface AuditEventResponse {
+  success: boolean;
+  items: AuditEvent[];
+  count: number;
 }
 
 export type ConfigurationValueType =

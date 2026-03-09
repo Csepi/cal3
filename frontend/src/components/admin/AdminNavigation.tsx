@@ -9,7 +9,7 @@ export interface AdminNavigationProps {
   className?: string;
 }
 
-type TabIcon = 'KPI' | 'USR' | 'ORG' | 'CAL' | 'EVT' | 'ACL' | 'RES' | 'LOG' | 'CFG' | 'SYS' | 'NOT';
+type TabIcon = 'KPI' | 'USR' | 'ORG' | 'CAL' | 'EVT' | 'ACL' | 'RES' | 'LOG' | 'CFG' | 'SYS' | 'NOT' | 'ERR';
 
 const ICONS: Record<TabIcon, ReactElement> = {
   KPI: (
@@ -105,6 +105,13 @@ const ICONS: Record<TabIcon, ReactElement> = {
       <path d="M9 21a3 3 0 0 0 6 0" />
     </svg>
   ),
+  ERR: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 8v5" />
+      <path d="M12 16h.01" />
+    </svg>
+  ),
 };
 
 const TAB_CONFIG: Record<AdminTab, { label: string; icon: TabIcon; description: string }> = {
@@ -117,6 +124,7 @@ const TAB_CONFIG: Record<AdminTab, { label: string; icon: TabIcon; description: 
   reservations: { label: 'Resource Bookings', icon: 'RES', description: 'Track reservations and capacity' },
   notifications: { label: 'Notification Platform', icon: 'NOT', description: 'Channel providers, batching, and digests' },
   logs: { label: 'Operational Logs', icon: 'LOG', description: 'Monitor backend activity and errors' },
+  errors: { label: 'Error Dashboard', icon: 'ERR', description: 'Aggregate critical failures and trends' },
   configuration: { label: 'Runtime Configuration', icon: 'CFG', description: 'Manage OAuth credentials and feature flags' },
   'system-info': { label: 'System Health', icon: 'SYS', description: 'Runtime diagnostics and configuration' },
 };
@@ -144,7 +152,7 @@ const NAV_GROUPS: Array<{
   {
     label: 'Platform Operations',
     description: 'Logs and system diagnostics',
-    tabs: ['logs', 'notifications', 'configuration', 'system-info'],
+    tabs: ['logs', 'errors', 'notifications', 'configuration', 'system-info'],
   },
 ];
 
@@ -160,6 +168,7 @@ const ICON_BACKGROUNDS: Record<TabIcon, string> = {
   CFG: 'from-amber-500 to-orange-600',
   SYS: 'from-zinc-500 to-gray-700',
   NOT: 'from-fuchsia-500 to-pink-600',
+  ERR: 'from-red-500 to-orange-600',
 };
 
 const IconBadge: React.FC<{ code: TabIcon; emphasize: boolean }> = ({ code, emphasize }) => (
