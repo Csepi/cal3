@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { marked } from 'marked';
-import DOMPurify from 'dompurify';
+import { sanitizeHtml } from '../../utils/htmlSecurity';
 
 interface TaskMarkdownEditorProps {
   value: string;
@@ -12,8 +12,8 @@ export const TaskMarkdownEditor: React.FC<TaskMarkdownEditorProps> = ({
   onChange,
 }) => {
   const sanitizedHtml = useMemo(() => {
-    const raw = marked.parse(value || '');
-    return DOMPurify.sanitize(raw);
+    const raw = marked.parse(value || '', { async: false }) as string;
+    return sanitizeHtml(raw);
   }, [value]);
 
   return (

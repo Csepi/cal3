@@ -4,6 +4,7 @@ import { UserPermissionsService } from '../services/userPermissions';
 import type { Organization, User } from '../types';
 
 interface OrganisationUser extends User {
+  id: number;
   organisationRole: 'admin' | 'editor' | 'user';
   joinedAt: string;
 }

@@ -159,6 +159,7 @@ const ICON_BACKGROUNDS: Record<TabIcon, string> = {
   LOG: 'from-slate-500 to-slate-700',
   CFG: 'from-amber-500 to-orange-600',
   SYS: 'from-zinc-500 to-gray-700',
+  NOT: 'from-fuchsia-500 to-pink-600',
 };
 
 const IconBadge: React.FC<{ code: TabIcon; emphasize: boolean }> = ({ code, emphasize }) => (

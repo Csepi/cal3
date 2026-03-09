@@ -8,12 +8,20 @@
   Min,
 } from 'class-validator';
 import { ReservationStatus } from '../entities/reservation.entity';
+import { SanitizeText } from '../common/validation/sanitize.decorator';
+import {
+  IsAfterProperty,
+  IsSafeText,
+} from '../common/validation/security.validators';
 
 export class CreateReservationDto {
   @IsDateString()
   startTime!: Date;
 
   @IsDateString()
+  @IsAfterProperty('startTime', {
+    message: 'endTime must be later than startTime',
+  })
   endTime!: Date;
 
   @IsOptional()
@@ -26,10 +34,13 @@ export class CreateReservationDto {
   customerInfo?: Record<string, unknown>;
 
   @IsOptional()
+  @SanitizeText({ trim: true, maxLength: 2048 })
   @IsString()
+  @IsSafeText()
   notes?: string;
 
   @IsInt()
+  @Min(1)
   resourceId!: number;
 }
 
@@ -40,6 +51,9 @@ export class UpdateReservationDto {
 
   @IsOptional()
   @IsDateString()
+  @IsAfterProperty('startTime', {
+    message: 'endTime must be later than startTime',
+  })
   endTime?: Date;
 
   @IsOptional()
@@ -56,7 +70,9 @@ export class UpdateReservationDto {
   status?: ReservationStatus;
 
   @IsOptional()
+  @SanitizeText({ trim: true, maxLength: 2048 })
   @IsString()
+  @IsSafeText()
   notes?: string;
 }
 
@@ -65,6 +81,9 @@ export class CreateRecurringReservationDto {
   startTime!: Date;
 
   @IsDateString()
+  @IsAfterProperty('startTime', {
+    message: 'endTime must be later than startTime',
+  })
   endTime!: Date;
 
   @IsOptional()
@@ -77,10 +96,13 @@ export class CreateRecurringReservationDto {
   customerInfo?: Record<string, unknown>;
 
   @IsOptional()
+  @SanitizeText({ trim: true, maxLength: 2048 })
   @IsString()
+  @IsSafeText()
   notes?: string;
 
   @IsInt()
+  @Min(1)
   resourceId!: number;
 
   @IsObject()

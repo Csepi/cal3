@@ -5,7 +5,7 @@
  */
 
 import { useState, useCallback, useMemo } from 'react';
-import type { Event } from '../../types/Event';
+import type { Event } from '../../../types/Event';
 import type {
   CalendarState,
   CalendarActions,
@@ -41,7 +41,8 @@ type WeekRange = { startDate: Date; endDate: Date };
 
 export const useCalendar = (
   initialDate: Date = new Date(),
-  initialView: 'month' | 'week' | 'day' = 'month'
+  initialView: 'month' | 'week' | 'day' = 'month',
+  _weekStartDay?: number,
 ): UseCalendarReturn => {
   // Core state
   const [state, setState] = useState<CalendarState>({
@@ -183,7 +184,7 @@ export const useCalendar = (
 
       // Calendar filter
       if (filter.calendarIds && filter.calendarIds.length > 0) {
-        if (!filter.calendarIds.includes(event.calendar.id)) {
+        if (!event.calendar || !filter.calendarIds.includes(event.calendar.id)) {
           return false;
         }
       }
@@ -227,8 +228,8 @@ export const useCalendar = (
           bValue = b.title.toLowerCase();
           break;
         case 'calendar':
-          aValue = a.calendar.name.toLowerCase();
-          bValue = b.calendar.name.toLowerCase();
+          aValue = (a.calendar?.name ?? '').toLowerCase();
+          bValue = (b.calendar?.name ?? '').toLowerCase();
           break;
         default:
           return 0;

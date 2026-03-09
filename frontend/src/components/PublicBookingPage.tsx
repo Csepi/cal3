@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { BASE_URL } from '../config/apiConfig';
 
+const getErrorMessage = (error: unknown, fallback: string) =>
+  error instanceof Error ? error.message : fallback;
+
 interface ResourceInfo {
   id: number;
   name: string;
@@ -74,7 +77,7 @@ const PublicBookingPage: React.FC = () => {
         setResource(data);
         setError(null);
       } catch (err: unknown) {
-        setError(err.message || 'An error occurred while loading the resource');
+        setError(getErrorMessage(err, 'An error occurred while loading the resource'));
       } finally {
         setLoading(false);
       }
@@ -187,7 +190,7 @@ const PublicBookingPage: React.FC = () => {
         setAvailableSlots(data.slots || []);
       }
     } catch (err: unknown) {
-      setError(err.message || 'Failed to create booking');
+      setError(getErrorMessage(err, 'Failed to create booking'));
       console.error('Booking error:', err);
     } finally {
       setSubmitting(false);

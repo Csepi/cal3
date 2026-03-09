@@ -13,7 +13,16 @@ import type {
   User as UserBase,
 } from '../../types';
 
-export type User = UserBase;
+export type User = UserBase & {
+  id: number;
+  username: string;
+  email: string;
+  firstName?: string;
+  lastName?: string;
+  role?: string;
+  isActive?: boolean;
+  usagePlans?: string[];
+};
 export type Calendar = CalendarBase;
 export type Event = EventBase;
 

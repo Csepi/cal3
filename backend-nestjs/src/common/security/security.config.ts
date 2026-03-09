@@ -115,10 +115,7 @@ export function getCorsAllowedHeaders(): string[] {
 }
 
 export function buildCorsOptions(allowedOrigins: string[]): CorsOptions {
-  const exactOrigins = allowedOrigins.filter((origin) => !origin.includes('*'));
-  const wildcardOrigins = allowedOrigins
-    .filter((origin) => origin.includes('*'))
-    .map((origin) => wildcardToRegExp(origin));
+  const allowOrigin = createOriginMatcher(allowedOrigins);
 
   const allowedHeaders = getCorsAllowedHeaders();
 
@@ -128,11 +125,7 @@ export function buildCorsOptions(allowedOrigins: string[]): CorsOptions {
         return callback(null, true);
       }
 
-      if (exactOrigins.includes(origin)) {
-        return callback(null, true);
-      }
-
-      if (wildcardOrigins.some((regex) => regex.test(origin))) {
+      if (allowOrigin(origin)) {
         return callback(null, true);
       }
 
@@ -146,6 +139,39 @@ export function buildCorsOptions(allowedOrigins: string[]): CorsOptions {
     preflightContinue: true,
     optionsSuccessStatus: 204,
     maxAge: parseInt(process.env.SECURITY_CORS_MAX_AGE ?? '600', 10),
+  };
+}
+
+export function isOriginAllowed(
+  origin: string | null | undefined,
+  allowedOrigins: string[],
+): boolean {
+  if (!origin) {
+    return false;
+  }
+
+  return createOriginMatcher(allowedOrigins)(origin);
+}
+
+export function createOriginMatcher(
+  allowedOrigins: string[],
+): (origin: string) => boolean {
+  const normalizedAllowed = allowedOrigins.map((origin) =>
+    normalizeOrigin(origin),
+  );
+  const exactOrigins = normalizedAllowed.filter(
+    (origin) => !origin.includes('*'),
+  );
+  const wildcardOrigins = normalizedAllowed
+    .filter((origin) => origin.includes('*'))
+    .map((origin) => wildcardToRegExp(origin));
+
+  return (origin: string): boolean => {
+    const normalizedOrigin = normalizeOrigin(origin);
+    if (exactOrigins.includes(normalizedOrigin)) {
+      return true;
+    }
+    return wildcardOrigins.some((regex) => regex.test(normalizedOrigin));
   };
 }
 

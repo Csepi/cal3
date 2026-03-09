@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { LessThan, Repository } from 'typeorm';
 import { LogEntry, LogLevel } from '../entities/log-entry.entity';
 import { LogSettings } from '../entities/log-settings.entity';
+import { toContainsLikePattern } from '../common/database/query-safety';
 
 export interface LogQueryOptions {
   levels?: LogLevel[];
@@ -74,9 +75,9 @@ export class LoggingService {
     }
 
     if (search) {
-      const likeSearch = `%${search.toLowerCase()}%`;
+      const likeSearch = toContainsLikePattern(search);
       qb.andWhere(
-        "(LOWER(log.message) LIKE :search OR LOWER(COALESCE(log.stack, '')) LIKE :search)",
+        "(LOWER(log.message) LIKE :search ESCAPE '\\\\' OR LOWER(COALESCE(log.stack, '')) LIKE :search ESCAPE '\\\\')",
         { search: likeSearch },
       );
     }
@@ -173,3 +174,4 @@ export class LoggingService {
     return output;
   }
 }
+

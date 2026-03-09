@@ -81,7 +81,7 @@ export const MobileWeekView: React.FC<MobileWeekViewProps> = ({
   const getEventsForTimeSlot = (date: Date, hour: number): Event[] => {
     return events.filter(event => {
       const eventStart = new Date(event.startDate);
-      const eventEnd = new Date(event.endDate);
+      const eventEnd = new Date(event.endDate ?? event.startDate);
       const slotStart = new Date(date);
       slotStart.setHours(hour, 0, 0, 0);
       const slotEnd = new Date(date);
@@ -200,7 +200,7 @@ export const MobileWeekView: React.FC<MobileWeekViewProps> = ({
                     {/* Events in this slot */}
                     {slotEvents.map((event, eventIndex) => {
                       const eventStart = new Date(event.startDate);
-                      const eventEnd = new Date(event.endDate);
+                      const eventEnd = new Date(event.endDate ?? event.startDate);
                       const slotStart = new Date(day);
                       slotStart.setHours(hour, 0, 0, 0);
                       const meetingLink = getMeetingLinkFromEvent(event);

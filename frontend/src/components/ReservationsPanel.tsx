@@ -36,7 +36,7 @@ interface ReservationsPanelProps {
 }
 
 interface Organization extends DomainOrganization {
-  role?: 'USER' | 'EDITOR' | 'ORG_ADMIN';
+  role?: string;
 }
 
 interface ResourceType extends DomainResourceType {
@@ -62,6 +62,13 @@ const getErrorMessage = (error: unknown, fallback: string): string =>
   error instanceof Error ? error.message : fallback;
 
 const ReservationsPanel: React.FC<ReservationsPanelProps> = ({ themeColor = '#3b82f6' }) => {
+  type ThemeColors = {
+    gradient: string;
+    primary: string;
+    accent: string;
+    badge: string;
+  };
+
   // Mobile detection
   const { isMobile } = useScreenSize();
 
@@ -163,8 +170,8 @@ const ReservationsPanel: React.FC<ReservationsPanelProps> = ({ themeColor = '#3b
   });
 
   // Theme configuration
-  const getThemeColors = (color: string) => {
-    const colorMap: Record<string, unknown> = {
+  const getThemeColors = (color: string): ThemeColors => {
+    const colorMap: Record<string, ThemeColors> = {
       '#ef4444': { gradient: 'from-red-50 via-red-100 to-red-200', primary: 'bg-red-500 hover:bg-red-600', accent: 'text-red-600', badge: 'bg-red-100 text-red-800' },
       '#f59e0b': { gradient: 'from-orange-50 via-orange-100 to-orange-200', primary: 'bg-orange-500 hover:bg-orange-600', accent: 'text-orange-600', badge: 'bg-orange-100 text-orange-800' },
       '#eab308': { gradient: 'from-yellow-50 via-yellow-100 to-yellow-200', primary: 'bg-yellow-500 hover:bg-yellow-600', accent: 'text-yellow-600', badge: 'bg-yellow-100 text-yellow-800' },
@@ -322,18 +329,18 @@ const ReservationsPanel: React.FC<ReservationsPanelProps> = ({ themeColor = '#3b
 
     // Fetch deletion preview
     try {
-      let preview;
+      let preview: DeletionPreview | undefined;
       if (type === 'organization') {
-        preview = await apiService.get(`/organisations/${item.id}/deletion-preview`);
+        preview = await apiService.get<DeletionPreview>(`/organisations/${item.id}/deletion-preview`);
       } else if (type === 'resourceType') {
-        preview = await apiService.get(`/resource-types/${item.id}/deletion-preview`);
+        preview = await apiService.get<DeletionPreview>(`/resource-types/${item.id}/deletion-preview`);
       } else if (type === 'resource') {
-        preview = await apiService.get(`/resources/${item.id}/deletion-preview`);
+        preview = await apiService.get<DeletionPreview>(`/resources/${item.id}/deletion-preview`);
       }
 
       setDeleteModal(prev => ({
         ...prev,
-        preview,
+        preview: preview ?? null,
         loading: false
       }));
     } catch (err: unknown) {
@@ -358,15 +365,15 @@ const ReservationsPanel: React.FC<ReservationsPanelProps> = ({ themeColor = '#3b
       } else if (deleteModal.type === 'resourceType') {
         await apiService.delete(`/resource-types/${deleteModal.item.id}/cascade`);
         // Reload resource types for this organization
-        await loadOrganizationData(selectedOrgId!);
+        await loadOrganizationData();
       } else if (deleteModal.type === 'resource') {
         await apiService.delete(`/resources/${deleteModal.item.id}/cascade`);
         // Reload resources for this organization
-        await loadOrganizationData(selectedOrgId!);
+        await loadOrganizationData();
       } else if (deleteModal.type === 'reservation') {
         await apiService.delete(`/reservations/${deleteModal.item.id}`);
         // Reload reservations for this organization
-        await loadOrganizationData(selectedOrgId!);
+        await loadOrganizationData();
       }
 
       // Close modal
@@ -380,6 +387,21 @@ const ReservationsPanel: React.FC<ReservationsPanelProps> = ({ themeColor = '#3b
     } catch (err: unknown) {
       throw new Error(getErrorMessage(err, 'Failed to delete item'));
     }
+  };
+
+  const getDeleteItemName = (item: DeletableItem | null): string => {
+    if (!item) return 'Unknown';
+    if ('name' in item && typeof item.name === 'string') {
+      return item.name;
+    }
+    const reservationCustomerName =
+      'customerName' in item && typeof item.customerName === 'string'
+        ? item.customerName
+        : null;
+    if (reservationCustomerName) {
+      return reservationCustomerName;
+    }
+    return `Reservation #${item.id}`;
   };
 
   const handleDeleteCancel = () => {
@@ -1325,9 +1347,9 @@ const ReservationsPanel: React.FC<ReservationsPanelProps> = ({ themeColor = '#3b
         onClose={handleDeleteCancel}
         onConfirm={handleDeleteConfirm}
         title={`Delete ${deleteModal.type === 'resourceType' ? 'Resource Type' : deleteModal.type === 'organization' ? 'Organization' : deleteModal.type || 'Item'}`}
-        itemName={deleteModal.item?.name || 'Unknown'}
+        itemName={getDeleteItemName(deleteModal.item)}
         itemType={deleteModal.type || 'resource'}
-        cascadePreview={deleteModal.preview}
+        cascadePreview={deleteModal.preview ?? undefined}
         isLoading={deleteModal.loading}
       />
 

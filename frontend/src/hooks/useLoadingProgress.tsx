@@ -25,7 +25,7 @@ export const useLoadingProgress = (): UseLoadingProgressReturn => {
     message: 'Loading...'
   });
 
-  const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const startLoading = useCallback((message = 'Loading...') => {
     setLoadingState({

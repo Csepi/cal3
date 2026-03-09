@@ -11,13 +11,13 @@ export interface NotificationMessage {
   eventType: string;
   title?: string | null;
   body: string;
-  data?: Record<string, unknown> | null;
+  data?: Record<string, any> | null;
   isRead: boolean;
   archived: boolean;
   createdAt: string;
   threadId?: number | null;
   threadKey?: string | null;
-  metadata?: Record<string, unknown> | null;
+  metadata?: Record<string, any> | null;
 }
 
 export interface NotificationThreadSummary {
@@ -33,7 +33,7 @@ export interface NotificationThreadSummary {
 
 export interface NotificationPreference {
   eventType: string;
-  channels: Record<NotificationChannel, boolean> & Record<string, boolean>;
+  channels: Record<string, boolean>;
   digest?: 'immediate' | 'hourly' | 'daily';
   fallbackOrder?: NotificationChannel[];
   quietHours?: {
@@ -47,12 +47,12 @@ export interface NotificationPreference {
 export interface NotificationInboxRuleCondition {
   field: string;
   operator: string;
-  value?: string | number | boolean | Record<string, unknown> | null;
+  value?: string | number | boolean | Record<string, any> | string[] | null;
 }
 
 export interface NotificationInboxRuleAction {
   type: string;
-  payload?: Record<string, unknown> | null;
+  payload?: Record<string, any> | null;
 }
 
 export interface NotificationInboxRule {
@@ -80,7 +80,7 @@ export interface NotificationScopeMute {
 export interface NotificationScopeOption {
   value: string;
   label: string;
-  meta?: Record<string, unknown> | null;
+  meta?: Record<string, any> | null;
 }
 
 export interface NotificationEventDefinition {
@@ -114,7 +114,7 @@ export interface NotificationCatalog {
 
 export interface NotificationSocketEvent {
   type: string;
-  data: Record<string, unknown> | null;
+  data: Record<string, any> | null;
 }
 
 

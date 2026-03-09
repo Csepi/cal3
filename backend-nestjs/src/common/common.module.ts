@@ -29,6 +29,8 @@ import { RbacPermissionService } from './authorization/rbac-permission.service';
 import { RbacAuthorizationGuard } from './authorization/rbac-authorization.guard';
 import { RlsSessionService } from './database/rls-session.service';
 import { SecurityReportsController } from './security/security-reports.controller';
+import { CsrfService } from './security/csrf.service';
+import { ParameterizedQueryService } from './database/parameterized-query.service';
 
 @Global() // Make this module global so its exports are available everywhere
 @Module({
@@ -66,6 +68,8 @@ import { SecurityReportsController } from './security/security-reports.controlle
     RbacPermissionService,
     RbacAuthorizationGuard,
     RlsSessionService,
+    CsrfService,
+    ParameterizedQueryService,
   ],
   exports: [
     UserPermissionsService,
@@ -84,6 +88,8 @@ import { SecurityReportsController } from './security/security-reports.controlle
     RbacPermissionService,
     RbacAuthorizationGuard,
     RlsSessionService,
+    CsrfService,
+    ParameterizedQueryService,
     TypeOrmModule,
   ],
 })

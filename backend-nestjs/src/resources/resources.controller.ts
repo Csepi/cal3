@@ -9,6 +9,7 @@ import {
   Query,
   UseGuards,
   Req,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { ResourcesService } from './resources.service';
@@ -19,6 +20,7 @@ import { PublicBookingService } from './public-booking.service';
 import { ConfigurationService } from '../configuration/configuration.service';
 import { RequireResourceAccess } from '../common/decorators/require-resource-access.decorator';
 import type { RequestWithUser } from '../common/types/request-with-user';
+import { ResourceListQueryDto } from './dto/resource.query.dto';
 
 @Controller('resources')
 @UseGuards(JwtAuthGuard)
@@ -38,7 +40,7 @@ export class ResourcesController {
 
   @Get()
   async findAll(
-    @Query('resourceTypeId') resourceTypeId: string | undefined = undefined,
+    @Query() query: ResourceListQueryDto,
     @Req() req: RequestWithUser,
   ) {
     console.log(
@@ -69,23 +71,26 @@ export class ResourcesController {
 
     return await this.resourcesService.findAllByOrganizations(
       organizationIds,
-      resourceTypeId ? +resourceTypeId : undefined,
+      query.resourceTypeId,
     );
   }
 
   @Get(':id')
-  async findOne(@Param('id') id: string) {
-    return await this.resourcesService.findOne(+id);
+  async findOne(@Param('id', ParseIntPipe) id: number) {
+    return await this.resourcesService.findOne(id);
   }
 
   @Patch(':id')
-  async update(@Param('id') id: string, @Body() updateDto: UpdateResourceDto) {
-    return await this.resourcesService.update(+id, updateDto);
+  async update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateDto: UpdateResourceDto,
+  ) {
+    return await this.resourcesService.update(id, updateDto);
   }
 
   @Delete(':id')
-  async remove(@Param('id') id: string) {
-    await this.resourcesService.remove(+id);
+  async remove(@Param('id', ParseIntPipe) id: number) {
+    await this.resourcesService.remove(id);
     return { message: 'Resource deleted successfully' };
   }
 
@@ -100,9 +105,10 @@ export class ResourcesController {
     'edit',
     'You do not have permission to view deletion preview for this resource',
   )
-  async previewDeletion(@Param('id') id: string, @Req() _req: RequestWithUser) {
-    const resourceId = +id;
-
+  async previewDeletion(
+    @Param('id', ParseIntPipe) resourceId: number,
+    @Req() _req: RequestWithUser,
+  ) {
     return await this.cascadeDeletionService.previewResourceDeletion(
       resourceId,
     );
@@ -117,9 +123,10 @@ export class ResourcesController {
     'delete',
     'You do not have permission to delete this resource',
   )
-  async deleteCascade(@Param('id') id: string, @Req() req: RequestWithUser) {
-    const resourceId = +id;
-
+  async deleteCascade(
+    @Param('id', ParseIntPipe) resourceId: number,
+    @Req() req: RequestWithUser,
+  ) {
     const result = await this.cascadeDeletionService.deleteResource(
       resourceId,
       req.user.id,
@@ -136,9 +143,10 @@ export class ResourcesController {
     'view',
     'You do not have permission to view this resource',
   )
-  async getPublicToken(@Param('id') id: string, @Req() _req: RequestWithUser) {
-    const resourceId = +id;
-
+  async getPublicToken(
+    @Param('id', ParseIntPipe) resourceId: number,
+    @Req() _req: RequestWithUser,
+  ) {
     const resource = await this.resourcesService.findOne(resourceId);
 
     return {
@@ -160,9 +168,10 @@ export class ResourcesController {
     'edit',
     'You do not have permission to regenerate token for this resource',
   )
-  async regenerateToken(@Param('id') id: string, @Req() _req: RequestWithUser) {
-    const resourceId = +id;
-
+  async regenerateToken(
+    @Param('id', ParseIntPipe) resourceId: number,
+    @Req() _req: RequestWithUser,
+  ) {
     const resource = await this.resourcesService.findOne(resourceId);
 
     const newToken =

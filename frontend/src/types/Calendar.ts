@@ -22,6 +22,7 @@ export interface Calendar {
   isTasksCalendar?: boolean;
   rank?: number;
   groupId?: number | null;
+  eventCount?: number;
   group?: {
     id: number;
     name: string;
@@ -32,11 +33,16 @@ export interface Calendar {
     id: number;
     username: string;
     email: string;
+    firstName?: string;
+    lastName?: string;
   };
   ownerId?: number;
   sharedWith?: Array<{
     id: number;
     username: string;
+    email?: string;
+    firstName?: string;
+    lastName?: string;
     permission: SharePermission;
   }>;
   createdAt: string;

@@ -10,6 +10,7 @@ import {
   UseGuards,
   Req,
   ForbiddenException,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { ResourceTypesService } from './resource-types.service';
@@ -17,6 +18,8 @@ import {
   CreateResourceTypeDto,
   UpdateResourceTypeDto,
 } from '../dto/resource-type.dto';
+import { ResourceTypeListQueryDto } from './dto/resource-type.query.dto';
+import { UpdateResourceTypeColorDto } from './dto/update-resource-type-color.dto';
 import { UserPermissionsService } from '../common/services/user-permissions.service';
 import { CascadeDeletionService } from '../common/services/cascade-deletion.service';
 import type { RequestWithUser } from '../common/types/request-with-user';
@@ -37,7 +40,7 @@ export class ResourceTypesController {
 
   @Get()
   async findAll(
-    @Query('organisationId') organisationId: string | undefined = undefined,
+    @Query() query: ResourceTypeListQueryDto,
     @Req() req: RequestWithUser,
   ) {
     console.log(
@@ -67,10 +70,13 @@ export class ResourceTypesController {
     }
 
     // If a specific organisationId is requested, make sure it's in the user's accessible list
-    if (organisationId && !organizationIds.includes(+organisationId)) {
+    if (
+      typeof query.organisationId === 'number' &&
+      !organizationIds.includes(query.organisationId)
+    ) {
       console.log(
         '⚠️  Requested organization ID',
-        organisationId,
+        query.organisationId,
         'not accessible - returning empty',
       );
       return [];
@@ -78,26 +84,26 @@ export class ResourceTypesController {
 
     return await this.resourceTypesService.findAllByOrganizations(
       organizationIds,
-      organisationId ? +organisationId : undefined,
+      query.organisationId,
     );
   }
 
   @Get(':id')
-  async findOne(@Param('id') id: string) {
-    return await this.resourceTypesService.findOne(+id);
+  async findOne(@Param('id', ParseIntPipe) id: number) {
+    return await this.resourceTypesService.findOne(id);
   }
 
   @Patch(':id')
   async update(
-    @Param('id') id: string,
+    @Param('id', ParseIntPipe) id: number,
     @Body() updateDto: UpdateResourceTypeDto,
   ) {
-    return await this.resourceTypesService.update(+id, updateDto);
+    return await this.resourceTypesService.update(id, updateDto);
   }
 
   @Delete(':id')
-  async remove(@Param('id') id: string) {
-    await this.resourceTypesService.remove(+id);
+  async remove(@Param('id', ParseIntPipe) id: number) {
+    await this.resourceTypesService.remove(id);
     return { message: 'Resource type deleted successfully' };
   }
 
@@ -108,8 +114,10 @@ export class ResourceTypesController {
    * GET /api/resource-types/:id/deletion-preview
    */
   @Get(':id/deletion-preview')
-  async previewDeletion(@Param('id') id: string, @Req() req: RequestWithUser) {
-    const resourceTypeId = +id;
+  async previewDeletion(
+    @Param('id', ParseIntPipe) resourceTypeId: number,
+    @Req() req: RequestWithUser,
+  ) {
 
     // Get the resource type to check organization access
     const resourceType =
@@ -139,8 +147,10 @@ export class ResourceTypesController {
    * DELETE /api/resource-types/:id/cascade
    */
   @Delete(':id/cascade')
-  async deleteCascade(@Param('id') id: string, @Req() req: RequestWithUser) {
-    const resourceTypeId = +id;
+  async deleteCascade(
+    @Param('id', ParseIntPipe) resourceTypeId: number,
+    @Req() req: RequestWithUser,
+  ) {
 
     // Get the resource type to check organization access
     const resourceType =
@@ -174,12 +184,10 @@ export class ResourceTypesController {
    */
   @Patch(':id/color')
   async updateColor(
-    @Param('id') id: string,
-    @Body() body: { color: string },
+    @Param('id', ParseIntPipe) resourceTypeId: number,
+    @Body() body: UpdateResourceTypeColorDto,
     @Req() req: RequestWithUser,
   ) {
-    const resourceTypeId = +id;
-
     // Check if user can manage this resource type
     const canManage = await this.userPermissionsService.canUserEditResourceType(
       req.user.id,

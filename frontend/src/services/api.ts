@@ -442,7 +442,12 @@ class ApiService {
   }
 
   async getCalendarGroups(): Promise<CalendarGroupWithCalendars[]> {
-    const tryFetch = async (path: string) => {
+    const tryFetch = async (
+      path: string,
+    ): Promise<
+      | { ok: true; data: CalendarGroupWithCalendars[] }
+      | { ok: false; response: Response }
+    > => {
       const response = await this.secureApiFetch(`${BASE_URL}${path}`);
       if (!response.ok) {
         return { ok: false, response };
@@ -469,7 +474,9 @@ class ApiService {
   async createCalendarGroup(
     payload: CreateCalendarGroupRequest,
   ): Promise<CalendarGroup> {
-    const tryPost = async (path: string) => {
+    const tryPost = async (
+      path: string,
+    ): Promise<{ ok: true; data: CalendarGroup } | { ok: false; response: Response }> => {
       const response = await this.secureApiFetch(`${BASE_URL}${path}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -789,13 +796,17 @@ class ApiService {
   }
 
   async post<T = unknown>(endpoint: string, data?: unknown): Promise<T> {
-    const response = await this.secureApiFetch(`${BASE_URL}/api${endpoint}`, {
+    const requestInit: RequestInit = {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      ...(data && { body: JSON.stringify(data) }),
-    });
+    };
+    if (data !== undefined) {
+      requestInit.body = JSON.stringify(data);
+    }
+
+    const response = await this.secureApiFetch(`${BASE_URL}/api${endpoint}`, requestInit);
 
     if (!response.ok) {
       if (response.status === 401) {
@@ -809,13 +820,17 @@ class ApiService {
   }
 
   async patch<T = unknown>(endpoint: string, data?: unknown): Promise<T> {
-    const response = await this.secureApiFetch(`${BASE_URL}/api${endpoint}`, {
+    const requestInit: RequestInit = {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
       },
-      ...(data && { body: JSON.stringify(data) }),
-    });
+    };
+    if (data !== undefined) {
+      requestInit.body = JSON.stringify(data);
+    }
+
+    const response = await this.secureApiFetch(`${BASE_URL}/api${endpoint}`, requestInit);
 
     if (!response.ok) {
       if (response.status === 401) {

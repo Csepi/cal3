@@ -3,6 +3,7 @@ import type { Request, Response } from 'express';
 import { AgentApiKeyGuard } from './guards/agent-api-key.guard';
 import { AgentMcpHttpService } from './agent-mcp-http.service';
 import type { AgentContext } from './interfaces/agent-context.interface';
+import { AgentStreamPayloadDto } from './dto/agent-stream.dto';
 
 type AgentRequest = Request & { agentContext: AgentContext };
 
@@ -15,9 +16,9 @@ export class AgentMcpStreamController {
   async handleRequest(
     @Req() req: AgentRequest,
     @Res({ passthrough: false }) res: Response,
-    @Body() body: unknown,
+    @Body() body: AgentStreamPayloadDto,
   ): Promise<void> {
-    const payload = req.method === 'POST' ? body : undefined;
+    const payload = req.method === 'POST' ? body.payload ?? body : undefined;
     await this.httpService.handleStreamRequest(
       req.agentContext,
       req,

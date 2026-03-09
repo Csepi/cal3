@@ -155,7 +155,7 @@ export const MobileMonthView: React.FC<MobileMonthViewProps> = ({
                     dot
                     size="sm"
                     className="flex-shrink-0"
-                    style={{ backgroundColor: event.color || event.calendar.color }}
+                    style={{ backgroundColor: event.color || event.calendar?.color || themeColor }}
                   />
                 ))}
                 {hasMoreEvents && (

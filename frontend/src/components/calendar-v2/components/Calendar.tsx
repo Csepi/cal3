@@ -42,13 +42,12 @@ export const Calendar = memo<CalendarContainerProps>(({
 
   // Default settings
   const calendarSettings = useMemo(() => ({
-    weekStartDay: WeekStartDay.MONDAY,
-    timeFormat: TimeFormat.TWELVE_HOUR,
-    showWeekNumbers: false,
-    showTimeZone: false,
-    timezone: 'UTC',
-    defaultView: 'month' as const,
-    ...settings
+    weekStartDay: settings?.weekStartDay ?? WeekStartDay.MONDAY,
+    timeFormat: settings?.timeFormat ?? TimeFormat.TWELVE_HOUR,
+    showWeekNumbers: settings?.showWeekNumbers ?? false,
+    showTimeZone: settings?.showTimeZone ?? false,
+    timezone: settings?.timezone ?? 'UTC',
+    defaultView: settings?.defaultView ?? ('month' as const),
   }), [settings]);
 
   // Initialize calendar hook

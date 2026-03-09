@@ -32,7 +32,7 @@ interface UseAutomationRulesReturn {
 
   // Actions
   fetchRules: () => Promise<void>;
-  fetchRuleById: (ruleId: number) => Promise<void>;
+  fetchRuleById: (ruleId: number) => Promise<AutomationRuleDetailDto | null>;
   createRule: (ruleData: CreateAutomationRuleDto, runRetroactively?: boolean) => Promise<AutomationRuleDetailDto>;
   updateRule: (ruleId: number, updateData: UpdateAutomationRuleDto) => Promise<AutomationRuleDetailDto>;
   deleteRule: (ruleId: number) => Promise<void>;
@@ -123,16 +123,18 @@ export function useAutomationRules(): UseAutomationRulesReturn {
   }, [pagination.page, pagination.limit, filters]);
 
   // Fetch a single rule by ID
-  const fetchRuleById = useCallback(async (ruleId: number) => {
+  const fetchRuleById = useCallback(async (ruleId: number): Promise<AutomationRuleDetailDto | null> => {
     setIsLoading(true);
     setError(null);
 
     try {
       const rule = await getAutomationRule(ruleId);
       setSelectedRule(rule);
+      return rule;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch rule');
       console.error('Error fetching automation rule:', err);
+      return null;
     } finally {
       setIsLoading(false);
     }

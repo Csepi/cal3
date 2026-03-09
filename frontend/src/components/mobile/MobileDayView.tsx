@@ -137,8 +137,8 @@ export const MobileDayView: React.FC<MobileDayViewProps> = ({
                       key={event.id}
                       className="p-3 rounded-lg shadow-sm border-l-4 cursor-pointer active:scale-98 transition-transform"
                       style={{
-                        borderLeftColor: event.color || event.calendar.color,
-                        backgroundColor: `${event.color || event.calendar.color}10`,
+                        borderLeftColor: event.color || event.calendar?.color || themeColor,
+                        backgroundColor: `${event.color || event.calendar?.color || themeColor}10`,
                       }}
                       onClick={(e) => {
                         e.stopPropagation();

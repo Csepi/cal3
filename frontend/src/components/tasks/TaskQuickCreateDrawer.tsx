@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import type { TaskLabel, TaskPriority, TaskStatus } from '../../types/Task';
+import { TaskPriority, TaskStatus } from '../../types/Task';
+import type { TaskLabel } from '../../types/Task';
 
 interface TaskQuickCreateDrawerProps {
   open: boolean;

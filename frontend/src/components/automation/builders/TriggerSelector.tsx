@@ -4,9 +4,9 @@ import { useAutomationMetadata } from '../../../hooks/useAutomationMetadata';
 
 interface TriggerSelectorProps {
   selectedTrigger: TriggerType | null;
-  triggerConfig: Record<string, unknown>;
+  triggerConfig: Record<string, any>;
   onTriggerChange: (trigger: TriggerType) => void;
-  onConfigChange: (config: Record<string, unknown>) => void;
+  onConfigChange: (config: Record<string, any>) => void;
   disabled?: boolean;
 }
 

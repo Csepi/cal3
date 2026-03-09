@@ -269,7 +269,7 @@ export async function secureFetch(
   const shouldAttachCsrf =
     typeof csrf === 'boolean' ? csrf : MUTATING_METHODS.has(method);
   if (shouldAttachCsrf) {
-    applyCsrfHeader(headers);
+    applyCsrfHeader(headers, true);
   }
 
   const execute = async (): Promise<Response> => {

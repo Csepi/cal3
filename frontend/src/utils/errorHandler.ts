@@ -38,7 +38,14 @@ export async function createDetailedError(
     if (responseText) {
       try {
         details.responseBody = JSON.parse(responseText);
-        details.message = details.responseBody.message || details.responseBody.error || 'Request failed';
+        const parsed =
+          typeof details.responseBody === 'object' && details.responseBody !== null
+            ? (details.responseBody as Record<string, unknown>)
+            : null;
+        details.message =
+          (parsed && typeof parsed.message === 'string' && parsed.message) ||
+          (parsed && typeof parsed.error === 'string' && parsed.error) ||
+          'Request failed';
       } catch {
         details.responseBody = responseText;
         details.message = responseText;

@@ -13,6 +13,7 @@ export interface RoleAssignmentModalProps {
   availableUsers: User[];
   currentMembers: MemberWithRole[];
   loading?: boolean;
+  themeColor?: string;
 }
 
 export const RoleAssignmentModal: React.FC<RoleAssignmentModalProps> = ({

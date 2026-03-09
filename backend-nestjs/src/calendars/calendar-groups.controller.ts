@@ -8,6 +8,7 @@ import {
   Post,
   Request,
   UseGuards,
+  ParseIntPipe,
 } from '@nestjs/common';
 import type { RequestWithUser } from '../common/types/request-with-user';
 import {
@@ -26,6 +27,7 @@ import {
   ShareCalendarGroupDto,
   UpdateCalendarGroupDto,
 } from '../dto/calendar-group.dto';
+import { UnshareCalendarUsersDto } from './dto/calendar-sharing.dto';
 
 @ApiTags('Calendar Groups')
 @Controller('calendar-groups')
@@ -63,12 +65,12 @@ export class CalendarGroupsController {
   @ApiOperation({ summary: 'Rename or toggle visibility of a group' })
   @ApiParam({ name: 'id', description: 'Group ID', type: 'number' })
   update(
-    @Param('id') id: string,
+    @Param('id', ParseIntPipe) id: number,
     @Body() updateCalendarGroupDto: UpdateCalendarGroupDto,
     @Request() req: RequestWithUser,
   ) {
     return this.calendarGroupsService.update(
-      +id,
+      id,
       updateCalendarGroupDto,
       req.user.id,
     );
@@ -79,20 +81,20 @@ export class CalendarGroupsController {
     summary: 'Delete a calendar group without deleting the calendars inside it',
   })
   @ApiParam({ name: 'id', description: 'Group ID', type: 'number' })
-  remove(@Param('id') id: string, @Request() req: RequestWithUser) {
-    return this.calendarGroupsService.remove(+id, req.user.id);
+  remove(@Param('id', ParseIntPipe) id: number, @Request() req: RequestWithUser) {
+    return this.calendarGroupsService.remove(id, req.user.id);
   }
 
   @Post(':id/calendars')
   @ApiOperation({ summary: 'Assign calendars to a group (drag/drop support)' })
   @ApiParam({ name: 'id', description: 'Group ID', type: 'number' })
   assignCalendars(
-    @Param('id') id: string,
+    @Param('id', ParseIntPipe) id: number,
     @Body() assignCalendarsDto: AssignCalendarsToGroupDto,
     @Request() req: RequestWithUser,
   ) {
     return this.calendarGroupsService.assignCalendars(
-      +id,
+      id,
       assignCalendarsDto,
       req.user.id,
     );
@@ -102,12 +104,12 @@ export class CalendarGroupsController {
   @ApiOperation({ summary: 'Remove calendars from a group' })
   @ApiParam({ name: 'id', description: 'Group ID', type: 'number' })
   unassignCalendars(
-    @Param('id') id: string,
+    @Param('id', ParseIntPipe) id: number,
     @Body() assignCalendarsDto: AssignCalendarsToGroupDto,
     @Request() req: RequestWithUser,
   ) {
     return this.calendarGroupsService.unassignCalendars(
-      +id,
+      id,
       assignCalendarsDto,
       req.user.id,
     );
@@ -119,12 +121,12 @@ export class CalendarGroupsController {
   })
   @ApiParam({ name: 'id', description: 'Group ID', type: 'number' })
   shareGroup(
-    @Param('id') id: string,
+    @Param('id', ParseIntPipe) id: number,
     @Body() shareCalendarGroupDto: ShareCalendarGroupDto,
     @Request() req: RequestWithUser,
   ) {
     return this.calendarGroupsService.shareGroup(
-      +id,
+      id,
       shareCalendarGroupDto,
       req.user.id,
     );
@@ -136,12 +138,12 @@ export class CalendarGroupsController {
   })
   @ApiParam({ name: 'id', description: 'Group ID', type: 'number' })
   unshareGroup(
-    @Param('id') id: string,
-    @Body() body: { userIds: number[] },
+    @Param('id', ParseIntPipe) id: number,
+    @Body() body: UnshareCalendarUsersDto,
     @Request() req: RequestWithUser,
   ) {
     return this.calendarGroupsService.unshareGroup(
-      +id,
+      id,
       body.userIds,
       req.user.id,
     );

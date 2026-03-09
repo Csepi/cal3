@@ -2,6 +2,8 @@ export interface ReservationCustomerInfo {
   name?: string;
   email?: string;
   phone?: string;
+  organization?: string;
+  organizationId?: number;
   [key: string]: unknown;
 }
 
@@ -28,6 +30,7 @@ export interface ReservationResource {
   id: number;
   name: string;
   description?: string;
+  color?: string;
   capacity?: number;
   resourceTypeId?: number;
   resourceType?: ReservationResourceType;
@@ -50,6 +53,7 @@ export interface ReservationRecord {
   endTime: string;
   quantity: number;
   status: string;
+  description?: string;
   notes?: string;
   customerName?: string;
   customerEmail?: string;
@@ -58,3 +62,6 @@ export interface ReservationRecord {
   resource?: ReservationResource;
   createdBy?: ReservationUserSummary;
 }
+
+export type Booking = ReservationRecord;
+export type Resource = ReservationResource;

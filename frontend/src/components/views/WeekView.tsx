@@ -497,7 +497,7 @@ const WeekView: React.FC<WeekViewProps> = ({
                                     className="cursor-pointer hover:underline flex items-center"
                                     onClick={(e) => {
                                       e.stopPropagation();
-                                      openInGoogleMaps(event.location);
+                                      openInGoogleMaps(event.location ?? '');
                                     }}
                                     style={{ color: eventColor }}
                                   >

@@ -28,7 +28,7 @@ export const EventListItem: React.FC<EventListItemProps> = ({
   themeColor,
   compact = false,
 }) => {
-  const eventColor = event.color || event.calendar.color || themeColor;
+  const eventColor = event.color || event.calendar?.color || themeColor;
   const meetingLink = getMeetingLinkFromEvent(event);
 
   const formatTime = (time: string) => {
@@ -114,7 +114,7 @@ export const EventListItem: React.FC<EventListItemProps> = ({
                 className="w-2 h-2 rounded-full"
                 style={{ backgroundColor: eventColor }}
               />
-              <span>{event.calendar.name}</span>
+              <span>{event.calendar?.name || 'Calendar'}</span>
             </div>
           )}
         </div>

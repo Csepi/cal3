@@ -12,6 +12,7 @@ interface TouchableAreaProps {
   onClick?: () => void;
   onLongPress?: () => void;
   className?: string;
+  style?: React.CSSProperties;
   disabled?: boolean;
   ariaLabel?: string;
   minSize?: 'sm' | 'md' | 'lg';
@@ -22,6 +23,7 @@ export const TouchableArea: React.FC<TouchableAreaProps> = ({
   onClick,
   onLongPress,
   className = '',
+  style,
   disabled = false,
   ariaLabel,
   minSize = 'md',
@@ -84,6 +86,7 @@ export const TouchableArea: React.FC<TouchableAreaProps> = ({
       }}
       disabled={disabled}
       aria-label={ariaLabel}
+      style={style}
       className={`
         ${sizeClasses[minSize]}
         flex items-center justify-center

@@ -233,7 +233,7 @@ const AgentSettingsPage: React.FC<AgentSettingsPageProps> = ({ themeColor = "#3b
   const [selectedAgentId, setSelectedAgentId] = useState<number | null>(null);
   const [selectedAgent, setSelectedAgent] = useState<AgentDetail | null>(null);
   const [catalog, setCatalog] = useState<AgentCatalogResponse | null>(null);
-  const [permissionsDraft, setPermissionsDraft] = useState<Record<AgentActionKey, PermissionDraft>>({});
+  const [permissionsDraft, setPermissionsDraft] = useState<Partial<Record<AgentActionKey, PermissionDraft>>>({});
   const [keys, setKeys] = useState<AgentKey[]>([]);
   const [keysLoading, setKeysLoading] = useState(false);
 

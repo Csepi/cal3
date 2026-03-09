@@ -4,39 +4,59 @@ import {
   MinLength,
   IsOptional,
   IsEnum,
+  MaxLength,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { UserRole } from '../entities/user.entity';
+import { SanitizeText } from '../common/validation/sanitize.decorator';
+import {
+  IsSafeText,
+  IsStrongPassword,
+} from '../common/validation/security.validators';
 
 export class RegisterDto {
   @ApiProperty({ example: 'john_doe', description: 'Unique username' })
+  @SanitizeText({ trim: true })
   @IsString()
   @MinLength(3)
+  @MaxLength(64)
+  @IsSafeText()
   username!: string;
 
   @ApiProperty({
     example: 'john@example.com',
     description: 'User email address',
   })
+  @SanitizeText({ trim: true, toLowerCase: true })
   @IsEmail()
+  @MaxLength(254)
   email!: string;
 
   @ApiProperty({
     example: 'password123',
     description: 'User password (min 6 characters)',
   })
+  @SanitizeText()
   @IsString()
   @MinLength(6)
+  @MaxLength(128)
+  @IsStrongPassword()
   password!: string;
 
   @ApiPropertyOptional({ example: 'John', description: 'User first name' })
   @IsOptional()
+  @SanitizeText({ trim: true })
   @IsString()
+  @MaxLength(80)
+  @IsSafeText()
   firstName?: string;
 
   @ApiPropertyOptional({ example: 'Doe', description: 'User last name' })
   @IsOptional()
+  @SanitizeText({ trim: true })
   @IsString()
+  @MaxLength(80)
+  @IsSafeText()
   lastName?: string;
 
   @ApiPropertyOptional({
@@ -54,11 +74,18 @@ export class LoginDto {
     example: 'john_doe or john@example.com',
     description: 'Username or email',
   })
+  @SanitizeText({ trim: true })
   @IsString()
+  @MinLength(1)
+  @MaxLength(254)
+  @IsSafeText()
   username!: string;
 
   @ApiProperty({ example: 'password123', description: 'User password' })
+  @SanitizeText()
   @IsString()
+  @MinLength(1)
+  @MaxLength(128)
   password!: string;
 }
 
@@ -114,6 +141,8 @@ export class RefreshTokenRequestDto {
     description: 'Refresh token (optional when HttpOnly cookie is present).',
   })
   @IsOptional()
+  @SanitizeText({ trim: true })
   @IsString()
+  @MaxLength(4096)
   refreshToken?: string;
 }

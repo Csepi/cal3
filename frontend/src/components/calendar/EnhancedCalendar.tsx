@@ -335,7 +335,7 @@ function useCalendarState(
 
     toggleOrganization: (org: Organization) => {
       setSelectedResourceTypes((prev) => {
-        const orgResourceTypeIds = org.resourceTypes.map((rt) => rt.id);
+        const orgResourceTypeIds = (org.resourceTypes ?? []).map((rt) => rt.id);
         const allSelected = orgResourceTypeIds.every((id) => prev.includes(id));
 
         return allSelected
@@ -715,16 +715,17 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
 
         if (resourceTypeId) {
           for (const org of organizations) {
-            const resourceType = org.resourceTypes.find(rt => rt.id === resourceTypeId);
+            const resourceType = (org.resourceTypes ?? []).find((rt) => rt.id === resourceTypeId);
             if (resourceType) {
-              resourceTypeColor = resourceType.color;
+              resourceTypeColor = resourceType.color || resourceTypeColor;
               break;
             }
           }
         }
 
+        const fallbackTimestamp = new Date().toISOString();
         return {
-          id: `reservation-${r.id}`,
+          id: -1000000 - r.id,
           title: r.resource?.name || 'Reservation',
           start: r.startTime,
           end: r.endTime,
@@ -734,11 +735,18 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
           endTime: endTimeLabel,
           color: resourceTypeColor,
           isAllDay: false,
-          notes: r.description || `${r.status} - ${r.customerName || 'No customer'}`,
+          notes: r.description || r.notes || `${r.status} - ${r.customerName || 'No customer'}`,
+          createdAt: r.startTime || fallbackTimestamp,
+          updatedAt: r.endTime || r.startTime || fallbackTimestamp,
           calendar: {
             id: -1, // Special ID for reservations
             name: 'Reservations',
-            color: resourceTypeColor
+            color: resourceTypeColor,
+            visibility: 'private',
+            isActive: true,
+            createdAt: fallbackTimestamp,
+            updatedAt: fallbackTimestamp,
+            ownerId: 0,
           },
           isReservation: true, // Flag to identify reservation events
           reservationData: r // Keep original reservation data
@@ -843,7 +851,6 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
           events={filteredEvents}
           selectedDate={state.selectedDate}
           onDateClick={handleDateClick}
-          onEventClick={handleEventClick}
           weekStartDay={1}
           themeColor={themeConfig.primary}
         />
@@ -1428,7 +1435,7 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
           <div className="space-y-3">
             {state.organizations && state.organizations.length > 0 ? (
               state.organizations.map(org => {
-                const orgResourceTypeIds = org.resourceTypes.map(rt => rt.id);
+                const orgResourceTypeIds = (org.resourceTypes ?? []).map((rt) => rt.id);
                 const allOrgResourceTypesSelected = orgResourceTypeIds.length > 0 &&
                   orgResourceTypeIds.every(id => state.selectedResourceTypes.includes(id));
 
@@ -1874,7 +1881,7 @@ export const EnhancedCalendar: React.FC<EnhancedCalendarProps> = ({
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
             <span className="text-sm font-medium">
-              {LOADING_MESSAGES[Math.floor(Math.random() * LOADING_MESSAGES.length)]}
+              {Object.values(LOADING_MESSAGES)[Math.floor(Math.random() * Object.values(LOADING_MESSAGES).length)]}
             </span>
           </div>
         </div>
@@ -2030,12 +2037,12 @@ export const EnhancedCalendar: React.FC<EnhancedCalendarProps> = ({
             setModals(prev => ({ ...prev, mobileBottomSheet: false }));
             actions.editEvent(event);
           }}
-          onCreateEvent={(date) => {
+          onCreateEvent={() => {
             if (offlineMode) {
               return;
             }
             setModals(prev => ({ ...prev, mobileBottomSheet: false }));
-            actions.createEvent(date);
+            actions.createEvent(state.selectedDate ?? undefined);
           }}
           themeColor={themeConfig.primary}
         />

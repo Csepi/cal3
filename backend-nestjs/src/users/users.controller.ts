@@ -9,6 +9,7 @@ import {
 } from '@nestjs/swagger';
 import { UsersService } from './users.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { ListUsersQueryDto } from './dto/list-users.query.dto';
 
 @ApiTags('Users')
 @Controller('users')
@@ -26,8 +27,8 @@ export class UsersController {
   })
   @ApiResponse({ status: 200, description: 'Users retrieved successfully' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  findAll(@Query('search') search?: string) {
-    return this.usersService.findAll(search);
+  findAll(@Query() query: ListUsersQueryDto) {
+    return this.usersService.findAll(query.search);
   }
 
   @Get('me')

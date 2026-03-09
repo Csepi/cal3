@@ -159,7 +159,7 @@ const ResourceManagement: React.FC<ResourceManagementProps> = () => {
     setFormData({
       name: resource.name,
       description: resource.description || '',
-      capacity: resource.capacity,
+      capacity: resource.capacity ?? 1,
       resourceTypeId: resource.resourceType?.id || 0
     });
     setShowModal(true);
@@ -207,7 +207,7 @@ const ResourceManagement: React.FC<ResourceManagementProps> = () => {
                   <td className="px-6 py-4 border-b border-green-100 text-sm text-gray-700">{resource.id}</td>
                   <td className="px-6 py-4 border-b border-green-100 text-sm text-gray-900 font-medium">{resource.name}</td>
                   <td className="px-6 py-4 border-b border-green-100 text-sm text-gray-700">{resource.resourceType?.name || 'N/A'}</td>
-                  <td className="px-6 py-4 border-b border-green-100 text-sm text-gray-700">{resource.resourceType?.organisation?.name || 'N/A'}</td>
+                  <td className="px-6 py-4 border-b border-green-100 text-sm text-gray-700">{resource.resourceType?.organisationId ?? resource.resourceType?.organizationId ?? 'N/A'}</td>
                   <td className="px-6 py-4 border-b border-green-100 text-sm text-gray-700">{resource.capacity}</td>
                   <td className="px-6 py-4 border-b border-green-100 text-sm">
                     <span className={`px-3 py-1 rounded-full text-xs font-medium border ${

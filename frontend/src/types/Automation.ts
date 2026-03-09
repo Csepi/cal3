@@ -76,6 +76,8 @@ export enum AuditLogStatus {
   SKIPPED = 'skipped',
 }
 
+export type AutomationConfig = Record<string, any>;
+
 // ===== Condition Interfaces =====
 
 export interface CreateConditionDto {
@@ -101,14 +103,14 @@ export interface ConditionDto {
 
 export interface CreateActionDto {
   actionType: ActionType;
-  actionConfig: Record<string, unknown>;
+  actionConfig: AutomationConfig;
   order?: number;
 }
 
 export interface ActionDto {
   id: number;
   actionType: ActionType;
-  actionConfig: Record<string, unknown>;
+  actionConfig: AutomationConfig;
   order: number;
 }
 
@@ -118,7 +120,7 @@ export interface CreateAutomationRuleDto {
   name: string;
   description?: string;
   triggerType: TriggerType;
-  triggerConfig?: Record<string, unknown>;
+  triggerConfig?: AutomationConfig;
   isEnabled?: boolean;
   conditionLogic?: ConditionLogic;
   conditions: CreateConditionDto[];
@@ -129,7 +131,7 @@ export interface UpdateAutomationRuleDto {
   name?: string;
   description?: string;
   isEnabled?: boolean;
-  triggerConfig?: Record<string, unknown>;
+  triggerConfig?: AutomationConfig;
   conditionLogic?: ConditionLogic;
   conditions?: CreateConditionDto[];
   actions?: CreateActionDto[];
@@ -140,7 +142,7 @@ export interface AutomationRuleDto {
   name: string;
   description: string | null;
   triggerType: TriggerType;
-  triggerConfig: Record<string, unknown> | null;
+  triggerConfig: AutomationConfig | null;
   isEnabled: boolean;
   conditionLogic: ConditionLogic;
   lastExecutedAt: Date | null;
@@ -187,7 +189,7 @@ export interface ActionResultDto {
   actionType: string;
   success: boolean;
   error?: string;
-  data?: Record<string, unknown>;
+  data?: AutomationConfig;
   executedAt: Date;
 }
 
@@ -198,7 +200,7 @@ export interface AuditLogDto {
   eventId: number | null;
   eventTitle: string | null;
   triggerType: TriggerType;
-  triggerContext: Record<string, unknown> | null;
+  triggerContext: AutomationConfig | null;
   conditionsResult: ConditionsResultDto;
   actionResults: ActionResultDto[] | null;
   status: AuditLogStatus;
@@ -232,7 +234,7 @@ export interface RuleFormState {
   name: string;
   description: string;
   triggerType: TriggerType | null;
-  triggerConfig: Record<string, unknown>;
+  triggerConfig: AutomationConfig;
   conditionLogic: ConditionLogic;
   conditions: ConditionFormData[];
   actions: ActionFormData[];
@@ -253,7 +255,7 @@ export interface ConditionFormData {
 export interface ActionFormData {
   tempId: string; // for React key management
   actionType: ActionType | null;
-  actionConfig: Record<string, unknown>;
+  actionConfig: AutomationConfig;
   order: number;
 }
 
@@ -278,7 +280,7 @@ export interface TriggerTypeMetadata {
   description: string;
   icon: string;
   requiresConfig: boolean;
-  configSchema?: Record<string, unknown>;
+  configSchema?: AutomationConfig;
 }
 
 export interface ConditionFieldMetadata {

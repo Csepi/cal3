@@ -169,8 +169,8 @@ function getTriggerIcon(triggerType: string): string {
 }
 
 // Helper function to format trigger config
-function formatTriggerConfig(config: Record<string, unknown>): string {
-  if (config.minutes) {
+function formatTriggerConfig(config: Record<string, any>): string {
+  if (typeof config.minutes === 'number') {
     const hours = Math.floor(config.minutes / 60);
     const mins = config.minutes % 60;
     if (hours > 0 && mins > 0) {
@@ -182,7 +182,7 @@ function formatTriggerConfig(config: Record<string, unknown>): string {
     }
   }
   if (config.cronExpression) {
-    return config.cronExpression;
+    return String(config.cronExpression);
   }
   return JSON.stringify(config);
 }

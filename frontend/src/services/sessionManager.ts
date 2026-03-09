@@ -1,5 +1,10 @@
 import { BASE_URL } from '../config/apiConfig';
-import { applyCsrfHeader, clearCsrfToken, ensureCsrfToken } from './csrf';
+import {
+  applyCsrfHeader,
+  clearCsrfToken,
+  ensureCsrfToken,
+  ensureCsrfTokenFromServer,
+} from './csrf';
 import { clientLogger } from '../utils/clientLogger';
 import { clearWidgetToken, syncWidgetToken } from './widgetAuthStorage';
 import { isNativeClient } from './clientPlatform';
@@ -115,6 +120,7 @@ class SessionManager {
       this.restorePersistedSession();
       this.startWebActivityTracking();
       ensureCsrfToken();
+      void ensureCsrfTokenFromServer();
       if (this.hasActiveSession()) {
         this.recordActivity(Date.now(), true);
       }

@@ -15,13 +15,15 @@ export * from './ui';
 export * from './admin';
 
 // Calendar-specific components
-export * from './calendar';
+export * from './calendar/index';
 
 // Profile-related components
 export * from './profile';
 
 // Reservation-specific components
-export * from './reservation';
+export { ReservationFilterPanel } from './reservation/ReservationFilterPanel';
+export { ReservationFormModal } from './reservation/ReservationFormModal';
+export { ReservationListTable } from './reservation/ReservationListTable';
 
 // Dialog components
 export * from './dialogs';

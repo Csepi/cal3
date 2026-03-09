@@ -32,6 +32,8 @@ export interface CalendarEventModalProps {
   selectedDate?: Date | null;
   /** Current theme color */
   themeColor: string;
+  /** Optional preferred time format */
+  timeFormat?: string;
   /** Error message to display */
   error?: string | null;
   /** Whether the form is currently submitting */
@@ -91,12 +93,12 @@ export const CalendarEventModal: React.FC<CalendarEventModalProps> = ({
           location: editingEvent.location || '',
           color: editingEvent.color,
           icon: editingEvent.icon,
-          calendarId: editingEvent.calendar.id
+          calendarId: editingEvent.calendar?.id
         });
 
         // Set recurrence pattern if event has recurrence
-        if (editingEvent.recurrencePattern) {
-          setRecurrencePattern(editingEvent.recurrencePattern);
+        if (editingEvent.recurrenceRule) {
+          setRecurrencePattern(editingEvent.recurrenceRule as RecurrencePattern);
         } else {
           setRecurrencePattern(null);
         }
@@ -129,10 +131,7 @@ export const CalendarEventModal: React.FC<CalendarEventModalProps> = ({
   /**
    * Handle form field changes
    */
-  const handleFormChange = <K extends keyof CreateEventRequest>(
-    field: K,
-    value: CreateEventRequest[K],
-  ) => {
+  const handleFormChange = (field: keyof CreateEventRequest, value: any) => {
     setEventForm(prev => ({
       ...prev,
       [field]: value

@@ -43,8 +43,12 @@ export const OrganizationOverview: React.FC<OrganizationOverviewProps> = ({
   }
 
   const totalMembers = adminCount + userCount;
-  const createdDate = new Date(organization.createdAt).toLocaleDateString();
-  const updatedDate = new Date(organization.updatedAt).toLocaleDateString();
+  const createdDate = organization.createdAt
+    ? new Date(organization.createdAt).toLocaleDateString()
+    : 'N/A';
+  const updatedDate = organization.updatedAt
+    ? new Date(organization.updatedAt).toLocaleDateString()
+    : 'N/A';
 
   return (
     <div className="space-y-6">

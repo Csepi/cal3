@@ -9,6 +9,7 @@ import {
   Res,
   Query,
   Logger,
+  BadRequestException,
 } from '@nestjs/common';
 import type { RequestWithUser } from '../../common/types/request-with-user';
 import type { Response } from 'express';
@@ -18,7 +19,10 @@ import {
   SyncCalendarsDto,
   CalendarSyncStatusDto,
 } from '../../dto/calendar-sync.dto';
-import { SyncProvider } from '../../entities/calendar-sync.entity';
+import {
+  CalendarSyncProviderParamDto,
+  OAuthCallbackQueryDto,
+} from './dto/oauth-callback.query.dto';
 
 @Controller('calendar-sync')
 export class CalendarSyncController {
@@ -42,20 +46,16 @@ export class CalendarSyncController {
   @Get('auth/:provider')
   @UseGuards(JwtAuthGuard)
   async getAuthUrl(
-    @Param('provider') provider: string,
+    @Param() params: CalendarSyncProviderParamDto,
     @Request() req: RequestWithUser,
   ): Promise<{ authUrl: string }> {
+    const provider = params.provider;
     this.logger.log(
       `[getAuthUrl] Request from user: ${req.user.id} for provider: ${provider}`,
     );
 
-    if (provider !== 'google' && provider !== 'microsoft') {
-      this.logger.error(`[getAuthUrl] Invalid provider: ${provider}`);
-      throw new Error('Invalid provider');
-    }
-
     const authUrl = await this.calendarSyncService.getAuthUrl(
-      provider as SyncProvider,
+      provider,
       req.user.id,
     );
     this.logger.log(
@@ -66,22 +66,17 @@ export class CalendarSyncController {
 
   @Get('callback/:provider')
   async handleOAuthCallback(
-    @Param('provider') provider: string,
-    @Query('code') code: string,
-    @Query('state') state: string,
-    @Query('userId') userId: string,
+    @Param() params: CalendarSyncProviderParamDto,
+    @Query() query: OAuthCallbackQueryDto,
     @Res() res: Response,
   ) {
+    const provider = params.provider;
+    const { code, state, userId } = query;
     this.logger.log(
       `[handleOAuthCallback] Received callback for provider: ${provider}, state: ${state}, userId: ${userId}, code: ${code?.substring(0, 10)}...`,
     );
 
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:8080';
-
-    if (provider !== 'google' && provider !== 'microsoft') {
-      this.logger.error(`[handleOAuthCallback] Invalid provider: ${provider}`);
-      return res.redirect(`${frontendUrl}?error=invalid_provider`);
-    }
 
     if (!code) {
       this.logger.error(`[handleOAuthCallback] No authorization code provided`);
@@ -89,19 +84,7 @@ export class CalendarSyncController {
     }
 
     try {
-      // Extract user ID from state parameter (format: calendar-sync-{userId}-{randomString})
-      let userIdToUse = 1; // fallback
-      if (state && state.startsWith('calendar-sync-')) {
-        const stateParts = state.split('-');
-        if (stateParts.length >= 3) {
-          userIdToUse = parseInt(stateParts[2]);
-        }
-      }
-
-      // Fallback to query parameter if state parsing fails
-      if (!userIdToUse && userId) {
-        userIdToUse = parseInt(userId);
-      }
+      const userIdToUse = this.resolveUserId(state, userId);
 
       this.logger.log(
         `[handleOAuthCallback] Using userId: ${userIdToUse} (from state: ${state}, from param: ${userId})`,
@@ -109,7 +92,7 @@ export class CalendarSyncController {
 
       this.logger.log(`[handleOAuthCallback] Calling calendar sync service...`);
       await this.calendarSyncService.handleOAuthCallback(
-        provider as SyncProvider,
+        provider,
         code,
         userIdToUse,
       );
@@ -165,16 +148,14 @@ export class CalendarSyncController {
   @Post('disconnect/:provider')
   @UseGuards(JwtAuthGuard)
   async disconnectProvider(
-    @Param('provider') provider: string,
+    @Param() params: CalendarSyncProviderParamDto,
     @Request() req: RequestWithUser,
   ): Promise<{ message: string }> {
-    if (provider !== 'google' && provider !== 'microsoft') {
-      throw new Error('Invalid provider');
-    }
+    const provider = params.provider;
 
     await this.calendarSyncService.disconnectProvider(
       req.user.id,
-      provider as SyncProvider,
+      provider,
     );
     return {
       message: `${provider} calendar provider disconnected successfully`,
@@ -188,5 +169,23 @@ export class CalendarSyncController {
   ): Promise<{ message: string }> {
     await this.calendarSyncService.forceSync(req.user.id);
     return { message: 'Sync completed successfully' };
+  }
+
+  private resolveUserId(state?: string, userIdFromQuery?: number): number {
+    if (state && state.startsWith('calendar-sync-')) {
+      const stateParts = state.split('-');
+      if (stateParts.length >= 3) {
+        const parsed = Number.parseInt(stateParts[2], 10);
+        if (Number.isFinite(parsed) && parsed > 0) {
+          return parsed;
+        }
+      }
+    }
+
+    if (typeof userIdFromQuery === 'number' && userIdFromQuery > 0) {
+      return userIdFromQuery;
+    }
+
+    throw new BadRequestException('Missing user context for OAuth callback');
   }
 }

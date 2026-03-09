@@ -4,7 +4,7 @@
  * Comprehensive type definitions for the new calendar system
  */
 
-import type { Event } from '../types/Event';
+import type { Event } from '../../types/Event';
 import type { CalendarDate, CalendarWeek, WeekStartDay, TimeFormat } from '../../utils/calendar';
 
 export interface CalendarTheme {

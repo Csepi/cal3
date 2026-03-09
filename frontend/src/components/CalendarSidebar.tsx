@@ -33,6 +33,14 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
   onSelectAllResources,
   onDeselectAllResources
 }) => {
+  type ThemeColors = {
+    gradient: string;
+    primary: string;
+    light: string;
+    text: string;
+    hover: string;
+  };
+
   // Collapsible sidebar state - persisted in localStorage
   const [isCollapsed, setIsCollapsed] = useState(() => {
     const saved = localStorage.getItem('calendarSidebarCollapsed');
@@ -48,8 +56,8 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
     setIsCollapsed(!isCollapsed);
   };
   // Helper function to get theme-based colors
-  const getThemeColors = (color: string) => {
-    const colorMap: Record<string, unknown> = {
+  const getThemeColors = (color: string): ThemeColors => {
+    const colorMap: Record<string, ThemeColors> = {
       '#ef4444': { gradient: 'from-red-50 via-red-100 to-red-200', primary: 'red', light: 'red-100', text: 'red-700', hover: 'red-200' },
       '#f59e0b': { gradient: 'from-orange-50 via-orange-100 to-orange-200', primary: 'orange', light: 'orange-100', text: 'orange-700', hover: 'orange-200' },
       '#eab308': { gradient: 'from-yellow-50 via-yellow-100 to-yellow-200', primary: 'yellow', light: 'yellow-100', text: 'yellow-700', hover: 'yellow-200' },
@@ -127,6 +135,7 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
           <div className="flex-1 p-2 border-t border-gray-200 space-y-2 overflow-y-auto">
             {resources.map((resource) => {
               const isSelected = selectedResources.includes(resource.id);
+              const resourceColor = resource.color ?? '#3b82f6';
               return (
                 <button
                   key={resource.id}
@@ -139,8 +148,8 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
                   <div
                     className="w-8 h-8 rounded-full mx-auto border-2 border-white shadow-md"
                     style={{
-                      background: `linear-gradient(135deg, ${resource.color}, ${resource.color}dd)`,
-                      boxShadow: `0 2px 4px ${resource.color}40, inset 0 1px 2px rgba(255,255,255,0.3)`
+                      background: `linear-gradient(135deg, ${resourceColor}, ${resourceColor}dd)`,
+                      boxShadow: `0 2px 4px ${resourceColor}40, inset 0 1px 2px rgba(255,255,255,0.3)`
                     }}
                   />
                   {isSelected && (

@@ -8,7 +8,8 @@ interface ConfirmationDialogProps {
   cancelText?: string;
   themeColor: string;
   onConfirm: () => void;
-  onCancel: () => void;
+  onCancel?: () => void;
+  onClose?: () => void;
   isDestructive?: boolean;
 }
 
@@ -21,14 +22,25 @@ const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
   themeColor,
   onConfirm,
   onCancel,
+  onClose,
   isDestructive = true
 }) => {
   if (!isOpen) return null;
 
+  type WarningTheme = {
+    bg: string;
+    border: string;
+    icon: string;
+    confirmBtn: string;
+    cancelBtn: string;
+    text: string;
+    accent: string;
+  };
+
   // Get warning theme colors based on the user's profile color
-  const getWarningTheme = (color: string) => {
+  const getWarningTheme = (color: string): WarningTheme => {
     // Convert user's theme color to warning variants
-    const warningThemes: Record<string, unknown> = {
+    const warningThemes: Record<string, WarningTheme> = {
       '#3b82f6': { // Blue -> Red warning
         bg: 'bg-red-50',
         border: 'border-red-200',
@@ -107,6 +119,7 @@ const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
   };
 
   const warningTheme = getWarningTheme(themeColor);
+  const handleCancel = onCancel ?? onClose ?? (() => undefined);
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -144,7 +157,7 @@ const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
         {/* Actions */}
         <div className="px-6 py-4 bg-gray-50 flex justify-end space-x-3">
           <button
-            onClick={onCancel}
+            onClick={handleCancel}
             className={`px-4 py-2 rounded-xl font-medium transition-all duration-200 ${warningTheme.cancelBtn} border hover:scale-105 shadow-sm`}
           >
             {cancelText}

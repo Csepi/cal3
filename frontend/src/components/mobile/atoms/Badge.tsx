@@ -8,11 +8,12 @@
 import React from 'react';
 
 interface BadgeProps {
-  children: React.ReactNode;
+  children?: React.ReactNode;
   variant?: 'primary' | 'secondary' | 'success' | 'warning' | 'danger' | 'info';
   size?: 'sm' | 'md' | 'lg';
   dot?: boolean;
   className?: string;
+  style?: React.CSSProperties;
 }
 
 export const Badge: React.FC<BadgeProps> = ({
@@ -21,6 +22,7 @@ export const Badge: React.FC<BadgeProps> = ({
   size = 'md',
   dot = false,
   className = '',
+  style,
 }) => {
   const variantClasses = {
     primary: 'bg-blue-500 text-white',
@@ -53,6 +55,7 @@ export const Badge: React.FC<BadgeProps> = ({
           inline-block
           ${className}
         `}
+        style={style}
         aria-hidden="true"
       />
     );
@@ -69,6 +72,7 @@ export const Badge: React.FC<BadgeProps> = ({
         min-w-[20px]
         ${className}
       `}
+      style={style}
     >
       {children}
     </span>

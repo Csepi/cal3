@@ -11,7 +11,7 @@ interface AutomationDetailViewProps {
   rule: AutomationRuleDetailDto;
   onBack: () => void;
   onUpdate: () => void;
-  onSave: (ruleId: number, ruleData: UpdateAutomationRuleDto) => Promise<void>;
+  onSave: (ruleId: number, ruleData: UpdateAutomationRuleDto) => Promise<AutomationRuleDetailDto>;
   onToggle: (enabled: boolean) => void;
   onDelete: () => void;
   themeColor: string;

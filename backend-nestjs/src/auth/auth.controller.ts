@@ -33,6 +33,7 @@ import {
   DEVICE_FINGERPRINT_COOKIE,
   DEVICE_FINGERPRINT_HEADER,
 } from './services/token-fingerprint.service';
+import { CSRF_COOKIE_NAME, CsrfService } from '../common/security/csrf.service';
 
 @ApiTags('Authentication')
 @Controller('auth')
@@ -41,7 +42,40 @@ export class AuthController {
     private readonly authService: AuthService,
     private readonly configurationService: ConfigurationService,
     private readonly tokenFingerprintService: TokenFingerprintService,
+    private readonly csrfService: CsrfService,
   ) {}
+
+  @Get('csrf')
+  @ApiOperation({ summary: 'Issue or return the active CSRF token' })
+  async getCsrfToken(
+    @Req() req: ExpressRequest,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<{ csrfToken: string; headerName: string; cookieName: string }> {
+    const existing = req.cookies?.[CSRF_COOKIE_NAME];
+    const token =
+      typeof existing === 'string' && existing.length > 0
+        ? existing
+        : this.csrfService.generateToken();
+
+    if (!existing) {
+      const sameSite = this.resolveCookieSameSite(req);
+      const secure =
+        process.env.NODE_ENV !== 'development' || sameSite === 'none';
+      res.cookie(CSRF_COOKIE_NAME, token, {
+        httpOnly: false,
+        secure,
+        sameSite,
+        path: '/',
+        maxAge: 180 * 24 * 60 * 60 * 1000,
+      });
+    }
+
+    return {
+      csrfToken: token,
+      headerName: 'X-CSRF-Token',
+      cookieName: CSRF_COOKIE_NAME,
+    };
+  }
 
   @Post('register')
   @ApiOperation({ summary: 'Register a new user' })

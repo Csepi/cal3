@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  ParseIntPipe,
   Param,
   Post,
   Put,
@@ -75,59 +76,64 @@ export class AgentsController {
   }
 
   @Get(':id')
-  async getAgent(@Request() req: RequestWithUser, @Param('id') id: number) {
-    return this.agentsService.getAgentDetail(Number(id), req.user.id);
+  async getAgent(
+    @Request() req: RequestWithUser,
+    @Param('id', ParseIntPipe) id: number,
+  ) {
+    return this.agentsService.getAgentDetail(id, req.user.id);
   }
 
   @Put(':id')
   async updateAgent(
     @Request() req: RequestWithUser,
-    @Param('id') id: number,
+    @Param('id', ParseIntPipe) id: number,
     @Body() dto: UpdateAgentDto,
   ) {
-    return this.agentsService.updateAgent(Number(id), req.user.id, dto);
+    return this.agentsService.updateAgent(id, req.user.id, dto);
   }
 
   @Delete(':id')
-  async disableAgent(@Request() req: RequestWithUser, @Param('id') id: number) {
-    await this.agentsService.disableAgent(Number(id), req.user.id);
+  async disableAgent(
+    @Request() req: RequestWithUser,
+    @Param('id', ParseIntPipe) id: number,
+  ) {
+    await this.agentsService.disableAgent(id, req.user.id);
     return { success: true };
   }
 
   @Put(':id/permissions')
   async updatePermissions(
     @Request() req: RequestWithUser,
-    @Param('id') id: number,
+    @Param('id', ParseIntPipe) id: number,
     @Body() dto: UpdateAgentPermissionsDto,
   ) {
-    return this.agentsService.replacePermissions(Number(id), req.user.id, dto);
+    return this.agentsService.replacePermissions(id, req.user.id, dto);
   }
 
   @Get(':id/keys')
-  async listKeys(@Request() req: RequestWithUser, @Param('id') id: number) {
-    return this.agentsService.listAgentKeys(Number(id), req.user.id);
+  async listKeys(
+    @Request() req: RequestWithUser,
+    @Param('id', ParseIntPipe) id: number,
+  ) {
+    return this.agentsService.listAgentKeys(id, req.user.id);
   }
 
   @Post(':id/keys')
   async createKey(
     @Request() req: RequestWithUser,
-    @Param('id') id: number,
+    @Param('id', ParseIntPipe) id: number,
     @Body() dto: CreateAgentKeyDto,
   ) {
-    return this.agentsService.createAgentKey(Number(id), req.user.id, dto);
+    return this.agentsService.createAgentKey(id, req.user.id, dto);
   }
 
   @Delete(':id/keys/:keyId')
   async revokeKey(
     @Request() req: RequestWithUser,
-    @Param('id') id: number,
-    @Param('keyId') keyId: number,
+    @Param('id', ParseIntPipe) id: number,
+    @Param('keyId', ParseIntPipe) keyId: number,
   ) {
-    await this.agentsService.revokeAgentKey(
-      Number(id),
-      Number(keyId),
-      req.user.id,
-    );
+    await this.agentsService.revokeAgentKey(id, keyId, req.user.id);
     return { success: true };
   }
 }

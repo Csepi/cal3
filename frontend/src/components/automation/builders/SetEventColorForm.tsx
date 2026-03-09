@@ -3,8 +3,8 @@ import { SmartValuePicker } from '../SmartValuePicker';
 import { TriggerType } from '../../../types/Automation';
 
 interface SetEventColorFormProps {
-  config: Record<string, unknown>;
-  onChange: (config: Record<string, unknown>) => void;
+  config: Record<string, any>;
+  onChange: (config: Record<string, any>) => void;
   triggerType?: TriggerType | null;
 }
 
@@ -28,7 +28,7 @@ const PRESET_COLORS = [
 ];
 
 export const SetEventColorForm: React.FC<SetEventColorFormProps> = ({ config, onChange, triggerType }) => {
-  const selectedColor = config.color || '#3b82f6';
+  const selectedColor = typeof config.color === 'string' ? config.color : '#3b82f6';
 
   useEffect(() => {
     if (!config || typeof config.color !== 'string' || config.color.trim() === '') {

@@ -8,6 +8,7 @@
   Delete,
   UseGuards,
   Query,
+  ParseIntPipe,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -31,6 +32,11 @@ import {
 } from './dto/admin-user.dto';
 import { CreateCalendarDto, UpdateCalendarDto } from '../dto/calendar.dto';
 import { CreateEventDto, UpdateEventDto } from '../dto/event.dto';
+import {
+  AddUserToOrganizationDto,
+  ClearLogsQueryDto,
+  UpdateUserPasswordDto,
+} from './dto/admin-security.dto';
 
 @ApiTags('Admin')
 @Controller('admin')
@@ -149,8 +155,8 @@ export class AdminController {
   @Delete('logs')
   @ApiOperation({ summary: 'Delete application logs (Admin only)' })
   @ApiResponse({ status: 200, description: 'Logs deleted successfully' })
-  clearLogs(@Query('before') before?: string) {
-    return this.adminService.clearLogs(before);
+  clearLogs(@Query() query: ClearLogsQueryDto) {
+    return this.adminService.clearLogs(query.before);
   }
 
   @Post('logs/purge')
@@ -187,10 +193,10 @@ export class AdminController {
   @ApiOperation({ summary: 'Update user role (Admin only)' })
   @ApiResponse({ status: 200, description: 'User role updated successfully' })
   updateUserRole(
-    @Param('id') id: string,
+    @Param('id', ParseIntPipe) id: number,
     @Body() updateRoleDto: UpdateUserRoleDto,
   ) {
-    return this.adminService.updateUserRole(+id, updateRoleDto.role);
+    return this.adminService.updateUserRole(id, updateRoleDto.role);
   }
 
   @Patch('users/:id/usage-plans')
@@ -200,11 +206,11 @@ export class AdminController {
     description: 'User usage plans updated successfully',
   })
   updateUserUsagePlans(
-    @Param('id') id: string,
+    @Param('id', ParseIntPipe) id: number,
     @Body() updateUsagePlansDto: UpdateUsagePlansDto,
   ) {
     return this.adminService.updateUserUsagePlans(
-      +id,
+      id,
       updateUsagePlansDto.usagePlans,
     );
   }
@@ -212,22 +218,22 @@ export class AdminController {
   @Delete('users/:id')
   @ApiOperation({ summary: 'Delete user (Admin only)' })
   @ApiResponse({ status: 200, description: 'User deleted successfully' })
-  deleteUser(@Param('id') id: string) {
-    return this.adminService.deleteUser(+id);
+  deleteUser(@Param('id', ParseIntPipe) id: number) {
+    return this.adminService.deleteUser(id);
   }
 
   @Delete('calendars/:id')
   @ApiOperation({ summary: 'Delete calendar (Admin only)' })
   @ApiResponse({ status: 200, description: 'Calendar deleted successfully' })
-  deleteCalendar(@Param('id') id: string) {
-    return this.adminService.deleteCalendar(+id);
+  deleteCalendar(@Param('id', ParseIntPipe) id: number) {
+    return this.adminService.deleteCalendar(id);
   }
 
   @Delete('events/:id')
   @ApiOperation({ summary: 'Delete event (Admin only)' })
   @ApiResponse({ status: 200, description: 'Event deleted successfully' })
-  deleteEvent(@Param('id') id: string) {
-    return this.adminService.deleteEvent(+id);
+  deleteEvent(@Param('id', ParseIntPipe) id: number) {
+    return this.adminService.deleteEvent(id);
   }
 
   // CREATE OPERATIONS
@@ -257,21 +263,21 @@ export class AdminController {
   @ApiOperation({ summary: 'Update user (Admin only)' })
   @ApiResponse({ status: 200, description: 'User updated successfully' })
   updateUser(
-    @Param('id') id: string,
+    @Param('id', ParseIntPipe) id: number,
     @Body() updateUserDto: AdminUpdateUserDto,
   ) {
-    return this.adminService.updateUser(+id, updateUserDto);
+    return this.adminService.updateUser(id, updateUserDto);
   }
 
   @Patch('users/:id/password')
   @ApiOperation({ summary: 'Update user password (Admin only)' })
   @ApiResponse({ status: 200, description: 'Password updated successfully' })
   updateUserPassword(
-    @Param('id') id: string,
-    @Body() updatePasswordDto: { password: string },
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updatePasswordDto: UpdateUserPasswordDto,
   ) {
     return this.adminService.updateUserPassword(
-      +id,
+      id,
       updatePasswordDto.password,
     );
   }
@@ -280,39 +286,39 @@ export class AdminController {
   @ApiOperation({ summary: 'Update calendar (Admin only)' })
   @ApiResponse({ status: 200, description: 'Calendar updated successfully' })
   updateCalendar(
-    @Param('id') id: string,
+    @Param('id', ParseIntPipe) id: number,
     @Body() updateCalendarDto: UpdateCalendarDto,
   ) {
-    return this.adminService.updateCalendar(+id, updateCalendarDto);
+    return this.adminService.updateCalendar(id, updateCalendarDto);
   }
 
   @Patch('events/:id')
   @ApiOperation({ summary: 'Update event (Admin only)' })
   @ApiResponse({ status: 200, description: 'Event updated successfully' })
-  updateEvent(@Param('id') id: string, @Body() updateEventDto: UpdateEventDto) {
-    return this.adminService.updateEvent(+id, updateEventDto);
+  updateEvent(@Param('id', ParseIntPipe) id: number, @Body() updateEventDto: UpdateEventDto) {
+    return this.adminService.updateEvent(id, updateEventDto);
   }
 
   // GET SINGLE ITEM OPERATIONS
   @Get('users/:id')
   @ApiOperation({ summary: 'Get single user (Admin only)' })
   @ApiResponse({ status: 200, description: 'User retrieved successfully' })
-  getUser(@Param('id') id: string) {
-    return this.adminService.getUser(+id);
+  getUser(@Param('id', ParseIntPipe) id: number) {
+    return this.adminService.getUser(id);
   }
 
   @Get('calendars/:id')
   @ApiOperation({ summary: 'Get single calendar (Admin only)' })
   @ApiResponse({ status: 200, description: 'Calendar retrieved successfully' })
-  getCalendar(@Param('id') id: string) {
-    return this.adminService.getCalendar(+id);
+  getCalendar(@Param('id', ParseIntPipe) id: number) {
+    return this.adminService.getCalendar(id);
   }
 
   @Get('events/:id')
   @ApiOperation({ summary: 'Get single event (Admin only)' })
   @ApiResponse({ status: 200, description: 'Event retrieved successfully' })
-  getEvent(@Param('id') id: string) {
-    return this.adminService.getEvent(+id);
+  getEvent(@Param('id', ParseIntPipe) id: number) {
+    return this.adminService.getEvent(id);
   }
 
   // ORGANIZATION MANAGEMENT OPERATIONS
@@ -337,8 +343,8 @@ export class AdminController {
     status: 200,
     description: 'User organizations retrieved successfully',
   })
-  getUserOrganizations(@Param('id') id: string) {
-    return this.adminService.getUserOrganizations(+id);
+  getUserOrganizations(@Param('id', ParseIntPipe) id: number) {
+    return this.adminService.getUserOrganizations(id);
   }
 
   @Post('users/:id/organizations')
@@ -348,11 +354,11 @@ export class AdminController {
     description: 'User added to organization successfully',
   })
   addUserToOrganization(
-    @Param('id') id: string,
-    @Body() addToOrgDto: { organizationId: number },
+    @Param('id', ParseIntPipe) id: number,
+    @Body() addToOrgDto: AddUserToOrganizationDto,
   ) {
     return this.adminService.addUserToOrganization(
-      +id,
+      id,
       addToOrgDto.organizationId,
     );
   }
@@ -364,10 +370,10 @@ export class AdminController {
     description: 'User removed from organization successfully',
   })
   removeUserFromOrganization(
-    @Param('id') id: string,
-    @Param('orgId') orgId: string,
+    @Param('id', ParseIntPipe) id: number,
+    @Param('orgId', ParseIntPipe) orgId: number,
   ) {
-    return this.adminService.removeUserFromOrganization(+id, +orgId);
+    return this.adminService.removeUserFromOrganization(id, orgId);
   }
 
   @Get('organizations/:id/users')
@@ -376,8 +382,8 @@ export class AdminController {
     status: 200,
     description: 'Organization users retrieved successfully',
   })
-  getOrganizationUsers(@Param('id') id: string) {
-    return this.adminService.getOrganizationUsers(+id);
+  getOrganizationUsers(@Param('id', ParseIntPipe) id: number) {
+    return this.adminService.getOrganizationUsers(id);
   }
 
   @Post('organizations/:id/users')
@@ -387,12 +393,12 @@ export class AdminController {
     description: 'User added to organization successfully',
   })
   addUserToOrganizationWithRole(
-    @Param('id') id: string,
+    @Param('id', ParseIntPipe) id: number,
     @Body() addUserDto: AddUserToOrganisationRoleDto,
   ) {
     return this.adminService.addUserToOrganizationWithRole(
       addUserDto.userId,
-      +id,
+      id,
       addUserDto.role,
     );
   }
@@ -411,3 +417,5 @@ export class AdminController {
     return this.adminService.initializePublicBooking();
   }
 }
+
+

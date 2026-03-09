@@ -26,12 +26,14 @@ import {
   buildCorsOptions,
   buildHelmetOptions,
   getCorsAllowedHeaders,
+  isOriginAllowed,
   resolveAllowedOrigins,
 } from './common/security/security.config';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { NextFunction, Request, Response } from 'express';
+import { ParameterizedQueryService } from './common/database/parameterized-query.service';
 
 const logger = new Logger('Bootstrap');
 const dbLogger = new Logger('DatabaseConnection');
@@ -69,6 +71,7 @@ async function bootstrap() {
     // Get DataSource to monitor connection
     dbLogger.log('Resolving DataSource from NestJS container...');
     const dataSource = app.get(DataSource);
+    const parameterizedQueryService = app.get(ParameterizedQueryService);
     dbLogger.log(
       `DataSource resolved. Initialized: ${dataSource.isInitialized}`,
     );
@@ -96,18 +99,29 @@ async function bootstrap() {
         const queryStart = Date.now();
 
         if (dataSource.options.type === 'postgres') {
-          const result = await dataSource.query(
+          const result = await parameterizedQueryService.query<{
+            version: string;
+            current_database: string;
+            current_user: string;
+          }>(
             'SELECT version(), current_database(), current_user',
+            [],
+            { statementKey: 'bootstrap_postgres_version' },
           );
           const queryDuration = Date.now() - queryStart;
           dbLogger.log(`Test query successful (${queryDuration}ms)`);
-          dbLogger.log(
-            `PostgreSQL version: ${result[0].version.split(',')[0]}`,
-          );
-          dbLogger.log(`Database: ${result[0].current_database}`);
-          dbLogger.log(`User: ${result[0].current_user}`);
+          const row = result[0];
+          if (row) {
+            dbLogger.log(`PostgreSQL version: ${row.version.split(',')[0]}`);
+            dbLogger.log(`Database: ${row.current_database}`);
+            dbLogger.log(`User: ${row.current_user}`);
+          }
         } else {
-          await dataSource.query('SELECT 1');
+          await parameterizedQueryService.query(
+            'SELECT 1',
+            [],
+            { statementKey: 'bootstrap_health' },
+          );
           const queryDuration = Date.now() - queryStart;
           dbLogger.log(`Test query successful (${queryDuration}ms)`);
         }
@@ -164,8 +178,16 @@ async function bootstrap() {
     app.use((req: Request, res: Response, next: NextFunction) => {
       res.setHeader('Access-Control-Allow-Credentials', 'true');
       if (req.method === 'OPTIONS') {
-        const origin = req.headers.origin;
+        const originHeader = req.headers.origin;
+        const origin = Array.isArray(originHeader)
+          ? originHeader[0]
+          : originHeader;
         if (origin) {
+          if (!isOriginAllowed(origin, allowedOrigins)) {
+            dbLogger.warn(`Blocked preflight for disallowed origin ${origin}`);
+            res.status(403).send();
+            return;
+          }
           res.setHeader('Access-Control-Allow-Origin', origin);
           res.setHeader('Vary', 'Origin');
         }

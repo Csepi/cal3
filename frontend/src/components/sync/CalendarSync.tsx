@@ -35,6 +35,11 @@ interface SyncStatus {
   providers: ProviderSyncStatus[];
 }
 
+const isSyncStatus = (value: unknown): value is SyncStatus =>
+  typeof value === 'object' &&
+  value !== null &&
+  Array.isArray((value as { providers?: unknown }).providers);
+
 interface SyncThemeColors {
   primary: string;
   secondary: string;
@@ -550,7 +555,7 @@ const CalendarSync: React.FC<CalendarSyncProps> = ({ themeColor }) => {
       const status = await calendarApi.getCalendarSyncStatus();
 
       // Ensure we always have an array of providers
-      if (!status.providers || !Array.isArray(status.providers)) {
+      if (!isSyncStatus(status)) {
         // Initialize with default providers if not present
         setSyncStatus({
           providers: [
@@ -563,7 +568,7 @@ const CalendarSync: React.FC<CalendarSyncProps> = ({ themeColor }) => {
       }
 
       clientLogger.info('calendar-sync', 'sync status loaded', {
-        providers: status.providers?.length ?? 0,
+        providers: isSyncStatus(status) ? status.providers.length : 0,
       });
     } catch (err) {
       clientLogger.warn('calendar-sync', 'failed to load sync status', err);

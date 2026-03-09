@@ -42,6 +42,10 @@ import {
   AuditLogStatsDto,
 } from './dto/automation-audit-log.dto';
 import type { RequestWithUser } from '../common/types/request-with-user';
+import {
+  ListAutomationRulesQueryDto,
+  WebhookPayloadDto,
+} from './dto/automation-requests.dto';
 
 @ApiTags('automation')
 @Controller('automation')
@@ -83,15 +87,16 @@ export class AutomationController {
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   async listRules(
-    @Query('page', ParseIntPipe) page: number = 1,
-    @Query('limit', ParseIntPipe) limit: number = 20,
-    @Query('enabled') enabled: string | undefined = undefined,
+    @Query() query: ListAutomationRulesQueryDto,
     @Req() req: RequestWithUser,
   ): Promise<PaginatedAutomationRulesDto> {
     const userId = req.user.id;
-    const isEnabled =
-      enabled === 'true' ? true : enabled === 'false' ? false : undefined;
-    return this.automationService.listRules(userId, page, limit, isEnabled);
+    return this.automationService.listRules(
+      userId,
+      query.page ?? 1,
+      query.limit ?? 20,
+      query.enabled,
+    );
   }
 
   @Get('rules/:id')
@@ -274,9 +279,12 @@ export class AutomationController {
   })
   async handleWebhook(
     @Param('token') token: string,
-    @Body() payload: Record<string, unknown>,
+    @Body() body: WebhookPayloadDto,
   ): Promise<{ success: boolean; ruleId: number; message: string }> {
-    return this.automationService.executeRuleFromWebhook(token, payload);
+    return this.automationService.executeRuleFromWebhook(
+      token,
+      body.payload ?? {},
+    );
   }
 
   @Post('rules/:id/webhook/regenerate')

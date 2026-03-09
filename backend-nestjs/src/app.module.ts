@@ -34,6 +34,9 @@ import { NotificationsModule } from './notifications/notifications.module';
 import { RequestContextMiddleware } from './common/middleware/request-context.middleware';
 import { TasksModule } from './tasks/tasks.module';
 import { DatabaseModule } from './common/database/database.module';
+import { RequestSanitizationMiddleware } from './common/middleware/request-sanitization.middleware';
+import { StrictOriginMiddleware } from './common/middleware/strict-origin.middleware';
+import { CsrfProtectionMiddleware } from './common/middleware/csrf-protection.middleware';
 
 @Module({
   imports: [
@@ -91,6 +94,13 @@ import { DatabaseModule } from './common/database/database.module';
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(RequestContextMiddleware).forRoutes('*');
+    consumer
+      .apply(
+        RequestContextMiddleware,
+        RequestSanitizationMiddleware,
+        StrictOriginMiddleware,
+        CsrfProtectionMiddleware,
+      )
+      .forRoutes('*');
   }
 }

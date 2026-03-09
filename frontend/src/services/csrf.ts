@@ -1,3 +1,5 @@
+import { BASE_URL } from '../config/apiConfig';
+
 const CSRF_COOKIE_NAME = 'cal3_csrf_token';
 const TOKEN_LENGTH = 32;
 const CSRF_HEADER = 'X-CSRF-Token';
@@ -67,6 +69,43 @@ export const ensureCsrfToken = (): string => {
 
 export const clearCsrfToken = (): void => {
   deleteCookie(CSRF_COOKIE_NAME);
+};
+
+let csrfSyncPromise: Promise<string> | null = null;
+
+export const ensureCsrfTokenFromServer = async (): Promise<string> => {
+  const existing = getCsrfToken();
+  if (existing) {
+    return existing;
+  }
+
+  if (csrfSyncPromise) {
+    return csrfSyncPromise;
+  }
+
+  csrfSyncPromise = (async () => {
+    try {
+      const response = await fetch(`${BASE_URL}/api/auth/csrf`, {
+        method: 'GET',
+        credentials: 'include',
+      });
+      if (response.ok) {
+        const body = (await response.json()) as { csrfToken?: string };
+        if (typeof body?.csrfToken === 'string' && body.csrfToken.length > 0) {
+          writeCookie(CSRF_COOKIE_NAME, body.csrfToken);
+          return body.csrfToken;
+        }
+      }
+    } catch {
+      // Fallback below.
+    }
+
+    return ensureCsrfToken();
+  })().finally(() => {
+    csrfSyncPromise = null;
+  });
+
+  return csrfSyncPromise;
 };
 
 export const applyCsrfHeader = (

@@ -226,7 +226,9 @@ export const NotificationSettingsPanel: React.FC<NotificationSettingsPanelProps>
     });
 
     scopeMutes.forEach((mute) => {
-      addOption(mute.scopeType, mute.scopeId);
+      if (mute.scopeType === 'organisation' || mute.scopeType === 'calendar' || mute.scopeType === 'reservation') {
+        addOption(mute.scopeType, mute.scopeId);
+      }
     });
 
     (Object.keys(map) as ScopeKey[]).forEach((key) => {
@@ -258,8 +260,8 @@ export const NotificationSettingsPanel: React.FC<NotificationSettingsPanelProps>
 
     try {
       const response = await notificationsApi.getScopeOptions(scope);
-      const options: ScopeOption[] = Array.isArray(response?.[scope])
-        ? response[scope].map((option) => ({
+      const options: ScopeOption[] = Array.isArray(response)
+        ? response.map((option) => ({
             value: option.value,
             label: option.label,
             meta: option.meta ?? null,

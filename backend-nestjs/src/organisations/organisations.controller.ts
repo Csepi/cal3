@@ -9,6 +9,7 @@ import {
   UseGuards,
   Req,
   NotFoundException,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { AdminGuard } from '../auth/guards/admin.guard';
@@ -33,6 +34,7 @@ import { RequirePermission } from '../common/decorators/require-permission.decor
 import { RequireRole } from '../common/decorators/require-role.decorator';
 import { ORGANISATION_PERMISSIONS } from '../common/authorization/permission.types';
 import { UserRole } from '../entities/user.entity';
+import { UpdateOrganisationColorDto } from './dto/update-organisation-color.dto';
 
 @Controller('organisations')
 @UseGuards(JwtAuthGuard, RbacAuthorizationGuard)
@@ -95,9 +97,10 @@ export class OrganisationsController {
   @UseGuards(OrganisationOwnershipGuard)
   @OrganisationScope({ field: 'id', source: 'params' })
   @RequirePermission(ORGANISATION_PERMISSIONS.READ, { organisationIdParam: 'id' })
-  async findOne(@Param('id') id: string, @Req() req: RequestWithUser) {
-    const organizationId = +id;
-
+  async findOne(
+    @Param('id', ParseIntPipe) organizationId: number,
+    @Req() req: RequestWithUser,
+  ) {
     // Check if user has access to this organization
     const canAccess =
       await this.userPermissionsService.canUserAccessOrganization(
@@ -123,20 +126,18 @@ export class OrganisationsController {
     organisationIdParam: 'id',
   })
   async update(
-    @Param('id') id: string,
+    @Param('id', ParseIntPipe) organizationId: number,
     @Body() updateDto: UpdateOrganisationDto,
     @Req() _req: RequestWithUser,
   ) {
-    const organizationId = +id;
-
     return await this.organisationsService.update(organizationId, updateDto);
   }
 
   @Delete(':id')
   @UseGuards(AdminGuard) // Only super admins can delete organizations
   @RequireRole(UserRole.ADMIN)
-  async remove(@Param('id') id: string) {
-    await this.organisationsService.remove(+id);
+  async remove(@Param('id', ParseIntPipe) id: number) {
+    await this.organisationsService.remove(id);
     return { message: 'Organisation deleted successfully' };
   }
 
@@ -154,12 +155,10 @@ export class OrganisationsController {
     organisationIdParam: 'id',
   })
   async assignUser(
-    @Param('id') id: string,
+    @Param('id', ParseIntPipe) organizationId: number,
     @Body() assignDto: AssignUserDto,
     @Req() req: RequestWithUser,
   ) {
-    const organizationId = +id;
-
     return await this.organisationsService.assignUser(
       organizationId,
       assignDto.userId,
@@ -181,15 +180,13 @@ export class OrganisationsController {
     organisationIdParam: 'id',
   })
   async removeUser(
-    @Param('id') id: string,
-    @Param('userId') userId: string,
+    @Param('id', ParseIntPipe) organizationId: number,
+    @Param('userId', ParseIntPipe) userId: number,
     @Req() req: RequestWithUser,
   ) {
-    const organizationId = +id;
-
     return await this.organisationsService.removeUser(
       organizationId,
-      +userId,
+      userId,
       req.user.id,
     );
   }
@@ -209,12 +206,10 @@ export class OrganisationsController {
     organisationIdParam: 'id',
   })
   async assignUserWithRole(
-    @Param('id') id: string,
+    @Param('id', ParseIntPipe) organizationId: number,
     @Body() assignDto: AssignOrganisationUserDto,
     @Req() req: RequestWithUser,
   ) {
-    const organizationId = +id;
-
     return await this.organisationsService.assignUserWithRole(
       organizationId,
       assignDto,
@@ -229,11 +224,9 @@ export class OrganisationsController {
   @Get(':id/users/list')
   @RequirePermission(ORGANISATION_PERMISSIONS.READ, { organisationIdParam: 'id' })
   async getOrganizationUsers(
-    @Param('id') id: string,
+    @Param('id', ParseIntPipe) organizationId: number,
     @Req() req: RequestWithUser,
   ) {
-    const organizationId = +id;
-
     // Check if user has access to this organization
     const canAccess =
       await this.userPermissionsService.canUserAccessOrganization(
@@ -266,16 +259,14 @@ export class OrganisationsController {
     organisationIdParam: 'id',
   })
   async updateUserRole(
-    @Param('id') id: string,
-    @Param('userId') userId: string,
+    @Param('id', ParseIntPipe) organizationId: number,
+    @Param('userId', ParseIntPipe) userId: number,
     @Body() updateDto: UpdateOrganisationUserRoleDto,
     @Req() req: RequestWithUser,
   ) {
-    const organizationId = +id;
-
     return await this.organisationsService.updateUserRole(
       organizationId,
-      +userId,
+      userId,
       updateDto.role,
       req.user.id,
     );
@@ -299,15 +290,13 @@ export class OrganisationsController {
     organisationIdParam: 'id',
   })
   async removeUserFromOrganization(
-    @Param('id') id: string,
-    @Param('userId') userId: string,
+    @Param('id', ParseIntPipe) organizationId: number,
+    @Param('userId', ParseIntPipe) userId: number,
     @Req() req: RequestWithUser,
   ) {
-    const organizationId = +id;
-
     await this.organisationsService.removeUserFromOrganization(
       organizationId,
-      +userId,
+      userId,
       req.user.id,
     );
     return { message: 'User removed from organisation successfully' };
@@ -330,9 +319,10 @@ export class OrganisationsController {
   @RequirePermission(ORGANISATION_PERMISSIONS.ADMIN, {
     organisationIdParam: 'id',
   })
-  async previewDeletion(@Param('id') id: string, @Req() _req: RequestWithUser) {
-    const organizationId = +id;
-
+  async previewDeletion(
+    @Param('id', ParseIntPipe) organizationId: number,
+    @Req() _req: RequestWithUser,
+  ) {
     return await this.organisationsService.previewOrganizationDeletion(
       organizationId,
     );
@@ -354,9 +344,10 @@ export class OrganisationsController {
   @RequirePermission(ORGANISATION_PERMISSIONS.DELETE, {
     organisationIdParam: 'id',
   })
-  async deleteCascade(@Param('id') id: string, @Req() req: RequestWithUser) {
-    const organizationId = +id;
-
+  async deleteCascade(
+    @Param('id', ParseIntPipe) organizationId: number,
+    @Req() req: RequestWithUser,
+  ) {
     const result = await this.organisationsService.deleteOrganizationCascade(
       organizationId,
       req.user.id,
@@ -383,12 +374,10 @@ export class OrganisationsController {
     organisationIdParam: 'id',
   })
   async updateColor(
-    @Param('id') id: string,
-    @Body() body: { color: string; cascadeToResourceTypes?: boolean },
+    @Param('id', ParseIntPipe) organizationId: number,
+    @Body() body: UpdateOrganisationColorDto,
     @Req() _req: RequestWithUser,
   ) {
-    const organizationId = +id;
-
     return await this.organisationsService.updateColor(
       organizationId,
       body.color,

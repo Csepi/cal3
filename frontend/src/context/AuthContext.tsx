@@ -16,7 +16,11 @@ export type AuthUser = {
   email?: string;
   role?: string;
   themeColor?: string;
-  [key: string]: unknown;
+  firstName?: string;
+  lastName?: string;
+  isActive?: boolean;
+  usagePlans?: string[];
+  [key: string]: any;
 };
 
 export type LoginCredentials = {

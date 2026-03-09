@@ -13,6 +13,13 @@ import { QueryTasksDto } from './dto/query-tasks.dto';
 import { UpdateTaskLabelsDto } from './dto/update-task-labels.dto';
 import { CreateTaskLabelDto } from './dto/create-task-label.dto';
 import { TaskCalendarBridgeService } from './task-calendar-bridge.service';
+import { toContainsLikePattern } from '../common/database/query-safety';
+
+const TASK_SORT_COLUMN_MAP: Record<'updatedAt' | 'createdAt' | 'dueDate', string> = {
+  updatedAt: 'task.updatedAt',
+  createdAt: 'task.createdAt',
+  dueDate: 'task.dueDate',
+};
 
 @Injectable()
 export class TasksService {
@@ -60,9 +67,14 @@ export class TasksService {
     }
 
     if (query.search) {
+      const searchPattern = toContainsLikePattern(query.search);
       qb.andWhere(
-        '(task.title ILIKE :search OR task.body ILIKE :search OR task.place ILIKE :search)',
-        { search: `%${query.search}%` },
+        `(
+          task.title ILIKE :search ESCAPE '\\'
+          OR task.body ILIKE :search ESCAPE '\\'
+          OR task.place ILIKE :search ESCAPE '\\'
+        )`,
+        { search: searchPattern },
       );
     }
 
@@ -85,8 +97,9 @@ export class TasksService {
 
     if (query.sortBy) {
       const sortDirection = query.sortDirection ?? 'desc';
+      const sortColumn = TASK_SORT_COLUMN_MAP[query.sortBy];
       qb.orderBy(
-        `task.${query.sortBy}`,
+        sortColumn,
         sortDirection.toUpperCase() as 'ASC' | 'DESC',
       );
     } else {

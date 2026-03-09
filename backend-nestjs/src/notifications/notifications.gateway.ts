@@ -17,6 +17,7 @@ import {
   NOTIFICATION_WS_NAMESPACE,
   NOTIFICATION_WS_PATH,
 } from './notifications.constants';
+import { resolveAllowedOrigins } from '../common/security/security.config';
 
 interface AuthenticatedSocket extends Socket {
   userId?: number;
@@ -26,7 +27,8 @@ interface AuthenticatedSocket extends Socket {
   namespace: NOTIFICATION_WS_NAMESPACE,
   path: NOTIFICATION_WS_PATH,
   cors: {
-    origin: '*',
+    origin: resolveAllowedOrigins(),
+    credentials: true,
   },
 })
 export class NotificationsGateway

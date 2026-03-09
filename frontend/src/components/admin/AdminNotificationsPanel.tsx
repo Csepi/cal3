@@ -104,7 +104,7 @@ export const AdminNotificationsPanel = ({ themeColor = '#3b82f6' }: { themeColor
     setIsLoading(true);
     setError(null);
     try {
-      const data = await apiService.getAdminNotificationConfig();
+      const data = await apiService.getAdminNotificationConfig() as { categories?: ConfigurationGroup[] };
       const notificationsGroup: ConfigurationGroup | null = data?.categories?.[0] ?? null;
       setConfig(notificationsGroup);
     } catch (err) {

@@ -5,6 +5,7 @@ interface DeleteRuleDialogProps {
   rule: AutomationRuleDetailDto | AutomationRuleDto;
   onConfirm: () => Promise<void>;
   onCancel: () => void;
+  themeColor?: string;
 }
 
 export const DeleteRuleDialog: React.FC<DeleteRuleDialogProps> = ({

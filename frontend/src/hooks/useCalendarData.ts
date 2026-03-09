@@ -17,6 +17,7 @@ import {
 import { clientLogger } from '../utils/clientLogger';
 
 export type ReservationRecord = Booking;
+export type { Organization };
 
 export const calendarQueryKeys = {
   root: ['calendar'] as const,

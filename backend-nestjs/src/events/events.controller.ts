@@ -9,6 +9,7 @@ import {
   UseGuards,
   Request,
   Query,
+  ParseIntPipe,
 } from '@nestjs/common';
 import type { RequestWithUser } from '../common/types/request-with-user';
 import {
@@ -30,6 +31,7 @@ import {
   CreateRecurringEventDto,
 } from '../dto/recurrence.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { ListEventsQueryDto } from './dto/list-events.query.dto';
 
 @ApiTags('Events')
 @Controller('events')
@@ -97,10 +99,9 @@ export class EventsController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   findAll(
     @Request() req: RequestWithUser,
-    @Query('startDate') startDate?: string,
-    @Query('endDate') endDate?: string,
+    @Query() query: ListEventsQueryDto,
   ) {
-    return this.eventsService.findAll(req.user.id, startDate, endDate);
+    return this.eventsService.findAll(req.user.id, query.startDate, query.endDate);
   }
 
   @Get(':id')
@@ -116,8 +117,8 @@ export class EventsController {
   @ApiResponse({ status: 404, description: 'Event not found' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Access denied' })
-  findOne(@Param('id') id: string, @Request() req: RequestWithUser) {
-    return this.eventsService.findOne(+id, req.user.id);
+  findOne(@Param('id', ParseIntPipe) id: number, @Request() req: RequestWithUser) {
+    return this.eventsService.findOne(id, req.user.id);
   }
 
   @Patch(':id')
@@ -134,11 +135,11 @@ export class EventsController {
   @ApiResponse({ status: 403, description: 'Insufficient permissions' })
   @ApiResponse({ status: 404, description: 'Event not found' })
   update(
-    @Param('id') id: string,
+    @Param('id', ParseIntPipe) id: number,
     @Body() updateEventDto: UpdateEventDto,
     @Request() req: RequestWithUser,
   ) {
-    return this.eventsService.update(+id, updateEventDto, req.user.id);
+    return this.eventsService.update(id, updateEventDto, req.user.id);
   }
 
   @Delete(':id')
@@ -150,8 +151,8 @@ export class EventsController {
   @ApiResponse({ status: 404, description: 'Event not found' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Insufficient permissions' })
-  remove(@Param('id') id: string, @Request() req: RequestWithUser) {
-    return this.eventsService.remove(+id, req.user.id);
+  remove(@Param('id', ParseIntPipe) id: number, @Request() req: RequestWithUser) {
+    return this.eventsService.remove(id, req.user.id);
   }
 
   @Patch(':id/recurring')
@@ -168,12 +169,12 @@ export class EventsController {
   @ApiResponse({ status: 403, description: 'Insufficient permissions' })
   @ApiResponse({ status: 404, description: 'Event not found' })
   updateRecurring(
-    @Param('id') id: string,
+    @Param('id', ParseIntPipe) id: number,
     @Body() updateRecurringEventDto: UpdateRecurringEventDto,
     @Request() req: RequestWithUser,
   ) {
     return this.eventsService.updateRecurring(
-      +id,
+      id,
       updateRecurringEventDto,
       req.user.id,
     );
@@ -190,9 +191,9 @@ export class EventsController {
   @ApiResponse({ status: 403, description: 'Access denied to calendar' })
   @ApiResponse({ status: 404, description: 'Calendar not found' })
   findByCalendar(
-    @Param('calendarId') calendarId: string,
+    @Param('calendarId', ParseIntPipe) calendarId: number,
     @Request() req: RequestWithUser,
   ) {
-    return this.eventsService.findByCalendar(+calendarId, req.user.id);
+    return this.eventsService.findByCalendar(calendarId, req.user.id);
   }
 }

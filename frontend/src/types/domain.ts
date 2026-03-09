@@ -1,5 +1,4 @@
 import type { AuthUser } from '../context/AuthContext';
-import type { AccessibleOrganization } from '../services/userPermissions';
 import type {
   Calendar as CalendarModel,
   CalendarVisibility,
@@ -34,7 +33,17 @@ export type {
 };
 
 export type User = AuthUser;
-export type Organization = OrganizationModel | AccessibleOrganization;
+export interface Organization extends OrganizationModel {
+  role?: 'USER' | 'ORG_ADMIN' | 'EDITOR' | 'admin' | 'editor' | 'user' | string;
+  resourceTypes?: ResourceTypeModel[];
+  isActive?: boolean;
+  adminCount?: number;
+  userCount?: number;
+  calendarCount?: number;
+  createdAt?: string;
+  updatedAt?: string;
+  [key: string]: unknown;
+}
 export type ResourceType = ResourceTypeModel;
 export type Resource = ResourceModel;
 export type Calendar = CalendarModel;

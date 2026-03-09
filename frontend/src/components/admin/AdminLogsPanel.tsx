@@ -169,8 +169,8 @@ useEffect(() => {
 
       const contextSet = new Set<string>(
         nextLogs
-          .map((log) => (log.context || '').trim())
-          .filter((context) => context.length > 0),
+          .map((log: LogEntry) => (log.context || '').trim())
+          .filter((context: string) => context.length > 0),
       );
       const sortedContexts = Array.from(contextSet).sort();
       setAvailableContexts(sortedContexts);
