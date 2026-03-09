@@ -99,6 +99,28 @@ describe('CsrfProtectionMiddleware', () => {
     expect(next).toHaveBeenCalledWith();
   });
 
+  it('bootstraps CSRF cookie from header when request has cookies but no CSRF cookie', () => {
+    const req = createRequest({
+      method: 'POST',
+      headers: {
+        cookie: 'cal3_access_token=abc123',
+        [CSRF_HEADER_NAME]: 'bootstrap-token',
+      },
+      cookies: {},
+    });
+    const res = { cookie: jest.fn() } as any;
+    const next = jest.fn();
+
+    middleware.use(req, res, next);
+
+    expect(res.cookie).toHaveBeenCalledWith(
+      CSRF_COOKIE_NAME,
+      'bootstrap-token',
+      expect.objectContaining({ httpOnly: false }),
+    );
+    expect(next).toHaveBeenCalledWith();
+  });
+
   it('skips CSRF validation for excluded webhook path', () => {
     const req = createRequest({
       method: 'POST',

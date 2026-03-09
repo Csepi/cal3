@@ -26,15 +26,18 @@ export class CsrfProtectionMiddleware implements NestMiddleware {
   constructor(private readonly csrfService: CsrfService) {}
 
   use(req: Request, res: Response, next: NextFunction): void {
+    const shouldValidate = this.shouldValidate(req);
+    const headerToken = this.extractCsrfHeader(req);
     const csrfCookieToken = this.extractCsrfCookie(req);
-    const activeToken = csrfCookieToken ?? this.issueToken(req, res);
+    const activeToken =
+      csrfCookieToken ??
+      this.issueToken(req, res, shouldValidate ? headerToken : undefined);
 
-    if (!this.shouldValidate(req)) {
+    if (!shouldValidate) {
       next();
       return;
     }
 
-    const headerToken = this.extractCsrfHeader(req);
     if (!headerToken || !this.csrfService.tokensMatch(activeToken, headerToken)) {
       this.logger.warn(
         `Rejected CSRF validation for ${req.method} ${req.originalUrl ?? req.url}`,
@@ -67,8 +70,8 @@ export class CsrfProtectionMiddleware implements NestMiddleware {
     return Boolean(req.headers.cookie);
   }
 
-  private issueToken(req: Request, res: Response): string {
-    const token = this.csrfService.generateToken();
+  private issueToken(req: Request, res: Response, tokenOverride?: string): string {
+    const token = tokenOverride ?? this.csrfService.generateToken();
     const sameSite = this.resolveSameSite(req);
     res.cookie(CSRF_COOKIE_NAME, token, {
       httpOnly: false,
