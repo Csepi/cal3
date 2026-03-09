@@ -1,0 +1,27 @@
+config:
+  target: "{{ $processEnvironment.LOAD_BASE_URL || 'http://localhost:8081' }}"
+  phases:
+    - duration: 30
+      arrivalRate: 5
+      name: warmup
+    - duration: 60
+      arrivalRate: 15
+      name: sustained
+  defaults:
+    headers:
+      Content-Type: application/json
+scenarios:
+  - name: health-and-public-endpoints
+    flow:
+      - get:
+          url: "/api/health"
+      - get:
+          url: "/"
+  - name: login-failure-path
+    flow:
+      - post:
+          url: "/api/auth/login"
+          json:
+            username: "load-test-user"
+            password: "invalid-password"
+      - think: 1

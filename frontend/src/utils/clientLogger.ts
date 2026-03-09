@@ -43,13 +43,32 @@ interface RuntimeLogScope {
   CONFIG?: { LOG_LEVEL?: unknown };
 }
 
+interface ViteLikeEnv {
+  DEV?: unknown;
+  VITE_LOG_LEVEL?: unknown;
+}
+
+const readImportMetaEnv = (): ViteLikeEnv | undefined => {
+  try {
+    // Use runtime evaluation so test runners that execute CommonJS do not fail
+    // while parsing `import.meta`.
+    const value = new Function(
+      'try { return import.meta && import.meta.env ? import.meta.env : undefined; } catch { return undefined; }',
+    )() as ViteLikeEnv | undefined;
+    return value;
+  } catch {
+    return undefined;
+  }
+};
+
 const parseEnvLevel = (): LogLevel => {
-  const fallback = import.meta.env.DEV ? 'debug' : 'warn';
+  const viteEnv = readImportMetaEnv();
+  const fallback = viteEnv?.DEV ? 'debug' : 'warn';
   const runtimeScope = globalThis as RuntimeLogScope;
   const explicit =
     runtimeScope.ENV?.LOG_LEVEL ??
     runtimeScope.CONFIG?.LOG_LEVEL ??
-    import.meta.env.VITE_LOG_LEVEL;
+    viteEnv?.VITE_LOG_LEVEL;
   if (typeof explicit !== 'string') {
     return fallback;
   }

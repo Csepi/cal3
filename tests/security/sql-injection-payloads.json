@@ -1,0 +1,8 @@
+[
+  "' OR 1=1 --",
+  "\" OR \"1\"=\"1\" --",
+  "admin' UNION SELECT NULL,NULL,NULL --",
+  "'; DROP TABLE users; --",
+  "1 OR pg_sleep(2)",
+  "') OR ('1'='1"
+]

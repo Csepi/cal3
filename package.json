@@ -18,7 +18,20 @@
     "build:frontend": "npm --prefix frontend run build",
     "prestart": "npm run build",
     "postinstall": "echo 'Dependencies installed successfully'",
-    "test": "echo \"No tests specified\"",
+    "test": "npm run test:all",
+    "test:all": "npm run test:unit && npm run test:integration && npm run test:e2e:web",
+    "test:unit": "npm --prefix backend-nestjs run test:unit && npm --prefix frontend run test:unit",
+    "test:integration": "npm --prefix backend-nestjs run test:integration",
+    "test:e2e": "npm run test:e2e:web && npm run test:e2e:mobile",
+    "test:e2e:web": "playwright test --config e2e/playwright.config.ts",
+    "test:e2e:mobile": "node e2e/mobile/run-mobile-e2e.mjs",
+    "test:api": "newman run tests/api/cal3.postman_collection.json -e tests/api/cal3.postman_environment.json --reporters cli,htmlextra --reporter-htmlextra-export reports/newman-report.html",
+    "test:security": "npm --prefix backend-nestjs run test:security && npm run test:security:web",
+    "test:security:web": "node tests/security/run-zap-scan.mjs",
+    "test:load": "artillery run tests/load/artillery-smoke.yml",
+    "test:load:k6": "k6 run tests/load/k6-smoke.js",
+    "test:ci": "npm run test:unit && npm run test:integration && npm run test:e2e:web && npm run test:api && npm run test:security",
+    "test:prepare": "playwright install --with-deps chromium",
     "docker:check-env": "node scripts/validate-docker-env.cjs",
     "docker:precheck": "npm run docker:check-env && npm --prefix backend-nestjs run lint && npm --prefix backend-nestjs run test",
     "docker:build": "npm run docker:precheck && docker compose -f docker/compose.yaml --profile local build",
@@ -31,7 +44,9 @@
     "scripts:test:org-fix": "node scripts/test/test-org-fix.js",
     "scripts:test:public-booking": "node scripts/test/test-public-booking-api.js",
     "scripts:verify:migration": "node scripts/verify/verify-migration.js",
-    "scripts:verify:org-access": "node scripts/verify/verify-org-access.js"
+    "scripts:verify:org-access": "node scripts/verify/verify-org-access.js",
+    "coverage:backend": "npm --prefix backend-nestjs run test:cov",
+    "coverage:frontend": "npm --prefix frontend run test:cov"
   },
   "keywords": [
     "cal3",
@@ -50,9 +65,16 @@
   "devDependencies": {
     "@types/express": "^5.0.3",
     "@types/node": "^24.4.0",
+    "@playwright/test": "^1.54.1",
+    "artillery": "^2.0.23",
+    "appium": "^2.16.2",
+    "newman": "^6.2.1",
+    "newman-reporter-htmlextra": "^1.23.1",
     "nodemon": "^3.1.10",
     "ts-node": "^10.9.2",
-    "typescript": "^5.9.2"
+    "typescript": "^5.9.2",
+    "wait-on": "^8.0.3",
+    "webdriverio": "^9.15.0"
   },
   "repository": {
     "type": "git",
