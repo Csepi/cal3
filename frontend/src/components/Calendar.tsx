@@ -16,6 +16,8 @@ interface CalendarProps {
   timeFormat?: string;
   /** Optional timezone identifier (e.g. 'Europe/Budapest') */
   timezone?: string;
+  /** Render calendar in offline read-only mode */
+  offlineMode?: boolean;
 }
 
 /**
@@ -30,13 +32,19 @@ interface CalendarProps {
  * - Type-safe with comprehensive TypeScript coverage
  * - Modular and maintainable code structure
  */
-const Calendar: React.FC<CalendarProps> = ({ themeColor, timeFormat = '12h', timezone }) => {
+const Calendar: React.FC<CalendarProps> = ({
+  themeColor,
+  timeFormat = '12h',
+  timezone,
+  offlineMode = false,
+}) => {
   return (
     <div className="container mx-auto px-4 py-6">
       <EnhancedCalendar
         themeColor={themeColor}
         timeFormat={timeFormat}
         timezone={timezone}
+        offlineMode={offlineMode}
         className="max-w-7xl mx-auto"
       />
     </div>

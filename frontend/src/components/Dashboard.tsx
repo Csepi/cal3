@@ -41,6 +41,11 @@ import type { TabId } from './mobile/organisms/BottomTabBar';
 import { NotificationCenter, NotificationSettingsPanel } from './notifications';
 import { TasksWorkspace, type TasksWorkspaceHandle } from './tasks/TasksWorkspace';
 import { clientLogger } from '../utils/clientLogger';
+import { isNativeClient } from '../services/clientPlatform';
+import {
+  hasOfflineTimelineSnapshot,
+  isNavigatorOffline,
+} from '../services/offlineTimelineCache';
 
 /**
  * View types for the main navigation
@@ -91,6 +96,7 @@ const Dashboard: React.FC<DashboardProps> = ({ initialView = 'calendar' }) => {
   const [currentView, setCurrentView] = useState<DashboardView>(initialView);
   const [userProfile, setUserProfile] = useState<DashboardUserProfile | null>(null);
   const [isScreenVisible, setIsScreenVisible] = useState(false);
+  const [isOfflineReadOnlyMode, setIsOfflineReadOnlyMode] = useState(false);
 
   const tasksWorkspaceRef = useRef<TasksWorkspaceHandle | null>(null);
 
@@ -148,12 +154,56 @@ const Dashboard: React.FC<DashboardProps> = ({ initialView = 'calendar' }) => {
     localStorage.setItem('themeColor', newTheme);
   };
 
+  useEffect(() => {
+    if (!isNativeClient()) {
+      setIsOfflineReadOnlyMode(false);
+      return;
+    }
+
+    const evaluateOfflineMode = () => {
+      const sessionUser = sessionManager.snapshotUserMetadata();
+      const cacheUser = {
+        id: currentUser?.id ?? sessionUser?.id,
+        username: currentUser?.username ?? sessionUser?.username,
+        email: currentUser?.email ?? sessionUser?.email,
+      };
+
+      const canUseOfflineSnapshot =
+        !isAuthenticated &&
+        isNavigatorOffline() &&
+        hasOfflineTimelineSnapshot(cacheUser);
+      setIsOfflineReadOnlyMode(canUseOfflineSnapshot);
+    };
+
+    evaluateOfflineMode();
+
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    window.addEventListener('online', evaluateOfflineMode);
+    window.addEventListener('offline', evaluateOfflineMode);
+
+    return () => {
+      window.removeEventListener('online', evaluateOfflineMode);
+      window.removeEventListener('offline', evaluateOfflineMode);
+    };
+  }, [
+    currentUser?.email,
+    currentUser?.id,
+    currentUser?.username,
+    isAuthenticated,
+  ]);
+
   // Initialize authentication state from localStorage on component mount
   useEffect(() => {
+    if (isOfflineReadOnlyMode || isNavigatorOffline()) {
+      return;
+    }
     if (!sessionManager.hasActiveSession()) {
       sessionManager.refreshAccessToken().catch(() => null);
     }
-  }, []);
+  }, [isOfflineReadOnlyMode]);
 
   useEffect(() => {
     const timer = window.setTimeout(() => setIsScreenVisible(true), 10);
@@ -162,14 +212,46 @@ const Dashboard: React.FC<DashboardProps> = ({ initialView = 'calendar' }) => {
 
   // Load user profile and permissions on component mount if logged in
   useEffect(() => {
-    if (!currentUser?.username) {
+    if (isOfflineReadOnlyMode || !currentUser?.username) {
       return;
     }
 
     const initialise = async () => {
       if (!authApi.isAuthenticated()) {
+        if (isNativeClient() && isNavigatorOffline()) {
+          const sessionUser = sessionManager.snapshotUserMetadata();
+          const hasOfflineSnapshot = hasOfflineTimelineSnapshot({
+            id: currentUser.id ?? sessionUser?.id,
+            username: currentUser.username ?? sessionUser?.username,
+            email: currentUser.email ?? sessionUser?.email,
+          });
+          if (hasOfflineSnapshot) {
+            setIsOfflineReadOnlyMode(true);
+            return;
+          }
+        }
+
         const refreshed = await sessionManager.refreshAccessToken();
         if (!refreshed) {
+          if (isNativeClient() && isNavigatorOffline()) {
+            const sessionUser = sessionManager.snapshotUserMetadata();
+            const hasOfflineSnapshot = hasOfflineTimelineSnapshot({
+              id: currentUser.id ?? sessionUser?.id,
+              username: currentUser.username ?? sessionUser?.username,
+              email: currentUser.email ?? sessionUser?.email,
+            });
+            if (hasOfflineSnapshot) {
+              setIsOfflineReadOnlyMode(true);
+              return;
+            }
+          }
+          if (isNativeClient()) {
+            clientLogger.warn(
+              'dashboard',
+              'native token refresh failed; preserving session metadata for offline recovery',
+            );
+            return;
+          }
           await handleLogout();
           return;
         }
@@ -179,7 +261,13 @@ const Dashboard: React.FC<DashboardProps> = ({ initialView = 'calendar' }) => {
     };
 
     void initialise();
-  }, [currentUser?.username]);
+  }, [currentUser?.username, isOfflineReadOnlyMode]);
+
+  useEffect(() => {
+    if (isOfflineReadOnlyMode && currentView !== 'calendar') {
+      setCurrentView('calendar');
+    }
+  }, [currentView, isOfflineReadOnlyMode]);
 
   // Redirect to calendar if user loses access to current view
   useEffect(() => {
@@ -198,12 +286,16 @@ const Dashboard: React.FC<DashboardProps> = ({ initialView = 'calendar' }) => {
   }, [featureFlagsLoading, permissionsLoading, currentView, featureFlags, canAccessReservations]);
 
   // Get centralized theme configuration
-  if (!isAuthenticated || !currentUser?.username) {
+  if ((!isAuthenticated || !currentUser?.username) && !isOfflineReadOnlyMode) {
     return <Login />;
   }
 
   // Handle tab change (works for both mobile and desktop)
   const handleTabChange = (tabId: TabId) => {
+    if (isOfflineReadOnlyMode) {
+      setCurrentView('calendar');
+      return;
+    }
     setCurrentView(tabId as DashboardView);
   };
 
@@ -218,16 +310,25 @@ const Dashboard: React.FC<DashboardProps> = ({ initialView = 'calendar' }) => {
 
   // Refresh handler for pull-to-refresh
   const handleRefresh = async () => {
+    if (isOfflineReadOnlyMode) {
+      return;
+    }
     await loadUserProfile();
     await refreshPermissions();
   };
 
-  const activeNavigationView: TabId = (currentView === 'notification-settings'
-    ? 'notifications'
-    : currentView) as TabId;
+  const activeNavigationView: TabId = (isOfflineReadOnlyMode
+    ? 'calendar'
+    : currentView === 'notification-settings'
+      ? 'notifications'
+      : currentView) as TabId;
 
   const displayName = userProfile?.name || userProfile?.fullName || currentUser?.username || '';
   const mobileSurfaceLabel = (() => {
+    if (isOfflineReadOnlyMode) {
+      return 'Offline timeline';
+    }
+
     switch (currentView) {
       case 'calendar':
         return 'Timeline';
@@ -279,6 +380,7 @@ const Dashboard: React.FC<DashboardProps> = ({ initialView = 'calendar' }) => {
               themeColor={themeColor}
               timeFormat={userProfile?.timeFormat || '12h'}
               timezone={userProfile?.timezone}
+              offlineMode={isOfflineReadOnlyMode}
             />
           )}
           {currentView === 'tasks' && featureFlags.tasks && (
@@ -322,7 +424,7 @@ const Dashboard: React.FC<DashboardProps> = ({ initialView = 'calendar' }) => {
       </MobileLayout>
 
       {/* FAB quick actions */}
-      {currentView === 'calendar' && (
+      {currentView === 'calendar' && !isOfflineReadOnlyMode && (
         <FloatingActionButton
           primaryAction={{
             icon: '+',
@@ -332,7 +434,7 @@ const Dashboard: React.FC<DashboardProps> = ({ initialView = 'calendar' }) => {
           themeColor={themeColor}
         />
       )}
-      {currentView === 'tasks' && featureFlags.tasks && (
+      {currentView === 'tasks' && featureFlags.tasks && !isOfflineReadOnlyMode && (
         <FloatingActionButton
           primaryAction={{
             icon: '+',

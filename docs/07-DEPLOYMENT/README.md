@@ -36,3 +36,4 @@ If behavior is unexpected, check configuration, permissions, and request logs be
 - `../README.md`
 - `../09-TROUBLESHOOTING/README.md`
 - `./azure-swa-containerapps.md`
+- `./git-push-auto-upgrade.md`

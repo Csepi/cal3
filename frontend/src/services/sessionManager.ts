@@ -3,6 +3,7 @@ import { applyCsrfHeader, clearCsrfToken, ensureCsrfToken } from './csrf';
 import { clientLogger } from '../utils/clientLogger';
 import { clearWidgetToken, syncWidgetToken } from './widgetAuthStorage';
 import { isNativeClient } from './clientPlatform';
+import { clearOfflineTimelineSnapshots } from './offlineTimelineCache';
 
 interface SessionUser {
   id?: number;
@@ -511,6 +512,7 @@ class SessionManager {
     this.persistSessionState();
     clearCsrfToken();
     void clearWidgetToken();
+    clearOfflineTimelineSnapshots();
     this.notify();
   }
 

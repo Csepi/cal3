@@ -7,6 +7,14 @@ import { calendarApi } from '../services/calendarApi';
 import { resourcesApi } from '../services/resourcesApi';
 import { http } from '../lib/http';
 import type { Booking, Organization, ResourceType } from '../types';
+import { sessionManager } from '../services/sessionManager';
+import { isNativeClient } from '../services/clientPlatform';
+import {
+  getOfflineTimelineSnapshot,
+  isOfflineNetworkError,
+  upsertOfflineTimelineSnapshot,
+} from '../services/offlineTimelineCache';
+import { clientLogger } from '../utils/clientLogger';
 
 export type ReservationRecord = Booking;
 
@@ -18,10 +26,99 @@ export const calendarQueryKeys = {
   orgsAndReservations: ['calendar', 'orgs-reservations'] as const,
 };
 
-const fetchCalendarGroups = async (): Promise<CalendarGroupWithCalendars[]> => {
+interface UseCalendarDataOptions {
+  offlineMode?: boolean;
+}
+
+const resolveOfflineSnapshot = () =>
+  getOfflineTimelineSnapshot(sessionManager.snapshotUserMetadata());
+
+const fetchEvents = async (offlineMode: boolean): Promise<Event[]> => {
+  if (offlineMode) {
+    return resolveOfflineSnapshot()?.events ?? [];
+  }
+
   try {
-    return await calendarApi.getCalendarGroups();
+    const events = await eventsApi.getEvents();
+    if (isNativeClient()) {
+      upsertOfflineTimelineSnapshot(sessionManager.snapshotUserMetadata(), {
+        events,
+      });
+    }
+    return events;
   } catch (error) {
+    if (isNativeClient() && isOfflineNetworkError(error)) {
+      const snapshot = resolveOfflineSnapshot();
+      if (snapshot) {
+        clientLogger.warn('calendar-data', 'using offline events snapshot after fetch failure', {
+          events: snapshot.events.length,
+          cachedAt: new Date(snapshot.cachedAt).toISOString(),
+        });
+        return snapshot.events;
+      }
+    }
+    throw error;
+  }
+};
+
+const fetchCalendars = async (offlineMode: boolean): Promise<Calendar[]> => {
+  if (offlineMode) {
+    return resolveOfflineSnapshot()?.calendars ?? [];
+  }
+
+  try {
+    const calendars = await calendarApi.getCalendars();
+    if (isNativeClient()) {
+      upsertOfflineTimelineSnapshot(sessionManager.snapshotUserMetadata(), {
+        calendars,
+      });
+    }
+    return calendars;
+  } catch (error) {
+    if (isNativeClient() && isOfflineNetworkError(error)) {
+      const snapshot = resolveOfflineSnapshot();
+      if (snapshot) {
+        clientLogger.warn('calendar-data', 'using offline calendars snapshot after fetch failure', {
+          calendars: snapshot.calendars.length,
+          cachedAt: new Date(snapshot.cachedAt).toISOString(),
+        });
+        return snapshot.calendars;
+      }
+    }
+    throw error;
+  }
+};
+
+const fetchCalendarGroups = async (
+  offlineMode: boolean,
+): Promise<CalendarGroupWithCalendars[]> => {
+  if (offlineMode) {
+    return resolveOfflineSnapshot()?.calendarGroups ?? [];
+  }
+
+  try {
+    const groups = await calendarApi.getCalendarGroups();
+    if (isNativeClient()) {
+      upsertOfflineTimelineSnapshot(sessionManager.snapshotUserMetadata(), {
+        calendarGroups: groups,
+      });
+    }
+    return groups;
+  } catch (error) {
+    if (isNativeClient() && isOfflineNetworkError(error)) {
+      const snapshot = resolveOfflineSnapshot();
+      if (snapshot) {
+        clientLogger.warn(
+          'calendar-data',
+          'using offline calendar group snapshot after fetch failure',
+          {
+            calendarGroups: snapshot.calendarGroups.length,
+            cachedAt: new Date(snapshot.cachedAt).toISOString(),
+          },
+        );
+        return snapshot.calendarGroups;
+      }
+    }
     console.error('Error loading calendar groups:', error);
     return [];
   }
@@ -35,9 +132,9 @@ const fetchOrganizationsAndReservations = async (): Promise<{
   let reservations: ReservationRecord[] = [];
 
   try {
-    const orgsData = await http.get<Array<{ id: number; name: string; role?: string; color?: string }>>(
-      '/api/user-permissions/accessible-organizations',
-    );
+    const orgsData = await http.get<
+      Array<{ id: number; name: string; role?: string; color?: string }>
+    >('/api/user-permissions/accessible-organizations');
 
     const orgsWithResourceTypes = await Promise.all(
       orgsData.map(async (org) => {
@@ -76,22 +173,27 @@ const fetchOrganizationsAndReservations = async (): Promise<{
   return { organizations, reservations };
 };
 
-export const useCalendarData = () => {
+export const useCalendarData = ({
+  offlineMode = false,
+}: UseCalendarDataOptions = {}) => {
   const eventsQuery = useQuery<Event[]>({
     queryKey: calendarQueryKeys.events,
-    queryFn: () => eventsApi.getEvents(),
-    refetchInterval: 30000,
+    queryFn: () => fetchEvents(offlineMode),
+    refetchInterval: offlineMode ? false : 30000,
     refetchIntervalInBackground: false,
+    retry: offlineMode ? 0 : 1,
   });
 
   const calendarsQuery = useQuery<Calendar[]>({
     queryKey: calendarQueryKeys.calendars,
-    queryFn: () => calendarApi.getCalendars(),
+    queryFn: () => fetchCalendars(offlineMode),
+    retry: offlineMode ? 0 : 1,
   });
 
   const calendarGroupsQuery = useQuery<CalendarGroupWithCalendars[]>({
     queryKey: calendarQueryKeys.calendarGroups,
-    queryFn: fetchCalendarGroups,
+    queryFn: () => fetchCalendarGroups(offlineMode),
+    retry: offlineMode ? 0 : 1,
   });
 
   const orgsQuery = useQuery<{
@@ -99,7 +201,14 @@ export const useCalendarData = () => {
     reservations: ReservationRecord[];
   }>({
     queryKey: calendarQueryKeys.orgsAndReservations,
-    queryFn: fetchOrganizationsAndReservations,
+    queryFn: () =>
+      offlineMode
+        ? Promise.resolve({
+            organizations: [],
+            reservations: [],
+          })
+        : fetchOrganizationsAndReservations(),
+    enabled: !offlineMode,
   });
 
   const isLoading = eventsQuery.isLoading || calendarsQuery.isLoading;
@@ -120,4 +229,3 @@ export const useCalendarData = () => {
     error,
   };
 };
-

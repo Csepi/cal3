@@ -19,6 +19,7 @@ import type { CalendarGroupWithCalendars } from '../../types/CalendarGroup';
 import { eventsApi } from '../../services/eventsApi';
 import { calendarApi } from '../../services/calendarApi';
 import { profileApi } from '../../services/profileApi';
+import { apiService } from '../../services/api';
 import { getThemeConfig, type ThemeConfig, LOADING_MESSAGES } from '../../constants';
 import { CalendarEventModal } from './CalendarEventModal';
 import { CalendarManager } from './CalendarManager';
@@ -70,6 +71,7 @@ interface EnhancedCalendarProps {
   timeFormat?: string;
   className?: string;
   timezone?: string;
+  offlineMode?: boolean;
 }
 
 const getCalendarRankValue = (calendar?: CalendarType | null): number => {
@@ -87,7 +89,11 @@ const sortCalendarsByRank = (calendars: CalendarType[]): CalendarType[] =>
   });
 
 // Calendar hook for state management
-function useCalendarState(themeColor: string, initialView: CalendarState['currentView'] = 'month') {
+function useCalendarState(
+  themeColor: string,
+  initialView: CalendarState['currentView'] = 'month',
+  offlineMode = false,
+) {
   const queryClient = useQueryClient();
   const {
     eventsQuery,
@@ -97,7 +103,7 @@ function useCalendarState(themeColor: string, initialView: CalendarState['curren
     isLoading,
     isFetching,
     error,
-  } = useCalendarData();
+  } = useCalendarData({ offlineMode });
 
   const calendars = useMemo(
     () => sortCalendarsByRank(calendarsQuery.data ?? []),
@@ -122,6 +128,12 @@ function useCalendarState(themeColor: string, initialView: CalendarState['curren
   const lastSavedVisibleCalendarsRef = useRef<string | null>(null);
 
   useEffect(() => {
+    if (offlineMode) {
+      setStoredVisibleCalendarIds(null);
+      setCalendarPreferenceLoaded(true);
+      return;
+    }
+
     let isActive = true;
 
     const loadCalendarPreference = async () => {
@@ -160,12 +172,12 @@ function useCalendarState(themeColor: string, initialView: CalendarState['curren
       }
     };
 
-    loadCalendarPreference();
+    void loadCalendarPreference();
 
     return () => {
       isActive = false;
     };
-  }, []);
+  }, [offlineMode]);
 
   useEffect(() => {
     if (calendars.length === 0) {
@@ -209,6 +221,10 @@ function useCalendarState(themeColor: string, initialView: CalendarState['curren
   }, [calendars, calendarPreferenceLoaded, storedVisibleCalendarIds]);
 
   useEffect(() => {
+    if (offlineMode) {
+      return;
+    }
+
     if (!calendarPreferenceLoaded || !hasInitializedSelectionRef.current) {
       return;
     }
@@ -237,7 +253,7 @@ function useCalendarState(themeColor: string, initialView: CalendarState['curren
     };
 
     void persistSelection();
-  }, [selectedCalendars, calendarPreferenceLoaded, calendars.length]);
+  }, [selectedCalendars, calendarPreferenceLoaded, calendars.length, offlineMode]);
 
   // Modal states
   const [modals, setModals] = useState({
@@ -268,8 +284,11 @@ function useCalendarState(themeColor: string, initialView: CalendarState['curren
   const themeConfig = useMemo(() => getThemeConfig(themeColor), [themeColor]);
 
   const refreshData = useCallback(async () => {
+    if (offlineMode) {
+      return;
+    }
     await queryClient.invalidateQueries({ queryKey: calendarQueryKeys.root });
-  }, [queryClient]);
+  }, [offlineMode, queryClient]);
 
   const actions: CalendarActions = useMemo(() => ({
     setCurrentDate,
@@ -330,6 +349,9 @@ function useCalendarState(themeColor: string, initialView: CalendarState['curren
       color: string,
       cascadeToResourceTypes: boolean,
     ) => {
+      if (offlineMode) {
+        return;
+      }
       try {
         await apiService.patch(`/organisations/${orgId}/color`, {
           color,
@@ -344,6 +366,9 @@ function useCalendarState(themeColor: string, initialView: CalendarState['curren
     },
 
     updateResourceTypeColor: async (resourceTypeId: number, color: string) => {
+      if (offlineMode) {
+        return;
+      }
       try {
         await apiService.patch(`/resource-types/${resourceTypeId}/color`, { color });
         await queryClient.invalidateQueries({
@@ -355,6 +380,9 @@ function useCalendarState(themeColor: string, initialView: CalendarState['curren
     },
 
     createEvent: (date?: Date) => {
+      if (offlineMode) {
+        return;
+      }
       setModalData((prev) => ({
         ...prev,
         editingEvent: null,
@@ -369,6 +397,9 @@ function useCalendarState(themeColor: string, initialView: CalendarState['curren
     },
 
     editEvent: (event: Event) => {
+      if (offlineMode) {
+        return;
+      }
       setModalData((prev) => ({
         ...prev,
         editingEvent: event,
@@ -378,7 +409,7 @@ function useCalendarState(themeColor: string, initialView: CalendarState['curren
     },
 
     refreshData,
-  }), [currentView, queryClient, refreshData]);
+  }), [currentView, queryClient, refreshData, offlineMode]);
 
   const state = useMemo<CalendarState>(
     () => ({
@@ -436,6 +467,7 @@ interface CalendarHeaderProps {
   onCreateCalendar: () => void;
   onToggleMobileDrawer?: () => void;
   isMobile?: boolean;
+  readOnly?: boolean;
 }
 
 const CalendarHeader: React.FC<CalendarHeaderProps> = ({
@@ -446,6 +478,7 @@ const CalendarHeader: React.FC<CalendarHeaderProps> = ({
   onCreateCalendar,
   onToggleMobileDrawer,
   isMobile = false,
+  readOnly = false,
 }) => {
   const formatTitle = useMemo(() => {
     const { currentDate, currentView } = state;
@@ -580,37 +613,39 @@ const CalendarHeader: React.FC<CalendarHeaderProps> = ({
             </div>
 
             {/* Create Actions */}
-            <div className="flex items-center space-x-2">
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={onCreateEvent}
-                className="bg-white/20 text-white hover:bg-white/30 border border-white/30 rounded-lg backdrop-blur-sm shadow-sm transition-all duration-200 hover:shadow-md font-medium"
-                icon={
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                  </svg>
-                }
-              >
-                <span className="hidden md:inline">New Event</span>
-              </Button>
-
-              {!isMobile && (
+            {!readOnly && (
+              <div className="flex items-center space-x-2">
                 <Button
                   variant="secondary"
                   size="sm"
-                  onClick={onCreateCalendar}
+                  onClick={onCreateEvent}
                   className="bg-white/20 text-white hover:bg-white/30 border border-white/30 rounded-lg backdrop-blur-sm shadow-sm transition-all duration-200 hover:shadow-md font-medium"
                   icon={
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                     </svg>
                   }
                 >
-                  <span className="hidden md:inline">New Calendar</span>
+                  <span className="hidden md:inline">New Event</span>
                 </Button>
-              )}
-            </div>
+
+                {!isMobile && (
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={onCreateCalendar}
+                    className="bg-white/20 text-white hover:bg-white/30 border border-white/30 rounded-lg backdrop-blur-sm shadow-sm transition-all duration-200 hover:shadow-md font-medium"
+                    icon={
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                    }
+                  >
+                    <span className="hidden md:inline">New Calendar</span>
+                  </Button>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -630,6 +665,7 @@ interface CalendarGridProps {
   isMobile?: boolean;
   onShowDayDetails?: (date: Date) => void;
   timezone?: string;
+  readOnly?: boolean;
 }
 
 const CalendarGrid: React.FC<CalendarGridProps> = ({
@@ -643,6 +679,7 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
   isMobile = false,
   onShowDayDetails,
   timezone,
+  readOnly = false,
 }) => {
   const { currentDate, currentView, events, selectedCalendars, reservations, selectedResourceTypes, organizations } = state;
 
@@ -721,13 +758,19 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
   }, [actions, isMobile, onShowDayDetails]);
 
   const handleEventClick = useCallback((event: Event) => {
+    if (readOnly) {
+      return;
+    }
     actions.editEvent(event);
-  }, [actions]);
+  }, [actions, readOnly]);
 
   const handleTimeRangeSelect = useCallback((date: Date) => {
+    if (readOnly) {
+      return;
+    }
     // Create event with time range
     actions.createEvent(date);
-  }, [actions]);
+  }, [actions, readOnly]);
 
   // Swipe gestures for navigation
   const swipeHandlers = useSwipeGesture({
@@ -746,7 +789,12 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
           currentDate={currentDate}
           events={filteredEvents}
           onEventClick={handleEventClick}
-          onCreateEvent={(date) => actions.createEvent(date)}
+          onCreateEvent={(date) => {
+            if (readOnly) {
+              return;
+            }
+            actions.createEvent(date);
+          }}
           accentColor={accentColor}
           focusMode={timelineFocusMode}
           onToggleFocusMode={onToggleTimelineFocusMode}
@@ -772,6 +820,9 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
           onDateClick={handleDateClick}
           onEventClick={handleEventClick}
           onTimeSlotClick={(date, hour) => {
+            if (readOnly) {
+              return;
+            }
             const eventDate = new Date(date);
             eventDate.setHours(hour, 0, 0, 0);
             actions.createEvent(eventDate);
@@ -841,6 +892,7 @@ interface CalendarSidebarProps {
   onCreateCalendar: () => void;
   onEditCalendar?: (calendar: CalendarType) => void;
   onDeleteCalendar?: (calendar: CalendarType) => void;
+  readOnly?: boolean;
 }
 
 const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
@@ -850,6 +902,7 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
   onCreateCalendar,
   onEditCalendar,
   onDeleteCalendar,
+  readOnly = false,
 }) => {
   const [creatingGroup, setCreatingGroup] = React.useState(false);
   // Collapsible sidebar state - persisted in localStorage
@@ -954,30 +1007,30 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
 
   const handleDragStart = React.useCallback(
     (event: React.DragEvent<HTMLSpanElement>, calendarId: number) => {
-      if (isPersistingOrder) return;
+      if (isPersistingOrder || readOnly) return;
       didDropRef.current = false;
       setCalendarOrder(state.calendars);
       setDraggingCalendarId(calendarId);
       event.dataTransfer.effectAllowed = 'move';
       event.dataTransfer.setData('text/plain', String(calendarId));
     },
-    [isPersistingOrder, state.calendars],
+    [isPersistingOrder, readOnly, state.calendars],
   );
 
   const handleDragOver = React.useCallback(
     (event: React.DragEvent<HTMLDivElement>, calendarId: number) => {
-      if (draggingCalendarId === null || isPersistingOrder) return;
+      if (draggingCalendarId === null || isPersistingOrder || readOnly) return;
       event.preventDefault();
       setCalendarOrder((prev) =>
         moveCalendarInList(prev, draggingCalendarId, calendarId),
       );
     },
-    [draggingCalendarId, isPersistingOrder, moveCalendarInList],
+    [draggingCalendarId, isPersistingOrder, moveCalendarInList, readOnly],
   );
 
   const handleDrop = React.useCallback(
     (event: React.DragEvent<HTMLDivElement>, calendarId: number) => {
-      if (draggingCalendarId === null || isPersistingOrder) return;
+      if (draggingCalendarId === null || isPersistingOrder || readOnly) return;
       event.preventDefault();
       didDropRef.current = true;
       const reordered = moveCalendarInList(
@@ -989,7 +1042,7 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
       setDraggingCalendarId(null);
       void persistCalendarOrder(reordered);
     },
-    [draggingCalendarId, isPersistingOrder, moveCalendarInList, persistCalendarOrder],
+    [draggingCalendarId, isPersistingOrder, moveCalendarInList, persistCalendarOrder, readOnly],
   );
 
   const handleDragEnd = React.useCallback(() => {
@@ -1002,6 +1055,9 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
   }, [draggingCalendarId, state.calendars]);
 
   const handleCreateGroup = async () => {
+    if (readOnly) {
+      return;
+    }
     const name = window.prompt('Name for the new calendar group?');
     if (!name || name.trim().length < 2) {
       return;
@@ -1189,15 +1245,17 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
               <h3 className={`text-md font-semibold text-${themeConfig.text}`}>Groups</h3>
               <span className="text-xs text-gray-500">{groupedCalendars.groups.length} total</span>
             </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleCreateGroup}
-              disabled={creatingGroup}
-              className={`text-${themeConfig.primary}-600 hover:bg-${themeConfig.primary}-100`}
-            >
-              + Group
-            </Button>
+            {!readOnly && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleCreateGroup}
+                disabled={creatingGroup}
+                className={`text-${themeConfig.primary}-600 hover:bg-${themeConfig.primary}-100`}
+              >
+                + Group
+              </Button>
+            )}
           </div>
 
           {groupedCalendars.groups.map((group) => {
@@ -1249,22 +1307,26 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
           <div className="flex items-start justify-between mb-4">
             <div>
               <h3 className={`text-lg font-semibold text-${themeConfig.text}`}>My Calendars</h3>
-              <p className="text-xs text-gray-500">Drag to reorder (updates priority)</p>
-              {isPersistingOrder && (
+              {!readOnly && (
+                <p className="text-xs text-gray-500">Drag to reorder (updates priority)</p>
+              )}
+              {isPersistingOrder && !readOnly && (
                 <p className="text-xs text-gray-400">Saving order...</p>
               )}
             </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onCreateCalendar}
-              className={`text-${themeConfig.primary}-600 hover:bg-${themeConfig.primary}-100`}
-              icon={
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                </svg>
-              }
-            />
+            {!readOnly && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onCreateCalendar}
+                className={`text-${themeConfig.primary}-600 hover:bg-${themeConfig.primary}-100`}
+                icon={
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                  </svg>
+                }
+              />
+            )}
           </div>
 
           <div className="space-y-2">
@@ -1288,16 +1350,18 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
                 onDragOver={(event) => handleDragOver(event, calendar.id)}
                 onDrop={(event) => handleDrop(event, calendar.id)}
               >
-                <span
-                  className="text-xs text-gray-400 px-1 cursor-grab"
-                  title="Drag to reorder"
-                  draggable={!isPersistingOrder}
-                  onDragStart={(event) => handleDragStart(event, calendar.id)}
-                  onDragEnd={handleDragEnd}
-                  onClick={(event) => event.stopPropagation()}
-                >
-                  |||
-                </span>
+                {!readOnly && (
+                  <span
+                    className="text-xs text-gray-400 px-1 cursor-grab"
+                    title="Drag to reorder"
+                    draggable={!isPersistingOrder}
+                    onDragStart={(event) => handleDragStart(event, calendar.id)}
+                    onDragEnd={handleDragEnd}
+                    onClick={(event) => event.stopPropagation()}
+                  >
+                    |||
+                  </span>
+                )}
                 <div
                   className="w-4 h-4 rounded border-2 flex items-center justify-center"
                   style={{
@@ -1391,6 +1455,9 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
                           type="color"
                           value={org.color}
                           onChange={async (e) => {
+                            if (readOnly) {
+                              return;
+                            }
                             e.stopPropagation();
                             const cascadeConfirm = window.confirm(
                               `Update color for ${org.name}?\n\n` +
@@ -1400,6 +1467,7 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
                             await actions.updateOrganizationColor(org.id, e.target.value, cascadeConfirm);
                           }}
                           onClick={(e) => e.stopPropagation()}
+                          disabled={readOnly}
                           className="w-6 h-6 rounded cursor-pointer border-2 border-gray-300"
                           title="Change organization color"
                         />
@@ -1459,10 +1527,14 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
                                 type="color"
                                 value={resourceType.color}
                                 onChange={async (e) => {
+                                  if (readOnly) {
+                                    return;
+                                  }
                                   e.stopPropagation();
                                   await actions.updateResourceTypeColor(resourceType.id, e.target.value);
                                 }}
                                 onClick={(e) => e.stopPropagation()}
+                                disabled={readOnly}
                                 className="w-5 h-5 rounded cursor-pointer border border-gray-300"
                                 title="Change resource type color"
                               />
@@ -1508,6 +1580,7 @@ export const EnhancedCalendar: React.FC<EnhancedCalendarProps> = ({
   timeFormat = '12h',
   className = '',
   timezone,
+  offlineMode = false,
 }) => {
   // Mobile detection (used to choose the default calendar view)
   const { isMobile } = useScreenSize();
@@ -1525,7 +1598,7 @@ export const EnhancedCalendar: React.FC<EnhancedCalendarProps> = ({
     isInitialLoading,
     isRefreshing,
     loadError,
-  } = useCalendarState(themeColor, 'timeline');
+  } = useCalendarState(themeColor, 'timeline', offlineMode);
   const [timelineFocusMode, setTimelineFocusMode] = useState(false);
   const resolvedTimezone = useMemo(
     () => timezone || Intl.DateTimeFormat().resolvedOptions().timeZone,
@@ -1682,6 +1755,9 @@ export const EnhancedCalendar: React.FC<EnhancedCalendarProps> = ({
   // Event handlers
   const handleSaveEvent = useCallback(
     async (eventData: CreateEventRequest | UpdateEventRequest) => {
+      if (offlineMode) {
+        return;
+      }
       try {
         setErrors((prev) => ({ ...prev, event: null }));
 
@@ -1710,11 +1786,15 @@ export const EnhancedCalendar: React.FC<EnhancedCalendarProps> = ({
       updateEventMutation,
       setErrors,
       setModals,
+      offlineMode,
     ],
   );
 
   const handleDeleteEvent = useCallback(
     async (eventId: number) => {
+      if (offlineMode) {
+        return;
+      }
       try {
         await deleteEventMutation.mutateAsync(eventId);
         setModals((prev) => ({ ...prev, eventModal: false }));
@@ -1727,10 +1807,13 @@ export const EnhancedCalendar: React.FC<EnhancedCalendarProps> = ({
         throw error;
       }
     },
-    [deleteEventMutation, setErrors, setModals],
+    [deleteEventMutation, setErrors, setModals, offlineMode],
   );
 
   const handleCalendarChange = useCallback(async () => {
+    if (offlineMode) {
+      return;
+    }
     try {
       await queryClient.invalidateQueries({
         queryKey: calendarQueryKeys.calendars,
@@ -1750,7 +1833,7 @@ export const EnhancedCalendar: React.FC<EnhancedCalendarProps> = ({
           error instanceof Error ? error.message : 'Failed to refresh calendar data',
       }));
     }
-  }, [queryClient, setErrors, setModals]);
+  }, [queryClient, setErrors, setModals, offlineMode]);
 
   const handleEditCalendar = useCallback((calendar: CalendarType) => {
     setModalData(prev => ({ ...prev, editingCalendar: calendar }));
@@ -1759,6 +1842,9 @@ export const EnhancedCalendar: React.FC<EnhancedCalendarProps> = ({
 
   const handleDeleteCalendar = useCallback(
     async (calendar: CalendarType) => {
+      if (offlineMode) {
+        return;
+      }
       if (
         !confirm(
           `Are you sure you want to delete "${calendar.name}"? This will also delete all events in this calendar.`,
@@ -1774,7 +1860,7 @@ export const EnhancedCalendar: React.FC<EnhancedCalendarProps> = ({
         alert(error instanceof Error ? error.message : 'Failed to delete calendar');
       }
     },
-    [deleteCalendarMutation],
+    [deleteCalendarMutation, offlineMode],
   );
 
   // Loading state
@@ -1822,9 +1908,14 @@ export const EnhancedCalendar: React.FC<EnhancedCalendarProps> = ({
 
   return (
     <div className={`bg-white rounded-3xl shadow-2xl overflow-hidden relative ${className}`}>
-      {isRefreshing && !isInitialLoading && (
+      {isRefreshing && !isInitialLoading && !offlineMode && (
         <div className="pointer-events-none absolute right-6 top-4 text-[10px] uppercase tracking-[0.3em] text-slate-400">
           Syncing
+        </div>
+      )}
+      {offlineMode && (
+        <div className="px-4 py-2 text-xs font-medium text-amber-800 bg-amber-50 border-b border-amber-200">
+          Offline mode: showing last synced timeline items. Changes are disabled until you reconnect.
         </div>
       )}
       {/* Header - Conditional Mobile/Desktop */}
@@ -1849,6 +1940,7 @@ export const EnhancedCalendar: React.FC<EnhancedCalendarProps> = ({
           }}
           onToggleMobileDrawer={() => setModals(prev => ({ ...prev, mobileDrawer: true }))}
           isMobile={isMobile}
+          readOnly={offlineMode}
         />
       ) : null}
 
@@ -1864,8 +1956,9 @@ export const EnhancedCalendar: React.FC<EnhancedCalendarProps> = ({
               setModalData(prev => ({ ...prev, editingCalendar: null }));
               setModals(prev => ({ ...prev, calendarModal: true }));
             }}
-            onEditCalendar={handleEditCalendar}
-            onDeleteCalendar={handleDeleteCalendar}
+            onEditCalendar={offlineMode ? undefined : handleEditCalendar}
+            onDeleteCalendar={offlineMode ? undefined : handleDeleteCalendar}
+            readOnly={offlineMode}
           />
         )}
 
@@ -1884,11 +1977,14 @@ export const EnhancedCalendar: React.FC<EnhancedCalendarProps> = ({
                 setModals(prev => ({ ...prev, mobileDrawer: false, calendarModal: true }));
                 setModalData(prev => ({ ...prev, editingCalendar: null }));
               }}
-              onEditCalendar={(calendar) => {
-                setModals(prev => ({ ...prev, mobileDrawer: false }));
-                handleEditCalendar(calendar);
-              }}
-              onDeleteCalendar={handleDeleteCalendar}
+              onEditCalendar={offlineMode
+                ? undefined
+                : (calendar) => {
+                    setModals(prev => ({ ...prev, mobileDrawer: false }));
+                    handleEditCalendar(calendar);
+                  }}
+              onDeleteCalendar={offlineMode ? undefined : handleDeleteCalendar}
+              readOnly={offlineMode}
             />
           </MobileDrawer>
         )}
@@ -1905,6 +2001,7 @@ export const EnhancedCalendar: React.FC<EnhancedCalendarProps> = ({
             onToggleTimelineFocusMode={() => setTimelineFocusMode((prev) => !prev)}
             isMobile={isMobile}
             timezone={resolvedTimezone}
+            readOnly={offlineMode}
             onShowDayDetails={(date) => {
               actions.setSelectedDate(date);
               setModals(prev => ({ ...prev, mobileBottomSheet: true }));
@@ -1927,10 +2024,16 @@ export const EnhancedCalendar: React.FC<EnhancedCalendarProps> = ({
             return eventDate.getTime() === selectedDate.getTime();
           })}
           onEventClick={(event) => {
+            if (offlineMode) {
+              return;
+            }
             setModals(prev => ({ ...prev, mobileBottomSheet: false }));
             actions.editEvent(event);
           }}
           onCreateEvent={(date) => {
+            if (offlineMode) {
+              return;
+            }
             setModals(prev => ({ ...prev, mobileBottomSheet: false }));
             actions.createEvent(date);
           }}
@@ -1939,41 +2042,45 @@ export const EnhancedCalendar: React.FC<EnhancedCalendarProps> = ({
       )}
 
       {/* Modals */}
-      <CalendarEventModal
-        isOpen={modals.eventModal}
-        onClose={() => setModals(prev => ({ ...prev, eventModal: false }))}
-        onSave={handleSaveEvent}
-        onDelete={handleDeleteEvent}
-        editingEvent={modalData.editingEvent}
-        calendars={state.calendars}
-        selectedDate={state.selectedDate}
-        themeColor={themeColor}
-        timeFormat={timeFormat}
-        error={errors.event}
-        loading={
-          createEventMutation.isPending ||
-          updateEventMutation.isPending ||
-          deleteEventMutation.isPending
-        }
-      />
+      {!offlineMode && (
+        <>
+          <CalendarEventModal
+            isOpen={modals.eventModal}
+            onClose={() => setModals(prev => ({ ...prev, eventModal: false }))}
+            onSave={handleSaveEvent}
+            onDelete={handleDeleteEvent}
+            editingEvent={modalData.editingEvent}
+            calendars={state.calendars}
+            selectedDate={state.selectedDate}
+            themeColor={themeColor}
+            timeFormat={timeFormat}
+            error={errors.event}
+            loading={
+              createEventMutation.isPending ||
+              updateEventMutation.isPending ||
+              deleteEventMutation.isPending
+            }
+          />
 
-      <CalendarManager
-        isOpen={modals.calendarModal}
-        onClose={() => setModals(prev => ({ ...prev, calendarModal: false }))}
-        onCalendarChange={handleCalendarChange}
-        editingCalendar={modalData.editingCalendar}
-        themeColor={themeColor}
-        error={errors.calendar}
-      />
+          <CalendarManager
+            isOpen={modals.calendarModal}
+            onClose={() => setModals(prev => ({ ...prev, calendarModal: false }))}
+            onCalendarChange={handleCalendarChange}
+            editingCalendar={modalData.editingCalendar}
+            themeColor={themeColor}
+            error={errors.calendar}
+          />
 
-      <ConfirmationDialog
-        isOpen={modals.confirmDialog}
-        onClose={() => setModals(prev => ({ ...prev, confirmDialog: false }))}
-        onConfirm={modalData.confirmAction || (() => {})}
-        title={modalData.confirmTitle}
-        message={modalData.confirmMessage}
-        themeColor={themeColor}
-      />
+          <ConfirmationDialog
+            isOpen={modals.confirmDialog}
+            onClose={() => setModals(prev => ({ ...prev, confirmDialog: false }))}
+            onConfirm={modalData.confirmAction || (() => {})}
+            title={modalData.confirmTitle}
+            message={modalData.confirmMessage}
+            themeColor={themeColor}
+          />
+        </>
+      )}
     </div>
   );
 };
