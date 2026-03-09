@@ -1,69 +1,91 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
-  fetchAdminLogs,
-  updateLogRetentionSettings,
   clearAdminLogs,
-  runAdminLogRetention,
+  fetchAdminLogs,
   formatAdminError,
+  runAdminLogRetention,
+  updateLogRetentionSettings,
 } from './adminApiService';
-import type { LogEntry, LogLevel, LogSettings } from './types';
-
-type RangePreset = '5m' | '15m' | '1h' | '24h' | '7d' | '30d' | 'custom';
-
-const LEVEL_OPTIONS: { value: LogLevel; label: string; description: string }[] = [
-  { value: 'error', label: 'Errors', description: 'Unhandled failures and critical exceptions' },
-  { value: 'warn', label: 'Warnings', description: 'Recoverable issues that need attention' },
-  { value: 'info', label: 'Information', description: 'Key lifecycle and status messages' },
-  { value: 'debug', label: 'Debug', description: 'Detailed diagnostics for investigation' },
-  { value: 'trace', label: 'Trace', description: 'Highly granular tracing output' },
-  { value: 'log', label: 'Legacy Info', description: 'Backward-compatible info level records' },
-  { value: 'verbose', label: 'Legacy Trace', description: 'Backward-compatible trace records' },
-];
-
-const LEVEL_BADGES: Record<LogLevel, { label: string; classes: string }> = {
-  error: { label: 'Error', classes: 'bg-red-100 text-red-700 border border-red-200' },
-  warn: { label: 'Warning', classes: 'bg-amber-100 text-amber-700 border border-amber-200' },
-  info: { label: 'Info', classes: 'bg-blue-100 text-blue-700 border border-blue-200' },
-  debug: { label: 'Debug', classes: 'bg-purple-100 text-purple-700 border border-purple-200' },
-  trace: { label: 'Trace', classes: 'bg-slate-100 text-slate-700 border border-slate-200' },
-  log: { label: 'Legacy Info', classes: 'bg-cyan-100 text-cyan-700 border border-cyan-200' },
-  verbose: { label: 'Legacy Trace', classes: 'bg-zinc-100 text-zinc-700 border border-zinc-200' },
-};
-
-const RANGE_PRESETS: Array<{ value: RangePreset; label: string }> = [
-  { value: '5m', label: 'Last 5 minutes' },
-  { value: '15m', label: 'Last 15 minutes' },
-  { value: '1h', label: 'Last hour' },
-  { value: '24h', label: 'Last 24 hours' },
-  { value: '7d', label: 'Last 7 days' },
-  { value: '30d', label: 'Last 30 days' },
-  { value: 'custom', label: 'Custom range' },
-];
+import type { LogLevel, LogResponse, LogSettings } from './types';
+import {
+  applyClientLogFilters,
+  buildRequestGroups,
+  computePercentile,
+  parseLogEntry,
+  sortParsedLogs,
+  toCsv,
+  type ClientLogFilters,
+  type ParsedLogEntry,
+} from './logsInsights';
 
 interface AdminLogsPanelProps {
-  themeColor?: string;
   isActive?: boolean;
 }
 
-interface FilterDraft {
+type ViewMode = 'table' | 'timeline' | 'requests';
+
+interface ServerFilterState {
   levels: LogLevel[];
   contexts: string[];
   search: string;
-  rangePreset: RangePreset;
-  customFrom: string;
-  customTo: string;
+  from: string;
+  to: string;
+  limit: number;
+  offset: number;
 }
 
-const defaultFilters: FilterDraft = {
+interface SettingsDraft {
+  retentionDays: number;
+  autoCleanupEnabled: boolean;
+  realtimeCriticalAlertsEnabled: boolean;
+  errorRateAlertThresholdPerMinute: number;
+  p95LatencyAlertThresholdMs: number;
+  metricsRetentionHours: number;
+}
+
+const LEVEL_OPTIONS: LogLevel[] = ['trace', 'debug', 'info', 'warn', 'error'];
+const METHOD_OPTIONS = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS', 'HEAD'];
+
+const DEFAULT_SERVER_FILTERS: ServerFilterState = {
   levels: [],
   contexts: [],
   search: '',
-  rangePreset: '24h',
-  customFrom: '',
-  customTo: '',
+  from: '',
+  to: '',
+  limit: 200,
+  offset: 0,
 };
 
-const formatDateTime = (value: string) =>
+const INITIAL_CLIENT_FILTERS: ClientLogFilters = {
+  methods: [],
+  requestId: '',
+  pathContains: '',
+  userId: '',
+  organisationId: '',
+  onlyWithStack: false,
+  onlyErrors: false,
+  onlyApiExceptions: false,
+  onlyAuthRelated: false,
+};
+
+const levelBadgeClass: Record<LogLevel, string> = {
+  log: 'bg-slate-100 text-slate-700 border border-slate-200',
+  info: 'bg-blue-100 text-blue-700 border border-blue-200',
+  warn: 'bg-amber-100 text-amber-700 border border-amber-200',
+  error: 'bg-red-100 text-red-700 border border-red-200',
+  debug: 'bg-violet-100 text-violet-700 border border-violet-200',
+  verbose: 'bg-cyan-100 text-cyan-700 border border-cyan-200',
+  trace: 'bg-indigo-100 text-indigo-700 border border-indigo-200',
+};
+
+const metricTone = (value: number, warnThreshold: number): string =>
+  value >= warnThreshold
+    ? 'text-red-700'
+    : value >= warnThreshold * 0.7
+      ? 'text-amber-700'
+      : 'text-emerald-700';
+
+const formatDateTime = (value: string): string =>
   new Intl.DateTimeFormat(undefined, {
     year: 'numeric',
     month: 'short',
@@ -73,747 +95,1199 @@ const formatDateTime = (value: string) =>
     second: '2-digit',
   }).format(new Date(value));
 
-const computeRange = (filters: FilterDraft): { from?: string; to?: string } => {
-  const now = new Date();
-  switch (filters.rangePreset) {
-    case '5m': {
-      const from = new Date(now.getTime() - 5 * 60 * 1000);
-      return { from: from.toISOString(), to: now.toISOString() };
-    }
-    case '15m': {
-      const from = new Date(now.getTime() - 15 * 60 * 1000);
-      return { from: from.toISOString(), to: now.toISOString() };
-    }
-    case '1h': {
-      const from = new Date(now.getTime() - 60 * 60 * 1000);
-      return { from: from.toISOString(), to: now.toISOString() };
-    }
-    case '24h': {
-      const from = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-      return { from: from.toISOString(), to: now.toISOString() };
-    }
-    case '7d': {
-      const from = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-      return { from: from.toISOString(), to: now.toISOString() };
-    }
-    case '30d': {
-      const from = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-      return { from: from.toISOString(), to: now.toISOString() };
-    }
-    case 'custom': {
-      const from = filters.customFrom ? new Date(filters.customFrom) : undefined;
-      const to = filters.customTo ? new Date(filters.customTo) : undefined;
-      return {
-        from: from && !Number.isNaN(from.getTime()) ? from.toISOString() : undefined,
-        to: to && !Number.isNaN(to.getTime()) ? to.toISOString() : undefined,
-      };
-    }
-    default:
-      return {};
-  }
+const toInputDateTime = (date: Date): string => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const hour = String(date.getHours()).padStart(2, '0');
+  const minute = String(date.getMinutes()).padStart(2, '0');
+  return `${year}-${month}-${day}T${hour}:${minute}`;
 };
 
-const areStringArraysEqual = (left: string[], right: string[]): boolean =>
-  left.length === right.length && left.every((value, index) => value === right[index]);
+const toIso = (value: string): string | undefined => {
+  if (!value.trim()) {
+    return undefined;
+  }
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? undefined : parsed.toISOString();
+};
 
-export const AdminLogsPanel: React.FC<AdminLogsPanelProps> = ({ themeColor = '#3b82f6', isActive = false }) => {
-const [filters, setFilters] = useState<FilterDraft>(defaultFilters);
-const [appliedFilters, setAppliedFilters] = useState<FilterDraft>(defaultFilters);
-const [logs, setLogs] = useState<LogEntry[]>([]);
-const [availableContexts, setAvailableContexts] = useState<string[]>([]);
-const [settings, setSettings] = useState<LogSettings | null>(null);
-const [expandedLogId, setExpandedLogId] = useState<number | null>(null);
-const [isLoading, setIsLoading] = useState(false);
-const [isSavingSettings, setIsSavingSettings] = useState(false);
-const [isClearing, setIsClearing] = useState(false);
-const [isRunningCleanup, setIsRunningCleanup] = useState(false);
-const [retentionDraft, setRetentionDraft] = useState<{
-  retentionDays: number;
-  autoCleanupEnabled: boolean;
-  realtimeCriticalAlertsEnabled: boolean;
-  errorRateAlertThresholdPerMinute: number;
-  p95LatencyAlertThresholdMs: number;
-  metricsRetentionHours: number;
-}>({
-  retentionDays: 30,
-  autoCleanupEnabled: true,
-  realtimeCriticalAlertsEnabled: true,
-  errorRateAlertThresholdPerMinute: 25,
-  p95LatencyAlertThresholdMs: 1500,
-  metricsRetentionHours: 72,
-});
-const [error, setError] = useState<string | null>(null);
-const [status, setStatus] = useState<string | null>(null);
-const [isLevelsOpen, setIsLevelsOpen] = useState(false);
-const [isContextsOpen, setIsContextsOpen] = useState(false);
+const toggleArray = <T,>(values: T[], value: T): T[] =>
+  values.includes(value) ? values.filter((entry) => entry !== value) : [...values, value];
 
-const levelsDropdownRef = useRef<HTMLDivElement>(null);
-const contextsDropdownRef = useRef<HTMLDivElement>(null);
+const safeNumber = (value: string): number | null => {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+};
 
-useEffect(() => {
-  const handleClickOutside = (event: MouseEvent) => {
-    if (levelsDropdownRef.current && !levelsDropdownRef.current.contains(event.target as Node)) {
-      setIsLevelsOpen(false);
-    }
-    if (contextsDropdownRef.current && !contextsDropdownRef.current.contains(event.target as Node)) {
-      setIsContextsOpen(false);
-    }
-  };
-  document.addEventListener('mousedown', handleClickOutside);
-  return () => document.removeEventListener('mousedown', handleClickOutside);
-}, []);
+const getDurationMs = (from: string, to: string): number =>
+  Math.max(0, new Date(to).getTime() - new Date(from).getTime());
 
-  const loadLogs = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
+const downloadTextFile = (filename: string, content: string, mimeType: string): void => {
+  const blob = new Blob([content], { type: mimeType });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+};
 
-    try {
-      const { levels, contexts, search, rangePreset, customFrom, customTo } = appliedFilters;
-      const { from, to } = computeRange({ levels, contexts, search, rangePreset, customFrom, customTo });
+export const AdminLogsPanel: React.FC<AdminLogsPanelProps> = ({ isActive = false }) => {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [message, setMessage] = useState<string | null>(null);
 
-      const response = await fetchAdminLogs({
-        levels: levels.length > 0 ? levels : undefined,
-        contexts: contexts.length > 0 ? contexts : undefined,
-        search: search.trim() || undefined,
-        from,
-        to,
-      });
+  const [serverDraft, setServerDraft] =
+    useState<ServerFilterState>(DEFAULT_SERVER_FILTERS);
+  const [serverFilters, setServerFilters] =
+    useState<ServerFilterState>(DEFAULT_SERVER_FILTERS);
 
-      const nextLogs = response.items ?? [];
-      setLogs(nextLogs);
+  const [clientFilters, setClientFilters] =
+    useState<ClientLogFilters>(INITIAL_CLIENT_FILTERS);
+  const [minLatencyMs, setMinLatencyMs] = useState('');
+  const [requireMetadata, setRequireMetadata] = useState(false);
+  const [sortDirection, setSortDirection] = useState<'newest' | 'oldest'>('newest');
 
-      const contextSet = new Set<string>(
-        nextLogs
-          .map((log: LogEntry) => (log.context || '').trim())
-          .filter((context: string) => context.length > 0),
-      );
-      const sortedContexts = Array.from(contextSet).sort();
-      setAvailableContexts(sortedContexts);
-      setFilters((prev) => {
-        const nextContexts = prev.contexts.filter((ctx) => contextSet.has(ctx));
-        if (areStringArraysEqual(prev.contexts, nextContexts)) {
-          return prev;
-        }
-        return {
-          ...prev,
-          contexts: nextContexts,
-        };
-      });
-      setAppliedFilters((prev) => {
-        const nextContexts = prev.contexts.filter((ctx) => contextSet.has(ctx));
-        if (areStringArraysEqual(prev.contexts, nextContexts)) {
-          return prev;
-        }
-        return {
-          ...prev,
-          contexts: nextContexts,
-        };
-      });
+  const [viewMode, setViewMode] = useState<ViewMode>('table');
+  const [expandedRows, setExpandedRows] = useState<Record<number, boolean>>({});
+  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
 
-      if (response.settings) {
-        setSettings(response.settings);
-        setRetentionDraft({
-          retentionDays: response.settings.retentionDays,
-          autoCleanupEnabled: response.settings.autoCleanupEnabled,
-          realtimeCriticalAlertsEnabled:
-            response.settings.realtimeCriticalAlertsEnabled,
-          errorRateAlertThresholdPerMinute:
-            response.settings.errorRateAlertThresholdPerMinute,
-          p95LatencyAlertThresholdMs:
-            response.settings.p95LatencyAlertThresholdMs,
-          metricsRetentionHours: response.settings.metricsRetentionHours,
-        });
-      }
-      setStatus(null);
-    } catch (err) {
-      setError(formatAdminError(err));
-    } finally {
-      setIsLoading(false);
-    }
-  }, [appliedFilters]);
+  const [autoRefresh, setAutoRefresh] = useState(true);
+  const [refreshSeconds, setRefreshSeconds] = useState(20);
+
+  const [logs, setLogs] = useState<ParsedLogEntry[]>([]);
+  const [totalCount, setTotalCount] = useState(0);
+
+  const [settings, setSettings] = useState<LogSettings | null>(null);
+  const [settingsDraft, setSettingsDraft] = useState<SettingsDraft | null>(null);
+  const [clearBefore, setClearBefore] = useState('');
+  const [savingSettings, setSavingSettings] = useState(false);
+  const [maintenanceBusy, setMaintenanceBusy] = useState(false);
 
   useEffect(() => {
-    if (isActive) {
-      loadLogs();
+    if (!settings) {
+      return;
     }
+    setSettingsDraft({
+      retentionDays: settings.retentionDays,
+      autoCleanupEnabled: settings.autoCleanupEnabled,
+      realtimeCriticalAlertsEnabled: settings.realtimeCriticalAlertsEnabled,
+      errorRateAlertThresholdPerMinute: settings.errorRateAlertThresholdPerMinute,
+      p95LatencyAlertThresholdMs: settings.p95LatencyAlertThresholdMs,
+      metricsRetentionHours: settings.metricsRetentionHours,
+    });
+  }, [settings]);
+
+  const loadLogs = useCallback(
+    async (silent = false) => {
+      if (!silent) {
+        setLoading(true);
+      }
+      setError(null);
+
+      try {
+        const response = (await fetchAdminLogs({
+          levels: serverFilters.levels,
+          contexts: serverFilters.contexts,
+          search: serverFilters.search,
+          from: toIso(serverFilters.from),
+          to: toIso(serverFilters.to),
+          limit: serverFilters.limit,
+          offset: serverFilters.offset,
+        })) as LogResponse;
+
+        const parsed = (response.items ?? []).map(parseLogEntry);
+        setLogs(parsed);
+        setTotalCount(response.count ?? parsed.length);
+        setSettings(response.settings ?? null);
+      } catch (err) {
+        setError(formatAdminError(err));
+      } finally {
+        if (!silent) {
+          setLoading(false);
+        }
+      }
+    },
+    [serverFilters],
+  );
+
+  useEffect(() => {
+    if (!isActive) {
+      return;
+    }
+    void loadLogs();
   }, [isActive, loadLogs]);
 
-  const levelStats = useMemo(() => {
-    const tally: Record<LogLevel, number> = {
-      error: 0,
-      warn: 0,
-      info: 0,
-      debug: 0,
-      trace: 0,
-      log: 0,
-      verbose: 0,
-    };
-    logs.forEach((log) => {
-      tally[log.level] += 1;
-    });
-    return tally;
-  }, [logs]);
-
-  const handleLevelToggle = (level: LogLevel) => {
-    setFilters((prev) => {
-      const exists = prev.levels.includes(level);
-      const nextLevels = exists ? prev.levels.filter((item) => item !== level) : [...prev.levels, level];
-      return { ...prev, levels: nextLevels };
-    });
-  };
-
-  const handleContextToggle = (context: string) => {
-    setFilters((prev) => {
-      const exists = prev.contexts.includes(context);
-      const nextContexts = exists ? prev.contexts.filter((item) => item !== context) : [...prev.contexts, context];
-      return { ...prev, contexts: nextContexts };
-    });
-  };
-
-const handlePresetChange = (value: RangePreset) => {
-  setFilters((prev) => ({
-    ...prev,
-    rangePreset: value,
-  }));
-  };
-
-const handleApplyFilters = () => {
-  setAppliedFilters({ ...filters });
-  setIsLevelsOpen(false);
-  setIsContextsOpen(false);
-};
-
-const handleResetFilters = () => {
-  setFilters(defaultFilters);
-  setAppliedFilters(defaultFilters);
-  setIsLevelsOpen(false);
-  setIsContextsOpen(false);
-};
-
-const selectAllLevels = () => {
-  setFilters((prev) => ({ ...prev, levels: LEVEL_OPTIONS.map((option) => option.value) }));
-};
-
-const clearLevels = () => {
-  setFilters((prev) => ({ ...prev, levels: [] }));
-};
-
-const selectAllContexts = () => {
-  setFilters((prev) => ({ ...prev, contexts: availableContexts }));
-};
-
-const clearContexts = () => {
-  setFilters((prev) => ({ ...prev, contexts: [] }));
-};
-
-  const handleSaveSettings = async () => {
-    setIsSavingSettings(true);
-    setError(null);
-    try {
-      const payload = {
-        retentionDays: Math.max(0, Number(retentionDraft.retentionDays)),
-        autoCleanupEnabled: retentionDraft.autoCleanupEnabled,
-        realtimeCriticalAlertsEnabled:
-          retentionDraft.realtimeCriticalAlertsEnabled,
-        errorRateAlertThresholdPerMinute: Math.max(
-          1,
-          Number(retentionDraft.errorRateAlertThresholdPerMinute),
-        ),
-        p95LatencyAlertThresholdMs: Math.max(
-          50,
-          Number(retentionDraft.p95LatencyAlertThresholdMs),
-        ),
-        metricsRetentionHours: Math.max(
-          1,
-          Number(retentionDraft.metricsRetentionHours),
-        ),
-      };
-      const response = await updateLogRetentionSettings(payload);
-      setSettings(response.settings);
-      setStatus('Retention settings updated.');
-    } catch (err) {
-      setError(formatAdminError(err));
-    } finally {
-      setIsSavingSettings(false);
-    }
-  };
-
-  const handleClearLogs = async () => {
-    if (!window.confirm('Delete all stored logs? This action cannot be undone.')) {
+  useEffect(() => {
+    if (!isActive || !autoRefresh) {
       return;
     }
 
-    setIsClearing(true);
-    setError(null);
+    const seconds = Math.max(10, refreshSeconds);
+    const timer = window.setInterval(() => {
+      void loadLogs(true);
+    }, seconds * 1000);
 
+    return () => window.clearInterval(timer);
+  }, [autoRefresh, isActive, loadLogs, refreshSeconds]);
+
+  const availableContexts = useMemo(() => {
+    const contextSet = new Set<string>();
+    logs.forEach((log) => {
+      if (log.context && log.context.trim()) {
+        contextSet.add(log.context);
+      }
+    });
+    return Array.from(contextSet).sort((a, b) => a.localeCompare(b));
+  }, [logs]);
+
+  const filteredLogs = useMemo(() => {
+    const baseline = applyClientLogFilters(logs, clientFilters);
+    const minLatency = safeNumber(minLatencyMs);
+
+    const refined = baseline.filter((entry) => {
+      if (requireMetadata) {
+        const metadataKeys = entry.metadata ? Object.keys(entry.metadata).length : 0;
+        if (metadataKeys === 0) {
+          return false;
+        }
+      }
+
+      if (minLatency !== null && minLatency > 0) {
+        if ((entry.latencyMs ?? -1) < minLatency) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+
+    return sortParsedLogs(refined, sortDirection);
+  }, [clientFilters, logs, minLatencyMs, requireMetadata, sortDirection]);
+
+  const requestGroups = useMemo(() => buildRequestGroups(filteredLogs), [filteredLogs]);
+
+  const latencyValues = useMemo(
+    () => filteredLogs.map((entry) => entry.latencyMs).filter((value): value is number => typeof value === 'number'),
+    [filteredLogs],
+  );
+
+  const errorCount = useMemo(
+    () => filteredLogs.filter((entry) => entry.level === 'error').length,
+    [filteredLogs],
+  );
+  const authRelatedCount = useMemo(
+    () => filteredLogs.filter((entry) => entry.isAuthRelated).length,
+    [filteredLogs],
+  );
+  const apiExceptionCount = useMemo(
+    () => filteredLogs.filter((entry) => entry.isApiException).length,
+    [filteredLogs],
+  );
+
+  const p50Latency = computePercentile(latencyValues, 50);
+  const p95Latency = computePercentile(latencyValues, 95);
+  const errorRatio = filteredLogs.length > 0 ? (errorCount / filteredLogs.length) * 100 : 0;
+
+  const hasPreviousPage = serverFilters.offset > 0;
+  const hasNextPage = serverFilters.offset + serverFilters.limit < totalCount;
+  const currentFrom = totalCount === 0 ? 0 : serverFilters.offset + 1;
+  const currentTo = Math.min(serverFilters.offset + serverFilters.limit, totalCount);
+
+  const queryDirty =
+    JSON.stringify({ ...serverDraft, offset: 0 }) !==
+    JSON.stringify({ ...serverFilters, offset: 0 });
+
+  const applyServerQuery = () => {
+    setServerFilters({ ...serverDraft, offset: 0 });
+    setMessage('Query updated.');
+  };
+
+  const resetAllFilters = () => {
+    const resetState = {
+      ...DEFAULT_SERVER_FILTERS,
+      from: toInputDateTime(new Date(Date.now() - 60 * 60 * 1000)),
+      to: toInputDateTime(new Date()),
+    };
+
+    setServerDraft(resetState);
+    setServerFilters({ ...resetState, offset: 0 });
+    setClientFilters(INITIAL_CLIENT_FILTERS);
+    setMinLatencyMs('');
+    setRequireMetadata(false);
+    setSortDirection('newest');
+    setMessage('Filters reset to default incident window.');
+  };
+
+  const applyQuickPreset = (preset: 'auth' | 'api' | 'slow' | 'noisy') => {
+    if (preset === 'auth') {
+      setClientFilters((prev) => ({
+        ...prev,
+        onlyErrors: true,
+        onlyAuthRelated: true,
+        onlyApiExceptions: false,
+      }));
+      setSortDirection('newest');
+      setMessage('Preset applied: authentication incidents');
+      return;
+    }
+
+    if (preset === 'api') {
+      setClientFilters((prev) => ({
+        ...prev,
+        onlyErrors: false,
+        onlyAuthRelated: false,
+        onlyApiExceptions: true,
+      }));
+      setSortDirection('newest');
+      setMessage('Preset applied: API exceptions');
+      return;
+    }
+
+    if (preset === 'slow') {
+      setClientFilters((prev) => ({
+        ...prev,
+        onlyErrors: false,
+        onlyAuthRelated: false,
+      }));
+      setMinLatencyMs('1000');
+      setSortDirection('newest');
+      setMessage('Preset applied: slow requests >= 1000ms');
+      return;
+    }
+
+    setClientFilters((prev) => ({
+      ...prev,
+      onlyErrors: true,
+      onlyApiExceptions: false,
+      onlyAuthRelated: false,
+    }));
+    setServerDraft((prev) => ({
+      ...prev,
+      levels: ['warn', 'error'],
+      offset: 0,
+    }));
+    setMessage('Preset applied: warn/error noise sweep');
+  };
+
+  const exportCsv = () => {
+    const csv = toCsv(filteredLogs);
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    downloadTextFile(`operational-logs-${timestamp}.csv`, csv, 'text/csv;charset=utf-8');
+    setMessage('CSV export generated.');
+  };
+
+  const copyPayload = async (entry: ParsedLogEntry) => {
     try {
-      const response = await clearAdminLogs();
-      setStatus(`Cleared ${response.deleted ?? 0} log entries.`);
-      await loadLogs();
-    } catch (err) {
-      setError(formatAdminError(err));
-    } finally {
-      setIsClearing(false);
+      if (!navigator.clipboard) {
+        setMessage('Clipboard API unavailable in this browser context.');
+        return;
+      }
+
+      await navigator.clipboard.writeText(JSON.stringify(entry, null, 2));
+      setMessage(`Copied log #${entry.id} payload.`);
+    } catch {
+      setMessage('Failed to copy payload.');
     }
   };
 
-  const handleRunCleanup = async () => {
-    setIsRunningCleanup(true);
+  const saveRetentionSettings = async () => {
+    if (!settingsDraft) {
+      return;
+    }
+
+    setSavingSettings(true);
     setError(null);
 
     try {
-      const response = await runAdminLogRetention();
-      const removed = response.deleted ?? 0;
-      setStatus(removed > 0 ? `Retention removed ${removed} log entries.` : 'Retention completed. No entries removed.');
-      await loadLogs();
+      await updateLogRetentionSettings(settingsDraft);
+      setMessage('Retention and alert settings updated.');
+      await loadLogs(true);
     } catch (err) {
       setError(formatAdminError(err));
     } finally {
-      setIsRunningCleanup(false);
+      setSavingSettings(false);
     }
   };
 
-  const themeBorderStyle = { borderColor: themeColor };
+  const purgeExpired = async () => {
+    setMaintenanceBusy(true);
+    setError(null);
+
+    try {
+      const result = await runAdminLogRetention();
+      const deleted = typeof result?.deleted === 'number' ? result.deleted : 0;
+      setMessage(`Retention cleanup complete. Deleted ${deleted} log entries.`);
+      await loadLogs(true);
+    } catch (err) {
+      setError(formatAdminError(err));
+    } finally {
+      setMaintenanceBusy(false);
+    }
+  };
+
+  const clearLogs = async () => {
+    setMaintenanceBusy(true);
+    setError(null);
+
+    try {
+      const result = await clearAdminLogs(toIso(clearBefore));
+      const deleted = typeof result?.deleted === 'number' ? result.deleted : 0;
+      setMessage(`Log cleanup complete. Deleted ${deleted} entries.`);
+      await loadLogs(true);
+    } catch (err) {
+      setError(formatAdminError(err));
+    } finally {
+      setMaintenanceBusy(false);
+    }
+  };
 
   return (
-    <section className="bg-white/90 backdrop-blur-md rounded-3xl shadow-xl border" style={themeBorderStyle}>
-      <header className="px-6 py-5 border-b border-gray-200 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div>
-          <h2 className="text-xl font-semibold text-gray-900">Operational Logs</h2>
-          <p className="text-sm text-gray-500">Track backend activity and errors persisted to the database.</p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <button
-            type="button"
-            onClick={loadLogs}
-            disabled={isLoading}
-            className="inline-flex items-center gap-1 rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-60"
-          >
-            Refresh
-          </button>
-          <button
-            type="button"
-            onClick={handleRunCleanup}
-            disabled={isRunningCleanup || isLoading}
-            className="inline-flex items-center gap-1 rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-60"
-          >
-            Run Cleanup
-          </button>
-          <button
-            type="button"
-            onClick={handleClearLogs}
-            disabled={isClearing || isLoading}
-            className="inline-flex items-center gap-1 rounded-lg bg-red-50 text-red-600 px-3 py-2 text-sm font-medium border border-red-200 hover:bg-red-100 disabled:opacity-60"
-          >
-            Clear Logs
-          </button>
-        </div>
-      </header>
-
-      {error && (
-        <div className="px-6 py-4 bg-red-50 border-b border-red-100 text-sm text-red-700">{error}</div>
-      )}
-
-      {status && (
-        <div className="px-6 py-4 bg-emerald-50 border-b border-emerald-100 text-sm text-emerald-700">{status}</div>
-      )}
-
-      <div className="px-6 py-5 border-b border-gray-200 space-y-6">
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          <div ref={levelsDropdownRef} className="relative">
-            <button
-              type="button"
-              className="w-full rounded-xl border border-gray-200 px-4 py-3 text-left text-sm font-medium text-gray-700 hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400"
-              onClick={() => setIsLevelsOpen((prev) => !prev)}
-            >
-              <div className="flex items-center justify-between">
-                <span>
-                  Levels{filters.levels.length > 0 ? ` (${filters.levels.length} selected)` : ' (All)'}
-                </span>
-                <span className="text-xs text-gray-400">{isLevelsOpen ? 'Hide' : 'Show'}</span>
-              </div>
-              <p className="mt-1 text-xs text-gray-500">Choose which severity levels to include.</p>
-            </button>
-            {isLevelsOpen && (
-              <div className="absolute z-20 mt-2 w-full rounded-xl border border-gray-200 bg-white shadow-lg p-3 space-y-3">
-                {LEVEL_OPTIONS.map((option) => {
-                  const checked = filters.levels.includes(option.value);
-                  return (
-                    <label key={option.value} className="flex items-start gap-3 rounded-lg px-2 py-1 hover:bg-gray-50">
-                      <input
-                        type="checkbox"
-                        className="mt-1 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                        checked={checked}
-                        onChange={() => handleLevelToggle(option.value)}
-                      />
-                      <div>
-                        <p className="text-sm font-medium text-gray-800">{option.label}</p>
-                        <p className="text-xs text-gray-500">{option.description}</p>
-                      </div>
-                    </label>
-                  );
-                })}
-                <div className="flex items-center justify-between border-t border-gray-200 pt-2 text-xs">
-                  <button type="button" className="text-blue-600 hover:text-blue-500" onClick={selectAllLevels}>
-                    Select all
-                  </button>
-                  <button type="button" className="text-gray-600 hover:text-gray-500" onClick={clearLevels}>
-                    Clear
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-
-          <div ref={contextsDropdownRef} className="relative">
-            <button
-              type="button"
-              className="w-full rounded-xl border border-gray-200 px-4 py-3 text-left text-sm font-medium text-gray-700 hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 disabled:opacity-60"
-              disabled={availableContexts.length === 0}
-              onClick={() => setIsContextsOpen((prev) => !prev)}
-            >
-              <div className="flex items-center justify-between">
-                <span>
-                  Event types{' '}
-                  {filters.contexts.length > 0
-                    ? `(${filters.contexts.length} selected)`
-                    : availableContexts.length > 0
-                    ? '(All)'
-                    : '(Waiting for logs)'}
-                </span>
-                {availableContexts.length > 0 && (
-                  <span className="text-xs text-gray-400">{isContextsOpen ? 'Hide' : 'Show'}</span>
-                )}
-              </div>
-              <p className="mt-1 text-xs text-gray-500">
-                {availableContexts.length > 0
-                  ? 'Filter by specific Nest logger contexts.'
-                  : 'Contexts appear once logs have been collected.'}
-              </p>
-            </button>
-            {isContextsOpen && availableContexts.length > 0 && (
-              <div className="absolute z-20 mt-2 max-h-72 w-full overflow-auto rounded-xl border border-gray-200 bg-white shadow-lg p-3 space-y-2">
-                {availableContexts.map((context) => {
-                  const checked = filters.contexts.includes(context);
-                  return (
-                    <label key={context} className="flex items-center gap-3 rounded-lg px-2 py-1 hover:bg-gray-50">
-                      <input
-                        type="checkbox"
-                        className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                        checked={checked}
-                        onChange={() => handleContextToggle(context)}
-                      />
-                      <span className="text-sm text-gray-700">{context}</span>
-                    </label>
-                  );
-                })}
-                <div className="flex items-center justify-between border-t border-gray-200 pt-2 text-xs">
-                  <button type="button" className="text-blue-600 hover:text-blue-500" onClick={selectAllContexts}>
-                    Select all
-                  </button>
-                  <button type="button" className="text-gray-600 hover:text-gray-500" onClick={clearContexts}>
-                    Clear
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          <label className="flex flex-col gap-1 text-sm text-gray-600">
-            Free-text Search
-            <input
-              type="text"
-              value={filters.search}
-              onChange={(event) => setFilters((prev) => ({ ...prev, search: event.target.value }))}
-              placeholder="Message, stack trace, or metadata"
-              className="rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
-            />
-          </label>
-
+    <section className="rounded-3xl border border-slate-200 bg-white/95 shadow-xl backdrop-blur-md">
+      <header className="border-b border-slate-200 px-6 py-5">
+        <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <p className="text-sm font-semibold text-gray-700 mb-2">Time Range</p>
-            <div className="flex flex-wrap gap-2">
-              {RANGE_PRESETS.map((preset) => (
-                <button
-                  key={preset.value}
-                  type="button"
-                  onClick={() => handlePresetChange(preset.value)}
-                  className={`rounded-full border px-3 py-1 text-xs font-medium transition ${
-                    filters.rangePreset === preset.value
-                      ? 'border-blue-500 bg-blue-50 text-blue-700'
-                      : 'border-gray-200 text-gray-600 hover:border-gray-300'
-                  }`}
-                >
-                  {preset.label}
-                </button>
-              ))}
-            </div>
-            {filters.rangePreset === 'custom' && (
-              <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
-                <label className="flex flex-col text-xs text-gray-600 gap-1">
-                  Start
-                  <input
-                    type="datetime-local"
-                    value={filters.customFrom}
-                    onChange={(event) => setFilters((prev) => ({ ...prev, customFrom: event.target.value }))}
-                    className="rounded-lg border border-gray-200 px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
-                  />
-                </label>
-                <label className="flex flex-col text-xs text-gray-600 gap-1">
-                  End
-                  <input
-                    type="datetime-local"
-                    value={filters.customTo}
-                    onChange={(event) => setFilters((prev) => ({ ...prev, customTo: event.target.value }))}
-                    className="rounded-lg border border-gray-200 px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
-                  />
-                </label>
-              </div>
-            )}
-          </div>
-        </div>
-
-        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-gray-200 pt-4">
-          <div className="text-xs text-gray-500">
-            Showing {logs.length} entries{filters.levels.length > 0 ? ` | Levels: ${filters.levels.join(', ')}` : ''}
-            {filters.contexts.length > 0 ? ` | Event types: ${filters.contexts.join(', ')}` : ''}
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <button
-              type="button"
-              className="rounded-lg border border-gray-200 px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50"
-              onClick={handleResetFilters}
-            >
-              Reset
-            </button>
-            <button
-              type="button"
-              onClick={handleApplyFilters}
-              className="rounded-lg bg-blue-600 text-white px-4 py-2 text-sm font-medium hover:bg-blue-700 transition"
-            >
-              Apply Filters
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <div className="px-6 py-5 border-b border-gray-200">
-        <h3 className="text-sm font-semibold text-gray-700 mb-3">Retention and Alert Policy</h3>
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-          <label className="flex flex-col gap-1 text-sm text-gray-600">
-            Keep logs for (days)
-            <input
-              type="number"
-              min={0}
-              value={retentionDraft.retentionDays}
-              onChange={(event) =>
-                setRetentionDraft((prev) => ({
-                  ...prev,
-                  retentionDays: Number(event.target.value || 0),
-                }))
-              }
-              className="rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
-            />
-          </label>
-
-          <label className="flex items-center gap-2 text-sm text-gray-600 mt-2 md:mt-6">
-            <input
-              type="checkbox"
-              checked={retentionDraft.autoCleanupEnabled}
-              onChange={(event) =>
-                setRetentionDraft((prev) => ({
-                  ...prev,
-                  autoCleanupEnabled: event.target.checked,
-                }))
-              }
-              className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-            />
-            Enable automatic cleanup
-          </label>
-
-          <label className="flex flex-col gap-1 text-sm text-gray-600">
-            Metrics retention (hours)
-            <input
-              type="number"
-              min={1}
-              value={retentionDraft.metricsRetentionHours}
-              onChange={(event) =>
-                setRetentionDraft((prev) => ({
-                  ...prev,
-                  metricsRetentionHours: Number(event.target.value || 1),
-                }))
-              }
-              className="rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
-            />
-          </label>
-
-          <label className="flex flex-col gap-1 text-sm text-gray-600">
-            Error-rate alert threshold (per min)
-            <input
-              type="number"
-              min={1}
-              value={retentionDraft.errorRateAlertThresholdPerMinute}
-              onChange={(event) =>
-                setRetentionDraft((prev) => ({
-                  ...prev,
-                  errorRateAlertThresholdPerMinute: Number(
-                    event.target.value || 1,
-                  ),
-                }))
-              }
-              className="rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
-            />
-          </label>
-
-          <label className="flex flex-col gap-1 text-sm text-gray-600">
-            P95 latency alert threshold (ms)
-            <input
-              type="number"
-              min={50}
-              value={retentionDraft.p95LatencyAlertThresholdMs}
-              onChange={(event) =>
-                setRetentionDraft((prev) => ({
-                  ...prev,
-                  p95LatencyAlertThresholdMs: Number(event.target.value || 50),
-                }))
-              }
-              className="rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
-            />
-          </label>
-
-          <label className="flex items-center gap-2 text-sm text-gray-600 mt-2 md:mt-6">
-            <input
-              type="checkbox"
-              checked={retentionDraft.realtimeCriticalAlertsEnabled}
-              onChange={(event) =>
-                setRetentionDraft((prev) => ({
-                  ...prev,
-                  realtimeCriticalAlertsEnabled: event.target.checked,
-                }))
-              }
-              className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-            />
-            Enable realtime critical alerts
-          </label>
-
-          <div className="flex items-end">
-            <button
-              type="button"
-              onClick={handleSaveSettings}
-              disabled={isSavingSettings}
-              className="w-full inline-flex justify-center rounded-lg bg-emerald-600 text-white px-3 py-2 text-sm font-medium hover:bg-emerald-700 transition-colors disabled:opacity-60"
-            >
-              {isSavingSettings ? 'Saving...' : 'Save Policy'}
-            </button>
-          </div>
-        </div>
-        {settings && (
-          <p className="text-xs text-gray-500 mt-2">
-            Last updated {formatDateTime(settings.updatedAt)}. Logs older than{' '}
-            <span className="font-medium">{settings.retentionDays} days</span> are removed automatically when retention is enabled.
-            {' '}Critical alerting is{' '}
-            <span className="font-medium">
-              {settings.realtimeCriticalAlertsEnabled ? 'enabled' : 'disabled'}
-            </span>
-            .
-          </p>
-        )}
-      </div>
-
-      <div className="px-6 py-5 space-y-4">
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
-          {Object.entries(levelStats).map(([level, count]) => {
-            const meta = LEVEL_BADGES[level as LogLevel];
-            return (
-              <div
-                key={level}
-                className="rounded-xl border border-gray-100 bg-gray-50/60 px-4 py-3 shadow-sm flex items-center justify-between"
-              >
-                <span className={`text-xs font-semibold uppercase ${meta.classes}`}>{meta.label}</span>
-                <span className="text-lg font-semibold text-gray-900">{count}</span>
-              </div>
-            );
-          })}
-        </div>
-
-        {isLoading && logs.length === 0 && (
-          <div className="flex flex-col items-center justify-center gap-3 py-16">
-            <div className="animate-spin h-8 w-8 border-2 border-blue-500 border-t-transparent rounded-full" />
-            <p className="text-sm text-gray-500">Loading logs...</p>
-          </div>
-        )}
-
-        {!isLoading && logs.length === 0 && (
-          <div className="flex flex-col items-center justify-center gap-3 py-16 text-center">
-            <div className="text-3xl" aria-hidden="true">
-              [no-logs]
-            </div>
-            <p className="text-sm text-gray-600">
-              No log entries match the current filters. Try expanding the time range or selecting different criteria.
+            <h2 className="text-2xl font-semibold text-slate-900">Operational Logs</h2>
+            <p className="text-sm text-slate-500">
+              Incident-first triage console with correlation, anomaly filters, and retention controls.
             </p>
           </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <label className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-slate-50 px-3 py-1.5 text-xs text-slate-700">
+              <input
+                type="checkbox"
+                checked={autoRefresh}
+                onChange={(event) => setAutoRefresh(event.target.checked)}
+                className="h-4 w-4"
+              />
+              Auto refresh
+            </label>
+            <select
+              value={refreshSeconds}
+              onChange={(event) => setRefreshSeconds(Number(event.target.value))}
+              className="rounded-lg border border-slate-300 px-2 py-1.5 text-xs"
+            >
+              <option value={10}>10s</option>
+              <option value={20}>20s</option>
+              <option value={30}>30s</option>
+              <option value={60}>60s</option>
+            </select>
+            <button
+              type="button"
+              onClick={() => void loadLogs()}
+              className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50"
+            >
+              Refresh
+            </button>
+          </div>
+        </div>
+        {error && <p className="mt-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
+        {message && !error && (
+          <p className="mt-3 rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-700">{message}</p>
         )}
+      </header>
 
-        <div className="space-y-3">
-          {logs.map((log) => {
-            const isExpanded = expandedLogId === log.id;
-            const badge = LEVEL_BADGES[log.level];
-            return (
-              <div key={log.id} className="border border-gray-200 rounded-xl bg-white shadow-sm">
-                <button
-                  type="button"
-                  className="w-full flex items-start justify-between gap-4 px-4 py-3 text-left"
-                  onClick={() => setExpandedLogId(isExpanded ? null : log.id)}
-                >
-                  <div className="flex-1 space-y-1">
+      <div className="grid gap-4 border-b border-slate-200 bg-gradient-to-r from-slate-50 to-white px-6 py-4 md:grid-cols-2 xl:grid-cols-4">
+        <article className="rounded-xl border border-slate-200 bg-white px-4 py-3">
+          <p className="text-xs uppercase tracking-wide text-slate-500">Loaded</p>
+          <p className="text-2xl font-semibold text-slate-900">{filteredLogs.length}</p>
+          <p className="text-xs text-slate-500">of {totalCount} queried logs</p>
+        </article>
+        <article className="rounded-xl border border-slate-200 bg-white px-4 py-3">
+          <p className="text-xs uppercase tracking-wide text-slate-500">Errors</p>
+          <p className={`text-2xl font-semibold ${metricTone(errorRatio, 30)}`}>{errorCount}</p>
+          <p className="text-xs text-slate-500">{errorRatio.toFixed(1)}% error ratio</p>
+        </article>
+        <article className="rounded-xl border border-slate-200 bg-white px-4 py-3">
+          <p className="text-xs uppercase tracking-wide text-slate-500">Auth/API Signals</p>
+          <p className="text-2xl font-semibold text-slate-900">{authRelatedCount + apiExceptionCount}</p>
+          <p className="text-xs text-slate-500">{authRelatedCount} auth, {apiExceptionCount} API exceptions</p>
+        </article>
+        <article className="rounded-xl border border-slate-200 bg-white px-4 py-3">
+          <p className="text-xs uppercase tracking-wide text-slate-500">Latency</p>
+          <p className="text-2xl font-semibold text-slate-900">
+            {p95Latency !== null ? `${Math.round(p95Latency)}ms` : 'n/a'}
+          </p>
+          <p className="text-xs text-slate-500">
+            p50 {p50Latency !== null ? `${Math.round(p50Latency)}ms` : 'n/a'}
+          </p>
+        </article>
+      </div>
+
+      <div className="grid gap-4 border-b border-slate-200 px-6 py-5 xl:grid-cols-[2fr_1fr]">
+        <section className="space-y-4 rounded-2xl border border-slate-200 bg-slate-50/60 p-4">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h3 className="text-sm font-semibold text-slate-800">Server Query Filters</h3>
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => applyQuickPreset('auth')}
+                className="rounded-full border border-slate-300 px-2.5 py-1 text-xs text-slate-700 hover:bg-slate-100"
+              >
+                Auth incidents
+              </button>
+              <button
+                type="button"
+                onClick={() => applyQuickPreset('api')}
+                className="rounded-full border border-slate-300 px-2.5 py-1 text-xs text-slate-700 hover:bg-slate-100"
+              >
+                API exceptions
+              </button>
+              <button
+                type="button"
+                onClick={() => applyQuickPreset('slow')}
+                className="rounded-full border border-slate-300 px-2.5 py-1 text-xs text-slate-700 hover:bg-slate-100"
+              >
+                Slow requests
+              </button>
+              <button
+                type="button"
+                onClick={() => applyQuickPreset('noisy')}
+                className="rounded-full border border-slate-300 px-2.5 py-1 text-xs text-slate-700 hover:bg-slate-100"
+              >
+                Warn/Error sweep
+              </button>
+            </div>
+          </div>
+
+          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+            <label className="space-y-1 text-xs text-slate-600">
+              Search message/stack
+              <input
+                type="text"
+                value={serverDraft.search}
+                onChange={(event) =>
+                  setServerDraft((prev) => ({ ...prev, search: event.target.value }))
+                }
+                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+                placeholder="request id, keyword, exception"
+              />
+            </label>
+
+            <label className="space-y-1 text-xs text-slate-600">
+              From
+              <input
+                type="datetime-local"
+                value={serverDraft.from}
+                onChange={(event) =>
+                  setServerDraft((prev) => ({ ...prev, from: event.target.value }))
+                }
+                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+              />
+            </label>
+
+            <label className="space-y-1 text-xs text-slate-600">
+              To
+              <input
+                type="datetime-local"
+                value={serverDraft.to}
+                onChange={(event) =>
+                  setServerDraft((prev) => ({ ...prev, to: event.target.value }))
+                }
+                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+              />
+            </label>
+
+            <label className="space-y-1 text-xs text-slate-600">
+              Page size
+              <select
+                value={serverDraft.limit}
+                onChange={(event) =>
+                  setServerDraft((prev) => ({ ...prev, limit: Number(event.target.value) }))
+                }
+                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+              >
+                <option value={100}>100</option>
+                <option value={200}>200</option>
+                <option value={300}>300</option>
+                <option value={500}>500</option>
+              </select>
+            </label>
+          </div>
+
+          <div className="space-y-2">
+            <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Levels</p>
+            <div className="flex flex-wrap gap-2">
+              {LEVEL_OPTIONS.map((level) => {
+                const active = serverDraft.levels.includes(level);
+                return (
+                  <button
+                    key={level}
+                    type="button"
+                    onClick={() =>
+                      setServerDraft((prev) => ({
+                        ...prev,
+                        levels: toggleArray(prev.levels, level),
+                      }))
+                    }
+                    className={`rounded-full px-2.5 py-1 text-xs font-medium transition ${
+                      active
+                        ? 'bg-slate-800 text-white'
+                        : 'border border-slate-300 text-slate-700 hover:bg-slate-100'
+                    }`}
+                  >
+                    {level}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Contexts</p>
+            <div className="flex max-h-24 flex-wrap gap-2 overflow-auto pr-1">
+              {availableContexts.length === 0 && (
+                <span className="text-xs text-slate-500">No contexts in current result set.</span>
+              )}
+              {availableContexts.map((context) => {
+                const active = serverDraft.contexts.includes(context);
+                return (
+                  <button
+                    key={context}
+                    type="button"
+                    onClick={() =>
+                      setServerDraft((prev) => ({
+                        ...prev,
+                        contexts: toggleArray(prev.contexts, context),
+                      }))
+                    }
+                    className={`rounded-full px-2.5 py-1 text-xs ${
+                      active
+                        ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                        : 'bg-white text-slate-700 border border-slate-300 hover:bg-slate-100'
+                    }`}
+                  >
+                    {context}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              disabled={loading || !queryDirty}
+              onClick={applyServerQuery}
+              className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              Run query
+            </button>
+            <button
+              type="button"
+              onClick={resetAllFilters}
+              className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100"
+            >
+              Reset filters
+            </button>
+            <button
+              type="button"
+              onClick={exportCsv}
+              className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100"
+            >
+              Export CSV
+            </button>
+          </div>
+        </section>
+
+        <section className="space-y-4 rounded-2xl border border-slate-200 bg-white p-4">
+          <h3 className="text-sm font-semibold text-slate-800">Client Investigation Filters</h3>
+
+          <div className="space-y-2">
+            <p className="text-xs font-medium uppercase tracking-wide text-slate-500">HTTP Method</p>
+            <div className="flex flex-wrap gap-2">
+              {METHOD_OPTIONS.map((method) => {
+                const active = clientFilters.methods.includes(method);
+                return (
+                  <button
+                    key={method}
+                    type="button"
+                    onClick={() =>
+                      setClientFilters((prev) => ({
+                        ...prev,
+                        methods: toggleArray(prev.methods, method),
+                      }))
+                    }
+                    className={`rounded-full px-2.5 py-1 text-xs ${
+                      active
+                        ? 'bg-blue-100 text-blue-800 border border-blue-300'
+                        : 'bg-slate-100 text-slate-700 border border-slate-200 hover:bg-slate-200'
+                    }`}
+                  >
+                    {method}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="grid gap-3 md:grid-cols-2">
+            <label className="space-y-1 text-xs text-slate-600">
+              Request ID contains
+              <input
+                type="text"
+                value={clientFilters.requestId}
+                onChange={(event) =>
+                  setClientFilters((prev) => ({ ...prev, requestId: event.target.value }))
+                }
+                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                placeholder="UUID fragment"
+              />
+            </label>
+            <label className="space-y-1 text-xs text-slate-600">
+              Path contains
+              <input
+                type="text"
+                value={clientFilters.pathContains}
+                onChange={(event) =>
+                  setClientFilters((prev) => ({ ...prev, pathContains: event.target.value }))
+                }
+                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                placeholder="/api/auth"
+              />
+            </label>
+            <label className="space-y-1 text-xs text-slate-600">
+              User ID
+              <input
+                type="number"
+                value={clientFilters.userId}
+                onChange={(event) =>
+                  setClientFilters((prev) => ({ ...prev, userId: event.target.value }))
+                }
+                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                placeholder="123"
+              />
+            </label>
+            <label className="space-y-1 text-xs text-slate-600">
+              Organisation ID
+              <input
+                type="number"
+                value={clientFilters.organisationId}
+                onChange={(event) =>
+                  setClientFilters((prev) => ({ ...prev, organisationId: event.target.value }))
+                }
+                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                placeholder="456"
+              />
+            </label>
+            <label className="space-y-1 text-xs text-slate-600">
+              Min latency (ms)
+              <input
+                type="number"
+                min={0}
+                value={minLatencyMs}
+                onChange={(event) => setMinLatencyMs(event.target.value)}
+                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                placeholder="1000"
+              />
+            </label>
+            <label className="space-y-1 text-xs text-slate-600">
+              Sort direction
+              <select
+                value={sortDirection}
+                onChange={(event) =>
+                  setSortDirection(event.target.value === 'oldest' ? 'oldest' : 'newest')
+                }
+                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              >
+                <option value="newest">Newest first</option>
+                <option value="oldest">Oldest first</option>
+              </select>
+            </label>
+          </div>
+
+          <div className="grid gap-2 text-xs text-slate-700 md:grid-cols-2">
+            <label className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
+              <input
+                type="checkbox"
+                checked={clientFilters.onlyErrors}
+                onChange={(event) =>
+                  setClientFilters((prev) => ({ ...prev, onlyErrors: event.target.checked }))
+                }
+                className="h-4 w-4"
+              />
+              Errors only
+            </label>
+            <label className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
+              <input
+                type="checkbox"
+                checked={clientFilters.onlyApiExceptions}
+                onChange={(event) =>
+                  setClientFilters((prev) => ({
+                    ...prev,
+                    onlyApiExceptions: event.target.checked,
+                  }))
+                }
+                className="h-4 w-4"
+              />
+              API exceptions only
+            </label>
+            <label className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
+              <input
+                type="checkbox"
+                checked={clientFilters.onlyAuthRelated}
+                onChange={(event) =>
+                  setClientFilters((prev) => ({
+                    ...prev,
+                    onlyAuthRelated: event.target.checked,
+                  }))
+                }
+                className="h-4 w-4"
+              />
+              Auth related only
+            </label>
+            <label className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
+              <input
+                type="checkbox"
+                checked={clientFilters.onlyWithStack}
+                onChange={(event) =>
+                  setClientFilters((prev) => ({
+                    ...prev,
+                    onlyWithStack: event.target.checked,
+                  }))
+                }
+                className="h-4 w-4"
+              />
+              Only with stack traces
+            </label>
+            <label className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 md:col-span-2">
+              <input
+                type="checkbox"
+                checked={requireMetadata}
+                onChange={(event) => setRequireMetadata(event.target.checked)}
+                className="h-4 w-4"
+              />
+              Require metadata payload
+            </label>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setClientFilters(INITIAL_CLIENT_FILTERS)}
+              className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-100"
+            >
+              Reset client filters
+            </button>
+            <button
+              type="button"
+              onClick={() => setMinLatencyMs('')}
+              className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-100"
+            >
+              Clear latency gate
+            </button>
+          </div>
+        </section>
+      </div>
+
+      <div className="border-b border-slate-200 px-6 py-4">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setViewMode('table')}
+              className={`rounded-lg px-3 py-1.5 text-sm font-medium ${
+                viewMode === 'table'
+                  ? 'bg-slate-900 text-white'
+                  : 'border border-slate-300 text-slate-700 hover:bg-slate-50'
+              }`}
+            >
+              Table
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode('timeline')}
+              className={`rounded-lg px-3 py-1.5 text-sm font-medium ${
+                viewMode === 'timeline'
+                  ? 'bg-slate-900 text-white'
+                  : 'border border-slate-300 text-slate-700 hover:bg-slate-50'
+              }`}
+            >
+              Timeline
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode('requests')}
+              className={`rounded-lg px-3 py-1.5 text-sm font-medium ${
+                viewMode === 'requests'
+                  ? 'bg-slate-900 text-white'
+                  : 'border border-slate-300 text-slate-700 hover:bg-slate-50'
+              }`}
+            >
+              Request groups
+            </button>
+          </div>
+
+          <div className="flex items-center gap-2 text-xs text-slate-600">
+            <span>
+              Showing {currentFrom}-{currentTo} of {totalCount}
+            </span>
+            <button
+              type="button"
+              disabled={!hasPreviousPage || loading}
+              onClick={() =>
+                setServerFilters((prev) => ({
+                  ...prev,
+                  offset: Math.max(0, prev.offset - prev.limit),
+                }))
+              }
+              className="rounded-lg border border-slate-300 px-3 py-1.5 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              Previous
+            </button>
+            <button
+              type="button"
+              disabled={!hasNextPage || loading}
+              onClick={() =>
+                setServerFilters((prev) => ({
+                  ...prev,
+                  offset: prev.offset + prev.limit,
+                }))
+              }
+              className="rounded-lg border border-slate-300 px-3 py-1.5 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid gap-4 px-6 py-5 xl:grid-cols-[3fr_1fr]">
+        <section className="min-h-[420px] rounded-2xl border border-slate-200 bg-white p-4">
+          {loading && <p className="text-sm text-slate-500">Loading logs...</p>}
+          {!loading && filteredLogs.length === 0 && (
+            <p className="text-sm text-slate-500">No logs match the current filter set.</p>
+          )}
+
+          {!loading && filteredLogs.length > 0 && viewMode === 'table' && (
+            <div className="max-h-[640px] overflow-auto">
+              <table className="min-w-full text-left text-xs">
+                <thead className="sticky top-0 bg-slate-100 text-slate-600">
+                  <tr>
+                    <th className="px-3 py-2 font-semibold">Time</th>
+                    <th className="px-3 py-2 font-semibold">Level</th>
+                    <th className="px-3 py-2 font-semibold">Context</th>
+                    <th className="px-3 py-2 font-semibold">Message</th>
+                    <th className="px-3 py-2 font-semibold">Request</th>
+                    <th className="px-3 py-2 font-semibold">Latency</th>
+                    <th className="px-3 py-2 font-semibold">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredLogs.map((entry) => (
+                    <React.Fragment key={entry.id}>
+                      <tr className="border-t border-slate-200 align-top">
+                        <td className="px-3 py-2 text-slate-600">{formatDateTime(entry.createdAt)}</td>
+                        <td className="px-3 py-2">
+                          <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${levelBadgeClass[entry.level]}`}>
+                            {entry.level}
+                          </span>
+                        </td>
+                        <td className="px-3 py-2 text-slate-700">{entry.context ?? 'n/a'}</td>
+                        <td className="max-w-[520px] px-3 py-2 text-slate-800">{entry.message}</td>
+                        <td className="px-3 py-2 text-[11px] text-slate-600">
+                          {entry.requestId ? (
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setClientFilters((prev) => ({ ...prev, requestId: entry.requestId ?? '' }))
+                              }
+                              className="font-mono text-blue-700 hover:underline"
+                            >
+                              {entry.requestId.slice(0, 8)}...
+                            </button>
+                          ) : (
+                            'n/a'
+                          )}
+                        </td>
+                        <td className="px-3 py-2 text-slate-700">
+                          {typeof entry.latencyMs === 'number' ? `${entry.latencyMs}ms` : 'n/a'}
+                        </td>
+                        <td className="px-3 py-2">
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setExpandedRows((prev) => ({ ...prev, [entry.id]: !prev[entry.id] }))
+                              }
+                              className="rounded border border-slate-300 px-2 py-1 text-[11px] text-slate-700 hover:bg-slate-50"
+                            >
+                              {expandedRows[entry.id] ? 'Hide' : 'Details'}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => void copyPayload(entry)}
+                              className="rounded border border-slate-300 px-2 py-1 text-[11px] text-slate-700 hover:bg-slate-50"
+                            >
+                              Copy
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                      {expandedRows[entry.id] && (
+                        <tr className="border-t border-slate-100 bg-slate-50/70">
+                          <td colSpan={7} className="px-3 py-3">
+                            <div className="grid gap-3 lg:grid-cols-2">
+                              <div>
+                                <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Metadata</p>
+                                <pre className="mt-1 max-h-44 overflow-auto rounded-lg bg-slate-900 p-2 text-[11px] text-slate-100">
+                                  {entry.metadata ? JSON.stringify(entry.metadata, null, 2) : '{}'}
+                                </pre>
+                              </div>
+                              <div>
+                                <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Stack</p>
+                                <pre className="mt-1 max-h-44 overflow-auto rounded-lg bg-slate-900 p-2 text-[11px] text-slate-100">
+                                  {entry.stack?.trim() || 'No stack trace'}
+                                </pre>
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </React.Fragment>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {!loading && filteredLogs.length > 0 && viewMode === 'timeline' && (
+            <div className="max-h-[640px] space-y-3 overflow-auto pr-1">
+              {filteredLogs.map((entry) => (
+                <article key={entry.id} className="rounded-xl border border-slate-200 bg-slate-50/60 p-3">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className={`inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full ${badge.classes}`}>
-                        {badge.label}
+                      <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${levelBadgeClass[entry.level]}`}>
+                        {entry.level}
                       </span>
-                      {log.context && (
-                        <span className="text-xs font-medium text-gray-500 bg-gray-100 rounded-full px-2 py-0.5">
-                          {log.context}
+                      <span className="text-xs text-slate-500">{entry.context ?? 'n/a'}</span>
+                      {entry.method && (
+                        <span className="rounded-full border border-blue-200 bg-blue-50 px-2 py-0.5 text-[11px] text-blue-700">
+                          {entry.method}
                         </span>
                       )}
-                      <span className="text-xs text-gray-400">{formatDateTime(log.createdAt)}</span>
+                      {entry.path && <span className="font-mono text-[11px] text-slate-600">{entry.path}</span>}
                     </div>
-                    <p className="text-sm text-gray-900 line-clamp-2">{log.message}</p>
+                    <span className="text-[11px] text-slate-500">{formatDateTime(entry.createdAt)}</span>
                   </div>
-                  <div className="flex items-center text-gray-400">
-                    <svg className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
+                  <p className="mt-2 text-sm text-slate-800">{entry.message}</p>
+                  <div className="mt-2 flex flex-wrap items-center gap-3 text-[11px] text-slate-500">
+                    <span>req: {entry.requestId ?? 'n/a'}</span>
+                    <span>user: {entry.userId ?? 'n/a'}</span>
+                    <span>org: {entry.organisationId ?? 'n/a'}</span>
+                    <span>
+                      latency: {typeof entry.latencyMs === 'number' ? `${entry.latencyMs}ms` : 'n/a'}
+                    </span>
                   </div>
-                </button>
+                </article>
+              ))}
+            </div>
+          )}
 
-                {isExpanded && (
-                  <div className="px-4 pb-4 space-y-3 border-t border-gray-100 bg-gray-50/60 rounded-b-xl">
-                    {log.stack && (
+          {!loading && filteredLogs.length > 0 && viewMode === 'requests' && (
+            <div className="max-h-[640px] space-y-3 overflow-auto pr-1">
+              {requestGroups.map((group) => {
+                const duration = getDurationMs(group.startedAt, group.endedAt);
+                return (
+                  <article key={group.id} className="rounded-xl border border-slate-200 bg-white p-3">
+                    <div className="flex flex-wrap items-start justify-between gap-3">
                       <div>
-                        <h4 className="text-xs font-semibold text-gray-500 uppercase mb-1">Stack Trace</h4>
-                        <pre className="max-h-56 overflow-auto bg-gray-900 text-gray-100 text-xs rounded-lg p-4 leading-relaxed">
-                          {log.stack}
-                        </pre>
+                        <p className="font-mono text-xs text-slate-700">
+                          {group.requestId ?? `single-entry-${group.entries[0]?.id ?? 0}`}
+                        </p>
+                        <p className="text-xs text-slate-500">{group.entries.length} log lines</p>
+                      </div>
+                      <div className="text-right text-xs text-slate-600">
+                        <p>{formatDateTime(group.startedAt)}</p>
+                        <p>duration {duration}ms</p>
+                      </div>
+                    </div>
+
+                    <div className="mt-2 flex flex-wrap gap-2 text-[11px] text-slate-600">
+                      <span className="rounded-full bg-slate-100 px-2 py-0.5">errors: {group.errorCount}</span>
+                      <span className="rounded-full bg-slate-100 px-2 py-0.5">methods: {group.methods.join(', ') || 'n/a'}</span>
+                      <span className="rounded-full bg-slate-100 px-2 py-0.5">paths: {group.paths.length}</span>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setExpandedGroups((prev) => ({ ...prev, [group.id]: !prev[group.id] }))
+                      }
+                      className="mt-2 rounded border border-slate-300 px-2.5 py-1 text-[11px] text-slate-700 hover:bg-slate-50"
+                    >
+                      {expandedGroups[group.id] ? 'Hide entries' : 'Show entries'}
+                    </button>
+
+                    {expandedGroups[group.id] && (
+                      <div className="mt-2 space-y-2 border-t border-slate-200 pt-2">
+                        {group.entries.map((entry) => (
+                          <div key={entry.id} className="rounded-lg border border-slate-200 bg-slate-50 px-2 py-2 text-xs">
+                            <div className="flex flex-wrap items-center justify-between gap-2">
+                              <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${levelBadgeClass[entry.level]}`}>
+                                {entry.level}
+                              </span>
+                              <span className="text-[11px] text-slate-500">{formatDateTime(entry.createdAt)}</span>
+                            </div>
+                            <p className="mt-1 text-slate-800">{entry.message}</p>
+                          </div>
+                        ))}
                       </div>
                     )}
-                    {log.metadata && (
-                      <div>
-                        <h4 className="text-xs font-semibold text-gray-500 uppercase mb-1">Metadata</h4>
-                        <pre className="bg-white border border-gray-200 rounded-lg p-3 text-xs text-gray-700 overflow-auto">
-                          {JSON.stringify(log.metadata, null, 2)}
-                        </pre>
-                      </div>
-                    )}
-                  </div>
-                )}
+                  </article>
+                );
+              })}
+            </div>
+          )}
+        </section>
+
+        <aside className="space-y-4">
+          <section className="rounded-2xl border border-slate-200 bg-slate-50/60 p-4">
+            <h3 className="text-sm font-semibold text-slate-800">Retention & Alerts</h3>
+            {settingsDraft ? (
+              <div className="mt-3 space-y-3">
+                <label className="space-y-1 text-xs text-slate-600">
+                  Retention days
+                  <input
+                    type="number"
+                    min={0}
+                    value={settingsDraft.retentionDays}
+                    onChange={(event) =>
+                      setSettingsDraft((prev) =>
+                        prev
+                          ? { ...prev, retentionDays: Number(event.target.value) }
+                          : prev
+                      )
+                    }
+                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                  />
+                </label>
+                <label className="space-y-1 text-xs text-slate-600">
+                  Error rate threshold/min
+                  <input
+                    type="number"
+                    min={1}
+                    value={settingsDraft.errorRateAlertThresholdPerMinute}
+                    onChange={(event) =>
+                      setSettingsDraft((prev) =>
+                        prev
+                          ? {
+                              ...prev,
+                              errorRateAlertThresholdPerMinute: Number(event.target.value),
+                            }
+                          : prev
+                      )
+                    }
+                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                  />
+                </label>
+                <label className="space-y-1 text-xs text-slate-600">
+                  p95 latency threshold (ms)
+                  <input
+                    type="number"
+                    min={100}
+                    value={settingsDraft.p95LatencyAlertThresholdMs}
+                    onChange={(event) =>
+                      setSettingsDraft((prev) =>
+                        prev
+                          ? {
+                              ...prev,
+                              p95LatencyAlertThresholdMs: Number(event.target.value),
+                            }
+                          : prev
+                      )
+                    }
+                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                  />
+                </label>
+
+                <label className="inline-flex items-center gap-2 text-xs text-slate-700">
+                  <input
+                    type="checkbox"
+                    checked={settingsDraft.autoCleanupEnabled}
+                    onChange={(event) =>
+                      setSettingsDraft((prev) =>
+                        prev
+                          ? { ...prev, autoCleanupEnabled: event.target.checked }
+                          : prev
+                      )
+                    }
+                    className="h-4 w-4"
+                  />
+                  Auto cleanup enabled
+                </label>
+                <label className="inline-flex items-center gap-2 text-xs text-slate-700">
+                  <input
+                    type="checkbox"
+                    checked={settingsDraft.realtimeCriticalAlertsEnabled}
+                    onChange={(event) =>
+                      setSettingsDraft((prev) =>
+                        prev
+                          ? {
+                              ...prev,
+                              realtimeCriticalAlertsEnabled: event.target.checked,
+                            }
+                          : prev
+                      )
+                    }
+                    className="h-4 w-4"
+                  />
+                  Realtime critical alerts enabled
+                </label>
+
+                <button
+                  type="button"
+                  disabled={savingSettings}
+                  onClick={() => void saveRetentionSettings()}
+                  className="w-full rounded-lg bg-slate-900 px-3 py-2 text-sm font-semibold text-white hover:bg-slate-800 disabled:opacity-60"
+                >
+                  {savingSettings ? 'Saving...' : 'Save settings'}
+                </button>
               </div>
-            );
-          })}
-        </div>
+            ) : (
+              <p className="mt-2 text-xs text-slate-500">Settings will appear after first query response.</p>
+            )}
+          </section>
+
+          <section className="rounded-2xl border border-slate-200 bg-slate-50/60 p-4">
+            <h3 className="text-sm font-semibold text-slate-800">Maintenance</h3>
+            <div className="mt-3 space-y-3">
+              <button
+                type="button"
+                disabled={maintenanceBusy}
+                onClick={() => void purgeExpired()}
+                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-700 hover:bg-slate-100 disabled:opacity-60"
+              >
+                Run retention purge now
+              </button>
+
+              <label className="space-y-1 text-xs text-slate-600">
+                Clear logs before
+                <input
+                  type="datetime-local"
+                  value={clearBefore}
+                  onChange={(event) => setClearBefore(event.target.value)}
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                />
+              </label>
+
+              <button
+                type="button"
+                disabled={maintenanceBusy}
+                onClick={() => void clearLogs()}
+                className="w-full rounded-lg border border-red-300 px-3 py-2 text-sm font-medium text-red-700 hover:bg-red-50 disabled:opacity-60"
+              >
+                {clearBefore ? 'Delete logs before timestamp' : 'Delete all logs'}
+              </button>
+            </div>
+          </section>
+        </aside>
       </div>
     </section>
   );
 };
 
+export default AdminLogsPanel;

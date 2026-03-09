@@ -780,8 +780,8 @@ export class AdminService {
     const settings = await this.loggingService.getSettings();
 
     return {
-      items: logs,
-      count: logs.length,
+      items: logs.items,
+      count: logs.total,
       settings,
     };
   }

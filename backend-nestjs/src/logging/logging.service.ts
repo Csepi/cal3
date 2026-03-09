@@ -51,7 +51,9 @@ export class LoggingService {
     await this.logRepository.save(entry);
   }
 
-  async findLogs(options: LogQueryOptions = {}): Promise<LogEntry[]> {
+  async findLogs(
+    options: LogQueryOptions = {},
+  ): Promise<{ items: LogEntry[]; total: number }> {
     const {
       levels,
       contexts,
@@ -92,7 +94,8 @@ export class LoggingService {
 
     qb.skip(offset).take(Math.min(limit, 500));
 
-    return qb.getMany();
+    const [items, total] = await qb.getManyAndCount();
+    return { items, total };
   }
 
   async clearLogs(options: ClearLogsOptions = {}): Promise<number> {
