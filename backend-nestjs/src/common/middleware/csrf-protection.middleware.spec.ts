@@ -61,7 +61,7 @@ describe('CsrfProtectionMiddleware', () => {
     expect(next.mock.calls[0][0]).toBeInstanceOf(ForbiddenException);
   });
 
-  it('rejects mutating request when header does not match cookie token', () => {
+  it('re-synchronizes CSRF cookie when header token does not match cookie token', () => {
     const req = createRequest({
       method: 'PATCH',
       headers: {
@@ -77,7 +77,12 @@ describe('CsrfProtectionMiddleware', () => {
 
     middleware.use(req, res, next);
 
-    expect(next.mock.calls[0][0]).toBeInstanceOf(ForbiddenException);
+    expect(res.cookie).toHaveBeenCalledWith(
+      CSRF_COOKIE_NAME,
+      'different-token',
+      expect.objectContaining({ httpOnly: false }),
+    );
+    expect(next).toHaveBeenCalledWith();
   });
 
   it('allows mutating request with matching header/cookie token', () => {

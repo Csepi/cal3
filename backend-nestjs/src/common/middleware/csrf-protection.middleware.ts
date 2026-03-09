@@ -28,10 +28,21 @@ export class CsrfProtectionMiddleware implements NestMiddleware {
   use(req: Request, res: Response, next: NextFunction): void {
     const shouldValidate = this.shouldValidate(req);
     const headerToken = this.extractCsrfHeader(req);
-    const csrfCookieToken = this.extractCsrfCookie(req);
+    let csrfCookieToken = this.extractCsrfCookie(req);
+
+    if (
+      headerToken &&
+      csrfCookieToken &&
+      !this.csrfService.tokensMatch(csrfCookieToken, headerToken)
+    ) {
+      // Keep same-site clients resilient to token drift between app/api subdomains.
+      this.issueToken(req, res, headerToken);
+      csrfCookieToken = headerToken;
+    }
+
     const activeToken =
       csrfCookieToken ??
-      this.issueToken(req, res, shouldValidate ? headerToken : undefined);
+      this.issueToken(req, res, headerToken);
 
     if (!shouldValidate) {
       next();
