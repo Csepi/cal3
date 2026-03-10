@@ -5,6 +5,12 @@ import type {
   PersonalAuditQuery,
   PersonalAuditSummary,
 } from '../types/PersonalAudit';
+import type {
+  DataSubjectRequestListResponse,
+  PersonalDataExport,
+  PrivacyAccessReport,
+  PrivacyConsentRecord,
+} from '../types/PrivacyCompliance';
 
 const toQueryString = (query: PersonalAuditQuery = {}): string => {
   const params = new URLSearchParams();
@@ -50,4 +56,104 @@ export async function getPersonalAuditSummary(
   );
   const payload = await handle<{ summary: PersonalAuditSummary }>(response);
   return payload.summary;
+}
+
+export async function getPrivacyAccessReport(): Promise<PrivacyAccessReport> {
+  const response = await secureFetch(`${BASE_URL}/api/compliance/me/privacy/access`);
+  return handle<PrivacyAccessReport>(response);
+}
+
+export async function exportPersonalData(): Promise<PersonalDataExport> {
+  const response = await secureFetch(`${BASE_URL}/api/compliance/me/privacy/export`);
+  return handle<PersonalDataExport>(response);
+}
+
+export async function getPrivacyConsents(): Promise<PrivacyConsentRecord[]> {
+  const response = await secureFetch(`${BASE_URL}/api/compliance/me/privacy/consents`);
+  return handle<PrivacyConsentRecord[]>(response);
+}
+
+export async function upsertPrivacyConsent(
+  consentType:
+    | 'privacy_policy'
+    | 'terms_of_service'
+    | 'marketing_email'
+    | 'data_processing'
+    | 'cookie_analytics',
+  payload: {
+    decision: 'accepted' | 'revoked';
+    policyVersion: string;
+    source?: string;
+    metadata?: Record<string, unknown>;
+  },
+): Promise<PrivacyConsentRecord> {
+  const response = await secureFetch(
+    `${BASE_URL}/api/compliance/me/privacy/consents/${consentType}`,
+    {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    },
+  );
+  return handle<PrivacyConsentRecord>(response);
+}
+
+export async function acceptPrivacyPolicy(version: string): Promise<{
+  acceptedAt: string;
+  version: string;
+  consent: PrivacyConsentRecord;
+}> {
+  const response = await secureFetch(
+    `${BASE_URL}/api/compliance/me/privacy/policy-acceptance`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ version }),
+    },
+  );
+  return handle<{
+    acceptedAt: string;
+    version: string;
+    consent: PrivacyConsentRecord;
+  }>(response);
+}
+
+export async function createDataSubjectRequest(payload: {
+  requestType: 'access' | 'export' | 'delete';
+  reason?: string;
+  confirmEmail?: string;
+}): Promise<Record<string, unknown>> {
+  const response = await secureFetch(`${BASE_URL}/api/compliance/me/privacy/requests`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(payload),
+  });
+  return handle<Record<string, unknown>>(response);
+}
+
+export async function listDataSubjectRequests(params?: {
+  statuses?: string[];
+  requestTypes?: string[];
+  search?: string;
+  limit?: number;
+  offset?: number;
+}): Promise<DataSubjectRequestListResponse> {
+  const query = new URLSearchParams();
+  params?.statuses?.forEach((value) => query.append('statuses', value));
+  params?.requestTypes?.forEach((value) => query.append('requestTypes', value));
+  if (params?.search) query.append('search', params.search);
+  if (typeof params?.limit === 'number') query.append('limit', String(params.limit));
+  if (typeof params?.offset === 'number') query.append('offset', String(params.offset));
+
+  const suffix = query.toString();
+  const response = await secureFetch(
+    `${BASE_URL}/api/compliance/me/privacy/requests${suffix ? `?${suffix}` : ''}`,
+  );
+  return handle<DataSubjectRequestListResponse>(response);
 }

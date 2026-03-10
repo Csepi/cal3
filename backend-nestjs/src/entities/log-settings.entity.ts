@@ -28,6 +28,9 @@ export class LogSettings {
   @Column({ type: 'int', default: 72 })
   metricsRetentionHours!: number;
 
+  @Column({ type: 'int', default: 2555 })
+  auditRetentionDays!: number;
+
   @UpdateDateColumn()
   updatedAt!: Date;
 }

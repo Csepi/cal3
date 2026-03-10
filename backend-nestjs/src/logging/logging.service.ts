@@ -127,6 +127,7 @@ export class LoggingService {
         errorRateAlertThresholdPerMinute: 25,
         p95LatencyAlertThresholdMs: 1500,
         metricsRetentionHours: 72,
+        auditRetentionDays: 2555,
       });
       await this.settingsRepository.save(settings);
     }
@@ -144,6 +145,7 @@ export class LoggingService {
         | 'errorRateAlertThresholdPerMinute'
         | 'p95LatencyAlertThresholdMs'
         | 'metricsRetentionHours'
+        | 'auditRetentionDays'
       >
     >,
   ): Promise<LogSettings> {
@@ -176,6 +178,10 @@ export class LoggingService {
 
     if (typeof partial.metricsRetentionHours === 'number') {
       settings.metricsRetentionHours = partial.metricsRetentionHours;
+    }
+
+    if (typeof partial.auditRetentionDays === 'number') {
+      settings.auditRetentionDays = Math.max(2555, partial.auditRetentionDays);
     }
 
     return this.settingsRepository.save(settings);

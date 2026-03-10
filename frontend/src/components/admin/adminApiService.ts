@@ -15,6 +15,9 @@ import type {
   AuditEventResponse,
   ConfigurationOverview,
   ConfigurationSettingSummary,
+  ComplianceDashboard,
+  DataSubjectRequestResponse,
+  ComplianceAccessReview,
 } from './types';
 import { BASE_URL } from '../../config/apiConfig';
 import { secureFetch } from '../../services/authErrorHandler';
@@ -141,6 +144,7 @@ export const updateLogRetentionSettings = async (data: {
   errorRateAlertThresholdPerMinute?: number;
   p95LatencyAlertThresholdMs?: number;
   metricsRetentionHours?: number;
+  auditRetentionDays?: number;
 }) => {
   return adminApiCall({
     endpoint: '/admin/logs/settings',
@@ -209,6 +213,71 @@ export const fetchAdminErrorSummary = async (
   const query = buildQueryString({ hours });
   return adminApiCall({
     endpoint: `/admin/audit/error-summary${query}`,
+  });
+};
+
+interface ComplianceDsrQuery {
+  statuses?: string[];
+  requestTypes?: string[];
+  search?: string;
+  offset?: number;
+  limit?: number;
+}
+
+export const fetchComplianceDashboard = async (): Promise<ComplianceDashboard> => {
+  return adminApiCall({
+    endpoint: '/admin/compliance/dashboard',
+  });
+};
+
+export const fetchComplianceAccessReview = async (): Promise<ComplianceAccessReview> => {
+  return adminApiCall({
+    endpoint: '/admin/compliance/access-review',
+  });
+};
+
+export const fetchComplianceDataSubjectRequests = async (
+  params: ComplianceDsrQuery = {},
+): Promise<DataSubjectRequestResponse> => {
+  const query = buildQueryString({
+    statuses: params.statuses?.length ? params.statuses : undefined,
+    requestTypes: params.requestTypes?.length ? params.requestTypes : undefined,
+    search: params.search,
+    offset: params.offset,
+    limit: params.limit,
+  });
+
+  return adminApiCall({
+    endpoint: `/admin/compliance/dsr${query}`,
+  });
+};
+
+export const updateComplianceDataSubjectRequest = async (
+  id: number,
+  data: { status: 'pending' | 'in_progress' | 'completed' | 'rejected'; adminNotes?: string },
+): Promise<{ success?: boolean } & Record<string, unknown>> => {
+  return adminApiCall({
+    endpoint: `/admin/compliance/dsr/${id}`,
+    method: 'PATCH',
+    data,
+  });
+};
+
+export const exportComplianceAudit = async (params: {
+  format?: 'json' | 'csv';
+  from?: string;
+  to?: string;
+  categories?: string[];
+}): Promise<Record<string, unknown>> => {
+  const query = buildQueryString({
+    format: params.format,
+    from: params.from,
+    to: params.to,
+    categories: params.categories?.length ? params.categories : undefined,
+  });
+
+  return adminApiCall({
+    endpoint: `/admin/compliance/audit-export${query}`,
   });
 };
 

@@ -9,6 +9,9 @@ export type SecurityAuditEvent =
   | 'auth.register'
   | 'auth.refresh'
   | 'auth.refresh.suspicious'
+  | 'auth.mfa.setup'
+  | 'auth.mfa.enabled'
+  | 'auth.mfa.disabled'
   | 'webhook.received'
   | 'automation.invocation';
 

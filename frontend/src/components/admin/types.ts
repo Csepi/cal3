@@ -89,7 +89,8 @@ export type AdminTab =
   | 'notifications'
   | 'system-info'
   | 'logs'
-  | 'errors';
+  | 'errors'
+  | 'compliance';
 
 export interface ConfirmDialogState {
   isOpen: boolean;
@@ -203,6 +204,7 @@ export interface LogSettings {
   errorRateAlertThresholdPerMinute: number;
   p95LatencyAlertThresholdMs: number;
   metricsRetentionHours: number;
+  auditRetentionDays: number;
   updatedAt: string;
 }
 
@@ -280,5 +282,99 @@ export interface ConfigurationOverview {
     backendBaseUrl: string;
     frontendBaseUrl: string;
   };
+}
+
+export interface ComplianceControl {
+  id: string;
+  framework: 'GDPR' | 'SOC2' | 'ISO27001' | 'ASVS';
+  control: string;
+  status: 'pass' | 'warn' | 'fail';
+  detail: string;
+  evidence: string;
+}
+
+export interface ComplianceDashboard {
+  generatedAt: string;
+  summary: {
+    users: {
+      total: number;
+      active: number;
+      admins: number;
+    };
+    dsr: Record<string, Record<string, number>>;
+    consent: {
+      acceptedPrivacyPolicy: number;
+      totalUsers: number;
+      ratio: number;
+    };
+    mfa: {
+      enabledCount: number;
+      totalUsers: number;
+      ratio: number;
+    };
+    errorSummary: {
+      criticalCount: number;
+      failureCount: number;
+      topErrorCodes: Array<{ code: string; count: number }>;
+      trend: Array<{ hour: string; count: number }>;
+    };
+  };
+  settings: {
+    appLogRetentionDays: number;
+    auditRetentionDays: number;
+  };
+  controls: ComplianceControl[];
+}
+
+export interface DataSubjectRequestItem {
+  id: number;
+  userId: number;
+  requestType: 'access' | 'export' | 'delete';
+  status: 'pending' | 'in_progress' | 'completed' | 'rejected';
+  reason: string | null;
+  adminNotes: string | null;
+  handledByUserId: number | null;
+  completedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+  payload?: Record<string, unknown> | null;
+  metadata?: Record<string, unknown> | null;
+}
+
+export interface DataSubjectRequestResponse {
+  count: number;
+  items: DataSubjectRequestItem[];
+}
+
+export interface ComplianceAccessReview {
+  generatedAt: string;
+  privilegedAccounts: Array<{
+    id: number;
+    username: string;
+    email: string;
+    role: string;
+    isActive: boolean;
+    mfaEnabled: boolean;
+    updatedAt: string;
+    lastLoginAt: string | null;
+  }>;
+  organisationAdmins: Array<{
+    organisationId: number;
+    userId: number;
+    assignedAt: string;
+    user: {
+      username: string;
+      email: string;
+      mfaEnabled: boolean;
+    } | null;
+  }>;
+  staleAccessCandidates: Array<{
+    userId: number;
+    username: string;
+    email: string;
+    role: string;
+    mfaEnabled: boolean;
+    lastLoginAt: string | null;
+  }>;
 }
 

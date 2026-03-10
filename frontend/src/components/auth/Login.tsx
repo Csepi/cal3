@@ -14,6 +14,10 @@ const Login: React.FC = () => {
   const [password, setPassword] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
+  const [mfaCode, setMfaCode] = useState('');
+  const [mfaRecoveryCode, setMfaRecoveryCode] = useState('');
+  const [mfaRequired, setMfaRequired] = useState(false);
+  const [mfaRecoveryMode, setMfaRecoveryMode] = useState(false);
   const [error, setError] = useState<ErrorDetails | null>(null);
   const { login } = useAuth();
 
@@ -80,6 +84,16 @@ const Login: React.FC = () => {
       errors.push('Password is required');
     }
 
+    if (mfaRequired) {
+      if (mfaRecoveryMode) {
+        if (!mfaRecoveryCode.trim()) {
+          errors.push('Recovery code is required');
+        }
+      } else if (!mfaCode.trim()) {
+        errors.push('MFA verification code is required');
+      }
+    }
+
     return errors;
   };
 
@@ -136,7 +150,10 @@ const Login: React.FC = () => {
 
       try {
         setIsSubmitting(true);
-        const result = await apiService.login(username, password);
+        const result = await apiService.login(username, password, {
+          mfaCode: mfaCode.trim() || undefined,
+          mfaRecoveryCode: mfaRecoveryCode.trim() || undefined,
+        });
 
         await login({
           token: result.token,
@@ -144,7 +161,21 @@ const Login: React.FC = () => {
           username: result.user.username,
           role: result.user.role,
         });
+        setMfaRequired(false);
+        setMfaCode('');
+        setMfaRecoveryCode('');
       } catch (err: unknown) {
+        const details = extractErrorDetails(err);
+        if (
+          details.message.includes('MFA verification code required') ||
+          details.message.includes('Invalid MFA verification code')
+        ) {
+          setMfaRequired(true);
+        }
+        if (!details.message.includes('MFA verification code required') && mfaRequired) {
+          setMfaCode('');
+          setMfaRecoveryCode('');
+        }
         setError(extractErrorDetails(err));
         setIsSubmitting(false);
       }
@@ -282,6 +313,60 @@ const Login: React.FC = () => {
             />
           </div>
 
+          {!isRegistering && mfaRequired && (
+            <div className="space-y-3 rounded-2xl border border-blue-200 bg-blue-50/70 p-4">
+              <p className="text-xs font-semibold uppercase tracking-wide text-blue-700">
+                Multi-Factor Authentication Required
+              </p>
+              {!mfaRecoveryMode && (
+                <div>
+                  <label htmlFor="mfaCode" className="block text-sm font-medium text-gray-700 mb-2">
+                    Authenticator Code
+                  </label>
+                  <input
+                    type="text"
+                    id="mfaCode"
+                    value={mfaCode}
+                    onChange={(event) => setMfaCode(event.target.value)}
+                    disabled={isSubmitting}
+                    className="w-full px-4 py-3 bg-white border border-blue-300 text-gray-800 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-300 placeholder:text-gray-500"
+                    placeholder="Enter 6-digit code"
+                    maxLength={6}
+                  />
+                </div>
+              )}
+              {mfaRecoveryMode && (
+                <div>
+                  <label htmlFor="mfaRecoveryCode" className="block text-sm font-medium text-gray-700 mb-2">
+                    Recovery Code
+                  </label>
+                  <input
+                    type="text"
+                    id="mfaRecoveryCode"
+                    value={mfaRecoveryCode}
+                    onChange={(event) => setMfaRecoveryCode(event.target.value.toUpperCase())}
+                    disabled={isSubmitting}
+                    className="w-full px-4 py-3 bg-white border border-blue-300 text-gray-800 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-300 placeholder:text-gray-500"
+                    placeholder="AB12C-34DEF"
+                    maxLength={32}
+                  />
+                </div>
+              )}
+              <button
+                type="button"
+                disabled={isSubmitting}
+                onClick={() => {
+                  setMfaRecoveryMode((prev) => !prev);
+                  setMfaCode('');
+                  setMfaRecoveryCode('');
+                }}
+                className="text-xs font-medium text-blue-700 hover:text-blue-600 disabled:opacity-70"
+              >
+                {mfaRecoveryMode ? 'Use authenticator code instead' : 'Use recovery code instead'}
+              </button>
+            </div>
+          )}
+
           {error && (
             <ErrorBox
               error={error}
@@ -304,7 +389,13 @@ const Login: React.FC = () => {
             <button
               type="button"
               disabled={isSubmitting}
-              onClick={() => setIsRegistering(!isRegistering)}
+              onClick={() => {
+                setIsRegistering(!isRegistering);
+                setMfaRequired(false);
+                setMfaRecoveryMode(false);
+                setMfaCode('');
+                setMfaRecoveryCode('');
+              }}
               className="text-blue-600 hover:text-blue-500 font-medium transition-colors duration-200 disabled:opacity-70 disabled:cursor-not-allowed"
             >
               {isRegistering ? "Already have an account? Sign In" : "Don't have an account? Sign Up"}

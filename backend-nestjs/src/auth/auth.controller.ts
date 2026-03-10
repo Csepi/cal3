@@ -21,6 +21,8 @@ import {
   LoginDto,
   AuthResponseDto,
   RefreshTokenRequestDto,
+  EnableMfaDto,
+  DisableMfaDto,
 } from '../dto/auth.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { ConfigurationService } from '../configuration/configuration.service';
@@ -33,6 +35,7 @@ import {
   DEVICE_FINGERPRINT_HEADER,
 } from './services/token-fingerprint.service';
 import { CSRF_COOKIE_NAME, CsrfService } from '../common/security/csrf.service';
+import { MfaService } from './services/mfa.service';
 
 @ApiTags('Authentication')
 @Controller('auth')
@@ -42,6 +45,7 @@ export class AuthController {
     private readonly configurationService: ConfigurationService,
     private readonly tokenFingerprintService: TokenFingerprintService,
     private readonly csrfService: CsrfService,
+    private readonly mfaService: MfaService,
   ) {}
 
   @Get('csrf')
@@ -198,6 +202,52 @@ export class AuthController {
       expires_at: token.widgetExpiresAt.toISOString(),
       token_type: 'Bearer',
     };
+  }
+
+  @Get('mfa/status')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get MFA enrollment status for current user' })
+  getMfaStatus(@Req() req: RequestWithUser) {
+    return this.mfaService.getStatus(req.user.id);
+  }
+
+  @Post('mfa/setup')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Generate MFA setup challenge (TOTP secret + OTPAuth URL)' })
+  setupMfa(@Req() req: RequestWithUser) {
+    return this.mfaService.createSetupChallenge(req.user.id);
+  }
+
+  @Post('mfa/enable')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Enable MFA for current user' })
+  async enableMfa(
+    @Req() req: RequestWithUser,
+    @Body() body: EnableMfaDto,
+  ) {
+    const result = await this.mfaService.enableMfa(req.user.id, body.code);
+    return {
+      success: true,
+      recoveryCodes: result.recoveryCodes,
+    };
+  }
+
+  @Post('mfa/disable')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Disable MFA for current user' })
+  async disableMfa(
+    @Req() req: RequestWithUser,
+    @Body() body: DisableMfaDto,
+  ) {
+    await this.mfaService.disableMfa(req.user.id, {
+      code: body.code,
+      recoveryCode: body.recoveryCode,
+    });
+    return { success: true };
   }
 
   // Google OAuth routes

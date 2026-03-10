@@ -18,6 +18,7 @@ import { UserBootstrapService } from '../tasks/user-bootstrap.service';
 import { JwtRevocationService } from './services/jwt-revocation.service';
 import { AbusePreventionService } from '../api-security/services/abuse-prevention.service';
 import { CaptchaVerificationService } from '../api-security/services/captcha-verification.service';
+import { MfaService } from './services/mfa.service';
 
 export interface AuthRequestMetadata {
   ip?: string;
@@ -51,6 +52,7 @@ export class AuthService {
     private readonly captchaVerificationService: CaptchaVerificationService,
     private readonly userBootstrapService: UserBootstrapService,
     private readonly jwtRevocationService: JwtRevocationService,
+    private readonly mfaService: MfaService,
   ) {}
 
   async register(
@@ -180,6 +182,25 @@ export class AuthService {
       throw new UnauthorizedException('Account is disabled');
     }
 
+    try {
+      await this.mfaService.assertSecondFactor(
+        user,
+        loginDto.mfaCode,
+        loginDto.mfaRecoveryCode,
+      );
+    } catch (error) {
+      await this.abusePreventionService.registerLoginFailure(
+        normalizedUsername,
+        metadata.ip,
+      );
+      await this.securityAudit.log('auth.login.failure', {
+        userId: user.id,
+        reason: 'mfa_verification_failed',
+        ip: metadata.ip,
+      });
+      throw error;
+    }
+
     await this.abusePreventionService.resetLoginFailures(
       normalizedUsername,
       metadata.ip,
@@ -216,6 +237,9 @@ export class AuthService {
         'lastName',
         'role',
         'themeColor',
+        'mfaEnabled',
+        'mfaEnrolledAt',
+        'sessionTimeoutMinutes',
         'createdAt',
         'updatedAt',
       ],
@@ -364,6 +388,7 @@ export class AuthService {
         lastName: user.lastName,
         role: user.role,
         themeColor: user.themeColor,
+        mfaEnabled: user.mfaEnabled,
       },
     };
   }

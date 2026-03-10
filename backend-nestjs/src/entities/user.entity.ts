@@ -88,6 +88,32 @@ export class User {
   @Column({ type: 'json', default: () => '\'["user"]\'' }) // Array of usage plans
   usagePlans!: UsagePlan[];
 
+  @Column({ default: false })
+  mfaEnabled!: boolean;
+
+  @Column({ type: 'text', nullable: true })
+  @Exclude()
+  mfaSecret?: string | null;
+
+  @Column({ type: 'varchar', length: 32, nullable: true })
+  mfaKeyVersion?: string | null;
+
+  @Column({ type: 'json', nullable: true })
+  @Exclude()
+  mfaRecoveryCodes?: string[] | null;
+
+  @Column({ type: 'timestamptz', nullable: true })
+  mfaEnrolledAt?: Date | null;
+
+  @Column({ type: 'timestamptz', nullable: true })
+  privacyPolicyAcceptedAt?: Date | null;
+
+  @Column({ type: 'varchar', length: 64, nullable: true })
+  privacyPolicyVersion?: string | null;
+
+  @Column({ type: 'int', default: 480 })
+  sessionTimeoutMinutes!: number;
+
   @Column({ default: false }) // Hide the Reservations tab in the UI
   hideReservationsTab!: boolean;
 

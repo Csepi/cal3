@@ -17,6 +17,8 @@ import { TasksModule } from '../tasks/tasks.module';
 import { RefreshTokenFamilyService } from './services/refresh-token-family.service';
 import { JwtRevocationService } from './services/jwt-revocation.service';
 import { TokenFingerprintService } from './services/token-fingerprint.service';
+import { TotpService } from './services/totp.service';
+import { MfaService } from './services/mfa.service';
 import { ApiSecurityModule } from '../api-security/api-security.module';
 
 @Module({
@@ -49,8 +51,10 @@ import { ApiSecurityModule } from '../api-security/api-security.module';
     RefreshTokenFamilyService,
     JwtRevocationService,
     TokenFingerprintService,
+    TotpService,
+    MfaService,
   ],
   controllers: [AuthController],
-  exports: [AuthService],
+  exports: [AuthService, MfaService],
 })
 export class AuthModule {}

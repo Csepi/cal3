@@ -39,6 +39,7 @@ import { MonitoringModule } from './monitoring/monitoring.module';
 import { ApiSecurityModule } from './api-security/api-security.module';
 import { IpBlockMiddleware } from './api-security/middleware/ip-block.middleware';
 import { RequestHardeningMiddleware } from './api-security/middleware/request-hardening.middleware';
+import { ComplianceModule } from './compliance/compliance.module';
 
 @Module({
   imports: [
@@ -66,6 +67,7 @@ import { RequestHardeningMiddleware } from './api-security/middleware/request-ha
     TasksModule,
     MonitoringModule,
     ApiSecurityModule,
+    ComplianceModule,
     TypeOrmModule.forFeature([
       User,
       Calendar,

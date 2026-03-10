@@ -55,6 +55,11 @@ interface AuthResponse {
   user: UserProfile;
 }
 
+interface LoginOptions {
+  mfaCode?: string;
+  mfaRecoveryCode?: string;
+}
+
 type JsonObject = Record<string, unknown>;
 
 export interface CreateRecurringEventRequest extends CreateEventRequest {
@@ -642,13 +647,31 @@ class ApiService {
   }
 
   // Authentication methods
-  async login(usernameOrEmail: string, password: string): Promise<AuthResponse> {
+  async login(
+    usernameOrEmail: string,
+    password: string,
+    options: LoginOptions = {},
+  ): Promise<AuthResponse> {
+    const payload: Record<string, unknown> = {
+      username: usernameOrEmail,
+      password,
+    };
+    if (options.mfaCode && options.mfaCode.trim().length > 0) {
+      payload.mfaCode = options.mfaCode.trim();
+    }
+    if (
+      options.mfaRecoveryCode &&
+      options.mfaRecoveryCode.trim().length > 0
+    ) {
+      payload.mfaRecoveryCode = options.mfaRecoveryCode.trim();
+    }
+
     const response = await secureFetch(`${BASE_URL}/api/auth/login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ username: usernameOrEmail, password }),
+      body: JSON.stringify(payload),
       auth: false,
       csrf: true,
     });

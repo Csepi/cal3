@@ -45,6 +45,8 @@ import { RefreshToken } from '../../entities/refresh-token.entity';
 import { IdempotencyRecord } from '../../entities/idempotency-record.entity';
 import { AuditEvent } from '../../entities/audit-event.entity';
 import { ApiKey } from '../../entities/api-key.entity';
+import { UserConsent } from '../../entities/user-consent.entity';
+import { DataSubjectRequest } from '../../entities/data-subject-request.entity';
 import {
   getPoolConfigFromEnv,
   getPoolOptionsForEngine,
@@ -136,6 +138,8 @@ export const getDatabaseEntities = (): DataSourceOptions['entities'] => [
   IdempotencyRecord,
   AuditEvent,
   ApiKey,
+  UserConsent,
+  DataSubjectRequest,
 ];
 
 /**

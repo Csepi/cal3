@@ -41,6 +41,7 @@ interface SettingsDraft {
   errorRateAlertThresholdPerMinute: number;
   p95LatencyAlertThresholdMs: number;
   metricsRetentionHours: number;
+  auditRetentionDays: number;
 }
 
 const LEVEL_OPTIONS: LogLevel[] = ['trace', 'debug', 'info', 'warn', 'error'];
@@ -178,6 +179,7 @@ export const AdminLogsPanel: React.FC<AdminLogsPanelProps> = ({ isActive = false
       errorRateAlertThresholdPerMinute: settings.errorRateAlertThresholdPerMinute,
       p95LatencyAlertThresholdMs: settings.p95LatencyAlertThresholdMs,
       metricsRetentionHours: settings.metricsRetentionHours,
+      auditRetentionDays: settings.auditRetentionDays,
     });
   }, [settings]);
 
@@ -1159,6 +1161,22 @@ export const AdminLogsPanel: React.FC<AdminLogsPanelProps> = ({ isActive = false
                       setSettingsDraft((prev) =>
                         prev
                           ? { ...prev, retentionDays: Number(event.target.value) }
+                          : prev
+                      )
+                    }
+                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                  />
+                </label>
+                <label className="space-y-1 text-xs text-slate-600">
+                  Audit retention days (compliance)
+                  <input
+                    type="number"
+                    min={2555}
+                    value={settingsDraft.auditRetentionDays}
+                    onChange={(event) =>
+                      setSettingsDraft((prev) =>
+                        prev
+                          ? { ...prev, auditRetentionDays: Number(event.target.value) }
                           : prev
                       )
                     }

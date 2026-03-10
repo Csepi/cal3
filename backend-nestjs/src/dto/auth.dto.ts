@@ -5,6 +5,7 @@ import {
   IsOptional,
   IsEnum,
   MaxLength,
+  Matches,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { UserRole } from '../entities/user.entity';
@@ -107,6 +108,26 @@ export class LoginDto {
   @IsString()
   @MaxLength(120)
   honeypot?: string;
+
+  @ApiPropertyOptional({
+    description: 'Time-based one-time password for accounts with MFA enabled.',
+    example: '123456',
+  })
+  @IsOptional()
+  @SanitizeText({ trim: true })
+  @IsString()
+  @Matches(/^\d{6}$/)
+  mfaCode?: string;
+
+  @ApiPropertyOptional({
+    description: 'Recovery code fallback when authenticator app is unavailable.',
+    example: 'AB12C-34DEF',
+  })
+  @IsOptional()
+  @SanitizeText({ trim: true })
+  @IsString()
+  @MaxLength(32)
+  mfaRecoveryCode?: string;
 }
 
 export class AuthResponseDto {
@@ -153,6 +174,7 @@ export class AuthResponseDto {
     lastName?: string;
     role: UserRole;
     themeColor: string;
+    mfaEnabled?: boolean;
   };
 }
 
@@ -165,4 +187,37 @@ export class RefreshTokenRequestDto {
   @IsString()
   @MaxLength(4096)
   refreshToken?: string;
+}
+
+export class EnableMfaDto {
+  @ApiProperty({
+    description: '6-digit code from authenticator app.',
+    example: '123456',
+  })
+  @SanitizeText({ trim: true })
+  @IsString()
+  @Matches(/^\d{6}$/)
+  code!: string;
+}
+
+export class DisableMfaDto {
+  @ApiPropertyOptional({
+    description: '6-digit code from authenticator app.',
+    example: '123456',
+  })
+  @IsOptional()
+  @SanitizeText({ trim: true })
+  @IsString()
+  @Matches(/^\d{6}$/)
+  code?: string;
+
+  @ApiPropertyOptional({
+    description: 'Recovery code fallback for disabling MFA.',
+    example: 'AB12C-34DEF',
+  })
+  @IsOptional()
+  @SanitizeText({ trim: true })
+  @IsString()
+  @MaxLength(32)
+  recoveryCode?: string;
 }

@@ -13,6 +13,7 @@ import {
   AdminReservationPanel,
   AdminLogsPanel,
   AdminErrorDashboardPanel,
+  AdminCompliancePanel,
   AdminNotificationsPanel,
   type AdminTab,
 } from './admin';
@@ -70,6 +71,8 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ themeColor = '#3b82f6' }) => {
         return <AdminLogsPanel {...panelProps} />;
       case 'errors':
         return <AdminErrorDashboardPanel {...panelProps} />;
+      case 'compliance':
+        return <AdminCompliancePanel {...panelProps} />;
       case 'notifications':
         return <AdminNotificationsPanel {...panelProps} />;
       case 'configuration':

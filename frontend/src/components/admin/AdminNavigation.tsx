@@ -9,7 +9,20 @@ export interface AdminNavigationProps {
   className?: string;
 }
 
-type TabIcon = 'KPI' | 'USR' | 'ORG' | 'CAL' | 'EVT' | 'ACL' | 'RES' | 'LOG' | 'CFG' | 'SYS' | 'NOT' | 'ERR';
+type TabIcon =
+  | 'KPI'
+  | 'USR'
+  | 'ORG'
+  | 'CAL'
+  | 'EVT'
+  | 'ACL'
+  | 'RES'
+  | 'LOG'
+  | 'CFG'
+  | 'SYS'
+  | 'NOT'
+  | 'ERR'
+  | 'CMP';
 
 const ICONS: Record<TabIcon, ReactElement> = {
   KPI: (
@@ -112,6 +125,15 @@ const ICONS: Record<TabIcon, ReactElement> = {
       <path d="M12 16h.01" />
     </svg>
   ),
+  CMP: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round">
+      <path d="M5 4h14v16H5z" />
+      <path d="M9 8h6" />
+      <path d="M9 12h6" />
+      <path d="M9 16h3" />
+      <path d="m16 15 1.5 1.5L20 14" />
+    </svg>
+  ),
 };
 
 const TAB_CONFIG: Record<AdminTab, { label: string; icon: TabIcon; description: string }> = {
@@ -124,6 +146,7 @@ const TAB_CONFIG: Record<AdminTab, { label: string; icon: TabIcon; description: 
   reservations: { label: 'Resource Bookings', icon: 'RES', description: 'Track reservations and capacity' },
   notifications: { label: 'Notification Platform', icon: 'NOT', description: 'Channel providers, batching, and digests' },
   logs: { label: 'Operational Logs', icon: 'LOG', description: 'Monitor backend activity and errors' },
+  compliance: { label: 'Compliance Center', icon: 'CMP', description: 'GDPR, SOC 2, ISO and ASVS control evidence' },
   errors: { label: 'Error Dashboard', icon: 'ERR', description: 'Aggregate critical failures and trends' },
   configuration: { label: 'Runtime Configuration', icon: 'CFG', description: 'Manage OAuth credentials and feature flags' },
   'system-info': { label: 'System Health', icon: 'SYS', description: 'Runtime diagnostics and configuration' },
@@ -152,7 +175,7 @@ const NAV_GROUPS: Array<{
   {
     label: 'Platform Operations',
     description: 'Logs and system diagnostics',
-    tabs: ['logs', 'errors', 'notifications', 'configuration', 'system-info'],
+    tabs: ['logs', 'compliance', 'errors', 'notifications', 'configuration', 'system-info'],
   },
 ];
 
@@ -169,6 +192,7 @@ const ICON_BACKGROUNDS: Record<TabIcon, string> = {
   SYS: 'from-zinc-500 to-gray-700',
   NOT: 'from-fuchsia-500 to-pink-600',
   ERR: 'from-red-500 to-orange-600',
+  CMP: 'from-emerald-500 to-teal-600',
 };
 
 const IconBadge: React.FC<{ code: TabIcon; emphasize: boolean }> = ({ code, emphasize }) => (

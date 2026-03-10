@@ -26,6 +26,8 @@ export type AuthUser = {
 export type LoginCredentials = {
   username: string;
   password: string;
+  mfaCode?: string;
+  mfaRecoveryCode?: string;
 };
 
 export type LoginPayload = {
@@ -64,7 +66,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const login = useCallback(async (input: LoginInput) => {
     if ('password' in input) {
-      const response = await authApi.login(input.username, input.password);
+      const response = await authApi.login(input.username, input.password, {
+        mfaCode: input.mfaCode,
+        mfaRecoveryCode: input.mfaRecoveryCode,
+      });
       return response.user ?? null;
     }
 

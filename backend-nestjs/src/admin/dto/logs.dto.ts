@@ -133,4 +133,11 @@ export class UpdateLogSettingsDto {
   @Min(1)
   @Max(24 * 30)
   metricsRetentionHours?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(365)
+  @Max(3650)
+  auditRetentionDays?: number;
 }
