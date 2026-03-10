@@ -22,6 +22,9 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "test:all": "npm run test:unit && npm run test:integration && npm run test:e2e && npm run test:security",
+    "db:audit:queries": "ts-node scripts/database/audit-raw-sql.ts",
+    "db:explain:hotspots": "ts-node scripts/database/explain-hotspot-queries.ts",
+    "db:validate:security": "ts-node scripts/database/validate-enterprise-security.ts",
     "seed": "ts-node -r tsconfig-paths/register src/database/seed.ts",
     "tasks:bootstrap": "ts-node -r tsconfig-paths/register scripts/bootstrap-tasks-calendars.ts"
   },

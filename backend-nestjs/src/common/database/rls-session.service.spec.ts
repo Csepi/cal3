@@ -1,10 +1,12 @@
 import type { DataSource, EntityManager, QueryRunner } from 'typeorm';
 import { RlsSessionService } from './rls-session.service';
+import type { RequestContextService } from '../services/request-context.service';
 
 describe('RlsSessionService', () => {
   let queryRunner: jest.Mocked<QueryRunner>;
   let dataSource: DataSource;
   let service: RlsSessionService;
+  let requestContext: Pick<RequestContextService, 'getRequestId'>;
 
   beforeEach(() => {
     queryRunner = {
@@ -21,7 +23,14 @@ describe('RlsSessionService', () => {
       createQueryRunner: jest.fn().mockReturnValue(queryRunner),
     } as unknown as DataSource;
 
-    service = new RlsSessionService(dataSource);
+    requestContext = {
+      getRequestId: jest.fn().mockReturnValue('req-123'),
+    };
+
+    service = new RlsSessionService(
+      dataSource,
+      requestContext as RequestContextService,
+    );
   });
 
   it('applies tenant context before executing operation', async () => {
@@ -31,10 +40,32 @@ describe('RlsSessionService', () => {
     );
 
     expect(queryRunner.query).toHaveBeenCalledWith(
-      expect.stringContaining('SELECT app_set_tenant_context'),
-      [5, 77, false],
+      expect.stringContaining('SELECT app_set_request_context'),
+      [5, 77, false, 'req-123', null],
     );
     expect(queryRunner.commitTransaction).toHaveBeenCalled();
+  });
+
+  it('falls back to legacy tenant context function when request context function is unavailable', async () => {
+    queryRunner.query
+      .mockRejectedValueOnce(new Error('function app_set_request_context does not exist'))
+      .mockResolvedValueOnce(undefined);
+
+    await service.withTenantContext(
+      { organisationId: 4, userId: 10, isSuperAdmin: true },
+      async () => 'ok',
+    );
+
+    expect(queryRunner.query).toHaveBeenNthCalledWith(
+      1,
+      expect.stringContaining('SELECT app_set_request_context'),
+      [4, 10, true, 'req-123', null],
+    );
+    expect(queryRunner.query).toHaveBeenNthCalledWith(
+      2,
+      expect.stringContaining('SELECT app_set_tenant_context'),
+      [4, 10, true],
+    );
   });
 
   it('rolls back transaction when operation fails', async () => {
@@ -51,4 +82,3 @@ describe('RlsSessionService', () => {
     expect(queryRunner.release).toHaveBeenCalled();
   });
 });
-

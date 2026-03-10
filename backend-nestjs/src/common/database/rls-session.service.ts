@@ -1,15 +1,21 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Optional } from '@nestjs/common';
 import { DataSource, EntityManager, QueryRunner } from 'typeorm';
+import { RequestContextService } from '../services/request-context.service';
 
 export interface RlsSessionContext {
   organisationId?: number | null;
   userId?: number | null;
   isSuperAdmin?: boolean;
+  requestId?: string | null;
+  encryptionKey?: string | null;
 }
 
 @Injectable()
 export class RlsSessionService {
-  constructor(private readonly dataSource: DataSource) {}
+  constructor(
+    private readonly dataSource: DataSource,
+    @Optional() private readonly requestContext?: RequestContextService,
+  ) {}
 
   async withTenantContext<T>(
     context: RlsSessionContext,
@@ -36,16 +42,33 @@ export class RlsSessionService {
     runner: QueryRunner,
     context: RlsSessionContext,
   ): Promise<void> {
-    await runner.query(
-      `
-      SELECT app_set_tenant_context($1::int, $2::int, $3::boolean)
-    `,
-      [
-        context.organisationId ?? null,
-        context.userId ?? null,
-        context.isSuperAdmin ?? false,
-      ],
-    );
+    const requestId = context.requestId ?? this.requestContext?.getRequestId() ?? null;
+
+    try {
+      await runner.query(
+        `
+        SELECT app_set_request_context($1::int, $2::int, $3::boolean, $4::text, $5::text)
+      `,
+        [
+          context.organisationId ?? null,
+          context.userId ?? null,
+          context.isSuperAdmin ?? false,
+          requestId,
+          context.encryptionKey ?? null,
+        ],
+      );
+      return;
+    } catch {
+      await runner.query(
+        `
+        SELECT app_set_tenant_context($1::int, $2::int, $3::boolean)
+      `,
+        [
+          context.organisationId ?? null,
+          context.userId ?? null,
+          context.isSuperAdmin ?? false,
+        ],
+      );
+    }
   }
 }
-
