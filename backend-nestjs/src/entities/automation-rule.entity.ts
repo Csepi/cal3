@@ -6,6 +6,7 @@
   UpdateDateColumn,
   ManyToOne,
   OneToMany,
+  JoinColumn,
 } from 'typeorm';
 import { timestampType } from './column-types';
 import { User } from './user.entity';
@@ -87,12 +88,14 @@ export class AutomationRule {
   approvedAt!: Date | null;
 
   @ManyToOne(() => User, { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'approvedByUserId' })
   approvedBy!: User | null;
 
   @Column({ type: 'integer', nullable: true })
   approvedByUserId!: number | null;
 
   @ManyToOne(() => User, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'createdById' })
   createdBy!: User;
 
   @Column()
