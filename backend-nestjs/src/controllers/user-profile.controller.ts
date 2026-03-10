@@ -32,6 +32,7 @@ import {
 } from '../dto/user-profile.dto';
 import { Task } from '../entities/task.entity';
 import { TaskCalendarBridgeService } from '../tasks/task-calendar-bridge.service';
+import { I18nService } from 'nestjs-i18n';
 
 @ApiTags('User Profile')
 @Controller('user')
@@ -48,6 +49,7 @@ export class UserProfileController {
     @InjectRepository(Task)
     private readonly taskRepository: Repository<Task>,
     private readonly taskCalendarBridgeService: TaskCalendarBridgeService,
+    private readonly i18nService: I18nService,
   ) {}
 
   @Get('profile')
@@ -70,6 +72,7 @@ export class UserProfileController {
         'timezone',
         'timeFormat',
         'language',
+        'preferredLanguage',
         'usagePlans',
         'hideReservationsTab',
         'hiddenResourceIds',
@@ -109,12 +112,27 @@ export class UserProfileController {
       });
 
       if (conflicts && conflicts.id !== userId) {
-        throw new ConflictException('Username or email already exists');
+        throw new ConflictException(
+          this.i18nService.t('auth.usernameAlreadyExists', {
+            lang: this.resolveLanguage(req),
+            defaultValue: 'Username or email already exists',
+          }),
+        );
       }
     }
 
-    const { defaultTasksCalendarId, ...rest } = updateProfileDto;
+    const {
+      defaultTasksCalendarId,
+      language,
+      preferredLanguage,
+      ...rest
+    } = updateProfileDto;
     const updatePayload: QueryDeepPartialEntity<User> = { ...rest };
+    const resolvedLanguage = preferredLanguage ?? language;
+    if (resolvedLanguage) {
+      updatePayload.language = resolvedLanguage;
+      updatePayload.preferredLanguage = resolvedLanguage;
+    }
 
     if (defaultTasksCalendarId !== undefined) {
       const calendarId = defaultTasksCalendarId;
@@ -138,7 +156,11 @@ export class UserProfileController {
 
         if (!calendar) {
           throw new ConflictException(
-            'Invalid Tasks calendar. Select one you own or can edit.',
+            this.i18nService.t('validation.invalidCalendar', {
+              lang: this.resolveLanguage(req),
+              defaultValue:
+                'Invalid Tasks calendar. Select one you own or can edit.',
+            }),
           );
         }
 
@@ -161,7 +183,11 @@ export class UserProfileController {
 
         if (!hasWriteAccess) {
           throw new ConflictException(
-            'Invalid Tasks calendar. Select one you own or can edit.',
+            this.i18nService.t('validation.invalidCalendar', {
+              lang: this.resolveLanguage(req),
+              defaultValue:
+                'Invalid Tasks calendar. Select one you own or can edit.',
+            }),
           );
         }
 
@@ -213,6 +239,7 @@ export class UserProfileController {
         'timezone',
         'timeFormat',
         'language',
+        'preferredLanguage',
         'usagePlans',
         'hideReservationsTab',
         'hiddenResourceIds',
@@ -256,6 +283,7 @@ export class UserProfileController {
         'timezone',
         'timeFormat',
         'language',
+        'preferredLanguage',
         'usagePlans',
         'hideReservationsTab',
         'hiddenResourceIds',
@@ -288,7 +316,12 @@ export class UserProfileController {
     });
 
     if (!user) {
-      throw new ConflictException('User not found');
+      throw new ConflictException(
+        this.i18nService.t('errors.notFound', {
+          lang: this.resolveLanguage(req),
+          defaultValue: 'User not found',
+        }),
+      );
     }
 
     // Verify current password
@@ -297,7 +330,12 @@ export class UserProfileController {
       user.password,
     );
     if (!isCurrentPasswordValid) {
-      throw new ConflictException('Current password is incorrect');
+      throw new ConflictException(
+        this.i18nService.t('auth.invalidCredentials', {
+          lang: this.resolveLanguage(req),
+          defaultValue: 'Current password is incorrect',
+        }),
+      );
     }
 
     // Hash new password
@@ -309,6 +347,16 @@ export class UserProfileController {
 
     await this.userRepository.update(userId, { password: hashedNewPassword });
 
-    return { message: 'Password changed successfully' };
+    return {
+      message: this.i18nService.t('success.saved', {
+        lang: this.resolveLanguage(req),
+        defaultValue: 'Password changed successfully',
+      }),
+    };
+  }
+
+  private resolveLanguage(req: RequestWithUser): string {
+    const value = req.headers['x-user-language'];
+    return typeof value === 'string' ? value : 'en';
   }
 }

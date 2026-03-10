@@ -18,6 +18,8 @@ import { automationService } from '../../services/automationService';
 import { useAutomationMetadata } from '../../hooks/useAutomationMetadata';
 import { clientLogger } from '../../utils/clientLogger';
 
+import { tStatic } from '../../i18n';
+
 interface AutomationRuleModalProps {
   rule?: AutomationRuleDetailDto;
   onClose: () => void;
@@ -246,36 +248,34 @@ export function AutomationRuleModal({
 
           {/* Basic Info Section */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-gray-900">Basic Information</h3>
+            <h3 className="text-lg font-semibold text-gray-900">{tStatic('common:auto.frontend.kb0d5be39ae39')}</h3>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Rule Name *
-              </label>
+                {tStatic('common:auto.frontend.k9cb64f2d5ab1')}</label>
               <input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="e.g., Color work meetings blue"
+                placeholder={tStatic('common:auto.frontend.k4800efe7348e')}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 maxLength={200}
               />
-              <p className="mt-1 text-xs text-gray-500">{name.length}/200 characters</p>
+              <p className="mt-1 text-xs text-gray-500">{name.length}{tStatic('common:auto.frontend.k224b09a6c90e')}</p>
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Description
-              </label>
+                {tStatic('common:auto.frontend.k55f8ebc805e6')}</label>
               <textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder="Optional description of what this rule does"
+                placeholder={tStatic('common:auto.frontend.kd9201e10ac38')}
                 rows={2}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 maxLength={1000}
               />
-              <p className="mt-1 text-xs text-gray-500">{description.length}/1000 characters</p>
+              <p className="mt-1 text-xs text-gray-500">{description.length}{tStatic('common:auto.frontend.k061e9235ec37')}</p>
             </div>
 
             <div className="flex items-center gap-2">
@@ -287,8 +287,7 @@ export function AutomationRuleModal({
                 className="w-4 h-4"
               />
               <label htmlFor="isEnabled" className="text-sm font-medium text-gray-700">
-                Enable this rule immediately
-              </label>
+                {tStatic('common:auto.frontend.k344bfc4e0e30')}</label>
             </div>
           </div>
 
@@ -331,9 +330,9 @@ export function AutomationRuleModal({
         <div className="p-6 border-t border-gray-200 flex items-center justify-between">
           <div className="text-sm text-gray-600">
             {rule ? (
-              <>Created: {new Date(rule.createdAt).toLocaleDateString()}</>
+              <>{tStatic('common:auto.frontend.k0c78dab162bd')}{new Date(rule.createdAt).toLocaleDateString()}</>
             ) : (
-              <>* Required fields</>
+              <>{tStatic('common:auto.frontend.ka3fdbbda044d')}</>
             )}
           </div>
           <div className="flex items-center gap-3">
@@ -342,8 +341,7 @@ export function AutomationRuleModal({
               className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
               disabled={isSaving}
             >
-              Cancel
-            </button>
+              {tStatic('common:auto.frontend.k77dfd2135f4d')}</button>
             <button
               onClick={handleSave}
               disabled={isSaving}

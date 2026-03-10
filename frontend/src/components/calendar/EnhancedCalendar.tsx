@@ -38,6 +38,8 @@ import type { Organization, ReservationRecord } from '../../hooks/useCalendarDat
 import { useScreenSize } from '../../hooks/useScreenSize';
 import { useSwipeGesture } from '../../hooks/useSwipeGesture';
 
+import { tStatic } from '../../i18n';
+
 interface CalendarState {
   currentDate: Date;
   selectedDate: Date | null;
@@ -522,7 +524,7 @@ const CalendarHeader: React.FC<CalendarHeaderProps> = ({
             <button
               onClick={onToggleMobileDrawer}
               className="p-2 mr-2 text-white hover:bg-white/30 rounded-lg transition-colors duration-200"
-              aria-label="Open menu"
+              aria-label={tStatic('common:auto.frontend.k197101e9db29')}
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
@@ -564,8 +566,7 @@ const CalendarHeader: React.FC<CalendarHeaderProps> = ({
               onClick={() => actions.navigateCalendar('today')}
               className="text-white hover:bg-white/30 border border-white/30 rounded-lg backdrop-blur-sm shadow-sm transition-all duration-200 hover:shadow-md font-medium"
             >
-              Today
-            </Button>
+              {tStatic('common:auto.frontend.k24345a14377f')}</Button>
 
             <h1 className="text-lg md:text-2xl font-bold ml-2 md:ml-4 truncate">{formatTitle}</h1>
           </div>
@@ -584,8 +585,7 @@ const CalendarHeader: React.FC<CalendarHeaderProps> = ({
                     : 'text-white/90 hover:bg-white/30 hover:text-white'
                 }`}
               >
-                Month
-              </Button>
+                {tStatic('common:auto.frontend.k082bc378cd60')}</Button>
               <Button
                 variant="ghost"
                 size="sm"
@@ -596,8 +596,7 @@ const CalendarHeader: React.FC<CalendarHeaderProps> = ({
                     : 'text-white/90 hover:bg-white/30 hover:text-white'
                 }`}
               >
-                Week
-              </Button>
+                {tStatic('common:auto.frontend.kf82be68a7fb4')}</Button>
               <Button
                 variant="ghost"
                 size="sm"
@@ -608,8 +607,7 @@ const CalendarHeader: React.FC<CalendarHeaderProps> = ({
                     : 'text-white/90 hover:bg-white/30 hover:text-white'
                 }`}
               >
-                Timeline
-              </Button>
+                {tStatic('common:auto.frontend.k018514a3d58a')}</Button>
             </div>
 
             {/* Create Actions */}
@@ -626,7 +624,7 @@ const CalendarHeader: React.FC<CalendarHeaderProps> = ({
                     </svg>
                   }
                 >
-                  <span className="hidden md:inline">New Event</span>
+                  <span className="hidden md:inline">{tStatic('common:auto.frontend.k6396b65c4ecf')}</span>
                 </Button>
 
                 {!isMobile && (
@@ -641,7 +639,7 @@ const CalendarHeader: React.FC<CalendarHeaderProps> = ({
                       </svg>
                     }
                   >
-                    <span className="hidden md:inline">New Calendar</span>
+                    <span className="hidden md:inline">{tStatic('common:auto.frontend.kfe0b9a9de658')}</span>
                   </Button>
                 )}
               </div>
@@ -971,7 +969,7 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
         Number.isFinite(calendar.rank),
       );
       if (!supportsRank) {
-        alert('Calendar ranking is not available on this backend. Restart the backend to apply the rank update.');
+        alert(tStatic('common:auto.frontend.kd6c923c0ba86'));
         setCalendarOrder(state.calendars);
         return;
       }
@@ -1000,7 +998,7 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
         const message =
           err instanceof Error ? err.message : 'Failed to update calendar order';
         if (message.includes('rank should not exist')) {
-          alert('Calendar ranking is not enabled on the backend yet. Restart the backend and try again.');
+          alert(tStatic('common:auto.frontend.k09ba7c20211a'));
         } else {
           alert(message);
         }
@@ -1065,7 +1063,7 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
     if (readOnly) {
       return;
     }
-    const name = window.prompt('Name for the new calendar group?');
+    const name = window.prompt(tStatic('common:auto.frontend.k93ce14374ff4'));
     if (!name || name.trim().length < 2) {
       return;
     }
@@ -1153,7 +1151,7 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
               onEditCalendar(calendar);
             }}
             className="p-1 hover:bg-gray-200 rounded transition-all duration-200"
-            title="Edit Calendar"
+            title={tStatic('common:auto.frontend.k65c10a34b7c9')}
           >
             <span className="text-xs">✎</span>
           </button>
@@ -1165,7 +1163,7 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
               onDeleteCalendar(calendar);
             }}
             className="p-1 hover:bg-red-100 rounded transition-all duration-200"
-            title="Delete Calendar"
+            title={tStatic('common:auto.frontend.k63ba33f6ca07')}
           >
             <span className="text-xs">🗑</span>
           </button>
@@ -1183,7 +1181,7 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
           <button
             onClick={toggleCollapse}
             className="w-full p-2 hover:bg-gray-100 rounded-lg transition-all duration-200"
-            title="Expand sidebar"
+            title={tStatic('common:auto.frontend.kf462e889fd88')}
           >
             <span className="text-xl">▶</span>
           </button>
@@ -1239,7 +1237,7 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
           <button
             onClick={toggleCollapse}
             className="p-1.5 hover:bg-gray-100 rounded-lg transition-all duration-200"
-            title="Collapse sidebar"
+            title={tStatic('common:auto.frontend.k9e6876286e45')}
           >
             <span className="text-lg">◀</span>
           </button>
@@ -1249,8 +1247,8 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <h3 className={`text-md font-semibold text-${themeConfig.text}`}>Groups</h3>
-              <span className="text-xs text-gray-500">{groupedCalendars.groups.length} total</span>
+              <h3 className={`text-md font-semibold text-${themeConfig.text}`}>{tStatic('common:auto.frontend.kae9629f4ebb8')}</h3>
+              <span className="text-xs text-gray-500">{groupedCalendars.groups.length} {tStatic('common:auto.frontend.k5a537e209151')}</span>
             </div>
             {!readOnly && (
               <Button
@@ -1260,8 +1258,7 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
                 disabled={creatingGroup}
                 className={`text-${themeConfig.primary}-600 hover:bg-${themeConfig.primary}-100`}
               >
-                + Group
-              </Button>
+                {tStatic('common:auto.frontend.k74a33ebc8648')}</Button>
             )}
           </div>
 
@@ -1286,14 +1283,14 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
                         }
                       }}
                       className="w-4 h-4 rounded border border-gray-400 flex items-center justify-center"
-                      aria-label="Toggle group visibility"
+                      aria-label={tStatic('common:auto.frontend.kbb7229ba35ec')}
                     >
                       {allSelected && <span className="text-xs">✓</span>}
                     </button>
                     <div>
                       <div className="font-semibold text-gray-800">{group.name}</div>
                       <div className="text-xs text-gray-500">
-                        {group.calendars.length} calendars · {group.isVisible ? 'Visible' : 'Hidden'}
+                        {group.calendars.length} {tStatic('common:auto.frontend.k66a98b77f77d')}{group.isVisible ? 'Visible' : 'Hidden'}
                       </div>
                     </div>
                   </div>
@@ -1301,7 +1298,7 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
                 <div className="divide-y divide-gray-100">
                   {group.calendars.map((calendar) => renderCalendarRow(calendar))}
                   {group.calendars.length === 0 && (
-                    <div className="px-4 py-3 text-sm text-gray-500">No calendars in this group yet.</div>
+                    <div className="px-4 py-3 text-sm text-gray-500">{tStatic('common:auto.frontend.kbab7e2781755')}</div>
                   )}
                 </div>
               </div>
@@ -1313,12 +1310,12 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
         <div>
           <div className="flex items-start justify-between mb-4">
             <div>
-              <h3 className={`text-lg font-semibold text-${themeConfig.text}`}>My Calendars</h3>
+              <h3 className={`text-lg font-semibold text-${themeConfig.text}`}>{tStatic('common:auto.frontend.ked5b05b30d74')}</h3>
               {!readOnly && (
-                <p className="text-xs text-gray-500">Drag to reorder (updates priority)</p>
+                <p className="text-xs text-gray-500">{tStatic('common:auto.frontend.k894709238e27')}</p>
               )}
               {isPersistingOrder && !readOnly && (
-                <p className="text-xs text-gray-400">Saving order...</p>
+                <p className="text-xs text-gray-400">{tStatic('common:auto.frontend.k86ec79b780bf')}</p>
               )}
             </div>
             {!readOnly && (
@@ -1360,7 +1357,7 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
                 {!readOnly && (
                   <span
                     className="text-xs text-gray-400 px-1 cursor-grab"
-                    title="Drag to reorder"
+                    title={tStatic('common:auto.frontend.ke7541faf0a7e')}
                     draggable={!isPersistingOrder}
                     onDragStart={(event) => handleDragStart(event, calendar.id)}
                     onDragEnd={handleDragEnd}
@@ -1403,7 +1400,7 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
                         onEditCalendar(calendar);
                       }}
                       className="p-1 hover:bg-gray-200 rounded transition-all duration-200"
-                      title="Edit Calendar"
+                      title={tStatic('common:auto.frontend.k65c10a34b7c9')}
                     >
                       <span className="text-xs">✏️</span>
                     </button>
@@ -1415,7 +1412,7 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
                         onDeleteCalendar(calendar);
                       }}
                       className="p-1 hover:bg-red-100 rounded transition-all duration-200"
-                      title="Delete Calendar"
+                      title={tStatic('common:auto.frontend.k63ba33f6ca07')}
                     >
                       <span className="text-xs">🗑️</span>
                     </button>
@@ -1429,7 +1426,7 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
         {/* Reservations by Organization and Resource Type */}
         <div>
           <div className="flex items-center justify-between mb-4">
-            <h3 className={`text-lg font-semibold text-${themeConfig.text}`}>Reservations</h3>
+            <h3 className={`text-lg font-semibold text-${themeConfig.text}`}>{tStatic('common:auto.frontend.kfe5c54bbae46')}</h3>
           </div>
 
           <div className="space-y-3">
@@ -1476,7 +1473,7 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
                           onClick={(e) => e.stopPropagation()}
                           disabled={readOnly}
                           className="w-6 h-6 rounded cursor-pointer border-2 border-gray-300"
-                          title="Change organization color"
+                          title={tStatic('common:auto.frontend.k5ce071a801c8')}
                         />
                       </div>
                       <span className="text-sm font-semibold text-gray-700 cursor-pointer" onClick={() => actions.toggleOrganization(org)}>🏢 {org.name}</span>
@@ -1543,7 +1540,7 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
                                 onClick={(e) => e.stopPropagation()}
                                 disabled={readOnly}
                                 className="w-5 h-5 rounded cursor-pointer border border-gray-300"
-                                title="Change resource type color"
+                                title={tStatic('common:auto.frontend.k0cb317bcb48d')}
                               />
                             </div>
                             <div className="flex-1 min-w-0 cursor-pointer" onClick={() => actions.toggleResourceType(resourceType.id)}>
@@ -1564,15 +1561,14 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
                       })}
                     </div>
                   ) : (
-                    <div className="ml-4 text-xs text-gray-500 italic">No resource types</div>
+                    <div className="ml-4 text-xs text-gray-500 italic">{tStatic('common:auto.frontend.k954fce4e485c')}</div>
                   )}
                 </div>
                 );
               })
             ) : (
               <div className="text-sm text-gray-500 text-center py-4">
-                No organizations with reservations access
-              </div>
+                {tStatic('common:auto.frontend.k83dff77c0c5b')}</div>
             )}
           </div>
         </div>
@@ -1899,15 +1895,14 @@ export const EnhancedCalendar: React.FC<EnhancedCalendarProps> = ({
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 18.5c-.77.833.192 2.5 1.732 2.5z" />
             </svg>
           </div>
-          <h3 className="text-lg font-medium text-gray-900 mb-2">Error Loading Calendar</h3>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">{tStatic('common:auto.frontend.k4682f16ef04e')}</h3>
           <p className="text-sm text-gray-600 mb-4">{loadError}</p>
           <Button
             variant="primary"
             onClick={actions.refreshData}
             themeColor={themeColor}
           >
-            Try Again
-          </Button>
+            {tStatic('common:auto.frontend.kcef2fe093b68')}</Button>
         </div>
       </div>
     );
@@ -1917,13 +1912,11 @@ export const EnhancedCalendar: React.FC<EnhancedCalendarProps> = ({
     <div className={`bg-white rounded-3xl shadow-2xl overflow-hidden relative ${className}`}>
       {isRefreshing && !isInitialLoading && !offlineMode && (
         <div className="pointer-events-none absolute right-6 top-4 text-[10px] uppercase tracking-[0.3em] text-slate-400">
-          Syncing
-        </div>
+          {tStatic('common:auto.frontend.k4ae6fa22bc99')}</div>
       )}
       {offlineMode && (
         <div className="px-4 py-2 text-xs font-medium text-amber-800 bg-amber-50 border-b border-amber-200">
-          Offline mode: showing last synced timeline items. Changes are disabled until you reconnect.
-        </div>
+          {tStatic('common:auto.frontend.k3dbc98afa55f')}</div>
       )}
       {/* Header - Conditional Mobile/Desktop */}
       {isMobile ? (
@@ -1974,7 +1967,7 @@ export const EnhancedCalendar: React.FC<EnhancedCalendarProps> = ({
           <MobileDrawer
             isOpen={modals.mobileDrawer}
             onClose={() => setModals(prev => ({ ...prev, mobileDrawer: false }))}
-            title="Calendars"
+            title={tStatic('common:auto.frontend.k9444501818e6')}
           >
             <CalendarSidebar
               state={state}

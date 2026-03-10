@@ -34,6 +34,8 @@ import {
 } from './reservation';
 import type { ReservationFormData } from './reservation/ReservationFormModal';
 
+import { tStatic } from '../i18n';
+
 type Reservation = Booking & {
   customerInfo?: ReservationCustomerInfo;
   resource?: ReservationResource;
@@ -364,11 +366,9 @@ const ReservationManagement: React.FC<ReservationManagementProps> = ({
         {/* Header */}
         <div className="mb-8 text-center">
           <h1 className="text-4xl font-bold text-gray-800 mb-2">
-            🏢 Reservation Management
-          </h1>
+            {tStatic('common:auto.frontend.k19ffa859d292')}</h1>
           <p className="text-gray-600 text-lg">
-            Manage resource reservations and bookings
-          </p>
+            {tStatic('common:auto.frontend.k679450f78983')}</p>
         </div>
 
         {/* Main Content */}
@@ -413,11 +413,11 @@ const ReservationManagement: React.FC<ReservationManagementProps> = ({
         {/* Footer */}
         <div className="mt-16 text-center text-gray-500">
           <div className="flex items-center justify-center space-x-4 text-sm">
-            <span>PrimeCal Reservation System</span>
+            <span>{tStatic('common:auto.frontend.k020f4a3ef74c')}</span>
             <span>•</span>
-            <span>Modular Architecture</span>
+            <span>{tStatic('common:auto.frontend.k81b9d5dd476b')}</span>
             <span>•</span>
-            <span>Built with React & TypeScript</span>
+            <span>{tStatic('common:auto.frontend.kac63676737cd')}</span>
           </div>
         </div>
       </div>

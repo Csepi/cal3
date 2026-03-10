@@ -8,6 +8,8 @@ import { memo, useCallback, useMemo } from 'react';
 import type { CalendarHeaderProps } from '../types';
 import { formatDate } from '../../../utils/calendar';
 
+import { tStatic } from '../../../i18n';
+
 export const CalendarHeader = memo<CalendarHeaderProps>(({
   currentDate,
   view,
@@ -105,7 +107,7 @@ export const CalendarHeader = memo<CalendarHeaderProps>(({
             <button
               onClick={handlePrevious}
               className={navButtonClasses}
-              aria-label="Previous period"
+              aria-label={tStatic('common:auto.frontend.k0aab6a575e14')}
               type="button"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -116,7 +118,7 @@ export const CalendarHeader = memo<CalendarHeaderProps>(({
             <button
               onClick={handleNext}
               className={navButtonClasses}
-              aria-label="Next period"
+              aria-label={tStatic('common:auto.frontend.k0630852d72f5')}
               type="button"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -132,8 +134,7 @@ export const CalendarHeader = memo<CalendarHeaderProps>(({
             className={todayButtonClasses}
             type="button"
           >
-            Today
-          </button>
+            {tStatic('common:auto.frontend.k24345a14377f')}</button>
         )}
 
         {/* Title */}
@@ -151,13 +152,13 @@ export const CalendarHeader = memo<CalendarHeaderProps>(({
               onClick={handleCreateEvent}
               className={actionButtonClasses}
               type="button"
-              aria-label="Create new event"
+              aria-label={tStatic('common:auto.frontend.k44cf8342ddd4')}
             >
               <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
               </svg>
-              <span className="hidden sm:inline">New Event</span>
-              <span className="sm:hidden">Event</span>
+              <span className="hidden sm:inline">{tStatic('common:auto.frontend.k6396b65c4ecf')}</span>
+              <span className="sm:hidden">{tStatic('common:auto.frontend.kad8919ace091')}</span>
             </button>
           )}
 
@@ -166,13 +167,13 @@ export const CalendarHeader = memo<CalendarHeaderProps>(({
               onClick={handleCreateCalendar}
               className={`${buttonBaseClasses} text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 focus:ring-blue-500`}
               type="button"
-              aria-label="Create new calendar"
+              aria-label={tStatic('common:auto.frontend.k66ec06fd1b14')}
             >
               <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
-              <span className="hidden sm:inline">New Calendar</span>
-              <span className="sm:hidden">Calendar</span>
+              <span className="hidden sm:inline">{tStatic('common:auto.frontend.kfe0b9a9de658')}</span>
+              <span className="sm:hidden">{tStatic('common:auto.frontend.kadab5090ac6a')}</span>
             </button>
           )}
         </div>
@@ -184,22 +185,19 @@ export const CalendarHeader = memo<CalendarHeaderProps>(({
               className={`${viewButtonClasses(view === 'month')} border-0 rounded-none first:rounded-l-md`}
               type="button"
             >
-              Month
-            </button>
+              {tStatic('common:auto.frontend.k082bc378cd60')}</button>
             <button
               onClick={() => handleViewChange('week')}
               className={`${viewButtonClasses(view === 'week')} border-0 border-l border-gray-300 rounded-none`}
               type="button"
             >
-              Week
-            </button>
+              {tStatic('common:auto.frontend.kf82be68a7fb4')}</button>
             <button
               onClick={() => handleViewChange('day')}
               className={`${viewButtonClasses(view === 'day')} border-0 border-l border-gray-300 rounded-none last:rounded-r-md`}
               type="button"
             >
-              Day
-            </button>
+              {tStatic('common:auto.frontend.k987b9ced08d4')}</button>
           </div>
         )}
 

@@ -11,6 +11,8 @@ import { IdempotencyRecord } from '../../entities/idempotency-record.entity';
 
 import { logError } from '../errors/error-logger';
 import { buildErrorContext } from '../errors/error-context';
+import { bStatic } from '../../i18n/runtime';
+
 export interface IdempotencyOptions<T> {
   key: string | undefined;
   scope: string;
@@ -48,16 +50,16 @@ export class IdempotencyService {
     const key = options.key?.trim();
     if (!key) {
       throw new BadRequestException(
-        'Missing Idempotency-Key header for this endpoint.',
+        bStatic('errors.auto.backend.k5a9884e65fa5'),
       );
     }
 
     if (key.length > 128) {
-      throw new BadRequestException('Idempotency key is too long.');
+      throw new BadRequestException(bStatic('errors.auto.backend.k97faa2e6d469'));
     }
     if (!this.keyPattern.test(key)) {
       throw new BadRequestException(
-        'Idempotency key must match [A-Za-z0-9:_-] and be 8-128 chars.',
+        bStatic('errors.auto.backend.k0881a836c50a'),
       );
     }
 
@@ -79,7 +81,7 @@ export class IdempotencyService {
         await this.repository.remove(existing);
       } else if (existing.requestHash !== requestHash) {
         throw new ConflictException(
-          'Conflicting request payload for supplied Idempotency-Key.',
+          bStatic('errors.auto.backend.kde8c534f2842'),
         );
       } else if (existing.responsePayload) {
         try {

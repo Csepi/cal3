@@ -1,0 +1,10 @@
+{
+  "subjects": {
+    "eventReminder": "Event reminder: {{title}}",
+    "bookingConfirmation": "Booking confirmation",
+    "passwordReset": "Reset your PrimeCalendar password"
+  },
+  "footer": {
+    "unsubscribe": "Manage your email preferences in account settings."
+  }
+}

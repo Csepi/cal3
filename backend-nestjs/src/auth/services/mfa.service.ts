@@ -12,6 +12,8 @@ import { SecurityStoreService } from '../../api-security/services/security-store
 import { FieldEncryptionService } from '../../common/security/field-encryption.service';
 import { SecurityAuditService } from '../../logging/security-audit.service';
 
+import { bStatic } from '../../i18n/runtime';
+
 const MFA_SETUP_TTL_SECONDS = 10 * 60;
 const MFA_RECOVERY_CODES = 8;
 const MFA_RECOVERY_SEGMENT_LENGTH = 5;
@@ -95,12 +97,12 @@ export class MfaService {
     const secret = await this.securityStore.getString(this.getSetupKey(userId));
     if (!secret) {
       throw new BadRequestException(
-        'MFA setup challenge expired. Generate a new setup secret.',
+        bStatic('errors.auto.backend.kfd4908a3510b'),
       );
     }
 
     if (!this.totpService.verifyCode(secret, code)) {
-      throw new BadRequestException('Invalid MFA verification code.');
+      throw new BadRequestException(bStatic('errors.auto.backend.k11e7d9f23e37'));
     }
 
     const user = await this.getUser(userId);
@@ -141,7 +143,7 @@ export class MfaService {
         : false);
 
     if (!valid) {
-      throw new UnauthorizedException('Invalid MFA confirmation.');
+      throw new UnauthorizedException(bStatic('errors.auto.backend.kfa37b7d91796'));
     }
 
     user.mfaEnabled = false;
@@ -170,7 +172,7 @@ export class MfaService {
     const hasRecovery =
       typeof recoveryCode === 'string' && recoveryCode.trim().length > 0;
     if (!hasTotp && !hasRecovery) {
-      throw new UnauthorizedException('MFA verification code required.');
+      throw new UnauthorizedException(bStatic('errors.auto.backend.k50f73ab2469a'));
     }
 
     let success = false;
@@ -185,7 +187,7 @@ export class MfaService {
     }
 
     if (!success) {
-      throw new UnauthorizedException('Invalid MFA verification code.');
+      throw new UnauthorizedException(bStatic('errors.auto.backend.k11e7d9f23e37'));
     }
   }
 
@@ -246,7 +248,7 @@ export class MfaService {
   private async getUser(userId: number): Promise<User> {
     const user = await this.userRepository.findOne({ where: { id: userId } });
     if (!user) {
-      throw new UnauthorizedException('User not found.');
+      throw new UnauthorizedException(bStatic('errors.auto.backend.k9c986a39aaff'));
     }
     return user;
   }

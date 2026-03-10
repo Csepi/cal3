@@ -14,6 +14,8 @@ import type {
   ReservationResource,
 } from '../../types/reservation';
 
+import { tStatic } from '../../i18n';
+
 export interface ReservationFormData {
   startTime: string;
   endTime: string;
@@ -299,7 +301,7 @@ export const ReservationFormModal: React.FC<ReservationFormModalProps> = ({
         );
 
     if (hasChanges) {
-      const confirmClose = window.confirm('You have unsaved changes. Are you sure you want to close?');
+      const confirmClose = window.confirm(tStatic('common:auto.frontend.k4761b5e2b6d1'));
       if (!confirmClose) return;
     }
 
@@ -329,7 +331,7 @@ export const ReservationFormModal: React.FC<ReservationFormModalProps> = ({
 
         {/* Basic Information */}
         <Card
-          header={<h3 className="text-lg font-semibold text-gray-800">🏢 Reservation Details</h3>}
+          header={<h3 className="text-lg font-semibold text-gray-800">{tStatic('common:auto.frontend.k889031affe01')}</h3>}
           padding="lg"
           themeColor={themeColor}
         >
@@ -337,14 +339,14 @@ export const ReservationFormModal: React.FC<ReservationFormModalProps> = ({
             {/* Resource Selection */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Resource <span className="text-red-500">*</span>
+                {tStatic('common:auto.frontend.k021493f340d3')}<span className="text-red-500">*</span>
               </label>
               <select
                 value={formData.resourceId}
                 onChange={(e) => handleFormChange('resourceId', parseInt(e.target.value))}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
-                <option value={0}>Select a resource...</option>
+                <option value={0}>{tStatic('common:auto.frontend.kff778ef170a6')}</option>
                 {resources.map((resource) => (
                   <option key={resource.id} value={resource.id}>
                     {resource.name} ({resource.resourceType?.name || 'Unknown Type'})
@@ -358,7 +360,7 @@ export const ReservationFormModal: React.FC<ReservationFormModalProps> = ({
 
             {/* Quantity */}
             <Input
-              label="Quantity"
+              label={tStatic('common:auto.frontend.k44f6af694554')}
               type="number"
               value={formData.quantity.toString()}
               onChange={(e) => handleFormChange('quantity', parseInt(e.target.value) || 1)}
@@ -372,7 +374,7 @@ export const ReservationFormModal: React.FC<ReservationFormModalProps> = ({
 
         {/* Date & Time */}
         <Card
-          header={<h3 className="text-lg font-semibold text-gray-800">📅 Date & Time</h3>}
+          header={<h3 className="text-lg font-semibold text-gray-800">{tStatic('common:auto.frontend.k28b7ba5d46e1')}</h3>}
           padding="lg"
           themeColor={themeColor}
         >
@@ -387,8 +389,7 @@ export const ReservationFormModal: React.FC<ReservationFormModalProps> = ({
                 className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
               />
               <label htmlFor="isMultiDay" className="ml-3 text-sm text-gray-700">
-                Multi-day reservation
-              </label>
+                {tStatic('common:auto.frontend.kbb9cbd06f7ec')}</label>
             </div>
 
             {isMultiDay ? (
@@ -396,7 +397,7 @@ export const ReservationFormModal: React.FC<ReservationFormModalProps> = ({
               <div className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <Input
-                    label="Start Date"
+                    label={tStatic('common:auto.frontend.k9d7ab1a55796')}
                     type="date"
                     value={formData.startDate}
                     onChange={(e) => handleFormChange('startDate', e.target.value)}
@@ -405,7 +406,7 @@ export const ReservationFormModal: React.FC<ReservationFormModalProps> = ({
                     themeColor={themeColor}
                   />
                   <Input
-                    label="End Date"
+                    label={tStatic('common:auto.frontend.k84b147812589')}
                     type="date"
                     value={formData.endDate}
                     onChange={(e) => handleFormChange('endDate', e.target.value)}
@@ -416,7 +417,7 @@ export const ReservationFormModal: React.FC<ReservationFormModalProps> = ({
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <Input
-                    label="Start Time"
+                    label={tStatic('common:auto.frontend.k41c1074ddb72')}
                     type="time"
                     value={formData.startTimeOnly}
                     onChange={(e) => handleFormChange('startTimeOnly', e.target.value)}
@@ -425,7 +426,7 @@ export const ReservationFormModal: React.FC<ReservationFormModalProps> = ({
                     themeColor={themeColor}
                   />
                   <Input
-                    label="End Time"
+                    label={tStatic('common:auto.frontend.k4c640e925e8b')}
                     type="time"
                     value={formData.endTimeOnly}
                     onChange={(e) => handleFormChange('endTimeOnly', e.target.value)}
@@ -439,7 +440,7 @@ export const ReservationFormModal: React.FC<ReservationFormModalProps> = ({
               // Single day form
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Input
-                  label="Start Date & Time"
+                  label={tStatic('common:auto.frontend.k405a8946fe89')}
                   type="datetime-local"
                   value={formData.startTime}
                   onChange={(e) => handleFormChange('startTime', e.target.value)}
@@ -448,7 +449,7 @@ export const ReservationFormModal: React.FC<ReservationFormModalProps> = ({
                   themeColor={themeColor}
                 />
                 <Input
-                  label="End Date & Time"
+                  label={tStatic('common:auto.frontend.k6a7ae5702f81')}
                   type="datetime-local"
                   value={formData.endTime}
                   onChange={(e) => handleFormChange('endTime', e.target.value)}
@@ -463,43 +464,43 @@ export const ReservationFormModal: React.FC<ReservationFormModalProps> = ({
 
         {/* Customer Information */}
         <Card
-          header={<h3 className="text-lg font-semibold text-gray-800">👤 Customer Information</h3>}
+          header={<h3 className="text-lg font-semibold text-gray-800">{tStatic('common:auto.frontend.k0723ca5efe89')}</h3>}
           padding="lg"
           themeColor={themeColor}
         >
           <div className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Input
-                label="Customer Name"
+                label={tStatic('common:auto.frontend.k75636316f9d7')}
                 value={formData.customerInfo.name || ''}
                 onChange={(e) => handleCustomerInfoChange('name', e.target.value)}
                 themeColor={themeColor}
-                placeholder="Enter customer name"
+                placeholder={tStatic('common:auto.frontend.ke5fee2c5ed7a')}
               />
               <Input
-                label="Email"
+                label={tStatic('common:auto.frontend.k84add5b29527')}
                 type="email"
                 value={formData.customerInfo.email || ''}
                 onChange={(e) => handleCustomerInfoChange('email', e.target.value)}
                 themeColor={themeColor}
-                placeholder="Enter customer email"
+                placeholder={tStatic('common:auto.frontend.kc008a436c4c0')}
               />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Input
-                label="Phone"
+                label={tStatic('common:auto.frontend.k77064d526523')}
                 type="tel"
                 value={formData.customerInfo.phone || ''}
                 onChange={(e) => handleCustomerInfoChange('phone', e.target.value)}
                 themeColor={themeColor}
-                placeholder="Enter customer phone"
+                placeholder={tStatic('common:auto.frontend.keb2d16823597')}
               />
               <Input
-                label="Organization"
+                label={tStatic('common:auto.frontend.k519255ae1f74')}
                 value={formData.customerInfo.organization || ''}
                 onChange={(e) => handleCustomerInfoChange('organization', e.target.value)}
                 themeColor={themeColor}
-                placeholder="Enter organization"
+                placeholder={tStatic('common:auto.frontend.kc0cf6c781f3b')}
               />
             </div>
           </div>
@@ -507,16 +508,16 @@ export const ReservationFormModal: React.FC<ReservationFormModalProps> = ({
 
         {/* Notes */}
         <Card
-          header={<h3 className="text-lg font-semibold text-gray-800">📝 Additional Notes</h3>}
+          header={<h3 className="text-lg font-semibold text-gray-800">{tStatic('common:auto.frontend.kf130d03921ac')}</h3>}
           padding="lg"
           themeColor={themeColor}
         >
           <Input
-            label="Notes"
+            label={tStatic('common:auto.frontend.k70440046a3dc')}
             value={formData.notes}
             onChange={(e) => handleFormChange('notes', e.target.value)}
             themeColor={themeColor}
-            placeholder="Enter additional notes or special requirements..."
+            placeholder={tStatic('common:auto.frontend.k0b4bc2ffa9d6')}
             multiline
             rows={3}
           />
@@ -530,8 +531,7 @@ export const ReservationFormModal: React.FC<ReservationFormModalProps> = ({
             disabled={loading}
             themeColor={themeColor}
           >
-            Cancel
-          </Button>
+            {tStatic('common:auto.frontend.k77dfd2135f4d')}</Button>
           <Button
             variant="primary"
             onClick={handleSubmit}

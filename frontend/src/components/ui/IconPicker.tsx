@@ -12,6 +12,8 @@
 
 import React, { useState, useMemo } from 'react';
 
+import { tStatic } from '../../i18n';
+
 interface IconPickerProps {
   value?: string;
   onChange: (icon: string | undefined) => void;
@@ -548,7 +550,7 @@ export const IconPicker: React.FC<IconPickerProps> = ({
           {value ? (
             <>
               <span className="text-2xl">{value}</span>
-              <span className="text-sm text-gray-600">Selected</span>
+              <span className="text-sm text-gray-600">{tStatic('common:auto.frontend.k9a976fc228b6')}</span>
             </>
           ) : (
             placeholder
@@ -585,7 +587,7 @@ export const IconPicker: React.FC<IconPickerProps> = ({
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search icons..."
+                placeholder={tStatic('common:auto.frontend.k2f149aaf731c')}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 autoFocus
               />
@@ -631,8 +633,8 @@ export const IconPicker: React.FC<IconPickerProps> = ({
                 </div>
               ) : (
                 <div className="text-center py-8 text-gray-500">
-                  <p className="text-sm">No icons found for "{searchQuery}"</p>
-                  <p className="text-xs mt-2">Try a different search term</p>
+                  <p className="text-sm">{tStatic('common:auto.frontend.k7d005a7b9492')}{searchQuery}"</p>
+                  <p className="text-xs mt-2">{tStatic('common:auto.frontend.k39d6420eaad6')}</p>
                 </div>
               )}
             </div>
@@ -645,7 +647,7 @@ export const IconPicker: React.FC<IconPickerProps> = ({
                   value={customIcon}
                   onChange={(e) => setCustomIcon(e.target.value)}
                   onKeyPress={(e) => e.key === 'Enter' && handleCustomIconSubmit()}
-                  placeholder="Or type custom emoji..."
+                  placeholder={tStatic('common:auto.frontend.k7f3d0ba4d3c9')}
                   maxLength={10}
                   className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
@@ -655,8 +657,7 @@ export const IconPicker: React.FC<IconPickerProps> = ({
                   disabled={!customIcon.trim()}
                   className="px-4 py-2 bg-blue-500 text-white rounded-lg text-sm font-medium hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-all duration-200"
                 >
-                  Add
-                </button>
+                  {tStatic('common:auto.frontend.k61cc55aa0453')}</button>
               </div>
             </div>
 
@@ -667,8 +668,7 @@ export const IconPicker: React.FC<IconPickerProps> = ({
                 onClick={handleClear}
                 className="px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200"
               >
-                Clear
-              </button>
+                {tStatic('common:auto.frontend.k719ea396ad92')}</button>
               <button
                 type="button"
                 onClick={() => {
@@ -677,8 +677,7 @@ export const IconPicker: React.FC<IconPickerProps> = ({
                 }}
                 className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-all duration-200"
               >
-                Close
-              </button>
+                {tStatic('common:auto.frontend.kbbfa773e5a63')}</button>
             </div>
           </div>
         </>

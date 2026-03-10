@@ -22,6 +22,8 @@ import { ReservationCalendarRoleType } from '../entities/reservation-calendar-ro
 import { ReservationCalendarService } from './reservation-calendar.service';
 import { CreateReservationCalendarDto, AssignRoleDto } from './dto';
 
+import { bStatic } from '../i18n/runtime';
+
 /**
  * ReservationCalendarController
  *
@@ -64,7 +66,7 @@ export class ReservationCalendarController {
       );
 
     return {
-      message: 'Reservation calendar created successfully',
+      message: bStatic('errors.auto.backend.kf29ecd8b3ec4'),
       data: reservationCalendar,
     };
   }
@@ -84,7 +86,7 @@ export class ReservationCalendarController {
       );
 
     return {
-      message: 'Organisation reservation calendars retrieved successfully',
+      message: bStatic('errors.auto.backend.k546342b267e4'),
       data: calendars,
     };
   }
@@ -113,7 +115,7 @@ export class ReservationCalendarController {
     );
 
     return {
-      message: 'Calendar role assigned successfully',
+      message: bStatic('errors.auto.backend.k168ee03bd6b6'),
       data: role,
     };
   }
@@ -135,7 +137,7 @@ export class ReservationCalendarController {
     );
 
     return {
-      message: 'Calendar role removed successfully',
+      message: bStatic('errors.auto.backend.kb4dddc1788c7'),
     };
   }
 
@@ -153,7 +155,7 @@ export class ReservationCalendarController {
     );
 
     return {
-      message: 'Calendar roles retrieved successfully',
+      message: bStatic('errors.auto.backend.k522e58a22aad'),
       data: roles,
     };
   }
@@ -169,7 +171,7 @@ export class ReservationCalendarController {
       );
 
     return {
-      message: 'User reservation calendars retrieved successfully',
+      message: bStatic('errors.auto.backend.k71edb36e1151'),
       data: calendars,
     };
   }
@@ -190,7 +192,7 @@ export class ReservationCalendarController {
     );
 
     return {
-      message: 'User calendar role retrieved successfully',
+      message: bStatic('errors.auto.backend.kb19891a1ee1f'),
       data: role,
     };
   }
@@ -213,7 +215,7 @@ export class ReservationCalendarController {
     );
 
     return {
-      message: 'Role check completed successfully',
+      message: bStatic('errors.auto.backend.k364dde03730e'),
       data: { hasRole },
     };
   }
@@ -233,7 +235,7 @@ export class ReservationCalendarController {
     // Only users with editor role can access this
 
     return {
-      message: 'Reservation creation endpoint - editors only',
+      message: bStatic('errors.auto.backend.k36dbeb621c2c'),
       data: { reservationCalendarId, userId: user.id },
     };
   }
@@ -254,7 +256,7 @@ export class ReservationCalendarController {
     // Both editors and reviewers can access this
 
     return {
-      message: 'Reservations retrieved successfully',
+      message: bStatic('errors.auto.backend.kfefa55e83d03'),
       data: { reservationCalendarId, userRole: 'editor or reviewer' },
     };
   }
@@ -278,7 +280,7 @@ export class ReservationCalendarController {
     // Both editors and reviewers can approve reservations
 
     return {
-      message: 'Reservation approval endpoint',
+      message: bStatic('errors.auto.backend.k14e4cde25066'),
       data: { reservationCalendarId, reservationId, approvedBy: user.id },
     };
   }

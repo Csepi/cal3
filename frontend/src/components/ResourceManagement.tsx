@@ -8,6 +8,8 @@ import type {
 } from '../types/reservation';
 import type { Resource as DomainResource } from '../types';
 
+import { tStatic } from '../i18n';
+
 type Resource = DomainResource & {
   resourceType?: ReservationResourceType;
   managedBy?: ReservationUserSummary;
@@ -122,7 +124,7 @@ const ResourceManagement: React.FC<ResourceManagementProps> = () => {
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm('Are you sure you want to delete this resource?')) return;
+    if (!confirm(tStatic('common:auto.frontend.k0a26404adde8'))) return;
 
     try {
       const response = await secureFetch(`${BASE_URL}/api/resources/${id}`, {
@@ -168,13 +170,12 @@ const ResourceManagement: React.FC<ResourceManagementProps> = () => {
   return (
     <div>
       <div className="mb-6 flex justify-between items-center">
-        <h3 className="text-xl font-medium text-gray-800">Resources</h3>
+        <h3 className="text-xl font-medium text-gray-800">{tStatic('common:auto.frontend.k87df60de337f')}</h3>
         <button
           onClick={openCreateModal}
           className="bg-blue-500 text-white px-4 py-2 rounded-xl hover:bg-blue-600 transition-all duration-200 flex items-center gap-2"
         >
-          ➕ Add Resource
-        </button>
+          {tStatic('common:auto.frontend.ka73dc5286fa5')}</button>
       </div>
 
       {error && (
@@ -192,13 +193,13 @@ const ResourceManagement: React.FC<ResourceManagementProps> = () => {
           <table className="min-w-full bg-white border border-green-200 rounded-2xl overflow-hidden shadow-sm">
             <thead className="bg-gradient-to-r from-green-100 to-emerald-100">
               <tr>
-                <th className="px-6 py-4 text-left text-sm font-medium text-gray-800 border-b border-green-200">ID</th>
-                <th className="px-6 py-4 text-left text-sm font-medium text-gray-800 border-b border-green-200">Name</th>
-                <th className="px-6 py-4 text-left text-sm font-medium text-gray-800 border-b border-green-200">Type</th>
-                <th className="px-6 py-4 text-left text-sm font-medium text-gray-800 border-b border-green-200">Organisation</th>
-                <th className="px-6 py-4 text-left text-sm font-medium text-gray-800 border-b border-green-200">Capacity</th>
-                <th className="px-6 py-4 text-left text-sm font-medium text-gray-800 border-b border-green-200">Status</th>
-                <th className="px-6 py-4 text-left text-sm font-medium text-gray-800 border-b border-green-200">Actions</th>
+                <th className="px-6 py-4 text-left text-sm font-medium text-gray-800 border-b border-green-200">{tStatic('common:auto.frontend.k89f89c02cf47')}</th>
+                <th className="px-6 py-4 text-left text-sm font-medium text-gray-800 border-b border-green-200">{tStatic('common:auto.frontend.k709a23220f2c')}</th>
+                <th className="px-6 py-4 text-left text-sm font-medium text-gray-800 border-b border-green-200">{tStatic('common:auto.frontend.k3deb74565196')}</th>
+                <th className="px-6 py-4 text-left text-sm font-medium text-gray-800 border-b border-green-200">{tStatic('common:auto.frontend.k6e99c1d3b150')}</th>
+                <th className="px-6 py-4 text-left text-sm font-medium text-gray-800 border-b border-green-200">{tStatic('common:auto.frontend.k45bd908df490')}</th>
+                <th className="px-6 py-4 text-left text-sm font-medium text-gray-800 border-b border-green-200">{tStatic('common:auto.frontend.kbae7d5be7082')}</th>
+                <th className="px-6 py-4 text-left text-sm font-medium text-gray-800 border-b border-green-200">{tStatic('common:auto.frontend.kc3cd636a585b')}</th>
               </tr>
             </thead>
             <tbody>
@@ -222,14 +223,12 @@ const ResourceManagement: React.FC<ResourceManagementProps> = () => {
                         onClick={() => openEditModal(resource)}
                         className="text-xs px-3 py-2 bg-yellow-500 text-white rounded-xl hover:bg-yellow-600 transition-all duration-200"
                       >
-                        ✏️ Edit
-                      </button>
+                        {tStatic('common:auto.frontend.k46d11d96ea97')}</button>
                       <button
                         onClick={() => handleDelete(resource.id)}
                         className="text-xs px-3 py-2 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-all duration-200"
                       >
-                        🗑️ Delete
-                      </button>
+                        {tStatic('common:auto.frontend.k8fb0a9354a21')}</button>
                     </div>
                   </td>
                 </tr>
@@ -237,8 +236,7 @@ const ResourceManagement: React.FC<ResourceManagementProps> = () => {
               {resources.length === 0 && (
                 <tr>
                   <td colSpan={7} className="px-6 py-8 text-center text-gray-500">
-                    No resources found. Create one to get started!
-                  </td>
+                    {tStatic('common:auto.frontend.kd31f885e4380')}</td>
                 </tr>
               )}
             </tbody>
@@ -254,7 +252,7 @@ const ResourceManagement: React.FC<ResourceManagementProps> = () => {
             </h2>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Name *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">{tStatic('common:auto.frontend.kd145bb830936')}</label>
                 <input
                   type="text"
                   value={formData.name}
@@ -263,21 +261,21 @@ const ResourceManagement: React.FC<ResourceManagementProps> = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Resource Type *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">{tStatic('common:auto.frontend.k545cb7d12316')}</label>
                 <select
                   value={formData.resourceTypeId}
                   onChange={(e) => setFormData({ ...formData, resourceTypeId: parseInt(e.target.value) })}
                   className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 outline-none"
                   disabled={!!editingResource}
                 >
-                  <option value={0}>Select Resource Type</option>
+                  <option value={0}>{tStatic('common:auto.frontend.ke8354ca09ba9')}</option>
                   {resourceTypes.map(type => (
                     <option key={type.id} value={type.id}>{type.name} ({type.organisation?.name})</option>
                   ))}
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">{tStatic('common:auto.frontend.k55f8ebc805e6')}</label>
                 <textarea
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
@@ -286,7 +284,7 @@ const ResourceManagement: React.FC<ResourceManagementProps> = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Capacity *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">{tStatic('common:auto.frontend.ke7d3330ca4d6')}</label>
                 <input
                   type="number"
                   value={formData.capacity}
@@ -307,8 +305,7 @@ const ResourceManagement: React.FC<ResourceManagementProps> = () => {
                   onClick={() => setShowModal(false)}
                   className="flex-1 bg-gray-500 text-white py-3 rounded-xl hover:bg-gray-600 transition-all"
                 >
-                  Cancel
-                </button>
+                  {tStatic('common:auto.frontend.k77dfd2135f4d')}</button>
               </div>
             </div>
           </div>

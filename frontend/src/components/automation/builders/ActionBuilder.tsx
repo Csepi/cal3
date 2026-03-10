@@ -3,6 +3,8 @@ import { TriggerType } from '../../../types/Automation';
 import type { ActionFormData } from '../../../types/Automation';
 import { ActionRow } from './ActionRow';
 
+import { tStatic } from '../../../i18n';
+
 interface ActionBuilderProps {
   actions: ActionFormData[];
   onActionsChange: (actions: ActionFormData[]) => void;
@@ -62,17 +64,15 @@ export const ActionBuilder: React.FC<ActionBuilderProps> = ({ actions, onActions
     <div className="space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-gray-900">Actions</h3>
+        <h3 className="text-lg font-semibold text-gray-900">{tStatic('common:auto.frontend.kc3cd636a585b')}</h3>
         <span className="text-sm text-gray-600">
-          {actions.length} of 5 max
-        </span>
+          {actions.length} {tStatic('common:auto.frontend.kc17863b2020d')}</span>
       </div>
 
       {/* Info Box */}
       <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
         <p className="text-sm text-gray-700">
-          ⚡ Actions are executed in order when conditions are met. Drag to reorder.
-        </p>
+          {tStatic('common:auto.frontend.kcace83e5d476')}</p>
       </div>
 
       {/* Action Rows */}
@@ -94,7 +94,7 @@ export const ActionBuilder: React.FC<ActionBuilderProps> = ({ actions, onActions
                 </div>
                 <div
                   className="cursor-move text-gray-400 hover:text-gray-600 p-1"
-                  title="Drag to reorder"
+                  title={tStatic('common:auto.frontend.ke7541faf0a7e')}
                 >
                   <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M9 3C9 2.44772 9.44772 2 10 2C10.5523 2 11 2.44772 11 3V21C11 21.5523 10.5523 22 10 22C9.44772 22 9 21.5523 9 21V3ZM13 3C13 2.44772 13.4477 2 14 2C14.5523 2 15 2.44772 15 3V21C15 21.5523 14.5523 22 14 22C13.4477 22 13 21.5523 13 21V3Z" />
@@ -132,44 +132,39 @@ export const ActionBuilder: React.FC<ActionBuilderProps> = ({ actions, onActions
               d="M12 6v6m0 0v6m0-6h6m-6 0H6"
             />
           </svg>
-          Add Action
-        </button>
+          {tStatic('common:auto.frontend.kb412f37277a4')}</button>
       </div>
 
       {/* Validation Warning */}
       {actions.length === 0 && (
         <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-          <p className="text-sm text-yellow-800">⚠️ At least one action is required.</p>
+          <p className="text-sm text-yellow-800">{tStatic('common:auto.frontend.ke3e24865bc1f')}</p>
         </div>
       )}
 
       {actions.length >= 5 && (
         <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
           <p className="text-sm text-yellow-800">
-            ⚠️ Maximum of 5 actions reached. Remove an action to add more.
-          </p>
+            {tStatic('common:auto.frontend.kb4e2020c5d2b')}</p>
         </div>
       )}
 
       {/* Helper Text */}
       <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg">
         <p className="text-xs text-gray-600">
-          <strong>Tip:</strong> Actions are executed sequentially. If one action fails, the
-          remaining actions will still be attempted. Check the audit log to see execution results.
-        </p>
+          <strong>{tStatic('common:auto.frontend.k2ee750e04190')}</strong> {tStatic('common:auto.frontend.k0e89dd90bc2c')}</p>
       </div>
 
       {/* Coming Soon Actions Info */}
       <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg">
         <p className="text-xs font-medium text-gray-700 mb-2">
-          Additional actions coming soon:
-        </p>
+          {tStatic('common:auto.frontend.k1b0a93821960')}</p>
         <ul className="text-xs text-gray-600 space-y-1 ml-4">
-          <li>• Move to Calendar - Transfer events between calendars</li>
-          <li>• Cancel Event - Mark events as cancelled</li>
-          <li>• Create Task - Generate related tasks</li>
-          <li>• Send Email - Email notifications</li>
-          <li>• Webhook - Trigger external integrations</li>
+          <li>{tStatic('common:auto.frontend.kf988b329c585')}</li>
+          <li>{tStatic('common:auto.frontend.kd19a873ed419')}</li>
+          <li>{tStatic('common:auto.frontend.k221b462017d9')}</li>
+          <li>{tStatic('common:auto.frontend.k3d9e4ce1b0ce')}</li>
+          <li>{tStatic('common:auto.frontend.ka1b535608122')}</li>
         </ul>
       </div>
     </div>

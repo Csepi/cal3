@@ -17,6 +17,8 @@ import { Reservation } from '../entities/reservation.entity';
 import { UserPermissionsService } from '../common/services/user-permissions.service';
 import { NotificationChannelType } from './notifications.constants';
 
+import { bStatic } from '../i18n/runtime';
+
 export interface NotificationEvaluationInput {
   eventType: string;
   actorId?: number | null;
@@ -218,7 +220,7 @@ export class NotificationRulesService {
       });
 
       if (!entity) {
-        throw new NotFoundException('Inbox rule not found');
+        throw new NotFoundException(bStatic('errors.auto.backend.k1103a2f45842'));
       }
     } else {
       entity = this.inboxRuleRepository.create({
@@ -531,7 +533,7 @@ export class NotificationRulesService {
   ): Promise<NotificationScopeMuteDto | null> {
     const normalizedScopeId = this.normaliseScopeId(scopeId);
     if (!normalizedScopeId) {
-      throw new NotFoundException('Invalid scope identifier');
+      throw new NotFoundException(bStatic('errors.auto.backend.k2616e6d9bf72'));
     }
 
     let entity = await this.scopeMuteRepository.findOne({

@@ -30,6 +30,19 @@ npm run docker:build
 npm run docker:up
 ```
 
+## Internationalization
+
+```bash
+npm run i18n:extract
+npm run i18n:export
+npm run i18n:validate
+npm run i18n:expand
+npm run i18n:test
+```
+
+- Extraction report: `reports/i18n/string-inventory.csv`
+- Translator export: `reports/i18n/frontend-en-keys.csv`, `reports/i18n/backend-en-keys.csv`
+
 ## Documentation
 
 - Quick start: `docs/QUICKSTART.md`

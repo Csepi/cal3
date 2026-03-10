@@ -15,6 +15,8 @@ import { CreateTaskLabelDto } from './dto/create-task-label.dto';
 import { TaskCalendarBridgeService } from './task-calendar-bridge.service';
 import { toContainsLikePattern } from '../common/database/query-safety';
 
+import { bStatic } from '../i18n/runtime';
+
 const TASK_SORT_COLUMN_MAP: Record<'updatedAt' | 'createdAt' | 'dueDate', string> = {
   updatedAt: 'task.updatedAt',
   createdAt: 'task.createdAt',
@@ -150,7 +152,7 @@ export class TasksService {
     });
 
     if (!task) {
-      throw new NotFoundException('Task not found');
+      throw new NotFoundException(bStatic('errors.auto.backend.k69113b770182'));
     }
 
     return task;
@@ -216,7 +218,7 @@ export class TasksService {
     });
 
     if (!task) {
-      throw new NotFoundException('Task not found');
+      throw new NotFoundException(bStatic('errors.auto.backend.k69113b770182'));
     }
 
     const labelsToAttach: TaskLabel[] = [];
@@ -250,7 +252,7 @@ export class TasksService {
     });
 
     if (!task) {
-      throw new NotFoundException('Task not found');
+      throw new NotFoundException(bStatic('errors.auto.backend.k69113b770182'));
     }
 
     task.labels = (task.labels ?? []).filter((label) => label.id !== labelId);
@@ -276,7 +278,7 @@ export class TasksService {
     });
 
     if (labels.length !== ids.length) {
-      throw new ForbiddenException('One or more labels are invalid.');
+      throw new ForbiddenException(bStatic('errors.auto.backend.kc618434ab292'));
     }
 
     return labels;

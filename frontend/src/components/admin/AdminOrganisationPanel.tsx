@@ -20,6 +20,8 @@ import { OrganizationFormModal } from './organization/OrganizationFormModal';
 import { RoleAssignmentModal } from './organization/RoleAssignmentModal';
 import { ConfirmationDialog } from './organization/ConfirmationDialog';
 
+import { tStatic } from '../../i18n';
+
 export interface AdminOrganisationPanelProps {
   /** Current theme color for styling */
   themeColor?: string;
@@ -181,15 +183,14 @@ export const AdminOrganisationPanel: React.FC<AdminOrganisationPanelProps> = ({
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">🏛️ Organizations</h2>
-          <p className="text-gray-600 mt-1">Manage organizations and their members</p>
+          <h2 className="text-2xl font-bold text-gray-900">{tStatic('common:auto.frontend.k67170cd8033c')}</h2>
+          <p className="text-gray-600 mt-1">{tStatic('common:auto.frontend.k140b3678c51a')}</p>
         </div>
         <Button
           onClick={() => setShowCreateModal(true)}
           className={`${theme.button} text-white mt-4 sm:mt-0`}
         >
-          + Create Organization
-        </Button>
+          {tStatic('common:auto.frontend.kae0bd855b370')}</Button>
       </div>
 
       {/* Error Display */}
@@ -205,8 +206,8 @@ export const AdminOrganisationPanel: React.FC<AdminOrganisationPanelProps> = ({
         <div className="lg:col-span-1">
           <Card>
             <div className="p-4 border-b border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900">Organizations</h3>
-              <p className="text-sm text-gray-600">{organizations.length} total</p>
+              <h3 className="text-lg font-semibold text-gray-900">{tStatic('common:auto.frontend.k07605242f7a0')}</h3>
+              <p className="text-sm text-gray-600">{organizations.length} {tStatic('common:auto.frontend.k5a537e209151')}</p>
             </div>
             <div className="p-4">
               <OrganizationList
@@ -235,8 +236,7 @@ export const AdminOrganisationPanel: React.FC<AdminOrganisationPanelProps> = ({
                       : 'border-transparent text-gray-500 hover:text-gray-700'
                   }`}
                 >
-                  📊 Overview
-                </button>
+                  {tStatic('common:auto.frontend.k2405de13f17d')}</button>
                 <button
                   onClick={() => setActiveView('members')}
                   className={`px-4 py-2 font-medium text-sm border-b-2 transition-colors ${
@@ -245,7 +245,7 @@ export const AdminOrganisationPanel: React.FC<AdminOrganisationPanelProps> = ({
                       : 'border-transparent text-gray-500 hover:text-gray-700'
                   }`}
                 >
-                  👥 Members ({members.length})
+                  {tStatic('common:auto.frontend.k13be8d2d1fec')}{members.length})
                 </button>
               </div>
 
@@ -276,11 +276,9 @@ export const AdminOrganisationPanel: React.FC<AdminOrganisationPanelProps> = ({
               <div className="p-12 text-center">
                 <div className="text-gray-400 text-6xl mb-4">🏛️</div>
                 <h3 className="text-xl font-medium text-gray-900 mb-2">
-                  Select an Organization
-                </h3>
+                  {tStatic('common:auto.frontend.k5cbe929744ea')}</h3>
                 <p className="text-gray-600">
-                  Choose an organization from the list to view details and manage members
-                </p>
+                  {tStatic('common:auto.frontend.ka69b29974b35')}</p>
               </div>
             </Card>
           )}

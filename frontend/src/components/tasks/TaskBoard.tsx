@@ -1,6 +1,8 @@
 import { useMemo } from 'react';
 import type { Task, TaskStatus } from '../../types/Task';
 
+import { tStatic } from '../../i18n';
+
 interface TaskBoardProps {
   tasks: Task[];
   onSelect: (task: Task) => void;
@@ -127,8 +129,7 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
                 {config.title}
               </span>
               <span className="text-xs text-gray-400">
-                {column.length} tasks
-              </span>
+                {column.length} {tStatic('common:auto.frontend.k55d8727a05eb')}</span>
             </header>
             <div className="space-y-3">
               {column.map((task) => (
@@ -152,7 +153,7 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
                   </div>
                   {task.dueDate && (
                     <p className="mt-1 text-xs text-gray-500">
-                      Due {formatDueDate(task.dueDate, task.dueTimezone)}
+                      {tStatic('common:auto.frontend.k145caf292855')}{formatDueDate(task.dueDate, task.dueTimezone)}
                     </p>
                   )}
                   {task.labels?.length ? (
@@ -177,8 +178,7 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
               ))}
               {column.length === 0 && (
                 <p className="rounded-lg border border-dashed border-gray-200 px-3 py-6 text-center text-sm text-gray-400">
-                  Nothing here yet. Create a task or drag one from another column.
-                </p>
+                  {tStatic('common:auto.frontend.ke58f9fa2adf6')}</p>
               )}
             </div>
           </section>

@@ -7,6 +7,8 @@ import { AutomationRuleModal } from './AutomationRuleModal';
 import { RetroactiveExecutionDialog } from './dialogs/RetroactiveExecutionDialog';
 import { DeleteRuleDialog } from './dialogs/DeleteRuleDialog';
 
+import { tStatic } from '../../i18n';
+
 interface AutomationDetailViewProps {
   rule: AutomationRuleDetailDto;
   onBack: () => void;
@@ -72,7 +74,7 @@ export const AutomationDetailView: React.FC<AutomationDetailViewProps> = ({
             <button
               onClick={onBack}
               className="text-gray-600 hover:text-gray-900 transition-colors"
-              title="Back to list"
+              title={tStatic('common:auto.frontend.k747f5bd6a090')}
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -108,40 +110,37 @@ export const AutomationDetailView: React.FC<AutomationDetailViewProps> = ({
               style={{ backgroundColor: themeColor }}
               className="px-3 py-2 text-white rounded-lg hover:opacity-90 transition-opacity text-sm"
             >
-              ▶️ Run Now
-            </button>
+              {tStatic('common:auto.frontend.kd8f798e5f77e')}</button>
 
             {/* Edit Button */}
             <button
               onClick={handleEdit}
               className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm"
             >
-              ✏️ Edit
-            </button>
+              {tStatic('common:auto.frontend.k46d11d96ea97')}</button>
 
             {/* Delete Button */}
             <button
               onClick={handleDelete}
               className="px-3 py-2 border border-red-300 text-red-600 rounded-lg hover:bg-red-50 transition-colors text-sm"
             >
-              🗑️ Delete
-            </button>
+              {tStatic('common:auto.frontend.k8fb0a9354a21')}</button>
           </div>
         </div>
 
         {/* Metadata */}
         <div className="flex gap-6 text-sm text-gray-600">
           <div>
-            <strong>Created:</strong> {new Date(rule.createdAt).toLocaleDateString()}
+            <strong>{tStatic('common:auto.frontend.k0c78dab162bd')}</strong> {new Date(rule.createdAt).toLocaleDateString()}
           </div>
           <div>
-            <strong>Updated:</strong> {formatRelativeTime(rule.updatedAt)}
+            <strong>{tStatic('common:auto.frontend.k702cad2fcdae')}</strong> {formatRelativeTime(rule.updatedAt)}
           </div>
           <div>
-            <strong>Executions:</strong> {rule.executionCount}
+            <strong>{tStatic('common:auto.frontend.k1e90bd5e0a96')}</strong> {rule.executionCount}
           </div>
           <div>
-            <strong>Last run:</strong> {formatRelativeTime(rule.lastExecutedAt)}
+            <strong>{tStatic('common:auto.frontend.k32261df5e59a')}</strong> {formatRelativeTime(rule.lastExecutedAt)}
           </div>
         </div>
 
@@ -155,8 +154,7 @@ export const AutomationDetailView: React.FC<AutomationDetailViewProps> = ({
                 : 'border-transparent text-gray-600 hover:text-gray-900'
             }`}
           >
-            Overview
-          </button>
+            {tStatic('common:auto.frontend.k0efc2e6be4c2')}</button>
           <button
             onClick={() => setActiveTab('history')}
             className={`px-4 py-2 border-b-2 transition-colors ${
@@ -165,8 +163,7 @@ export const AutomationDetailView: React.FC<AutomationDetailViewProps> = ({
                 : 'border-transparent text-gray-600 hover:text-gray-900'
             }`}
           >
-            Execution History
-          </button>
+            {tStatic('common:auto.frontend.k9215c729df82')}</button>
         </div>
       </div>
 
@@ -190,15 +187,14 @@ export const AutomationDetailView: React.FC<AutomationDetailViewProps> = ({
             {/* Trigger */}
             <div className="bg-white border border-gray-200 rounded-lg p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                <span>🎯</span> Trigger
-              </h3>
+                <span>🎯</span> {tStatic('common:auto.frontend.kd3f06a581b2b')}</h3>
               <div className="space-y-2">
                 <p className="text-sm">
-                  <strong>Type:</strong> {getTriggerTypeLabel(rule.triggerType)}
+                  <strong>{tStatic('common:auto.frontend.kee3fb11d05c9')}</strong> {getTriggerTypeLabel(rule.triggerType)}
                 </p>
                 {rule.triggerConfig && Object.keys(rule.triggerConfig).length > 0 && (
                   <div>
-                    <strong className="text-sm">Configuration:</strong>
+                    <strong className="text-sm">{tStatic('common:auto.frontend.kce8ad60d0c97')}</strong>
                     <pre className="mt-1 text-xs bg-gray-50 p-3 rounded border border-gray-200 overflow-x-auto">
                       {JSON.stringify(rule.triggerConfig, null, 2)}
                     </pre>
@@ -210,11 +206,11 @@ export const AutomationDetailView: React.FC<AutomationDetailViewProps> = ({
             {/* Conditions */}
             <div className="bg-white border border-gray-200 rounded-lg p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                <span>✅</span> Conditions ({rule.conditions.length})
+                <span>✅</span> {tStatic('common:auto.frontend.k5f838a2688fd')}{rule.conditions.length})
               </h3>
               <div className="mb-3">
                 <span className="text-sm font-medium text-gray-700">
-                  Logic: {rule.conditionLogic === 'AND' ? 'All must be true' : 'Any can be true'}
+                  {tStatic('common:auto.frontend.k76a492f90d95')}{rule.conditionLogic === 'AND' ? 'All must be true' : 'Any can be true'}
                 </span>
               </div>
               <div className="space-y-2">
@@ -240,7 +236,7 @@ export const AutomationDetailView: React.FC<AutomationDetailViewProps> = ({
             {/* Actions */}
             <div className="bg-white border border-gray-200 rounded-lg p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                <span>⚡</span> Actions ({rule.actions.length})
+                <span>⚡</span> {tStatic('common:auto.frontend.kb0889f263e2e')}{rule.actions.length})
               </h3>
               <div className="space-y-2">
                 {rule.actions.map((action, index) => (
@@ -254,8 +250,7 @@ export const AutomationDetailView: React.FC<AutomationDetailViewProps> = ({
                         {action.actionConfig && Object.keys(action.actionConfig).length > 0 && (
                           <details className="mt-1">
                             <summary className="text-xs text-gray-600 cursor-pointer hover:text-gray-900">
-                              View configuration
-                            </summary>
+                              {tStatic('common:auto.frontend.k086b3939fa89')}</summary>
                             <pre className="mt-1 text-xs bg-white p-2 rounded border overflow-x-auto">
                               {JSON.stringify(action.actionConfig, null, 2)}
                             </pre>

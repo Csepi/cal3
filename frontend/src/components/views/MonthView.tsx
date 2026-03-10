@@ -7,6 +7,8 @@ import type {
 } from '../../types/reservation';
 import { getMeetingLinkFromEvent } from '../../utils/meetingLinks';
 
+import { tStatic } from '../../i18n';
+
 interface ReservationOrganizationWithTypes extends ReservationOrganization {
   resourceTypes?: ReservationResourceType[];
 }
@@ -232,7 +234,7 @@ const MonthView: React.FC<MonthViewProps> = ({
                         <div className="font-medium truncate flex items-center">
                           {event.title}
                           {(event.parentEventId || event.recurrenceId || event.isRecurring) && (
-                            <span className="ml-1 text-xs" title="Recurring Event">🔄</span>
+                            <span className="ml-1 text-xs" title={tStatic('common:auto.frontend.k9f0a132fb8af')}>🔄</span>
                           )}
                         </div>
                         {!event.isAllDay && event.startTime && (
@@ -250,8 +252,7 @@ const MonthView: React.FC<MonthViewProps> = ({
                             }}
                             aria-label={`Join ${event.title} meeting`}
                           >
-                            Join
-                          </button>
+                            {tStatic('common:auto.frontend.ke0d73143de80')}</button>
                         )}
                       </div>
                     );
@@ -285,8 +286,7 @@ const MonthView: React.FC<MonthViewProps> = ({
                   {/* More events indicator */}
                   {hasMoreEvents && (
                     <div className="text-xs text-gray-500 font-medium">
-                      +{dayEvents.length - maxDisplayEvents} more
-                    </div>
+                      +{dayEvents.length - maxDisplayEvents} {tStatic('common:auto.frontend.ke7c95b4c2824')}</div>
                   )}
                 </div>
               </div>
@@ -309,7 +309,7 @@ const MonthView: React.FC<MonthViewProps> = ({
               })}
             </h3>
             <p className="text-sm text-gray-600 mt-1">
-              {selectedDateEvents.length} event{selectedDateEvents.length !== 1 ? 's' : ''}
+              {selectedDateEvents.length} {tStatic('common:auto.frontend.k5006ed0248a0')}{selectedDateEvents.length !== 1 ? 's' : ''}
               {selectedDateReservations.length > 0 && ` • ${selectedDateReservations.length} reservation${selectedDateReservations.length !== 1 ? 's' : ''}`}
             </p>
           </div>
@@ -335,9 +335,8 @@ const MonthView: React.FC<MonthViewProps> = ({
                       <h4 className="font-medium text-gray-900 flex-1 pr-2 flex items-center">
                         {event.title}
                         {(event.parentEventId || event.recurrenceId || event.isRecurring) && (
-                          <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full" title="Recurring Event">
-                            🔄 Recurring
-                          </span>
+                          <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full" title={tStatic('common:auto.frontend.k9f0a132fb8af')}>
+                            {tStatic('common:auto.frontend.kaf81638fa1e4')}</span>
                         )}
                       </h4>
                       {(meetingLink || event.isAllDay) && (
@@ -352,13 +351,11 @@ const MonthView: React.FC<MonthViewProps> = ({
                               }}
                               aria-label={`Join ${event.title} meeting`}
                             >
-                              Join
-                            </button>
+                              {tStatic('common:auto.frontend.ke0d73143de80')}</button>
                           )}
                           {event.isAllDay && (
                             <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full">
-                              All day
-                            </span>
+                              {tStatic('common:auto.frontend.k114574336ac7')}</span>
                           )}
                         </div>
                       )}
@@ -394,7 +391,7 @@ const MonthView: React.FC<MonthViewProps> = ({
                         style={{ backgroundColor: event.color || themeColor }}
                       />
                       <span className="text-xs text-gray-500">
-                        Calendar: {event.calendar?.name || 'Default'}
+                        {tStatic('common:auto.frontend.k842ce8f7d6ef')}{event.calendar?.name || 'Default'}
                       </span>
                     </div>
                   </div>
@@ -451,7 +448,7 @@ const MonthView: React.FC<MonthViewProps> = ({
                           style={{ backgroundColor: reservationColor }}
                         />
                         <span className="text-xs text-gray-500">
-                          Type: {reservation.resource?.resourceType?.name || 'Unknown'}
+                          {tStatic('common:auto.frontend.kee3fb11d05c9')}{reservation.resource?.resourceType?.name || 'Unknown'}
                         </span>
                       </div>
                     </div>
@@ -461,8 +458,8 @@ const MonthView: React.FC<MonthViewProps> = ({
             ) : (
               <div className="flex flex-col items-center justify-center h-40 text-gray-400">
                 <div className="text-4xl mb-3">📅</div>
-                <p className="text-sm">No events on this day</p>
-                <p className="text-xs mt-1">Click to add an event</p>
+                <p className="text-sm">{tStatic('common:auto.frontend.k0542b5d6024f')}</p>
+                <p className="text-xs mt-1">{tStatic('common:auto.frontend.k423620015297')}</p>
               </div>
             )}
           </div>

@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 
+import { tStatic } from '../../i18n';
+
 interface BottomSheetProps {
   isOpen: boolean;
   onClose: () => void;
@@ -105,7 +107,7 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
             <button
               onClick={onClose}
               className="p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200"
-              aria-label="Close"
+              aria-label={tStatic('common:auto.frontend.kbbfa773e5a63')}
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

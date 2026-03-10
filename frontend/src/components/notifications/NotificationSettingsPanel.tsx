@@ -11,6 +11,8 @@ import type {
   NotificationScopeOption,
 } from '../../types/Notification';
 
+import { tStatic } from '../../i18n';
+
 const CHANNEL_LABELS: Record<NotificationChannel, string> = {
   inapp: 'In-app',
   email: 'Email',
@@ -763,10 +765,9 @@ export const NotificationSettingsPanel: React.FC<NotificationSettingsPanelProps>
     <div className="max-w-5xl mx-auto px-4 py-8 space-y-10">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900">Notification Settings</h1>
+          <h1 className="text-2xl font-semibold text-gray-900">{tStatic('common:auto.frontend.ke0a9fb92d49f')}</h1>
           <p className="text-sm text-gray-500">
-            Customise how you receive updates, automate inbox clean-up, and manage muted scopes.
-          </p>
+            {tStatic('common:auto.frontend.k086cff62cb4a')}</p>
         </div>
         <div className="flex gap-2">
           <button
@@ -774,8 +775,7 @@ export const NotificationSettingsPanel: React.FC<NotificationSettingsPanelProps>
             onClick={onBack}
             className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100"
           >
-            Back
-          </button>
+            {tStatic('common:auto.frontend.kb52b36b7269f')}</button>
           <button
             type="button"
             onClick={handleSavePreferences}
@@ -788,16 +788,16 @@ export const NotificationSettingsPanel: React.FC<NotificationSettingsPanelProps>
       </div>
 
       <section>
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Per-event channel preferences</h2>
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">{tStatic('common:auto.frontend.k7a650ac6d748')}</h2>
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Event Type</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Channels</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Primary Channel</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Fallback Channels</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Digest</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">{tStatic('common:auto.frontend.k2e1d8fd9f8a5')}</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">{tStatic('common:auto.frontend.k18e03e2a37ba')}</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">{tStatic('common:auto.frontend.k51e494a5d028')}</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">{tStatic('common:auto.frontend.k8776357fc253')}</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">{tStatic('common:auto.frontend.k47fdd58bee4d')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 bg-white">
@@ -820,7 +820,7 @@ export const NotificationSettingsPanel: React.FC<NotificationSettingsPanelProps>
                     </p>
                     {eventDefinitionMap.get(pref.eventType)?.recommendedChannels?.length ? (
                       <p className="text-xs text-blue-600 mt-1">
-                        Recommended channels:{' '}
+                        {tStatic('common:auto.frontend.kbea84759a373')}{' '}
                         {eventDefinitionMap
                           .get(pref.eventType)!
                           .recommendedChannels.map((channel) => CHANNEL_LABELS[channel])
@@ -894,10 +894,9 @@ export const NotificationSettingsPanel: React.FC<NotificationSettingsPanelProps>
       <section className="space-y-4">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-lg font-semibold text-gray-900">Inbox filters</h2>
+            <h2 className="text-lg font-semibold text-gray-900">{tStatic('common:auto.frontend.kd6a7f38bd2a2')}</h2>
             <p className="text-sm text-gray-500">
-              Automatically archive, mute, or suppress notifications that match specific criteria.
-            </p>
+              {tStatic('common:auto.frontend.k74a874e5c9d4')}</p>
           </div>
           <button
             type="button"
@@ -908,18 +907,16 @@ export const NotificationSettingsPanel: React.FC<NotificationSettingsPanelProps>
             }}
             className="px-4 py-2 rounded-lg border border-blue-500 text-blue-600 hover:bg-blue-50"
           >
-            New filter
-          </button>
+            {tStatic('common:auto.frontend.kd69c36f4d5ed')}</button>
         </div>
 
         {showFilterBuilder && (
           <div className="rounded-2xl border border-blue-200 bg-blue-50/60 p-5 space-y-4">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <h3 className="text-base font-semibold text-blue-900">Create filter</h3>
+                <h3 className="text-base font-semibold text-blue-900">{tStatic('common:auto.frontend.kb300cb54145e')}</h3>
                 <p className="text-xs text-blue-700">
-                  Define the scope, triggers, and actions. Filters run in order and can continue to the next filter.
-                </p>
+                  {tStatic('common:auto.frontend.k448908faea44')}</p>
               </div>
               <button
                 type="button"
@@ -929,24 +926,23 @@ export const NotificationSettingsPanel: React.FC<NotificationSettingsPanelProps>
                 }}
                 className="text-sm text-blue-700 hover:text-blue-900"
               >
-                Cancel
-              </button>
+                {tStatic('common:auto.frontend.k77dfd2135f4d')}</button>
             </div>
 
             <div className="grid gap-4 md:grid-cols-2">
               <label className="flex flex-col gap-1 text-sm">
-                <span className="font-medium text-gray-700">Filter name</span>
+                <span className="font-medium text-gray-700">{tStatic('common:auto.frontend.k154854eeb738')}</span>
                 <input
                   type="text"
                   value={filterDraft.name}
                   onChange={(event) => handleFilterFieldChange('name', event.target.value)}
                   className="rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring focus:ring-blue-200"
-                  placeholder="e.g. Calendar reminders digest"
+                  placeholder={tStatic('common:auto.frontend.k31b6be506b29')}
                 />
               </label>
 
               <label className="flex flex-col gap-1 text-sm">
-                <span className="font-medium text-gray-700">Scope</span>
+                <span className="font-medium text-gray-700">{tStatic('common:auto.frontend.k4651a34e4df9')}</span>
                 <select
                   value={filterDraft.scopeType}
                   onChange={(event) =>
@@ -964,7 +960,7 @@ export const NotificationSettingsPanel: React.FC<NotificationSettingsPanelProps>
 
               {filterDraft.scopeType !== 'global' && (
                 <div className="flex flex-col gap-2 text-sm">
-                  <span className="font-medium text-gray-700">Scope identifier</span>
+                  <span className="font-medium text-gray-700">{tStatic('common:auto.frontend.k7536ce72e95a')}</span>
                   <select
                     value={scopeSelectValue}
                     onChange={handleScopeSelectChange}
@@ -998,13 +994,12 @@ export const NotificationSettingsPanel: React.FC<NotificationSettingsPanelProps>
                     )}
                   {selectedScopeOption && selectedScopeOption.meta?.organisationName && (
                     <p className="mt-1 text-xs text-gray-500">
-                      Organisation: {selectedScopeOption.meta.organisationName}
+                      {tStatic('common:auto.frontend.k4bca08807b54')}{selectedScopeOption.meta.organisationName}
                     </p>
                   )}
                   {currentScopeMeta?.loading && (
                     <p className="text-xs text-gray-500">
-                      Loading {filterDraft.scopeType} options...
-                    </p>
+                      {tStatic('common:auto.frontend.k8f26c6520d61')}{filterDraft.scopeType} {tStatic('common:auto.frontend.kf828418a73ac')}</p>
                   )}
                   {currentScopeMeta?.error && (
                     <p className="text-xs text-red-500">
@@ -1018,24 +1013,22 @@ export const NotificationSettingsPanel: React.FC<NotificationSettingsPanelProps>
                       disabled={currentScopeMeta?.loading}
                       className="self-start text-xs font-medium text-blue-600 hover:text-blue-800 disabled:opacity-50"
                     >
-                      Refresh list
-                    </button>
+                      {tStatic('common:auto.frontend.k7fe6bbe7e67e')}</button>
                   </div>
                   <input
                     type="text"
                     value={filterDraft.scopeId}
                     onChange={(event) => handleScopeInputChange(event.target.value)}
                     className="rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring focus:ring-blue-200"
-                    placeholder="Or enter a custom ID"
+                    placeholder={tStatic('common:auto.frontend.k3aa0a4dad08a')}
                   />
                   <p className="text-xs text-gray-500">
-                    Pick a value from the dropdown or supply a custom identifier for this scope. Use refresh if new items were added elsewhere.
-                  </p>
+                    {tStatic('common:auto.frontend.kdf8ce1352fc8')}</p>
                 </div>
               )}
 
               <label className="flex flex-col gap-1 text-sm">
-                <span className="font-medium text-gray-700">Event types (optional)</span>
+                <span className="font-medium text-gray-700">{tStatic('common:auto.frontend.kab8017fc78eb')}</span>
                 <select
                   multiple
                   value={filterDraft.eventTypes}
@@ -1051,12 +1044,11 @@ export const NotificationSettingsPanel: React.FC<NotificationSettingsPanelProps>
                   ))}
                 </select>
                 <p className="text-xs text-gray-500">
-                  Leave empty to match all event types. Hold Ctrl/Cmd to select multiple.
-                </p>
+                  {tStatic('common:auto.frontend.k0bf1ab4aca4b')}</p>
               </label>
 
               <label className="flex flex-col gap-1 text-sm">
-                <span className="font-medium text-gray-700">Context types (optional)</span>
+                <span className="font-medium text-gray-700">{tStatic('common:auto.frontend.ka09e914c10ae')}</span>
                 <select
                   multiple
                   value={filterDraft.contextTypes}
@@ -1072,13 +1064,12 @@ export const NotificationSettingsPanel: React.FC<NotificationSettingsPanelProps>
                   ))}
                 </select>
                 <p className="text-xs text-gray-500">
-                  Leave empty to match all contexts. Hold Ctrl/Cmd to select multiple.
-                </p>
+                  {tStatic('common:auto.frontend.k45c715ebfd26')}</p>
               </label>
             </div>
 
             <div>
-              <span className="text-sm font-medium text-gray-700">Actions</span>
+              <span className="text-sm font-medium text-gray-700">{tStatic('common:auto.frontend.kc3cd636a585b')}</span>
               <div className="mt-2 grid gap-2 sm:grid-cols-2">
                 <label className="inline-flex items-center gap-2 text-sm text-gray-600">
                   <input
@@ -1087,8 +1078,7 @@ export const NotificationSettingsPanel: React.FC<NotificationSettingsPanelProps>
                     checked={filterDraft.markRead}
                     onChange={(event) => handleFilterFieldChange('markRead', event.target.checked)}
                   />
-                  Mark matching notifications as read
-                </label>
+                  {tStatic('common:auto.frontend.k2d6fe3c6b14e')}</label>
                 <label className="inline-flex items-center gap-2 text-sm text-gray-600">
                   <input
                     type="checkbox"
@@ -1096,8 +1086,7 @@ export const NotificationSettingsPanel: React.FC<NotificationSettingsPanelProps>
                     checked={filterDraft.archive}
                     onChange={(event) => handleFilterFieldChange('archive', event.target.checked)}
                   />
-                  Archive matching notifications
-                </label>
+                  {tStatic('common:auto.frontend.keb4ebcfdfcee')}</label>
                 <label className="inline-flex items-center gap-2 text-sm text-gray-600">
                   <input
                     type="checkbox"
@@ -1105,8 +1094,7 @@ export const NotificationSettingsPanel: React.FC<NotificationSettingsPanelProps>
                     checked={filterDraft.muteThread}
                     onChange={(event) => handleFilterFieldChange('muteThread', event.target.checked)}
                   />
-                  Mute thread automatically
-                </label>
+                  {tStatic('common:auto.frontend.k43065f82789b')}</label>
                 <label className="inline-flex items-center gap-2 text-sm text-gray-600">
                   <input
                     type="checkbox"
@@ -1114,14 +1102,13 @@ export const NotificationSettingsPanel: React.FC<NotificationSettingsPanelProps>
                     checked={filterDraft.suppressNotification}
                     onChange={(event) => handleFilterFieldChange('suppressNotification', event.target.checked)}
                   />
-                  Suppress notification entirely
-                </label>
+                  {tStatic('common:auto.frontend.kad7519685a63')}</label>
               </div>
             </div>
 
             {!filterDraft.suppressNotification && (
               <div>
-                <span className="text-sm font-medium text-gray-700">Channels to suppress</span>
+                <span className="text-sm font-medium text-gray-700">{tStatic('common:auto.frontend.k2f2641929eb5')}</span>
                 <div className="mt-2 flex flex-wrap gap-3">
                   {CHANNEL_CHOICES.map((channel) => (
                     <label key={channel} className="inline-flex items-center gap-2 text-xs text-gray-600">
@@ -1145,8 +1132,7 @@ export const NotificationSettingsPanel: React.FC<NotificationSettingsPanelProps>
                 checked={filterDraft.continueProcessing}
                 onChange={(event) => handleFilterFieldChange('continueProcessing', event.target.checked)}
               />
-              Continue evaluating subsequent filters after this one
-            </label>
+              {tStatic('common:auto.frontend.k81cadd2c4dba')}</label>
 
             {filterError && (
               <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
@@ -1163,8 +1149,7 @@ export const NotificationSettingsPanel: React.FC<NotificationSettingsPanelProps>
                 }}
                 className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100"
               >
-                Cancel
-              </button>
+                {tStatic('common:auto.frontend.k77dfd2135f4d')}</button>
               <button
                 type="button"
                 onClick={handleCreateFilter}
@@ -1180,8 +1165,7 @@ export const NotificationSettingsPanel: React.FC<NotificationSettingsPanelProps>
         <div className="space-y-3">
           {sortedFilters.length === 0 ? (
             <div className="border border-dashed border-gray-300 rounded-lg p-6 text-sm text-gray-500 text-center">
-              No inbox filters yet. Use the "New filter" button to automate clean-up.
-            </div>
+              {tStatic('common:auto.frontend.k171ffe836248')}</div>
           ) : (
             sortedFilters.map((filter) => (
               <div key={filter.id ?? filter.name} className="border border-gray-200 rounded-xl p-4 bg-white shadow-sm">
@@ -1189,7 +1173,7 @@ export const NotificationSettingsPanel: React.FC<NotificationSettingsPanelProps>
                   <div>
                     <h3 className="text-base font-semibold text-gray-900">{filter.name}</h3>
                     <p className="text-xs uppercase tracking-wide text-gray-500">
-                      Scope: {filter.scopeType}
+                      {tStatic('common:auto.frontend.k8402f050006c')}{filter.scopeType}
                       {filter.scopeId ? ` - ${filter.scopeId}` : ''}
                     </p>
                     {filter.conditions.some((condition) => condition.field === 'eventType') && (
@@ -1228,14 +1212,13 @@ export const NotificationSettingsPanel: React.FC<NotificationSettingsPanelProps>
                         disabled={filterSavingId === filter.id}
                         className="px-3 py-1.5 rounded-lg text-sm border border-red-400 text-red-500 hover:bg-red-50"
                       >
-                        Delete
-                      </button>
+                        {tStatic('common:auto.frontend.kf6fdbe48dc54')}</button>
                     )}
                   </div>
                 </div>
                 <div className="mt-3 grid gap-3 text-sm text-gray-600 md:grid-cols-2">
                   <div>
-                    <p className="font-medium text-gray-500 uppercase text-xs tracking-wide">Conditions</p>
+                    <p className="font-medium text-gray-500 uppercase text-xs tracking-wide">{tStatic('common:auto.frontend.k5506eb6161a0')}</p>
                     <ul className="mt-1 list-disc list-inside space-y-1">
                       {renderFilterConditions(filter).map((condition, index) => (
                         <li key={`${filter.id}-cond-${index}`}>{condition}</li>
@@ -1243,7 +1226,7 @@ export const NotificationSettingsPanel: React.FC<NotificationSettingsPanelProps>
                     </ul>
                   </div>
                   <div>
-                    <p className="font-medium text-gray-500 uppercase text-xs tracking-wide">Actions</p>
+                    <p className="font-medium text-gray-500 uppercase text-xs tracking-wide">{tStatic('common:auto.frontend.kc3cd636a585b')}</p>
                     <ul className="mt-1 list-disc list-inside space-y-1">
                       {renderFilterActions(filter).map((action, index) => (
                         <li key={`${filter.id}-action-${index}`}>{action}</li>
@@ -1260,17 +1243,15 @@ export const NotificationSettingsPanel: React.FC<NotificationSettingsPanelProps>
       <section className="space-y-4">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-lg font-semibold text-gray-900">Muted scopes</h2>
+            <h2 className="text-lg font-semibold text-gray-900">{tStatic('common:auto.frontend.ka7bf14e4a004')}</h2>
             <p className="text-sm text-gray-500">
-              Mute entire calendars, reservations, or organisations to keep your inbox focused.
-            </p>
+              {tStatic('common:auto.frontend.k8e1e1c67a4c6')}</p>
           </div>
         </div>
 
         {scopeMutes.length === 0 ? (
           <div className="border border-dashed border-gray-300 rounded-lg p-6 text-sm text-gray-500 text-center">
-            Nothing muted yet. Add a scope below to silence notifications in bulk.
-          </div>
+            {tStatic('common:auto.frontend.kaf3aaf57e6a4')}</div>
         ) : (
           <div className="grid gap-3 md:grid-cols-2">
             {scopeMutes.map((mute) => (
@@ -1281,7 +1262,7 @@ export const NotificationSettingsPanel: React.FC<NotificationSettingsPanelProps>
                   </p>
                   {mute.updatedAt && (
                     <p className="text-xs text-gray-500">
-                      Muted {new Date(mute.updatedAt).toLocaleString()}
+                      {tStatic('common:auto.frontend.kb9e78ced88a4')}{new Date(mute.updatedAt).toLocaleString()}
                     </p>
                   )}
                 </div>
@@ -1291,18 +1272,17 @@ export const NotificationSettingsPanel: React.FC<NotificationSettingsPanelProps>
                   disabled={savingMute}
                   className="px-3 py-1.5 rounded-lg text-sm border border-gray-300 text-gray-600 hover:bg-gray-100"
                 >
-                  Unmute
-                </button>
+                  {tStatic('common:auto.frontend.k7044c3104095')}</button>
               </div>
             ))}
           </div>
         )}
 
         <div className="rounded-2xl border border-gray-200 bg-white p-5 space-y-4">
-          <h3 className="text-base font-semibold text-gray-900">Add mute</h3>
+          <h3 className="text-base font-semibold text-gray-900">{tStatic('common:auto.frontend.kf13c813340c5')}</h3>
           <div className="grid gap-4 md:grid-cols-[200px_1fr]">
             <label className="flex flex-col gap-1 text-sm">
-              <span className="font-medium text-gray-700">Scope type</span>
+              <span className="font-medium text-gray-700">{tStatic('common:auto.frontend.k6d50ba5e0801')}</span>
               <select
                 value={muteDraft.scopeType}
                 onChange={(event) =>
@@ -1321,7 +1301,7 @@ export const NotificationSettingsPanel: React.FC<NotificationSettingsPanelProps>
               </select>
             </label>
             <label className="flex flex-col gap-1 text-sm">
-              <span className="font-medium text-gray-700">Identifier</span>
+              <span className="font-medium text-gray-700">{tStatic('common:auto.frontend.k06b6ace8ca3f')}</span>
               <input
                 type="text"
                 value={muteDraft.scopeId}
@@ -1329,7 +1309,7 @@ export const NotificationSettingsPanel: React.FC<NotificationSettingsPanelProps>
                   setMuteDraft((prev) => ({ ...prev, scopeId: event.target.value }))
                 }
                 className="rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring focus:ring-blue-200"
-                placeholder="Enter the ID to mute (e.g. calendar ID)"
+                placeholder={tStatic('common:auto.frontend.kef9a57ad3fcb')}
               />
             </label>
           </div>

@@ -8,6 +8,7 @@
 
 import React from 'react';
 import { TabBarItem } from '../molecules/TabBarItem';
+import { useAppTranslation } from '../../../i18n/useAppTranslation';
 
 export type TabId =
   | 'calendar'
@@ -157,67 +158,68 @@ export const BottomTabBar: React.FC<BottomTabBarProps> = ({
   hideReservationsTab = false,
   notificationsBadge = 0,
 }) => {
+  const { t } = useAppTranslation('common');
   // Define all possible tabs with simple text icons for consistency in the CLI preview.
   const allTabs: Tab[] = [
     {
       id: 'calendar',
       icon: icons.timeline,
-      label: 'Timeline',
+      label: t('navigation.calendar'),
       visible: true, // Always visible
     },
     {
       id: 'tasks',
       icon: icons.tasks,
-      label: 'Tasks',
+      label: t('navigation.tasks', { defaultValue: 'Tasks' }),
       visible: featureFlags.tasks,
     },
     {
       id: 'profile',
       icon: icons.profile,
-      label: 'Me',
+      label: t('navigation.profile'),
       visible: true, // Always visible
     },
     {
       id: 'personal-logs',
       icon: icons.personalLogs,
-      label: 'Logs',
+      label: t('navigation.logsShort', { defaultValue: 'Logs' }),
       visible: true,
     },
     {
       id: 'agent',
       icon: icons.agent,
-      label: 'Agents',
+      label: t('navigation.agentsShort', { defaultValue: 'Agents' }),
       visible: featureFlags.agents,
     },
     {
       id: 'sync',
       icon: icons.sync,
-      label: 'Sync',
+      label: t('navigation.syncShort'),
       visible: featureFlags.calendarSync,
     },
     {
       id: 'automation',
       icon: icons.automation,
-      label: 'Automate',
+      label: t('navigation.automationShort'),
       visible: featureFlags.automation,
     },
     {
       id: 'reservations',
       icon: icons.reservations,
-      label: 'Book',
+      label: t('navigation.reservationsShort'),
       visible: featureFlags.reservations && canAccessReservations && !hideReservationsTab,
     },
     {
       id: 'notifications',
       icon: icons.notifications,
-      label: 'Alerts',
+      label: t('navigation.notificationsShort', { defaultValue: 'Alerts' }),
       visible: true,
       badge: notificationsBadge,
     },
     {
       id: 'admin',
       icon: icons.admin,
-      label: 'Admin',
+      label: t('navigation.adminShort'),
       visible: userRole === 'admin',
     },
   ];
@@ -275,7 +277,7 @@ export const BottomTabBar: React.FC<BottomTabBarProps> = ({
                   <circle cx="19" cy="12" r="1.4" />
                 </svg>
               )}
-              label="More"
+              label={t('common.other', { defaultValue: 'More' })}
               isActive={false}
               onClick={() => {
                 // Placeholder for future overflow menu.

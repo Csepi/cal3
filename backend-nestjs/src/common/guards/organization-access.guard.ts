@@ -8,6 +8,8 @@ import {
 import { Reflector } from '@nestjs/core';
 import { PermissionResolverService } from '../services/permission-resolver.service';
 
+import { bStatic } from '../../i18n/runtime';
+
 export type OrganizationAccessAction = 'view' | 'admin' | 'editSettings';
 
 export interface OrganizationAccessPolicy {
@@ -45,7 +47,7 @@ export class OrganizationAccessGuard
     const userId = Number(request?.user?.id);
 
     if (!orgId || !userId) {
-      throw new NotFoundException('Organisation not found or access denied');
+      throw new NotFoundException(bStatic('errors.auto.backend.kac01992866fd'));
     }
 
     if (action === 'admin') {

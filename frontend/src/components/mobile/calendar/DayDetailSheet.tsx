@@ -16,6 +16,8 @@ import { EventListItem } from './EventListItem';
 import { TouchableArea } from '../atoms/TouchableArea';
 import { Icon } from '../atoms/Icon';
 
+import { tStatic } from '../../../i18n';
+
 interface DayDetailSheetProps {
   isOpen: boolean;
   onClose: () => void;
@@ -104,8 +106,7 @@ export const DayDetailSheet: React.FC<DayDetailSheetProps> = ({
             {groupedEvents.allDay.length > 0 && (
               <div className="mb-4">
                 <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2 px-1">
-                  All-day events
-                </div>
+                  {tStatic('common:auto.frontend.k9c4da1c26de5')}</div>
                 <div className="space-y-2">
                   {groupedEvents.allDay.map(event => (
                     <EventListItem
@@ -124,8 +125,7 @@ export const DayDetailSheet: React.FC<DayDetailSheetProps> = ({
               <div>
                 {groupedEvents.allDay.length > 0 && (
                   <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2 px-1">
-                    Scheduled events
-                  </div>
+                    {tStatic('common:auto.frontend.ka1322c4f0653')}</div>
                 )}
                 <div className="space-y-2">
                   {groupedEvents.timed.map(event => (
@@ -144,10 +144,9 @@ export const DayDetailSheet: React.FC<DayDetailSheetProps> = ({
           /* Empty State */
           <div className="flex-1 flex flex-col items-center justify-center py-12 text-center">
             <div className="text-6xl mb-4">📅</div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">No events</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">{tStatic('common:auto.frontend.ke339ba737a4f')}</h3>
             <p className="text-sm text-gray-600 mb-6 px-8">
-              You don't have events scheduled for this day
-            </p>
+              {tStatic('common:auto.frontend.kadc645a1bcce')}</p>
             <TouchableArea
               onClick={() => {
                 onClose();
@@ -158,7 +157,7 @@ export const DayDetailSheet: React.FC<DayDetailSheetProps> = ({
             >
               <div className="flex items-center gap-2 text-white font-medium">
                 <Icon icon="➕" size="sm" />
-                <span>Create Event</span>
+                <span>{tStatic('common:auto.frontend.k53a956b04d61')}</span>
               </div>
             </TouchableArea>
           </div>

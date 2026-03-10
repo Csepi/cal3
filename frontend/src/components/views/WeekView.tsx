@@ -3,6 +3,8 @@ import type { Event } from '../../types/Event';
 import type { ReservationRecord } from '../../types/reservation';
 import { getMeetingLinkFromEvent } from '../../utils/meetingLinks';
 
+import { tStatic } from '../../i18n';
+
 interface WeekViewProps {
   currentDate: Date;
   events: Event[];
@@ -351,7 +353,7 @@ const WeekView: React.FC<WeekViewProps> = ({
       <div className="flex border-b border-gray-200 bg-white/80 backdrop-blur-sm">
         {/* Time column header */}
         <div className="w-20 border-r border-gray-200 bg-gray-50 flex items-center justify-center py-4">
-          <span className="text-xs text-gray-500 font-medium">Time</span>
+          <span className="text-xs text-gray-500 font-medium">{tStatic('common:auto.frontend.k6c82e6dd8680')}</span>
         </div>
 
         {/* Day headers */}
@@ -462,7 +464,7 @@ const WeekView: React.FC<WeekViewProps> = ({
                               <div className="flex items-center">
                                 {event.title}
                                 {(event.parentEventId || event.recurrenceId || event.isRecurring) && (
-                                  <span className="ml-1 text-xs" title="Recurring Event">🔄</span>
+                                  <span className="ml-1 text-xs" title={tStatic('common:auto.frontend.k9f0a132fb8af')}>🔄</span>
                                 )}
                               </div>
                             </div>
@@ -477,8 +479,7 @@ const WeekView: React.FC<WeekViewProps> = ({
                                 }}
                                 aria-label={`Join ${event.title} meeting`}
                               >
-                                Join
-                              </button>
+                                {tStatic('common:auto.frontend.ke0d73143de80')}</button>
                             )}
 
                             {/* Time display for non-all-day events */}

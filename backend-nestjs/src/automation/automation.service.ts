@@ -50,6 +50,8 @@ import {
 import { logError } from '../common/errors/error-logger';
 import { buildErrorContext } from '../common/errors/error-context';
 
+import { bStatic } from '../i18n/runtime';
+
 export interface WebhookExecutionRequestMetadata {
   rawBody: string;
   headers: Record<string, string | string[] | undefined>;
@@ -211,7 +213,7 @@ export class AutomationService {
     }
 
     if (rule.createdById !== userId) {
-      throw new ForbiddenException('You do not have access to this rule');
+      throw new ForbiddenException(bStatic('errors.auto.backend.k136a28392f60'));
     }
 
     return this.mapToRuleDetailDto(rule);
@@ -232,7 +234,7 @@ export class AutomationService {
     }
 
     if (rule.createdById !== userId) {
-      throw new ForbiddenException('You do not have access to this rule');
+      throw new ForbiddenException(bStatic('errors.auto.backend.k136a28392f60'));
     }
 
     // Check for duplicate name if name is being changed
@@ -331,7 +333,7 @@ export class AutomationService {
     }
 
     if (rule.createdById !== userId) {
-      throw new ForbiddenException('You do not have access to this rule');
+      throw new ForbiddenException(bStatic('errors.auto.backend.k136a28392f60'));
     }
 
     // Cascade delete will handle conditions, actions, and audit logs
@@ -354,7 +356,7 @@ export class AutomationService {
     }
 
     if (rule.createdById !== userId) {
-      throw new ForbiddenException('You do not have access to this rule');
+      throw new ForbiddenException(bStatic('errors.auto.backend.k136a28392f60'));
     }
 
     this.automationSecurity.assertKillSwitchDisabled();
@@ -628,7 +630,7 @@ export class AutomationService {
       throw new NotFoundException(`Rule with ID ${ruleId} not found`);
     }
     if (rule.createdById !== userId) {
-      throw new ForbiddenException('You do not have access to this rule');
+      throw new ForbiddenException(bStatic('errors.auto.backend.k136a28392f60'));
     }
 
     const page = query.page || 1;
@@ -689,7 +691,7 @@ export class AutomationService {
 
     // Verify ownership through rule
     if (log.rule.createdById !== userId) {
-      throw new ForbiddenException('You do not have access to this audit log');
+      throw new ForbiddenException(bStatic('errors.auto.backend.k2d772da12d7d'));
     }
 
     return this.mapToAuditLogDetailDto(log);
@@ -705,7 +707,7 @@ export class AutomationService {
       throw new NotFoundException(`Rule with ID ${ruleId} not found`);
     }
     if (rule.createdById !== userId) {
-      throw new ForbiddenException('You do not have access to this rule');
+      throw new ForbiddenException(bStatic('errors.auto.backend.k136a28392f60'));
     }
 
     const stats = (await this.auditLogRepository
@@ -895,18 +897,18 @@ export class AutomationService {
 
     if (!rule) {
       this.logger.warn(`Webhook token not found: ${webhookToken}`);
-      throw new NotFoundException('Invalid webhook token');
+      throw new NotFoundException(bStatic('errors.auto.backend.kd2b5c7f4dd5d'));
     }
 
     if (!rule.isEnabled) {
       this.logger.warn(`Webhook rule ${rule.id} is disabled`);
-      throw new BadRequestException('Webhook rule is disabled');
+      throw new BadRequestException(bStatic('errors.auto.backend.k2a027758911e'));
     }
 
     if (rule.triggerType !== TriggerType.WEBHOOK_INCOMING) {
       this.logger.error(`Rule ${rule.id} is not a webhook trigger`);
       throw new BadRequestException(
-        'This rule is not configured for webhook triggers',
+        bStatic('errors.auto.backend.kdc4730dfebe2'),
       );
     }
 
@@ -951,7 +953,7 @@ export class AutomationService {
     return {
       success: true,
       ruleId: rule.id,
-      message: 'Webhook processed successfully',
+      message: bStatic('errors.auto.backend.ka70f28f9a49a'),
     };
   }
 
@@ -979,11 +981,11 @@ export class AutomationService {
     }
 
     if (rule.createdById !== userId) {
-      throw new ForbiddenException('You do not have access to this rule');
+      throw new ForbiddenException(bStatic('errors.auto.backend.k136a28392f60'));
     }
 
     if (rule.triggerType !== TriggerType.WEBHOOK_INCOMING) {
-      throw new BadRequestException('This rule is not a webhook trigger');
+      throw new BadRequestException(bStatic('errors.auto.backend.k014ee6f5062b'));
     }
 
     // Generate new token + secret pair and clear rotated-secret metadata
@@ -1009,10 +1011,10 @@ export class AutomationService {
       throw new NotFoundException(`Rule with ID ${ruleId} not found`);
     }
     if (rule.createdById !== userId) {
-      throw new ForbiddenException('You do not have access to this rule');
+      throw new ForbiddenException(bStatic('errors.auto.backend.k136a28392f60'));
     }
     if (rule.triggerType !== TriggerType.WEBHOOK_INCOMING) {
-      throw new BadRequestException('This rule is not a webhook trigger');
+      throw new BadRequestException(bStatic('errors.auto.backend.k014ee6f5062b'));
     }
 
     const rotated = this.webhookSecurity.computeRotatedSecretState(rule);
@@ -1040,12 +1042,12 @@ export class AutomationService {
       throw new NotFoundException(`Rule with ID ${ruleId} not found`);
     }
     if (rule.createdById !== userId) {
-      throw new ForbiddenException('You do not have access to this rule');
+      throw new ForbiddenException(bStatic('errors.auto.backend.k136a28392f60'));
     }
 
     if (!rule.isApprovalRequired) {
       throw new BadRequestException(
-        'This automation rule does not require explicit approval.',
+        bStatic('errors.auto.backend.k60db261b7890'),
       );
     }
 

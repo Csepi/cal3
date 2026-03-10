@@ -5,6 +5,9 @@ import { ErrorBox } from '../common/ErrorBox';
 import type { ErrorDetails } from '../common/ErrorBox';
 import { extractErrorDetails } from '../../utils/errorHandler';
 import { useAuth } from '../../hooks/useAuth';
+import { useAppTranslation } from '../../i18n/useAppTranslation';
+
+import { tStatic } from '../../i18n';
 
 const Login: React.FC = () => {
   const [isRegistering, setIsRegistering] = useState(false);
@@ -20,6 +23,7 @@ const Login: React.FC = () => {
   const [mfaRecoveryMode, setMfaRecoveryMode] = useState(false);
   const [error, setError] = useState<ErrorDetails | null>(null);
   const { login } = useAuth();
+  const { t } = useAppTranslation(['auth', 'validation']);
 
   // Feature flags to control OAuth visibility
   const { flags: featureFlags } = useFeatureFlags();
@@ -37,29 +41,29 @@ const Login: React.FC = () => {
     const errors: string[] = [];
 
     if (!username.trim()) {
-      errors.push('Username is required');
+      errors.push(t('auth:errors.invalidCredentials'));
     } else if (username.trim().length < 3) {
-      errors.push('Username must be at least 3 characters long');
+      errors.push(t('validation:minLength', { min: 3 }));
     } else if (username.trim().length > 20) {
-      errors.push('Username must be less than 20 characters');
+      errors.push(t('validation:maxLength', { max: 20 }));
     } else if (!/^[a-zA-Z0-9_]+$/.test(username.trim())) {
-      errors.push('Username can only contain letters, numbers, and underscores');
+      errors.push(t('auth:errors.usernameAlreadyExists'));
     }
 
     if (!email.trim()) {
-      errors.push('Email is required');
+      errors.push(t('validation:required'));
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
-      errors.push('Please enter a valid email address');
+      errors.push(t('validation:invalidEmail'));
     }
 
     if (!password) {
-      errors.push('Password is required');
+      errors.push(t('validation:required'));
     } else if (password.length < 6) {
-      errors.push('Password must be at least 6 characters long');
+      errors.push(t('validation:minLength', { min: 6 }));
     } else if (password.length > 100) {
-      errors.push('Password must be less than 100 characters');
+      errors.push(t('validation:maxLength', { max: 100 }));
     } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(password)) {
-      errors.push('Password must contain at least one uppercase letter, one lowercase letter, and one number');
+      errors.push(t('auth:errors.weakPassword'));
     }
 
     if (firstName && firstName.length > 50) {
@@ -77,20 +81,20 @@ const Login: React.FC = () => {
     const errors: string[] = [];
 
     if (!username.trim()) {
-      errors.push('Email or username is required');
+      errors.push(t('validation:required'));
     }
 
     if (!password) {
-      errors.push('Password is required');
+      errors.push(t('validation:required'));
     }
 
     if (mfaRequired) {
       if (mfaRecoveryMode) {
         if (!mfaRecoveryCode.trim()) {
-          errors.push('Recovery code is required');
+          errors.push(t('auth:errors.recoveryCodeRequired'));
         }
       } else if (!mfaCode.trim()) {
-        errors.push('MFA verification code is required');
+        errors.push(t('auth:messages.mfaRequired'));
       }
     }
 
@@ -201,12 +205,12 @@ const Login: React.FC = () => {
       >
         <div className="primecal-hero mb-10">
           <div className="primecal-brand">
-            <img src="/primecal-icon.png" alt="PrimeCal logo" className="primecal-logo" />
+            <img src="/primecal-icon.png" alt={tStatic('common:auto.frontend.k0ee38c25e94e')} className="primecal-logo" />
             <h1 className="hero-title">
-              Prime<span className="highlight">Cal</span>
+              {tStatic('common:auto.frontend.k2533d6c74ece')}<span className="highlight">{tStatic('common:auto.frontend.k793245c6a884')}</span>
             </h1>
           </div>
-          <p className="brand-motto">Be in sync with Reality</p>
+          <p className="brand-motto">{t('common:app.tagline', { defaultValue: 'Be in sync with reality' })}</p>
         </div>
 
         <form
@@ -218,7 +222,7 @@ const Login: React.FC = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-2">
-                    First Name
+                    {t('auth:labels.firstName')}
                   </label>
                   <input
                     type="text"
@@ -227,12 +231,12 @@ const Login: React.FC = () => {
                     onChange={(e) => setFirstName(e.target.value)}
                     disabled={isSubmitting}
                     className="w-full px-4 py-3 bg-white border border-blue-300 text-gray-800 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-300 placeholder:text-gray-500"
-                    placeholder="First name"
+                    placeholder={t('auth:placeholders.firstName')}
                   />
                 </div>
                 <div>
                   <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-2">
-                    Last Name
+                    {t('auth:labels.lastName')}
                   </label>
                   <input
                     type="text"
@@ -241,14 +245,14 @@ const Login: React.FC = () => {
                     onChange={(e) => setLastName(e.target.value)}
                     disabled={isSubmitting}
                     className="w-full px-4 py-3 bg-white border border-blue-300 text-gray-800 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-300 placeholder:text-gray-500"
-                    placeholder="Last name"
+                    placeholder={t('auth:placeholders.lastName')}
                   />
                 </div>
               </div>
 
               <div>
                 <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-2">
-                  Username *
+                  {t('auth:labels.username')} *
                 </label>
                 <input
                   type="text"
@@ -257,14 +261,14 @@ const Login: React.FC = () => {
                   onChange={(e) => setUsername(e.target.value)}
                   disabled={isSubmitting}
                   className="w-full px-4 py-3 bg-white border border-blue-300 text-gray-800 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-300 placeholder:text-gray-500"
-                  placeholder="Choose a username"
+                  placeholder={t('auth:placeholders.username')}
                   required
                 />
               </div>
 
               <div>
                 <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                  Email *
+                  {t('auth:labels.email')} *
                 </label>
                 <input
                   type="email"
@@ -273,7 +277,7 @@ const Login: React.FC = () => {
                   onChange={(e) => setEmail(e.target.value)}
                   disabled={isSubmitting}
                   className="w-full px-4 py-3 bg-white border border-blue-300 text-gray-800 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-300 placeholder:text-gray-500"
-                  placeholder="Enter your email"
+                  placeholder={t('auth:placeholders.email')}
                   required
                 />
               </div>
@@ -283,7 +287,7 @@ const Login: React.FC = () => {
           {!isRegistering && (
             <div>
               <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-3">
-                Email or Username
+                {t('auth:labels.email')} / {t('auth:labels.username')}
               </label>
               <input
                 type="text"
@@ -292,14 +296,14 @@ const Login: React.FC = () => {
                 onChange={(e) => setUsername(e.target.value)}
                 disabled={isSubmitting}
                 className="w-full px-5 py-4 bg-white border border-blue-300 text-gray-800 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-300 placeholder:text-gray-500"
-                placeholder="Enter your email or username"
+                placeholder={t('auth:placeholders.username')}
               />
             </div>
           )}
 
           <div>
             <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-3">
-              Password {isRegistering && '*'}
+              {t('auth:labels.password')} {isRegistering && '*'}
             </label>
             <input
               type="password"
@@ -308,7 +312,14 @@ const Login: React.FC = () => {
               onChange={(e) => setPassword(e.target.value)}
               disabled={isSubmitting}
               className={`w-full px-5 py-4 bg-white border border-blue-300 text-gray-800 ${isRegistering ? 'rounded-xl' : 'rounded-2xl'} focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-300 placeholder:text-gray-500`}
-              placeholder={isRegistering ? "Choose a secure password (min 6 chars)" : "Enter your password"}
+              placeholder={
+                isRegistering
+                  ? t('auth:hints.passwordStrength', {
+                      defaultValue:
+                        'Use at least 8 characters with upper/lowercase letters and numbers.',
+                    })
+                  : t('auth:placeholders.password')
+              }
               required
             />
           </div>
@@ -316,12 +327,12 @@ const Login: React.FC = () => {
           {!isRegistering && mfaRequired && (
             <div className="space-y-3 rounded-2xl border border-blue-200 bg-blue-50/70 p-4">
               <p className="text-xs font-semibold uppercase tracking-wide text-blue-700">
-                Multi-Factor Authentication Required
+                {t('auth:messages.mfaRequired')}
               </p>
               {!mfaRecoveryMode && (
                 <div>
                   <label htmlFor="mfaCode" className="block text-sm font-medium text-gray-700 mb-2">
-                    Authenticator Code
+                    {t('auth:labels.mfaCode')}
                   </label>
                   <input
                     type="text"
@@ -330,7 +341,7 @@ const Login: React.FC = () => {
                     onChange={(event) => setMfaCode(event.target.value)}
                     disabled={isSubmitting}
                     className="w-full px-4 py-3 bg-white border border-blue-300 text-gray-800 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-300 placeholder:text-gray-500"
-                    placeholder="Enter 6-digit code"
+                    placeholder={t('auth:placeholders.mfaCode')}
                     maxLength={6}
                   />
                 </div>
@@ -338,7 +349,7 @@ const Login: React.FC = () => {
               {mfaRecoveryMode && (
                 <div>
                   <label htmlFor="mfaRecoveryCode" className="block text-sm font-medium text-gray-700 mb-2">
-                    Recovery Code
+                    {t('auth:labels.recoveryCode')}
                   </label>
                   <input
                     type="text"
@@ -347,7 +358,7 @@ const Login: React.FC = () => {
                     onChange={(event) => setMfaRecoveryCode(event.target.value.toUpperCase())}
                     disabled={isSubmitting}
                     className="w-full px-4 py-3 bg-white border border-blue-300 text-gray-800 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-300 placeholder:text-gray-500"
-                    placeholder="AB12C-34DEF"
+                    placeholder={t('auth:placeholders.recoveryCode')}
                     maxLength={32}
                   />
                 </div>
@@ -362,7 +373,9 @@ const Login: React.FC = () => {
                 }}
                 className="text-xs font-medium text-blue-700 hover:text-blue-600 disabled:opacity-70"
               >
-                {mfaRecoveryMode ? 'Use authenticator code instead' : 'Use recovery code instead'}
+                {mfaRecoveryMode
+                  ? t('auth:actions.useAuthenticatorCode')
+                  : t('auth:actions.useRecoveryCode')}
               </button>
             </div>
           )}
@@ -370,7 +383,7 @@ const Login: React.FC = () => {
           {error && (
             <ErrorBox
               error={error}
-              title={isRegistering ? 'Registration Error' : 'Login Error'}
+              title={isRegistering ? t('auth:actions.signUp') : t('auth:actions.signIn')}
               onClose={() => setError(null)}
             />
           )}
@@ -382,7 +395,7 @@ const Login: React.FC = () => {
           >
             {isSubmitting
               ? (isRegistering ? 'Creating Account...' : 'Signing In...')
-              : (isRegistering ? 'Create Account' : 'Sign In')}
+              : (isRegistering ? t('auth:actions.createAccount') : t('auth:actions.signIn'))}
           </button>
 
           <div className="text-center">
@@ -398,7 +411,9 @@ const Login: React.FC = () => {
               }}
               className="text-blue-600 hover:text-blue-500 font-medium transition-colors duration-200 disabled:opacity-70 disabled:cursor-not-allowed"
             >
-              {isRegistering ? "Already have an account? Sign In" : "Don't have an account? Sign Up"}
+              {isRegistering
+                ? `${t('auth:links.haveAccount')} ${t('auth:actions.signIn')}`
+                : `${t('auth:links.noAccount')} ${t('auth:actions.signUp')}`}
             </button>
           </div>
 
@@ -410,7 +425,7 @@ const Login: React.FC = () => {
                   <div className="w-full border-t border-gray-300" />
                 </div>
                 <div className="relative flex justify-center text-sm">
-                  <span className="px-2 bg-white text-gray-500">Or continue with SSO</span>
+                  <span className="px-2 bg-white text-gray-500">{t('auth:oauth.continueWithSso')}</span>
                 </div>
               </div>
 
@@ -427,7 +442,7 @@ const Login: React.FC = () => {
                     <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
                     <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
                   </svg>
-                  <span className="ml-2">Google</span>
+                  <span className="ml-2">{tStatic('common:auto.frontend.k2b681c0a24ba')}</span>
                 </button>
 
                 <button
@@ -442,7 +457,7 @@ const Login: React.FC = () => {
                     <path fill="#7fba00" d="M0 12.628h11.377V24H0z"/>
                     <path fill="#ffb900" d="M12.623 12.628H24V24H12.623z"/>
                   </svg>
-                  <span className="ml-2">Microsoft</span>
+                  <span className="ml-2">{tStatic('common:auto.frontend.k11f3242118ff')}</span>
                 </button>
               </div>
             </div>
@@ -455,7 +470,7 @@ const Login: React.FC = () => {
           <div className="flex items-center gap-3 rounded-2xl border border-blue-200 bg-white/90 px-4 py-3 shadow-lg">
             <span className="h-5 w-5 animate-spin rounded-full border-2 border-blue-500 border-t-transparent" />
             <span className="text-sm font-medium text-blue-800">
-              {isRegistering ? 'Creating account...' : 'Signing in...'}
+              {isRegistering ? t('auth:actions.createAccount') : t('auth:actions.signIn')}
             </span>
           </div>
         </div>

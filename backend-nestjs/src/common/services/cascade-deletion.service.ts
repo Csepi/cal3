@@ -8,6 +8,8 @@ import { Reservation } from '../../entities/reservation.entity';
 
 import { logError } from '../errors/error-logger';
 import { buildErrorContext } from '../errors/error-context';
+import { bStatic } from '../../i18n/runtime';
+
 export interface CascadeDeletePreview {
   resourceTypes?: number;
   resources?: number;
@@ -171,7 +173,7 @@ export class CascadeDeletionService {
 
       return {
         success: true,
-        message: 'Organisation and all related entities deleted successfully',
+        message: bStatic('errors.auto.backend.k56e343ad3780'),
         ...preview,
       };
     } catch (error) {
@@ -283,7 +285,7 @@ export class CascadeDeletionService {
 
       return {
         success: true,
-        message: 'Resource type and all related entities deleted successfully',
+        message: bStatic('errors.auto.backend.kfe54d8979200'),
         ...preview,
       };
     } catch (error) {
@@ -372,7 +374,7 @@ export class CascadeDeletionService {
 
       return {
         success: true,
-        message: 'Resource and all related reservations deleted successfully',
+        message: bStatic('errors.auto.backend.k95655ab14f0f'),
         ...preview,
       };
     } catch (error) {

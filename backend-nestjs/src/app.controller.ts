@@ -8,6 +8,8 @@ import { DataSource } from 'typeorm';
 import { AppService } from './app.service';
 import { ParameterizedQueryService } from './common/database/parameterized-query.service';
 
+import { bStatic } from './i18n/runtime';
+
 @Controller()
 export class AppController {
   constructor(
@@ -64,7 +66,7 @@ export class AppController {
 
     if (!this.dataSource.isInitialized) {
       throw new ServiceUnavailableException({
-        message: 'Database connection is not initialized.',
+        message: bStatic('errors.auto.backend.kfb82ed5819d9'),
         diagnostics,
       });
     }
@@ -76,7 +78,7 @@ export class AppController {
       diagnostics.databaseReachable = true;
     } catch (error) {
       throw new ServiceUnavailableException({
-        message: 'Database readiness probe failed.',
+        message: bStatic('errors.auto.backend.kda52953ac116'),
         diagnostics: {
           ...diagnostics,
           error: error instanceof Error ? error.message : String(error),

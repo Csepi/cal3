@@ -19,6 +19,8 @@ import { CreateReservationCalendarDto, AssignRoleDto } from './dto';
 
 import { logError } from '../common/errors/error-logger';
 import { buildErrorContext } from '../common/errors/error-context';
+import { bStatic } from '../i18n/runtime';
+
 /**
  * ReservationCalendarService
  *
@@ -61,7 +63,7 @@ export class ReservationCalendarService {
       where: { id: organisationId },
     });
     if (!organisation) {
-      throw new NotFoundException('Organisation not found');
+      throw new NotFoundException(bStatic('errors.auto.backend.k4d405a7f53bf'));
     }
 
     // Create the base calendar first
@@ -137,7 +139,7 @@ export class ReservationCalendarService {
         relations: ['organisation'],
       });
     if (!reservationCalendar) {
-      throw new NotFoundException('Reservation calendar not found');
+      throw new NotFoundException(bStatic('errors.auto.backend.k0fd2b77d8182'));
     }
 
     // Verify permission
@@ -152,7 +154,7 @@ export class ReservationCalendarService {
       relations: ['organisations'],
     });
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException(bStatic('errors.auto.backend.k01eb94695483'));
     }
 
     const isOrgMember = user.organisations.some(
@@ -160,7 +162,7 @@ export class ReservationCalendarService {
     );
     if (!isOrgMember) {
       throw new BadRequestException(
-        'User must be a member of the organisation',
+        bStatic('errors.auto.backend.kf93b5d6eda33'),
       );
     }
 
@@ -208,7 +210,7 @@ export class ReservationCalendarService {
         relations: ['organisation'],
       });
     if (!reservationCalendar) {
-      throw new NotFoundException('Reservation calendar not found');
+      throw new NotFoundException(bStatic('errors.auto.backend.k0fd2b77d8182'));
     }
 
     // Verify permission
@@ -225,13 +227,13 @@ export class ReservationCalendarService {
       },
     });
     if (!role) {
-      throw new NotFoundException('Role not found');
+      throw new NotFoundException(bStatic('errors.auto.backend.k70623637b261'));
     }
 
     // Cannot remove auto-assigned organisation admin roles
     if (role.isOrganisationAdmin) {
       throw new BadRequestException(
-        'Cannot remove auto-assigned organisation admin role',
+        bStatic('errors.auto.backend.k8226f3acd653'),
       );
     }
 
@@ -476,7 +478,7 @@ export class ReservationCalendarService {
     );
     if (!isOrgAdmin) {
       throw new ForbiddenException(
-        'Insufficient permissions for this organisation',
+        bStatic('errors.auto.backend.k55a553adc5c5'),
       );
     }
   }

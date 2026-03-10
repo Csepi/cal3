@@ -8,6 +8,8 @@ import {
 import { isIP } from 'net';
 import type { NextFunction, Request, Response } from 'express';
 
+import { bStatic } from '../../i18n/runtime';
+
 const MUTATING_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
 const URL_FIELD_PATTERN = /(url|uri|webhook)/i;
 
@@ -62,12 +64,12 @@ export class RequestHardeningMiddleware implements NestMiddleware {
     const contentLength = Number(contentLengthRaw);
 
     if (Number.isFinite(contentLength) && contentLength > this.maxRequestBytes) {
-      throw new PayloadTooLargeException('Request payload too large.');
+      throw new PayloadTooLargeException(bStatic('errors.auto.backend.kf17ebe05ab58'));
     }
 
     if (this.isMultipart(req) && Number.isFinite(contentLength)) {
       if (contentLength > this.maxUploadBytes) {
-        throw new PayloadTooLargeException('Uploaded payload exceeds limits.');
+        throw new PayloadTooLargeException(bStatic('errors.auto.backend.k9ccded2d1d1c'));
       }
     }
   }
@@ -85,7 +87,7 @@ export class RequestHardeningMiddleware implements NestMiddleware {
     const rawContentType = Array.isArray(header) ? header[0] : header;
     if (!rawContentType) {
       throw new UnsupportedMediaTypeException(
-        'Content-Type header is required for mutating requests.',
+        bStatic('errors.auto.backend.k0d177c9a02f4'),
       );
     }
 
@@ -102,7 +104,7 @@ export class RequestHardeningMiddleware implements NestMiddleware {
 
     if (isMultipart && !this.isUploadPathAllowed(req.path || req.url || '')) {
       throw new UnsupportedMediaTypeException(
-        'File upload is not allowed on this endpoint.',
+        bStatic('errors.auto.backend.k8b135a6ebfca'),
       );
     }
   }

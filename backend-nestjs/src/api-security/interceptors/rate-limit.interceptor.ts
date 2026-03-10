@@ -9,6 +9,8 @@ import {
 import { Observable } from 'rxjs';
 import { AdvancedRateLimitService } from '../services/advanced-rate-limit.service';
 
+import { bStatic } from '../../i18n/runtime';
+
 @Injectable()
 export class RateLimitInterceptor implements NestInterceptor {
   constructor(private readonly rateLimitService: AdvancedRateLimitService) {}
@@ -39,7 +41,7 @@ export class RateLimitInterceptor implements NestInterceptor {
       throw new HttpException(
         {
           statusCode: HttpStatus.TOO_MANY_REQUESTS,
-          message: 'Rate limit exceeded. Please retry later.',
+          message: bStatic('errors.auto.backend.kc4118fd24c92'),
           details: {
             tier: decision.tier,
             category: decision.category,

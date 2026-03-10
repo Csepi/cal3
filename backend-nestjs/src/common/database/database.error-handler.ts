@@ -1,5 +1,7 @@
 import type { DatabaseErrorDetails, DatabaseErrorType } from './database.types';
 
+import { bStatic } from '../../i18n/runtime';
+
 /**
  * Extract a database error code if present.
  */
@@ -36,7 +38,7 @@ export const getDatabaseErrorDetails = (
   if (code === '23505' || code === 2627 || code === 2601) {
     return {
       type: 'unique-violation',
-      message: 'Unique constraint violation',
+      message: bStatic('errors.auto.backend.kd345d572102d'),
       code,
       originalError: error,
     };
@@ -45,7 +47,7 @@ export const getDatabaseErrorDetails = (
   if (code === '23503' || code === 547) {
     return {
       type: 'foreign-key-violation',
-      message: 'Foreign key constraint violation',
+      message: bStatic('errors.auto.backend.kb9f1dbdfdd8f'),
       code,
       originalError: error,
     };
@@ -54,7 +56,7 @@ export const getDatabaseErrorDetails = (
   if (code === '23502' || code === 515) {
     return {
       type: 'not-null-violation',
-      message: 'Required field is missing',
+      message: bStatic('errors.auto.backend.k55fb5a13ea13'),
       code,
       originalError: error,
     };
@@ -63,7 +65,7 @@ export const getDatabaseErrorDetails = (
   if (lower.includes('timeout') || lower.includes('timed out')) {
     return {
       type: 'timeout',
-      message: 'Database connection timed out',
+      message: bStatic('errors.auto.backend.kbac42d185e20'),
       code,
       originalError: error,
     };
@@ -76,7 +78,7 @@ export const getDatabaseErrorDetails = (
   ) {
     return {
       type: 'authentication',
-      message: 'Database authentication failed',
+      message: bStatic('errors.auto.backend.kfca0b6abbb44'),
       code,
       originalError: error,
     };
@@ -89,7 +91,7 @@ export const getDatabaseErrorDetails = (
   ) {
     return {
       type: 'ssl',
-      message: 'Database SSL negotiation failed',
+      message: bStatic('errors.auto.backend.k6d60b15afba2'),
       code,
       originalError: error,
     };
@@ -102,7 +104,7 @@ export const getDatabaseErrorDetails = (
   ) {
     return {
       type: 'connection',
-      message: 'Database connection failed',
+      message: bStatic('errors.auto.backend.k0c8775cf281c'),
       code,
       originalError: error,
     };

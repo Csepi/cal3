@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import type { RecurrencePattern } from '../types/Event';
 import { RecurrenceType, RecurrenceEndType } from '../types/Event';
 
+import { tStatic } from '../i18n';
+
 export enum WeekDay {
   SUNDAY = 'SU',
   MONDAY = 'MO',
@@ -105,8 +107,7 @@ const RecurrenceSelector: React.FC<RecurrenceSelectorProps> = ({
   return (
     <div className="space-y-2">
       <label className="block text-sm font-medium text-gray-700">
-        🔄 Recurrence
-      </label>
+        {tStatic('common:auto.frontend.k60cd33334a67')}</label>
 
       {/* Basic recurrence selector */}
       <div className="space-y-3">
@@ -128,7 +129,7 @@ const RecurrenceSelector: React.FC<RecurrenceSelectorProps> = ({
           <div className={`border ${themeColors.border} rounded-xl p-4 bg-white/90 space-y-4`}>
             {/* Recurrence type */}
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-600">Frequency</label>
+              <label className="block text-sm font-medium text-gray-600">{tStatic('common:auto.frontend.k89836a870e44')}</label>
               <select
                 value={value?.type || RecurrenceType.NONE}
                 onChange={(e) => {
@@ -142,11 +143,11 @@ const RecurrenceSelector: React.FC<RecurrenceSelectorProps> = ({
                 }}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
               >
-                <option value={RecurrenceType.NONE}>Does not repeat</option>
-                <option value={RecurrenceType.DAILY}>Daily</option>
-                <option value={RecurrenceType.WEEKLY}>Weekly</option>
-                <option value={RecurrenceType.MONTHLY}>Monthly</option>
-                <option value={RecurrenceType.YEARLY}>Yearly</option>
+                <option value={RecurrenceType.NONE}>{tStatic('common:auto.frontend.k69f96c81cd07')}</option>
+                <option value={RecurrenceType.DAILY}>{tStatic('common:auto.frontend.k728298d3dbf4')}</option>
+                <option value={RecurrenceType.WEEKLY}>{tStatic('common:auto.frontend.k158f3da59275')}</option>
+                <option value={RecurrenceType.MONTHLY}>{tStatic('common:auto.frontend.kd31edb7b8a94')}</option>
+                <option value={RecurrenceType.YEARLY}>{tStatic('common:auto.frontend.k7622eb5aa42d')}</option>
               </select>
             </div>
 
@@ -155,7 +156,7 @@ const RecurrenceSelector: React.FC<RecurrenceSelectorProps> = ({
                 {/* Interval */}
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="block text-sm font-medium text-gray-600">Repeat every</label>
+                    <label className="block text-sm font-medium text-gray-600">{tStatic('common:auto.frontend.k7bd2492af73e')}</label>
                     <div className="flex items-center space-x-2">
                       <input
                         type="number"
@@ -178,7 +179,7 @@ const RecurrenceSelector: React.FC<RecurrenceSelectorProps> = ({
                 {/* Days of week (for weekly recurrence) */}
                 {value.type === RecurrenceType.WEEKLY && (
                   <div className="space-y-2">
-                    <label className="block text-sm font-medium text-gray-600">Repeat on</label>
+                    <label className="block text-sm font-medium text-gray-600">{tStatic('common:auto.frontend.k66bdfe35729f')}</label>
                     <div className="flex flex-wrap gap-2">
                       {Object.entries(weekDayLabels).map(([day, label]) => (
                         <button
@@ -207,7 +208,7 @@ const RecurrenceSelector: React.FC<RecurrenceSelectorProps> = ({
 
                 {/* End condition */}
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-600">Ends</label>
+                  <label className="block text-sm font-medium text-gray-600">{tStatic('common:auto.frontend.k91856dcb7d93')}</label>
                   <div className="space-y-3">
                     <label className="flex items-center space-x-2">
                       <input
@@ -217,7 +218,7 @@ const RecurrenceSelector: React.FC<RecurrenceSelectorProps> = ({
                         onChange={() => handlePatternChange({ endType: RecurrenceEndType.NEVER, count: undefined, endDate: undefined })}
                         className="text-blue-500"
                       />
-                      <span className="text-sm">Never</span>
+                      <span className="text-sm">{tStatic('common:auto.frontend.k80c3052d33cc')}</span>
                     </label>
 
                     <label className="flex items-center space-x-2">
@@ -228,7 +229,7 @@ const RecurrenceSelector: React.FC<RecurrenceSelectorProps> = ({
                         onChange={() => handlePatternChange({ endType: RecurrenceEndType.COUNT, endDate: undefined })}
                         className="text-blue-500"
                       />
-                      <span className="text-sm">After</span>
+                      <span className="text-sm">{tStatic('common:auto.frontend.k79ba5e1b3f99')}</span>
                       <input
                         type="number"
                         min="1"
@@ -238,7 +239,7 @@ const RecurrenceSelector: React.FC<RecurrenceSelectorProps> = ({
                         disabled={value.endType !== RecurrenceEndType.COUNT}
                         className="w-20 px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none disabled:bg-gray-100"
                       />
-                      <span className="text-sm">occurrences</span>
+                      <span className="text-sm">{tStatic('common:auto.frontend.k11e495371082')}</span>
                     </label>
 
                     <label className="flex items-center space-x-2">
@@ -249,7 +250,7 @@ const RecurrenceSelector: React.FC<RecurrenceSelectorProps> = ({
                         onChange={() => handlePatternChange({ endType: RecurrenceEndType.DATE, count: undefined })}
                         className="text-blue-500"
                       />
-                      <span className="text-sm">On date</span>
+                      <span className="text-sm">{tStatic('common:auto.frontend.k594e71c95675')}</span>
                       <input
                         type="date"
                         value={value.endDate || ''}

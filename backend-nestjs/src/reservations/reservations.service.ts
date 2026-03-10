@@ -18,6 +18,8 @@ import { ReservationAvailabilityService } from '../common/services/reservation-a
 
 import { logError } from '../common/errors/error-logger';
 import { buildErrorContext } from '../common/errors/error-context';
+import { bStatic } from '../i18n/runtime';
+
 @Injectable()
 export class ReservationsService {
   private readonly logger = new Logger(ReservationsService.name);
@@ -39,7 +41,7 @@ export class ReservationsService {
     const endTime = new Date(createDto.endTime);
 
     if (Number.isNaN(startTime.getTime()) || Number.isNaN(endTime.getTime())) {
-      throw new BadRequestException('Invalid start or end time provided');
+      throw new BadRequestException(bStatic('errors.auto.backend.k0248cd0e4f39'));
     }
 
     const resource = await this.resourceRepository.findOne({
@@ -138,7 +140,7 @@ export class ReservationsService {
       : new Date(reservation.endTime);
 
     if (Number.isNaN(startTime.getTime()) || Number.isNaN(endTime.getTime())) {
-      throw new BadRequestException('Invalid start or end time provided');
+      throw new BadRequestException(bStatic('errors.auto.backend.k0248cd0e4f39'));
     }
 
     const quantity = updateDto.quantity ?? reservation.quantity ?? 1;

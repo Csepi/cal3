@@ -18,6 +18,8 @@ import { User } from '../entities/user.entity';
 import { OrganisationAdminService } from './organisation-admin.service';
 import { AssignOrganisationAdminDto, AddUserToOrganisationDto } from './dto';
 
+import { bStatic } from '../i18n/runtime';
+
 /**
  * OrganisationAdminController
  *
@@ -59,7 +61,7 @@ export class OrganisationAdminController {
       );
 
     return {
-      message: 'Organisation admin assigned successfully',
+      message: bStatic('errors.auto.backend.k8b032ce1343e'),
       data: orgAdmin,
     };
   }
@@ -82,7 +84,7 @@ export class OrganisationAdminController {
     );
 
     return {
-      message: 'Organisation admin removed successfully',
+      message: bStatic('errors.auto.backend.k19ab10bf79eb'),
     };
   }
 
@@ -99,7 +101,7 @@ export class OrganisationAdminController {
       await this.organisationAdminService.getOrganisationAdmins(organisationId);
 
     return {
-      message: 'Organisation admins retrieved successfully',
+      message: bStatic('errors.auto.backend.kedd85645eab2'),
       data: admins,
     };
   }
@@ -129,7 +131,7 @@ export class OrganisationAdminController {
     );
 
     return {
-      message: 'User added to organisation successfully',
+      message: bStatic('errors.auto.backend.k8f4fed72aa18'),
     };
   }
 
@@ -151,7 +153,7 @@ export class OrganisationAdminController {
     );
 
     return {
-      message: 'User removed from organisation successfully',
+      message: bStatic('errors.auto.backend.k9d4b095fcd4d'),
     };
   }
 
@@ -168,7 +170,7 @@ export class OrganisationAdminController {
       await this.organisationAdminService.getOrganisationUsers(organisationId);
 
     return {
-      message: 'Organisation users retrieved successfully',
+      message: bStatic('errors.auto.backend.kf0dee69a9ca2'),
       data: users,
     };
   }
@@ -184,7 +186,7 @@ export class OrganisationAdminController {
       );
 
     return {
-      message: 'User organisation admin roles retrieved successfully',
+      message: bStatic('errors.auto.backend.k6d2b5d4462e1'),
       data: adminRoles,
     };
   }
@@ -203,7 +205,7 @@ export class OrganisationAdminController {
     );
 
     return {
-      message: 'Organisation admin status retrieved successfully',
+      message: bStatic('errors.auto.backend.kafdf4ca7d587'),
       data: { isAdmin },
     };
   }

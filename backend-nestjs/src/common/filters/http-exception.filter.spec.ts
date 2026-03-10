@@ -3,6 +3,8 @@ import { AllExceptionsFilter } from './http-exception.filter';
 import { DomainValidationException } from '../exceptions/domain.exception';
 import { ERROR_CODES } from '../responses/error.catalog';
 
+import { bStatic } from '../../i18n/runtime';
+
 describe('AllExceptionsFilter', () => {
   const setHeader = jest.fn();
   const status = jest.fn().mockReturnThis();
@@ -46,7 +48,7 @@ describe('AllExceptionsFilter', () => {
     );
 
     filter.catch(
-      new DomainValidationException('Invalid fields', { field: 'email' }),
+      new DomainValidationException(bStatic('errors.auto.backend.k9c0d192ca522'), { field: 'email' }),
       host,
     );
 
@@ -56,7 +58,7 @@ describe('AllExceptionsFilter', () => {
         success: false,
         error: expect.objectContaining({
           code: ERROR_CODES.VALIDATION_FAILED,
-          message: 'The request contains invalid data.',
+          message: bStatic('errors.auto.backend.k4c7949072460'),
         }),
       }),
     );

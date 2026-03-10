@@ -6,6 +6,8 @@ import {
 } from '@nestjs/common';
 import { ERROR_CODES } from '../responses/error.catalog';
 
+import { bStatic } from '../../i18n/runtime';
+
 /**
  * Structured validation error detail.
  */
@@ -73,7 +75,7 @@ export const createApiValidationPipe = (
       const details = flattenValidationErrors(errors);
       return new BadRequestException({
         code: ERROR_CODES.VALIDATION_FAILED,
-        message: 'Validation failed',
+        message: bStatic('errors.auto.backend.k08b7b9da9ce6'),
         details: { fields: details },
       });
     },

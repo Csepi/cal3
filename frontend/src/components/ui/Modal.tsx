@@ -1,6 +1,8 @@
 import React, { useEffect } from 'react';
 import { getThemeConfig } from '../../constants';
 
+import { tStatic } from '../../i18n';
+
 /**
  * Reusable Modal component with theme support and accessibility features
  *
@@ -191,7 +193,7 @@ export const Modal: React.FC<ModalProps> = ({
                   type="button"
                   className={getCloseButtonClasses()}
                   onClick={onClose}
-                  aria-label="Close modal"
+                  aria-label={tStatic('common:auto.frontend.k70d3a544a361')}
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path

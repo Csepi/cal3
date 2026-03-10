@@ -11,6 +11,8 @@ import { Reservation, ReservationStatus } from '../entities/reservation.entity';
 import { CreatePublicBookingDto } from '../dto/public-booking.dto';
 import { ReservationAvailabilityService } from '../common/services/reservation-availability.service';
 
+import { bStatic } from '../i18n/runtime';
+
 export interface TimeSlot {
   startTime: string;
   endTime: string;
@@ -71,7 +73,7 @@ export class PublicBookingService {
 
     if (!resource) {
       throw new NotFoundException(
-        'Resource not found or booking link is invalid',
+        bStatic('errors.auto.backend.ke32af7ecb8a2'),
       );
     }
 
@@ -108,7 +110,7 @@ export class PublicBookingService {
 
     if (!resource) {
       throw new NotFoundException(
-        'Resource not found or booking link is invalid',
+        bStatic('errors.auto.backend.ke32af7ecb8a2'),
       );
     }
 
@@ -192,7 +194,7 @@ export class PublicBookingService {
 
     if (!resource) {
       throw new NotFoundException(
-        'Resource not found or booking link is invalid',
+        bStatic('errors.auto.backend.ke32af7ecb8a2'),
       );
     }
 
@@ -201,11 +203,11 @@ export class PublicBookingService {
     const endTime = new Date(bookingDto.endTime);
 
     if (Number.isNaN(startTime.getTime()) || Number.isNaN(endTime.getTime())) {
-      throw new BadRequestException('Invalid start or end time');
+      throw new BadRequestException(bStatic('errors.auto.backend.k8abd49d2623c'));
     }
 
     if (startTime >= endTime) {
-      throw new BadRequestException('End time must be after start time');
+      throw new BadRequestException(bStatic('errors.auto.backend.k468339327f19'));
     }
 
     const quantity = bookingDto.quantity ?? 1;

@@ -22,6 +22,8 @@ import { TaskPriority, TaskStatus } from '../entities/task.entity';
 
 import { logError } from '../common/errors/error-logger';
 import { buildErrorContext } from '../common/errors/error-context';
+import { bStatic } from '../i18n/runtime';
+
 type ToolHandler = (parameters: Record<string, unknown>) => Promise<unknown>;
 
 interface McpSession {
@@ -118,7 +120,7 @@ export class AgentMcpHttpService {
       if (!res.headersSent) {
         res.status(500).json({
           jsonrpc: '2.0',
-          error: { code: -32000, message: 'Internal server error' },
+          error: { code: -32000, message: bStatic('errors.auto.backend.kfbb5b2a6d525') },
           id: null,
         });
       }

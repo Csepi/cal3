@@ -1,0 +1,10 @@
+{
+  "subjects": {
+    "eventReminder": "Terminerinnerung: {{title}}",
+    "bookingConfirmation": "Buchungsbest?tigung",
+    "passwordReset": "PrimeCalendar-Passwort zur?cksetzen"
+  },
+  "footer": {
+    "unsubscribe": "Verwalten Sie Ihre E-Mail-Einstellungen in den Kontoeinstellungen."
+  }
+}

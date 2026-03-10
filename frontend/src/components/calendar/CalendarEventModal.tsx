@@ -15,6 +15,8 @@ import type { Calendar as CalendarType } from '../../types/Calendar';
 import RecurrenceSelector from '../RecurrenceSelector';
 import { EventCommentsPanel } from './EventCommentsPanel';
 
+import { tStatic } from '../../i18n';
+
 export interface CalendarEventModalProps {
   /** Whether the modal is open */
   isOpen: boolean;
@@ -263,7 +265,7 @@ export const CalendarEventModal: React.FC<CalendarEventModalProps> = ({
       : Object.values(eventForm).some(value => value !== '' && value !== false && value !== undefined);
 
     if (hasChanges) {
-      const confirmClose = window.confirm('You have unsaved changes. Are you sure you want to close?');
+      const confirmClose = window.confirm(tStatic('common:auto.frontend.k4761b5e2b6d1'));
       if (!confirmClose) return;
     }
 
@@ -293,33 +295,33 @@ export const CalendarEventModal: React.FC<CalendarEventModalProps> = ({
 
         {/* Basic Information */}
         <Card
-          header={<h3 className="text-lg font-semibold text-gray-800">📝 Event Details</h3>}
+          header={<h3 className="text-lg font-semibold text-gray-800">{tStatic('common:auto.frontend.k926affd7a838')}</h3>}
           padding="lg"
           themeColor={themeColor}
         >
           <div className="space-y-4">
             {/* Event Title */}
             <Input
-              label="Event Title"
+              label={tStatic('common:auto.frontend.k072cbaeaf68c')}
               value={eventForm.title || ''}
               onChange={(e) => handleFormChange('title', e.target.value)}
               error={formErrors.title}
               required
               themeColor={themeColor}
-              placeholder="Enter event title..."
+              placeholder={tStatic('common:auto.frontend.k6b82116e6f21')}
             />
 
             {/* Calendar Selection */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Calendar <span className="text-red-500">*</span>
+                {tStatic('common:auto.frontend.kadab5090ac6a')}<span className="text-red-500">*</span>
               </label>
               <select
                 value={eventForm.calendarId || ''}
                 onChange={(e) => handleFormChange('calendarId', parseInt(e.target.value))}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
-                <option value="">Select a calendar...</option>
+                <option value="">{tStatic('common:auto.frontend.k403f89ec3c4e')}</option>
                 {calendars.map((calendar) => (
                   <option key={calendar.id} value={calendar.id}>
                     {calendar.name}
@@ -333,34 +335,33 @@ export const CalendarEventModal: React.FC<CalendarEventModalProps> = ({
 
             {/* Description */}
             <Input
-              label="Description"
+              label={tStatic('common:auto.frontend.k55f8ebc805e6')}
               value={eventForm.description || ''}
               onChange={(e) => handleFormChange('description', e.target.value)}
               themeColor={themeColor}
-              placeholder="Enter event description..."
+              placeholder={tStatic('common:auto.frontend.k99eaa5aa0805')}
               multiline
               rows={3}
             />
 
             {/* Location */}
             <Input
-              label="Location"
+              label={tStatic('common:auto.frontend.kd219c68101f5')}
               value={eventForm.location || ''}
               onChange={(e) => handleFormChange('location', e.target.value)}
               themeColor={themeColor}
-              placeholder="Enter event location..."
+              placeholder={tStatic('common:auto.frontend.k39fa3b775dbe')}
             />
 
             {/* Icon Picker */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Event Icon (Optional)
-              </label>
+                {tStatic('common:auto.frontend.k93eab4a44abd')}</label>
               <IconPicker
                 value={eventForm.icon}
                 onChange={(icon) => handleFormChange('icon', icon || '')}
                 category="all"
-                placeholder="Select an event icon..."
+                placeholder={tStatic('common:auto.frontend.k760bd96da349')}
               />
             </div>
           </div>
@@ -368,7 +369,7 @@ export const CalendarEventModal: React.FC<CalendarEventModalProps> = ({
 
         {/* Date & Time */}
         <Card
-          header={<h3 className="text-lg font-semibold text-gray-800">🕒 Date & Time</h3>}
+          header={<h3 className="text-lg font-semibold text-gray-800">{tStatic('common:auto.frontend.ke2288c4f8590')}</h3>}
           padding="lg"
           themeColor={themeColor}
         >
@@ -383,14 +384,13 @@ export const CalendarEventModal: React.FC<CalendarEventModalProps> = ({
                 className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
               />
               <label htmlFor="isAllDay" className="ml-3 text-sm text-gray-700">
-                All day event
-              </label>
+                {tStatic('common:auto.frontend.kb4f02de8fc39')}</label>
             </div>
 
             {/* Start Date & Time */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Input
-                label="Start Date"
+                label={tStatic('common:auto.frontend.k9d7ab1a55796')}
                 type="date"
                 value={eventForm.startDate || ''}
                 onChange={(e) => handleFormChange('startDate', e.target.value)}
@@ -401,7 +401,7 @@ export const CalendarEventModal: React.FC<CalendarEventModalProps> = ({
 
               {!eventForm.isAllDay && (
                 <Input
-                  label="Start Time"
+                  label={tStatic('common:auto.frontend.k41c1074ddb72')}
                   type="time"
                   value={eventForm.startTime || ''}
                   onChange={(e) => handleFormChange('startTime', e.target.value)}
@@ -415,7 +415,7 @@ export const CalendarEventModal: React.FC<CalendarEventModalProps> = ({
             {/* End Date & Time */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Input
-                label="End Date"
+                label={tStatic('common:auto.frontend.k84b147812589')}
                 type="date"
                 value={eventForm.endDate || ''}
                 onChange={(e) => handleFormChange('endDate', e.target.value)}
@@ -426,7 +426,7 @@ export const CalendarEventModal: React.FC<CalendarEventModalProps> = ({
 
               {!eventForm.isAllDay && (
                 <Input
-                  label="End Time"
+                  label={tStatic('common:auto.frontend.k4c640e925e8b')}
                   type="time"
                   value={eventForm.endTime || ''}
                   onChange={(e) => handleFormChange('endTime', e.target.value)}
@@ -441,14 +441,13 @@ export const CalendarEventModal: React.FC<CalendarEventModalProps> = ({
 
         {/* Event Color */}
         <Card
-          header={<h3 className="text-lg font-semibold text-gray-800">🎨 Event Color</h3>}
+          header={<h3 className="text-lg font-semibold text-gray-800">{tStatic('common:auto.frontend.kba8045568a8b')}</h3>}
           padding="lg"
           themeColor={themeColor}
         >
           <div className="space-y-4">
             <p className="text-sm text-gray-600">
-              Choose a color to help identify this event visually
-            </p>
+              {tStatic('common:auto.frontend.kadac57e7dc8a')}</p>
 
             {/* Color Grid */}
             <div className="grid grid-cols-4 gap-3">
@@ -492,7 +491,7 @@ export const CalendarEventModal: React.FC<CalendarEventModalProps> = ({
             {/* Custom Color Input */}
             <div className="pt-4 border-t border-gray-200">
               <Input
-                label="Custom Color"
+                label={tStatic('common:auto.frontend.k04644b6690e8')}
                 type="color"
                 value={eventForm.color || themeColor}
                 onChange={(e) => handleFormChange('color', e.target.value)}
@@ -508,10 +507,9 @@ export const CalendarEventModal: React.FC<CalendarEventModalProps> = ({
                   style={{ backgroundColor: eventForm.color || themeColor }}
                 />
                 <div>
-                  <p className="text-sm font-medium text-gray-800">Preview</p>
+                  <p className="text-sm font-medium text-gray-800">{tStatic('common:auto.frontend.kf1fbb2b43dca')}</p>
                   <p className="text-xs text-gray-500">
-                    This color will be used for this event
-                  </p>
+                    {tStatic('common:auto.frontend.k1fa84e155e57')}</p>
                 </div>
               </div>
             </div>
@@ -520,7 +518,7 @@ export const CalendarEventModal: React.FC<CalendarEventModalProps> = ({
 
         {/* Recurrence Pattern */}
         <Card
-          header={<h3 className="text-lg font-semibold text-gray-800">🔄 Repeat Event</h3>}
+          header={<h3 className="text-lg font-semibold text-gray-800">{tStatic('common:auto.frontend.k3a71dbdf29e7')}</h3>}
           padding="lg"
           themeColor={themeColor}
         >
@@ -550,8 +548,7 @@ export const CalendarEventModal: React.FC<CalendarEventModalProps> = ({
                 themeColor="#ef4444"
                 className="text-red-600 border-red-300 hover:bg-red-50"
               >
-                🗑️ Delete Event
-              </Button>
+                {tStatic('common:auto.frontend.k17a53749b63b')}</Button>
             )}
           </div>
           <div className="flex space-x-3">
@@ -561,8 +558,7 @@ export const CalendarEventModal: React.FC<CalendarEventModalProps> = ({
               disabled={loading}
               themeColor={themeColor}
             >
-              Cancel
-            </Button>
+              {tStatic('common:auto.frontend.k77dfd2135f4d')}</Button>
             <Button
               variant="primary"
               onClick={handleSubmit}
@@ -580,7 +576,7 @@ export const CalendarEventModal: React.FC<CalendarEventModalProps> = ({
 
       {editingEvent && (
         <div className="pt-3 text-center text-[11px] text-gray-400">
-          Event ID: {editingEvent.id}
+          {tStatic('common:auto.frontend.k422e323a1bb1')}{editingEvent.id}
         </div>
       )}
     </SimpleModal>

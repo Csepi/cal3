@@ -2,6 +2,8 @@ import type { AutomationRuleDto } from '../../types/Automation';
 import { useAutomationMetadata } from '../../hooks/useAutomationMetadata';
 import { formatRelativeTime } from '../../services/automationService';
 
+import { tStatic } from '../../i18n';
+
 interface AutomationRuleCardProps {
   rule: AutomationRuleDto;
   themeColor: string;
@@ -64,14 +66,14 @@ export function AutomationRuleCard({
           <button
             onClick={() => onEdit(rule.id)}
             className="text-gray-500 hover:text-blue-600 transition-colors"
-            title="Edit"
+            title={tStatic('common:auto.frontend.k5301648dcf6b')}
           >
             ✏️
           </button>
           <button
             onClick={() => onDelete(rule.id)}
             className="text-gray-500 hover:text-red-600 transition-colors"
-            title="Delete"
+            title={tStatic('common:auto.frontend.kf6fdbe48dc54')}
           >
             🗑️
           </button>
@@ -111,12 +113,11 @@ export function AutomationRuleCard({
         <div className="flex items-center gap-1">
           <span>✓</span>
           <span>
-            {rule.conditionLogic === 'AND' ? 'All' : 'Any'} conditions
-          </span>
+            {rule.conditionLogic === 'AND' ? 'All' : 'Any'} {tStatic('common:auto.frontend.kf8eb525d26e1')}</span>
         </div>
         <div className="flex items-center gap-1">
           <span>⚡</span>
-          <span>Actions configured</span>
+          <span>{tStatic('common:auto.frontend.k00a3a8000a9b')}</span>
         </div>
       </div>
 
@@ -125,12 +126,12 @@ export function AutomationRuleCard({
         <div className="flex items-center gap-1">
           <span>📊</span>
           <span>
-            {rule.executionCount} execution{rule.executionCount !== 1 ? 's' : ''}
+            {rule.executionCount} {tStatic('common:auto.frontend.k1e2147459888')}{rule.executionCount !== 1 ? 's' : ''}
           </span>
         </div>
         <div className="flex items-center gap-1">
           <span>⏱️</span>
-          <span>Last run: {formatRelativeTime(rule.lastExecutedAt)}</span>
+          <span>{tStatic('common:auto.frontend.k32261df5e59a')}{formatRelativeTime(rule.lastExecutedAt)}</span>
         </div>
       </div>
 
@@ -140,15 +141,13 @@ export function AutomationRuleCard({
           onClick={() => onView(rule.id)}
           className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50 transition-colors"
         >
-          View Details
-        </button>
+          {tStatic('common:auto.frontend.k907b3bee2778')}</button>
         <button
           onClick={() => onEdit(rule.id)}
           className="px-3 py-1 text-sm text-white rounded hover:opacity-90 transition-opacity"
           style={{ backgroundColor: themeColor }}
         >
-          Edit
-        </button>
+          {tStatic('common:auto.frontend.k5301648dcf6b')}</button>
       </div>
     </div>
   );

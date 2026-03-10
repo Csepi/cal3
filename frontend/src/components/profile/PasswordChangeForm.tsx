@@ -1,6 +1,8 @@
 import React from 'react';
 import { Card, CardHeader, Input, Button } from '../ui';
 
+import { tStatic } from '../../i18n';
+
 /**
  * PasswordChangeForm component for updating user passwords
  *
@@ -75,8 +77,7 @@ export const PasswordChangeForm: React.FC<PasswordChangeFormProps> = ({
       padding="lg"
       header={
         <CardHeader>
-          🔒 Change Password
-        </CardHeader>
+          {tStatic('common:auto.frontend.k8d7f2404827e')}</CardHeader>
       }
     >
       <form onSubmit={onSubmit} className="space-y-6">
@@ -90,13 +91,12 @@ export const PasswordChangeForm: React.FC<PasswordChangeFormProps> = ({
             </div>
             <div className="ml-3">
               <h4 className="text-sm font-medium text-blue-800">
-                Password Security Requirements
-              </h4>
+                {tStatic('common:auto.frontend.k29af0426093a')}</h4>
               <ul className="mt-2 text-sm text-blue-700 list-disc list-inside space-y-1">
-                <li>Minimum 8 characters long</li>
-                <li>Include uppercase and lowercase letters</li>
-                <li>Include at least one number</li>
-                <li>Include at least one special character</li>
+                <li>{tStatic('common:auto.frontend.kc68e5a5b4579')}</li>
+                <li>{tStatic('common:auto.frontend.k48af8345c2c7')}</li>
+                <li>{tStatic('common:auto.frontend.k2a80a57c7afb')}</li>
+                <li>{tStatic('common:auto.frontend.k2098323d757c')}</li>
               </ul>
             </div>
           </div>
@@ -104,14 +104,14 @@ export const PasswordChangeForm: React.FC<PasswordChangeFormProps> = ({
 
         {/* Current Password */}
         <Input
-          label="Current Password"
+          label={tStatic('common:auto.frontend.k4d5967896006')}
           type="password"
           value={formData.currentPassword}
           onChange={(e) => onFormDataChange('currentPassword', e.target.value)}
           error={errors.currentPassword}
           required
           themeColor={themeColor}
-          placeholder="Enter your current password"
+          placeholder={tStatic('common:auto.frontend.k9149cfc2a4ec')}
           icon={
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
@@ -122,14 +122,14 @@ export const PasswordChangeForm: React.FC<PasswordChangeFormProps> = ({
         {/* New Password */}
         <div>
           <Input
-            label="New Password"
+            label={tStatic('common:auto.frontend.k4894cb39ee41')}
             type="password"
             value={formData.newPassword}
             onChange={(e) => onFormDataChange('newPassword', e.target.value)}
             error={errors.newPassword}
             required
             themeColor={themeColor}
-            placeholder="Enter your new password"
+            placeholder={tStatic('common:auto.frontend.k7bec90ce73f6')}
             icon={
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
@@ -141,7 +141,7 @@ export const PasswordChangeForm: React.FC<PasswordChangeFormProps> = ({
           {formData.newPassword && (
             <div className="mt-2">
               <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-500">Password strength:</span>
+                <span className="text-gray-500">{tStatic('common:auto.frontend.kc10b14453c6f')}</span>
                 <span className={`font-medium ${passwordStrength.color}`}>
                   {passwordStrength.text}
                 </span>
@@ -163,14 +163,14 @@ export const PasswordChangeForm: React.FC<PasswordChangeFormProps> = ({
 
         {/* Confirm Password */}
         <Input
-          label="Confirm New Password"
+          label={tStatic('common:auto.frontend.k68dcd71ce6ba')}
           type="password"
           value={formData.confirmPassword}
           onChange={(e) => onFormDataChange('confirmPassword', e.target.value)}
           error={errors.confirmPassword}
           required
           themeColor={themeColor}
-          placeholder="Confirm your new password"
+          placeholder={tStatic('common:auto.frontend.k9c2ee32348d9')}
           icon={
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -186,15 +186,13 @@ export const PasswordChangeForm: React.FC<PasswordChangeFormProps> = ({
                 <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
-                Passwords match
-              </div>
+                {tStatic('common:auto.frontend.k5e0655e84917')}</div>
             ) : (
               <div className="flex items-center text-red-600">
                 <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
-                Passwords do not match
-              </div>
+                {tStatic('common:auto.frontend.kd69c3b1ac54b')}</div>
             )}
           </div>
         )}
@@ -209,8 +207,7 @@ export const PasswordChangeForm: React.FC<PasswordChangeFormProps> = ({
               className="flex-1"
               themeColor={themeColor}
             >
-              Cancel
-            </Button>
+              {tStatic('common:auto.frontend.k77dfd2135f4d')}</Button>
           )}
           <Button
             type="submit"

@@ -1,0 +1,5 @@
+{
+  "newBooking": "?j foglal?s ?rkezett: {{clientName}}",
+  "eventStartingSoon": "Az esem?ny {{minutes}} percen bel?l kezd?dik.",
+  "calendarShared": "Megosztottak ?nnel egy napt?rat."
+}

@@ -41,6 +41,8 @@ import {
   NOTIFICATION_CHANNEL_PROVIDERS,
 } from './channels/notification-channel.registry';
 import { NotificationMutesController } from './notification-mutes.controller';
+import { NotificationI18nService } from './notification-i18n.service';
+import { EmailTemplateService } from './email-template.service';
 
 @Module({
   imports: [
@@ -109,6 +111,7 @@ import { NotificationMutesController } from './notification-mutes.controller';
     MobilePushChannelProvider,
     SlackChannelProvider,
     TeamsChannelProvider,
+    EmailTemplateService,
     {
       provide: NOTIFICATION_CHANNEL_PROVIDERS,
       useFactory: (
@@ -127,12 +130,14 @@ import { NotificationMutesController } from './notification-mutes.controller';
       ],
     },
     NotificationChannelRegistry,
+    NotificationI18nService,
   ],
   exports: [
     NotificationsService,
     NotificationRulesService,
     NotificationThreadsService,
     NotificationChannelRegistry,
+    NotificationI18nService,
   ],
 })
 export class NotificationsModule {}

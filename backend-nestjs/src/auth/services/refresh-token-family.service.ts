@@ -5,6 +5,8 @@ import { RefreshToken } from '../../entities/refresh-token.entity';
 import { SecurityAuditService } from '../../logging/security-audit.service';
 import type { RefreshValidationResult } from '../token.types';
 
+import { bStatic } from '../../i18n/runtime';
+
 @Injectable()
 export class RefreshTokenFamilyService {
   constructor(
@@ -110,10 +112,10 @@ export class RefreshTokenFamilyService {
       case 'revoked':
       case 'reused':
       case 'fingerprint_mismatch':
-        throw new UnauthorizedException('Refresh token rejected');
+        throw new UnauthorizedException(bStatic('errors.auto.backend.kbb6ee5c65583'));
       case 'invalid':
       default:
-        throw new UnauthorizedException('Invalid refresh token');
+        throw new UnauthorizedException(bStatic('errors.auto.backend.k1ee8cced14c2'));
     }
   }
 }

@@ -1,0 +1,9 @@
+{
+  "required": "Ez a mez? k?telez?.",
+  "invalidEmail": "?rv?nytelen e-mail-c?m.",
+  "invalidDate": "?rv?nytelen d?tum.",
+  "invalidTime": "?rv?nytelen id?pont.",
+  "passwordWeak": "A jelsz? t?l gyenge.",
+  "startBeforeEnd": "A kezd?si id?pontnak kor?bbinak kell lennie.",
+  "invalidCalendar": "?rv?nytelen Feladatok napt?r. V?lasszon olyat, amelyhez tulajdonosi vagy szerkeszt?si joga van."
+}

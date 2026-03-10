@@ -1,0 +1,10 @@
+{
+  "subjects": {
+    "eventReminder": "Rappel d??v?nement : {{title}}",
+    "bookingConfirmation": "Confirmation de r?servation",
+    "passwordReset": "R?initialisez votre mot de passe PrimeCalendar"
+  },
+  "footer": {
+    "unsubscribe": "G?rez vos pr?f?rences e-mail dans les param?tres du compte."
+  }
+}

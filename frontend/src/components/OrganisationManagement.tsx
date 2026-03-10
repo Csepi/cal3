@@ -6,6 +6,8 @@ import OrganisationUserManagement from './OrganisationUserManagement';
 import type { ReservationResourceType, ReservationUserSummary } from '../types/reservation';
 import type { Organization } from '../types';
 
+import { tStatic } from '../i18n';
+
 interface Organisation extends Organization {
   address?: string;
   phone?: string;
@@ -124,7 +126,7 @@ const OrganisationManagement: React.FC<OrganisationManagementProps> = ({ themeCo
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm('Are you sure you want to delete this organisation?')) return;
+    if (!confirm(tStatic('common:auto.frontend.ka24ce7fc318d'))) return;
 
     try {
       const response = await secureFetch(`${BASE_URL}/api/organisations/${id}`, {
@@ -164,7 +166,7 @@ const OrganisationManagement: React.FC<OrganisationManagementProps> = ({ themeCo
     return (
       <div className="flex justify-center items-center py-8">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-        <span className="ml-2 text-gray-600">Loading permissions...</span>
+        <span className="ml-2 text-gray-600">{tStatic('common:auto.frontend.k0e89e70a6600')}</span>
       </div>
     );
   }
@@ -178,13 +180,12 @@ const OrganisationManagement: React.FC<OrganisationManagementProps> = ({ themeCo
   return (
     <div>
       <div className="mb-6 flex justify-between items-center">
-        <h3 className="text-xl font-medium text-gray-800">Organisations (Admin)</h3>
+        <h3 className="text-xl font-medium text-gray-800">{tStatic('common:auto.frontend.ke6a1bae77aa4')}</h3>
         <button
           onClick={openCreateModal}
           className="bg-blue-500 text-white px-4 py-2 rounded-xl hover:bg-blue-600 transition-all duration-200 flex items-center gap-2"
         >
-          ➕ Add Organisation
-        </button>
+          {tStatic('common:auto.frontend.k307f767ce299')}</button>
       </div>
 
       {error && (
@@ -202,13 +203,13 @@ const OrganisationManagement: React.FC<OrganisationManagementProps> = ({ themeCo
           <table className="min-w-full bg-white border border-blue-200 rounded-2xl overflow-hidden shadow-sm">
             <thead className="bg-gradient-to-r from-blue-100 to-indigo-100">
               <tr>
-                <th className="px-6 py-4 text-left text-sm font-medium text-gray-800 border-b border-blue-200">ID</th>
-                <th className="px-6 py-4 text-left text-sm font-medium text-gray-800 border-b border-blue-200">Name</th>
-                <th className="px-6 py-4 text-left text-sm font-medium text-gray-800 border-b border-blue-200">Email</th>
-                <th className="px-6 py-4 text-left text-sm font-medium text-gray-800 border-b border-blue-200">Phone</th>
-                <th className="px-6 py-4 text-left text-sm font-medium text-gray-800 border-b border-blue-200">Address</th>
-                <th className="px-6 py-4 text-left text-sm font-medium text-gray-800 border-b border-blue-200">Status</th>
-                <th className="px-6 py-4 text-left text-sm font-medium text-gray-800 border-b border-blue-200">Actions</th>
+                <th className="px-6 py-4 text-left text-sm font-medium text-gray-800 border-b border-blue-200">{tStatic('common:auto.frontend.k89f89c02cf47')}</th>
+                <th className="px-6 py-4 text-left text-sm font-medium text-gray-800 border-b border-blue-200">{tStatic('common:auto.frontend.k709a23220f2c')}</th>
+                <th className="px-6 py-4 text-left text-sm font-medium text-gray-800 border-b border-blue-200">{tStatic('common:auto.frontend.k84add5b29527')}</th>
+                <th className="px-6 py-4 text-left text-sm font-medium text-gray-800 border-b border-blue-200">{tStatic('common:auto.frontend.k77064d526523')}</th>
+                <th className="px-6 py-4 text-left text-sm font-medium text-gray-800 border-b border-blue-200">{tStatic('common:auto.frontend.kd70f93df5e8f')}</th>
+                <th className="px-6 py-4 text-left text-sm font-medium text-gray-800 border-b border-blue-200">{tStatic('common:auto.frontend.kbae7d5be7082')}</th>
+                <th className="px-6 py-4 text-left text-sm font-medium text-gray-800 border-b border-blue-200">{tStatic('common:auto.frontend.kc3cd636a585b')}</th>
               </tr>
             </thead>
             <tbody>
@@ -232,14 +233,12 @@ const OrganisationManagement: React.FC<OrganisationManagementProps> = ({ themeCo
                         onClick={() => openEditModal(org)}
                         className="text-xs px-3 py-2 bg-yellow-500 text-white rounded-xl hover:bg-yellow-600 transition-all duration-200"
                       >
-                        ✏️ Edit
-                      </button>
+                        {tStatic('common:auto.frontend.k46d11d96ea97')}</button>
                       <button
                         onClick={() => handleDelete(org.id)}
                         className="text-xs px-3 py-2 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-all duration-200"
                       >
-                        🗑️ Delete
-                      </button>
+                        {tStatic('common:auto.frontend.k8fb0a9354a21')}</button>
                     </div>
                   </td>
                 </tr>
@@ -247,8 +246,7 @@ const OrganisationManagement: React.FC<OrganisationManagementProps> = ({ themeCo
               {organisations.length === 0 && (
                 <tr>
                   <td colSpan={7} className="px-6 py-8 text-center text-gray-500">
-                    No organisations found. Create one to get started!
-                  </td>
+                    {tStatic('common:auto.frontend.k2ab519e1046b')}</td>
                 </tr>
               )}
             </tbody>
@@ -264,7 +262,7 @@ const OrganisationManagement: React.FC<OrganisationManagementProps> = ({ themeCo
             </h2>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Name *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">{tStatic('common:auto.frontend.kd145bb830936')}</label>
                 <input
                   type="text"
                   value={formData.name}
@@ -273,7 +271,7 @@ const OrganisationManagement: React.FC<OrganisationManagementProps> = ({ themeCo
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">{tStatic('common:auto.frontend.k55f8ebc805e6')}</label>
                 <textarea
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
@@ -282,7 +280,7 @@ const OrganisationManagement: React.FC<OrganisationManagementProps> = ({ themeCo
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">{tStatic('common:auto.frontend.k84add5b29527')}</label>
                 <input
                   type="email"
                   value={formData.email}
@@ -291,7 +289,7 @@ const OrganisationManagement: React.FC<OrganisationManagementProps> = ({ themeCo
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Phone</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">{tStatic('common:auto.frontend.k77064d526523')}</label>
                 <input
                   type="tel"
                   value={formData.phone}
@@ -300,7 +298,7 @@ const OrganisationManagement: React.FC<OrganisationManagementProps> = ({ themeCo
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Address</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">{tStatic('common:auto.frontend.kd70f93df5e8f')}</label>
                 <input
                   type="text"
                   value={formData.address}
@@ -320,8 +318,7 @@ const OrganisationManagement: React.FC<OrganisationManagementProps> = ({ themeCo
                   onClick={() => setShowModal(false)}
                   className="flex-1 bg-gray-500 text-white py-3 rounded-xl hover:bg-gray-600 transition-all"
                 >
-                  Cancel
-                </button>
+                  {tStatic('common:auto.frontend.k77dfd2135f4d')}</button>
               </div>
             </div>
           </div>

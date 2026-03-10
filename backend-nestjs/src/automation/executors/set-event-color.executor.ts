@@ -14,6 +14,8 @@ import {
 import { ActionExecutorRegistry } from './action-executor-registry';
 import { AutomationSmartValuesService } from '../automation-smart-values.service';
 
+import { bStatic } from '../../i18n/runtime';
+
 /**
  * Executor for SET_EVENT_COLOR action
  * Changes the color of an event
@@ -54,7 +56,7 @@ export class SetEventColorExecutor implements IActionExecutor, OnModuleInit {
           actionId: action.id,
           actionType: this.actionType,
           error:
-            'No event available to modify (webhook triggers cannot modify events)',
+            bStatic('errors.auto.backend.k8aa1f523351f'),
           executedAt,
         };
       }

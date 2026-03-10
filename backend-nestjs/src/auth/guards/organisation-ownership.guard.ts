@@ -15,6 +15,8 @@ import {
 } from '../../common/decorators/organisation-scope.decorator';
 import { RequestWithUser } from '../../common/types/request-with-user';
 
+import { bStatic } from '../../i18n/runtime';
+
 type ScopedRequest = RequestWithUser & {
   organisationId?: number;
 };
@@ -45,7 +47,7 @@ export class OrganisationOwnershipGuard implements CanActivate {
     const organisationId = this.resolveOrganisationId(request, scope);
 
     if (!organisationId) {
-      throw new BadRequestException('Organisation identifier is required.');
+      throw new BadRequestException(bStatic('errors.auto.backend.k1745a7fec990'));
     }
 
     const hasAccess =
@@ -60,7 +62,7 @@ export class OrganisationOwnershipGuard implements CanActivate {
           );
 
     if (!hasAccess) {
-      throw new ForbiddenException('Organisation access denied.');
+      throw new ForbiddenException(bStatic('errors.auto.backend.k3d01a02f5019'));
     }
 
     request.organisationId = organisationId;

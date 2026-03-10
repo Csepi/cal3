@@ -4,6 +4,8 @@ import { secureFetch } from '../services/authErrorHandler';
 import type { ReservationOrganization } from '../types/reservation';
 import type { Organization, ResourceType as DomainResourceType } from '../types';
 
+import { tStatic } from '../i18n';
+
 interface ResourceType extends DomainResourceType {
   minBookingDuration?: number;
   bufferTime?: number;
@@ -123,7 +125,7 @@ const ResourceTypeManagement: React.FC<ResourceTypeManagementProps> = () => {
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm('Are you sure you want to delete this resource type?')) return;
+    if (!confirm(tStatic('common:auto.frontend.kc3e7bfb476be'))) return;
 
     try {
       const response = await secureFetch(`${BASE_URL}/api/resource-types/${id}`, {
@@ -177,13 +179,12 @@ const ResourceTypeManagement: React.FC<ResourceTypeManagementProps> = () => {
   return (
     <div>
       <div className="mb-6 flex justify-between items-center">
-        <h3 className="text-xl font-medium text-gray-800">Resource Types</h3>
+        <h3 className="text-xl font-medium text-gray-800">{tStatic('common:auto.frontend.k4830bf222d91')}</h3>
         <button
           onClick={openCreateModal}
           className="bg-blue-500 text-white px-4 py-2 rounded-xl hover:bg-blue-600 transition-all duration-200 flex items-center gap-2"
         >
-          ➕ Add Resource Type
-        </button>
+          {tStatic('common:auto.frontend.k2b0c57c06bda')}</button>
       </div>
 
       {error && (
@@ -201,13 +202,13 @@ const ResourceTypeManagement: React.FC<ResourceTypeManagementProps> = () => {
           <table className="min-w-full bg-white border border-blue-200 rounded-2xl overflow-hidden shadow-sm">
             <thead className="bg-gradient-to-r from-purple-100 to-pink-100">
               <tr>
-                <th className="px-6 py-4 text-left text-sm font-medium text-gray-800 border-b border-purple-200">ID</th>
-                <th className="px-6 py-4 text-left text-sm font-medium text-gray-800 border-b border-purple-200">Name</th>
-                <th className="px-6 py-4 text-left text-sm font-medium text-gray-800 border-b border-purple-200">Organisation</th>
-                <th className="px-6 py-4 text-left text-sm font-medium text-gray-800 border-b border-purple-200">Min Duration</th>
-                <th className="px-6 py-4 text-left text-sm font-medium text-gray-800 border-b border-purple-200">Buffer Time</th>
-                <th className="px-6 py-4 text-left text-sm font-medium text-gray-800 border-b border-purple-200">Features</th>
-                <th className="px-6 py-4 text-left text-sm font-medium text-gray-800 border-b border-purple-200">Actions</th>
+                <th className="px-6 py-4 text-left text-sm font-medium text-gray-800 border-b border-purple-200">{tStatic('common:auto.frontend.k89f89c02cf47')}</th>
+                <th className="px-6 py-4 text-left text-sm font-medium text-gray-800 border-b border-purple-200">{tStatic('common:auto.frontend.k709a23220f2c')}</th>
+                <th className="px-6 py-4 text-left text-sm font-medium text-gray-800 border-b border-purple-200">{tStatic('common:auto.frontend.k6e99c1d3b150')}</th>
+                <th className="px-6 py-4 text-left text-sm font-medium text-gray-800 border-b border-purple-200">{tStatic('common:auto.frontend.kef3ae34124ae')}</th>
+                <th className="px-6 py-4 text-left text-sm font-medium text-gray-800 border-b border-purple-200">{tStatic('common:auto.frontend.k205ba5199133')}</th>
+                <th className="px-6 py-4 text-left text-sm font-medium text-gray-800 border-b border-purple-200">{tStatic('common:auto.frontend.kfc338f87a058')}</th>
+                <th className="px-6 py-4 text-left text-sm font-medium text-gray-800 border-b border-purple-200">{tStatic('common:auto.frontend.kc3cd636a585b')}</th>
               </tr>
             </thead>
             <tbody>
@@ -216,15 +217,15 @@ const ResourceTypeManagement: React.FC<ResourceTypeManagementProps> = () => {
                   <td className="px-6 py-4 border-b border-purple-100 text-sm text-gray-700">{type.id}</td>
                   <td className="px-6 py-4 border-b border-purple-100 text-sm text-gray-900 font-medium">{type.name}</td>
                   <td className="px-6 py-4 border-b border-purple-100 text-sm text-gray-700">{type.organisation?.name || 'N/A'}</td>
-                  <td className="px-6 py-4 border-b border-purple-100 text-sm text-gray-700">{type.minBookingDuration || '-'} min</td>
-                  <td className="px-6 py-4 border-b border-purple-100 text-sm text-gray-700">{type.bufferTime || '-'} min</td>
+                  <td className="px-6 py-4 border-b border-purple-100 text-sm text-gray-700">{type.minBookingDuration || '-'} {tStatic('common:auto.frontend.kb6c935d4f3c7')}</td>
+                  <td className="px-6 py-4 border-b border-purple-100 text-sm text-gray-700">{type.bufferTime || '-'} {tStatic('common:auto.frontend.kb6c935d4f3c7')}</td>
                   <td className="px-6 py-4 border-b border-purple-100 text-sm">
                     <div className="flex gap-1">
                       {type.waitlistEnabled && (
-                        <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs">Waitlist</span>
+                        <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs">{tStatic('common:auto.frontend.k23a1732e27a5')}</span>
                       )}
                       {type.recurringEnabled && (
-                        <span className="px-2 py-1 bg-green-100 text-green-700 rounded text-xs">Recurring</span>
+                        <span className="px-2 py-1 bg-green-100 text-green-700 rounded text-xs">{tStatic('common:auto.frontend.k349f0e5ffd4c')}</span>
                       )}
                     </div>
                   </td>
@@ -234,14 +235,12 @@ const ResourceTypeManagement: React.FC<ResourceTypeManagementProps> = () => {
                         onClick={() => openEditModal(type)}
                         className="text-xs px-3 py-2 bg-yellow-500 text-white rounded-xl hover:bg-yellow-600 transition-all duration-200"
                       >
-                        ✏️ Edit
-                      </button>
+                        {tStatic('common:auto.frontend.k46d11d96ea97')}</button>
                       <button
                         onClick={() => handleDelete(type.id)}
                         className="text-xs px-3 py-2 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-all duration-200"
                       >
-                        🗑️ Delete
-                      </button>
+                        {tStatic('common:auto.frontend.k8fb0a9354a21')}</button>
                     </div>
                   </td>
                 </tr>
@@ -249,8 +248,7 @@ const ResourceTypeManagement: React.FC<ResourceTypeManagementProps> = () => {
               {resourceTypes.length === 0 && (
                 <tr>
                   <td colSpan={7} className="px-6 py-8 text-center text-gray-500">
-                    No resource types found. Create one to get started!
-                  </td>
+                    {tStatic('common:auto.frontend.ke1198a25cc8f')}</td>
                 </tr>
               )}
             </tbody>
@@ -267,7 +265,7 @@ const ResourceTypeManagement: React.FC<ResourceTypeManagementProps> = () => {
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Name *</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">{tStatic('common:auto.frontend.kd145bb830936')}</label>
                   <input
                     type="text"
                     value={formData.name}
@@ -276,14 +274,14 @@ const ResourceTypeManagement: React.FC<ResourceTypeManagementProps> = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Organisation *</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">{tStatic('common:auto.frontend.k695feaaed412')}</label>
                   <select
                     value={formData.organisationId}
                     onChange={(e) => setFormData({ ...formData, organisationId: parseInt(e.target.value) })}
                     className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 outline-none"
                     disabled={!!editingType}
                   >
-                    <option value={0}>Select Organisation</option>
+                    <option value={0}>{tStatic('common:auto.frontend.kc5aef772f4a8')}</option>
                     {organisations.map(org => (
                       <option key={org.id} value={org.id}>{org.name}</option>
                     ))}
@@ -291,7 +289,7 @@ const ResourceTypeManagement: React.FC<ResourceTypeManagementProps> = () => {
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">{tStatic('common:auto.frontend.k55f8ebc805e6')}</label>
                 <textarea
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
@@ -301,7 +299,7 @@ const ResourceTypeManagement: React.FC<ResourceTypeManagementProps> = () => {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Min Booking Duration (minutes)</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">{tStatic('common:auto.frontend.ka63587030d01')}</label>
                   <input
                     type="number"
                     value={formData.minBookingDuration}
@@ -310,7 +308,7 @@ const ResourceTypeManagement: React.FC<ResourceTypeManagementProps> = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Buffer Time (minutes)</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">{tStatic('common:auto.frontend.k64ff0da1954c')}</label>
                   <input
                     type="number"
                     value={formData.bufferTime}
@@ -327,7 +325,7 @@ const ResourceTypeManagement: React.FC<ResourceTypeManagementProps> = () => {
                     onChange={(e) => setFormData({ ...formData, waitlistEnabled: e.target.checked })}
                     className="w-4 h-4 text-purple-600 bg-gray-100 border-gray-300 rounded focus:ring-purple-500"
                   />
-                  <span className="text-sm font-medium text-gray-700">Enable Waitlist</span>
+                  <span className="text-sm font-medium text-gray-700">{tStatic('common:auto.frontend.kd10de836d525')}</span>
                 </label>
                 <label className="flex items-center space-x-2">
                   <input
@@ -336,7 +334,7 @@ const ResourceTypeManagement: React.FC<ResourceTypeManagementProps> = () => {
                     onChange={(e) => setFormData({ ...formData, recurringEnabled: e.target.checked })}
                     className="w-4 h-4 text-purple-600 bg-gray-100 border-gray-300 rounded focus:ring-purple-500"
                   />
-                  <span className="text-sm font-medium text-gray-700">Enable Recurring Bookings</span>
+                  <span className="text-sm font-medium text-gray-700">{tStatic('common:auto.frontend.kfe4ade15771f')}</span>
                 </label>
               </div>
               <div className="flex space-x-4 pt-4">
@@ -351,8 +349,7 @@ const ResourceTypeManagement: React.FC<ResourceTypeManagementProps> = () => {
                   onClick={() => setShowModal(false)}
                   className="flex-1 bg-gray-500 text-white py-3 rounded-xl hover:bg-gray-600 transition-all"
                 >
-                  Cancel
-                </button>
+                  {tStatic('common:auto.frontend.k77dfd2135f4d')}</button>
               </div>
             </div>
           </div>

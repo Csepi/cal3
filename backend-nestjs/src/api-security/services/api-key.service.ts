@@ -13,6 +13,8 @@ import type { ApiKeyAuthContext } from '../types';
 import { CreateApiKeyDto } from '../dto/api-key.dto';
 import { AuditTrailService } from '../../logging/audit-trail.service';
 
+import { bStatic } from '../../i18n/runtime';
+
 interface ParsedApiKey {
   prefix: string;
   secret: string;
@@ -43,7 +45,7 @@ export class ApiKeyService {
   async createForUser(userId: number, dto: CreateApiKeyDto) {
     const user = await this.userRepository.findOne({ where: { id: userId } });
     if (!user || !user.isActive) {
-      throw new UnauthorizedException('User not found or inactive.');
+      throw new UnauthorizedException(bStatic('errors.auto.backend.kd2c36ed08a6d'));
     }
 
     const generated = this.generatePlaintextKey();
@@ -89,7 +91,7 @@ export class ApiKeyService {
       where: { id: keyId, userId },
     });
     if (!key) {
-      throw new NotFoundException('API key not found.');
+      throw new NotFoundException(bStatic('errors.auto.backend.kd97fc69fecc9'));
     }
     key.isActive = false;
     key.revokedAt = new Date();
@@ -101,7 +103,7 @@ export class ApiKeyService {
       where: { id: keyId, userId },
     });
     if (!existing) {
-      throw new NotFoundException('API key not found.');
+      throw new NotFoundException(bStatic('errors.auto.backend.kd97fc69fecc9'));
     }
 
     existing.isActive = false;
@@ -125,14 +127,14 @@ export class ApiKeyService {
   ): Promise<ApiKeyAuthResult> {
     const parsed = this.parseRawKey(rawKey);
     if (!parsed) {
-      throw new UnauthorizedException('Invalid API key format.');
+      throw new UnauthorizedException(bStatic('errors.auto.backend.kcfbd08e1cd20'));
     }
 
     const key = await this.apiKeyRepository.findOne({
       where: { prefix: parsed.prefix, isActive: true },
     });
     if (!key) {
-      throw new UnauthorizedException('Invalid API key.');
+      throw new UnauthorizedException(bStatic('errors.auto.backend.kba8fb1ed6754'));
     }
 
     const expected = Buffer.from(key.keyHash, 'utf8');
@@ -141,15 +143,15 @@ export class ApiKeyService {
       expected.length === provided.length &&
       timingSafeEqual(expected, provided);
     if (!hashMatches) {
-      throw new UnauthorizedException('Invalid API key.');
+      throw new UnauthorizedException(bStatic('errors.auto.backend.kba8fb1ed6754'));
     }
 
     const now = Date.now();
     if (key.revokedAt) {
-      throw new UnauthorizedException('API key has been revoked.');
+      throw new UnauthorizedException(bStatic('errors.auto.backend.k6de08e0e2c3b'));
     }
     if (key.expiresAt && key.expiresAt.getTime() <= now) {
-      throw new UnauthorizedException('API key has expired.');
+      throw new UnauthorizedException(bStatic('errors.auto.backend.k26f09996ebc0'));
     }
 
     const requiredScope = this.inferRequiredScope(method, path);
@@ -162,14 +164,14 @@ export class ApiKeyService {
     const rotationRequired =
       Boolean(key.rotateAfter) && key.rotateAfter!.getTime() <= now;
     if (rotationRequired && this.strictRotation) {
-      throw new UnauthorizedException('API key rotation required.');
+      throw new UnauthorizedException(bStatic('errors.auto.backend.k7b5c093c92f2'));
     }
 
     const user = await this.userRepository.findOne({
       where: { id: key.userId, isActive: true },
     });
     if (!user) {
-      throw new UnauthorizedException('User for API key is unavailable.');
+      throw new UnauthorizedException(bStatic('errors.auto.backend.kcbf50014cb11'));
     }
 
     await Promise.all([

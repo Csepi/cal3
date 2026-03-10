@@ -7,6 +7,8 @@ import {
 } from '@nestjs/common';
 import { SecurityStoreService } from './security-store.service';
 
+import { bStatic } from '../../i18n/runtime';
+
 interface LoginFailureState {
   requiresCaptcha: boolean;
   accountLocked: boolean;
@@ -67,7 +69,7 @@ export class AbusePreventionService {
 
     const blocked = await this.store.getString(this.ipBlockKey(normalizedIp));
     if (blocked) {
-      throw new ForbiddenException('IP temporarily blocked due to abuse risk.');
+      throw new ForbiddenException(bStatic('errors.auto.backend.k56d6bb46c378'));
     }
   }
 
@@ -240,7 +242,7 @@ export class AbusePreventionService {
     const locked = await this.isAccountLocked(identifier);
     if (locked) {
       throw new HttpException(
-        'Account temporarily locked after repeated failed login attempts.',
+        bStatic('errors.auto.backend.k2cf906554c2d'),
         HttpStatus.TOO_MANY_REQUESTS,
       );
     }

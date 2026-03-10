@@ -23,6 +23,8 @@ import { NotificationsService } from '../notifications/notifications.service';
 
 import { logError } from '../common/errors/error-logger';
 import { buildErrorContext } from '../common/errors/error-context';
+import { bStatic } from '../i18n/runtime';
+
 @Injectable()
 export class OrganisationsService {
   private readonly logger = new Logger(OrganisationsService.name);
@@ -204,7 +206,7 @@ export class OrganisationsService {
     // Check user has Store or Enterprise plan
     if (!user.usagePlans || !Array.isArray(user.usagePlans)) {
       throw new BadRequestException(
-        'User does not have required usage plans for organization access',
+        bStatic('errors.auto.backend.kc45aaa30617f'),
       );
     }
 
@@ -214,7 +216,7 @@ export class OrganisationsService {
 
     if (!hasRequiredPlan) {
       throw new BadRequestException(
-        'User must have Store or Enterprise plan to be assigned to an organization',
+        bStatic('errors.auto.backend.k77c3c8d967b0'),
       );
     }
 

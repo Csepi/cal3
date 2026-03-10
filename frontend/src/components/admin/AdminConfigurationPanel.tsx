@@ -9,6 +9,8 @@ import {
   formatAdminError,
 } from './adminApiService';
 
+import { tStatic } from '../../i18n';
+
 interface AdminConfigurationPanelProps {
   themeColor?: string;
   isActive?: boolean;
@@ -153,8 +155,7 @@ const AdminConfigurationPanel: React.FC<AdminConfigurationPanelProps> = ({
             }
             className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-300"
           >
-            Save
-          </button>
+            {tStatic('common:auto.frontend.kefc007a393f6')}</button>
           <button
             type="button"
             onClick={() => {
@@ -166,16 +167,14 @@ const AdminConfigurationPanel: React.FC<AdminConfigurationPanelProps> = ({
             disabled={disabled || updatingKey === setting.key || !isDirty}
             className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 disabled:cursor-not-allowed disabled:text-gray-400"
           >
-            Revert
-          </button>
+            {tStatic('common:auto.frontend.k272607a7bd01')}</button>
           <button
             type="button"
             onClick={() => handleSettingUpdate(setting, null)}
             disabled={disabled || updatingKey === setting.key}
             className="rounded-lg border border-red-200 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 disabled:cursor-not-allowed disabled:text-red-300"
           >
-            Restore default
-          </button>
+            {tStatic('common:auto.frontend.kcd98ea26318e')}</button>
         </div>
       </div>
     );
@@ -274,8 +273,7 @@ const AdminConfigurationPanel: React.FC<AdminConfigurationPanelProps> = ({
             }
             className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-300"
           >
-            Save secret
-          </button>
+            {tStatic('common:auto.frontend.k3216fb844520')}</button>
           <button
             type="button"
             onClick={() => {
@@ -288,8 +286,7 @@ const AdminConfigurationPanel: React.FC<AdminConfigurationPanelProps> = ({
             disabled={disabled || updatingKey === setting.key}
             className="rounded-lg border border-red-200 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 disabled:cursor-not-allowed disabled:text-red-300"
           >
-            Clear secret
-          </button>
+            {tStatic('common:auto.frontend.ke67d7364d446')}</button>
         </div>
       </div>
     );
@@ -327,18 +324,15 @@ const AdminConfigurationPanel: React.FC<AdminConfigurationPanelProps> = ({
           <div className="flex items-center gap-2">
             {setting.isSensitive && (
               <span className="rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-medium text-amber-700">
-                Sensitive
-              </span>
+                {tStatic('common:auto.frontend.k561a19cf75e4')}</span>
             )}
             {requiresRestart && (
               <span className="rounded-full border border-purple-200 bg-purple-50 px-3 py-1 text-xs font-medium text-purple-700">
-                Restart required
-              </span>
+                {tStatic('common:auto.frontend.k73aaeac855ba')}</span>
             )}
             {setting.isReadOnly && (
               <span className="rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-xs font-medium text-gray-600">
-                Read only
-              </span>
+                {tStatic('common:auto.frontend.k601dcc1c87c3')}</span>
             )}
           </div>
         </div>
@@ -349,7 +343,7 @@ const AdminConfigurationPanel: React.FC<AdminConfigurationPanelProps> = ({
           <span className="font-mono text-gray-600">{setting.key}</span>
           <span>•</span>
           <span>
-            Status:{' '}
+            {tStatic('common:auto.frontend.k11dc9e195292')}{' '}
             {setting.hasValue
               ? 'Configured'
               : setting.isEditable
@@ -359,14 +353,14 @@ const AdminConfigurationPanel: React.FC<AdminConfigurationPanelProps> = ({
           {isUpdating && (
             <>
               <span>•</span>
-              <span className="text-blue-600">Saving…</span>
+              <span className="text-blue-600">{tStatic('common:auto.frontend.k56a2285c5b11')}</span>
             </>
           )}
           {setting.updatedAt && (
             <>
               <span>•</span>
               <span>
-                Updated{' '}
+                {tStatic('common:auto.frontend.kf2f8570ddd7b')}{' '}
                 {new Date(setting.updatedAt).toLocaleString(undefined, {
                   dateStyle: 'medium',
                   timeStyle: 'short',
@@ -384,7 +378,7 @@ const AdminConfigurationPanel: React.FC<AdminConfigurationPanelProps> = ({
       <div className="flex h-64 items-center justify-center">
         <div className="text-center">
           <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-b-2 border-blue-500" />
-          <p className="text-gray-600">Loading configuration…</p>
+          <p className="text-gray-600">{tStatic('common:auto.frontend.kb0f1327702a3')}</p>
         </div>
       </div>
     );
@@ -393,7 +387,7 @@ const AdminConfigurationPanel: React.FC<AdminConfigurationPanelProps> = ({
   if (error) {
     return (
       <div className="rounded-3xl border border-red-200 bg-red-50 p-6 text-red-700">
-        <h2 className="text-lg font-semibold">Failed to load configuration</h2>
+        <h2 className="text-lg font-semibold">{tStatic('common:auto.frontend.k09a07e7630f3')}</h2>
         <p className="mt-2">{error}</p>
       </div>
     );
@@ -411,19 +405,16 @@ const AdminConfigurationPanel: React.FC<AdminConfigurationPanelProps> = ({
       >
         <div className="rounded-2xl bg-white/90 p-6 shadow-inner">
           <h1 className="text-2xl font-semibold text-gray-900">
-            Runtime Configuration
-          </h1>
+            {tStatic('common:auto.frontend.k222cad2bd37e')}</h1>
           <p className="mt-2 text-sm text-gray-600">
-            Manage non-destructive environment settings, OAuth credentials, and
-            feature flags without redeploying infrastructure.
-          </p>
+            {tStatic('common:auto.frontend.k0ed0836d86d7')}</p>
           <div className="mt-4 grid gap-4 text-sm text-gray-700 sm:grid-cols-2">
             <div>
-              <span className="font-medium text-gray-900">Backend base URL:</span>{' '}
+              <span className="font-medium text-gray-900">{tStatic('common:auto.frontend.ke8fe1675b47f')}</span>{' '}
               <span className="font-mono">{overview.derived.backendBaseUrl}</span>
             </div>
             <div>
-              <span className="font-medium text-gray-900">Frontend base URL:</span>{' '}
+              <span className="font-medium text-gray-900">{tStatic('common:auto.frontend.keed9938aa1bf')}</span>{' '}
               <span className="font-mono">{overview.derived.frontendBaseUrl}</span>
             </div>
           </div>
@@ -460,13 +451,9 @@ const AdminConfigurationPanel: React.FC<AdminConfigurationPanelProps> = ({
       <section className="rounded-3xl border border-indigo-200 bg-indigo-50/60 p-6 shadow-inner">
         <div className="border-b border-indigo-200 pb-4">
           <h2 className="text-xl font-semibold text-indigo-900">
-            OAuth Callback URLs
-          </h2>
+            {tStatic('common:auto.frontend.k7e9ea68864fe')}</h2>
           <p className="mt-1 text-sm text-indigo-700">
-            These values are derived automatically from the backend runtime
-            configuration and are read-only. Use them when registering redirect
-            URIs with identity providers.
-          </p>
+            {tStatic('common:auto.frontend.kfcd930c3b4b4')}</p>
         </div>
 
         <div className="mt-6 grid gap-4 md:grid-cols-2">
@@ -476,21 +463,18 @@ const AdminConfigurationPanel: React.FC<AdminConfigurationPanelProps> = ({
               className="rounded-2xl border border-indigo-200 bg-white/80 p-4 shadow-sm"
             >
               <h3 className="text-lg font-semibold capitalize text-indigo-900">
-                {callback.provider} provider
-              </h3>
+                {callback.provider} {tStatic('common:auto.frontend.k90c5d1358d12')}</h3>
               <div className="mt-3 space-y-3 text-sm text-indigo-900">
                 <div>
                   <p className="font-medium text-indigo-800">
-                    Auth callback URL
-                  </p>
+                    {tStatic('common:auto.frontend.k465e0290fa57')}</p>
                   <code className="mt-1 block break-all rounded-md bg-indigo-100 px-2 py-1 text-xs font-mono">
                     {callback.authCallback}
                   </code>
                 </div>
                 <div>
                   <p className="font-medium text-indigo-800">
-                    Calendar sync callback URL
-                  </p>
+                    {tStatic('common:auto.frontend.k5844a708e900')}</p>
                   <code className="mt-1 block break-all rounded-md bg-indigo-100 px-2 py-1 text-xs font-mono">
                     {callback.calendarSyncCallback}
                   </code>

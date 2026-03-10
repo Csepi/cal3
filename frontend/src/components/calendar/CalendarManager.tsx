@@ -14,6 +14,8 @@ import type { Calendar as CalendarType, CreateCalendarRequest, UpdateCalendarReq
 import type { CalendarGroupWithCalendars } from '../../types/CalendarGroup';
 import { calendarApi } from '../../services/calendarApi';
 
+import { tStatic } from '../../i18n';
+
 export interface CalendarManagerProps {
   /** Whether the calendar modal is open */
   isOpen: boolean;
@@ -204,7 +206,7 @@ export const CalendarManager: React.FC<CalendarManagerProps> = ({
       : Object.values(calendarForm).some(value => value !== '' && value !== themeColor);
 
     if (hasChanges) {
-      const confirmClose = window.confirm('You have unsaved changes. Are you sure you want to close?');
+      const confirmClose = window.confirm(tStatic('common:auto.frontend.k4761b5e2b6d1'));
       if (!confirmClose) return;
     }
 
@@ -233,30 +235,30 @@ export const CalendarManager: React.FC<CalendarManagerProps> = ({
 
         {/* Basic Information */}
         <Card
-          header={<h3 className="text-lg font-semibold text-gray-800">📅 Calendar Information</h3>}
+          header={<h3 className="text-lg font-semibold text-gray-800">{tStatic('common:auto.frontend.k266aabe1affe')}</h3>}
           padding="lg"
           themeColor={themeColor}
         >
           <div className="space-y-4">
             {/* Calendar Name */}
             <Input
-              label="Calendar Name"
+              label={tStatic('common:auto.frontend.k3bd4d6a60e8b')}
               value={calendarForm.name || ''}
               onChange={(e) => handleFormChange('name', e.target.value)}
               error={formErrors.name}
               required
               themeColor={themeColor}
-              placeholder="Enter calendar name..."
+              placeholder={tStatic('common:auto.frontend.kc93a555c2965')}
               maxLength={100}
             />
 
             {/* Description */}
             <Input
-              label="Description"
+              label={tStatic('common:auto.frontend.k55f8ebc805e6')}
               value={calendarForm.description || ''}
               onChange={(e) => handleFormChange('description', e.target.value)}
               themeColor={themeColor}
-              placeholder="Enter calendar description..."
+              placeholder={tStatic('common:auto.frontend.k5380bf5180c9')}
               multiline
               rows={3}
               maxLength={500}
@@ -265,13 +267,12 @@ export const CalendarManager: React.FC<CalendarManagerProps> = ({
             {/* Icon Picker */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Calendar Icon (Optional)
-              </label>
+                {tStatic('common:auto.frontend.k43d899337131')}</label>
               <IconPicker
                 value={calendarForm.icon}
                 onChange={(icon) => handleFormChange('icon', icon || '')}
                 category="all"
-                placeholder="Select a calendar icon..."
+                placeholder={tStatic('common:auto.frontend.ke6e545f79f05')}
               />
             </div>
           </div>
@@ -279,14 +280,13 @@ export const CalendarManager: React.FC<CalendarManagerProps> = ({
 
         {/* Color Selection */}
         <Card
-          header={<h3 className="text-lg font-semibold text-gray-800">🎨 Calendar Color</h3>}
+          header={<h3 className="text-lg font-semibold text-gray-800">{tStatic('common:auto.frontend.k7396350407d3')}</h3>}
           padding="lg"
           themeColor={themeColor}
         >
           <div className="space-y-4">
             <p className="text-sm text-gray-600">
-              Choose a color to help identify this calendar visually
-            </p>
+              {tStatic('common:auto.frontend.kc61e90b32ae4')}</p>
 
             {/* Color Grid */}
             <div className="grid grid-cols-4 gap-3">
@@ -330,7 +330,7 @@ export const CalendarManager: React.FC<CalendarManagerProps> = ({
             {/* Custom Color Input */}
             <div className="pt-4 border-t border-gray-200">
               <Input
-                label="Custom Color"
+                label={tStatic('common:auto.frontend.k04644b6690e8')}
                 type="color"
                 value={calendarForm.color || themeColor}
                 onChange={(e) => handleFormChange('color', e.target.value)}
@@ -347,10 +347,9 @@ export const CalendarManager: React.FC<CalendarManagerProps> = ({
                   style={{ backgroundColor: calendarForm.color || themeColor }}
                 />
                 <div>
-                  <p className="text-sm font-medium text-gray-800">Preview</p>
+                  <p className="text-sm font-medium text-gray-800">{tStatic('common:auto.frontend.kf1fbb2b43dca')}</p>
                   <p className="text-xs text-gray-500">
-                    This color will be used for events in this calendar
-                  </p>
+                    {tStatic('common:auto.frontend.k159eb49d10a6')}</p>
                 </div>
               </div>
             </div>
@@ -360,12 +359,12 @@ export const CalendarManager: React.FC<CalendarManagerProps> = ({
         {/* Calendar Group */}
         <Card className="border border-gray-200 shadow-sm">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-lg font-semibold text-gray-800">🗂 Calendar Group</h3>
+            <h3 className="text-lg font-semibold text-gray-800">{tStatic('common:auto.frontend.k94ed8ea7a5b8')}</h3>
             <Button
               variant="ghost"
               size="sm"
               onClick={async () => {
-                const name = window.prompt('New group name?');
+                const name = window.prompt(tStatic('common:auto.frontend.k75371e4709e8'));
                 if (!name || name.trim().length < 2) return;
                 const created = await calendarApi.createCalendarGroup({ name: name.trim(), isVisible: true });
                 const groups = await calendarApi.getCalendarGroups().catch(() => []);
@@ -373,11 +372,10 @@ export const CalendarManager: React.FC<CalendarManagerProps> = ({
                 setCalendarForm((prev) => ({ ...prev, groupId: created.id }));
               }}
             >
-              + New Group
-            </Button>
+              {tStatic('common:auto.frontend.k96c60816f798')}</Button>
           </div>
           <div className="space-y-2">
-            <label className="block text-sm text-gray-700">Assign to group (optional)</label>
+            <label className="block text-sm text-gray-700">{tStatic('common:auto.frontend.k58114711fad3')}</label>
             <select
               value={calendarForm.groupId ?? ''}
               onChange={(e) =>
@@ -388,7 +386,7 @@ export const CalendarManager: React.FC<CalendarManagerProps> = ({
               }
               className="w-full rounded-lg border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500"
             >
-              <option value="">No group</option>
+              <option value="">{tStatic('common:auto.frontend.kf6b2246c64fa')}</option>
               {calendarGroups.map((group) => (
                 <option key={group.id} value={group.id}>
                   {group.name}
@@ -408,8 +406,7 @@ export const CalendarManager: React.FC<CalendarManagerProps> = ({
               disabled={loading}
               className="text-red-600 border-red-600 hover:bg-red-50"
             >
-              Delete Calendar
-            </Button>
+              {tStatic('common:auto.frontend.k63ba33f6ca07')}</Button>
           )}
 
           {/* Main Actions */}
@@ -420,8 +417,7 @@ export const CalendarManager: React.FC<CalendarManagerProps> = ({
               disabled={loading}
               themeColor={themeColor}
             >
-              Cancel
-            </Button>
+              {tStatic('common:auto.frontend.k77dfd2135f4d')}</Button>
             <Button
               variant="primary"
               onClick={handleSubmit}
@@ -441,10 +437,10 @@ export const CalendarManager: React.FC<CalendarManagerProps> = ({
           <div className="pt-4 border-t border-gray-200 text-sm text-gray-500">
             <div className="flex items-center justify-between">
               <div>
-                <span>Created: {new Date(editingCalendar.createdAt).toLocaleDateString()}</span>
+                <span>{tStatic('common:auto.frontend.k0c78dab162bd')}{new Date(editingCalendar.createdAt).toLocaleDateString()}</span>
               </div>
               <div>
-                <span>ID: {editingCalendar.id}</span>
+                <span>{tStatic('common:auto.frontend.kd789a1e992ad')}{editingCalendar.id}</span>
               </div>
             </div>
           </div>

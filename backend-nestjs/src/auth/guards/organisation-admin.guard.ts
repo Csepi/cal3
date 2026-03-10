@@ -10,6 +10,8 @@ import type { Request } from 'express';
 import { OrganisationAdmin } from '../../entities/organisation-admin.entity';
 import { User, UserRole } from '../../entities/user.entity';
 
+import { bStatic } from '../../i18n/runtime';
+
 /**
  * Organisation Admin Guard
  *
@@ -39,7 +41,7 @@ export class OrganisationAdminGuard implements CanActivate {
     const user: User = request.user;
 
     if (!user) {
-      throw new ForbiddenException('User not authenticated');
+      throw new ForbiddenException(bStatic('errors.auto.backend.kdc8648114cf5'));
     }
 
     // Global admins have access to all organisations
@@ -50,7 +52,7 @@ export class OrganisationAdminGuard implements CanActivate {
     // Get organisation ID from request parameters
     const organisationId = this.getOrganisationIdFromRequest(request);
     if (!organisationId) {
-      throw new ForbiddenException('Organisation ID not found in request');
+      throw new ForbiddenException(bStatic('errors.auto.backend.kbfed79ce2b3d'));
     }
 
     // Check if user is an organisation admin for this specific organisation
@@ -63,7 +65,7 @@ export class OrganisationAdminGuard implements CanActivate {
 
     if (!orgAdmin) {
       throw new ForbiddenException(
-        'Insufficient permissions for this organisation',
+        bStatic('errors.auto.backend.k55a553adc5c5'),
       );
     }
 

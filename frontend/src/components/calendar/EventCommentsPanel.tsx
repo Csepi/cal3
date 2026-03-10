@@ -14,6 +14,8 @@ import type {
 } from '../../types/EventComment';
 import { Button, Card, Input } from '../ui';
 
+import { tStatic } from '../../i18n';
+
 interface EventCommentsPanelProps {
   eventId?: number | null;
   eventTitle?: string;
@@ -236,7 +238,7 @@ export const EventCommentsPanel: React.FC<EventCommentsPanelProps> = ({
     const template = replyTemplates[parentId] || 'quick_note';
 
     if (!commentsMeta.canReply) {
-      setError('Replies are only available on shared or public events');
+      setError(tStatic('common:auto.frontend.kfca41fd86e37'));
       return;
     }
 
@@ -309,8 +311,7 @@ export const EventCommentsPanel: React.FC<EventCommentsPanelProps> = ({
               }));
             }}
           >
-            Reply
-          </button>
+            {tStatic('common:auto.frontend.k6c2bb735a46a')}</button>
         )}
         {isOwner && !comment.isSystem && (
           <button
@@ -320,8 +321,7 @@ export const EventCommentsPanel: React.FC<EventCommentsPanelProps> = ({
               setEditDraft(comment.content);
             }}
           >
-            Edit
-          </button>
+            {tStatic('common:auto.frontend.k5301648dcf6b')}</button>
         )}
         {!comment.isSystem && (
           <button
@@ -367,13 +367,11 @@ export const EventCommentsPanel: React.FC<EventCommentsPanelProps> = ({
                 )}
                 {comment.isSystem && (
                   <span className="text-xs px-2 py-1 bg-gray-200 text-gray-700 rounded-full">
-                    System
-                  </span>
+                    {tStatic('common:auto.frontend.kbc0792d8dc81')}</span>
                 )}
                 {comment.isFlagged && (
                   <span className="text-xs px-2 py-1 bg-red-100 text-red-700 rounded-full">
-                    Flagged
-                  </span>
+                    {tStatic('common:auto.frontend.kf8db8a172be6')}</span>
                 )}
               </div>
               <div className="mt-2 text-sm text-gray-800 whitespace-pre-wrap">
@@ -393,8 +391,7 @@ export const EventCommentsPanel: React.FC<EventCommentsPanelProps> = ({
                         onClick={handleEdit}
                         themeColor={themeColor}
                       >
-                        Save
-                      </Button>
+                        {tStatic('common:auto.frontend.kefc007a393f6')}</Button>
                       <Button
                         size="sm"
                         variant="ghost"
@@ -403,8 +400,7 @@ export const EventCommentsPanel: React.FC<EventCommentsPanelProps> = ({
                           setEditDraft('');
                         }}
                       >
-                        Cancel
-                      </Button>
+                        {tStatic('common:auto.frontend.k77dfd2135f4d')}</Button>
                     </div>
                   </div>
                 ) : (
@@ -461,8 +457,7 @@ export const EventCommentsPanel: React.FC<EventCommentsPanelProps> = ({
                     disabled={!commentsMeta.canReply}
                     themeColor={themeColor}
                   >
-                    Send Reply
-                  </Button>
+                    {tStatic('common:auto.frontend.k18a16e17bb17')}</Button>
                   <Button
                     size="sm"
                     variant="ghost"
@@ -484,8 +479,7 @@ export const EventCommentsPanel: React.FC<EventCommentsPanelProps> = ({
                       });
                     }}
                   >
-                    Clear
-                  </Button>
+                    {tStatic('common:auto.frontend.k719ea396ad92')}</Button>
                 </div>
               </div>
             </div>
@@ -505,12 +499,11 @@ export const EventCommentsPanel: React.FC<EventCommentsPanelProps> = ({
     return (
       <Card
         themeColor={themeColor}
-        header={<div className="text-lg font-semibold">Comments & Logs</div>}
+        header={<div className="text-lg font-semibold">{tStatic('common:auto.frontend.k77cbaf126ad3')}</div>}
         padding="lg"
       >
         <p className="text-sm text-gray-600">
-          Save the event first to start logging comments or quick reality logs.
-        </p>
+          {tStatic('common:auto.frontend.k2cb2bf173edd')}</p>
       </Card>
     );
   }
@@ -522,14 +515,13 @@ export const EventCommentsPanel: React.FC<EventCommentsPanelProps> = ({
         <div className="flex items-start justify-between gap-3">
           <div>
             <div className="text-lg font-semibold text-gray-900">
-              Comments & reality logs
-            </div>
+              {tStatic('common:auto.frontend.k610d107fe414')}</div>
             <div className="text-sm text-gray-600">
-              Inherits event visibility ({visibilityLabel})
+              {tStatic('common:auto.frontend.k0e7280c3a006')}{visibilityLabel})
             </div>
             {eventTitle && (
               <div className="text-xs text-gray-500 mt-0.5">
-                Logging against "{eventTitle}"
+                {tStatic('common:auto.frontend.k1de8193ceaf7')}{eventTitle}"
               </div>
             )}
           </div>
@@ -541,7 +533,7 @@ export const EventCommentsPanel: React.FC<EventCommentsPanelProps> = ({
                   : 'bg-gray-100 text-gray-600'
               }`}
             >
-              Replies {commentsMeta.canReply ? 'enabled' : 'locked to sharing'}
+              {tStatic('common:auto.frontend.kc8a103c73005')}{commentsMeta.canReply ? 'enabled' : 'locked to sharing'}
             </span>
           </div>
         </div>
@@ -568,17 +560,17 @@ export const EventCommentsPanel: React.FC<EventCommentsPanelProps> = ({
 
         <div className="space-y-3">
           <Input
-            label="Add a new comment"
+            label={tStatic('common:auto.frontend.k5799a2fa1bcf')}
             multiline
             rows={3}
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
             themeColor={themeColor}
-            placeholder="Add context after the selected template..."
+            placeholder={tStatic('common:auto.frontend.kcdcad0dd38ce')}
           />
           <div className="flex items-center justify-between flex-wrap gap-3">
             <div className="text-xs text-gray-600">
-              Template prefix: {templateLabel(selectedTemplate)}
+              {tStatic('common:auto.frontend.k7166cb5ef807')}{templateLabel(selectedTemplate)}
             </div>
             <div className="flex gap-2">
               <Button
@@ -587,8 +579,7 @@ export const EventCommentsPanel: React.FC<EventCommentsPanelProps> = ({
                 onClick={() => setDraft('')}
                 disabled={saving}
               >
-                Clear
-              </Button>
+                {tStatic('common:auto.frontend.k719ea396ad92')}</Button>
               <Button
                 variant="primary"
                 size="sm"
@@ -596,14 +587,13 @@ export const EventCommentsPanel: React.FC<EventCommentsPanelProps> = ({
                 loading={saving}
                 themeColor={themeColor}
               >
-                Add comment
-              </Button>
+                {tStatic('common:auto.frontend.k7d3764e42e75')}</Button>
             </div>
           </div>
         </div>
 
         {loading && (
-          <div className="text-sm text-gray-600">Loading comments...</div>
+          <div className="text-sm text-gray-600">{tStatic('common:auto.frontend.k4b98e940d2f9')}</div>
         )}
 
         {error && (
@@ -614,9 +604,7 @@ export const EventCommentsPanel: React.FC<EventCommentsPanelProps> = ({
 
         {!loading && !comments.length && !error && (
           <div className="text-sm text-gray-600 bg-gray-50 border border-dashed border-gray-200 rounded-xl p-4">
-            No comments yet. Use the quick templates above to log activity or
-            reality checks.
-          </div>
+            {tStatic('common:auto.frontend.k0b5659f90228')}</div>
         )}
 
         {comments.map((comment) => renderComment(comment))}

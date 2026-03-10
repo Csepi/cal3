@@ -11,6 +11,8 @@ import {
   CsrfService,
 } from '../security/csrf.service';
 
+import { bStatic } from '../../i18n/runtime';
+
 const MUTATING_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
 const CSRF_EXCLUDED_PATH_PREFIXES = [
   '/api/automation/webhook',
@@ -53,7 +55,7 @@ export class CsrfProtectionMiddleware implements NestMiddleware {
       this.logger.warn(
         `Rejected CSRF validation for ${req.method} ${req.originalUrl ?? req.url}`,
       );
-      next(new ForbiddenException('Invalid CSRF token'));
+      next(new ForbiddenException(bStatic('errors.auto.backend.keecddcf2e464')));
       return;
     }
 

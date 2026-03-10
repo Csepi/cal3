@@ -7,6 +7,8 @@ import { AutomationAction } from '../../entities/automation-action.entity';
 import { AutomationRule } from '../../entities/automation-rule.entity';
 import { ThrottlerException } from '@nestjs/throttler';
 
+import { bStatic } from '../../i18n/runtime';
+
 export type AutomationExecutionSource = 'manual' | 'webhook' | 'agent';
 
 @Injectable()
@@ -47,7 +49,7 @@ export class AutomationSecurityService {
   assertKillSwitchDisabled(): void {
     if (process.env.AUTOMATION_KILL_SWITCH === 'true') {
       throw new ForbiddenException(
-        'Automation execution is currently disabled by emergency kill switch.',
+        bStatic('errors.auto.backend.k96e5338b2d83'),
       );
     }
   }
@@ -98,7 +100,7 @@ export class AutomationSecurityService {
       return;
     }
     throw new ForbiddenException(
-      'This automation requires approval before execution.',
+      bStatic('errors.auto.backend.kbd3b20ebf94f'),
     );
   }
 

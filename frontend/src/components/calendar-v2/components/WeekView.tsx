@@ -15,6 +15,8 @@ import {
   type CalendarDate
 } from '../../../utils/calendar';
 
+import { tStatic } from '../../../i18n';
+
 export const WeekView = memo<CalendarWeekProps>(({
   week,
   events,
@@ -185,15 +187,14 @@ export const WeekView = memo<CalendarWeekProps>(({
       style={style}
       data-testid={testId}
       role="grid"
-      aria-label="Weekly calendar view"
+      aria-label={tStatic('common:auto.frontend.k578aad03c7e3')}
     >
       {/* All-day events section */}
       <div className="border-b border-gray-200">
         {/* Header row */}
         <div className="grid grid-cols-8 border-b border-gray-200">
           <div className="p-2 text-xs font-medium text-gray-500 bg-gray-50">
-            All Day
-          </div>
+            {tStatic('common:auto.frontend.k9cd859950bbb')}</div>
           {weekData.days.map((day, index) => (
             <div
               key={`header-${day.year}-${day.month}-${day.day}`}

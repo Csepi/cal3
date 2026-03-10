@@ -6,6 +6,8 @@ import { getAutomationRules } from '../../services/automationService';
 import type { AutomationRuleDto } from '../../types/Automation';
 import { clientLogger } from '../../utils/clientLogger';
 
+import { tStatic } from '../../i18n';
+
 interface CalendarSyncProps {
   themeColor: string;
 }
@@ -478,7 +480,7 @@ const CalendarSync: React.FC<CalendarSyncProps> = ({ themeColor }) => {
 
       // Show success message
       setTimeout(() => {
-        alert('Calendar connected successfully! Your events are now being synced.');
+        alert(tStatic('common:auto.frontend.k62ed9b154b3a'));
       }, 1000);
     } else if (error) {
       // Clear URL parameters to avoid issues with browser extensions
@@ -671,7 +673,7 @@ const CalendarSync: React.FC<CalendarSyncProps> = ({ themeColor }) => {
       const providerData = syncStatus.providers.find(p => p.provider === provider);
 
       if (providerSelectedCalendars.length === 0) {
-        alert('Please select at least one calendar to sync.');
+        alert(tStatic('common:auto.frontend.kf894ec4ef37b'));
         return;
       }
 
@@ -748,7 +750,7 @@ const CalendarSync: React.FC<CalendarSyncProps> = ({ themeColor }) => {
   if (isLoading) {
     return (
       <div className={`min-h-screen bg-gradient-to-br ${getSimpleThemeGradient(themeColor)} flex justify-center items-center`}>
-        <div className="text-xl text-gray-600">Loading calendar sync...</div>
+        <div className="text-xl text-gray-600">{tStatic('common:auto.frontend.k669c2a2662fe')}</div>
       </div>
     );
   }
@@ -776,8 +778,7 @@ const CalendarSync: React.FC<CalendarSyncProps> = ({ themeColor }) => {
         <div className="container mx-auto px-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <h1 className={`text-3xl font-semibold ${themeColors.text.title}`}>
-              🔄 Calendar Sync
-            </h1>
+              {tStatic('common:auto.frontend.k132de3464dfc')}</h1>
           </div>
         </div>
       </header>
@@ -811,21 +812,19 @@ const CalendarSync: React.FC<CalendarSyncProps> = ({ themeColor }) => {
                           onClick={handleForcSync}
                           className={`px-4 py-2 ${themeColors.button} text-white rounded-xl font-medium transition-all duration-300 hover:scale-105 shadow-md`}
                         >
-                          🔄 Force Sync
-                        </button>
+                          {tStatic('common:auto.frontend.kf4ebd3fd97f5')}</button>
                         <button
                           onClick={() => handleDisconnect(provider.provider)}
                           className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-xl font-medium transition-all duration-300 hover:scale-105 shadow-md"
                         >
-                          🔌 Disconnect
-                        </button>
+                          {tStatic('common:auto.frontend.k2dd32fc55477')}</button>
                       </>
                     ) : (
                       <button
                         onClick={() => handleProviderConnect(provider.provider)}
                         className={`px-4 py-2 ${provider.provider === 'google' ? 'bg-blue-500 hover:bg-blue-600' : 'bg-blue-600 hover:bg-blue-700'} text-white rounded-xl font-medium transition-all duration-300 hover:scale-105 shadow-md`}
                       >
-                        Connect {provider.provider === 'google' ? 'Google' : 'Microsoft'}
+                        {tStatic('common:auto.frontend.kb65463cb6a42')}{provider.provider === 'google' ? 'Google' : 'Microsoft'}
                       </button>
                     )}
                   </div>
@@ -838,7 +837,7 @@ const CalendarSync: React.FC<CalendarSyncProps> = ({ themeColor }) => {
                   {/* Available Calendars */}
                   {provider.calendars.length > 0 && (
                     <div>
-                      <h4 className={`text-lg font-semibold ${themeColors.text.title} mb-4`}>Available Calendars</h4>
+                      <h4 className={`text-lg font-semibold ${themeColors.text.title} mb-4`}>{tStatic('common:auto.frontend.k8bb03d5be718')}</h4>
                       <div className="space-y-3">
                         {provider.calendars.map((calendar) => {
                           const providerSelectedCalendars = selectedCalendars[provider.provider] || [];
@@ -856,7 +855,7 @@ const CalendarSync: React.FC<CalendarSyncProps> = ({ themeColor }) => {
                                   <div className="flex items-center space-x-2">
                                     <h5 className="font-medium text-gray-800">{calendar.name}</h5>
                                     {calendar.primary && (
-                                      <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">Primary</span>
+                                      <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">{tStatic('common:auto.frontend.ka9a96ec01949')}</span>
                                     )}
                                   </div>
                                   {calendar.description && (
@@ -866,14 +865,13 @@ const CalendarSync: React.FC<CalendarSyncProps> = ({ themeColor }) => {
                                     <div className="mt-3 space-y-3">
                                       <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                                          Local Calendar Name:
-                                        </label>
+                                          {tStatic('common:auto.frontend.k7d70b7be41f5')}</label>
                                         <input
                                           type="text"
                                           value={providerCustomNames[calendar.id] || calendar.name}
                                           onChange={(e) => handleCustomNameChange(provider.provider, calendar.id, e.target.value)}
                                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                          placeholder="Enter custom name for this calendar"
+                                          placeholder={tStatic('common:auto.frontend.kca630110293d')}
                                         />
                                       </div>
                                       <div className="border-t pt-3">
@@ -894,14 +892,12 @@ const CalendarSync: React.FC<CalendarSyncProps> = ({ themeColor }) => {
                                             className="rounded"
                                           />
                                           <label htmlFor={`automation-${provider.provider}-${calendar.id}`} className="text-sm font-medium text-gray-700">
-                                            🤖 Trigger automation rules on imported events
-                                          </label>
+                                            {tStatic('common:auto.frontend.k51db5a12132d')}</label>
                                         </div>
                                         {(triggerAutomation[provider.provider]?.[calendar.id]) && automationRules.length > 0 && (
                                           <div className="ml-6 mt-2">
                                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                              Select Rules (optional - all enabled if none selected):
-                                            </label>
+                                              {tStatic('common:auto.frontend.k021fba63719d')}</label>
                                             <div className="max-h-40 overflow-y-auto border border-gray-300 rounded-lg p-2 space-y-1">
                                               {automationRules.map(rule => {
                                                 const triggerLabel = rule.triggerType === 'event.created' ? '📝 Created' :
@@ -937,8 +933,7 @@ const CalendarSync: React.FC<CalendarSyncProps> = ({ themeColor }) => {
                                         )}
                                         {(triggerAutomation[provider.provider]?.[calendar.id]) && automationRules.length === 0 && (
                                           <p className="ml-6 mt-2 text-sm text-gray-500 italic">
-                                            No automation rules found. Create rules with event.created, event.updated, or calendar.imported triggers in the Automation panel.
-                                          </p>
+                                            {tStatic('common:auto.frontend.k9ad50b6da202')}</p>
                                         )}
                                       </div>
                                     </div>
@@ -956,7 +951,7 @@ const CalendarSync: React.FC<CalendarSyncProps> = ({ themeColor }) => {
                             onClick={() => handleSyncCalendars(provider.provider)}
                             className={`px-6 py-3 ${themeColors.button} text-white rounded-xl font-medium transition-all duration-300 hover:scale-105 shadow-lg`}
                           >
-                            🔄 Sync Selected Calendars ({selectedCalendars[provider.provider].length})
+                            {tStatic('common:auto.frontend.k9e6e67831b18')}{selectedCalendars[provider.provider].length})
                           </button>
                         </div>
                       )}
@@ -966,7 +961,7 @@ const CalendarSync: React.FC<CalendarSyncProps> = ({ themeColor }) => {
                   {/* Synced Calendars */}
                   {provider.syncedCalendars.length > 0 && (
                     <div>
-                      <h4 className={`text-lg font-semibold ${themeColors.text.title} mb-4`}>Synced Calendars</h4>
+                      <h4 className={`text-lg font-semibold ${themeColors.text.title} mb-4`}>{tStatic('common:auto.frontend.k6e550cfd0ca1')}</h4>
                       <div className="space-y-3">
                         {provider.syncedCalendars.map((syncedCal, index) => (
                           <div key={index} className={`bg-${themeColors.light} border border-${themeColors.border} rounded-xl p-4`}>
@@ -974,16 +969,15 @@ const CalendarSync: React.FC<CalendarSyncProps> = ({ themeColor }) => {
                               <div>
                                 <h5 className="font-medium text-gray-800">{syncedCal.localName}</h5>
                                 <p className="text-gray-600 text-sm">
-                                  Synced from: {syncedCal.externalName}
+                                  {tStatic('common:auto.frontend.ka7c99586604d')}{syncedCal.externalName}
                                 </p>
                                 <p className="text-gray-500 text-xs">
-                                  Last sync: {new Date(syncedCal.lastSync).toLocaleString()}
+                                  {tStatic('common:auto.frontend.ka563a35ce645')}{new Date(syncedCal.lastSync).toLocaleString()}
                                 </p>
                               </div>
                               <div className="flex items-center space-x-2">
                                 <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">
-                                  ✅ Active
-                                </span>
+                                  {tStatic('common:auto.frontend.kac02641b6bd7')}</span>
                               </div>
                             </div>
                           </div>
@@ -995,7 +989,7 @@ const CalendarSync: React.FC<CalendarSyncProps> = ({ themeColor }) => {
                   {/* No data states */}
                   {provider.calendars.length === 0 && provider.syncedCalendars.length === 0 && (
                     <div className="text-center py-8">
-                      <p className="text-gray-600">No calendars available for this provider.</p>
+                      <p className="text-gray-600">{tStatic('common:auto.frontend.k1a137cf7a5da')}</p>
                     </div>
                   )}
                 </div>
@@ -1005,8 +999,7 @@ const CalendarSync: React.FC<CalendarSyncProps> = ({ themeColor }) => {
               {!provider.isConnected && (
                 <div className="p-6 text-center">
                   <p className="text-gray-600 mb-4">
-                    Connect your {provider.provider === 'google' ? 'Google Calendar' : 'Microsoft Outlook'} to sync your events.
-                  </p>
+                    {tStatic('common:auto.frontend.k9cb243731bbf')}{provider.provider === 'google' ? 'Google Calendar' : 'Microsoft Outlook'} {tStatic('common:auto.frontend.k9b931510f0fb')}</p>
                 </div>
               )}
             </div>

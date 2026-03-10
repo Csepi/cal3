@@ -1,0 +1,51 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">PrimeCal</string>
+    <string name="title_activity_main">PrimeCal</string>
+    <string name="package_name">com.primecal.calendar</string>
+    <string name="custom_url_scheme">com.primecal.calendar</string>
+
+    <string name="widget_timeline_description">PrimeCal idõvonal áttekintõ widget</string>
+    <string name="widget_title">Idõvonal</string>
+    <string name="widget_last_updated">Frissítve: %1$s</string>
+    <string name="widget_last_updated_never">Még nem frissült</string>
+    <string name="widget_state_loading">Idõvonal betöltése…</string>
+    <string name="widget_state_empty">Nincs idõvonal bejegyzés</string>
+    <string name="widget_state_error_retry">Az adatok betöltése sikertelen. Érintse meg a frissítést az újrapróbáláshoz.</string>
+    <string name="widget_error_auth">Jelentkezzen be a PrimeCal alkalmazásban az idõvonal adatok betöltéséhez.</string>
+    <string name="widget_error_auth_cached">Gyorsítótárazott bejegyzések megjelenítése. A munkamenet frissítéséhez nyissa meg a PrimeCal alkalmazást.</string>
+    <string name="widget_error_generic">Az idõvonal adatok betöltése sikertelen.</string>
+    <string name="widget_untitled_event">(Névtelen esemény)</string>
+
+    <string name="widget_action_refresh">Idõvonal frissítése</string>
+    <string name="widget_action_previous">Elõzõ tartomány</string>
+    <string name="widget_action_next">Következõ tartomány</string>
+    <string name="widget_action_add">Gyors hozzáadás</string>
+
+    <string name="widget_config_title">Idõvonal widget beállítása</string>
+    <string name="widget_config_subtitle">Válassza ki, mit jelenítsen meg a widget és milyen gyakran frissüljön.</string>
+    <string name="widget_field_date_range">Dátumtartomány</string>
+    <string name="widget_field_entries">Megjelenített elemek</string>
+    <string name="widget_field_color_scheme">Színséma</string>
+    <string name="widget_field_refresh_frequency">Frissítés gyakorisága</string>
+    <string name="widget_field_click_behavior">Elemre kattintás viselkedése</string>
+    <string name="widget_save">Mentés</string>
+    <string name="widget_cancel">Mégse</string>
+    <string name="widget_entries_option">%1$d elem</string>
+
+    <string name="widget_range_today">Ma</string>
+    <string name="widget_range_week">Ez a hét</string>
+    <string name="widget_range_month">Ez a hónap</string>
+
+    <string name="widget_color_system">Rendszer alapértelmezett</string>
+    <string name="widget_color_light">Világos</string>
+    <string name="widget_color_dark">Sötét</string>
+
+    <string name="widget_refresh_15m">15 percenként</string>
+    <string name="widget_refresh_30m">30 percenként</string>
+    <string name="widget_refresh_1h">Óránként</string>
+    <string name="widget_refresh_3h">3 óránként</string>
+
+    <string name="widget_click_event">Esemény részletek megnyitása</string>
+    <string name="widget_click_day">Napi nézet megnyitása</string>
+</resources>

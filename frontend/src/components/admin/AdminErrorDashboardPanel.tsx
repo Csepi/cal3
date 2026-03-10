@@ -6,6 +6,8 @@ import {
 } from './adminApiService';
 import type { AuditEvent, AuditSeverity } from './types';
 
+import { tStatic } from '../../i18n';
+
 interface AdminErrorDashboardPanelProps {
   isActive?: boolean;
 }
@@ -84,30 +86,28 @@ export const AdminErrorDashboardPanel: React.FC<AdminErrorDashboardPanelProps> =
     <section className="bg-white/90 backdrop-blur-md rounded-3xl shadow-xl border border-gray-200">
       <header className="px-6 py-5 border-b border-gray-200 flex items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-semibold text-gray-900">Error Dashboard</h2>
+          <h2 className="text-xl font-semibold text-gray-900">{tStatic('common:auto.frontend.k2204bca9e1e9')}</h2>
           <p className="text-sm text-gray-500">
-            Aggregated API/frontend failures with trend and critical event feed.
-          </p>
+            {tStatic('common:auto.frontend.kcda7f284bf42')}</p>
         </div>
         <div className="flex items-center gap-2">
-          <label className="text-xs text-gray-600">Window</label>
+          <label className="text-xs text-gray-600">{tStatic('common:auto.frontend.k41dfc0a6c927')}</label>
           <select
             className="rounded-lg border border-gray-300 px-2 py-1 text-sm"
             value={hoursWindow}
             onChange={(event) => setHoursWindow(Number(event.target.value))}
           >
-            <option value={1}>1h</option>
-            <option value={6}>6h</option>
-            <option value={24}>24h</option>
-            <option value={72}>72h</option>
+            <option value={1}>{tStatic('common:auto.frontend.ke9c9f7bc39bb')}</option>
+            <option value={6}>{tStatic('common:auto.frontend.k8d61fd6a4ee0')}</option>
+            <option value={24}>{tStatic('common:auto.frontend.k027795961131')}</option>
+            <option value={72}>{tStatic('common:auto.frontend.k3a667340feca')}</option>
           </select>
           <button
             type="button"
             onClick={() => void load()}
             className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50"
           >
-            Refresh
-          </button>
+            {tStatic('common:auto.frontend.k56e3badc4e6c')}</button>
         </div>
       </header>
 
@@ -119,26 +119,26 @@ export const AdminErrorDashboardPanel: React.FC<AdminErrorDashboardPanelProps> =
 
       <div className="px-6 py-5 grid gap-4 md:grid-cols-3">
         <article className="rounded-xl border border-gray-200 p-4 bg-gray-50/70">
-          <p className="text-xs uppercase tracking-wide text-gray-500">Critical</p>
+          <p className="text-xs uppercase tracking-wide text-gray-500">{tStatic('common:auto.frontend.k04b7b26c8ca2')}</p>
           <p className="text-2xl font-semibold text-red-700">
             {summary?.criticalCount ?? 0}
           </p>
         </article>
         <article className="rounded-xl border border-gray-200 p-4 bg-gray-50/70">
-          <p className="text-xs uppercase tracking-wide text-gray-500">Failures</p>
+          <p className="text-xs uppercase tracking-wide text-gray-500">{tStatic('common:auto.frontend.k3eec15825d37')}</p>
           <p className="text-2xl font-semibold text-amber-700">
             {summary?.failureCount ?? 0}
           </p>
         </article>
         <article className="rounded-xl border border-gray-200 p-4 bg-gray-50/70">
-          <p className="text-xs uppercase tracking-wide text-gray-500">Events Loaded</p>
+          <p className="text-xs uppercase tracking-wide text-gray-500">{tStatic('common:auto.frontend.k7c8ab1b444c9')}</p>
           <p className="text-2xl font-semibold text-gray-900">{events.length}</p>
         </article>
       </div>
 
       <div className="px-6 pb-6 grid gap-6 xl:grid-cols-2">
         <article className="rounded-2xl border border-gray-200 p-4">
-          <h3 className="text-sm font-semibold text-gray-800 mb-3">Top Error Codes</h3>
+          <h3 className="text-sm font-semibold text-gray-800 mb-3">{tStatic('common:auto.frontend.k7e377a85510e')}</h3>
           <div className="space-y-2">
             {(summary?.topErrorCodes ?? []).slice(0, 10).map((item) => (
               <div
@@ -150,13 +150,13 @@ export const AdminErrorDashboardPanel: React.FC<AdminErrorDashboardPanelProps> =
               </div>
             ))}
             {(summary?.topErrorCodes?.length ?? 0) === 0 && (
-              <p className="text-sm text-gray-500">No error codes in this time window.</p>
+              <p className="text-sm text-gray-500">{tStatic('common:auto.frontend.k121aab5e3528')}</p>
             )}
           </div>
         </article>
 
         <article className="rounded-2xl border border-gray-200 p-4">
-          <h3 className="text-sm font-semibold text-gray-800 mb-3">Critical Feed</h3>
+          <h3 className="text-sm font-semibold text-gray-800 mb-3">{tStatic('common:auto.frontend.kbcc1a612d1aa')}</h3>
           <div className="space-y-3 max-h-[380px] overflow-auto pr-1">
             {criticalEvents.map((event) => (
               <div key={event.id} className="rounded-xl border border-red-200 bg-red-50/50 p-3">
@@ -167,20 +167,20 @@ export const AdminErrorDashboardPanel: React.FC<AdminErrorDashboardPanelProps> =
                 <p className="mt-1 text-xs text-red-700">{event.errorMessage ?? 'Critical event without message'}</p>
                 {event.requestId && (
                   <p className="mt-1 font-mono text-[11px] text-red-600">
-                    req: {event.requestId}
+                    {tStatic('common:auto.frontend.k501f4b093aea')}{event.requestId}
                   </p>
                 )}
               </div>
             ))}
             {criticalEvents.length === 0 && (
-              <p className="text-sm text-gray-500">No critical events in this window.</p>
+              <p className="text-sm text-gray-500">{tStatic('common:auto.frontend.kb681987fc18b')}</p>
             )}
           </div>
         </article>
       </div>
 
       <div className="px-6 pb-6">
-        <h3 className="text-sm font-semibold text-gray-800 mb-3">Recent Error Events</h3>
+        <h3 className="text-sm font-semibold text-gray-800 mb-3">{tStatic('common:auto.frontend.k2bbce038f70e')}</h3>
         <div className="space-y-2 max-h-[420px] overflow-auto pr-1">
           {events.map((event) => (
             <article
@@ -212,9 +212,9 @@ export const AdminErrorDashboardPanel: React.FC<AdminErrorDashboardPanelProps> =
             </article>
           ))}
           {!loading && events.length === 0 && (
-            <p className="text-sm text-gray-500">No error events available.</p>
+            <p className="text-sm text-gray-500">{tStatic('common:auto.frontend.kac45479776ed')}</p>
           )}
-          {loading && <p className="text-sm text-gray-500">Loading error events...</p>}
+          {loading && <p className="text-sm text-gray-500">{tStatic('common:auto.frontend.k1e6195a7e64b')}</p>}
         </div>
       </div>
     </section>

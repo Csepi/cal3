@@ -1,0 +1,10 @@
+{
+  "subjects": {
+    "eventReminder": "Esem?ny eml?keztet?: {{title}}",
+    "bookingConfirmation": "Foglal?s visszaigazol?sa",
+    "passwordReset": "PrimeCalendar jelsz? vissza?ll?t?sa"
+  },
+  "footer": {
+    "unsubscribe": "Az e-mail-be?ll?t?sokat a fi?kbe?ll?t?sokban kezelheti."
+  }
+}

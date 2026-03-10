@@ -8,6 +8,8 @@ import { Badge } from '../../ui/Badge';
 import type { MemberWithRole } from '../types';
 import { getThemeConfig } from '../../../constants/theme';
 
+import { tStatic } from '../../../i18n';
+
 export interface OrganizationMembersPanelProps {
   members: MemberWithRole[];
   onRemoveMember: (userId: number, isAdmin: boolean) => void;
@@ -55,7 +57,7 @@ export const OrganizationMembersPanel: React.FC<OrganizationMembersPanelProps> =
     return (
       <div className="flex justify-center items-center py-8">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-        <span className="ml-3 text-gray-600">Loading members...</span>
+        <span className="ml-3 text-gray-600">{tStatic('common:auto.frontend.k37aa0f6e7026')}</span>
       </div>
     );
   }
@@ -65,34 +67,33 @@ export const OrganizationMembersPanel: React.FC<OrganizationMembersPanelProps> =
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h3 className="text-lg font-semibold text-gray-900">Organization Members</h3>
-          <p className="text-sm text-gray-600">{members.length} member{members.length !== 1 ? 's' : ''}</p>
+          <h3 className="text-lg font-semibold text-gray-900">{tStatic('common:auto.frontend.kc209b1f49a86')}</h3>
+          <p className="text-sm text-gray-600">{members.length} {tStatic('common:auto.frontend.k6467baa3b187')}{members.length !== 1 ? 's' : ''}</p>
         </div>
         <Button
           onClick={onAddMember}
           className={`${theme.button} text-white`}
         >
-          + Add Member
-        </Button>
+          {tStatic('common:auto.frontend.k4f6ad46de845')}</Button>
       </div>
 
       {/* Members List */}
       {members.length === 0 ? (
         <div className="text-center py-8 bg-gray-50 rounded-lg border border-gray-200">
-          <p className="text-gray-600">No members in this organization</p>
-          <p className="text-sm text-gray-500 mt-1">Add your first member to get started</p>
+          <p className="text-gray-600">{tStatic('common:auto.frontend.ke0ace647303b')}</p>
+          <p className="text-sm text-gray-500 mt-1">{tStatic('common:auto.frontend.k730beb148dd7')}</p>
         </div>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full border-collapse">
             <thead>
               <tr className="bg-gray-50 border-b border-gray-200">
-                <th className="text-left px-4 py-3 text-sm font-semibold text-gray-700">User</th>
-                <th className="text-left px-4 py-3 text-sm font-semibold text-gray-700">Email</th>
-                <th className="text-center px-4 py-3 text-sm font-semibold text-gray-700">Role</th>
-                <th className="text-center px-4 py-3 text-sm font-semibold text-gray-700">Status</th>
-                <th className="text-center px-4 py-3 text-sm font-semibold text-gray-700">Assigned</th>
-                <th className="text-center px-4 py-3 text-sm font-semibold text-gray-700">Actions</th>
+                <th className="text-left px-4 py-3 text-sm font-semibold text-gray-700">{tStatic('common:auto.frontend.k9f8a2389a20c')}</th>
+                <th className="text-left px-4 py-3 text-sm font-semibold text-gray-700">{tStatic('common:auto.frontend.k84add5b29527')}</th>
+                <th className="text-center px-4 py-3 text-sm font-semibold text-gray-700">{tStatic('common:auto.frontend.kc3f104d13657')}</th>
+                <th className="text-center px-4 py-3 text-sm font-semibold text-gray-700">{tStatic('common:auto.frontend.kbae7d5be7082')}</th>
+                <th className="text-center px-4 py-3 text-sm font-semibold text-gray-700">{tStatic('common:auto.frontend.ke24e824b6811')}</th>
+                <th className="text-center px-4 py-3 text-sm font-semibold text-gray-700">{tStatic('common:auto.frontend.kc3cd636a585b')}</th>
               </tr>
             </thead>
             <tbody>
@@ -132,12 +133,10 @@ export const OrganizationMembersPanel: React.FC<OrganizationMembersPanelProps> =
                     <td className="px-4 py-3 text-center">
                       {member.isActive ? (
                         <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                          Active
-                        </span>
+                          {tStatic('common:auto.frontend.ka733b809d2f1')}</span>
                       ) : (
                         <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                          Inactive
-                        </span>
+                          {tStatic('common:auto.frontend.k09af574c7f20')}</span>
                       )}
                     </td>
                     <td className="px-4 py-3 text-center text-sm text-gray-600">
@@ -148,8 +147,7 @@ export const OrganizationMembersPanel: React.FC<OrganizationMembersPanelProps> =
                         onClick={() => onRemoveMember(member.id, member.isOrgAdmin || false)}
                         className="text-xs px-2 py-1 bg-red-500 hover:bg-red-600 text-white"
                       >
-                        Remove
-                      </Button>
+                        {tStatic('common:auto.frontend.ke963907dac5c')}</Button>
                     </td>
                   </tr>
                 );
@@ -161,25 +159,22 @@ export const OrganizationMembersPanel: React.FC<OrganizationMembersPanelProps> =
 
       {/* Legend */}
       <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-        <h4 className="text-sm font-semibold text-gray-700 mb-2">Role Descriptions</h4>
+        <h4 className="text-sm font-semibold text-gray-700 mb-2">{tStatic('common:auto.frontend.kfbf44064cf9f')}</h4>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs text-gray-600">
           <div className="flex items-start">
             <span className="mr-2">👑</span>
             <div>
-              <span className="font-medium">Admin:</span> Full organization management access
-            </div>
+              <span className="font-medium">{tStatic('common:auto.frontend.ka537f08b4a6d')}</span> {tStatic('common:auto.frontend.k7d669f5b0d2a')}</div>
           </div>
           <div className="flex items-start">
             <span className="mr-2">✏️</span>
             <div>
-              <span className="font-medium">Editor:</span> Can modify organization content
-            </div>
+              <span className="font-medium">{tStatic('common:auto.frontend.k2ac3b2c1e825')}</span> {tStatic('common:auto.frontend.k91c9a4c7b98f')}</div>
           </div>
           <div className="flex items-start">
             <span className="mr-2">👤</span>
             <div>
-              <span className="font-medium">User:</span> Standard read and limited write access
-            </div>
+              <span className="font-medium">{tStatic('common:auto.frontend.k3123a0e46062')}</span> {tStatic('common:auto.frontend.ka16b6f22077d')}</div>
           </div>
         </div>
       </div>

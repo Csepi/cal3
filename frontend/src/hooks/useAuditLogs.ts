@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback } from 'react';
 import type { AuditLogDto, AuditLogQueryDto, AuditLogStatsDto } from '../types/Automation';
 import { getAuditLogs, getAuditLogStats, getAllAuditLogs } from '../services/automationService';
 
+import { tStatic } from '../i18n';
+
 interface UseAuditLogsOptions {
   ruleId?: number;
   query?: AuditLogQueryDto;
@@ -144,7 +146,7 @@ export function useSingleAuditLog(options: UseSingleAuditLogOptions): UseSingleA
       if (foundLog) {
         setLog(foundLog);
       } else {
-        setError('Audit log not found');
+        setError(tStatic('common:auto.frontend.k6f00ca392fa4'));
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch audit log');

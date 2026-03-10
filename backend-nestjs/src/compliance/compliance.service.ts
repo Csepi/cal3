@@ -28,6 +28,8 @@ import {
   USER_CONSENT_TYPES,
 } from './dto/compliance.dto';
 
+import { bStatic } from '../i18n/runtime';
+
 interface RequestMetadata {
   ip?: string | null;
   userAgent?: string | null;
@@ -232,7 +234,7 @@ export class ComplianceService {
       dto.confirmEmail &&
       dto.confirmEmail.trim().toLowerCase() !== user.email.toLowerCase()
     ) {
-      throw new BadRequestException('confirmEmail does not match account email.');
+      throw new BadRequestException(bStatic('errors.auto.backend.k6db32fcb066d'));
     }
 
     if (requestType === 'delete') {
@@ -245,7 +247,7 @@ export class ComplianceService {
       });
       if (pending > 0) {
         throw new BadRequestException(
-          'A pending delete request already exists for this account.',
+          bStatic('errors.auto.backend.k8faa23ec909f'),
         );
       }
     }
@@ -358,7 +360,7 @@ export class ComplianceService {
   ) {
     const request = await this.dsrRepository.findOne({ where: { id } });
     if (!request) {
-      throw new NotFoundException('Data subject request not found.');
+      throw new NotFoundException(bStatic('errors.auto.backend.k7ae8b1b79db1'));
     }
 
     request.status = payload.status;
@@ -569,7 +571,7 @@ export class ComplianceService {
   private async getUser(userId: number): Promise<User> {
     const user = await this.userRepository.findOne({ where: { id: userId } });
     if (!user) {
-      throw new NotFoundException('User not found.');
+      throw new NotFoundException(bStatic('errors.auto.backend.k9c986a39aaff'));
     }
     return user;
   }

@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import type { Calendar as CalendarType } from '../types/Calendar';
 import type { ReservationResource } from '../types/reservation';
 
+import { tStatic } from '../i18n';
+
 interface CalendarSidebarProps {
   calendars: CalendarType[];
   selectedCalendars: number[];
@@ -96,7 +98,7 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
           <button
             onClick={toggleCollapse}
             className="w-full p-2 hover:bg-gray-100 rounded-lg transition-all duration-200"
-            title="Expand sidebar"
+            title={tStatic('common:auto.frontend.kf462e889fd88')}
           >
             <span className="text-xl">▶</span>
           </button>
@@ -172,11 +174,11 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
       {/* Header */}
       <div className="p-4 border-b border-gray-200">
         <div className="flex items-center justify-between mb-3">
-          <h3 className="text-lg font-semibold text-gray-800">My Calendars</h3>
+          <h3 className="text-lg font-semibold text-gray-800">{tStatic('common:auto.frontend.ked5b05b30d74')}</h3>
           <button
             onClick={toggleCollapse}
             className="p-1.5 hover:bg-gray-100 rounded-lg transition-all duration-200"
-            title="Collapse sidebar"
+            title={tStatic('common:auto.frontend.k9e6876286e45')}
           >
             <span className="text-lg">◀</span>
           </button>
@@ -193,8 +195,7 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
                 : `bg-${themeColors.light} text-${themeColors.text} hover:bg-${themeColors.hover}`
             }`}
           >
-            Select All
-          </button>
+            {tStatic('common:auto.frontend.k86a599ef4df2')}</button>
           <button
             onClick={onDeselectAll}
             disabled={selectedCalendars.length === 0}
@@ -204,8 +205,7 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
           >
-            Deselect All
-          </button>
+            {tStatic('common:auto.frontend.kbc0394933790')}</button>
         </div>
       </div>
 
@@ -267,7 +267,7 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
                           onEditCalendar(calendar);
                         }}
                         className="p-1 opacity-60 hover:opacity-100 hover:bg-gray-200 rounded transition-all duration-200"
-                        title="Edit Calendar"
+                        title={tStatic('common:auto.frontend.k65c10a34b7c9')}
                       >
                         <span className="text-xs">✏️</span>
                       </button>
@@ -280,7 +280,7 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
                             onDeleteCalendar(calendar);
                           }}
                           className="p-1 opacity-60 hover:opacity-100 hover:bg-red-100 rounded transition-all duration-200"
-                          title="Delete Calendar"
+                          title={tStatic('common:auto.frontend.k63ba33f6ca07')}
                         >
                           <span className="text-xs">🗑️</span>
                         </button>
@@ -293,8 +293,7 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
                             ? 'bg-blue-200 text-blue-800'
                             : 'bg-gray-100 text-gray-600'
                         }`}>
-                          Owner
-                        </span>
+                          {tStatic('common:auto.frontend.k89ff31225c5f')}</span>
                       )}
                     </div>
                   </div>
@@ -312,8 +311,7 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
                     <p className={`text-xs mt-1 ${
                       isSelected ? 'text-blue-600' : 'text-gray-400'
                     }`}>
-                      {calendar.eventCount} events
-                    </p>
+                      {calendar.eventCount} {tStatic('common:auto.frontend.k82d50d9042de')}</p>
                   )}
                 </div>
               </div>
@@ -326,8 +324,8 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
                 <div className="w-12 h-12 mx-auto mb-3 bg-gray-100 rounded-full flex items-center justify-center">
                   📅
                 </div>
-                <p>No calendars found</p>
-                <p className="text-xs mt-1">Create a calendar to get started</p>
+                <p>{tStatic('common:auto.frontend.k30390f456845')}</p>
+                <p className="text-xs mt-1">{tStatic('common:auto.frontend.k0326fc7a87db')}</p>
               </div>
             </div>
           )}
@@ -338,7 +336,7 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
       {resources.length > 0 && (
         <>
           <div className="flex-1 p-4 border-t border-gray-200 flex flex-col">
-            <h3 className="text-lg font-semibold text-gray-800 mb-3">Reservations</h3>
+            <h3 className="text-lg font-semibold text-gray-800 mb-3">{tStatic('common:auto.frontend.kfe5c54bbae46')}</h3>
 
             <div className="flex gap-2 mb-3">
               <button
@@ -350,8 +348,7 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
                     : `bg-${themeColors.light} text-${themeColors.text} hover:bg-${themeColors.hover}`
                 }`}
               >
-                Select All
-              </button>
+                {tStatic('common:auto.frontend.k86a599ef4df2')}</button>
               <button
                 onClick={onDeselectAllResources}
                 disabled={selectedResources.length === 0}
@@ -361,8 +358,7 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
-                Deselect All
-              </button>
+                {tStatic('common:auto.frontend.kbc0394933790')}</button>
             </div>
 
             <div className="space-y-2 flex-1 overflow-y-auto">
@@ -414,7 +410,7 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
         <div className="p-4 border-t border-gray-200 bg-gray-50">
           <div className="text-xs text-gray-600">
             <span className="font-medium">
-              {selectedCalendars.length} of {calendars.length}
+              {selectedCalendars.length} {tStatic('common:auto.frontend.kde04fa0e29f9')}{calendars.length}
             </span>
             {' calendars selected'}
           </div>
@@ -422,7 +418,7 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
           {resources.length > 0 && (
             <div className="text-xs text-gray-600 mt-1">
               <span className="font-medium">
-                {selectedResources.length} of {resources.length}
+                {selectedResources.length} {tStatic('common:auto.frontend.kde04fa0e29f9')}{resources.length}
               </span>
               {' resources selected'}
             </div>
@@ -430,8 +426,7 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
 
           {someSelected && (
             <div className="mt-2 text-xs text-amber-600 bg-amber-50 px-2 py-1 rounded">
-              ⚠️ Some calendars are hidden
-            </div>
+              {tStatic('common:auto.frontend.k2953c5f06198')}</div>
           )}
         </div>
       )}

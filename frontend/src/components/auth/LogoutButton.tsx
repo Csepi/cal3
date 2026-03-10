@@ -10,6 +10,8 @@ import { authErrorHandler } from '../../services/authErrorHandler';
 import { TouchableArea } from '../mobile/atoms/TouchableArea';
 import { useScreenSize } from '../../hooks/useScreenSize';
 
+import { tStatic } from '../../i18n';
+
 interface LogoutButtonProps {
   variant?: 'button' | 'link' | 'icon';
   className?: string;
@@ -91,8 +93,7 @@ export const LogoutButton: React.FC<LogoutButtonProps> = ({
         {isLoggingOut ? (
           <span className="flex items-center justify-center gap-2">
             <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-            Logging out...
-          </span>
+            {tStatic('common:auto.frontend.k7ac4b086c002')}</span>
         ) : (
           'Logout'
         )}
@@ -110,11 +111,9 @@ export const LogoutButton: React.FC<LogoutButtonProps> = ({
           <div className="bg-white rounded-lg p-6 max-w-sm w-full shadow-xl">
             <div className="mb-4">
               <h3 className="text-lg font-semibold text-gray-800 mb-2">
-                Confirm Logout
-              </h3>
+                {tStatic('common:auto.frontend.k6e6ea085d5a5')}</h3>
               <p className="text-gray-600 text-sm">
-                Are you sure you want to log out? You'll need to sign in again to access your calendar.
-              </p>
+                {tStatic('common:auto.frontend.kf36bdf430c01')}</p>
             </div>
 
             <div className={`flex gap-3 ${isMobile ? 'flex-col' : 'flex-row-reverse'}`}>
@@ -122,14 +121,12 @@ export const LogoutButton: React.FC<LogoutButtonProps> = ({
                 onClick={performLogout}
                 className={`px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors ${isMobile ? 'w-full' : ''}`}
               >
-                Yes, Logout
-              </button>
+                {tStatic('common:auto.frontend.kef2c81d4a225')}</button>
               <button
                 onClick={() => setShowConfirm(false)}
                 className={`px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors ${isMobile ? 'w-full' : ''}`}
               >
-                Cancel
-              </button>
+                {tStatic('common:auto.frontend.k77dfd2135f4d')}</button>
             </div>
           </div>
         </div>

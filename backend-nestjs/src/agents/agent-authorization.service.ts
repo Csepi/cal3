@@ -14,6 +14,8 @@ import { AgentActionKey } from './agent-actions.registry';
 import { FeatureFlagsService } from '../common/feature-flags.service';
 import { upgradeLegacyCalendarPermissions } from './legacy-permissions.helper';
 
+import { bStatic } from '../i18n/runtime';
+
 @Injectable()
 export class AgentAuthorizationService {
   constructor(
@@ -39,7 +41,7 @@ export class AgentAuthorizationService {
     });
 
     if (!apiKey || !apiKey.isActive) {
-      throw new UnauthorizedException('Invalid or revoked agent API key.');
+      throw new UnauthorizedException(bStatic('errors.auto.backend.k2fc74a9a4181'));
     }
 
     const matches = await this.agentKeysService.verifyKey(
@@ -47,7 +49,7 @@ export class AgentAuthorizationService {
       apiKey.hashedKey,
     );
     if (!matches) {
-      throw new UnauthorizedException('Invalid agent API key.');
+      throw new UnauthorizedException(bStatic('errors.auto.backend.kc26d2feee15e'));
     }
 
     const agent = await this.agentProfileRepository.findOne({
@@ -56,15 +58,15 @@ export class AgentAuthorizationService {
     });
 
     if (!agent) {
-      throw new UnauthorizedException('Agent record not found.');
+      throw new UnauthorizedException(bStatic('errors.auto.backend.keaca6d98adfc'));
     }
 
     if (agent.status !== AgentStatus.ACTIVE) {
-      throw new ForbiddenException('This agent has been disabled.');
+      throw new ForbiddenException(bStatic('errors.auto.backend.k74179ec67c0d'));
     }
 
     if (!agent.user || !agent.user.isActive) {
-      throw new ForbiddenException('Agent owner account is inactive.');
+      throw new ForbiddenException(bStatic('errors.auto.backend.kcac8a0ce385e'));
     }
 
     const upgradedPermissions = await upgradeLegacyCalendarPermissions(
@@ -125,7 +127,7 @@ export class AgentAuthorizationService {
 
     if (!calendarIds.length || !calendarIds.includes(calendarId)) {
       throw new ForbiddenException(
-        'Agent is not authorised for this calendar.',
+        bStatic('errors.auto.backend.kb64a55519aa3'),
       );
     }
 
@@ -143,13 +145,13 @@ export class AgentAuthorizationService {
 
     if (ruleIds.length === 0) {
       throw new ForbiddenException(
-        'Agent does not have automation rules assigned.',
+        bStatic('errors.auto.backend.k081436182728'),
       );
     }
 
     if (!ruleIds.includes(ruleId)) {
       throw new ForbiddenException(
-        'Agent is not authorised to use this automation rule.',
+        bStatic('errors.auto.backend.kc304dcad1fe6'),
       );
     }
 
@@ -181,12 +183,12 @@ export class AgentAuthorizationService {
 
   private extractTokenId(token: string): string {
     if (!token) {
-      throw new UnauthorizedException('Agent API key is required.');
+      throw new UnauthorizedException(bStatic('errors.auto.backend.k6cc9eb5158d2'));
     }
 
     const match = token.match(/^ag_sk_([0-9a-fA-F-]{36})_[A-Za-z0-9_-]+$/);
     if (!match) {
-      throw new UnauthorizedException('Agent API key format is invalid.');
+      throw new UnauthorizedException(bStatic('errors.auto.backend.ka980dd5a1188'));
     }
 
     return match[1];
@@ -194,7 +196,7 @@ export class AgentAuthorizationService {
 
   private ensureFeatureEnabled(): void {
     if (!this.featureFlagsService.isAgentIntegrationsEnabled()) {
-      throw new ForbiddenException('MCP agent integrations are disabled.');
+      throw new ForbiddenException(bStatic('errors.auto.backend.kec1daafbe5cc'));
     }
   }
 }

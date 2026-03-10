@@ -1,0 +1,9 @@
+{
+  "required": "Ce champ est obligatoire.",
+  "invalidEmail": "Adresse e-mail invalide.",
+  "invalidDate": "Date invalide.",
+  "invalidTime": "Heure invalide.",
+  "passwordWeak": "Mot de passe trop faible.",
+  "startBeforeEnd": "L?heure de d?but doit ?tre avant l?heure de fin.",
+  "invalidCalendar": "Calendrier de t?ches invalide. S?lectionnez un calendrier que vous poss?dez ou que vous pouvez modifier."
+}

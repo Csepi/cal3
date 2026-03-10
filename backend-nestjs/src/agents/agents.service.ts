@@ -26,6 +26,8 @@ import {
 import { FeatureFlagsService } from '../common/feature-flags.service';
 import { upgradeLegacyCalendarPermissions } from './legacy-permissions.helper';
 
+import { bStatic } from '../i18n/runtime';
+
 export interface AgentSummary {
   id: number;
   name: string;
@@ -248,7 +250,7 @@ export class AgentsService {
 
     if (agent.status !== AgentStatus.ACTIVE) {
       throw new ForbiddenException(
-        'Cannot create API keys for a disabled agent.',
+        bStatic('errors.auto.backend.k0be9d6cf2db1'),
       );
     }
 
@@ -283,7 +285,7 @@ export class AgentsService {
     });
 
     if (!key) {
-      throw new NotFoundException('API key not found for this agent.');
+      throw new NotFoundException(bStatic('errors.auto.backend.ka63f7f6ce3b3'));
     }
 
     if (!key.isActive) {
@@ -302,7 +304,7 @@ export class AgentsService {
 
   private ensureFeatureEnabled(): void {
     if (!this.featureFlagsService.isAgentIntegrationsEnabled()) {
-      throw new ForbiddenException('MCP agent integrations are disabled.');
+      throw new ForbiddenException(bStatic('errors.auto.backend.kec1daafbe5cc'));
     }
   }
 
@@ -314,7 +316,7 @@ export class AgentsService {
       where: { id: userId, isActive: true },
     });
     if (!user) {
-      throw new NotFoundException('User not found or inactive.');
+      throw new NotFoundException(bStatic('errors.auto.backend.kd2c36ed08a6d'));
     }
     return user;
   }
@@ -330,7 +332,7 @@ export class AgentsService {
     });
 
     if (!agent) {
-      throw new NotFoundException('Agent not found.');
+      throw new NotFoundException(bStatic('errors.auto.backend.k157b19c2d3cc'));
     }
     if (includeRelations && agent.permissions) {
       const upgraded = await upgradeLegacyCalendarPermissions(

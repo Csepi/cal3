@@ -21,6 +21,8 @@ import SystemInfoPage from './admin/SystemInfoPage';
 import AdminConfigurationPanel from './admin/AdminConfigurationPanel';
 import { getThemeConfig } from '../constants/theme';
 
+import { tStatic } from '../i18n';
+
 interface AdminPanelProps {
   themeColor?: string;
 }
@@ -85,7 +87,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ themeColor = '#3b82f6' }) => {
             <div className="mb-4 text-4xl text-gray-400" aria-hidden="true">
               ?
             </div>
-            <p className="text-gray-600">Unknown panel</p>
+            <p className="text-gray-600">{tStatic('common:auto.frontend.k812f17430ba2')}</p>
           </div>
         );
     }
@@ -129,8 +131,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ themeColor = '#3b82f6' }) => {
           <div className="mx-auto flex max-w-7xl items-center justify-between px-6">
             <div className="flex items-center gap-4">
               <h1 className="text-3xl font-semibold" style={{ color: themeColor }}>
-                Admin Control Center
-              </h1>
+                {tStatic('common:auto.frontend.k1497f8c9a0f1')}</h1>
               <span
                 className="rounded-full px-3 py-1 text-xs font-medium"
                 style={{
@@ -139,7 +140,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ themeColor = '#3b82f6' }) => {
                   border: `1px solid ${borderTint}`,
                 }}
               >
-                Environment: {process.env.NODE_ENV || 'development'}
+                {tStatic('common:auto.frontend.kf3d7eb2b15aa')}{process.env.NODE_ENV || 'development'}
               </span>
             </div>
           </div>

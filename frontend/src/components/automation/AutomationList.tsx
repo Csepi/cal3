@@ -1,6 +1,8 @@
 import type { AutomationRuleDto } from '../../types/Automation';
 import { AutomationRuleCard } from './AutomationRuleCard';
 
+import { tStatic } from '../../i18n';
+
 interface AutomationListProps {
   rules: AutomationRuleDto[];
   isLoading: boolean;
@@ -29,7 +31,7 @@ export function AutomationList({
             className="inline-block w-12 h-12 border-4 border-gray-200 border-t-blue-500 rounded-full animate-spin"
             style={{ borderTopColor: themeColor }}
           />
-          <p className="mt-4 text-gray-600">Loading automation rules...</p>
+          <p className="mt-4 text-gray-600">{tStatic('common:auto.frontend.k5571ca76c61a')}</p>
         </div>
       </div>
     );
@@ -42,16 +44,11 @@ export function AutomationList({
         <div className="text-center max-w-md">
           <div className="text-6xl mb-4">🤖</div>
           <h3 className="text-xl font-semibold text-gray-900 mb-2">
-            No Automation Rules Yet
-          </h3>
+            {tStatic('common:auto.frontend.ke427e71e398a')}</h3>
           <p className="text-gray-600">
-            Create your first automation rule to automatically manage your calendar
-            events based on conditions and triggers.
-          </p>
+            {tStatic('common:auto.frontend.k2dbf6dfeddb6')}</p>
           <p className="text-sm text-gray-500 mt-4">
-            Examples: Color-code work meetings, send reminders before events, or
-            organize imported calendar events.
-          </p>
+            {tStatic('common:auto.frontend.k69f563729f25')}</p>
         </div>
       </div>
     );

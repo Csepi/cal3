@@ -1,0 +1,51 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">PrimeCal</string>
+    <string name="title_activity_main">PrimeCal</string>
+    <string name="package_name">com.primecal.calendar</string>
+    <string name="custom_url_scheme">com.primecal.calendar</string>
+
+    <string name="widget_timeline_description">PrimeCal Zeitachsen-Widget</string>
+    <string name="widget_title">Zeitleiste</string>
+    <string name="widget_last_updated">Aktualisiert: %1$s</string>
+    <string name="widget_last_updated_never">Noch nicht aktualisiert</string>
+    <string name="widget_state_loading">Zeitleiste wird geladen…</string>
+    <string name="widget_state_empty">Keine Zeitleisten-Einträge gefunden</string>
+    <string name="widget_state_error_retry">Daten konnten nicht geladen werden. Zum Wiederholen auf Aktualisieren tippen.</string>
+    <string name="widget_error_auth">Melden Sie sich in PrimeCal an, um Zeitleisten-Daten zu laden.</string>
+    <string name="widget_error_auth_cached">Zwischengespeicherte Einträge werden angezeigt. Öffnen Sie PrimeCal, um die Sitzung zu aktualisieren.</string>
+    <string name="widget_error_generic">Zeitleisten-Daten konnten nicht geladen werden.</string>
+    <string name="widget_untitled_event">(Unbenannter Termin)</string>
+
+    <string name="widget_action_refresh">Zeitleiste aktualisieren</string>
+    <string name="widget_action_previous">Vorheriger Bereich</string>
+    <string name="widget_action_next">Nächster Bereich</string>
+    <string name="widget_action_add">Schnell hinzufügen</string>
+
+    <string name="widget_config_title">Zeitleisten-Widget konfigurieren</string>
+    <string name="widget_config_subtitle">Wählen Sie aus, was das Widget anzeigt und wie oft es aktualisiert wird.</string>
+    <string name="widget_field_date_range">Datumsbereich</string>
+    <string name="widget_field_entries">Angezeigte Einträge</string>
+    <string name="widget_field_color_scheme">Farbschema</string>
+    <string name="widget_field_refresh_frequency">Aktualisierungsintervall</string>
+    <string name="widget_field_click_behavior">Verhalten beim Antippen eines Eintrags</string>
+    <string name="widget_save">Speichern</string>
+    <string name="widget_cancel">Abbrechen</string>
+    <string name="widget_entries_option">%1$d Einträge</string>
+
+    <string name="widget_range_today">Heute</string>
+    <string name="widget_range_week">Diese Woche</string>
+    <string name="widget_range_month">Dieser Monat</string>
+
+    <string name="widget_color_system">Systemstandard</string>
+    <string name="widget_color_light">Hell</string>
+    <string name="widget_color_dark">Dunkel</string>
+
+    <string name="widget_refresh_15m">Alle 15 Minuten</string>
+    <string name="widget_refresh_30m">Alle 30 Minuten</string>
+    <string name="widget_refresh_1h">Stündlich</string>
+    <string name="widget_refresh_3h">Alle 3 Stunden</string>
+
+    <string name="widget_click_event">Termindetails öffnen</string>
+    <string name="widget_click_day">Tagesansicht öffnen</string>
+</resources>

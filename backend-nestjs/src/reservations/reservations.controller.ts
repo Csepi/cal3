@@ -21,6 +21,8 @@ import {
 import type { RequestWithUser } from '../common/types/request-with-user';
 import { ListReservationsQueryDto } from './dto/list-reservations.query.dto';
 
+import { bStatic } from '../i18n/runtime';
+
 @Controller('reservations')
 @UseGuards(JwtAuthGuard, ReservationAccessGuard) // Require both authentication and reservation access
 export class ReservationsController {
@@ -56,6 +58,6 @@ export class ReservationsController {
   @Delete(':id')
   async remove(@Param('id', ParseIntPipe) id: number, @Req() req: RequestWithUser) {
     await this.reservationsService.remove(id, req.user.id);
-    return { message: 'Reservation deleted successfully' };
+    return { message: bStatic('errors.auto.backend.k6167559c5e55') };
   }
 }

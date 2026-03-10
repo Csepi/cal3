@@ -10,6 +10,8 @@ import { Repository } from 'typeorm';
 import { Resource } from '../../entities/resource.entity';
 import { PermissionResolverService } from '../services/permission-resolver.service';
 
+import { bStatic } from '../../i18n/runtime';
+
 export type ResourceAccessAction = 'view' | 'edit' | 'delete';
 
 export interface ResourceAccessPolicy {
@@ -44,7 +46,7 @@ export class ResourceAccessGuard implements CanActivate, ResourceAccessPolicy {
     const userId = Number(request?.user?.id);
 
     if (!resourceId || !userId) {
-      throw new ForbiddenException('Resource not found');
+      throw new ForbiddenException(bStatic('errors.auto.backend.k2d1d4c2765a8'));
     }
 
     const customMessage =
@@ -82,7 +84,7 @@ export class ResourceAccessGuard implements CanActivate, ResourceAccessPolicy {
       relations: ['resourceType'],
     });
     if (!resource || !resource.resourceType) {
-      throw new ForbiddenException('Resource not found');
+      throw new ForbiddenException(bStatic('errors.auto.backend.k2d1d4c2765a8'));
     }
 
     return this.permissionResolver.canUserAccessOrganization(
@@ -100,7 +102,7 @@ export class ResourceAccessGuard implements CanActivate, ResourceAccessPolicy {
       relations: ['resourceType'],
     });
     if (!resource || !resource.resourceType) {
-      throw new ForbiddenException('Resource not found');
+      throw new ForbiddenException(bStatic('errors.auto.backend.k2d1d4c2765a8'));
     }
 
     return this.permissionResolver.canUserEditResourceType(

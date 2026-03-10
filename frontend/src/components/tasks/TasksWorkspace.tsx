@@ -23,6 +23,8 @@ import {
   startOfWeek,
 } from '../../utils/calendar';
 
+import { tStatic } from '../../i18n';
+
 type DueDateScope = 'all' | 'week' | 'month' | 'year';
 type DueDatePreset = 'this' | 'next' | 'custom';
 
@@ -299,12 +301,10 @@ export const TasksWorkspace = forwardRef<TasksWorkspaceHandle, TasksWorkspacePro
         <header className="flex flex-wrap items-start gap-3">
           <div>
             <p className="text-xs uppercase tracking-wide text-gray-400">
-              Workspace
-            </p>
-            <h1 className="text-3xl font-bold text-gray-900">Tasks</h1>
+              {tStatic('common:auto.frontend.k4ca0a75c2b7f')}</p>
+            <h1 className="text-3xl font-bold text-gray-900">{tStatic('common:auto.frontend.k090ec5f560fc')}</h1>
             <p className="text-sm text-gray-600">
-              Filter, focus, and ship the right tasks at the right time.
-            </p>
+              {tStatic('common:auto.frontend.kb8488b73364c')}</p>
           </div>
           <div className="ml-auto flex flex-wrap items-center gap-2">
             <button
@@ -312,8 +312,7 @@ export const TasksWorkspace = forwardRef<TasksWorkspaceHandle, TasksWorkspacePro
               onClick={clearFilters}
               className="rounded-full border border-gray-200 px-3 py-1 text-xs font-semibold text-gray-700 hover:border-gray-300"
             >
-              Reset filters
-            </button>
+              {tStatic('common:auto.frontend.k56553100b028')}</button>
             {!isMobile && (
               <button
                 type="button"
@@ -325,8 +324,7 @@ export const TasksWorkspace = forwardRef<TasksWorkspaceHandle, TasksWorkspacePro
                 className="rounded-full px-4 py-2 text-sm font-semibold text-white shadow"
                 style={{ backgroundColor: themeColor }}
               >
-                + New Task
-              </button>
+                {tStatic('common:auto.frontend.ka9271f952966')}</button>
             )}
           </div>
         </header>
@@ -335,11 +333,9 @@ export const TasksWorkspace = forwardRef<TasksWorkspaceHandle, TasksWorkspacePro
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               <span className="rounded-full bg-gray-900 px-3 py-1 text-xs font-semibold uppercase text-white">
-                Filters
-              </span>
+                {tStatic('common:auto.frontend.k96e578211aa2')}</span>
               <span className="text-sm text-gray-600">
-                One panel for status, labels, due dates, and text search.
-              </span>
+                {tStatic('common:auto.frontend.k0118bd8f9337')}</span>
             </div>
             <span className="text-xs font-semibold uppercase text-gray-500">
               {describeDueRange()}
@@ -349,10 +345,9 @@ export const TasksWorkspace = forwardRef<TasksWorkspaceHandle, TasksWorkspacePro
           <div className="mt-4 grid gap-4 lg:grid-cols-2">
             <div className="rounded-2xl border-l-4 border-indigo-400 bg-indigo-50/70 p-4">
               <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase text-indigo-700">
-                <span>Status</span>
+                <span>{tStatic('common:auto.frontend.kbae7d5be7082')}</span>
                 <span className="rounded-full bg-white/60 px-2 py-0.5 text-[11px] text-indigo-700">
-                  Progress
-                </span>
+                  {tStatic('common:auto.frontend.k1b90271d66cf')}</span>
               </div>
               <div className="flex flex-wrap gap-2">
                 {statusOptions.map((option) => {
@@ -385,7 +380,7 @@ export const TasksWorkspace = forwardRef<TasksWorkspaceHandle, TasksWorkspacePro
 
             <div className="rounded-2xl border-l-4 border-amber-500 bg-amber-50/70 p-4">
               <div className="mb-2 flex flex-wrap items-center gap-2 text-xs font-semibold uppercase text-amber-800">
-                <span>Due date</span>
+                <span>{tStatic('common:auto.frontend.k4c1aeebc433b')}</span>
                 <span className="rounded-full bg-white/60 px-2 py-0.5 text-[11px] text-amber-800">
                   {describeDueRange()}
                 </span>
@@ -509,7 +504,7 @@ export const TasksWorkspace = forwardRef<TasksWorkspaceHandle, TasksWorkspacePro
 
             <div className="rounded-2xl border-l-4 border-emerald-500 bg-emerald-50/70 p-4">
               <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase text-emerald-800">
-                <span>Labels</span>
+                <span>{tStatic('common:auto.frontend.k2228985493d9')}</span>
                 <span className="rounded-full bg-white/60 px-2 py-0.5 text-[11px] text-emerald-800">
                   {filters.labelIds?.length ? `${filters.labelIds.length} selected` : 'None'}
                 </span>
@@ -539,18 +534,16 @@ export const TasksWorkspace = forwardRef<TasksWorkspaceHandle, TasksWorkspacePro
                 })}
                 {!labels.length && (
                   <span className="text-xs text-emerald-700">
-                    Create labels to filter tasks.
-                  </span>
+                    {tStatic('common:auto.frontend.k62b5b9492c2b')}</span>
                 )}
               </div>
             </div>
 
             <div className="lg:col-span-2 rounded-2xl border-l-4 border-sky-500 bg-sky-50/70 p-4">
               <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase text-sky-800">
-                <span>Text</span>
+                <span>{tStatic('common:auto.frontend.kc3328c39b0e2')}</span>
                 <span className="rounded-full bg-white/60 px-2 py-0.5 text-[11px] text-sky-800">
-                  Title & description
-                </span>
+                  {tStatic('common:auto.frontend.k8cff97be8bed')}</span>
               </div>
               <input
                 type="search"
@@ -564,7 +557,7 @@ export const TasksWorkspace = forwardRef<TasksWorkspaceHandle, TasksWorkspacePro
                   }));
                 }}
                 className="w-full rounded-2xl border border-sky-200 bg-white px-3 py-2 text-sm shadow-sm focus:border-sky-300 focus:outline-none focus:ring-2 focus:ring-sky-200"
-                placeholder="Search by title or description"
+                placeholder={tStatic('common:auto.frontend.k21c5bef26fc2')}
               />
             </div>
           </div>
@@ -577,8 +570,7 @@ export const TasksWorkspace = forwardRef<TasksWorkspaceHandle, TasksWorkspacePro
         )}
         {loading ? (
           <div className="rounded-2xl bg-white/80 p-6 text-center text-gray-400 shadow">
-            Loading tasks...
-          </div>
+            {tStatic('common:auto.frontend.k80311b5ba51e')}</div>
         ) : (
           <TaskBoard
             tasks={tasks}

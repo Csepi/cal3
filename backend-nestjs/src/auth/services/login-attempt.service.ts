@@ -1,6 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ThrottlerException } from '@nestjs/throttler';
 
+import { bStatic } from '../../i18n/runtime';
+
 interface AttemptRecord {
   count: number;
   expiresAt: number;
@@ -32,7 +34,7 @@ export class LoginAttemptService {
           `Blocking login attempts for identifier ${identifier} from ${ip ?? 'unknown IP'}`,
         );
         throw new ThrottlerException(
-          'Too many failed attempts. Please try again later.',
+          bStatic('errors.auto.backend.kee21643021f7'),
         );
       }
       this.attemptsByKey.set(key, record);

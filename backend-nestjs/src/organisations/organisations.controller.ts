@@ -36,6 +36,8 @@ import { ORGANISATION_PERMISSIONS } from '../common/authorization/permission.typ
 import { UserRole } from '../entities/user.entity';
 import { UpdateOrganisationColorDto } from './dto/update-organisation-color.dto';
 
+import { bStatic } from '../i18n/runtime';
+
 @Controller('organisations')
 @UseGuards(JwtAuthGuard, RbacAuthorizationGuard)
 export class OrganisationsController {
@@ -108,7 +110,7 @@ export class OrganisationsController {
         organizationId,
       );
     if (!canAccess) {
-      throw new NotFoundException('Organisation not found or access denied');
+      throw new NotFoundException(bStatic('errors.auto.backend.kac01992866fd'));
     }
 
     return await this.organisationsService.findOne(organizationId);
@@ -138,7 +140,7 @@ export class OrganisationsController {
   @RequireRole(UserRole.ADMIN)
   async remove(@Param('id', ParseIntPipe) id: number) {
     await this.organisationsService.remove(id);
-    return { message: 'Organisation deleted successfully' };
+    return { message: bStatic('errors.auto.backend.k416d6af3a5d5') };
   }
 
   @Post(':id/users')
@@ -234,7 +236,7 @@ export class OrganisationsController {
         organizationId,
       );
     if (!canAccess) {
-      throw new NotFoundException('Organisation not found or access denied');
+      throw new NotFoundException(bStatic('errors.auto.backend.kac01992866fd'));
     }
 
     return await this.organisationsService.getOrganizationUsers(organizationId);
@@ -299,7 +301,7 @@ export class OrganisationsController {
       userId,
       req.user.id,
     );
-    return { message: 'User removed from organisation successfully' };
+    return { message: bStatic('errors.auto.backend.k9d4b095fcd4d') };
   }
 
   /**

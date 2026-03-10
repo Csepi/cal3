@@ -14,13 +14,15 @@ import {
   IsSafeText,
 } from '../common/validation/security.validators';
 
+import { bStatic } from '../i18n/runtime';
+
 export class CreateReservationDto {
   @IsDateString()
   startTime!: Date;
 
   @IsDateString()
   @IsAfterProperty('startTime', {
-    message: 'endTime must be later than startTime',
+    message: bStatic('errors.auto.backend.k5855f66b6cdc'),
   })
   endTime!: Date;
 
@@ -52,7 +54,7 @@ export class UpdateReservationDto {
   @IsOptional()
   @IsDateString()
   @IsAfterProperty('startTime', {
-    message: 'endTime must be later than startTime',
+    message: bStatic('errors.auto.backend.k5855f66b6cdc'),
   })
   endTime?: Date;
 
@@ -82,7 +84,7 @@ export class CreateRecurringReservationDto {
 
   @IsDateString()
   @IsAfterProperty('startTime', {
-    message: 'endTime must be later than startTime',
+    message: bStatic('errors.auto.backend.k5855f66b6cdc'),
   })
   endTime!: Date;
 

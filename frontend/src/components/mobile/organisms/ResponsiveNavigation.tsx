@@ -17,8 +17,12 @@ import { useTheme } from '../../../hooks/useTheme';
 import { usePermissions } from '../../../hooks/usePermissions';
 import { useFeatureFlags } from '../../../hooks/useFeatureFlags';
 import { useNotifications } from '../../../hooks/useNotifications';
+import { useAppTranslation } from '../../../i18n/useAppTranslation';
 import { BottomTabBar } from './BottomTabBar';
 import type { TabId } from './BottomTabBar';
+import { LanguageSwitcher } from '../../LanguageSwitcher';
+
+import { tStatic } from '../../../i18n';
 
 const iconProps = {
   className: 'h-4 w-4',
@@ -129,6 +133,7 @@ export const ResponsiveNavigation: React.FC<ResponsiveNavigationProps> = React.m
   onTabChange,
   hideReservationsTab,
 }) => {
+  const { t } = useAppTranslation('common');
   const { isMobile, isTablet } = useScreenSize();
   const { currentUser, logout } = useAuth();
   const { themeColor, themeConfig } = useTheme();
@@ -165,22 +170,22 @@ export const ResponsiveNavigation: React.FC<ResponsiveNavigationProps> = React.m
     {
       id: 'calendar' as TabId,
       icon: CalendarIcon,
-      label: 'Calendar',
+      label: t('navigation.calendar'),
       visible: true,
       isFeature: false,
     },
     {
       id: 'tasks' as TabId,
       icon: TasksIcon,
-      label: 'Tasks',
+      label: t('navigation.tasks', { defaultValue: 'Tasks' }),
       visible: featureFlags.tasks,
       isFeature: false,
     },
     {
       id: 'notifications' as TabId,
       icon: BellIcon,
-      label: 'Notifications',
-      shortLabel: 'Alerts',
+      label: t('navigation.notifications', { defaultValue: 'Notifications' }),
+      shortLabel: t('navigation.notificationsShort', { defaultValue: 'Alerts' }),
       visible: true,
       isFeature: true,
       badge: notificationsBadge,
@@ -188,55 +193,55 @@ export const ResponsiveNavigation: React.FC<ResponsiveNavigationProps> = React.m
     {
       id: 'profile' as TabId,
       icon: ProfileIcon,
-      label: 'Profile',
+      label: t('navigation.profile'),
       visible: true,
       isFeature: false,
     },
     {
       id: 'personal-logs' as TabId,
       icon: PersonalLogsIcon,
-      label: 'Personal Logs',
-      shortLabel: 'Logs',
+      label: t('navigation.personalLogs', { defaultValue: 'Personal Logs' }),
+      shortLabel: t('navigation.logsShort', { defaultValue: 'Logs' }),
       visible: true,
       isFeature: true,
     },
     {
       id: 'sync' as TabId,
       icon: SyncIcon,
-      label: 'Calendar Sync',
-      shortLabel: 'Sync',
+      label: t('navigation.sync'),
+      shortLabel: t('navigation.syncShort'),
       visible: featureFlags.calendarSync,
       isFeature: true,
     },
     {
       id: 'automation' as TabId,
       icon: AutomationIcon,
-      label: 'Automation',
-      shortLabel: 'Auto',
+      label: t('navigation.automation'),
+      shortLabel: t('navigation.automationShort'),
       visible: featureFlags.automation,
       isFeature: true,
     },
     {
       id: 'agent' as TabId,
       icon: AgentIcon,
-      label: 'Agent settings',
-      shortLabel: 'Agents',
+      label: t('navigation.agentSettings', { defaultValue: 'Agent settings' }),
+      shortLabel: t('navigation.agentsShort', { defaultValue: 'Agents' }),
       visible: featureFlags.agents,
       isFeature: true,
     },
     {
       id: 'reservations' as TabId,
       icon: ReservationsIcon,
-      label: 'Reservations',
-      shortLabel: 'Reserve',
+      label: t('navigation.reservations'),
+      shortLabel: t('navigation.reservationsShort'),
       visible: featureFlags.reservations && canAccessReservations && !hideReservationsTab,
       isFeature: true,
     },
     {
       id: 'admin' as TabId,
       icon: AdminIcon,
-      label: 'Admin Panel',
-      shortLabel: 'Admin',
+      label: t('navigation.admin'),
+      shortLabel: t('navigation.adminShort'),
       visible: userRole === 'admin',
       isFeature: false,
     },
@@ -272,10 +277,12 @@ export const ResponsiveNavigation: React.FC<ResponsiveNavigationProps> = React.m
       <div className="mx-auto flex max-w-7xl items-center gap-6 px-4 py-3 md:px-6 md:py-4">
         {/* Brand */}
         <div className="flex items-center gap-3 shrink-0">
-          <img src="/primecal-icon.png" alt="PrimeCal logo" className="h-10 w-10" />
+          <img src="/primecal-icon.png" alt={tStatic('common:auto.frontend.k0ee38c25e94e')} className="h-10 w-10" />
           <div className="leading-tight">
-            <p className="text-lg font-semibold text-gray-900">PrimeCal</p>
-            <p className="text-xs uppercase tracking-[0.3em] text-gray-500">Be in sync with reality</p>
+            <p className="text-lg font-semibold text-gray-900">{t('app.title')}</p>
+            <p className="text-xs uppercase tracking-[0.3em] text-gray-500">
+              {t('app.tagline', { defaultValue: 'Be in sync with reality' })}
+            </p>
           </div>
         </div>
 
@@ -284,7 +291,7 @@ export const ResponsiveNavigation: React.FC<ResponsiveNavigationProps> = React.m
           <div
             className={`flex w-full items-center justify-center gap-2 overflow-x-auto rounded-2xl border-2 border-${themeConfig.border} bg-white/60 p-1 backdrop-blur-sm`}
             role="tablist"
-            aria-label="Primary navigation"
+            aria-label={tStatic('common:auto.frontend.kd36dad20338f')}
           >
             {mainTabs.map((tab) => (
               <button
@@ -332,7 +339,7 @@ export const ResponsiveNavigation: React.FC<ResponsiveNavigationProps> = React.m
                   <span className="text-gray-600" aria-hidden="true">
                     {FeatureIcon}
                   </span>
-                  <span className="hidden md:inline">Features</span>
+                  <span className="hidden md:inline">{t('navigation.features')}</span>
                   {featureAlertBadge > 0 && (
                     <span className="ml-1 inline-flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-red-500 px-1 text-[0.65rem] font-semibold leading-none text-white">
                       {featureAlertBadge > 99 ? '99+' : featureAlertBadge}
@@ -354,7 +361,7 @@ export const ResponsiveNavigation: React.FC<ResponsiveNavigationProps> = React.m
                         left: `${dropdownPosition.left}px`,
                       }}
                       role="menu"
-                      aria-label="Feature navigation"
+                      aria-label={tStatic('common:auto.frontend.kb5c7d4601029')}
                     >
                       {featureTabs.map((tab) => (
                         <button
@@ -389,12 +396,15 @@ export const ResponsiveNavigation: React.FC<ResponsiveNavigationProps> = React.m
 
         {/* User summary + sign out */}
         <div className="flex items-center gap-4 shrink-0">
+          <LanguageSwitcher className="hidden lg:inline-flex" />
           <div className="hidden md:flex flex-col text-right">
-            <span className="text-xs font-medium uppercase tracking-wide text-gray-500">Profile</span>
+            <span className="text-xs font-medium uppercase tracking-wide text-gray-500">
+              {t('navigation.profile')}
+            </span>
             <span className="text-sm font-semibold text-gray-900">{userName}</span>
             {userRole === 'admin' && (
               <span className="mt-1 inline-flex items-center justify-end gap-1 rounded-full border border-red-200 bg-red-50 px-2 py-0.5 text-xs font-medium text-red-600">
-                Admin
+                {t('roles.admin')}
               </span>
             )}
           </div>
@@ -403,7 +413,7 @@ export const ResponsiveNavigation: React.FC<ResponsiveNavigationProps> = React.m
             onClick={logout}
             className="rounded-xl border border-red-400 bg-red-500 px-3 py-2 text-sm font-medium text-white shadow-md transition-all duration-300 hover:scale-105 hover:bg-red-600 md:px-4 md:text-base"
           >
-            Sign out
+            {t('actions.logout')}
           </button>
         </div>
       </div>

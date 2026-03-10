@@ -1,5 +1,7 @@
 import { IsOptional, IsString, Matches, MaxLength } from 'class-validator';
 
+import { bStatic } from '../../i18n/runtime';
+
 const HEX_COLOR_REGEX = /^#(?:[0-9a-fA-F]{6})$/;
 
 export class CreateTaskLabelDto {
@@ -9,7 +11,7 @@ export class CreateTaskLabelDto {
 
   @IsOptional()
   @Matches(HEX_COLOR_REGEX, {
-    message: 'Color must be a valid 6-digit hex value.',
+    message: bStatic('errors.auto.backend.kdb97389aba96'),
   })
   color?: string;
 }

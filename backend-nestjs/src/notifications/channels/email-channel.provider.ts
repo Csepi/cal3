@@ -1,11 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { I18nService } from 'nestjs-i18n';
 import * as nodemailer from 'nodemailer';
 import {
   NotificationChannelProvider,
   NotificationChannelContext,
   NotificationChannelSkipError,
 } from './notification-channel.interface';
+import { EmailTemplateService } from '../email-template.service';
 
 @Injectable()
 export class EmailChannelProvider implements NotificationChannelProvider {
@@ -15,7 +17,11 @@ export class EmailChannelProvider implements NotificationChannelProvider {
   private transporter: nodemailer.Transporter | null = null;
   private configuredProvider: string | null = null;
 
-  constructor(private readonly configService: ConfigService) {}
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly i18nService: I18nService,
+    private readonly emailTemplateService: EmailTemplateService,
+  ) {}
 
   async canSend(): Promise<boolean> {
     await this.ensureTransporter();
@@ -33,12 +39,35 @@ export class EmailChannelProvider implements NotificationChannelProvider {
       throw new NotificationChannelSkipError('Recipient email not available');
     }
 
+    const preferredLanguage =
+      message.user?.preferredLanguage ?? message.user?.language ?? 'en';
+
     const subject = message.title
       ? message.title
-      : `Notification (${message.eventType})`;
+      : this.i18nService.t('email.subjects.eventReminder', {
+          lang: preferredLanguage,
+          args: { title: message.eventType },
+          defaultValue: `Notification (${message.eventType})`,
+        });
 
     const textBody = message.body;
-    const htmlBody = `<p>${message.body.replace(/\n/g, '<br/>')}</p>`;
+    const templateName = this.emailTemplateService.resolveTemplateName(
+      message.eventType,
+    );
+    const htmlBody = this.emailTemplateService.renderTemplate(
+      templateName,
+      preferredLanguage,
+      {
+        name: message.user?.firstName || message.user?.username || 'there',
+        subject,
+        body: message.body,
+        eventTitle: message.title || message.eventType,
+        eventDate: message.data?.eventDate || '',
+        bookingDate: message.data?.bookingDate || '',
+        bookingTime: message.data?.bookingTime || '',
+        resetLink: message.data?.resetLink || '',
+      },
+    );
 
     try {
       await this.transporter.sendMail({

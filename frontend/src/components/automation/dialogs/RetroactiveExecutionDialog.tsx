@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import type { AutomationRuleDetailDto } from '../../../types/Automation';
 
+import { tStatic } from '../../../i18n';
+
 interface RetroactiveExecutionDialogProps {
   rule: AutomationRuleDetailDto;
   onConfirm: () => Promise<{ message: string; executionCount: number }>;
@@ -82,40 +84,37 @@ export const RetroactiveExecutionDialog: React.FC<RetroactiveExecutionDialogProp
           {!executionResult && !error && (
             <>
               <p className="text-gray-700 mb-4">
-                Are you sure you want to run this rule on all existing events?
-              </p>
+                {tStatic('common:auto.frontend.kcba3a2be4f7b')}</p>
 
               <div className={`${colors.light} border border-${themeColor}-200 rounded-lg p-4 mb-4`}>
-                <h3 className="font-semibold text-gray-900 mb-2">Rule Details:</h3>
+                <h3 className="font-semibold text-gray-900 mb-2">{tStatic('common:auto.frontend.k5a01491f1467')}</h3>
                 <p className="text-sm text-gray-700">
-                  <strong>Name:</strong> {rule.name}
+                  <strong>{tStatic('common:auto.frontend.k71dd2eff9b4d')}</strong> {rule.name}
                 </p>
                 {rule.description && (
                   <p className="text-sm text-gray-700 mt-1">
-                    <strong>Description:</strong> {rule.description}
+                    <strong>{tStatic('common:auto.frontend.k9b6f3f076617')}</strong> {rule.description}
                   </p>
                 )}
                 <p className="text-sm text-gray-700 mt-1">
-                  <strong>Trigger:</strong> {rule.triggerType.replace('event.', '')}
+                  <strong>{tStatic('common:auto.frontend.k0e84bec6113d')}</strong> {rule.triggerType.replace('event.', '')}
                 </p>
                 <p className="text-sm text-gray-700 mt-1">
-                  <strong>Conditions:</strong> {rule.conditions.length} condition(s)
-                </p>
+                  <strong>{tStatic('common:auto.frontend.kcdb6217a0174')}</strong> {rule.conditions.length} {tStatic('common:auto.frontend.k20ef46cbe17a')}</p>
                 <p className="text-sm text-gray-700 mt-1">
-                  <strong>Actions:</strong> {rule.actions.length} action(s)
-                </p>
+                  <strong>{tStatic('common:auto.frontend.k3894e58bd387')}</strong> {rule.actions.length} {tStatic('common:auto.frontend.k493861a9c510')}</p>
               </div>
 
               <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
                 <div className="flex items-start">
                   <span className="text-yellow-600 text-xl mr-2">⚠️</span>
                   <div className="flex-1">
-                    <p className="text-sm text-yellow-800 font-semibold mb-1">Important:</p>
+                    <p className="text-sm text-yellow-800 font-semibold mb-1">{tStatic('common:auto.frontend.k18dd7e894b3d')}</p>
                     <ul className="text-sm text-yellow-700 space-y-1 list-disc list-inside">
-                      <li>This will evaluate all your existing events</li>
-                      <li>Matching events will have the rule's actions applied</li>
-                      <li>This operation cannot be undone</li>
-                      <li>Large event sets may take some time to process</li>
+                      <li>{tStatic('common:auto.frontend.k409eaf89c76f')}</li>
+                      <li>{tStatic('common:auto.frontend.kbdb4e3175a04')}</li>
+                      <li>{tStatic('common:auto.frontend.kc4d1f1ce96ff')}</li>
+                      <li>{tStatic('common:auto.frontend.k9569a385aced')}</li>
                     </ul>
                   </div>
                 </div>
@@ -126,8 +125,8 @@ export const RetroactiveExecutionDialog: React.FC<RetroactiveExecutionDialogProp
           {isExecuting && (
             <div className="text-center py-8">
               <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-gray-200 border-t-blue-500 mb-4"></div>
-              <p className="text-gray-700 font-semibold">Executing rule on your events...</p>
-              <p className="text-gray-500 text-sm mt-2">This may take a moment</p>
+              <p className="text-gray-700 font-semibold">{tStatic('common:auto.frontend.k9bcbe50664bf')}</p>
+              <p className="text-gray-500 text-sm mt-2">{tStatic('common:auto.frontend.k639108a3064f')}</p>
             </div>
           )}
 
@@ -136,13 +135,12 @@ export const RetroactiveExecutionDialog: React.FC<RetroactiveExecutionDialogProp
               <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4">
                 <span className="text-green-600 text-3xl">✓</span>
               </div>
-              <p className="text-gray-900 font-semibold text-lg mb-2">Execution Complete</p>
+              <p className="text-gray-900 font-semibold text-lg mb-2">{tStatic('common:auto.frontend.kabd0e26a9f69')}</p>
               <p className="text-gray-700">
                 {executionResult.message}
               </p>
               <p className="text-gray-600 text-sm mt-2">
-                Processed {executionResult.executionCount} event(s)
-              </p>
+                {tStatic('common:auto.frontend.k8291b246a971')}{executionResult.executionCount} {tStatic('common:auto.frontend.k0ac9d9800cf8')}</p>
             </div>
           )}
 
@@ -151,7 +149,7 @@ export const RetroactiveExecutionDialog: React.FC<RetroactiveExecutionDialogProp
               <div className="flex items-start">
                 <span className="text-red-600 text-xl mr-2">✗</span>
                 <div className="flex-1">
-                  <p className="text-sm text-red-800 font-semibold mb-1">Execution Failed</p>
+                  <p className="text-sm text-red-800 font-semibold mb-1">{tStatic('common:auto.frontend.kb18f0e3b50db')}</p>
                   <p className="text-sm text-red-700">{error}</p>
                 </div>
               </div>
@@ -167,18 +165,16 @@ export const RetroactiveExecutionDialog: React.FC<RetroactiveExecutionDialogProp
                 onClick={onCancel}
                 className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-300"
                 disabled={isExecuting}
-                aria-label="Cancel retroactive execution"
+                aria-label={tStatic('common:auto.frontend.k7e5a87e8c48f')}
               >
-                Cancel
-              </button>
+                {tStatic('common:auto.frontend.k77dfd2135f4d')}</button>
               <button
                 onClick={handleConfirm}
                 className={`px-4 py-2 text-white ${colors.primary} ${colors.hover} rounded-lg focus:outline-none focus:ring-2 focus:ring-${themeColor}-500`}
                 disabled={isExecuting}
-                aria-label="Confirm retroactive execution"
+                aria-label={tStatic('common:auto.frontend.kaf89d8963b77')}
               >
-                Run Now
-              </button>
+                {tStatic('common:auto.frontend.k4ee85a626ff6')}</button>
             </>
           )}
 
@@ -186,10 +182,9 @@ export const RetroactiveExecutionDialog: React.FC<RetroactiveExecutionDialogProp
             <button
               onClick={handleClose}
               className={`px-4 py-2 text-white ${colors.primary} ${colors.hover} rounded-lg focus:outline-none focus:ring-2 focus:ring-${themeColor}-500`}
-              aria-label="Close dialog"
+              aria-label={tStatic('common:auto.frontend.k7b29020292a4')}
             >
-              Close
-            </button>
+              {tStatic('common:auto.frontend.kbbfa773e5a63')}</button>
           )}
         </div>
       </div>

@@ -14,6 +14,8 @@ import React from 'react';
 import { useScreenSize } from '../../../hooks/useScreenSize';
 import { ListItem } from '../molecules/ListItem';
 
+import { tStatic } from '../../../i18n';
+
 export interface TableColumn<T> {
   key: keyof T | string;
   label: string;
@@ -113,8 +115,7 @@ export function MobileTable<T extends Record<string, unknown>>({
               ))}
               {actions.length > 0 && (
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
-                </th>
+                  {tStatic('common:auto.frontend.kc3cd636a585b')}</th>
               )}
             </tr>
           </thead>

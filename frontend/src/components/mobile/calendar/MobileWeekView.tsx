@@ -15,6 +15,8 @@ import type { Event } from '../../../types/Event';
 import { getMeetingLinkFromEvent } from '../../../utils/meetingLinks';
 import { TouchableArea } from '../atoms/TouchableArea';
 
+import { tStatic } from '../../../i18n';
+
 interface MobileWeekViewProps {
   currentDate: Date;
   events: Event[];
@@ -245,8 +247,7 @@ export const MobileWeekView: React.FC<MobileWeekViewProps> = ({
                               }}
                               aria-label={`Join ${event.title} meeting`}
                             >
-                              Join
-                            </button>
+                              {tStatic('common:auto.frontend.ke0d73143de80')}</button>
                           )}
                         </div>
                       );

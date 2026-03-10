@@ -1,4 +1,4 @@
-﻿import {
+import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
@@ -6,6 +6,7 @@
   UpdateDateColumn,
   OneToMany,
   ManyToMany,
+  Index,
 } from 'typeorm';
 import { Calendar } from './calendar.entity';
 import { Event } from './event.entity';
@@ -76,8 +77,12 @@ export class User {
   @Column({ default: '24h' }) // '12h' or '24h'
   timeFormat!: string;
 
-  @Column({ default: 'en' }) // User's preferred language (e.g., 'en', 'de', 'fr', 'es', 'hu')
+  @Column({ default: 'en' }) // User's preferred language (e.g., 'en', 'hu', 'de', 'fr')
   language!: string;
+
+  @Index('IDX_users_preferred_language')
+  @Column({ name: 'preferred_language', length: 8, default: 'en' })
+  preferredLanguage!: string;
 
   @Column({ type: 'int', nullable: true })
   defaultTasksCalendarId!: number | null;

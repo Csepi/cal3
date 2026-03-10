@@ -14,6 +14,8 @@ import {
 import { Type } from 'class-transformer';
 import { TaskPriority, TaskStatus } from '../../entities/task.entity';
 
+import { bStatic } from '../../i18n/runtime';
+
 const HEX_COLOR_REGEX = /^#(?:[0-9a-fA-F]{6})$/;
 
 const SUPPORTED_BODY_FORMATS = ['markdown'] as const;
@@ -27,7 +29,7 @@ export class CreateTaskDto {
   @IsString()
   @MaxLength(8000, {
     message:
-      'Markdown body is limited to 8k characters to keep sync payloads small.',
+      bStatic('errors.auto.backend.k1c67b13212cf'),
   })
   body?: string | null;
 
@@ -37,7 +39,7 @@ export class CreateTaskDto {
 
   @IsOptional()
   @Matches(HEX_COLOR_REGEX, {
-    message: 'Color must be a valid 6-digit hex value.',
+    message: bStatic('errors.auto.backend.kdb97389aba96'),
   })
   color?: string;
 

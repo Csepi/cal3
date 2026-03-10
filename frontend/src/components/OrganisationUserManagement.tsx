@@ -3,6 +3,8 @@ import { http } from '../lib/http';
 import { UserPermissionsService } from '../services/userPermissions';
 import type { Organization, User } from '../types';
 
+import { tStatic } from '../i18n';
+
 interface OrganisationUser extends User {
   id: number;
   organisationRole: 'admin' | 'editor' | 'user';
@@ -143,7 +145,7 @@ const OrganisationUserManagement: React.FC<OrganisationUserManagementProps> = ({
   const handleRemoveUser = async (userId: number) => {
     if (!selectedOrgId) return;
 
-    if (!confirm('Are you sure you want to remove this user from the organization?')) return;
+    if (!confirm(tStatic('common:auto.frontend.k9860e37e9923'))) return;
 
     try {
       setLoading(true);
@@ -179,14 +181,13 @@ const OrganisationUserManagement: React.FC<OrganisationUserManagementProps> = ({
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-gray-800">👥 Organization User Management</h2>
+        <h2 className="text-2xl font-bold text-gray-800">{tStatic('common:auto.frontend.keec0895930d7')}</h2>
         {selectedOrgId && (
           <button
             onClick={() => setShowAddUserModal(true)}
             className={`${themeColors.primary} text-white px-4 py-2 rounded-lg transition-all duration-200`}
           >
-            + Add User
-          </button>
+            {tStatic('common:auto.frontend.k5d96d5ad6eb4')}</button>
         )}
       </div>
 
@@ -200,14 +201,13 @@ const OrganisationUserManagement: React.FC<OrganisationUserManagementProps> = ({
       {organisations.length > 0 && (
         <div className="bg-white rounded-lg border p-4">
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Select Organization
-          </label>
+            {tStatic('common:auto.frontend.kc8e5de1f5f2d')}</label>
           <select
             value={selectedOrgId || ''}
             onChange={(e) => setSelectedOrgId(Number(e.target.value) || null)}
             className="w-full p-2 border border-gray-300 rounded-lg"
           >
-            <option value="">Choose an organization...</option>
+            <option value="">{tStatic('common:auto.frontend.k75eeb86436a0')}</option>
             {organisations.map(org => (
               <option key={org.id} value={org.id}>
                 {org.name}
@@ -222,29 +222,28 @@ const OrganisationUserManagement: React.FC<OrganisationUserManagementProps> = ({
         <div className="bg-white rounded-lg border">
           <div className="p-4 border-b">
             <h3 className="text-lg font-semibold text-gray-800">
-              Users in {selectedOrg.name}
+              {tStatic('common:auto.frontend.k2ccfc55db679')}{selectedOrg.name}
             </h3>
             <p className="text-sm text-gray-600">
-              Manage users and their roles within this organization
-            </p>
+              {tStatic('common:auto.frontend.k0c76e245911e')}</p>
           </div>
 
           {loading ? (
             <div className="p-8 text-center">
               <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-              <p className="mt-2 text-gray-600">Loading users...</p>
+              <p className="mt-2 text-gray-600">{tStatic('common:auto.frontend.k37282b63dd84')}</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">User</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Role</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Usage Plans</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Joined</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">{tStatic('common:auto.frontend.k9f8a2389a20c')}</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">{tStatic('common:auto.frontend.k84add5b29527')}</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">{tStatic('common:auto.frontend.kc3f104d13657')}</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">{tStatic('common:auto.frontend.k95036cd183c6')}</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">{tStatic('common:auto.frontend.k43a1c6266f88')}</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">{tStatic('common:auto.frontend.kc3cd636a585b')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
@@ -281,14 +280,12 @@ const OrganisationUserManagement: React.FC<OrganisationUserManagementProps> = ({
                             onClick={() => openRoleChangeModal(user)}
                             className="text-xs px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
                           >
-                            Change Role
-                          </button>
+                            {tStatic('common:auto.frontend.k7b55cbe93348')}</button>
                           <button
                             onClick={() => handleRemoveUser(user.id)}
                             className="text-xs px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600"
                           >
-                            Remove
-                          </button>
+                            {tStatic('common:auto.frontend.ke963907dac5c')}</button>
                         </div>
                       </td>
                     </tr>
@@ -298,8 +295,7 @@ const OrganisationUserManagement: React.FC<OrganisationUserManagementProps> = ({
 
               {orgUsers.length === 0 && (
                 <div className="p-8 text-center text-gray-500">
-                  No users in this organization yet. Add some users to get started!
-                </div>
+                  {tStatic('common:auto.frontend.kcf057d3121f0')}</div>
               )}
             </div>
           )}
@@ -310,20 +306,19 @@ const OrganisationUserManagement: React.FC<OrganisationUserManagementProps> = ({
       {showAddUserModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Add User to Organization</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">{tStatic('common:auto.frontend.k0efa9b2edc29')}</h3>
             <div className="space-y-4">
               <div className="text-sm text-gray-600 mb-2">
-                <span className="font-medium">Note:</span> Only users with Store or Enterprise plans can be added to organizations.
-              </div>
+                <span className="font-medium">{tStatic('common:auto.frontend.k83423c198b60')}</span> {tStatic('common:auto.frontend.kf8d99250a936')}</div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Select User</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">{tStatic('common:auto.frontend.kc875cbd5b1af')}</label>
                 <select
                   value={selectedUserId || ''}
                   onChange={(e) => setSelectedUserId(Number(e.target.value) || null)}
                   className="w-full p-2 border border-gray-300 rounded-lg"
                 >
-                  <option value="">Choose a user...</option>
+                  <option value="">{tStatic('common:auto.frontend.k7d91dd0cb35d')}</option>
                   {availableUsers.map(user => (
                     <option key={user.id} value={user.id}>
                       {user.firstName} {user.lastName} ({user.email})
@@ -333,15 +328,15 @@ const OrganisationUserManagement: React.FC<OrganisationUserManagementProps> = ({
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Role</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">{tStatic('common:auto.frontend.kc3f104d13657')}</label>
                 <select
                   value={selectedUserRole}
                   onChange={(e) => setSelectedUserRole(e.target.value as 'admin' | 'editor' | 'user')}
                   className="w-full p-2 border border-gray-300 rounded-lg"
                 >
-                  <option value="user">User</option>
-                  <option value="editor">Editor</option>
-                  <option value="admin">Admin</option>
+                  <option value="user">{tStatic('common:auto.frontend.k9f8a2389a20c')}</option>
+                  <option value="editor">{tStatic('common:auto.frontend.kc7e9fb2ea6c3')}</option>
+                  <option value="admin">{tStatic('common:auto.frontend.k4e7afebcfbae')}</option>
                 </select>
               </div>
             </div>
@@ -355,8 +350,7 @@ const OrganisationUserManagement: React.FC<OrganisationUserManagementProps> = ({
                 }}
                 className="bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded"
               >
-                Cancel
-              </button>
+                {tStatic('common:auto.frontend.k77dfd2135f4d')}</button>
               <button
                 onClick={handleAddUser}
                 disabled={!selectedUserId || loading}
@@ -373,24 +367,24 @@ const OrganisationUserManagement: React.FC<OrganisationUserManagementProps> = ({
       {showRoleChangeModal && userToChangeRole && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Change User Role</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">{tStatic('common:auto.frontend.k163a8ef96ad3')}</h3>
             <div className="space-y-4">
               <div className="bg-gray-50 p-3 rounded">
                 <p className="font-medium">{userToChangeRole.firstName} {userToChangeRole.lastName}</p>
                 <p className="text-sm text-gray-600">{userToChangeRole.email}</p>
-                <p className="text-sm text-gray-500">Current role: {userToChangeRole.organisationRole}</p>
+                <p className="text-sm text-gray-500">{tStatic('common:auto.frontend.k53e944f37112')}{userToChangeRole.organisationRole}</p>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">New Role</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">{tStatic('common:auto.frontend.k261071b7ac94')}</label>
                 <select
                   value={selectedUserRole}
                   onChange={(e) => setSelectedUserRole(e.target.value as 'admin' | 'editor' | 'user')}
                   className="w-full p-2 border border-gray-300 rounded-lg"
                 >
-                  <option value="user">User</option>
-                  <option value="editor">Editor</option>
-                  <option value="admin">Admin</option>
+                  <option value="user">{tStatic('common:auto.frontend.k9f8a2389a20c')}</option>
+                  <option value="editor">{tStatic('common:auto.frontend.kc7e9fb2ea6c3')}</option>
+                  <option value="admin">{tStatic('common:auto.frontend.k4e7afebcfbae')}</option>
                 </select>
               </div>
             </div>
@@ -403,8 +397,7 @@ const OrganisationUserManagement: React.FC<OrganisationUserManagementProps> = ({
                 }}
                 className="bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded"
               >
-                Cancel
-              </button>
+                {tStatic('common:auto.frontend.k77dfd2135f4d')}</button>
               <button
                 onClick={handleChangeRole}
                 disabled={loading}
@@ -419,8 +412,7 @@ const OrganisationUserManagement: React.FC<OrganisationUserManagementProps> = ({
 
       {organisations.length === 0 && !loading && (
         <div className="text-center py-8 text-gray-500">
-          You don't have admin access to organizations.
-        </div>
+          {tStatic('common:auto.frontend.k3a1b61eb2eb7')}</div>
       )}
     </div>
   );

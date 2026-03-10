@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import type { Event } from '../../types/Event';
 import { getMeetingLinkFromEvent } from '../../utils/meetingLinks';
 
+import { tStatic } from '../../i18n';
+
 interface MobileDayViewProps {
   date: Date;
   events: Event[];
@@ -172,8 +174,7 @@ export const MobileDayView: React.FC<MobileDayViewProps> = ({
                           }}
                           aria-label={`Join ${event.title} meeting`}
                         >
-                          Join
-                        </button>
+                          {tStatic('common:auto.frontend.ke0d73143de80')}</button>
                       )}
                     </div>
                   );
@@ -183,8 +184,7 @@ export const MobileDayView: React.FC<MobileDayViewProps> = ({
               {/* Empty state for tap to create */}
               {hourEvents.length === 0 && (
                 <div className="ml-20 mr-2 h-full min-h-[60px] flex items-center justify-center text-gray-300 text-xs">
-                  Tap to create event
-                </div>
+                  {tStatic('common:auto.frontend.kc1bed81f0052')}</div>
               )}
             </div>
           );

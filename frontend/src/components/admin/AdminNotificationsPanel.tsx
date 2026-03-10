@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { apiService } from '../../services/api';
 
+import { tStatic } from '../../i18n';
+
 interface ConfigurationSetting {
   key: string;
   label: string;
@@ -109,7 +111,7 @@ export const AdminNotificationsPanel = ({ themeColor = '#3b82f6' }: { themeColor
       setConfig(notificationsGroup);
     } catch (err) {
       console.error('Failed to load notification admin configuration', err);
-      setError('Unable to load notification configuration. Please try again later.');
+      setError(tStatic('common:auto.frontend.k3be941eafdcc'));
     } finally {
       setIsLoading(false);
     }
@@ -127,7 +129,7 @@ export const AdminNotificationsPanel = ({ themeColor = '#3b82f6' }: { themeColor
       await loadConfig();
     } catch (err) {
       console.error('Failed to update notification config', err);
-      setError('Could not save setting. Please try again.');
+      setError(tStatic('common:auto.frontend.k04a3d4c72974'));
     } finally {
       setSavingKey(null);
     }
@@ -252,8 +254,8 @@ export const AdminNotificationsPanel = ({ themeColor = '#3b82f6' }: { themeColor
   return (
     <div className="space-y-6">
       <header className="border-b border-gray-200 pb-4">
-        <h1 className="text-2xl font-semibold text-gray-900">Notification Platform</h1>
-        <p className="text-sm text-gray-500">Configure delivery channels, providers, and runtime behaviour.</p>
+        <h1 className="text-2xl font-semibold text-gray-900">{tStatic('common:auto.frontend.kd8b4202f7e1b')}</h1>
+        <p className="text-sm text-gray-500">{tStatic('common:auto.frontend.kfb79f3c2942c')}</p>
       </header>
 
       {error && (
@@ -261,13 +263,13 @@ export const AdminNotificationsPanel = ({ themeColor = '#3b82f6' }: { themeColor
       )}
 
       {isLoading ? (
-        <div className="py-12 text-center text-gray-500">Loading notification configuration...</div>
+        <div className="py-12 text-center text-gray-500">{tStatic('common:auto.frontend.kba233b5914d1')}</div>
       ) : !config ? (
-        <div className="py-12 text-center text-gray-500">No notification settings found.</div>
+        <div className="py-12 text-center text-gray-500">{tStatic('common:auto.frontend.kcce790bbe640')}</div>
       ) : (
         <div className="space-y-8">
           <section>
-            <h2 className="text-lg font-medium text-gray-900 mb-3">Channel toggles</h2>
+            <h2 className="text-lg font-medium text-gray-900 mb-3">{tStatic('common:auto.frontend.k75466052753d')}</h2>
             <div className="grid gap-3">
               {config.settings.filter(isChannelToggle).map((setting) => (
                 <div key={setting.key} className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 border border-gray-200 rounded-xl p-4 bg-white shadow-sm">
@@ -284,7 +286,7 @@ export const AdminNotificationsPanel = ({ themeColor = '#3b82f6' }: { themeColor
           </section>
 
           <section>
-            <h2 className="text-lg font-medium text-gray-900 mb-3">Provider configuration</h2>
+            <h2 className="text-lg font-medium text-gray-900 mb-3">{tStatic('common:auto.frontend.k9986541c7b8d')}</h2>
             <div className="space-y-5">
               {providerGroupEntries.map(({ id: groupId, definition, settings }) => {
                 const toggle = definition?.toggleKey
@@ -345,15 +347,14 @@ export const AdminNotificationsPanel = ({ themeColor = '#3b82f6' }: { themeColor
               })}
               {providerGroupEntries.length === 0 && (
                 <div className="rounded-lg border border-gray-200 bg-white px-4 py-6 text-sm text-gray-500">
-                  No provider configuration available for the current channel selection.
-                </div>
+                  {tStatic('common:auto.frontend.k66089d6bc9fd')}</div>
               )}
             </div>
           </section>
 
           {derivedInfo.length > 0 && (
             <section>
-              <h2 className="text-lg font-medium text-gray-900 mb-3">Derived information</h2>
+              <h2 className="text-lg font-medium text-gray-900 mb-3">{tStatic('common:auto.frontend.kf0cec6e8e81e')}</h2>
               <div className="grid gap-2">
                 {derivedInfo.map(([key, value]) => (
                   <div key={key} className="text-sm text-gray-600">
@@ -368,7 +369,7 @@ export const AdminNotificationsPanel = ({ themeColor = '#3b82f6' }: { themeColor
       )}
 
       <footer className="rounded-xl border border-blue-100 bg-blue-50 px-4 py-3 text-xs text-blue-700">
-        Tip: Use feature flags to roll out channels gradually. Current accent colour{' '}
+        {tStatic('common:auto.frontend.kdd5b03b4c197')}{' '}
         <span className="inline-block h-3 w-3 rounded-full align-middle" style={{ backgroundColor: themeColor }} />
       </footer>
     </div>

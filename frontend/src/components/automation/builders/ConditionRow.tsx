@@ -6,6 +6,8 @@ import {
 import type { ConditionFormData } from '../../../types/Automation';
 import { useAutomationMetadata } from '../../../hooks/useAutomationMetadata';
 
+import { tStatic } from '../../../i18n';
+
 interface ConditionRowProps {
   condition: ConditionFormData;
   onUpdate: (updates: Partial<ConditionFormData>) => void;
@@ -82,13 +84,13 @@ export const ConditionRow: React.FC<ConditionRowProps> = ({
     <div className="flex items-start gap-2 p-4 bg-white border border-gray-200 rounded-lg hover:border-gray-300 transition-colors">
       {/* Field Selector */}
       <div className="flex-1 min-w-0">
-        <label className="block text-xs font-medium text-gray-600 mb-1">Field</label>
+        <label className="block text-xs font-medium text-gray-600 mb-1">{tStatic('common:auto.frontend.kc326a4660b67')}</label>
         <select
           value={condition.field || ''}
           onChange={handleFieldChange}
           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
         >
-          <option value="">Select field...</option>
+          <option value="">{tStatic('common:auto.frontend.k96f09e731e3f')}</option>
           {conditionFields.map((field) => (
             <option key={field.value} value={field.value}>
               {field.label}
@@ -96,20 +98,20 @@ export const ConditionRow: React.FC<ConditionRowProps> = ({
           ))}
         </select>
         {selectedField && (
-          <p className="mt-1 text-xs text-gray-500">Type: {selectedField.dataType}</p>
+          <p className="mt-1 text-xs text-gray-500">{tStatic('common:auto.frontend.kee3fb11d05c9')}{selectedField.dataType}</p>
         )}
       </div>
 
       {/* Operator Selector */}
       <div className="flex-1 min-w-0">
-        <label className="block text-xs font-medium text-gray-600 mb-1">Operator</label>
+        <label className="block text-xs font-medium text-gray-600 mb-1">{tStatic('common:auto.frontend.kd0e687b079fb')}</label>
         <select
           value={condition.operator || ''}
           onChange={handleOperatorChange}
           disabled={!condition.field}
           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed text-sm"
         >
-          <option value="">Select operator...</option>
+          <option value="">{tStatic('common:auto.frontend.ka129e373e89c')}</option>
           {availableOperators.map((op) => (
             <option key={op} value={op}>
               {op.replace(/_/g, ' ')}
@@ -121,7 +123,7 @@ export const ConditionRow: React.FC<ConditionRowProps> = ({
       {/* Value Input */}
       {condition.operator && requiresValue(condition.operator) && (
         <div className="flex-1 min-w-0">
-          <label className="block text-xs font-medium text-gray-600 mb-1">Value</label>
+          <label className="block text-xs font-medium text-gray-600 mb-1">{tStatic('common:auto.frontend.k8dce170de238')}</label>
           {selectedField?.dataType === 'string' &&
           condition.value.length > 50 ? (
             <textarea
@@ -141,15 +143,14 @@ export const ConditionRow: React.FC<ConditionRowProps> = ({
             />
           )}
           {condition.field === ConditionField.EVENT_DURATION && (
-            <p className="mt-1 text-xs text-gray-500">Duration in minutes</p>
+            <p className="mt-1 text-xs text-gray-500">{tStatic('common:auto.frontend.k465c1cd54995')}</p>
           )}
           {condition.field === ConditionField.WEBHOOK_DATA && (
             <p className="mt-1 text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded">
-              💡 Use dot notation to access nested JSON fields (e.g., webhook.data.customer_id, webhook.data.metadata.priority)
-            </p>
+              {tStatic('common:auto.frontend.k2bd42eb42b57')}</p>
           )}
           {condition.operator === ConditionOperator.IN_LIST && (
-            <p className="mt-1 text-xs text-gray-500">Separate multiple values with commas</p>
+            <p className="mt-1 text-xs text-gray-500">{tStatic('common:auto.frontend.k39951c6e3e5f')}</p>
           )}
         </div>
       )}
@@ -160,7 +161,7 @@ export const ConditionRow: React.FC<ConditionRowProps> = ({
           <button
             onClick={onDelete}
             className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded transition-colors"
-            title="Remove condition"
+            title={tStatic('common:auto.frontend.k858fb149fb4a')}
           >
             <svg
               className="w-5 h-5"

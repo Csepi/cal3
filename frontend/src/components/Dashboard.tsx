@@ -16,7 +16,7 @@
  */
 
 import { useState, useEffect, useRef } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useAppTranslation } from '../i18n/useAppTranslation';
 import { Login } from './auth';
 import Calendar from './Calendar';
 import AdminPanel from './AdminPanel';
@@ -48,6 +48,7 @@ import {
   hasOfflineTimelineSnapshot,
   isNavigatorOffline,
 } from '../services/offlineTimelineCache';
+import { applyLanguagePreference } from '../i18n';
 
 /**
  * View types for the main navigation
@@ -82,7 +83,7 @@ interface DashboardUserProfile {
 
 const Dashboard: React.FC<DashboardProps> = ({ initialView = 'calendar' }) => {
   // Hooks
-  const { i18n } = useTranslation();
+  const { t } = useAppTranslation('common');
   const { flags: featureFlags, loading: featureFlagsLoading } = useFeatureFlags();
   const { isMobile } = useScreenSize();
   const { currentUser, isAuthenticated, logout: authLogout } = useAuth();
@@ -142,12 +143,15 @@ const Dashboard: React.FC<DashboardProps> = ({ initialView = 'calendar' }) => {
 
       // Apply user's saved language preference
       if (profile.language) {
-        i18n.changeLanguage(profile.language);
+        await applyLanguagePreference(profile.language, { persistRemote: false });
       }
     } catch (err) {
       clientLogger.warn('dashboard', 'failed to load user profile', err);
       setGlobalErrorMessage(
-        'Unable to load profile data from the server. Some features may be unavailable until connectivity is restored.',
+        t('messages.profileLoadWarning', {
+          defaultValue:
+            'Unable to load profile data from the server. Some features may be unavailable until connectivity is restored.',
+        }),
       );
     }
   };
@@ -270,7 +274,10 @@ const Dashboard: React.FC<DashboardProps> = ({ initialView = 'calendar' }) => {
       } catch (error) {
         clientLogger.warn('dashboard', 'failed to refresh permissions', error);
         setGlobalErrorMessage(
-          'Unable to refresh permissions right now. Access checks may be stale.',
+          t('messages.permissionsRefreshWarning', {
+            defaultValue:
+              'Unable to refresh permissions right now. Access checks may be stale.',
+          }),
         );
       }
     };
@@ -342,31 +349,31 @@ const Dashboard: React.FC<DashboardProps> = ({ initialView = 'calendar' }) => {
   const displayName = userProfile?.name || userProfile?.fullName || currentUser?.username || '';
   const mobileSurfaceLabel = (() => {
     if (isOfflineReadOnlyMode) {
-      return 'Offline timeline';
+      return t('navigation.offlineTimeline', { defaultValue: 'Offline timeline' });
     }
 
     switch (currentView) {
       case 'calendar':
-        return 'Timeline';
+        return t('navigation.calendar');
       case 'tasks':
-        return 'Tasks';
+        return t('navigation.tasks', { defaultValue: 'Tasks' });
       case 'reservations':
-        return 'Bookings';
+        return t('navigation.reservations');
       case 'automation':
-        return 'Automation';
+        return t('navigation.automation');
       case 'agent':
-        return 'Agents';
+        return t('navigation.agentsShort', { defaultValue: 'Agents' });
       case 'sync':
-        return 'Sync';
+        return t('navigation.syncShort');
       case 'admin':
-        return 'Admin';
+        return t('navigation.adminShort');
       case 'notifications':
       case 'notification-settings':
-        return 'Notifications';
+        return t('navigation.notifications', { defaultValue: 'Notifications' });
       case 'personal-logs':
-        return 'Personal Logs';
+        return t('navigation.personalLogs', { defaultValue: 'Personal Logs' });
       default:
-        return 'Profile';
+        return t('navigation.profile');
     }
   })();
 
@@ -405,7 +412,7 @@ const Dashboard: React.FC<DashboardProps> = ({ initialView = 'calendar' }) => {
                   }}
                   className="rounded-md border border-amber-300 px-2 py-1 text-xs font-medium hover:bg-amber-100"
                 >
-                  Retry
+                  {t('actions.refresh')}
                 </button>
               </div>
             </div>
@@ -488,7 +495,7 @@ const Dashboard: React.FC<DashboardProps> = ({ initialView = 'calendar' }) => {
         <FloatingActionButton
           primaryAction={{
             icon: '+',
-            label: 'New Event',
+            label: t('calendar:events.newEvent', { defaultValue: 'New Event' }),
             onClick: handleCreateEvent,
           }}
           themeColor={themeColor}
@@ -498,7 +505,7 @@ const Dashboard: React.FC<DashboardProps> = ({ initialView = 'calendar' }) => {
         <FloatingActionButton
           primaryAction={{
             icon: '+',
-            label: 'New Task',
+            label: t('messages.newTask', { defaultValue: 'New Task' }),
             onClick: handleCreateTask,
           }}
           themeColor={themeColor}

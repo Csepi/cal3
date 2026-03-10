@@ -9,6 +9,8 @@ import { NotificationsGateway } from './notifications.gateway';
 
 import { logError } from '../common/errors/error-logger';
 import { buildErrorContext } from '../common/errors/error-context';
+import { bStatic } from '../i18n/runtime';
+
 export interface NotificationThreadSummary {
   id: number;
   threadKey: string;
@@ -150,7 +152,7 @@ export class NotificationThreadsService {
         where: { id: threadId },
       });
       if (!thread) {
-        throw new NotFoundException('Notification thread not found');
+        throw new NotFoundException(bStatic('errors.auto.backend.k22cbbe7c25d0'));
       }
       return this.threadStateRepository.save(
         this.threadStateRepository.create({ userId, threadId }),

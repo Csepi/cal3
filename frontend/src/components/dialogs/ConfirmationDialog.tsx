@@ -1,5 +1,7 @@
 import React from 'react';
 
+import { tStatic } from '../../i18n';
+
 interface ConfirmationDialogProps {
   isOpen: boolean;
   title: string;
@@ -147,8 +149,7 @@ const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
               <div className="flex items-center space-x-2">
                 <span className={`${warningTheme.icon} text-sm`}>🔥</span>
                 <span className={`text-sm font-medium ${warningTheme.accent}`}>
-                  This action cannot be undone
-                </span>
+                  {tStatic('common:auto.frontend.k0d1d9908264f')}</span>
               </div>
             </div>
           )}

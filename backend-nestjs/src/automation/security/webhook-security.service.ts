@@ -9,6 +9,8 @@ import { isIP } from 'net';
 import { SecurityStoreService } from '../../api-security/services/security-store.service';
 import { AutomationRule } from '../../entities/automation-rule.entity';
 
+import { bStatic } from '../../i18n/runtime';
+
 export interface IncomingWebhookSecurityInput {
   rule: AutomationRule;
   token: string;
@@ -97,7 +99,7 @@ export class WebhookSecurityService {
       this.replayTtlSeconds,
     );
     if (!created) {
-      throw new UnauthorizedException('Webhook replay detected.');
+      throw new UnauthorizedException(bStatic('errors.auto.backend.kb1e417a0bb43'));
     }
   }
 
@@ -110,7 +112,7 @@ export class WebhookSecurityService {
     const activeSecret = (rule.webhookSecret ?? '').trim();
     if (!activeSecret) {
       throw new ForbiddenException(
-        'Webhook secret is not configured for this automation.',
+        bStatic('errors.auto.backend.ke7ec2e69bf73'),
       );
     }
 
@@ -134,7 +136,7 @@ export class WebhookSecurityService {
       }
     }
 
-    throw new UnauthorizedException('Invalid webhook signature.');
+    throw new UnauthorizedException(bStatic('errors.auto.backend.kee831504837a'));
   }
 
   private signatureMatches(
@@ -165,7 +167,7 @@ export class WebhookSecurityService {
 
     const normalizedIp = this.normalizeIp(sourceIp);
     if (!normalizedIp) {
-      throw new ForbiddenException('Webhook source IP is not available.');
+      throw new ForbiddenException(bStatic('errors.auto.backend.k347bbedb503c'));
     }
 
     const allowed = effectiveWhitelist.some((entry) =>
@@ -231,7 +233,7 @@ export class WebhookSecurityService {
       this.getHeader(headers, 'x-webhook-signature') ??
       this.getHeader(headers, 'x-hub-signature-256');
     if (!raw) {
-      throw new UnauthorizedException('Webhook signature header is missing.');
+      throw new UnauthorizedException(bStatic('errors.auto.backend.ke0327c32eca8'));
     }
 
     const normalized = raw.trim().toLowerCase();
@@ -239,7 +241,7 @@ export class WebhookSecurityService {
       ? normalized.slice('sha256='.length)
       : normalized;
     if (!/^[a-f0-9]{64}$/.test(signature)) {
-      throw new BadRequestException('Webhook signature format is invalid.');
+      throw new BadRequestException(bStatic('errors.auto.backend.k126cfde1d29b'));
     }
     return signature;
   }
@@ -251,7 +253,7 @@ export class WebhookSecurityService {
       this.getHeader(headers, 'x-primecal-timestamp') ??
       this.getHeader(headers, 'x-webhook-timestamp');
     if (!raw) {
-      throw new UnauthorizedException('Webhook timestamp header is missing.');
+      throw new UnauthorizedException(bStatic('errors.auto.backend.ked5e2936032c'));
     }
 
     const trimmed = raw.trim();
@@ -264,7 +266,7 @@ export class WebhookSecurityService {
 
     const parsed = new Date(trimmed);
     if (Number.isNaN(parsed.getTime())) {
-      throw new BadRequestException('Webhook timestamp is invalid.');
+      throw new BadRequestException(bStatic('errors.auto.backend.ka6dd6e6e2776'));
     }
     return parsed;
   }
@@ -273,7 +275,7 @@ export class WebhookSecurityService {
     const now = Date.now();
     const drift = Math.abs(now - timestamp.getTime());
     if (drift > this.timestampToleranceMs) {
-      throw new UnauthorizedException('Webhook timestamp is outside tolerance.');
+      throw new UnauthorizedException(bStatic('errors.auto.backend.k78a1ff36887d'));
     }
   }
 

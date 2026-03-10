@@ -8,6 +8,8 @@ import { AutomationAuditLog } from '../entities/automation-audit-log.entity';
 import { AuditTrailService } from '../logging/audit-trail.service';
 import { PersonalAuditQueryDto } from './dto/personal-audit.query.dto';
 
+import { bStatic } from '../i18n/runtime';
+
 export interface PersonalAutomationRun {
   id: number;
   ruleId: number;
@@ -88,7 +90,7 @@ export class UsersService {
     });
 
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException(bStatic('errors.auto.backend.k01eb94695483'));
     }
 
     return user;

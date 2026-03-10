@@ -2,6 +2,8 @@ import React, { useEffect } from 'react';
 import { SmartValuePicker } from '../SmartValuePicker';
 import { TriggerType } from '../../../types/Automation';
 
+import { tStatic } from '../../../i18n';
+
 interface SetEventColorFormProps {
   config: Record<string, any>;
   onChange: (config: Record<string, any>) => void;
@@ -58,7 +60,7 @@ export const SetEventColorForm: React.FC<SetEventColorFormProps> = ({ config, on
       {/* Color Picker */}
       <div>
         <div className="flex items-center justify-between mb-2">
-          <label className="block text-sm font-medium text-gray-700">Event Color *</label>
+          <label className="block text-sm font-medium text-gray-700">{tStatic('common:auto.frontend.kfae169579bf8')}</label>
           {triggerType && (
             <SmartValuePicker
               triggerType={triggerType}
@@ -79,32 +81,30 @@ export const SetEventColorForm: React.FC<SetEventColorFormProps> = ({ config, on
             type="text"
             value={selectedColor}
             onChange={(e) => handleColorChange(e.target.value)}
-            placeholder="#3b82f6 or {{event.color}}"
+            placeholder={tStatic('common:auto.frontend.k7218d8dfdc3c')}
             className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm"
           />
           {!isSmartValue(selectedColor) && (
             <div
               className="w-12 h-12 rounded border-2 border-gray-300"
               style={{ backgroundColor: isValidHexColor(selectedColor) ? selectedColor : '#f3f4f6' }}
-              title="Preview"
+              title={tStatic('common:auto.frontend.kf1fbb2b43dca')}
             />
           )}
         </div>
         {!isValidHexColor(selectedColor) && !isSmartValue(selectedColor) && selectedColor && (
-          <p className="mt-1 text-xs text-red-600">Invalid hex color format or smart value</p>
+          <p className="mt-1 text-xs text-red-600">{tStatic('common:auto.frontend.k6eb080a90125')}</p>
         )}
         {isSmartValue(selectedColor) && (
           <p className="mt-1 text-xs text-purple-600">
-            ✨ Smart value will be replaced with actual data when the action executes
-          </p>
+            {tStatic('common:auto.frontend.ka7d0481daa87')}</p>
         )}
       </div>
 
       {/* Preset Colors */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
-          Preset Colors
-        </label>
+          {tStatic('common:auto.frontend.k5503a22f82c4')}</label>
         <div className="grid grid-cols-8 gap-2">
           {PRESET_COLORS.map((preset) => (
             <button
@@ -126,28 +126,22 @@ export const SetEventColorForm: React.FC<SetEventColorFormProps> = ({ config, on
       {/* Info */}
       <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
         <p className="text-xs text-gray-700">
-          <strong>How it works:</strong> When this rule triggers, the event's color will be
-          changed to the selected color (or smart value result). This applies to the event's visual appearance in the
-          calendar.
-        </p>
+          <strong>{tStatic('common:auto.frontend.k72ecbf9c4f99')}</strong> {tStatic('common:auto.frontend.k4c4aae583730')}</p>
         {triggerType && (
           <p className="text-xs text-purple-600 mt-2">
-            <strong>💡 Pro Tip:</strong> Use smart values like <code className="bg-purple-100 px-1 py-0.5 rounded">{`{{calendar.color}}`}</code> to
-            dynamically set colors based on trigger data.
-          </p>
+            <strong>{tStatic('common:auto.frontend.kf0e51ca62df5')}</strong> {tStatic('common:auto.frontend.kc15f86853485')}<code className="bg-purple-100 px-1 py-0.5 rounded">{`{{calendar.color}}`}</code> {tStatic('common:auto.frontend.kcfccbd3883d0')}</p>
         )}
       </div>
 
       {/* Preview */}
       {!isSmartValue(selectedColor) && (
         <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg">
-          <p className="text-xs font-medium text-gray-700 mb-2">Preview:</p>
+          <p className="text-xs font-medium text-gray-700 mb-2">{tStatic('common:auto.frontend.k4bf30626054d')}</p>
           <div
             className="p-3 rounded text-white font-medium text-sm"
             style={{ backgroundColor: isValidHexColor(selectedColor) ? selectedColor : '#9ca3af' }}
           >
-            Sample Event Title
-          </div>
+            {tStatic('common:auto.frontend.kdeb7d030b610')}</div>
         </div>
       )}
     </div>

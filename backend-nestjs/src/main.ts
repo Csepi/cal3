@@ -39,6 +39,8 @@ import { ParameterizedQueryService } from './common/database/parameterized-query
 import { RateLimitInterceptor } from './api-security/interceptors/rate-limit.interceptor';
 import { IdempotencyInterceptor } from './common/interceptors/idempotency.interceptor';
 
+import { bStatic } from './i18n/runtime';
+
 const logger = new Logger('Bootstrap');
 const dbLogger = new Logger('DatabaseConnection');
 
@@ -351,7 +353,7 @@ async function bootstrap() {
         'application/json': {
           example: {
             statusCode: 429,
-            message: 'Rate limit exceeded. Please retry later.',
+            message: bStatic('errors.auto.backend.kc4118fd24c92'),
           },
         },
       },

@@ -1,0 +1,9 @@
+{
+  "required": "Dieses Feld ist erforderlich.",
+  "invalidEmail": "Ung?ltige E-Mail-Adresse.",
+  "invalidDate": "Ung?ltiges Datum.",
+  "invalidTime": "Ung?ltige Uhrzeit.",
+  "passwordWeak": "Passwort ist zu schwach.",
+  "startBeforeEnd": "Die Startzeit muss vor der Endzeit liegen.",
+  "invalidCalendar": "Ung?ltiger Aufgabenkalender. W?hlen Sie einen Kalender, den Sie besitzen oder bearbeiten d?rfen."
+}

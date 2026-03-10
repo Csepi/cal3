@@ -11,6 +11,8 @@ import {
 import { SyncProvider } from '../../../entities/calendar-sync.entity';
 import { SanitizeText } from '../../../common/validation/sanitize.decorator';
 
+import { bStatic } from '../../../i18n/runtime';
+
 export class CalendarSyncProviderParamDto {
   @IsEnum(SyncProvider)
   provider!: SyncProvider;
@@ -27,7 +29,7 @@ export class OAuthCallbackQueryDto {
   @IsString()
   @MaxLength(512)
   @Matches(/^[\w\-:.]+$/, {
-    message: 'state contains unsupported characters',
+    message: bStatic('errors.auto.backend.k741143339954'),
   })
   state?: string;
 

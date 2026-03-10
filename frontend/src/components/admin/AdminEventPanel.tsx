@@ -10,6 +10,8 @@ import { Card, CardHeader, Button } from '../ui';
 import { loadAdminData, formatAdminError, adminApiCall } from './adminApiService';
 import type { Event } from './types';
 
+import { tStatic } from '../../i18n';
+
 export interface AdminEventPanelProps {
   /** Current theme color for styling */
   themeColor?: string;
@@ -51,7 +53,7 @@ export const AdminEventPanel: React.FC<AdminEventPanelProps> = ({
    * Delete an event
    */
   const deleteEvent = async (eventId: number) => {
-    if (!confirm('Are you sure you want to delete this event? This action cannot be undone.')) {
+    if (!confirm(tStatic('common:auto.frontend.k1ced43fa08df'))) {
       return;
     }
 
@@ -106,7 +108,7 @@ export const AdminEventPanel: React.FC<AdminEventPanelProps> = ({
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
                 <span>📝</span>
-                <h2 className="text-xl font-bold text-gray-800">Event Management</h2>
+                <h2 className="text-xl font-bold text-gray-800">{tStatic('common:auto.frontend.k980e58ee86cc')}</h2>
               </div>
               <Button
                 variant="outline"
@@ -137,7 +139,7 @@ export const AdminEventPanel: React.FC<AdminEventPanelProps> = ({
         {loading && events.length === 0 && (
           <div className="text-center py-12">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading events...</p>
+            <p className="text-gray-600">{tStatic('common:auto.frontend.kf691a435113c')}</p>
           </div>
         )}
 
@@ -162,8 +164,7 @@ export const AdminEventPanel: React.FC<AdminEventPanelProps> = ({
                         <h3 className="font-medium text-gray-900">{event.title}</h3>
                         {event.isAllDay && (
                           <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
-                            All Day
-                          </span>
+                            {tStatic('common:auto.frontend.k9cd859950bbb')}</span>
                         )}
                       </div>
 
@@ -172,8 +173,8 @@ export const AdminEventPanel: React.FC<AdminEventPanelProps> = ({
                         {event.endDate && (
                           <p>🏁 {formatDate(event.endDate)}</p>
                         )}
-                        <p>📚 Calendar: {event.calendar?.name}</p>
-                        <p>👤 Created by: {event.createdBy?.firstName} {event.createdBy?.lastName} ({event.createdBy?.username})</p>
+                        <p>{tStatic('common:auto.frontend.k3ec1473cd6ec')}{event.calendar?.name}</p>
+                        <p>{tStatic('common:auto.frontend.kfeb05e51c9e5')}{event.createdBy?.firstName} {event.createdBy?.lastName} ({event.createdBy?.username})</p>
                         {event.description && (
                           <p className="text-xs text-gray-500 mt-2">{event.description}</p>
                         )}
@@ -181,7 +182,7 @@ export const AdminEventPanel: React.FC<AdminEventPanelProps> = ({
                     </div>
                     <div className="flex items-center space-x-2 ml-4">
                       <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full">
-                        ID: {event.id}
+                        {tStatic('common:auto.frontend.kd789a1e992ad')}{event.id}
                       </span>
                       <Button
                         variant="outline"
@@ -189,8 +190,7 @@ export const AdminEventPanel: React.FC<AdminEventPanelProps> = ({
                         onClick={() => deleteEvent(event.id)}
                         className="text-red-600 border-red-300 hover:bg-red-50"
                       >
-                        Delete
-                      </Button>
+                        {tStatic('common:auto.frontend.kf6fdbe48dc54')}</Button>
                     </div>
                   </div>
                 </div>
@@ -203,14 +203,13 @@ export const AdminEventPanel: React.FC<AdminEventPanelProps> = ({
         {!loading && events.length === 0 && !error && (
           <div className="text-center py-12">
             <div className="text-gray-400 text-4xl mb-4">📝</div>
-            <p className="text-gray-600 mb-4">No events found</p>
+            <p className="text-gray-600 mb-4">{tStatic('common:auto.frontend.ka48cbba615f8')}</p>
             <Button
               variant="primary"
               onClick={loadEvents}
               themeColor={themeColor}
             >
-              Refresh
-            </Button>
+              {tStatic('common:auto.frontend.k56e3badc4e6c')}</Button>
           </div>
         )}
       </Card>

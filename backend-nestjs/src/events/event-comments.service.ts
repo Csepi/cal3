@@ -28,6 +28,8 @@ import { NotificationsService } from '../notifications/notifications.service';
 
 import { logError } from '../common/errors/error-logger';
 import { buildErrorContext } from '../common/errors/error-context';
+import { bStatic } from '../i18n/runtime';
+
 @Injectable()
 export class EventCommentsService {
   private readonly templateLibrary: Record<CommentTemplateKey, string> = {
@@ -93,13 +95,13 @@ export class EventCommentsService {
       });
 
       if (!parentComment) {
-        throw new NotFoundException('Parent comment not found');
+        throw new NotFoundException(bStatic('errors.auto.backend.k9e24f9d142bd'));
       }
 
       const repliesAllowed = await this.canReplyToEvent(event);
       if (!repliesAllowed) {
         throw new ForbiddenException(
-          'Replies are only available on shared or public events',
+          bStatic('errors.auto.backend.kfca41fd86e37'),
         );
       }
     }
@@ -138,12 +140,12 @@ export class EventCommentsService {
     });
 
     if (!comment) {
-      throw new NotFoundException('Comment not found');
+      throw new NotFoundException(bStatic('errors.auto.backend.k3d82047dbdee'));
     }
 
     if (comment.isSystem) {
       throw new ForbiddenException(
-        'System-generated comments cannot be edited',
+        bStatic('errors.auto.backend.k7465fa324834'),
       );
     }
 
@@ -178,7 +180,7 @@ export class EventCommentsService {
     });
 
     if (!comment) {
-      throw new NotFoundException('Comment not found');
+      throw new NotFoundException(bStatic('errors.auto.backend.k3d82047dbdee'));
     }
 
     comment.isFlagged = isFlagged;
@@ -245,7 +247,7 @@ export class EventCommentsService {
     const trimmed = (rawContent || '').trim();
 
     if (!base && !trimmed && !allowEmpty) {
-      throw new BadRequestException('Comment content cannot be empty');
+      throw new BadRequestException(bStatic('errors.auto.backend.k4c3fe780f67c'));
     }
 
     if (!base) {
@@ -319,7 +321,7 @@ export class EventCommentsService {
 
     if (!hasWriteAccess) {
       throw new ForbiddenException(
-        'You do not have permission to edit comment',
+        bStatic('errors.auto.backend.k762cacdc9f18'),
       );
     }
   }
@@ -331,7 +333,7 @@ export class EventCommentsService {
     });
 
     if (!comment) {
-      throw new NotFoundException('Comment not found');
+      throw new NotFoundException(bStatic('errors.auto.backend.k3d82047dbdee'));
     }
 
     return comment;

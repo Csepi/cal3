@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import type { RecurrencePattern } from '../../types/Event';
 
+import { tStatic } from '../../i18n';
+
 interface RecurrenceEditDialogProps {
   isOpen: boolean;
   onClose: () => void;
@@ -107,8 +109,7 @@ const RecurrenceEditDialog: React.FC<RecurrenceEditDialogProps> = ({
               {editType === 'delete' ? '🗑️ Delete Recurring Event' : '✏️ Edit Recurring Event'}
             </h2>
             <p className="text-gray-600 text-sm">
-              "{eventTitle}" is part of a recurring series
-            </p>
+              "{eventTitle}{tStatic('common:auto.frontend.k4a60a874aa0b')}</p>
           </div>
           <button
             onClick={onClose}
@@ -121,8 +122,7 @@ const RecurrenceEditDialog: React.FC<RecurrenceEditDialogProps> = ({
         {/* Question */}
         <div className="mb-6">
           <p className="text-gray-700 text-base leading-relaxed">
-            How would you like to {editType === 'delete' ? 'delete' : 'change'} this recurring event?
-          </p>
+            {tStatic('common:auto.frontend.kad6a982ff64b')}{editType === 'delete' ? 'delete' : 'change'} {tStatic('common:auto.frontend.kd97b8f59ec8a')}</p>
         </div>
 
         {/* Options */}
@@ -185,8 +185,7 @@ const RecurrenceEditDialog: React.FC<RecurrenceEditDialogProps> = ({
             onClick={onClose}
             className="flex-1 px-6 py-3 bg-gray-500 hover:bg-gray-600 text-white rounded-xl font-medium transition-all duration-200"
           >
-            Cancel
-          </button>
+            {tStatic('common:auto.frontend.k77dfd2135f4d')}</button>
           <button
             onClick={handleConfirm}
             className={`flex-1 px-6 py-3 text-white rounded-xl font-medium transition-all duration-200 hover:scale-105 shadow-lg ${

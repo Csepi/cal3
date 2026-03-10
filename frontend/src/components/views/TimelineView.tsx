@@ -3,6 +3,8 @@ import type { Event } from '../../types/Event';
 import type { Calendar } from '../../types/Calendar';
 import { getMeetingLinkFromEvent } from '../../utils/meetingLinks';
 
+import { tStatic } from '../../i18n';
+
 interface TimelineViewProps {
   currentDate: Date;
   events: Event[];
@@ -633,8 +635,7 @@ const TimelineView: React.FC<TimelineViewProps> = ({
       {!focusMode && (
         <div className="flex flex-wrap items-center justify-between gap-2">
           <p className="text-xs font-semibold text-gray-500 uppercase tracking-[0.2em]">
-            Timeline workspace
-          </p>
+            {tStatic('common:auto.frontend.k2a203e612524')}</p>
           <div className="flex flex-wrap items-center gap-2">
             {hasCalendarControls && (
               <button
@@ -642,7 +643,7 @@ const TimelineView: React.FC<TimelineViewProps> = ({
                 onClick={() => setShowCalendarFilters((prev) => !prev)}
                 className="inline-flex items-center rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-sm transition hover:border-slate-300"
               >
-                Calendars {activeCalendarsCount}/{calendars.length}
+                {tStatic('common:auto.frontend.k9444501818e6')}{activeCalendarsCount}/{calendars.length}
               </button>
             )}
             {onToggleFocusMode && (
@@ -665,8 +666,7 @@ const TimelineView: React.FC<TimelineViewProps> = ({
       {showCalendarFilters && hasCalendarControls && (
         <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
           <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
-            Show or hide calendars
-          </p>
+            {tStatic('common:auto.frontend.kf1d2e65258b1')}</p>
           <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
             {calendars.map((calendar) => {
               const isSelected = selectedCalendars.includes(calendar.id);
@@ -714,8 +714,7 @@ const TimelineView: React.FC<TimelineViewProps> = ({
         <div className="relative flex flex-col md:flex-row md:items-start md:justify-between gap-4">
           <div className="space-y-2">
             <p className="text-xs uppercase tracking-[0.2em] opacity-80">
-              Live focus
-            </p>
+              {tStatic('common:auto.frontend.kb67315fa1efe')}</p>
             <h3 className="text-2xl md:text-3xl font-semibold leading-tight drop-shadow-sm">
               {focusEvent ? focusEvent.title : 'No event right now'}
             </h3>
@@ -746,7 +745,7 @@ const TimelineView: React.FC<TimelineViewProps> = ({
               )}
               {focusEvent?.location && (
                 <span className="inline-flex items-center px-2 py-1 rounded-full bg-white/20 text-xs">
-                  Location: {focusEvent.location}
+                  {tStatic('common:auto.frontend.k1bf3994417be')}{focusEvent.location}
                 </span>
               )}
             </div>
@@ -761,7 +760,7 @@ const TimelineView: React.FC<TimelineViewProps> = ({
                     onClick={() => setShowCalendarFilters((prev) => !prev)}
                     className="inline-flex items-center rounded-full border border-white/40 bg-white/15 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-white/20"
                   >
-                    Calendars {activeCalendarsCount}/{calendars.length}
+                    {tStatic('common:auto.frontend.k9444501818e6')}{activeCalendarsCount}/{calendars.length}
                   </button>
                 )}
                 {onToggleFocusMode && (
@@ -770,8 +769,7 @@ const TimelineView: React.FC<TimelineViewProps> = ({
                     onClick={onToggleFocusMode}
                     className="inline-flex items-center rounded-full border border-white/40 bg-white/15 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-white/20"
                   >
-                    Exit clean focus
-                  </button>
+                    {tStatic('common:auto.frontend.kec185d577a9e')}</button>
                 )}
               </div>
             )}
@@ -792,16 +790,14 @@ const TimelineView: React.FC<TimelineViewProps> = ({
                 onClick={() => window.open(focusMeetingLink, '_blank', 'noopener,noreferrer')}
                 className="inline-flex items-center justify-center px-3 py-2 text-sm font-semibold bg-white/90 text-gray-900 rounded-xl shadow-md hover:shadow-lg transition-all"
               >
-                Join meeting
-              </button>
+                {tStatic('common:auto.frontend.kfd1cbbd5175f')}</button>
             )}
             {onCreateEvent && (
               <button
                 onClick={handleLogCurrentEvent}
                 className="inline-flex items-center justify-center px-3 py-2 text-sm font-semibold bg-white text-gray-900 rounded-xl shadow-md hover:shadow-lg transition-all"
               >
-                Log what I'm doing
-              </button>
+                {tStatic('common:auto.frontend.kfe5be9b72906')}</button>
             )}
           </div>
         </div>
@@ -819,9 +815,9 @@ const TimelineView: React.FC<TimelineViewProps> = ({
             </div>
             <div className="flex items-center justify-between text-xs opacity-90 mt-1">
               <span>
-                Started {formatTime(focusEvent.start, timeFormat, resolvedTimezone)}
+                {tStatic('common:auto.frontend.kfaa9e7e7ef5a')}{formatTime(focusEvent.start, timeFormat, resolvedTimezone)}
               </span>
-              <span>{formatDuration(remainingMs)} left</span>
+              <span>{formatDuration(remainingMs)} {tStatic('common:auto.frontend.k12c0f1fbadc4')}</span>
             </div>
           </div>
         )}
@@ -829,8 +825,7 @@ const TimelineView: React.FC<TimelineViewProps> = ({
         {sortedCurrentEvents.length > 1 && (
           <div className="relative mt-4">
             <p className="text-[10px] uppercase tracking-[0.2em] opacity-70">
-              Switch focus
-            </p>
+              {tStatic('common:auto.frontend.kb1bb51670915')}</p>
             <div className="mt-2 flex flex-wrap gap-2">
               {sortedCurrentEvents.map((event) => {
                 const isSelected = focusEvent?.id === event.id;
@@ -865,16 +860,14 @@ const TimelineView: React.FC<TimelineViewProps> = ({
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <div className="text-xs font-semibold text-gray-500 uppercase tracking-[0.2em]">
-                Past 3h / Next 5h
-              </div>
+                {tStatic('common:auto.frontend.k83f985a44237')}</div>
               {!followNow && (
                 <button
                   type="button"
                   onClick={handleBackToNow}
                   className="inline-flex items-center rounded-full border border-slate-200 bg-white px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-600 shadow-sm transition hover:border-slate-300 hover:text-slate-700"
                 >
-                  Back to now
-                </button>
+                  {tStatic('common:auto.frontend.k661d4f0b3bf4')}</button>
               )}
             </div>
             <div className="text-xs text-gray-500">
@@ -998,8 +991,7 @@ const TimelineView: React.FC<TimelineViewProps> = ({
                       className="text-[10px] font-semibold text-red-700 bg-white px-1.5 py-0.5 rounded-full shadow"
                       style={{ marginRight: 8 }}
                     >
-                      Now
-                    </span>
+                      {tStatic('common:auto.frontend.ke3b82040565b')}</span>
                   </div>
                 )}
 
@@ -1113,8 +1105,7 @@ const TimelineView: React.FC<TimelineViewProps> = ({
                                 }}
                                 aria-label={`Join ${item.title} meeting`}
                               >
-                                Join
-                              </button>
+                                {tStatic('common:auto.frontend.ke0d73143de80')}</button>
                             )}
                           </div>
                         </div>
@@ -1127,8 +1118,7 @@ const TimelineView: React.FC<TimelineViewProps> = ({
 
             {windowEvents.length === 0 && (
               <div className="pointer-events-none absolute inset-0 flex items-center justify-center text-sm text-gray-500">
-                No events in this 8-hour window.
-              </div>
+                {tStatic('common:auto.frontend.ka4dac97a7268')}</div>
             )}
           </div>
         </div>
@@ -1137,48 +1127,40 @@ const TimelineView: React.FC<TimelineViewProps> = ({
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 flex flex-col gap-3 md:col-span-1">
             <div className="flex items-center justify-between">
               <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                Context switch kit
-              </p>
+                {tStatic('common:auto.frontend.k8c1322aef774')}</p>
               <span
                 className={`text-[10px] px-2 py-0.5 rounded-full bg-amber-50 text-amber-700`}
               >
-                Focus
-              </span>
+                {tStatic('common:auto.frontend.kfe7f55b8bf68')}</span>
             </div>
             <p className="text-sm text-gray-700">
-              Quick actions to keep you on track for the current or next event.
-            </p>
+              {tStatic('common:auto.frontend.k33b340616eca')}</p>
             <div className="flex flex-col gap-2">
               <button
                 onClick={handleLogCurrentEvent}
                 className="w-full text-left px-3 py-2 rounded-lg border border-gray-200 hover:border-blue-400 hover:bg-blue-50 text-sm font-semibold"
               >
-                Log what I'm doing (comment on current)
-              </button>
+                {tStatic('common:auto.frontend.k48f181ac18ef')}</button>
               <button
                 onClick={handleFollowUp}
                 className="w-full text-left px-3 py-2 rounded-lg border border-gray-200 hover:border-blue-400 hover:bg-blue-50 text-sm font-semibold"
               >
-                Create follow-up meeting
-              </button>
+                {tStatic('common:auto.frontend.k7a3ca5e41e26')}</button>
               <button
                 onClick={handleBreak}
                 className="w-full text-left px-3 py-2 rounded-lg border border-gray-200 hover:border-blue-400 hover:bg-blue-50 text-sm font-semibold"
               >
-                Block a 10-min decompression break
-              </button>
+                {tStatic('common:auto.frontend.kaa97bf2efddf')}</button>
               <button
                 onClick={handleBlockers}
                 className="w-full text-left px-3 py-2 rounded-lg border border-gray-200 hover:border-blue-400 hover:bg-blue-50 text-sm font-semibold"
               >
-                Capture blockers/decisions in this meeting
-              </button>
+                {tStatic('common:auto.frontend.kced91ec8f10f')}</button>
               <button
                 onClick={handlePrepNext}
                 className="w-full text-left px-3 py-2 rounded-lg border border-gray-200 hover:border-blue-400 hover:bg-blue-50 text-sm font-semibold"
               >
-                Prep the next meeting
-              </button>
+                {tStatic('common:auto.frontend.k022f7179f9d4')}</button>
             </div>
           </div>
         )}

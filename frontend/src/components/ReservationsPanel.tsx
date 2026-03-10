@@ -23,6 +23,8 @@ import type {
   ResourceType as DomainResourceType,
 } from '../types';
 
+import { tStatic } from '../i18n';
+
 const apiService = {
   get: <T,>(endpoint: string) => http.get<T>(`/api${endpoint}`),
   post: <T,>(endpoint: string, data?: unknown) => http.post<T>(`/api${endpoint}`, data),
@@ -416,7 +418,7 @@ const ReservationsPanel: React.FC<ReservationsPanelProps> = ({ themeColor = '#3b
 
   // Public Booking Initialization
   const handleInitializePublicBooking = async () => {
-    if (!confirm('This will generate public booking tokens for all resources and default operating hours for all resource types. Continue?')) {
+    if (!confirm(tStatic('common:auto.frontend.k06cb91a03fb9'))) {
       return;
     }
 
@@ -469,12 +471,12 @@ const ReservationsPanel: React.FC<ReservationsPanelProps> = ({ themeColor = '#3b
 
   const handleSaveResourceType = async () => {
     if (!resourceTypeModal.name.trim()) {
-      alert('Please enter a resource type name');
+      alert(tStatic('common:auto.frontend.k0e71ac3919dd'));
       return;
     }
 
     if (!resourceTypeModal.editMode && !selectedOrgId) {
-      alert('No organization selected');
+      alert(tStatic('common:auto.frontend.k5685fdac56a2'));
       return;
     }
 
@@ -576,12 +578,12 @@ const ReservationsPanel: React.FC<ReservationsPanelProps> = ({ themeColor = '#3b
 
   const handleSaveResource = async () => {
     if (!resourceModal.name.trim()) {
-      alert('Please enter a resource name');
+      alert(tStatic('common:auto.frontend.k02cb2a87ae82'));
       return;
     }
 
     if (!resourceModal.resourceTypeId) {
-      alert('Please select a resource type');
+      alert(tStatic('common:auto.frontend.kb47bedb469a6'));
       return;
     }
 
@@ -669,11 +671,11 @@ const ReservationsPanel: React.FC<ReservationsPanelProps> = ({ themeColor = '#3b
 
   const handleSaveReservation = async () => {
     if (!reservationModal.resourceId) {
-      alert('Please select a resource');
+      alert(tStatic('common:auto.frontend.k5255a85e5f17'));
       return;
     }
     if (!reservationModal.customerName.trim() || !reservationModal.customerEmail.trim() || !reservationModal.customerPhone.trim()) {
-      alert('Please fill in all required customer information');
+      alert(tStatic('common:auto.frontend.k1a9c468ad813'));
       return;
     }
 
@@ -743,7 +745,7 @@ const ReservationsPanel: React.FC<ReservationsPanelProps> = ({ themeColor = '#3b
       <div className={`min-h-screen bg-gradient-to-br ${themeColors.gradient} flex items-center justify-center`}>
         <div className="text-center">
           <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600 text-lg">Loading reservations...</p>
+          <p className="text-gray-600 text-lg">{tStatic('common:auto.frontend.k44b91203c407')}</p>
         </div>
       </div>
     );
@@ -754,14 +756,12 @@ const ReservationsPanel: React.FC<ReservationsPanelProps> = ({ themeColor = '#3b
       <div className={`min-h-screen bg-gradient-to-br ${themeColors.gradient} flex items-center justify-center p-8`}>
         <div className="bg-white/80 backdrop-blur-md rounded-3xl p-12 max-w-2xl text-center shadow-xl">
           <div className="text-6xl mb-6">🏢</div>
-          <h2 className="text-3xl font-bold text-gray-800 mb-4">No Organizations Found</h2>
+          <h2 className="text-3xl font-bold text-gray-800 mb-4">{tStatic('common:auto.frontend.k1e717a0dea80')}</h2>
           <p className="text-gray-600 mb-6">
-            You are not assigned to organizations yet. Please contact your administrator to get access.
-          </p>
+            {tStatic('common:auto.frontend.ka1e68006ddbc')}</p>
           <div className={`${themeColors.badge} rounded-lg p-4`}>
             <p className="text-sm font-medium">
-              <strong>Note:</strong> You need to be assigned to an organization with Store or Enterprise plan to access reservations.
-            </p>
+              <strong>{tStatic('common:auto.frontend.k83423c198b60')}</strong> {tStatic('common:auto.frontend.k9baa06eaf046')}</p>
           </div>
         </div>
       </div>
@@ -784,8 +784,7 @@ const ReservationsPanel: React.FC<ReservationsPanelProps> = ({ themeColor = '#3b
           <div className="container mx-auto px-4">
             <div className="flex items-center gap-4">
               <h1 className="text-3xl font-semibold text-blue-900">
-                🎯 Reservations Management
-              </h1>
+                {tStatic('common:auto.frontend.kbba4bb6ec590')}</h1>
             </div>
           </div>
         </header>
@@ -795,7 +794,7 @@ const ReservationsPanel: React.FC<ReservationsPanelProps> = ({ themeColor = '#3b
 
         {/* Organization Selector */}
         <div className="mb-6 backdrop-blur-md bg-white/70 border border-blue-200 rounded-3xl p-6 shadow-xl hover:bg-white/80 transition-all duration-300">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">📋 Select Organization</h2>
+          <h2 className="text-lg font-semibold text-gray-800 mb-4">{tStatic('common:auto.frontend.k7c0e1044bfd4')}</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {organizations.map((org) => (
               <button
@@ -862,52 +861,52 @@ const ReservationsPanel: React.FC<ReservationsPanelProps> = ({ themeColor = '#3b
             <div className="min-h-96 backdrop-blur-md bg-white/70 border border-blue-200 rounded-3xl p-8 shadow-xl hover:bg-white/80 transition-all duration-300">
               {error && (
                 <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700">
-                  <strong>Error:</strong> {error}
+                  <strong>{tStatic('common:auto.frontend.k787aa1617c37')}</strong> {error}
                 </div>
               )}
 
               {activeView === 'overview' && (
                 <div>
-                  <h2 className="text-2xl font-bold text-gray-800 mb-6">📊 Organization Overview</h2>
+                  <h2 className="text-2xl font-bold text-gray-800 mb-6">{tStatic('common:auto.frontend.k77ce17d7c7e6')}</h2>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div className="bg-blue-50 rounded-2xl p-6 border border-blue-200">
                       <div className="text-4xl mb-2">📋</div>
                       <div className="text-3xl font-bold text-blue-600">{resourceTypes.length}</div>
-                      <div className="text-gray-600 font-medium">Resource Types</div>
+                      <div className="text-gray-600 font-medium">{tStatic('common:auto.frontend.k4830bf222d91')}</div>
                     </div>
                     <div className="bg-green-50 rounded-2xl p-6 border border-green-200">
                       <div className="text-4xl mb-2">🪑</div>
                       <div className="text-3xl font-bold text-green-600">{resources.length}</div>
-                      <div className="text-gray-600 font-medium">Resources</div>
+                      <div className="text-gray-600 font-medium">{tStatic('common:auto.frontend.k87df60de337f')}</div>
                     </div>
                     <div className="bg-purple-50 rounded-2xl p-6 border border-purple-200">
                       <div className="text-4xl mb-2">📆</div>
                       <div className="text-3xl font-bold text-purple-600">{reservations.length}</div>
-                      <div className="text-gray-600 font-medium">Reservations</div>
+                      <div className="text-gray-600 font-medium">{tStatic('common:auto.frontend.kfe5c54bbae46')}</div>
                     </div>
                   </div>
 
                   {/* Permissions Info */}
                   <div className="mt-8 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl border border-blue-200">
-                    <h3 className="text-lg font-semibold text-gray-800 mb-3">🔒 Your Permissions</h3>
+                    <h3 className="text-lg font-semibold text-gray-800 mb-3">{tStatic('common:auto.frontend.kb0ac20fea7bf')}</h3>
                     <div className="space-y-2">
                       <div className="flex items-center gap-2">
                         <span className={canEdit() ? 'text-green-600' : 'text-gray-400'}>
                           {canEdit() ? '✓' : '✗'}
                         </span>
-                        <span className="text-gray-700">Edit and delete resources & reservations</span>
+                        <span className="text-gray-700">{tStatic('common:auto.frontend.k3c7e4c8bab24')}</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <span className={canManageUsers() ? 'text-green-600' : 'text-gray-400'}>
                           {canManageUsers() ? '✓' : '✗'}
                         </span>
-                        <span className="text-gray-700">Manage organization users and settings</span>
+                        <span className="text-gray-700">{tStatic('common:auto.frontend.k3677bc8315fc')}</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <span className={canManageUsers() ? 'text-green-600' : 'text-gray-400'}>
                           {canManageUsers() ? '✓' : '✗'}
                         </span>
-                        <span className="text-gray-700">Delete organization (cascade)</span>
+                        <span className="text-gray-700">{tStatic('common:auto.frontend.kd293030f3753')}</span>
                       </div>
                     </div>
                   </div>
@@ -917,32 +916,30 @@ const ReservationsPanel: React.FC<ReservationsPanelProps> = ({ themeColor = '#3b
               {activeView === 'types' && (
                 <div>
                   <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-2xl font-bold text-gray-800">📋 Resource Types</h2>
+                    <h2 className="text-2xl font-bold text-gray-800">{tStatic('common:auto.frontend.k1d3142586dd2')}</h2>
                     <div className="flex gap-2">
                       {canManageUsers() && (
                         <button
                           onClick={handleInitializePublicBooking}
                           className="bg-purple-600 text-white px-4 py-2 rounded-xl font-medium hover:opacity-90 transition-opacity"
-                          title="Generate public booking tokens and default operating hours"
+                          title={tStatic('common:auto.frontend.kaea6af44e5f2')}
                         >
-                          🔧 Initialize Public Booking
-                        </button>
+                          {tStatic('common:auto.frontend.k31ac798d0151')}</button>
                       )}
                       {canEdit() && (
                         <button
                           onClick={handleAddResourceTypeClick}
                           className={`${themeColors.primary} text-white px-4 py-2 rounded-xl font-medium hover:opacity-90 transition-opacity`}
                         >
-                          + Add Resource Type
-                        </button>
+                          {tStatic('common:auto.frontend.k968b74a982ac')}</button>
                       )}
                     </div>
                   </div>
                   {resourceTypes.length === 0 ? (
                     <div className="text-center py-12 text-gray-500">
                       <div className="text-6xl mb-4">📋</div>
-                      <p className="text-lg">No resource types yet</p>
-                      {canEdit() && <p className="text-sm mt-2">Click "Add Resource Type" to create one</p>}
+                      <p className="text-lg">{tStatic('common:auto.frontend.ka47a88cdef1e')}</p>
+                      {canEdit() && <p className="text-sm mt-2">{tStatic('common:auto.frontend.k9ed1c0d8eccb')}</p>}
                     </div>
                   ) : (
                     <div className="grid grid-cols-1 gap-4">
@@ -953,8 +950,8 @@ const ReservationsPanel: React.FC<ReservationsPanelProps> = ({ themeColor = '#3b
                               <h3 className="font-semibold text-lg text-gray-800">{type.name}</h3>
                               {type.description && <p className="text-gray-600 text-sm mt-1">{type.description}</p>}
                               <div className="flex gap-4 mt-2 text-sm text-gray-500">
-                                {type.minBookingDuration && <span>Min: {type.minBookingDuration}m</span>}
-                                {type.bufferTime && <span>Buffer: {type.bufferTime}m</span>}
+                                {type.minBookingDuration && <span>{tStatic('common:auto.frontend.k21be6e4ee37c')}{type.minBookingDuration}m</span>}
+                                {type.bufferTime && <span>{tStatic('common:auto.frontend.k19ffcea72ce5')}{type.bufferTime}m</span>}
                               </div>
                             </div>
                             {canEdit() && (
@@ -963,14 +960,12 @@ const ReservationsPanel: React.FC<ReservationsPanelProps> = ({ themeColor = '#3b
                                   onClick={() => handleEditResourceTypeClick(type)}
                                   className="text-blue-600 hover:text-blue-800 px-3 py-1 rounded-lg hover:bg-blue-50"
                                 >
-                                  Edit
-                                </button>
+                                  {tStatic('common:auto.frontend.k5301648dcf6b')}</button>
                                 <button
                                   onClick={() => handleDeleteClick('resourceType', type)}
                                   className="text-red-600 hover:text-red-800 px-3 py-1 rounded-lg hover:bg-red-50"
                                 >
-                                  Delete
-                                </button>
+                                  {tStatic('common:auto.frontend.kf6fdbe48dc54')}</button>
                               </div>
                             )}
                           </div>
@@ -984,21 +979,20 @@ const ReservationsPanel: React.FC<ReservationsPanelProps> = ({ themeColor = '#3b
               {activeView === 'resources' && (
                 <div>
                   <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-2xl font-bold text-gray-800">🪑 Resources</h2>
+                    <h2 className="text-2xl font-bold text-gray-800">{tStatic('common:auto.frontend.ke5db679b7c26')}</h2>
                     {canEdit() && (
                       <button
                         onClick={handleAddResourceClick}
                         className={`${themeColors.primary} text-white px-4 py-2 rounded-xl font-medium hover:opacity-90 transition-opacity`}
                       >
-                        + Add Resource
-                      </button>
+                        {tStatic('common:auto.frontend.kc91b65e04724')}</button>
                     )}
                   </div>
                   {resources.length === 0 ? (
                     <div className="text-center py-12 text-gray-500">
                       <div className="text-6xl mb-4">🪑</div>
-                      <p className="text-lg">No resources yet</p>
-                      {canEdit() && <p className="text-sm mt-2">Click "Add Resource" to create one</p>}
+                      <p className="text-lg">{tStatic('common:auto.frontend.kfb9519a57e4c')}</p>
+                      {canEdit() && <p className="text-sm mt-2">{tStatic('common:auto.frontend.k906c0548976d')}</p>}
                     </div>
                   ) : (
                     <div className="grid grid-cols-1 gap-4">
@@ -1009,12 +1003,12 @@ const ReservationsPanel: React.FC<ReservationsPanelProps> = ({ themeColor = '#3b
                               <h3 className="font-semibold text-lg text-gray-800">{resource.name}</h3>
                               {resource.description && <p className="text-gray-600 text-sm mt-1">{resource.description}</p>}
                               <div className="flex gap-4 mt-2 text-sm text-gray-500">
-                                {resource.capacity && <span>Capacity: {resource.capacity}</span>}
-                                {resource.resourceType && <span>Type: {resource.resourceType.name}</span>}
+                                {resource.capacity && <span>{tStatic('common:auto.frontend.k218347e0b411')}{resource.capacity}</span>}
+                                {resource.resourceType && <span>{tStatic('common:auto.frontend.kee3fb11d05c9')}{resource.resourceType.name}</span>}
                               </div>
                               {resource.publicBookingToken && (
                                 <div className="mt-3 p-2 bg-blue-50 rounded-lg">
-                                  <p className="text-xs font-semibold text-blue-800 mb-1">🔗 Public Booking Link:</p>
+                                  <p className="text-xs font-semibold text-blue-800 mb-1">{tStatic('common:auto.frontend.kae79dbe3bdeb')}</p>
                                   <div className="flex items-center gap-2">
                                     <code className="text-xs text-blue-600 break-all flex-1">
                                       {window.location.origin}/public-booking/{resource.publicBookingToken}
@@ -1022,13 +1016,12 @@ const ReservationsPanel: React.FC<ReservationsPanelProps> = ({ themeColor = '#3b
                                     <button
                                       onClick={() => {
                                         navigator.clipboard.writeText(`${window.location.origin}/public-booking/${resource.publicBookingToken}`);
-                                        alert('Link copied to clipboard!');
+                                        alert(tStatic('common:auto.frontend.k88574a26f3fc'));
                                       }}
                                       className="px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded transition-colors flex-shrink-0"
-                                      title="Copy link"
+                                      title={tStatic('common:auto.frontend.k2f84eea5d45d')}
                                     >
-                                      Copy
-                                    </button>
+                                      {tStatic('common:auto.frontend.kaf74f7c5362a')}</button>
                                   </div>
                                 </div>
                               )}
@@ -1039,14 +1032,12 @@ const ReservationsPanel: React.FC<ReservationsPanelProps> = ({ themeColor = '#3b
                                   onClick={() => handleEditResourceClick(resource)}
                                   className="text-blue-600 hover:text-blue-800 px-3 py-1 rounded-lg hover:bg-blue-50 text-sm"
                                 >
-                                  Edit
-                                </button>
+                                  {tStatic('common:auto.frontend.k5301648dcf6b')}</button>
                                 <button
                                   onClick={() => handleDeleteClick('resource', resource)}
                                   className="text-red-600 hover:text-red-800 px-3 py-1 rounded-lg hover:bg-red-50 text-sm"
                                 >
-                                  Delete
-                                </button>
+                                  {tStatic('common:auto.frontend.kf6fdbe48dc54')}</button>
                               </div>
                             )}
                           </div>
@@ -1060,33 +1051,32 @@ const ReservationsPanel: React.FC<ReservationsPanelProps> = ({ themeColor = '#3b
               {activeView === 'reservations' && (
                 <div>
                   <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-2xl font-bold text-gray-800">📆 Reservations</h2>
+                    <h2 className="text-2xl font-bold text-gray-800">{tStatic('common:auto.frontend.k7854b94e302c')}</h2>
                     {canEdit() && (
                       <button
                         onClick={handleAddReservationClick}
                         className={`${themeColors.primary} text-white px-4 py-2 rounded-xl font-medium hover:opacity-90 transition-opacity`}
                       >
-                        + Create Reservation
-                      </button>
+                        {tStatic('common:auto.frontend.k0204b5c93ca5')}</button>
                     )}
                   </div>
                   {reservations.length === 0 ? (
                     <div className="text-center py-12 text-gray-500">
                       <div className="text-6xl mb-4">📆</div>
-                      <p className="text-lg">No reservations yet</p>
-                      <p className="text-sm mt-2">Reservations will appear here when customers book resources</p>
+                      <p className="text-lg">{tStatic('common:auto.frontend.kdcc08dcf854a')}</p>
+                      <p className="text-sm mt-2">{tStatic('common:auto.frontend.k2d2f8f3d7053')}</p>
                     </div>
                   ) : (
                     <div className="overflow-x-auto">
                       <table className="w-full">
                         <thead className="bg-gray-50">
                           <tr>
-                            <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Resource</th>
-                            <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Customer</th>
-                            <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Start Time</th>
-                            <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">End Time</th>
-                            <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Status</th>
-                            {canEdit() && <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Actions</th>}
+                            <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">{tStatic('common:auto.frontend.k021493f340d3')}</th>
+                            <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">{tStatic('common:auto.frontend.k0e85749a6f40')}</th>
+                            <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">{tStatic('common:auto.frontend.k41c1074ddb72')}</th>
+                            <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">{tStatic('common:auto.frontend.k4c640e925e8b')}</th>
+                            <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">{tStatic('common:auto.frontend.kbae7d5be7082')}</th>
+                            {canEdit() && <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">{tStatic('common:auto.frontend.kc3cd636a585b')}</th>}
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-200">
@@ -1117,13 +1107,12 @@ const ReservationsPanel: React.FC<ReservationsPanelProps> = ({ themeColor = '#3b
                               {canEdit() && (
                                 <td className="px-4 py-3">
                                   <div className="flex gap-2">
-                                    <button className="text-blue-600 hover:text-blue-800 text-sm">Edit</button>
+                                    <button className="text-blue-600 hover:text-blue-800 text-sm">{tStatic('common:auto.frontend.k5301648dcf6b')}</button>
                                     <button
                                       onClick={() => handleDeleteClick('reservation', reservation)}
                                       className="text-red-600 hover:text-red-800 text-sm"
                                     >
-                                      Delete
-                                    </button>
+                                      {tStatic('common:auto.frontend.kf6fdbe48dc54')}</button>
                                   </div>
                                 </td>
                               )}
@@ -1145,33 +1134,31 @@ const ReservationsPanel: React.FC<ReservationsPanelProps> = ({ themeColor = '#3b
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-3xl shadow-2xl max-w-lg w-full p-8 max-h-[90vh] overflow-y-auto">
             <h2 className="text-2xl font-bold text-gray-800 mb-6">
-              📋 {resourceTypeModal.editMode ? 'Edit' : 'Add'} Resource Type
-            </h2>
+              📋 {resourceTypeModal.editMode ? 'Edit' : 'Add'} {tStatic('common:auto.frontend.k1a4838822911')}</h2>
 
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Name <span className="text-red-500">*</span>
+                  {tStatic('common:auto.frontend.k709a23220f2c')}<span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
                   value={resourceTypeModal.name}
                   onChange={(e) => setResourceTypeModal(prev => ({ ...prev, name: e.target.value }))}
                   className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="e.g., Meeting Room, Desk, Equipment"
+                  placeholder={tStatic('common:auto.frontend.kb3d95eec0f37')}
                   disabled={resourceTypeModal.loading}
                 />
               </div>
 
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Description
-                </label>
+                  {tStatic('common:auto.frontend.k55f8ebc805e6')}</label>
                 <textarea
                   value={resourceTypeModal.description}
                   onChange={(e) => setResourceTypeModal(prev => ({ ...prev, description: e.target.value }))}
                   className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Optional description"
+                  placeholder={tStatic('common:auto.frontend.ka6eacf69e186')}
                   rows={3}
                   disabled={resourceTypeModal.loading}
                 />
@@ -1180,8 +1167,7 @@ const ReservationsPanel: React.FC<ReservationsPanelProps> = ({ themeColor = '#3b
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Min Booking Duration (minutes)
-                  </label>
+                    {tStatic('common:auto.frontend.ka63587030d01')}</label>
                   <input
                     type="number"
                     value={resourceTypeModal.minBookingDuration}
@@ -1194,8 +1180,7 @@ const ReservationsPanel: React.FC<ReservationsPanelProps> = ({ themeColor = '#3b
 
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Buffer Time (minutes)
-                  </label>
+                    {tStatic('common:auto.frontend.k64ff0da1954c')}</label>
                   <input
                     type="number"
                     value={resourceTypeModal.bufferTime}
@@ -1214,8 +1199,7 @@ const ReservationsPanel: React.FC<ReservationsPanelProps> = ({ themeColor = '#3b
                 className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-xl font-medium hover:bg-gray-50 transition-colors"
                 disabled={resourceTypeModal.loading}
               >
-                Cancel
-              </button>
+                {tStatic('common:auto.frontend.k77dfd2135f4d')}</button>
               <button
                 onClick={handleSaveResourceType}
                 className={`flex-1 px-4 py-2 ${themeColors.primary} text-white rounded-xl font-medium transition-opacity ${resourceTypeModal.loading ? 'opacity-50 cursor-not-allowed' : ''}`}
@@ -1236,12 +1220,11 @@ const ReservationsPanel: React.FC<ReservationsPanelProps> = ({ themeColor = '#3b
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-3xl shadow-2xl max-w-lg w-full p-8 max-h-[90vh] overflow-y-auto">
             <h2 className="text-2xl font-bold text-gray-800 mb-6">
-              🪑 {resourceModal.editMode ? 'Edit' : 'Add'} Resource
-            </h2>
+              🪑 {resourceModal.editMode ? 'Edit' : 'Add'} {tStatic('common:auto.frontend.k021493f340d3')}</h2>
 
             {resourceTypes.length === 0 ? (
               <div className="text-center py-8">
-                <p className="text-gray-600 mb-4">You need to create a resource type first before adding resources.</p>
+                <p className="text-gray-600 mb-4">{tStatic('common:auto.frontend.k73aa35d2e2b3')}</p>
                 <button
                   onClick={() => {
                     handleResourceModalClose();
@@ -1249,35 +1232,33 @@ const ReservationsPanel: React.FC<ReservationsPanelProps> = ({ themeColor = '#3b
                   }}
                   className={`${themeColors.primary} text-white px-4 py-2 rounded-xl font-medium`}
                 >
-                  Create Resource Type
-                </button>
+                  {tStatic('common:auto.frontend.k5a488a010d6a')}</button>
               </div>
             ) : (
               <>
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Name <span className="text-red-500">*</span>
+                      {tStatic('common:auto.frontend.k709a23220f2c')}<span className="text-red-500">*</span>
                     </label>
                     <input
                       type="text"
                       value={resourceModal.name}
                       onChange={(e) => setResourceModal(prev => ({ ...prev, name: e.target.value }))}
                       className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="e.g., Conference Room A, Desk #12"
+                      placeholder={tStatic('common:auto.frontend.k52aed95c4579')}
                       disabled={resourceModal.loading}
                     />
                   </div>
 
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Description
-                    </label>
+                      {tStatic('common:auto.frontend.k55f8ebc805e6')}</label>
                     <textarea
                       value={resourceModal.description}
                       onChange={(e) => setResourceModal(prev => ({ ...prev, description: e.target.value }))}
                       className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="Optional description"
+                      placeholder={tStatic('common:auto.frontend.ka6eacf69e186')}
                       rows={3}
                       disabled={resourceModal.loading}
                     />
@@ -1285,7 +1266,7 @@ const ReservationsPanel: React.FC<ReservationsPanelProps> = ({ themeColor = '#3b
 
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Resource Type <span className="text-red-500">*</span>
+                      {tStatic('common:auto.frontend.k1a4838822911')}<span className="text-red-500">*</span>
                     </label>
                     <select
                       value={resourceModal.resourceTypeId}
@@ -1303,8 +1284,7 @@ const ReservationsPanel: React.FC<ReservationsPanelProps> = ({ themeColor = '#3b
 
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Capacity
-                    </label>
+                      {tStatic('common:auto.frontend.k45bd908df490')}</label>
                     <input
                       type="number"
                       value={resourceModal.capacity}
@@ -1322,8 +1302,7 @@ const ReservationsPanel: React.FC<ReservationsPanelProps> = ({ themeColor = '#3b
                     className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-xl font-medium hover:bg-gray-50 transition-colors"
                     disabled={resourceModal.loading}
                   >
-                    Cancel
-                  </button>
+                    {tStatic('common:auto.frontend.k77dfd2135f4d')}</button>
                   <button
                     onClick={handleSaveResource}
                     className={`flex-1 px-4 py-2 ${themeColors.primary} text-white rounded-xl font-medium transition-opacity ${resourceModal.loading ? 'opacity-50 cursor-not-allowed' : ''}`}
@@ -1357,13 +1336,13 @@ const ReservationsPanel: React.FC<ReservationsPanelProps> = ({ themeColor = '#3b
       {reservationModal.isOpen && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-3xl shadow-2xl max-w-2xl w-full p-8 max-h-[90vh] overflow-y-auto">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Create Reservation</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">{tStatic('common:auto.frontend.k30303fe608eb')}</h2>
 
             <div className="space-y-4">
               {/* Resource Selection */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Resource <span className="text-red-500">*</span>
+                  {tStatic('common:auto.frontend.k021493f340d3')}<span className="text-red-500">*</span>
                 </label>
                 <select
                   value={reservationModal.resourceId}
@@ -1371,7 +1350,7 @@ const ReservationsPanel: React.FC<ReservationsPanelProps> = ({ themeColor = '#3b
                   className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   disabled={reservationModal.loading}
                 >
-                  <option value="">Select a resource</option>
+                  <option value="">{tStatic('common:auto.frontend.kbd1e22abe48e')}</option>
                   {resources.map(resource => (
                     <option key={resource.id} value={resource.id}>
                       {resource.name} ({resource.resourceType?.name})
@@ -1383,7 +1362,7 @@ const ReservationsPanel: React.FC<ReservationsPanelProps> = ({ themeColor = '#3b
               {/* Date */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Date <span className="text-red-500">*</span>
+                  {tStatic('common:auto.frontend.keb9a4bc1c0c1')}<span className="text-red-500">*</span>
                 </label>
                 <input
                   type="date"
@@ -1398,7 +1377,7 @@ const ReservationsPanel: React.FC<ReservationsPanelProps> = ({ themeColor = '#3b
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Start Time <span className="text-red-500">*</span>
+                    {tStatic('common:auto.frontend.k41c1074ddb72')}<span className="text-red-500">*</span>
                   </label>
                   <input
                     type="time"
@@ -1410,7 +1389,7 @@ const ReservationsPanel: React.FC<ReservationsPanelProps> = ({ themeColor = '#3b
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    End Time <span className="text-red-500">*</span>
+                    {tStatic('common:auto.frontend.k4c640e925e8b')}<span className="text-red-500">*</span>
                   </label>
                   <input
                     type="time"
@@ -1425,7 +1404,7 @@ const ReservationsPanel: React.FC<ReservationsPanelProps> = ({ themeColor = '#3b
               {/* Quantity */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Quantity <span className="text-red-500">*</span>
+                  {tStatic('common:auto.frontend.k44f6af694554')}<span className="text-red-500">*</span>
                 </label>
                 <input
                   type="number"
@@ -1439,12 +1418,12 @@ const ReservationsPanel: React.FC<ReservationsPanelProps> = ({ themeColor = '#3b
 
               {/* Customer Information */}
               <div className="border-t border-gray-200 pt-4 mt-4">
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">Customer Information</h3>
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">{tStatic('common:auto.frontend.kc996cd1052de')}</h3>
 
                 <div className="space-y-3">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Full Name <span className="text-red-500">*</span>
+                      {tStatic('common:auto.frontend.k64346b483c0a')}<span className="text-red-500">*</span>
                     </label>
                     <input
                       type="text"
@@ -1457,7 +1436,7 @@ const ReservationsPanel: React.FC<ReservationsPanelProps> = ({ themeColor = '#3b
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Email <span className="text-red-500">*</span>
+                      {tStatic('common:auto.frontend.k84add5b29527')}<span className="text-red-500">*</span>
                     </label>
                     <input
                       type="email"
@@ -1470,7 +1449,7 @@ const ReservationsPanel: React.FC<ReservationsPanelProps> = ({ themeColor = '#3b
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Phone <span className="text-red-500">*</span>
+                      {tStatic('common:auto.frontend.k77064d526523')}<span className="text-red-500">*</span>
                     </label>
                     <input
                       type="tel"
@@ -1483,8 +1462,7 @@ const ReservationsPanel: React.FC<ReservationsPanelProps> = ({ themeColor = '#3b
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Notes
-                    </label>
+                      {tStatic('common:auto.frontend.k70440046a3dc')}</label>
                     <textarea
                       value={reservationModal.notes}
                       onChange={(e) => setReservationModal(prev => ({ ...prev, notes: e.target.value }))}
@@ -1510,8 +1488,7 @@ const ReservationsPanel: React.FC<ReservationsPanelProps> = ({ themeColor = '#3b
                 disabled={reservationModal.loading}
                 className="flex-1 bg-gray-100 text-gray-700 px-6 py-3 rounded-xl font-medium hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Cancel
-              </button>
+                {tStatic('common:auto.frontend.k77dfd2135f4d')}</button>
             </div>
           </div>
         </div>

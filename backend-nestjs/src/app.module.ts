@@ -40,6 +40,9 @@ import { ApiSecurityModule } from './api-security/api-security.module';
 import { IpBlockMiddleware } from './api-security/middleware/ip-block.middleware';
 import { RequestHardeningMiddleware } from './api-security/middleware/request-hardening.middleware';
 import { ComplianceModule } from './compliance/compliance.module';
+import { AppI18nModule } from './i18n/i18n.module';
+import { LanguagePreferenceMiddleware } from './i18n/language-preference.middleware';
+import { UserLanguageController } from './controllers/user-language.controller';
 
 @Module({
   imports: [
@@ -68,6 +71,7 @@ import { ComplianceModule } from './compliance/compliance.module';
     MonitoringModule,
     ApiSecurityModule,
     ComplianceModule,
+    AppI18nModule,
     TypeOrmModule.forFeature([
       User,
       Calendar,
@@ -80,6 +84,7 @@ import { ComplianceModule } from './compliance/compliance.module';
     AppController,
     UserProfileController,
     UserPermissionsController,
+    UserLanguageController,
     FeatureFlagsController,
   ],
   providers: [
@@ -92,6 +97,7 @@ export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer
       .apply(
+        LanguagePreferenceMiddleware,
         RequestContextMiddleware,
         IpBlockMiddleware,
         RequestHardeningMiddleware,

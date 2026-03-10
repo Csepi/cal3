@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { DomainInfrastructureException } from './domain.exception';
 
+import { bStatic } from '../../i18n/runtime';
+
 export interface RetryPolicy {
   attempts?: number;
   baseDelayMs?: number;
@@ -32,7 +34,7 @@ export class ErrorRecoveryService {
     }
 
     throw new DomainInfrastructureException(
-      'Operation failed after retry attempts.',
+      bStatic('errors.auto.backend.k422775494206'),
       undefined,
       {
         attempts,

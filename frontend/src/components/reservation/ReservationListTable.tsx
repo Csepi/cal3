@@ -15,6 +15,8 @@ import type {
   ReservationUserSummary,
 } from '../../types/reservation';
 
+import { tStatic } from '../../i18n';
+
 export type Reservation = Booking & {
   customerInfo?: ReservationCustomerInfo;
   resource?: ReservationResource;
@@ -137,10 +139,9 @@ export const ReservationListTable: React.FC<ReservationListTableProps> = ({
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <span>📋</span>
-              <h3 className="text-lg font-semibold text-gray-800">Reservations</h3>
+              <h3 className="text-lg font-semibold text-gray-800">{tStatic('common:auto.frontend.kfe5c54bbae46')}</h3>
               <span className="bg-gray-100 text-gray-600 px-2 py-1 rounded-full text-sm">
-                {reservations.length} items
-              </span>
+                {reservations.length} {tStatic('common:auto.frontend.k7316c8b2e748')}</span>
             </div>
             <div className="flex items-center space-x-3">
               <Button
@@ -155,8 +156,7 @@ export const ReservationListTable: React.FC<ReservationListTableProps> = ({
                   </svg>
                 }
               >
-                Refresh
-              </Button>
+                {tStatic('common:auto.frontend.k56e3badc4e6c')}</Button>
               <Button
                 variant="primary"
                 size="sm"
@@ -168,8 +168,7 @@ export const ReservationListTable: React.FC<ReservationListTableProps> = ({
                   </svg>
                 }
               >
-                New Reservation
-              </Button>
+                {tStatic('common:auto.frontend.kf0767d6843b3')}</Button>
             </div>
           </div>
         </CardHeader>
@@ -191,7 +190,7 @@ export const ReservationListTable: React.FC<ReservationListTableProps> = ({
       {loading && reservations.length === 0 && (
         <div className="text-center py-12">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading reservations...</p>
+          <p className="text-gray-600">{tStatic('common:auto.frontend.k44b91203c407')}</p>
         </div>
       )}
 
@@ -202,26 +201,19 @@ export const ReservationListTable: React.FC<ReservationListTableProps> = ({
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Resource
-                </th>
+                  {tStatic('common:auto.frontend.k021493f340d3')}</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Date & Time
-                </th>
+                  {tStatic('common:auto.frontend.k63ae7cafeda4')}</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Duration
-                </th>
+                  {tStatic('common:auto.frontend.k1370004da76f')}</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Customer
-                </th>
+                  {tStatic('common:auto.frontend.k0e85749a6f40')}</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
-                </th>
+                  {tStatic('common:auto.frontend.kbae7d5be7082')}</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Qty
-                </th>
+                  {tStatic('common:auto.frontend.k1e5ff9e500c2')}</th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
-                </th>
+                  {tStatic('common:auto.frontend.kc3cd636a585b')}</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
@@ -257,7 +249,7 @@ export const ReservationListTable: React.FC<ReservationListTableProps> = ({
                         ) : (
                           <div>
                             <div>{startDateTime.date} {startDateTime.time}</div>
-                            <div className="text-gray-500">to {endDateTime.date} {endDateTime.time}</div>
+                            <div className="text-gray-500">{tStatic('common:auto.frontend.k4374aaee247f')}{endDateTime.date} {endDateTime.time}</div>
                           </div>
                         )}
                       </div>
@@ -300,16 +292,14 @@ export const ReservationListTable: React.FC<ReservationListTableProps> = ({
                           onClick={() => onEditReservation(reservation)}
                           themeColor={themeColor}
                         >
-                          Edit
-                        </Button>
+                          {tStatic('common:auto.frontend.k5301648dcf6b')}</Button>
                         <Button
                           variant="outline"
                           size="sm"
                           onClick={() => handleDelete(reservation)}
                           className="text-red-600 border-red-600 hover:bg-red-50"
                         >
-                          Delete
-                        </Button>
+                          {tStatic('common:auto.frontend.kf6fdbe48dc54')}</Button>
                       </div>
                     </td>
                   </tr>
@@ -322,7 +312,7 @@ export const ReservationListTable: React.FC<ReservationListTableProps> = ({
         /* Empty State */
         <div className="text-center py-12">
           <div className="text-gray-400 text-4xl mb-4">📅</div>
-          <p className="text-gray-600 mb-4">No reservations found</p>
+          <p className="text-gray-600 mb-4">{tStatic('common:auto.frontend.kf321e81ab1b2')}</p>
           <Button
             variant="primary"
             onClick={onCreateReservation}
@@ -333,8 +323,7 @@ export const ReservationListTable: React.FC<ReservationListTableProps> = ({
               </svg>
             }
           >
-            Create Your First Reservation
-          </Button>
+            {tStatic('common:auto.frontend.kf279ffe615a1')}</Button>
         </div>
       ) : null}
 
@@ -346,24 +335,21 @@ export const ReservationListTable: React.FC<ReservationListTableProps> = ({
               <div className="flex items-center space-x-2">
                 <div className="w-3 h-3 rounded-full bg-green-500"></div>
                 <span>
-                  {reservations.filter(r => r.status === 'confirmed').length} Confirmed
-                </span>
+                  {reservations.filter(r => r.status === 'confirmed').length} {tStatic('common:auto.frontend.k8cc7acb8f360')}</span>
               </div>
               <div className="flex items-center space-x-2">
                 <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
                 <span>
-                  {reservations.filter(r => r.status === 'pending').length} Pending
-                </span>
+                  {reservations.filter(r => r.status === 'pending').length} {tStatic('common:auto.frontend.k96f608c16cef')}</span>
               </div>
               <div className="flex items-center space-x-2">
                 <div className="w-3 h-3 rounded-full bg-red-500"></div>
                 <span>
-                  {reservations.filter(r => r.status === 'cancelled').length} Cancelled
-                </span>
+                  {reservations.filter(r => r.status === 'cancelled').length} {tStatic('common:auto.frontend.ka1bf92eff40d')}</span>
               </div>
             </div>
             <div>
-              <span>Total: {reservations.length} reservations</span>
+              <span>{tStatic('common:auto.frontend.kd8e7170f94e7')}{reservations.length} {tStatic('common:auto.frontend.kc62a93b580ae')}</span>
             </div>
           </div>
         </div>

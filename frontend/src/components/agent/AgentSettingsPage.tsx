@@ -15,6 +15,8 @@ import type {
 import { useScreenSize } from "../../hooks/useScreenSize";
 import { getThemeConfig } from "../../constants/theme";
 
+import { tStatic } from '../../i18n';
+
 type PermissionDraft = {
   enabled: boolean;
   scope: number[];
@@ -692,7 +694,7 @@ const AgentSettingsPage: React.FC<AgentSettingsPageProps> = ({ themeColor = "#3b
           })}
         </div>
         {scopeConfig.required && draft.enabled && draft.scope.length === 0 && (
-          <p className="text-sm text-amber-600">Select at least one option to enable this action.</p>
+          <p className="text-sm text-amber-600">{tStatic('common:auto.frontend.k23368df54454')}</p>
         )}
       </div>
     );
@@ -723,20 +725,17 @@ const AgentSettingsPage: React.FC<AgentSettingsPageProps> = ({ themeColor = "#3b
       >
         <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="space-y-2">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Agent command center</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">{tStatic('common:auto.frontend.kd066fb231f6e')}</p>
             <h1 className="text-3xl font-semibold" style={{ color: themeColor }}>
-              Agent settings
-            </h1>
+              {tStatic('common:auto.frontend.kb02d736ffdca')}</h1>
             <p className="max-w-2xl text-sm text-slate-600">
-              Decide which MCP agents can act on behalf of your team, what they can access, and how they authenticate.
-            </p>
+              {tStatic('common:auto.frontend.k8bc50e66b2ea')}</p>
           </div>
           <span
             className="inline-flex items-center gap-2 rounded-full px-4 py-1 text-xs font-semibold uppercase tracking-wide sm:self-start"
             style={accentChipStyle}
           >
-            External LLM access
-          </span>
+            {tStatic('common:auto.frontend.kf0858845aa51')}</span>
         </div>
       </header>
 
@@ -758,16 +757,14 @@ const AgentSettingsPage: React.FC<AgentSettingsPageProps> = ({ themeColor = "#3b
             <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
               <aside className="space-y-4">
                 <div className={`${panelCardClass} p-6`} style={subtleBorderStyle}>
-                  <h2 className="text-lg font-semibold text-slate-900">Agents</h2>
+                  <h2 className="text-lg font-semibold text-slate-900">{tStatic('common:auto.frontend.k64acf7e2a759')}</h2>
                   <p className="text-sm text-slate-600">
-                    Create a dedicated agent profile for each tool or collaborator.
-                  </p>
+                    {tStatic('common:auto.frontend.k3505a7841f01')}</p>
 
                   <form onSubmit={handleCreateAgent} className="mt-4 space-y-4">
                     <div>
                       <label className="block text-xs font-semibold uppercase tracking-wide text-slate-500">
-                        Name
-                      </label>
+                        {tStatic('common:auto.frontend.k709a23220f2c')}</label>
                       <input
                         type="text"
                         className={inputClass}
@@ -776,14 +773,13 @@ const AgentSettingsPage: React.FC<AgentSettingsPageProps> = ({ themeColor = "#3b
                         onChange={(event) =>
                           setAgentForm((previous) => ({ ...previous, name: event.target.value }))
                         }
-                        placeholder="e.g. VS Code Agent"
+                        placeholder={tStatic('common:auto.frontend.k5d4705606074')}
                       />
                     </div>
 
                     <div>
                       <label className="block text-xs font-semibold uppercase tracking-wide text-slate-500">
-                        Description
-                      </label>
+                        {tStatic('common:auto.frontend.k55f8ebc805e6')}</label>
                       <textarea
                         className={textareaClass}
                         style={{ borderColor: borderTint }}
@@ -792,7 +788,7 @@ const AgentSettingsPage: React.FC<AgentSettingsPageProps> = ({ themeColor = "#3b
                         onChange={(event) =>
                           setAgentForm((previous) => ({ ...previous, description: event.target.value }))
                         }
-                        placeholder="How will this agent be used?"
+                        placeholder={tStatic('common:auto.frontend.ka25f682cec3e')}
                       />
                     </div>
 
@@ -854,9 +850,9 @@ const AgentSettingsPage: React.FC<AgentSettingsPageProps> = ({ themeColor = "#3b
                                 isActive ? 'text-white/80' : 'text-slate-500'
                               }`}
                             >
-                              <span>{actionCount} actions</span>
+                              <span>{actionCount} {tStatic('common:auto.frontend.k326b426f9ac7')}</span>
                               <span>|</span>
-                              <span>{apiKeyCount} API keys</span>
+                              <span>{apiKeyCount} {tStatic('common:auto.frontend.k94fcf3c2dc0d')}</span>
                             </div>
                           </button>
                         </li>
@@ -865,8 +861,7 @@ const AgentSettingsPage: React.FC<AgentSettingsPageProps> = ({ themeColor = "#3b
 
                     {agents.length === 0 && (
                       <li className="rounded-2xl border border-dashed border-slate-200/70 bg-white/70 px-3 py-4 text-center text-sm text-slate-600">
-                        No agents yet. Create one to begin.
-                      </li>
+                        {tStatic('common:auto.frontend.kec2da0961f65')}</li>
                     )}
                   </ul>
                 </div>
@@ -880,12 +875,11 @@ const AgentSettingsPage: React.FC<AgentSettingsPageProps> = ({ themeColor = "#3b
                         <div>
                           <h2 className="text-xl font-semibold text-slate-900">{selectedAgent.name}</h2>
                           <p className="text-sm text-slate-600">
-                            Manage permissions and API credentials for this agent.
-                          </p>
+                            {tStatic('common:auto.frontend.k89d103901e80')}</p>
                           <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-slate-500">
-                            <span>Created {formatDate(selectedAgent.createdAt)}</span>
+                            <span>{tStatic('common:auto.frontend.kaccf40c89baa')}{formatDate(selectedAgent.createdAt)}</span>
                             <span>|</span>
-                            <span>Last used {formatDate(selectedAgent.lastUsedAt)}</span>
+                            <span>{tStatic('common:auto.frontend.kf1109d3dbc3c')}{formatDate(selectedAgent.lastUsedAt)}</span>
                           </div>
                         </div>
                         <button
@@ -905,8 +899,7 @@ const AgentSettingsPage: React.FC<AgentSettingsPageProps> = ({ themeColor = "#3b
                         <div className="grid gap-4 md:grid-cols-2">
                           <div>
                             <label className="block text-xs font-medium uppercase tracking-wide text-slate-500">
-                              Agent name
-                            </label>
+                              {tStatic('common:auto.frontend.kfc92420ca3d4')}</label>
                             <input
                               type="text"
                               value={agentForm.name}
@@ -920,8 +913,7 @@ const AgentSettingsPage: React.FC<AgentSettingsPageProps> = ({ themeColor = "#3b
                           </div>
                           <div>
                             <label className="block text-xs font-medium uppercase tracking-wide text-slate-500">
-                              Description
-                            </label>
+                              {tStatic('common:auto.frontend.k55f8ebc805e6')}</label>
                             <input
                               type="text"
                               value={agentForm.description}
@@ -949,14 +941,12 @@ const AgentSettingsPage: React.FC<AgentSettingsPageProps> = ({ themeColor = "#3b
                     <section className={`${panelCardClass} p-6`} style={subtleBorderStyle}>
                       <header className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                         <div>
-                          <h3 className="text-lg font-semibold text-slate-900">Capabilities</h3>
+                          <h3 className="text-lg font-semibold text-slate-900">{tStatic('common:auto.frontend.kca09c54bff74')}</h3>
                           <p className="text-sm text-slate-600">
-                            Choose what this agent may do and limit it to specific calendars or automations.
-                          </p>
+                            {tStatic('common:auto.frontend.k6696878255ae')}</p>
                         </div>
                         <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600">
-                          {enabledActionKeys.length} active actions
-                        </span>
+                          {enabledActionKeys.length} {tStatic('common:auto.frontend.kbdaace91c881')}</span>
                       </header>
 
                       <div className="mt-6 space-y-8">
@@ -1007,8 +997,7 @@ const AgentSettingsPage: React.FC<AgentSettingsPageProps> = ({ themeColor = "#3b
                                       </div>
                                       {!draft.enabled && (
                                         <span className="rounded-full bg-slate-200 px-2 py-0.5 text-xs text-slate-600">
-                                          Disabled
-                                        </span>
+                                          {tStatic('common:auto.frontend.kf4f4473df8cb')}</span>
                                       )}
                                     </div>
                                     {action.scopeConfig && renderScopeControls(action, draft)}
@@ -1035,30 +1024,27 @@ const AgentSettingsPage: React.FC<AgentSettingsPageProps> = ({ themeColor = "#3b
                     <section className={`${panelCardClass} p-6`} style={subtleBorderStyle}>
                       <header className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                         <div>
-                          <h3 className="text-lg font-semibold text-slate-900">API keys</h3>
+                          <h3 className="text-lg font-semibold text-slate-900">{tStatic('common:auto.frontend.k94fcf3c2dc0d')}</h3>
                           <p className="text-sm text-slate-600">
-                            Issue a unique key for each external tool. Revoke keys immediately if they are compromised.
-                          </p>
+                            {tStatic('common:auto.frontend.kb373c5ec5de5')}</p>
                         </div>
                         <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600">
-                          {keys.length} keys
-                        </span>
+                          {keys.length} {tStatic('common:auto.frontend.k5944ae25418c')}</span>
                       </header>
 
                       {newKeySecret && (
                         <div className="mt-4 rounded-lg border border-amber-300 bg-amber-50 p-4 text-sm text-amber-800">
                           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                             <div>
-                              <p className="font-semibold">New API key created</p>
-                              <p>Copy this token now. For security reasons it will not be shown again.</p>
+                              <p className="font-semibold">{tStatic('common:auto.frontend.k0ca467f31397')}</p>
+                              <p>{tStatic('common:auto.frontend.k11298b913e2b')}</p>
                             </div>
                             <button
                               type="button"
                               onClick={handleCopySecret}
                               className="inline-flex items-center justify-center rounded-md border border-amber-400 px-3 py-1.5 text-sm font-medium text-amber-800 hover:bg-amber-100 focus:outline-none focus:ring-2 focus:ring-amber-300"
                             >
-                              Copy API key
-                            </button>
+                              {tStatic('common:auto.frontend.k0c1a43787e11')}</button>
                           </div>
                           <code className="mt-3 block overflow-x-auto rounded-md bg-white px-3 py-2 text-sm text-slate-700 shadow-inner">
                             {newKeySecret}
@@ -1066,8 +1052,7 @@ const AgentSettingsPage: React.FC<AgentSettingsPageProps> = ({ themeColor = "#3b
                           {mcpConfigSnippet && (
                             <div className="mt-4">
                               <label className="block text-xs font-medium uppercase tracking-wide text-slate-500">
-                                MCP configuration
-                              </label>
+                                {tStatic('common:auto.frontend.kaa5855a2ec99')}</label>
                               <textarea
                                 className={`${textareaClass} font-mono`}
                                 style={{ borderColor: borderTint, backgroundColor: 'rgba(255,255,255,0.95)' }}
@@ -1087,15 +1072,14 @@ const AgentSettingsPage: React.FC<AgentSettingsPageProps> = ({ themeColor = "#3b
                       >
                         <div>
                           <label className="block text-xs font-medium uppercase tracking-wide text-slate-500">
-                            Key label
-                          </label>
+                            {tStatic('common:auto.frontend.k05ea70658da0')}</label>
                           <input
                             type="text"
                             value={newKeyLabel}
                             onChange={(event) => setNewKeyLabel(event.target.value)}
                             className={inputClass}
                             style={{ borderColor: borderTint }}
-                            placeholder="e.g. Claude Desktop"
+                            placeholder={tStatic('common:auto.frontend.kc7dd9308e111')}
                             disabled={isAgentDisabled}
                           />
                         </div>
@@ -1105,8 +1089,7 @@ const AgentSettingsPage: React.FC<AgentSettingsPageProps> = ({ themeColor = "#3b
                             disabled={isAgentDisabled}
                             className={`inline-flex w-full items-center justify-center rounded-xl px-4 py-2 text-sm font-semibold text-white shadow-md transition-transform duration-200 hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white ${theme.button} ${theme.focus} disabled:cursor-not-allowed disabled:opacity-60 md:w-auto`}
                           >
-                            Generate API key
-                          </button>
+                            {tStatic('common:auto.frontend.k924cf2c6cefb')}</button>
                         </div>
                       </form>
 
@@ -1117,12 +1100,12 @@ const AgentSettingsPage: React.FC<AgentSettingsPageProps> = ({ themeColor = "#3b
                             style={{ backgroundColor: hexToRgba(themeColor, 0.1) }}
                           >
                             <tr>
-                              <th className="px-4 py-2 text-left">Label</th>
-                              <th className="px-4 py-2 text-left">Last digits</th>
-                              <th className="px-4 py-2 text-left">Status</th>
-                              <th className="px-4 py-2 text-left">Last used</th>
-                              <th className="px-4 py-2 text-left">Created</th>
-                              <th className="px-4 py-2 text-right">Actions</th>
+                              <th className="px-4 py-2 text-left">{tStatic('common:auto.frontend.k74341e3c271d')}</th>
+                              <th className="px-4 py-2 text-left">{tStatic('common:auto.frontend.k692ee86a799e')}</th>
+                              <th className="px-4 py-2 text-left">{tStatic('common:auto.frontend.kbae7d5be7082')}</th>
+                              <th className="px-4 py-2 text-left">{tStatic('common:auto.frontend.kf1109d3dbc3c')}</th>
+                              <th className="px-4 py-2 text-left">{tStatic('common:auto.frontend.kaccf40c89baa')}</th>
+                              <th className="px-4 py-2 text-right">{tStatic('common:auto.frontend.kc3cd636a585b')}</th>
                             </tr>
                           </thead>
                           <tbody className="divide-y divide-slate-100">
@@ -1150,10 +1133,9 @@ const AgentSettingsPage: React.FC<AgentSettingsPageProps> = ({ themeColor = "#3b
                                       onClick={() => handleRevokeKey(key.id)}
                                       className="inline-flex items-center rounded-md border border-rose-300 px-3 py-1.5 text-xs font-medium text-rose-600 hover:bg-rose-50 focus:outline-none focus:ring-2 focus:ring-rose-200"
                                     >
-                                      Revoke
-                                    </button>
+                                      {tStatic('common:auto.frontend.k0be720759ff0')}</button>
                                   ) : (
-                                    <span className="text-xs text-slate-400">Revoked {formatDate(key.revokedAt)}</span>
+                                    <span className="text-xs text-slate-400">{tStatic('common:auto.frontend.k85f17ac049c4')}{formatDate(key.revokedAt)}</span>
                                   )}
                                 </td>
                               </tr>
@@ -1175,10 +1157,9 @@ const AgentSettingsPage: React.FC<AgentSettingsPageProps> = ({ themeColor = "#3b
                     className="flex h-full min-h-[320px] flex-col items-center justify-center rounded-3xl border border-dashed text-center text-slate-500 backdrop-blur-md"
                     style={{ borderColor: borderTint, backgroundColor: hexToRgba(themeColor, 0.08) }}
                   >
-                    <p className="text-lg font-semibold text-slate-600">Select or create an agent</p>
+                    <p className="text-lg font-semibold text-slate-600">{tStatic('common:auto.frontend.k1bc2f90be95a')}</p>
                     <p className="mt-2 max-w-md text-sm text-slate-500">
-                      Once you create an agent it will appear here so you can assign permissions and generate credentials.
-                    </p>
+                      {tStatic('common:auto.frontend.k1fcab2016cd0')}</p>
                   </div>
                 )}
               </section>

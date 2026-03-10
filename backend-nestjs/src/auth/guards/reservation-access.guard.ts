@@ -7,6 +7,8 @@ import {
 import { UserPermissionsService } from '../../common/services/user-permissions.service';
 import { RequestWithUser } from '../../common/types/request-with-user';
 
+import { bStatic } from '../../i18n/runtime';
+
 /**
  * Guard that checks if a user has access to reservation features
  * based on their usage plans (Store or Enterprise)
@@ -20,14 +22,14 @@ export class ReservationAccessGuard implements CanActivate {
     const user = request.user;
 
     if (!user) {
-      throw new ForbiddenException('User not authenticated');
+      throw new ForbiddenException(bStatic('errors.auto.backend.kdc8648114cf5'));
     }
 
     const hasAccess = this.userPermissionsService.hasReservationAccess(user);
 
     if (!hasAccess) {
       throw new ForbiddenException(
-        'Reservation features require Store or Enterprise plan. Please upgrade your plan to access these features.',
+        bStatic('errors.auto.backend.k0052f4061080'),
       );
     }
 

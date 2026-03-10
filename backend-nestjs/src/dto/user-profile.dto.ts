@@ -15,6 +15,15 @@ import {
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { UsagePlan } from '../entities/user.entity';
 
+import { bStatic } from '../i18n/runtime';
+
+export enum SupportedLanguage {
+  EN = 'en',
+  HU = 'hu',
+  DE = 'de',
+  FR = 'fr',
+}
+
 export class UpdateProfileDto {
   @ApiPropertyOptional({ example: 'john_doe', description: 'Username' })
   @IsOptional()
@@ -78,12 +87,19 @@ export class UpdateProfileDto {
 
   @ApiPropertyOptional({
     example: 'en',
-    description: 'User preferred language (en, de, fr, es, hu)',
+    description: 'User preferred language (en, hu, de, fr)',
   })
   @IsOptional()
-  @IsString()
-  @IsIn(['en', 'de', 'fr', 'es', 'hu'])
-  language?: string;
+  @IsEnum(SupportedLanguage)
+  language?: SupportedLanguage;
+
+  @ApiPropertyOptional({
+    example: 'en',
+    description: 'User preferred language (en, hu, de, fr)',
+  })
+  @IsOptional()
+  @IsEnum(SupportedLanguage)
+  preferredLanguage?: SupportedLanguage;
 
   @ApiPropertyOptional({
     example: false,
@@ -141,7 +157,7 @@ export class UpdateThemeDto {
   @IsOptional()
   @IsString()
   @Matches(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, {
-    message: 'Theme color must be a valid hex color',
+    message: bStatic('errors.auto.backend.kd3bbc5a4b63a'),
   })
   themeColor?: string;
 }
@@ -171,4 +187,13 @@ export class UpdateUsagePlansDto {
   @IsArray()
   @IsEnum(UsagePlan, { each: true })
   usagePlans!: UsagePlan[];
+}
+
+export class UpdateLanguagePreferenceDto {
+  @ApiPropertyOptional({
+    example: SupportedLanguage.EN,
+    description: 'Preferred UI language',
+  })
+  @IsEnum(SupportedLanguage)
+  preferredLanguage!: SupportedLanguage;
 }

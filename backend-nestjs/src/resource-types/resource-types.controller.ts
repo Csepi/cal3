@@ -24,6 +24,8 @@ import { UserPermissionsService } from '../common/services/user-permissions.serv
 import { CascadeDeletionService } from '../common/services/cascade-deletion.service';
 import type { RequestWithUser } from '../common/types/request-with-user';
 
+import { bStatic } from '../i18n/runtime';
+
 @Controller('resource-types')
 @UseGuards(JwtAuthGuard)
 export class ResourceTypesController {
@@ -104,7 +106,7 @@ export class ResourceTypesController {
   @Delete(':id')
   async remove(@Param('id', ParseIntPipe) id: number) {
     await this.resourceTypesService.remove(id);
-    return { message: 'Resource type deleted successfully' };
+    return { message: bStatic('errors.auto.backend.k9fb8e0cb5d44') };
   }
 
   // === Phase 2: Cascade deletion endpoints ===
@@ -123,7 +125,7 @@ export class ResourceTypesController {
     const resourceType =
       await this.resourceTypesService.findOne(resourceTypeId);
     if (!resourceType) {
-      throw new ForbiddenException('Resource type not found');
+      throw new ForbiddenException(bStatic('errors.auto.backend.kc8145f28464b'));
     }
 
     // Check if user can manage this organization's resource types
@@ -133,7 +135,7 @@ export class ResourceTypesController {
     );
     if (!canManage) {
       throw new ForbiddenException(
-        'You do not have permission to view deletion preview for this resource type',
+        bStatic('errors.auto.backend.k13b778a078f3'),
       );
     }
 
@@ -156,7 +158,7 @@ export class ResourceTypesController {
     const resourceType =
       await this.resourceTypesService.findOne(resourceTypeId);
     if (!resourceType) {
-      throw new ForbiddenException('Resource type not found');
+      throw new ForbiddenException(bStatic('errors.auto.backend.kc8145f28464b'));
     }
 
     // Check if user can manage this organization's resource types
@@ -166,7 +168,7 @@ export class ResourceTypesController {
     );
     if (!canManage) {
       throw new ForbiddenException(
-        'You do not have permission to delete this resource type',
+        bStatic('errors.auto.backend.kaaf9459acb1e'),
       );
     }
 
@@ -195,7 +197,7 @@ export class ResourceTypesController {
     );
     if (!canManage) {
       throw new ForbiddenException(
-        'You do not have permission to update this resource type color',
+        bStatic('errors.auto.backend.k04d5ce9b285a'),
       );
     }
 

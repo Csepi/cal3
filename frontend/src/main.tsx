@@ -7,11 +7,12 @@ import queryClient from './services/queryClient';
 import AppErrorBoundary from './components/common/AppErrorBoundary';
 import { errorReportingService } from './services/errorReportingService';
 import { mobileCrashReporter } from './services/mobileCrashReporter';
+import { I18nProvider } from './i18n/I18nProvider';
 import './index.css';
 import './styles/globals.css';
 import './styles/animations.css';
 import './styles/mobile.css';
-import './i18n';
+import './i18n/config';
 import App from './App.tsx';
 
 installClientLogger();
@@ -25,10 +26,12 @@ mobileCrashReporter.install();
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <AppErrorBoundary fallbackTitle="PrimeCal failed to render">
-      <QueryClientProvider client={queryClient}>
-        <App />
-      </QueryClientProvider>
-    </AppErrorBoundary>
+    <I18nProvider>
+      <AppErrorBoundary fallbackTitle="PrimeCal failed to render">
+        <QueryClientProvider client={queryClient}>
+          <App />
+        </QueryClientProvider>
+      </AppErrorBoundary>
+    </I18nProvider>
   </StrictMode>,
 );

@@ -12,6 +12,8 @@ import { DeleteRuleDialog } from './dialogs/DeleteRuleDialog';
 import { getThemeConfig } from '../../constants/theme';
 import { useScreenSize } from '../../hooks/useScreenSize';
 
+import { tStatic } from '../../i18n';
+
 interface AutomationPanelProps {
   themeColor?: string;
 }
@@ -200,11 +202,9 @@ export function AutomationPanel({ themeColor = '#3b82f6' }: AutomationPanelProps
         <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="space-y-1">
             <h1 className="text-3xl font-semibold" style={{ color: themeColor }}>
-              Automation Rules
-            </h1>
+              {tStatic('common:auto.frontend.kabbff7944d5d')}</h1>
             <p className="max-w-xl text-sm text-slate-600">
-              Monitor, compose, and optimise rule-driven workflows across your organization.
-            </p>
+              {tStatic('common:auto.frontend.k852606c7fba0')}</p>
           </div>
           <button
             type="button"
@@ -214,7 +214,7 @@ export function AutomationPanel({ themeColor = '#3b82f6' }: AutomationPanelProps
             <span className="text-lg leading-none" aria-hidden="true">
               +
             </span>
-            <span>Create rule</span>
+            <span>{tStatic('common:auto.frontend.k69c3acdbce07')}</span>
           </button>
         </div>
       </header>
@@ -232,14 +232,13 @@ export function AutomationPanel({ themeColor = '#3b82f6' }: AutomationPanelProps
             <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
               <div className="w-full lg:max-w-md">
                 <label className="block text-xs font-semibold uppercase tracking-wide text-slate-500" htmlFor="automation-search">
-                  Search rules
-                </label>
+                  {tStatic('common:auto.frontend.kd6162b7fffae')}</label>
                 <input
                   id="automation-search"
                   type="text"
                   value={searchValue}
                   onChange={(e) => handleSearch(e.target.value)}
-                  placeholder="Search by name, trigger, or action…"
+                  placeholder={tStatic('common:auto.frontend.k55bccd3da6bd')}
                   className={`mt-2 w-full rounded-xl border bg-white/90 px-4 py-2.5 text-sm text-slate-700 shadow-inner focus:outline-none focus:ring-2 ${theme.focus}`}
                   style={{ borderColor: borderTint }}
                 />
@@ -247,8 +246,7 @@ export function AutomationPanel({ themeColor = '#3b82f6' }: AutomationPanelProps
 
               <div className="flex flex-1 flex-wrap items-center gap-2">
                 <span id="automation-filters" className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  Status
-                </span>
+                  {tStatic('common:auto.frontend.kbae7d5be7082')}</span>
                 {STATUS_OPTIONS.map((option) => {
                   const isActive = filters.statusFilter === option.value;
                   return (
@@ -275,8 +273,7 @@ export function AutomationPanel({ themeColor = '#3b82f6' }: AutomationPanelProps
                     onClick={handleResetFilters}
                     className="text-sm font-medium text-slate-500 underline-offset-4 hover:text-slate-700 hover:underline focus:outline-none"
                   >
-                    Reset filters
-                  </button>
+                    {tStatic('common:auto.frontend.k56553100b028')}</button>
                 )}
               </div>
             </div>
@@ -286,13 +283,13 @@ export function AutomationPanel({ themeColor = '#3b82f6' }: AutomationPanelProps
               style={{ borderColor: borderTint, backgroundColor: accentTint }}
             >
               <span>
-                Total: <strong className="text-slate-900">{pagination.total}</strong>
+                {tStatic('common:auto.frontend.kd8e7170f94e7')}<strong className="text-slate-900">{pagination.total}</strong>
               </span>
               <span>
-                Enabled: <strong className="text-slate-900">{rules.filter((rule) => rule.isEnabled).length}</strong>
+                {tStatic('common:auto.frontend.kf1b45b4b3bf4')}<strong className="text-slate-900">{rules.filter((rule) => rule.isEnabled).length}</strong>
               </span>
               <span>
-                Disabled: <strong className="text-slate-900">{rules.filter((rule) => !rule.isEnabled).length}</strong>
+                {tStatic('common:auto.frontend.keddfac2be997')}<strong className="text-slate-900">{rules.filter((rule) => !rule.isEnabled).length}</strong>
               </span>
             </div>
           </section>
@@ -318,7 +315,7 @@ export function AutomationPanel({ themeColor = '#3b82f6' }: AutomationPanelProps
                     </svg>
                   </span>
                   <div>
-                    <p className="text-sm font-medium text-red-900">Automation service error</p>
+                    <p className="text-sm font-medium text-red-900">{tStatic('common:auto.frontend.k1af73ea29b0a')}</p>
                     <p className="mt-1 text-sm text-red-700">{error}</p>
                   </div>
                 </div>
@@ -326,10 +323,9 @@ export function AutomationPanel({ themeColor = '#3b82f6' }: AutomationPanelProps
                   type="button"
                   onClick={clearError}
                   className="text-sm font-medium text-red-600 transition hover:text-red-700 focus:outline-none focus:underline"
-                  aria-label="Dismiss error"
+                  aria-label={tStatic('common:auto.frontend.k347aaa77ff82')}
                 >
-                  Dismiss
-                </button>
+                  {tStatic('common:auto.frontend.k70afe9eff3f2')}</button>
               </div>
             </div>
           )}
@@ -354,10 +350,10 @@ export function AutomationPanel({ themeColor = '#3b82f6' }: AutomationPanelProps
             <nav
               className="mt-6 flex flex-col gap-3 rounded-2xl border bg-white/70 px-6 py-4 text-sm text-slate-600 shadow-sm sm:flex-row sm:items-center sm:justify-between"
               style={{ borderColor: borderTint }}
-              aria-label="Automation pagination"
+              aria-label={tStatic('common:auto.frontend.k2708be110a3e')}
             >
               <div>
-                Page <strong className="text-slate-900">{pagination.page}</strong> of{' '}
+                {tStatic('common:auto.frontend.kfb06270f7c21')}<strong className="text-slate-900">{pagination.page}</strong> {tStatic('common:auto.frontend.kde04fa0e29f9')}{' '}
                 <strong className="text-slate-900">{pagination.totalPages}</strong>
               </div>
               <div className="flex gap-2">
@@ -368,8 +364,7 @@ export function AutomationPanel({ themeColor = '#3b82f6' }: AutomationPanelProps
                   className={`rounded-lg border px-3 py-1.5 font-medium transition hover:bg-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white disabled:cursor-not-allowed disabled:opacity-60 ${theme.focus}`}
                   style={{ borderColor: borderTint }}
                 >
-                  Previous
-                </button>
+                  {tStatic('common:auto.frontend.k50f94286ba30')}</button>
                 <button
                   type="button"
                   onClick={() => handlePageChange(pagination.page + 1)}
@@ -377,8 +372,7 @@ export function AutomationPanel({ themeColor = '#3b82f6' }: AutomationPanelProps
                   className={`rounded-lg border px-3 py-1.5 font-medium transition hover:bg-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white disabled:cursor-not-allowed disabled:opacity-60 ${theme.focus}`}
                   style={{ borderColor: borderTint }}
                 >
-                  Next
-                </button>
+                  {tStatic('common:auto.frontend.kbc981983e7f5')}</button>
               </div>
             </nav>
           )}

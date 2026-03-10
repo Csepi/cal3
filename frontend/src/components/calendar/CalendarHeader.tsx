@@ -10,6 +10,8 @@ import React from 'react';
 import { Button } from '../ui';
 import { getThemeConfig } from '../../constants';
 
+import { tStatic } from '../../i18n';
+
 export interface CalendarHeaderProps {
   /** Current date being displayed */
   currentDate: Date;
@@ -152,8 +154,7 @@ export const CalendarHeader: React.FC<CalendarHeaderProps> = ({
               disabled={loading}
               themeColor={themeColor}
             >
-              Today
-            </Button>
+              {tStatic('common:auto.frontend.k24345a14377f')}</Button>
 
             <Button
               variant="outline"
@@ -185,13 +186,13 @@ export const CalendarHeader: React.FC<CalendarHeaderProps> = ({
                   : 'text-gray-600 hover:text-gray-900 hover:bg-gray-200'
                 }
               `}
-              title="Switch to month view"
+              title={tStatic('common:auto.frontend.kc623169539f0')}
             >
               <div className="flex items-center space-x-2">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
-                <span>Month</span>
+                <span>{tStatic('common:auto.frontend.k082bc378cd60')}</span>
               </div>
             </button>
 
@@ -205,13 +206,13 @@ export const CalendarHeader: React.FC<CalendarHeaderProps> = ({
                   : 'text-gray-600 hover:text-gray-900 hover:bg-gray-200'
                 }
               `}
-              title="Switch to week view"
+              title={tStatic('common:auto.frontend.kf40f3fcd07be')}
             >
               <div className="flex items-center space-x-2">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                 </svg>
-                <span>Week</span>
+                <span>{tStatic('common:auto.frontend.kf82be68a7fb4')}</span>
               </div>
             </button>
           </div>
@@ -230,8 +231,8 @@ export const CalendarHeader: React.FC<CalendarHeaderProps> = ({
                 </svg>
               }
             >
-              <span className="hidden sm:inline">New Calendar</span>
-              <span className="sm:hidden">Calendar</span>
+              <span className="hidden sm:inline">{tStatic('common:auto.frontend.kfe0b9a9de658')}</span>
+              <span className="sm:hidden">{tStatic('common:auto.frontend.kadab5090ac6a')}</span>
             </Button>
 
             <Button
@@ -246,8 +247,8 @@ export const CalendarHeader: React.FC<CalendarHeaderProps> = ({
                 </svg>
               }
             >
-              <span className="hidden sm:inline">New Event</span>
-              <span className="sm:hidden">Event</span>
+              <span className="hidden sm:inline">{tStatic('common:auto.frontend.k6396b65c4ecf')}</span>
+              <span className="sm:hidden">{tStatic('common:auto.frontend.kad8919ace091')}</span>
             </Button>
           </div>
         </div>
@@ -262,19 +263,18 @@ export const CalendarHeader: React.FC<CalendarHeaderProps> = ({
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
               <span>
-                Viewing {currentView} calendar
-              </span>
+                {tStatic('common:auto.frontend.k80862a89e60d')}{currentView} {tStatic('common:auto.frontend.ke4ffacba5591')}</span>
             </div>
             <div className="flex items-center space-x-2">
               <div className={`w-3 h-3 rounded-full bg-gradient-to-r ${themeConfig.gradientFrom} ${themeConfig.gradientTo}`}></div>
-              <span>Current theme applied</span>
+              <span>{tStatic('common:auto.frontend.k6c9245a33ae8')}</span>
             </div>
           </div>
 
           <div className="hidden md:flex items-center space-x-4 text-xs">
-            <span>Use ← → arrow keys to navigate</span>
+            <span>{tStatic('common:auto.frontend.k8cde830ef5fb')}</span>
             <span>•</span>
-            <span>Double-click dates to create events</span>
+            <span>{tStatic('common:auto.frontend.kcfb024aafef5')}</span>
           </div>
         </div>
       </div>

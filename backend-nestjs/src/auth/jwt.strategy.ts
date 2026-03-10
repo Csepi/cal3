@@ -8,6 +8,8 @@ import { JwtRevocationService } from './services/jwt-revocation.service';
 import { TokenFingerprintService } from './services/token-fingerprint.service';
 import type { AccessTokenClaims } from './token.types';
 
+import { bStatic } from '../i18n/runtime';
+
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
@@ -29,18 +31,18 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
   async validate(req: Request, payload: AccessTokenClaims) {
     if (await this.jwtRevocationService.isRevoked(payload.jti)) {
-      throw new UnauthorizedException('JWT has been revoked');
+      throw new UnauthorizedException(bStatic('errors.auto.backend.k61e6d7a773d2'));
     }
 
     if (payload.fph) {
       const fingerprint = this.tokenFingerprintService.extractFingerprint(req);
       if (!fingerprint) {
-        throw new UnauthorizedException('Missing token fingerprint');
+        throw new UnauthorizedException(bStatic('errors.auto.backend.k9764bc92306d'));
       }
       const fingerprintHash =
         this.tokenFingerprintService.hashFingerprint(fingerprint);
       if (fingerprintHash !== payload.fph) {
-        throw new UnauthorizedException('Token fingerprint mismatch');
+        throw new UnauthorizedException(bStatic('errors.auto.backend.kea6439506c54'));
       }
     }
 

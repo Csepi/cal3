@@ -2,6 +2,8 @@ import React from 'react';
 import { THEME_COLOR_OPTIONS } from '../../constants';
 import { Card, CardHeader } from '../ui';
 
+import { tStatic } from '../../i18n';
+
 export interface ThemeSelectorProps {
   /** Currently selected theme color */
   currentTheme: string;
@@ -26,10 +28,10 @@ export const ThemeSelector: React.FC<ThemeSelectorProps> = ({
       className={className}
       themeColor={currentTheme}
       padding="lg"
-      header={<CardHeader>Theme Colors</CardHeader>}
+      header={<CardHeader>{tStatic('common:auto.frontend.k974337d75802')}</CardHeader>}
     >
       <div className="space-y-4">
-        <p className="text-sm text-gray-600">Choose the accent color used across the interface.</p>
+        <p className="text-sm text-gray-600">{tStatic('common:auto.frontend.k3b725688145b')}</p>
 
         <div className="grid grid-cols-4 gap-3">
           {THEME_COLOR_OPTIONS.map((color) => {
@@ -79,7 +81,7 @@ export const ThemeSelector: React.FC<ThemeSelectorProps> = ({
             />
             <div>
               <p className="text-sm font-medium text-gray-800">
-                Current Theme: {selectedTheme?.name ?? 'Custom'}
+                {tStatic('common:auto.frontend.kded52f5c0579')}{selectedTheme?.name ?? 'Custom'}
               </p>
               <p className="text-xs text-gray-500">
                 {isSaving ? 'Saving your preference…' : 'Applied across dashboards, dialogs, and highlights.'}

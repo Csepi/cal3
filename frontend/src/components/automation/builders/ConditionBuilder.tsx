@@ -6,6 +6,8 @@ import {
 import type { ConditionFormData } from '../../../types/Automation';
 import { ConditionRow } from './ConditionRow';
 
+import { tStatic } from '../../../i18n';
+
 interface ConditionBuilderProps {
   conditions: ConditionFormData[];
   conditionLogic: ConditionLogic;
@@ -46,16 +48,16 @@ export const ConditionBuilder: React.FC<ConditionBuilderProps> = ({
     <div className="space-y-4">
       {/* Header with Logic Selector */}
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-gray-900">Conditions</h3>
+        <h3 className="text-lg font-semibold text-gray-900">{tStatic('common:auto.frontend.k5506eb6161a0')}</h3>
         <div className="flex items-center gap-2">
-          <label className="text-sm text-gray-600">Match:</label>
+          <label className="text-sm text-gray-600">{tStatic('common:auto.frontend.kad796922dcad')}</label>
           <select
             value={conditionLogic}
             onChange={(e) => onLogicChange(e.target.value as ConditionLogic)}
             className="px-3 py-1 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
-            <option value={ConditionLogic.AND}>All conditions (AND)</option>
-            <option value={ConditionLogic.OR}>Any condition (OR)</option>
+            <option value={ConditionLogic.AND}>{tStatic('common:auto.frontend.k3b8b09c597b0')}</option>
+            <option value={ConditionLogic.OR}>{tStatic('common:auto.frontend.k901f8783a407')}</option>
           </select>
         </div>
       </div>
@@ -65,17 +67,13 @@ export const ConditionBuilder: React.FC<ConditionBuilderProps> = ({
         <p className="text-sm text-gray-700">
           {conditions.length === 0 ? (
             <>
-              ℹ️ <strong>No conditions</strong> - the rule will trigger for all events matching the trigger.
-            </>
+              ℹ️ <strong>{tStatic('common:auto.frontend.k4e5dea9d96de')}</strong> {tStatic('common:auto.frontend.ke68dd07119f2')}</>
           ) : conditionLogic === ConditionLogic.AND ? (
             <>
-              ✓ <strong>All conditions</strong> must be true for the rule to trigger actions.
-            </>
+              ✓ <strong>{tStatic('common:auto.frontend.k771ea079b86f')}</strong> {tStatic('common:auto.frontend.kf721e9c23734')}</>
           ) : (
             <>
-              ✓ <strong>At least one condition</strong> must be true for the rule to trigger
-              actions.
-            </>
+              ✓ <strong>{tStatic('common:auto.frontend.k67944f44550c')}</strong> {tStatic('common:auto.frontend.kf721e9c23734')}</>
           )}
         </p>
       </div>
@@ -122,24 +120,21 @@ export const ConditionBuilder: React.FC<ConditionBuilderProps> = ({
               d="M12 6v6m0 0v6m0-6h6m-6 0H6"
             />
           </svg>
-          Add Condition
-        </button>
+          {tStatic('common:auto.frontend.k4803c2377e28')}</button>
       </div>
 
       {/* Validation Warning */}
       {conditions.length > 10 && (
         <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
           <p className="text-sm text-yellow-800">
-            ⚠️ Maximum of 10 conditions allowed. Please remove some conditions.
-          </p>
+            {tStatic('common:auto.frontend.k1caea110af88')}</p>
         </div>
       )}
 
       {/* Helper Text */}
       <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg">
         <p className="text-xs text-gray-600">
-          <strong>Tip:</strong> Conditions are optional. If no conditions are specified, the rule will apply to all events that match the trigger. Add conditions to filter specific events.
-        </p>
+          <strong>{tStatic('common:auto.frontend.k2ee750e04190')}</strong> {tStatic('common:auto.frontend.kf1db58300e47')}</p>
       </div>
     </div>
   );

@@ -27,6 +27,8 @@ import {
 
 import { logError } from '../common/errors/error-logger';
 import { buildErrorContext } from '../common/errors/error-context';
+import { bStatic } from '../i18n/runtime';
+
 @Injectable()
 export class EventsService {
   private automationService?: {
@@ -79,7 +81,7 @@ export class EventsService {
     const { calendarId, ...eventData } = createEventDto;
 
     if (!calendarId) {
-      throw new NotFoundException('Calendar ID is required');
+      throw new NotFoundException(bStatic('errors.auto.backend.k03f046194d79'));
     }
 
     // Check if user has write access to the calendar
@@ -89,7 +91,7 @@ export class EventsService {
     });
 
     if (!calendar) {
-      throw new NotFoundException('Calendar not found');
+      throw new NotFoundException(bStatic('errors.auto.backend.k22a8217d832e'));
     }
 
     const hasWriteAccess = await this.eventAccessPolicy.canWriteCalendar(
@@ -98,7 +100,7 @@ export class EventsService {
     );
     if (!hasWriteAccess) {
       throw new ForbiddenException(
-        'Insufficient permissions to create events in this calendar',
+        bStatic('errors.auto.backend.k12fe05bdbf89'),
       );
     }
 
@@ -202,7 +204,7 @@ export class EventsService {
     }
 
     if (!calendar) {
-      throw new NotFoundException('Calendar not found');
+      throw new NotFoundException(bStatic('errors.auto.backend.k22a8217d832e'));
     }
 
     const event = this.eventValidationService.createEventEntity(
@@ -300,7 +302,7 @@ export class EventsService {
     });
 
     if (!event) {
-      throw new NotFoundException('Event not found');
+      throw new NotFoundException(bStatic('errors.auto.backend.k231b810d5be3'));
     }
 
     // Check if user has access to the calendar
@@ -309,7 +311,7 @@ export class EventsService {
       userId,
     );
     if (!hasAccess) {
-      throw new ForbiddenException('Access denied to this event');
+      throw new ForbiddenException(bStatic('errors.auto.backend.kf5de6f833b10'));
     }
 
     return event;
@@ -332,7 +334,7 @@ export class EventsService {
     );
     if (!hasWriteAccess) {
       throw new ForbiddenException(
-        'Insufficient permissions to update this event',
+        bStatic('errors.auto.backend.k2ac8ab0d3329'),
       );
     }
 
@@ -348,7 +350,7 @@ export class EventsService {
         );
       if (!hasNewCalendarAccess) {
         throw new ForbiddenException(
-          'Insufficient permissions to move event to the specified calendar',
+          bStatic('errors.auto.backend.ke17ac3c06f4c'),
         );
       }
     }
@@ -419,7 +421,7 @@ export class EventsService {
     });
 
     if (!event) {
-      throw new NotFoundException('Event not found');
+      throw new NotFoundException(bStatic('errors.auto.backend.k231b810d5be3'));
     }
 
     // Check if user has write access to the calendar
@@ -429,7 +431,7 @@ export class EventsService {
     );
     if (!hasWriteAccess) {
       throw new ForbiddenException(
-        'Insufficient permissions to delete this event',
+        bStatic('errors.auto.backend.k72cb627cc482'),
       );
     }
 
@@ -472,7 +474,7 @@ export class EventsService {
     });
 
     if (!event) {
-      throw new NotFoundException('Event not found');
+      throw new NotFoundException(bStatic('errors.auto.backend.k231b810d5be3'));
     }
 
     await this.eventRepository.remove(event);
@@ -488,7 +490,7 @@ export class EventsService {
       userId,
     );
     if (!hasAccess) {
-      throw new ForbiddenException('Access denied to this calendar');
+      throw new ForbiddenException(bStatic('errors.auto.backend.kd445628ea741'));
     }
 
     return this.eventRepository.find({
@@ -508,7 +510,7 @@ export class EventsService {
     const { recurrence, ...eventData } = createRecurringEventDto;
 
     if (!createRecurringEventDto.calendarId) {
-      throw new NotFoundException('Calendar ID is required');
+      throw new NotFoundException(bStatic('errors.auto.backend.k03f046194d79'));
     }
 
     // Check if user has write access to the calendar
@@ -518,7 +520,7 @@ export class EventsService {
     );
     if (!hasWriteAccess) {
       throw new ForbiddenException(
-        'Insufficient permissions to create events in this calendar',
+        bStatic('errors.auto.backend.k12fe05bdbf89'),
       );
     }
 
@@ -578,7 +580,7 @@ export class EventsService {
     });
 
     if (!event) {
-      throw new NotFoundException('Event not found');
+      throw new NotFoundException(bStatic('errors.auto.backend.k231b810d5be3'));
     }
 
     // Check if user has write access
@@ -588,7 +590,7 @@ export class EventsService {
     );
     if (!hasWriteAccess) {
       throw new ForbiddenException(
-        'Insufficient permissions to update this event',
+        bStatic('errors.auto.backend.k2ac8ab0d3329'),
       );
     }
 
@@ -628,7 +630,7 @@ export class EventsService {
         );
         break;
       default:
-        throw new BadRequestException('Invalid update scope');
+        throw new BadRequestException(bStatic('errors.auto.backend.k0d8f56fb7f16'));
     }
 
     if (updatedEvents.length > 0) {
@@ -793,7 +795,7 @@ export class EventsService {
       : event;
 
     if (!parentEvent) {
-      throw new NotFoundException('Parent event not found');
+      throw new NotFoundException(bStatic('errors.auto.backend.k3a66d3aec00c'));
     }
 
     this.eventValidationService.sanitizeAndAssignUpdateData(

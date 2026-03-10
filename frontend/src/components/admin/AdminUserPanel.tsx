@@ -11,6 +11,8 @@ import {
 import type { User, Organisation } from "./types";
 import { USAGE_PLAN_OPTIONS } from "../../constants";
 
+import { tStatic } from '../../i18n';
+
 export interface AdminUserPanelProps {
   themeColor?: string;
   isActive?: boolean;
@@ -186,7 +188,7 @@ export const AdminUserPanel: React.FC<AdminUserPanelProps> = ({
           isActive: profileDraft.isActive,
         },
       });
-      setSuccess("Profile updated.");
+      setSuccess(tStatic('common:auto.frontend.kbcf7629607f8'));
       await loadUsers();
     } catch (error) {
       setError(error);
@@ -209,7 +211,7 @@ export const AdminUserPanel: React.FC<AdminUserPanelProps> = ({
       if (!updatedUser || typeof updatedUser.id !== "number") {
         throw new Error("Plan update failed");
       }
-      setSuccess("Plans updated.");
+      setSuccess(tStatic('common:auto.frontend.k6938e9c0dfa8'));
       await loadUsers();
     } catch (error) {
       setError(error);
@@ -264,7 +266,7 @@ export const AdminUserPanel: React.FC<AdminUserPanelProps> = ({
     if (!window.confirm(`Delete ${getDisplayName(user)}? This cannot be undone.`)) return;
     try {
       await adminApiCall({ endpoint: `/admin/users/${userId}`, method: "DELETE" });
-      setSuccess("User deleted.");
+      setSuccess(tStatic('common:auto.frontend.k0ba72d0bcef3'));
       await loadUsers();
     } catch (error) {
       setError(error);
@@ -279,7 +281,7 @@ export const AdminUserPanel: React.FC<AdminUserPanelProps> = ({
         endpoint: `/admin/users/${selectedUser.id}/reset-password`,
         method: "POST",
       });
-      setSuccess("Password reset email sent.");
+      setSuccess(tStatic('common:auto.frontend.kf83f6833ecee'));
     } catch (error) {
       setError(error);
     } finally {
@@ -309,7 +311,7 @@ export const AdminUserPanel: React.FC<AdminUserPanelProps> = ({
   const handleAddToOrganisation = async (organisationId: number, role: "admin" | "editor" | "user") => {
     if (!selectedUser) return;
     if (!hasRequiredOrgPlan(plansDraft)) {
-      setError("Assign Store or Enterprise plan before giving organisation roles.");
+      setError(tStatic('common:auto.frontend.kb304cc95467a'));
       return;
     }
     try {
@@ -321,7 +323,7 @@ export const AdminUserPanel: React.FC<AdminUserPanelProps> = ({
       });
       await loadOrganisations();
       await loadUsers();
-      setSuccess("Organisation membership updated.");
+      setSuccess(tStatic('common:auto.frontend.k38eeb0c37adb'));
     } catch (error) {
       setError(error);
       setOrgLoading(false);
@@ -330,7 +332,7 @@ export const AdminUserPanel: React.FC<AdminUserPanelProps> = ({
 
   const handleRemoveFromOrganisation = async (organisationId: number) => {
     if (!selectedUser) return;
-    if (!window.confirm("Remove user from this organisation?")) return;
+    if (!window.confirm(tStatic('common:auto.frontend.k08c3f6da58e6'))) return;
     try {
       setOrgLoading(true);
       await adminApiCall({
@@ -339,7 +341,7 @@ export const AdminUserPanel: React.FC<AdminUserPanelProps> = ({
       });
       await loadOrganisations();
       await loadUsers();
-      setSuccess("Organisation membership removed.");
+      setSuccess(tStatic('common:auto.frontend.k44e59001ed56'));
     } catch (error) {
       setError(error);
       setOrgLoading(false);
@@ -367,13 +369,13 @@ export const AdminUserPanel: React.FC<AdminUserPanelProps> = ({
           <CardHeader>
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div>
-                <p className="text-sm uppercase tracking-wide text-gray-500">People directory</p>
-                <h2 className="text-2xl font-semibold text-gray-800">Admin workspace</h2>
+                <p className="text-sm uppercase tracking-wide text-gray-500">{tStatic('common:auto.frontend.k455e3d3b9905')}</p>
+                <h2 className="text-2xl font-semibold text-gray-800">{tStatic('common:auto.frontend.kf2b0141d7883')}</h2>
               </div>
               <div className="flex gap-2">
-                <Badge variant="info">Total {stats.total}</Badge>
-                <Badge variant="success">Active {stats.active}</Badge>
-                <Badge variant="primary">Admins {stats.admins}</Badge>
+                <Badge variant="info">{tStatic('common:auto.frontend.kb25928c69902')}{stats.total}</Badge>
+                <Badge variant="success">{tStatic('common:auto.frontend.ka733b809d2f1')}{stats.active}</Badge>
+                <Badge variant="primary">{tStatic('common:auto.frontend.ked6b52430295')}{stats.admins}</Badge>
               </div>
             </div>
           </CardHeader>
@@ -393,8 +395,7 @@ export const AdminUserPanel: React.FC<AdminUserPanelProps> = ({
                 onClick={() => setBulkModalOpen(true)}
                 disabled={selectedIds.length === 0}
               >
-                Update plans
-              </Button>
+                {tStatic('common:auto.frontend.ka8b368e79f45')}</Button>
               <Button
                 variant="outline"
                 className="border-red-300 text-red-600 hover:bg-red-50"
@@ -409,7 +410,7 @@ export const AdminUserPanel: React.FC<AdminUserPanelProps> = ({
       >
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <Input
-            placeholder="Search by name or email"
+            placeholder={tStatic('common:auto.frontend.kdb074aa7303e')}
             value={filters.search}
             onChange={(event) => handleFilterChange("search", event.target.value)}
             themeColor={themeColor}
@@ -419,25 +420,25 @@ export const AdminUserPanel: React.FC<AdminUserPanelProps> = ({
             value={filters.role}
             onChange={(event) => handleFilterChange("role", event.target.value)}
           >
-            <option value="all">All roles</option>
-            <option value="user">Users</option>
-            <option value="admin">Admins</option>
+            <option value="all">{tStatic('common:auto.frontend.k0caca0d6c549')}</option>
+            <option value="user">{tStatic('common:auto.frontend.k57f2b181d0a5')}</option>
+            <option value="admin">{tStatic('common:auto.frontend.ked6b52430295')}</option>
           </select>
           <select
             className="rounded-xl border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
             value={filters.status}
             onChange={(event) => handleFilterChange("status", event.target.value)}
           >
-            <option value="all">All statuses</option>
-            <option value="active">Active</option>
-            <option value="inactive">Inactive</option>
+            <option value="all">{tStatic('common:auto.frontend.k6405179d241b')}</option>
+            <option value="active">{tStatic('common:auto.frontend.ka733b809d2f1')}</option>
+            <option value="inactive">{tStatic('common:auto.frontend.k09af574c7f20')}</option>
           </select>
           <select
             className="rounded-xl border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
             value={filters.plan}
             onChange={(event) => handleFilterChange("plan", event.target.value)}
           >
-            <option value="all">All plans</option>
+            <option value="all">{tStatic('common:auto.frontend.k34a5adb1782c')}</option>
             {USAGE_PLAN_OPTIONS.map((option) => (
               <option key={option.value} value={normalizePlan(option.value)}>
                 {option.label}
@@ -450,7 +451,7 @@ export const AdminUserPanel: React.FC<AdminUserPanelProps> = ({
       <div className="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
         <Card themeColor={themeColor} padding="lg" className="border border-blue-200 bg-white/85">
           <div className="mb-3 flex items-center justify-between text-sm text-gray-500">
-            <span>{filteredUsers.length} result(s)</span>
+            <span>{filteredUsers.length} {tStatic('common:auto.frontend.k381d833509a1')}</span>
             <label className="flex items-center gap-2">
               <input
                 type="checkbox"
@@ -460,16 +461,15 @@ export const AdminUserPanel: React.FC<AdminUserPanelProps> = ({
                 }
                 onChange={toggleSelectAll}
               />
-              Select all visible
-            </label>
+              {tStatic('common:auto.frontend.kd88560ec4c0c')}</label>
           </div>
           <div className="max-h-[60vh] overflow-y-auto pr-2">
             {loading ? (
-              <div className="flex items-center justify-center py-12 text-gray-500">Loading users…</div>
+              <div className="flex items-center justify-center py-12 text-gray-500">{tStatic('common:auto.frontend.kb6443c996d50')}</div>
             ) : filteredUsers.length === 0 ? (
               <div className="flex flex-col items-center justify-center gap-2 py-12 text-gray-500">
                 <span className="text-3xl">??</span>
-                <p>No users match your filters.</p>
+                <p>{tStatic('common:auto.frontend.k142e017bb44a')}</p>
               </div>
             ) : (
               <ul className="space-y-3">
@@ -505,7 +505,7 @@ export const AdminUserPanel: React.FC<AdminUserPanelProps> = ({
                               {user.isActive ? "Active" : "Inactive"}
                             </Badge>
                             {(user.usagePlans ?? []).length === 0 ? (
-                              <Badge variant="default">No plan</Badge>
+                              <Badge variant="default">{tStatic('common:auto.frontend.ke71f35adbc66')}</Badge>
                             ) : (
                               user.usagePlans?.map((plan) => (
                                 <Badge key={`${user.id}-${plan}`} variant="info">
@@ -524,16 +524,14 @@ export const AdminUserPanel: React.FC<AdminUserPanelProps> = ({
                                 void loadOrganisations(user);
                               }}
                             >
-                              Manage organisations
-                            </Button>
+                              {tStatic('common:auto.frontend.k0e0572f90cef')}</Button>
                             <Button
                               variant="outline"
                               size="sm"
                               className="border-red-300 text-red-600 hover:bg-red-50"
                               onClick={() => void handleDeleteUser(user.id)}
                             >
-                              Delete
-                            </Button>
+                              {tStatic('common:auto.frontend.kf6fdbe48dc54')}</Button>
                           </div>
                         </div>
                       </div>
@@ -548,15 +546,15 @@ export const AdminUserPanel: React.FC<AdminUserPanelProps> = ({
           {!profileDraft ? (
             <div className="flex h-full flex-col items-center justify-center gap-3 py-24 text-gray-500">
               <span className="text-4xl">??</span>
-              <p>Select a user to view profile details.</p>
+              <p>{tStatic('common:auto.frontend.ka4d68f92a9eb')}</p>
             </div>
           ) : (
             <div className="space-y-6">
               <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-gray-800">Profile</h3>
+                <h3 className="text-lg font-semibold text-gray-800">{tStatic('common:auto.frontend.kff4fc0276e96')}</h3>
                 <div className="grid gap-3 md:grid-cols-2">
                   <Input
-                    label="Username"
+                    label={tStatic('common:auto.frontend.k84c29015de33')}
                     value={profileDraft.username ?? ""}
                     onChange={(event) =>
                       setProfileDraft((prev) => prev && { ...prev, username: event.target.value })
@@ -564,7 +562,7 @@ export const AdminUserPanel: React.FC<AdminUserPanelProps> = ({
                     themeColor={themeColor}
                   />
                   <Input
-                    label="Email"
+                    label={tStatic('common:auto.frontend.k84add5b29527')}
                     type="email"
                     value={profileDraft.email ?? ""}
                     onChange={(event) =>
@@ -573,7 +571,7 @@ export const AdminUserPanel: React.FC<AdminUserPanelProps> = ({
                     themeColor={themeColor}
                   />
                   <Input
-                    label="First name"
+                    label={tStatic('common:auto.frontend.k7e568a90221d')}
                     value={profileDraft.firstName ?? ""}
                     onChange={(event) =>
                       setProfileDraft((prev) => prev && { ...prev, firstName: event.target.value })
@@ -581,7 +579,7 @@ export const AdminUserPanel: React.FC<AdminUserPanelProps> = ({
                     themeColor={themeColor}
                   />
                   <Input
-                    label="Last name"
+                    label={tStatic('common:auto.frontend.kadec36a821f8')}
                     value={profileDraft.lastName ?? ""}
                     onChange={(event) =>
                       setProfileDraft((prev) => prev && { ...prev, lastName: event.target.value })
@@ -591,7 +589,7 @@ export const AdminUserPanel: React.FC<AdminUserPanelProps> = ({
                 </div>
                 <div className="grid gap-3 md:grid-cols-2">
                   <div>
-                    <label className="mb-2 block text-sm font-medium text-gray-700">Role</label>
+                    <label className="mb-2 block text-sm font-medium text-gray-700">{tStatic('common:auto.frontend.kc3f104d13657')}</label>
                     <select
                       className="w-full rounded-xl border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                       value={profileDraft.role}
@@ -599,8 +597,8 @@ export const AdminUserPanel: React.FC<AdminUserPanelProps> = ({
                         setProfileDraft((prev) => prev && { ...prev, role: event.target.value })
                       }
                     >
-                      <option value="user">User</option>
-                      <option value="admin">Admin</option>
+                      <option value="user">{tStatic('common:auto.frontend.k9f8a2389a20c')}</option>
+                      <option value="admin">{tStatic('common:auto.frontend.k4e7afebcfbae')}</option>
                     </select>
                   </div>
                   <div className="flex items-end">
@@ -623,7 +621,7 @@ export const AdminUserPanel: React.FC<AdminUserPanelProps> = ({
               </div>
 
               <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-gray-800">Usage plans</h3>
+                <h3 className="text-lg font-semibold text-gray-800">{tStatic('common:auto.frontend.k61628f5a1228')}</h3>
                 <div className="grid gap-3 sm:grid-cols-2">
                   {USAGE_PLAN_OPTIONS.map((option) => {
                     const checked = plansDraft.some(
@@ -664,20 +662,18 @@ export const AdminUserPanel: React.FC<AdminUserPanelProps> = ({
               </div>
 
               <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-gray-800">Account tools</h3>
+                <h3 className="text-lg font-semibold text-gray-800">{tStatic('common:auto.frontend.k4934c20c02cd')}</h3>
                 <div className="rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3">
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div className="text-sm text-gray-600">
-                      Store or Enterprise plans unlock organisation administration.
-                    </div>
+                      {tStatic('common:auto.frontend.k75ec7abc577a')}</div>
                     <Button variant="outline" themeColor={themeColor} onClick={() => void loadOrganisations()}>
-                      Manage organisations
-                    </Button>
+                      {tStatic('common:auto.frontend.k0e0572f90cef')}</Button>
                   </div>
                 </div>
                 <div className="rounded-2xl border border-gray-200 bg-white px-4 py-3">
                   <div className="flex flex-wrap items-center justify-between gap-3">
-                    <div className="text-sm text-gray-600">Send password reset email to this user.</div>
+                    <div className="text-sm text-gray-600">{tStatic('common:auto.frontend.k7f1748f4c04e')}</div>
                     <Button variant="outline" onClick={() => void handleResetPassword()} disabled={resettingPassword}>
                       {resettingPassword ? "Sending…" : "Send reset"}
                     </Button>
@@ -698,8 +694,7 @@ export const AdminUserPanel: React.FC<AdminUserPanelProps> = ({
         footer={
           <div className="flex justify-end gap-2">
             <Button variant="outline" onClick={() => setBulkModalOpen(false)} disabled={bulkProcessing}>
-              Cancel
-            </Button>
+              {tStatic('common:auto.frontend.k77dfd2135f4d')}</Button>
             <Button
               themeColor={themeColor}
               onClick={() => void handleBulkPlans()}
@@ -712,15 +707,15 @@ export const AdminUserPanel: React.FC<AdminUserPanelProps> = ({
       >
         <div className="space-y-4">
           <div>
-            <label className="mb-2 block text-sm font-medium text-gray-700">Operation</label>
+            <label className="mb-2 block text-sm font-medium text-gray-700">{tStatic('common:auto.frontend.k430d32076eb2')}</label>
             <select
               className="w-full rounded-xl border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
               value={bulkOperation}
               onChange={(event) => setBulkOperation(event.target.value as UsagePlanOperation)}
             >
-              <option value="set">Set (replace existing)</option>
-              <option value="add">Add</option>
-              <option value="remove">Remove</option>
+              <option value="set">{tStatic('common:auto.frontend.kdd700d608129')}</option>
+              <option value="add">{tStatic('common:auto.frontend.k61cc55aa0453')}</option>
+              <option value="remove">{tStatic('common:auto.frontend.ke963907dac5c')}</option>
             </select>
           </div>
           <div className="space-y-2 rounded-2xl border border-gray-200 bg-white p-3">
@@ -751,20 +746,19 @@ export const AdminUserPanel: React.FC<AdminUserPanelProps> = ({
       <Modal
         isOpen={orgModalOpen}
         onClose={() => setOrgModalOpen(false)}
-        title="Organisation membership"
+        title={tStatic('common:auto.frontend.kb26a310064f3')}
         themeColor={themeColor}
         size="lg"
       >
         {orgLoading ? (
-          <div className="flex items-center justify-center py-12 text-gray-500">Loading…</div>
+          <div className="flex items-center justify-center py-12 text-gray-500">{tStatic('common:auto.frontend.k33ce417454bf')}</div>
         ) : (
           <div className="grid gap-4 lg:grid-cols-2">
             <div className="space-y-3 rounded-2xl border border-gray-200 bg-gray-50 p-4">
-              <h4 className="text-sm font-semibold uppercase tracking-wide text-gray-500">Assigned</h4>
+              <h4 className="text-sm font-semibold uppercase tracking-wide text-gray-500">{tStatic('common:auto.frontend.ke24e824b6811')}</h4>
               {orgAssignments.length === 0 ? (
                 <div className="rounded-xl border border-dashed border-gray-300 bg-white px-4 py-6 text-center text-sm text-gray-500">
-                  No organisations yet.
-                </div>
+                  {tStatic('common:auto.frontend.k0b337326dece')}</div>
               ) : (
                 orgAssignments.map((assignment) => (
                   <div
@@ -773,7 +767,7 @@ export const AdminUserPanel: React.FC<AdminUserPanelProps> = ({
                   >
                     <div>
                       <div className="font-semibold text-gray-800">{assignment.name}</div>
-                      {assignment.role && <div className="text-xs text-gray-500">Role: {assignment.role}</div>}
+                      {assignment.role && <div className="text-xs text-gray-500">{tStatic('common:auto.frontend.k61e4c27b1cb8')}{assignment.role}</div>}
                     </div>
                     <Button
                       variant="outline"
@@ -781,14 +775,13 @@ export const AdminUserPanel: React.FC<AdminUserPanelProps> = ({
                       className="border-red-300 text-red-600 hover:bg-red-50"
                       onClick={() => void handleRemoveFromOrganisation(assignment.id)}
                     >
-                      Remove
-                    </Button>
+                      {tStatic('common:auto.frontend.ke963907dac5c')}</Button>
                   </div>
                 ))
               )}
             </div>
             <div className="space-y-3 rounded-2xl border border-gray-200 bg-white p-4">
-              <h4 className="text-sm font-semibold uppercase tracking-wide text-gray-500">Available</h4>
+              <h4 className="text-sm font-semibold uppercase tracking-wide text-gray-500">{tStatic('common:auto.frontend.k7c62a1424469')}</h4>
               {orgOptions
                 .filter((option) => !orgAssignments.some((assignment) => assignment.id === option.id))
                 .map((option) => (
@@ -811,7 +804,7 @@ export const AdminUserPanel: React.FC<AdminUserPanelProps> = ({
                           disabled={!hasRequiredOrgPlan(plansDraft)}
                           onClick={() => void handleAddToOrganisation(option.id, role)}
                         >
-                          Add as {role}
+                          {tStatic('common:auto.frontend.k3d134f3d5896')}{role}
                         </Button>
                       ))}
                     </div>
@@ -819,8 +812,7 @@ export const AdminUserPanel: React.FC<AdminUserPanelProps> = ({
                 ))}
               {orgOptions.length === 0 && (
                 <div className="rounded-xl border border-dashed border-gray-300 px-4 py-6 text-center text-sm text-gray-500">
-                  No available organisations.
-                </div>
+                  {tStatic('common:auto.frontend.k232e80a6c640')}</div>
               )}
             </div>
           </div>

@@ -1,0 +1,5 @@
+{
+  "newBooking": "Neue Buchung von {{clientName}}",
+  "eventStartingSoon": "Der Termin beginnt in {{minutes}} Minuten.",
+  "calendarShared": "Ein Kalender wurde mit Ihnen geteilt."
+}

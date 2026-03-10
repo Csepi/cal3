@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
 import { profileApi } from '../services/profileApi';
 import { calendarApi } from '../services/calendarApi';
 import { getSimpleThemeGradient, LOADING_MESSAGES } from '../constants';
@@ -16,6 +15,8 @@ import {
   clearWidgetDiagnosticsLog,
   getWidgetDiagnosticsLog,
 } from '../services/widgetDiagnostics';
+import { useAppTranslation } from '../i18n/useAppTranslation';
+import { applyLanguagePreference } from '../i18n';
 
 /**
  * UserProfile component - Main user profile management interface
@@ -60,7 +61,7 @@ interface UserProfileData {
 
 const UserProfile: React.FC<UserProfileProps> = ({ onThemeChange, currentTheme }) => {
   // Hooks
-  const { i18n } = useTranslation();
+  const { t } = useAppTranslation(['settings', 'validation', 'common']);
   const { isMobile } = useScreenSize();
 
   // Core state management
@@ -184,14 +185,14 @@ const UserProfile: React.FC<UserProfileProps> = ({ onThemeChange, currentTheme }
 
       // Sync language with i18n
       if (userData.language) {
-        i18n.changeLanguage(userData.language);
+        await applyLanguagePreference(userData.language, { persistRemote: false });
       }
 
       await loadTasksCalendars(userData.id);
 
     } catch (err) {
       console.error('Error loading user data:', err);
-      setError(err instanceof Error ? err.message : 'Failed to load user profile');
+      setError(err instanceof Error ? err.message : t('errors:generic.unexpected', { defaultValue: 'Failed to load user profile' }));
     } finally {
       setLoading(false);
     }
@@ -226,27 +227,27 @@ const UserProfile: React.FC<UserProfileProps> = ({ onThemeChange, currentTheme }
     const errors: Record<string, string> = {};
 
     if (!profileForm.username.trim()) {
-      errors.username = 'Username is required';
+      errors.username = t('validation:required');
     } else if (profileForm.username.length < 3) {
-      errors.username = 'Username must be at least 3 characters';
+      errors.username = t('validation:minLength', { min: 3 });
     }
 
     if (!profileForm.email.trim()) {
-      errors.email = 'Email is required';
+      errors.email = t('validation:required');
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(profileForm.email)) {
-      errors.email = 'Please enter a valid email address';
+      errors.email = t('validation:invalidEmail');
     }
 
     if (!profileForm.timezone) {
-      errors.timezone = 'Please select a timezone';
+      errors.timezone = t('validation:timezoneRequired');
     }
 
     if (!profileForm.timeFormat) {
-      errors.timeFormat = 'Please select a time format';
+      errors.timeFormat = t('validation:required');
     }
 
     if (!profileForm.language) {
-      errors.language = 'Please select a language';
+      errors.language = t('validation:languageRequired');
     }
 
     setProfileErrors(errors);
@@ -260,19 +261,19 @@ const UserProfile: React.FC<UserProfileProps> = ({ onThemeChange, currentTheme }
     const errors: Record<string, string> = {};
 
     if (!passwordForm.currentPassword) {
-      errors.currentPassword = 'Current password is required';
+      errors.currentPassword = t('validation:required');
     }
 
     if (!passwordForm.newPassword) {
-      errors.newPassword = 'New password is required';
+      errors.newPassword = t('validation:required');
     } else if (passwordForm.newPassword.length < 8) {
-      errors.newPassword = 'Password must be at least 8 characters';
+      errors.newPassword = t('validation:minLength', { min: 8 });
     }
 
     if (!passwordForm.confirmPassword) {
-      errors.confirmPassword = 'Please confirm your new password';
+      errors.confirmPassword = t('validation:required');
     } else if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-      errors.confirmPassword = 'Passwords do not match';
+      errors.confirmPassword = t('validation:passwordsDoNotMatch');
     }
 
     setPasswordErrors(errors);
@@ -301,10 +302,10 @@ const UserProfile: React.FC<UserProfileProps> = ({ onThemeChange, currentTheme }
 
       // Update i18n language if changed
       if (profileData.language) {
-        i18n.changeLanguage(profileData.language);
+        await applyLanguagePreference(profileData.language, { persistRemote: false });
       }
 
-      setSuccess('Profile updated successfully!');
+      setSuccess(t('settings:messages.saved'));
       setTimeout(() => setSuccess(null), 3000);
 
       // Reload user data to ensure consistency
@@ -312,7 +313,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ onThemeChange, currentTheme }
 
     } catch (err) {
       console.error('Error updating profile:', err);
-      setError(err instanceof Error ? err.message : 'Failed to update profile');
+      setError(err instanceof Error ? err.message : t('settings:messages.saveFailed'));
     } finally {
       setProfileLoading(false);
     }
@@ -332,7 +333,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ onThemeChange, currentTheme }
 
       await profileApi.changePassword(passwordForm.currentPassword, passwordForm.newPassword);
 
-      setSuccess('Password changed successfully!');
+      setSuccess(t('settings:profile.changePassword'));
       setTimeout(() => setSuccess(null), 3000);
 
       // Reset password form and hide it
@@ -345,7 +346,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ onThemeChange, currentTheme }
 
     } catch (err) {
       console.error('Error changing password:', err);
-      setError(err instanceof Error ? err.message : 'Failed to change password');
+      setError(err instanceof Error ? err.message : t('errors:generic.unexpected', { defaultValue: 'Failed to change password' }));
     } finally {
       setPasswordLoading(false);
     }
@@ -367,11 +368,11 @@ const UserProfile: React.FC<UserProfileProps> = ({ onThemeChange, currentTheme }
 
     try {
       await profileApi.updateUserTheme(color);
-      setSuccess('Theme updated successfully!');
+      setSuccess(t('settings:messages.saved'));
       setTimeout(() => setSuccess(null), 3000);
     } catch (err) {
       console.error('Error updating theme:', err);
-      setError(err instanceof Error ? err.message : 'Failed to update theme');
+      setError(err instanceof Error ? err.message : t('settings:messages.saveFailed'));
       onThemeChange(previousTheme);
     } finally {
       setIsThemeSaving(false);
@@ -385,7 +386,11 @@ const UserProfile: React.FC<UserProfileProps> = ({ onThemeChange, currentTheme }
     try {
       if (navigator.clipboard?.writeText) {
         await navigator.clipboard.writeText(diagnosticsLog);
-        setWidgetLogStatus('Widget diagnostics copied to clipboard.');
+        setWidgetLogStatus(
+          t('settings:security.copyWidgetLog', {
+            defaultValue: 'Widget diagnostics copied to clipboard.',
+          }),
+        );
       } else {
         setWidgetLogStatus(diagnosticsLog);
       }
@@ -401,7 +406,11 @@ const UserProfile: React.FC<UserProfileProps> = ({ onThemeChange, currentTheme }
     setWidgetLogBusy(true);
     setWidgetLogStatus(null);
     await clearWidgetDiagnosticsLog();
-    setWidgetLogStatus('Widget diagnostics log cleared.');
+    setWidgetLogStatus(
+      t('settings:security.clearWidgetLog', {
+        defaultValue: 'Widget diagnostics log cleared.',
+      }),
+    );
     setWidgetLogBusy(false);
   };
 
@@ -416,7 +425,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ onThemeChange, currentTheme }
       <div className={`min-h-screen bg-gradient-to-br ${getSimpleThemeGradient(currentTheme)} flex justify-center items-center`}>
         <div className="text-center">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-800 mx-auto mb-4"></div>
-          <div className="text-xl font-semibold text-gray-800">{LOADING_MESSAGES.PROFILE}</div>
+          <div className="text-xl font-semibold text-gray-800">{t('common:app.loading', { defaultValue: LOADING_MESSAGES.PROFILE })}</div>
         </div>
       </div>
     );
@@ -430,14 +439,16 @@ const UserProfile: React.FC<UserProfileProps> = ({ onThemeChange, currentTheme }
           <div className="container mx-auto px-4">
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-3xl font-bold text-gray-800">User Profile</h1>
-                <p className="text-gray-600 mt-1">Manage your account settings and preferences</p>
+                <h1 className="text-3xl font-bold text-gray-800">
+                  {t('settings:sections.profile')}
+                </h1>
+                <p className="text-gray-600 mt-1">{t('settings:profile.personalInformation')}</p>
               </div>
               {user && (
                 <div className="text-right">
-                  <p className="text-sm text-gray-500">Welcome back,</p>
+                  <p className="text-sm text-gray-500">{t('common:app.welcome')}</p>
                   <p className="text-lg font-semibold text-gray-800">
-                    {user.firstName || user.username || 'User'}
+                    {user.firstName || user.username || t('roles.user')}
                   </p>
                 </div>
               )}
@@ -492,8 +503,8 @@ const UserProfile: React.FC<UserProfileProps> = ({ onThemeChange, currentTheme }
               <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
                 <div className={`flex ${isMobile ? 'flex-col gap-4' : 'items-center justify-between'}`}>
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-800 mb-2">Password</h3>
-                    <p className="text-gray-600 text-sm">Keep your account secure with a strong password</p>
+                    <h3 className="text-lg font-semibold text-gray-800 mb-2">{t('auth:labels.password')}</h3>
+                    <p className="text-gray-600 text-sm">{t('auth:hints.passwordStrength', { defaultValue: 'Keep your account secure with a strong password' })}</p>
                   </div>
                   <Button
                     variant="outline"
@@ -501,7 +512,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ onThemeChange, currentTheme }
                     onClick={() => setShowPasswordForm(true)}
                     className={isMobile ? 'w-full' : ''}
                   >
-                    Change Password
+                    {t('settings:profile.changePassword')}
                   </Button>
                 </div>
               </div>
@@ -534,9 +545,11 @@ const UserProfile: React.FC<UserProfileProps> = ({ onThemeChange, currentTheme }
             <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
               <div className="flex flex-col gap-3">
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-800">Widget Diagnostics</h3>
+                  <h3 className="text-lg font-semibold text-gray-800">
+                    {t('settings:security.widgetDiagnostics')}
+                  </h3>
                   <p className="text-sm text-gray-600 mt-1">
-                    Copy Android widget logs to troubleshoot loading issues quickly.
+                    {t('settings:security.widgetDiagnosticsHelp')}
                   </p>
                 </div>
                 <div className={`flex ${isMobile ? 'flex-col' : 'flex-row'} gap-3`}>
@@ -547,7 +560,9 @@ const UserProfile: React.FC<UserProfileProps> = ({ onThemeChange, currentTheme }
                     disabled={widgetLogBusy}
                     className={isMobile ? 'w-full' : ''}
                   >
-                    {widgetLogBusy ? 'Working...' : 'Copy Widget Log'}
+                    {widgetLogBusy
+                      ? t('common:app.saving', { defaultValue: 'Working...' })
+                      : t('settings:security.copyWidgetLog')}
                   </Button>
                   <Button
                     variant="ghost"
@@ -556,7 +571,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ onThemeChange, currentTheme }
                     disabled={widgetLogBusy}
                     className={isMobile ? 'w-full' : ''}
                   >
-                    Clear Widget Log
+                    {t('settings:security.clearWidgetLog')}
                   </Button>
                 </div>
                 {widgetLogStatus && (

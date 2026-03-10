@@ -1,5 +1,7 @@
 import React, { useEffect } from 'react';
 
+import { tStatic } from '../../i18n';
+
 interface MobileDrawerProps {
   isOpen: boolean;
   onClose: () => void;
@@ -70,7 +72,7 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
             <button
               onClick={onClose}
               className="p-2 rounded-lg hover:bg-gray-200 transition-colors duration-200"
-              aria-label="Close drawer"
+              aria-label={tStatic('common:auto.frontend.kde4e7f6fad95')}
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

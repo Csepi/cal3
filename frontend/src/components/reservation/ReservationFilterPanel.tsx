@@ -14,6 +14,8 @@ import type {
   ReservationResourceType,
 } from '../../types/reservation';
 
+import { tStatic } from '../../i18n';
+
 export interface ReservationFilters {
   status: string;
   resourceType: string;
@@ -100,11 +102,10 @@ export const ReservationFilterPanel: React.FC<ReservationFilterPanelProps> = ({
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <span>🔍</span>
-              <h3 className="text-lg font-semibold text-gray-800">Filter Reservations</h3>
+              <h3 className="text-lg font-semibold text-gray-800">{tStatic('common:auto.frontend.k06f0a8910a17')}</h3>
               {hasActiveFilters && (
                 <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">
-                  {getActiveFilterCount()} active
-                </span>
+                  {getActiveFilterCount()} {tStatic('common:auto.frontend.k2bb6b986c5d6')}</span>
               )}
             </div>
             <div className="flex items-center space-x-2">
@@ -120,8 +121,7 @@ export const ReservationFilterPanel: React.FC<ReservationFilterPanelProps> = ({
                   </svg>
                 }
               >
-                Refresh
-              </Button>
+                {tStatic('common:auto.frontend.k56e3badc4e6c')}</Button>
               {hasActiveFilters && (
                 <Button
                   variant="outline"
@@ -129,8 +129,7 @@ export const ReservationFilterPanel: React.FC<ReservationFilterPanelProps> = ({
                   onClick={onClearFilters}
                   themeColor={themeColor}
                 >
-                  Clear All
-                </Button>
+                  {tStatic('common:auto.frontend.k3a88a6d1344d')}</Button>
               )}
             </div>
           </div>
@@ -143,8 +142,7 @@ export const ReservationFilterPanel: React.FC<ReservationFilterPanelProps> = ({
           {/* Status Filter */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Status
-            </label>
+              {tStatic('common:auto.frontend.kbae7d5be7082')}</label>
             <select
               value={filters.status}
               onChange={(e) => handleFilterChange('status', e.target.value)}
@@ -162,15 +160,14 @@ export const ReservationFilterPanel: React.FC<ReservationFilterPanelProps> = ({
           {/* Resource Type Filter */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Resource Type
-            </label>
+              {tStatic('common:auto.frontend.k1a4838822911')}</label>
             <select
               value={filters.resourceType}
               onChange={(e) => handleFilterChange('resourceType', e.target.value)}
               disabled={loading}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
             >
-              <option value="">All Resource Types</option>
+              <option value="">{tStatic('common:auto.frontend.ka5043ba45fd6')}</option>
               {resourceTypes.map((type) => (
                 <option key={type.id} value={type.id.toString()}>
                   {type.name}
@@ -185,15 +182,14 @@ export const ReservationFilterPanel: React.FC<ReservationFilterPanelProps> = ({
           {/* Organization Filter */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Organization
-            </label>
+              {tStatic('common:auto.frontend.k519255ae1f74')}</label>
             <select
               value={filters.organization}
               onChange={(e) => handleFilterChange('organization', e.target.value)}
               disabled={loading}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
             >
-              <option value="">All Organizations</option>
+              <option value="">{tStatic('common:auto.frontend.ke38e91b35317')}</option>
               {organizations.map((org) => (
                 <option key={org.id} value={org.id.toString()}>
                   {org.name}
@@ -205,15 +201,14 @@ export const ReservationFilterPanel: React.FC<ReservationFilterPanelProps> = ({
           {/* Resource Filter */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Specific Resource
-            </label>
+              {tStatic('common:auto.frontend.keeed097200da')}</label>
             <select
               value={filters.resourceId}
               onChange={(e) => handleFilterChange('resourceId', e.target.value)}
               disabled={loading}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
             >
-              <option value="">All Resources</option>
+              <option value="">{tStatic('common:auto.frontend.k44b3ec5115df')}</option>
               {resources.map((resource) => (
                 <option key={resource.id} value={resource.id.toString()}>
                   {resource.name} ({resource.resourceType?.name || 'Unknown Type'})
@@ -226,7 +221,7 @@ export const ReservationFilterPanel: React.FC<ReservationFilterPanelProps> = ({
         {/* Date Range */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Input
-            label="Date From"
+            label={tStatic('common:auto.frontend.k3cf45b40c8c5')}
             type="date"
             value={filters.dateFrom}
             onChange={(e) => handleFilterChange('dateFrom', e.target.value)}
@@ -235,7 +230,7 @@ export const ReservationFilterPanel: React.FC<ReservationFilterPanelProps> = ({
           />
 
           <Input
-            label="Date To"
+            label={tStatic('common:auto.frontend.k8a23403b6825')}
             type="date"
             value={filters.dateTo}
             onChange={(e) => handleFilterChange('dateTo', e.target.value)}
@@ -247,11 +242,11 @@ export const ReservationFilterPanel: React.FC<ReservationFilterPanelProps> = ({
         {/* Filter Summary */}
         {hasActiveFilters && (
           <div className="pt-4 border-t border-gray-200">
-            <h4 className="text-sm font-medium text-gray-700 mb-3">Active Filters:</h4>
+            <h4 className="text-sm font-medium text-gray-700 mb-3">{tStatic('common:auto.frontend.k051efa471513')}</h4>
             <div className="flex flex-wrap gap-2">
               {filters.status && (
                 <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                  Status: {STATUS_OPTIONS.find(s => s.value === filters.status)?.label}
+                  {tStatic('common:auto.frontend.k11dc9e195292')}{STATUS_OPTIONS.find(s => s.value === filters.status)?.label}
                   <button
                     onClick={() => handleFilterChange('status', '')}
                     className="ml-1 text-blue-600 hover:text-blue-800"
@@ -263,7 +258,7 @@ export const ReservationFilterPanel: React.FC<ReservationFilterPanelProps> = ({
 
               {filters.resourceType && (
                 <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                  Type: {resourceTypes.find(rt => rt.id.toString() === filters.resourceType)?.name}
+                  {tStatic('common:auto.frontend.kee3fb11d05c9')}{resourceTypes.find(rt => rt.id.toString() === filters.resourceType)?.name}
                   <button
                     onClick={() => handleFilterChange('resourceType', '')}
                     className="ml-1 text-green-600 hover:text-green-800"
@@ -275,7 +270,7 @@ export const ReservationFilterPanel: React.FC<ReservationFilterPanelProps> = ({
 
               {filters.organization && (
                 <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                  Org: {organizations.find(o => o.id.toString() === filters.organization)?.name}
+                  {tStatic('common:auto.frontend.k3868a94969b3')}{organizations.find(o => o.id.toString() === filters.organization)?.name}
                   <button
                     onClick={() => handleFilterChange('organization', '')}
                     className="ml-1 text-purple-600 hover:text-purple-800"
@@ -287,7 +282,7 @@ export const ReservationFilterPanel: React.FC<ReservationFilterPanelProps> = ({
 
               {filters.resourceId && (
                 <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
-                  Resource: {resources.find(r => r.id.toString() === filters.resourceId)?.name}
+                  {tStatic('common:auto.frontend.kac1c5e7f5559')}{resources.find(r => r.id.toString() === filters.resourceId)?.name}
                   <button
                     onClick={() => handleFilterChange('resourceId', '')}
                     className="ml-1 text-orange-600 hover:text-orange-800"
@@ -299,7 +294,7 @@ export const ReservationFilterPanel: React.FC<ReservationFilterPanelProps> = ({
 
               {filters.dateFrom && (
                 <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                  From: {filters.dateFrom}
+                  {tStatic('common:auto.frontend.kc4d63e4c56f1')}{filters.dateFrom}
                   <button
                     onClick={() => handleFilterChange('dateFrom', '')}
                     className="ml-1 text-gray-600 hover:text-gray-800"
@@ -311,7 +306,7 @@ export const ReservationFilterPanel: React.FC<ReservationFilterPanelProps> = ({
 
               {filters.dateTo && (
                 <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                  To: {filters.dateTo}
+                  {tStatic('common:auto.frontend.k7e7fbc811015')}{filters.dateTo}
                   <button
                     onClick={() => handleFilterChange('dateTo', '')}
                     className="ml-1 text-gray-600 hover:text-gray-800"
@@ -331,12 +326,12 @@ export const ReservationFilterPanel: React.FC<ReservationFilterPanelProps> = ({
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
             <div>
-              <p className="text-sm font-medium text-gray-800 mb-1">Filter Tips</p>
+              <p className="text-sm font-medium text-gray-800 mb-1">{tStatic('common:auto.frontend.kfa37b443c1cd')}</p>
               <ul className="text-xs text-gray-600 space-y-1">
-                <li>• Use multiple filters to narrow down results</li>
-                <li>• Date range filters are inclusive of start and end dates</li>
-                <li>• Clear individual filters using the × button or clear all at once</li>
-                <li>• Filters are applied automatically as you change them</li>
+                <li>{tStatic('common:auto.frontend.ke66c0eddda56')}</li>
+                <li>{tStatic('common:auto.frontend.k9529def1247b')}</li>
+                <li>{tStatic('common:auto.frontend.k171aaa953396')}</li>
+                <li>{tStatic('common:auto.frontend.k23b00b667e1b')}</li>
               </ul>
             </div>
           </div>

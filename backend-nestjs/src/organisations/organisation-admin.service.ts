@@ -9,6 +9,8 @@ import { Repository } from 'typeorm';
 import { OrganisationAdmin } from '../entities/organisation-admin.entity';
 import { Organisation } from '../entities/organisation.entity';
 import { User, UserRole } from '../entities/user.entity';
+import { bStatic } from '../i18n/runtime';
+
 // Temporarily removed reservation calendar imports
 // import { ReservationCalendarRole, ReservationCalendarRoleType } from '../entities/reservation-calendar-role.entity';
 // import { ReservationCalendar } from '../entities/reservation-calendar.entity';
@@ -50,7 +52,7 @@ export class OrganisationAdminService {
     // Verify that the assigning user is a global admin
     if (assignedBy.role !== UserRole.ADMIN) {
       throw new ForbiddenException(
-        'Only global admins can assign organisation admins',
+        bStatic('errors.auto.backend.kea571d465678'),
       );
     }
 
@@ -59,7 +61,7 @@ export class OrganisationAdminService {
       where: { id: organisationId },
     });
     if (!organisation) {
-      throw new NotFoundException('Organisation not found');
+      throw new NotFoundException(bStatic('errors.auto.backend.k4d405a7f53bf'));
     }
 
     // Verify user exists and is not already an org admin for this organisation
@@ -67,7 +69,7 @@ export class OrganisationAdminService {
       where: { id: userId },
     });
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException(bStatic('errors.auto.backend.k01eb94695483'));
     }
 
     // Check if user is already an org admin for this organisation
@@ -76,7 +78,7 @@ export class OrganisationAdminService {
     });
     if (existingAdmin) {
       throw new BadRequestException(
-        'User is already an admin for this organisation',
+        bStatic('errors.auto.backend.kbb6563f8824e'),
       );
     }
 
@@ -110,7 +112,7 @@ export class OrganisationAdminService {
     // Verify that the removing user is a global admin
     if (removedBy.role !== UserRole.ADMIN) {
       throw new ForbiddenException(
-        'Only global admins can remove organisation admins',
+        bStatic('errors.auto.backend.kfdd2f2d8e234'),
       );
     }
 
@@ -119,7 +121,7 @@ export class OrganisationAdminService {
       where: { organisationId, userId },
     });
     if (!orgAdmin) {
-      throw new NotFoundException('Organisation admin role not found');
+      throw new NotFoundException(bStatic('errors.auto.backend.kff65b32df65d'));
     }
 
     // TODO: Remove all auto-assigned reservation calendar roles for this user in this organisation
@@ -159,7 +161,7 @@ export class OrganisationAdminService {
       relations: ['users'],
     });
     if (!organisation) {
-      throw new NotFoundException('Organisation not found');
+      throw new NotFoundException(bStatic('errors.auto.backend.k4d405a7f53bf'));
     }
 
     // Verify user exists
@@ -168,7 +170,7 @@ export class OrganisationAdminService {
       relations: ['organisations'],
     });
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException(bStatic('errors.auto.backend.k01eb94695483'));
     }
 
     // Check if user is already in the organisation
@@ -177,7 +179,7 @@ export class OrganisationAdminService {
     );
     if (isAlreadyMember) {
       throw new BadRequestException(
-        'User is already a member of this organisation',
+        bStatic('errors.auto.backend.kbc7264071c91'),
       );
     }
 
@@ -204,7 +206,7 @@ export class OrganisationAdminService {
       relations: ['organisations'],
     });
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException(bStatic('errors.auto.backend.k01eb94695483'));
     }
 
     const isOrgMember = user.organisations.some(
@@ -212,7 +214,7 @@ export class OrganisationAdminService {
     );
     if (!isOrgMember) {
       throw new BadRequestException(
-        'User is not a member of this organisation',
+        bStatic('errors.auto.backend.k9c56238d267c'),
       );
     }
 
@@ -220,7 +222,7 @@ export class OrganisationAdminService {
     const isOrgAdmin = await this.isOrganisationAdmin(userId, organisationId);
     if (isOrgAdmin) {
       throw new BadRequestException(
-        'Cannot remove organisation admin from organisation. Remove admin role first.',
+        bStatic('errors.auto.backend.k3d1eb39fc4c4'),
       );
     }
 
@@ -243,7 +245,7 @@ export class OrganisationAdminService {
       relations: ['users'],
     });
     if (!organisation) {
-      throw new NotFoundException('Organisation not found');
+      throw new NotFoundException(bStatic('errors.auto.backend.k4d405a7f53bf'));
     }
 
     return organisation.users;
@@ -291,7 +293,7 @@ export class OrganisationAdminService {
     const isOrgAdmin = await this.isOrganisationAdmin(user.id, organisationId);
     if (!isOrgAdmin) {
       throw new ForbiddenException(
-        'Insufficient permissions for this organisation',
+        bStatic('errors.auto.backend.k55a553adc5c5'),
       );
     }
   }

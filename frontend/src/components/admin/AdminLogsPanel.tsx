@@ -18,6 +18,8 @@ import {
   type ParsedLogEntry,
 } from './logsInsights';
 
+import { tStatic } from '../../i18n';
+
 interface AdminLogsPanelProps {
   isActive?: boolean;
 }
@@ -452,10 +454,9 @@ export const AdminLogsPanel: React.FC<AdminLogsPanelProps> = ({ isActive = false
       <header className="border-b border-slate-200 px-6 py-5">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <h2 className="text-2xl font-semibold text-slate-900">Operational Logs</h2>
+            <h2 className="text-2xl font-semibold text-slate-900">{tStatic('common:auto.frontend.k19adb9460725')}</h2>
             <p className="text-sm text-slate-500">
-              Incident-first triage console with correlation, anomaly filters, and retention controls.
-            </p>
+              {tStatic('common:auto.frontend.k06b37d6438b8')}</p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <label className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-slate-50 px-3 py-1.5 text-xs text-slate-700">
@@ -465,25 +466,23 @@ export const AdminLogsPanel: React.FC<AdminLogsPanelProps> = ({ isActive = false
                 onChange={(event) => setAutoRefresh(event.target.checked)}
                 className="h-4 w-4"
               />
-              Auto refresh
-            </label>
+              {tStatic('common:auto.frontend.k14fea7745534')}</label>
             <select
               value={refreshSeconds}
               onChange={(event) => setRefreshSeconds(Number(event.target.value))}
               className="rounded-lg border border-slate-300 px-2 py-1.5 text-xs"
             >
-              <option value={10}>10s</option>
-              <option value={20}>20s</option>
-              <option value={30}>30s</option>
-              <option value={60}>60s</option>
+              <option value={10}>{tStatic('common:auto.frontend.k357c84df0905')}</option>
+              <option value={20}>{tStatic('common:auto.frontend.k47369c14b203')}</option>
+              <option value={30}>{tStatic('common:auto.frontend.k790739d6bad4')}</option>
+              <option value={60}>{tStatic('common:auto.frontend.kc712d9281603')}</option>
             </select>
             <button
               type="button"
               onClick={() => void loadLogs()}
               className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50"
             >
-              Refresh
-            </button>
+              {tStatic('common:auto.frontend.k56e3badc4e6c')}</button>
           </div>
         </div>
         {error && <p className="mt-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
@@ -494,27 +493,27 @@ export const AdminLogsPanel: React.FC<AdminLogsPanelProps> = ({ isActive = false
 
       <div className="grid gap-4 border-b border-slate-200 bg-gradient-to-r from-slate-50 to-white px-6 py-4 md:grid-cols-2 xl:grid-cols-4">
         <article className="rounded-xl border border-slate-200 bg-white px-4 py-3">
-          <p className="text-xs uppercase tracking-wide text-slate-500">Loaded</p>
+          <p className="text-xs uppercase tracking-wide text-slate-500">{tStatic('common:auto.frontend.k6db90a0ab6dc')}</p>
           <p className="text-2xl font-semibold text-slate-900">{filteredLogs.length}</p>
-          <p className="text-xs text-slate-500">of {totalCount} queried logs</p>
+          <p className="text-xs text-slate-500">{tStatic('common:auto.frontend.kde04fa0e29f9')}{totalCount} {tStatic('common:auto.frontend.k16fc1137a185')}</p>
         </article>
         <article className="rounded-xl border border-slate-200 bg-white px-4 py-3">
-          <p className="text-xs uppercase tracking-wide text-slate-500">Errors</p>
+          <p className="text-xs uppercase tracking-wide text-slate-500">{tStatic('common:auto.frontend.k805e86a8cbf6')}</p>
           <p className={`text-2xl font-semibold ${metricTone(errorRatio, 30)}`}>{errorCount}</p>
-          <p className="text-xs text-slate-500">{errorRatio.toFixed(1)}% error ratio</p>
+          <p className="text-xs text-slate-500">{errorRatio.toFixed(1)}{tStatic('common:auto.frontend.k3176fc61dc1e')}</p>
         </article>
         <article className="rounded-xl border border-slate-200 bg-white px-4 py-3">
-          <p className="text-xs uppercase tracking-wide text-slate-500">Auth/API Signals</p>
+          <p className="text-xs uppercase tracking-wide text-slate-500">{tStatic('common:auto.frontend.k2d94ff479d83')}</p>
           <p className="text-2xl font-semibold text-slate-900">{authRelatedCount + apiExceptionCount}</p>
-          <p className="text-xs text-slate-500">{authRelatedCount} auth, {apiExceptionCount} API exceptions</p>
+          <p className="text-xs text-slate-500">{authRelatedCount} {tStatic('common:auto.frontend.k4896f3d2180f')}{apiExceptionCount} {tStatic('common:auto.frontend.ke969f8922682')}</p>
         </article>
         <article className="rounded-xl border border-slate-200 bg-white px-4 py-3">
-          <p className="text-xs uppercase tracking-wide text-slate-500">Latency</p>
+          <p className="text-xs uppercase tracking-wide text-slate-500">{tStatic('common:auto.frontend.k3e399725267d')}</p>
           <p className="text-2xl font-semibold text-slate-900">
             {p95Latency !== null ? `${Math.round(p95Latency)}ms` : 'n/a'}
           </p>
           <p className="text-xs text-slate-500">
-            p50 {p50Latency !== null ? `${Math.round(p50Latency)}ms` : 'n/a'}
+            {tStatic('common:auto.frontend.k42e3121f8419')}{p50Latency !== null ? `${Math.round(p50Latency)}ms` : 'n/a'}
           </p>
         </article>
       </div>
@@ -522,56 +521,50 @@ export const AdminLogsPanel: React.FC<AdminLogsPanelProps> = ({ isActive = false
       <div className="grid gap-4 border-b border-slate-200 px-6 py-5 xl:grid-cols-[2fr_1fr]">
         <section className="space-y-4 rounded-2xl border border-slate-200 bg-slate-50/60 p-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <h3 className="text-sm font-semibold text-slate-800">Server Query Filters</h3>
+            <h3 className="text-sm font-semibold text-slate-800">{tStatic('common:auto.frontend.k93f8248579ad')}</h3>
             <div className="flex flex-wrap gap-2">
               <button
                 type="button"
                 onClick={() => applyQuickPreset('auth')}
                 className="rounded-full border border-slate-300 px-2.5 py-1 text-xs text-slate-700 hover:bg-slate-100"
               >
-                Auth incidents
-              </button>
+                {tStatic('common:auto.frontend.kf8a05fd19690')}</button>
               <button
                 type="button"
                 onClick={() => applyQuickPreset('api')}
                 className="rounded-full border border-slate-300 px-2.5 py-1 text-xs text-slate-700 hover:bg-slate-100"
               >
-                API exceptions
-              </button>
+                {tStatic('common:auto.frontend.ke969f8922682')}</button>
               <button
                 type="button"
                 onClick={() => applyQuickPreset('slow')}
                 className="rounded-full border border-slate-300 px-2.5 py-1 text-xs text-slate-700 hover:bg-slate-100"
               >
-                Slow requests
-              </button>
+                {tStatic('common:auto.frontend.k13b2d17f42ed')}</button>
               <button
                 type="button"
                 onClick={() => applyQuickPreset('noisy')}
                 className="rounded-full border border-slate-300 px-2.5 py-1 text-xs text-slate-700 hover:bg-slate-100"
               >
-                Warn/Error sweep
-              </button>
+                {tStatic('common:auto.frontend.k9d77fe45166b')}</button>
             </div>
           </div>
 
           <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
             <label className="space-y-1 text-xs text-slate-600">
-              Search message/stack
-              <input
+              {tStatic('common:auto.frontend.kbce8bead8adb')}<input
                 type="text"
                 value={serverDraft.search}
                 onChange={(event) =>
                   setServerDraft((prev) => ({ ...prev, search: event.target.value }))
                 }
                 className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
-                placeholder="request id, keyword, exception"
+                placeholder={tStatic('common:auto.frontend.k29da5dcef255')}
               />
             </label>
 
             <label className="space-y-1 text-xs text-slate-600">
-              From
-              <input
+              {tStatic('common:auto.frontend.k3f66052a107e')}<input
                 type="datetime-local"
                 value={serverDraft.from}
                 onChange={(event) =>
@@ -582,8 +575,7 @@ export const AdminLogsPanel: React.FC<AdminLogsPanelProps> = ({ isActive = false
             </label>
 
             <label className="space-y-1 text-xs text-slate-600">
-              To
-              <input
+              {tStatic('common:auto.frontend.kae79ea1e9c63')}<input
                 type="datetime-local"
                 value={serverDraft.to}
                 onChange={(event) =>
@@ -594,8 +586,7 @@ export const AdminLogsPanel: React.FC<AdminLogsPanelProps> = ({ isActive = false
             </label>
 
             <label className="space-y-1 text-xs text-slate-600">
-              Page size
-              <select
+              {tStatic('common:auto.frontend.kc118e242c0b5')}<select
                 value={serverDraft.limit}
                 onChange={(event) =>
                   setServerDraft((prev) => ({ ...prev, limit: Number(event.target.value) }))
@@ -611,7 +602,7 @@ export const AdminLogsPanel: React.FC<AdminLogsPanelProps> = ({ isActive = false
           </div>
 
           <div className="space-y-2">
-            <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Levels</p>
+            <p className="text-xs font-medium uppercase tracking-wide text-slate-500">{tStatic('common:auto.frontend.ked47f098118b')}</p>
             <div className="flex flex-wrap gap-2">
               {LEVEL_OPTIONS.map((level) => {
                 const active = serverDraft.levels.includes(level);
@@ -639,10 +630,10 @@ export const AdminLogsPanel: React.FC<AdminLogsPanelProps> = ({ isActive = false
           </div>
 
           <div className="space-y-2">
-            <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Contexts</p>
+            <p className="text-xs font-medium uppercase tracking-wide text-slate-500">{tStatic('common:auto.frontend.k049c25129edc')}</p>
             <div className="flex max-h-24 flex-wrap gap-2 overflow-auto pr-1">
               {availableContexts.length === 0 && (
-                <span className="text-xs text-slate-500">No contexts in current result set.</span>
+                <span className="text-xs text-slate-500">{tStatic('common:auto.frontend.k558b4957918b')}</span>
               )}
               {availableContexts.map((context) => {
                 const active = serverDraft.contexts.includes(context);
@@ -676,30 +667,27 @@ export const AdminLogsPanel: React.FC<AdminLogsPanelProps> = ({ isActive = false
               onClick={applyServerQuery}
               className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              Run query
-            </button>
+              {tStatic('common:auto.frontend.kfc9a3ee95b97')}</button>
             <button
               type="button"
               onClick={resetAllFilters}
               className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100"
             >
-              Reset filters
-            </button>
+              {tStatic('common:auto.frontend.k56553100b028')}</button>
             <button
               type="button"
               onClick={exportCsv}
               className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100"
             >
-              Export CSV
-            </button>
+              {tStatic('common:auto.frontend.k5755f9ac0aa1')}</button>
           </div>
         </section>
 
         <section className="space-y-4 rounded-2xl border border-slate-200 bg-white p-4">
-          <h3 className="text-sm font-semibold text-slate-800">Client Investigation Filters</h3>
+          <h3 className="text-sm font-semibold text-slate-800">{tStatic('common:auto.frontend.k67bd83d2f291')}</h3>
 
           <div className="space-y-2">
-            <p className="text-xs font-medium uppercase tracking-wide text-slate-500">HTTP Method</p>
+            <p className="text-xs font-medium uppercase tracking-wide text-slate-500">{tStatic('common:auto.frontend.kcc0bd707e958')}</p>
             <div className="flex flex-wrap gap-2">
               {METHOD_OPTIONS.map((method) => {
                 const active = clientFilters.methods.includes(method);
@@ -728,32 +716,29 @@ export const AdminLogsPanel: React.FC<AdminLogsPanelProps> = ({ isActive = false
 
           <div className="grid gap-3 md:grid-cols-2">
             <label className="space-y-1 text-xs text-slate-600">
-              Request ID contains
-              <input
+              {tStatic('common:auto.frontend.k60b77e1c5796')}<input
                 type="text"
                 value={clientFilters.requestId}
                 onChange={(event) =>
                   setClientFilters((prev) => ({ ...prev, requestId: event.target.value }))
                 }
                 className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-                placeholder="UUID fragment"
+                placeholder={tStatic('common:auto.frontend.k2c60c9f5fe40')}
               />
             </label>
             <label className="space-y-1 text-xs text-slate-600">
-              Path contains
-              <input
+              {tStatic('common:auto.frontend.k097441777143')}<input
                 type="text"
                 value={clientFilters.pathContains}
                 onChange={(event) =>
                   setClientFilters((prev) => ({ ...prev, pathContains: event.target.value }))
                 }
                 className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-                placeholder="/api/auth"
+                placeholder={tStatic('common:auto.frontend.k75575b9c5e85')}
               />
             </label>
             <label className="space-y-1 text-xs text-slate-600">
-              User ID
-              <input
+              {tStatic('common:auto.frontend.k23bf49dab136')}<input
                 type="number"
                 value={clientFilters.userId}
                 onChange={(event) =>
@@ -764,8 +749,7 @@ export const AdminLogsPanel: React.FC<AdminLogsPanelProps> = ({ isActive = false
               />
             </label>
             <label className="space-y-1 text-xs text-slate-600">
-              Organisation ID
-              <input
+              {tStatic('common:auto.frontend.k5f2c539d453e')}<input
                 type="number"
                 value={clientFilters.organisationId}
                 onChange={(event) =>
@@ -776,8 +760,7 @@ export const AdminLogsPanel: React.FC<AdminLogsPanelProps> = ({ isActive = false
               />
             </label>
             <label className="space-y-1 text-xs text-slate-600">
-              Min latency (ms)
-              <input
+              {tStatic('common:auto.frontend.k4fbd024612a9')}<input
                 type="number"
                 min={0}
                 value={minLatencyMs}
@@ -787,16 +770,15 @@ export const AdminLogsPanel: React.FC<AdminLogsPanelProps> = ({ isActive = false
               />
             </label>
             <label className="space-y-1 text-xs text-slate-600">
-              Sort direction
-              <select
+              {tStatic('common:auto.frontend.k6ee0ca05a626')}<select
                 value={sortDirection}
                 onChange={(event) =>
                   setSortDirection(event.target.value === 'oldest' ? 'oldest' : 'newest')
                 }
                 className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
               >
-                <option value="newest">Newest first</option>
-                <option value="oldest">Oldest first</option>
+                <option value="newest">{tStatic('common:auto.frontend.kf5ec7772ca9b')}</option>
+                <option value="oldest">{tStatic('common:auto.frontend.k6a99c65c33fe')}</option>
               </select>
             </label>
           </div>
@@ -811,8 +793,7 @@ export const AdminLogsPanel: React.FC<AdminLogsPanelProps> = ({ isActive = false
                 }
                 className="h-4 w-4"
               />
-              Errors only
-            </label>
+              {tStatic('common:auto.frontend.k970d9abe25e2')}</label>
             <label className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
               <input
                 type="checkbox"
@@ -825,8 +806,7 @@ export const AdminLogsPanel: React.FC<AdminLogsPanelProps> = ({ isActive = false
                 }
                 className="h-4 w-4"
               />
-              API exceptions only
-            </label>
+              {tStatic('common:auto.frontend.k8dd8a591ebe2')}</label>
             <label className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
               <input
                 type="checkbox"
@@ -839,8 +819,7 @@ export const AdminLogsPanel: React.FC<AdminLogsPanelProps> = ({ isActive = false
                 }
                 className="h-4 w-4"
               />
-              Auth related only
-            </label>
+              {tStatic('common:auto.frontend.k9c23a5bcfa3d')}</label>
             <label className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
               <input
                 type="checkbox"
@@ -853,8 +832,7 @@ export const AdminLogsPanel: React.FC<AdminLogsPanelProps> = ({ isActive = false
                 }
                 className="h-4 w-4"
               />
-              Only with stack traces
-            </label>
+              {tStatic('common:auto.frontend.kb87be11422f4')}</label>
             <label className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 md:col-span-2">
               <input
                 type="checkbox"
@@ -862,8 +840,7 @@ export const AdminLogsPanel: React.FC<AdminLogsPanelProps> = ({ isActive = false
                 onChange={(event) => setRequireMetadata(event.target.checked)}
                 className="h-4 w-4"
               />
-              Require metadata payload
-            </label>
+              {tStatic('common:auto.frontend.kea23b7325541')}</label>
           </div>
 
           <div className="flex items-center gap-2">
@@ -872,15 +849,13 @@ export const AdminLogsPanel: React.FC<AdminLogsPanelProps> = ({ isActive = false
               onClick={() => setClientFilters(INITIAL_CLIENT_FILTERS)}
               className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-100"
             >
-              Reset client filters
-            </button>
+              {tStatic('common:auto.frontend.k5cf9727898c3')}</button>
             <button
               type="button"
               onClick={() => setMinLatencyMs('')}
               className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-100"
             >
-              Clear latency gate
-            </button>
+              {tStatic('common:auto.frontend.k7ece7f040e55')}</button>
           </div>
         </section>
       </div>
@@ -897,8 +872,7 @@ export const AdminLogsPanel: React.FC<AdminLogsPanelProps> = ({ isActive = false
                   : 'border border-slate-300 text-slate-700 hover:bg-slate-50'
               }`}
             >
-              Table
-            </button>
+              {tStatic('common:auto.frontend.k0424f6e7026f')}</button>
             <button
               type="button"
               onClick={() => setViewMode('timeline')}
@@ -908,8 +882,7 @@ export const AdminLogsPanel: React.FC<AdminLogsPanelProps> = ({ isActive = false
                   : 'border border-slate-300 text-slate-700 hover:bg-slate-50'
               }`}
             >
-              Timeline
-            </button>
+              {tStatic('common:auto.frontend.k018514a3d58a')}</button>
             <button
               type="button"
               onClick={() => setViewMode('requests')}
@@ -919,13 +892,12 @@ export const AdminLogsPanel: React.FC<AdminLogsPanelProps> = ({ isActive = false
                   : 'border border-slate-300 text-slate-700 hover:bg-slate-50'
               }`}
             >
-              Request groups
-            </button>
+              {tStatic('common:auto.frontend.k1c51b03e929e')}</button>
           </div>
 
           <div className="flex items-center gap-2 text-xs text-slate-600">
             <span>
-              Showing {currentFrom}-{currentTo} of {totalCount}
+              {tStatic('common:auto.frontend.k163d8174ff4b')}{currentFrom}-{currentTo} {tStatic('common:auto.frontend.kde04fa0e29f9')}{totalCount}
             </span>
             <button
               type="button"
@@ -938,8 +910,7 @@ export const AdminLogsPanel: React.FC<AdminLogsPanelProps> = ({ isActive = false
               }
               className="rounded-lg border border-slate-300 px-3 py-1.5 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              Previous
-            </button>
+              {tStatic('common:auto.frontend.k50f94286ba30')}</button>
             <button
               type="button"
               disabled={!hasNextPage || loading}
@@ -951,17 +922,16 @@ export const AdminLogsPanel: React.FC<AdminLogsPanelProps> = ({ isActive = false
               }
               className="rounded-lg border border-slate-300 px-3 py-1.5 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              Next
-            </button>
+              {tStatic('common:auto.frontend.kbc981983e7f5')}</button>
           </div>
         </div>
       </div>
 
       <div className="grid gap-4 px-6 py-5 xl:grid-cols-[3fr_1fr]">
         <section className="min-h-[420px] rounded-2xl border border-slate-200 bg-white p-4">
-          {loading && <p className="text-sm text-slate-500">Loading logs...</p>}
+          {loading && <p className="text-sm text-slate-500">{tStatic('common:auto.frontend.k9375a3fcc24d')}</p>}
           {!loading && filteredLogs.length === 0 && (
-            <p className="text-sm text-slate-500">No logs match the current filter set.</p>
+            <p className="text-sm text-slate-500">{tStatic('common:auto.frontend.k475092992217')}</p>
           )}
 
           {!loading && filteredLogs.length > 0 && viewMode === 'table' && (
@@ -969,13 +939,13 @@ export const AdminLogsPanel: React.FC<AdminLogsPanelProps> = ({ isActive = false
               <table className="min-w-full text-left text-xs">
                 <thead className="sticky top-0 bg-slate-100 text-slate-600">
                   <tr>
-                    <th className="px-3 py-2 font-semibold">Time</th>
-                    <th className="px-3 py-2 font-semibold">Level</th>
-                    <th className="px-3 py-2 font-semibold">Context</th>
-                    <th className="px-3 py-2 font-semibold">Message</th>
-                    <th className="px-3 py-2 font-semibold">Request</th>
-                    <th className="px-3 py-2 font-semibold">Latency</th>
-                    <th className="px-3 py-2 font-semibold">Action</th>
+                    <th className="px-3 py-2 font-semibold">{tStatic('common:auto.frontend.k6c82e6dd8680')}</th>
+                    <th className="px-3 py-2 font-semibold">{tStatic('common:auto.frontend.k7c7f5d049fad')}</th>
+                    <th className="px-3 py-2 font-semibold">{tStatic('common:auto.frontend.kcc11b3a28fa3')}</th>
+                    <th className="px-3 py-2 font-semibold">{tStatic('common:auto.frontend.k68f4145fee7d')}</th>
+                    <th className="px-3 py-2 font-semibold">{tStatic('common:auto.frontend.k4aed03cac49d')}</th>
+                    <th className="px-3 py-2 font-semibold">{tStatic('common:auto.frontend.k3e399725267d')}</th>
+                    <th className="px-3 py-2 font-semibold">{tStatic('common:auto.frontend.k97c89a4d6630')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -1024,8 +994,7 @@ export const AdminLogsPanel: React.FC<AdminLogsPanelProps> = ({ isActive = false
                               onClick={() => void copyPayload(entry)}
                               className="rounded border border-slate-300 px-2 py-1 text-[11px] text-slate-700 hover:bg-slate-50"
                             >
-                              Copy
-                            </button>
+                              {tStatic('common:auto.frontend.kaf74f7c5362a')}</button>
                           </div>
                         </td>
                       </tr>
@@ -1034,13 +1003,13 @@ export const AdminLogsPanel: React.FC<AdminLogsPanelProps> = ({ isActive = false
                           <td colSpan={7} className="px-3 py-3">
                             <div className="grid gap-3 lg:grid-cols-2">
                               <div>
-                                <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Metadata</p>
+                                <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">{tStatic('common:auto.frontend.k251edc0eb5a8')}</p>
                                 <pre className="mt-1 max-h-44 overflow-auto rounded-lg bg-slate-900 p-2 text-[11px] text-slate-100">
                                   {entry.metadata ? JSON.stringify(entry.metadata, null, 2) : '{}'}
                                 </pre>
                               </div>
                               <div>
-                                <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Stack</p>
+                                <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">{tStatic('common:auto.frontend.k83e5a0d3d2ef')}</p>
                                 <pre className="mt-1 max-h-44 overflow-auto rounded-lg bg-slate-900 p-2 text-[11px] text-slate-100">
                                   {entry.stack?.trim() || 'No stack trace'}
                                 </pre>
@@ -1077,11 +1046,11 @@ export const AdminLogsPanel: React.FC<AdminLogsPanelProps> = ({ isActive = false
                   </div>
                   <p className="mt-2 text-sm text-slate-800">{entry.message}</p>
                   <div className="mt-2 flex flex-wrap items-center gap-3 text-[11px] text-slate-500">
-                    <span>req: {entry.requestId ?? 'n/a'}</span>
-                    <span>user: {entry.userId ?? 'n/a'}</span>
-                    <span>org: {entry.organisationId ?? 'n/a'}</span>
+                    <span>{tStatic('common:auto.frontend.k501f4b093aea')}{entry.requestId ?? 'n/a'}</span>
+                    <span>{tStatic('common:auto.frontend.k91deeae7118a')}{entry.userId ?? 'n/a'}</span>
+                    <span>{tStatic('common:auto.frontend.kcede92635b22')}{entry.organisationId ?? 'n/a'}</span>
                     <span>
-                      latency: {typeof entry.latencyMs === 'number' ? `${entry.latencyMs}ms` : 'n/a'}
+                      {tStatic('common:auto.frontend.k6510c6dcc674')}{typeof entry.latencyMs === 'number' ? `${entry.latencyMs}ms` : 'n/a'}
                     </span>
                   </div>
                 </article>
@@ -1100,18 +1069,18 @@ export const AdminLogsPanel: React.FC<AdminLogsPanelProps> = ({ isActive = false
                         <p className="font-mono text-xs text-slate-700">
                           {group.requestId ?? `single-entry-${group.entries[0]?.id ?? 0}`}
                         </p>
-                        <p className="text-xs text-slate-500">{group.entries.length} log lines</p>
+                        <p className="text-xs text-slate-500">{group.entries.length} {tStatic('common:auto.frontend.k6eb34e47cf11')}</p>
                       </div>
                       <div className="text-right text-xs text-slate-600">
                         <p>{formatDateTime(group.startedAt)}</p>
-                        <p>duration {duration}ms</p>
+                        <p>{tStatic('common:auto.frontend.k5d3f344b5bd2')}{duration}{tStatic('common:auto.frontend.k26cc3217be64')}</p>
                       </div>
                     </div>
 
                     <div className="mt-2 flex flex-wrap gap-2 text-[11px] text-slate-600">
-                      <span className="rounded-full bg-slate-100 px-2 py-0.5">errors: {group.errorCount}</span>
-                      <span className="rounded-full bg-slate-100 px-2 py-0.5">methods: {group.methods.join(', ') || 'n/a'}</span>
-                      <span className="rounded-full bg-slate-100 px-2 py-0.5">paths: {group.paths.length}</span>
+                      <span className="rounded-full bg-slate-100 px-2 py-0.5">{tStatic('common:auto.frontend.k6c356f88f83f')}{group.errorCount}</span>
+                      <span className="rounded-full bg-slate-100 px-2 py-0.5">{tStatic('common:auto.frontend.kbbc7117f1502')}{group.methods.join(', ') || 'n/a'}</span>
+                      <span className="rounded-full bg-slate-100 px-2 py-0.5">{tStatic('common:auto.frontend.kbd88ec853cd6')}{group.paths.length}</span>
                     </div>
 
                     <button
@@ -1148,12 +1117,11 @@ export const AdminLogsPanel: React.FC<AdminLogsPanelProps> = ({ isActive = false
 
         <aside className="space-y-4">
           <section className="rounded-2xl border border-slate-200 bg-slate-50/60 p-4">
-            <h3 className="text-sm font-semibold text-slate-800">Retention & Alerts</h3>
+            <h3 className="text-sm font-semibold text-slate-800">{tStatic('common:auto.frontend.k594ce318f717')}</h3>
             {settingsDraft ? (
               <div className="mt-3 space-y-3">
                 <label className="space-y-1 text-xs text-slate-600">
-                  Retention days
-                  <input
+                  {tStatic('common:auto.frontend.k3f1babc75112')}<input
                     type="number"
                     min={0}
                     value={settingsDraft.retentionDays}
@@ -1168,8 +1136,7 @@ export const AdminLogsPanel: React.FC<AdminLogsPanelProps> = ({ isActive = false
                   />
                 </label>
                 <label className="space-y-1 text-xs text-slate-600">
-                  Audit retention days (compliance)
-                  <input
+                  {tStatic('common:auto.frontend.k1aa6e850e31e')}<input
                     type="number"
                     min={2555}
                     value={settingsDraft.auditRetentionDays}
@@ -1184,8 +1151,7 @@ export const AdminLogsPanel: React.FC<AdminLogsPanelProps> = ({ isActive = false
                   />
                 </label>
                 <label className="space-y-1 text-xs text-slate-600">
-                  Error rate threshold/min
-                  <input
+                  {tStatic('common:auto.frontend.k6c1473fc1f40')}<input
                     type="number"
                     min={1}
                     value={settingsDraft.errorRateAlertThresholdPerMinute}
@@ -1203,8 +1169,7 @@ export const AdminLogsPanel: React.FC<AdminLogsPanelProps> = ({ isActive = false
                   />
                 </label>
                 <label className="space-y-1 text-xs text-slate-600">
-                  p95 latency threshold (ms)
-                  <input
+                  {tStatic('common:auto.frontend.k6020eb433a56')}<input
                     type="number"
                     min={100}
                     value={settingsDraft.p95LatencyAlertThresholdMs}
@@ -1235,8 +1200,7 @@ export const AdminLogsPanel: React.FC<AdminLogsPanelProps> = ({ isActive = false
                     }
                     className="h-4 w-4"
                   />
-                  Auto cleanup enabled
-                </label>
+                  {tStatic('common:auto.frontend.k09c9938b1d98')}</label>
                 <label className="inline-flex items-center gap-2 text-xs text-slate-700">
                   <input
                     type="checkbox"
@@ -1253,8 +1217,7 @@ export const AdminLogsPanel: React.FC<AdminLogsPanelProps> = ({ isActive = false
                     }
                     className="h-4 w-4"
                   />
-                  Realtime critical alerts enabled
-                </label>
+                  {tStatic('common:auto.frontend.k65274f01414e')}</label>
 
                 <button
                   type="button"
@@ -1266,12 +1229,12 @@ export const AdminLogsPanel: React.FC<AdminLogsPanelProps> = ({ isActive = false
                 </button>
               </div>
             ) : (
-              <p className="mt-2 text-xs text-slate-500">Settings will appear after first query response.</p>
+              <p className="mt-2 text-xs text-slate-500">{tStatic('common:auto.frontend.kd435300c4694')}</p>
             )}
           </section>
 
           <section className="rounded-2xl border border-slate-200 bg-slate-50/60 p-4">
-            <h3 className="text-sm font-semibold text-slate-800">Maintenance</h3>
+            <h3 className="text-sm font-semibold text-slate-800">{tStatic('common:auto.frontend.k94de303bbef8')}</h3>
             <div className="mt-3 space-y-3">
               <button
                 type="button"
@@ -1279,12 +1242,10 @@ export const AdminLogsPanel: React.FC<AdminLogsPanelProps> = ({ isActive = false
                 onClick={() => void purgeExpired()}
                 className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-700 hover:bg-slate-100 disabled:opacity-60"
               >
-                Run retention purge now
-              </button>
+                {tStatic('common:auto.frontend.k98d2aa691696')}</button>
 
               <label className="space-y-1 text-xs text-slate-600">
-                Clear logs before
-                <input
+                {tStatic('common:auto.frontend.k8f7b37f9d7e7')}<input
                   type="datetime-local"
                   value={clearBefore}
                   onChange={(event) => setClearBefore(event.target.value)}

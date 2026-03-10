@@ -766,6 +766,25 @@ class ApiService {
     return await response.json();
   }
 
+  async updateLanguagePreference(
+    language: 'en' | 'hu' | 'de' | 'fr',
+  ): Promise<UserProfile> {
+    const response = await this.secureApiFetch(`${BASE_URL}/api/users/me/language`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ preferredLanguage: language }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || 'Failed to update language preference');
+    }
+
+    return await response.json();
+  }
+
   async updateUserTheme(themeColor: string): Promise<UserProfile> {
     const response = await this.secureApiFetch(`${BASE_URL}/api/user/theme`, {
       method: 'PATCH',

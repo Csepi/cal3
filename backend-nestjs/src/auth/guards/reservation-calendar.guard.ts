@@ -17,6 +17,8 @@ import { ReservationCalendar } from '../../entities/reservation-calendar.entity'
 import { OrganisationAdmin } from '../../entities/organisation-admin.entity';
 import { User, UserRole } from '../../entities/user.entity';
 
+import { bStatic } from '../../i18n/runtime';
+
 // Metadata key for required roles
 export const RESERVATION_CALENDAR_ROLES_KEY = 'reservationCalendarRoles';
 
@@ -62,7 +64,7 @@ export class ReservationCalendarGuard implements CanActivate {
     const user: User = request.user;
 
     if (!user) {
-      throw new ForbiddenException('User not authenticated');
+      throw new ForbiddenException(bStatic('errors.auto.backend.kdc8648114cf5'));
     }
 
     // Global admins have access to all reservation calendars
@@ -75,7 +77,7 @@ export class ReservationCalendarGuard implements CanActivate {
       this.getReservationCalendarIdFromRequest(request);
     if (!reservationCalendarId) {
       throw new ForbiddenException(
-        'Reservation calendar ID not found in request',
+        bStatic('errors.auto.backend.k9b5ae5026a48'),
       );
     }
 
@@ -86,7 +88,7 @@ export class ReservationCalendarGuard implements CanActivate {
       });
 
     if (!reservationCalendar) {
-      throw new ForbiddenException('Reservation calendar not found');
+      throw new ForbiddenException(bStatic('errors.auto.backend.k0fd2b77d8182'));
     }
 
     // Check if user is organisation admin for this reservation calendar's organisation
@@ -118,7 +120,7 @@ export class ReservationCalendarGuard implements CanActivate {
     });
 
     if (!userRole) {
-      throw new ForbiddenException('No access to this reservation calendar');
+      throw new ForbiddenException(bStatic('errors.auto.backend.kd60b00a02f78'));
     }
 
     // If specific roles are required, check if user has one of them

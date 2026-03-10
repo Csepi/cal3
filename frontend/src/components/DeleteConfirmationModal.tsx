@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 
+import { tStatic } from '../i18n';
+
 interface CascadePreview {
   resourceTypes?: number;
   resources?: number;
@@ -108,10 +110,9 @@ const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
           </svg>
           <div className="flex-1">
-            <h4 className="text-yellow-900 font-semibold mb-2">⚠️ Cascade Deletion Warning</h4>
+            <h4 className="text-yellow-900 font-semibold mb-2">{tStatic('common:auto.frontend.k7e63e14d24a5')}</h4>
             <p className="text-yellow-800 text-sm mb-2">
-              Deleting this {getItemTypeLabel().toLowerCase()} will also permanently delete:
-            </p>
+              {tStatic('common:auto.frontend.k0aa6a36bfb06')}{getItemTypeLabel().toLowerCase()} {tStatic('common:auto.frontend.k77b8b59bd3b8')}</p>
             <ul className="list-disc list-inside text-yellow-800 text-sm space-y-1">
               {warnings.map((warning, index) => (
                 <li key={index}>{warning}</li>
@@ -155,17 +156,17 @@ const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({
           {isLoading ? (
             <div className="text-center py-8">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto mb-4"></div>
-              <p className="text-gray-600">Loading deletion preview...</p>
+              <p className="text-gray-600">{tStatic('common:auto.frontend.ka047dfd82fbe')}</p>
             </div>
           ) : (
             <>
               {/* Warning Message */}
               <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
                 <p className="text-red-900 font-semibold mb-2">
-                  Are you sure you want to delete this {getItemTypeLabel().toLowerCase()}?
+                  {tStatic('common:auto.frontend.kde3860388938')}{getItemTypeLabel().toLowerCase()}?
                 </p>
                 <p className="text-red-800 text-sm">
-                  <strong>Name:</strong> {itemName}
+                  <strong>{tStatic('common:auto.frontend.k71dd2eff9b4d')}</strong> {itemName}
                 </p>
               </div>
 
@@ -175,20 +176,18 @@ const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({
               {/* Confirmation Input */}
               <div className="mt-6">
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Type <code className="bg-gray-100 px-2 py-1 rounded text-red-600">{expectedConfirmText}</code> to confirm deletion:
-                </label>
+                  {tStatic('common:auto.frontend.k3deb74565196')}<code className="bg-gray-100 px-2 py-1 rounded text-red-600">{expectedConfirmText}</code> {tStatic('common:auto.frontend.k9b994863b82d')}</label>
                 <input
                   type="text"
                   value={confirmText}
                   onChange={(e) => setConfirmText(e.target.value)}
                   disabled={deleting}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
-                  placeholder="Type DELETE to confirm"
+                  placeholder={tStatic('common:auto.frontend.k9380da26c3d2')}
                   autoFocus
                 />
                 <p className="text-xs text-gray-500 mt-2">
-                  ⚠️ This action cannot be undone!
-                </p>
+                  {tStatic('common:auto.frontend.k7ac22c2ef91f')}</p>
               </div>
 
               {/* Error Message */}
@@ -212,8 +211,7 @@ const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({
               disabled={deleting}
               className="px-4 py-2 text-gray-700 bg-white hover:bg-gray-100 border border-gray-300 rounded-lg font-medium transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Cancel
-            </button>
+              {tStatic('common:auto.frontend.k77dfd2135f4d')}</button>
             <button
               onClick={handleConfirm}
               disabled={!canDelete || deleting}
@@ -229,15 +227,13 @@ const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
-                  Deleting...
-                </>
+                  {tStatic('common:auto.frontend.ke16cac651b17')}</>
               ) : (
                 <>
                   <svg className="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                   </svg>
-                  Delete Permanently
-                </>
+                  {tStatic('common:auto.frontend.ka9ec7cf46a7d')}</>
               )}
             </button>
           </div>

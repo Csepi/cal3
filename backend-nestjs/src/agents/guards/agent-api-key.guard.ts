@@ -9,6 +9,8 @@ import { AgentAuthorizationService } from '../agent-authorization.service';
 import { AgentContext } from '../interfaces/agent-context.interface';
 import { AuditTrailService } from '../../logging/audit-trail.service';
 
+import { bStatic } from '../../i18n/runtime';
+
 type AgentRequest = Request & { agentContext?: AgentContext; user?: unknown };
 
 @Injectable()
@@ -81,11 +83,11 @@ export class AgentApiKeyGuard implements CanActivate {
       }
       if (scheme && scheme.toLowerCase() === 'bearer') {
         throw new UnauthorizedException(
-          'Bearer tokens are not valid for MCP endpoints.',
+          bStatic('errors.auto.backend.k11347e5e9a15'),
         );
       }
     }
 
-    throw new UnauthorizedException('Agent API key is required.');
+    throw new UnauthorizedException(bStatic('errors.auto.backend.k6cc9eb5158d2'));
   }
 }

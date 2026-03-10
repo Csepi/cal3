@@ -10,6 +10,8 @@ import type { Request } from 'express';
 import { Repository } from 'typeorm';
 import { Resource } from '../../entities/resource.entity';
 
+import { bStatic } from '../../i18n/runtime';
+
 export interface PublicBookingPolicy {
   validateBookingDates(startDate: Date, endDate: Date): void;
   validateBookingResource(resourceId: number): void;
@@ -30,7 +32,7 @@ export class PublicBookingGuard implements CanActivate, PublicBookingPolicy {
 
     if (!token) {
       throw new NotFoundException(
-        'Resource not found or booking link is invalid',
+        bStatic('errors.auto.backend.ke32af7ecb8a2'),
       );
     }
 
@@ -41,7 +43,7 @@ export class PublicBookingGuard implements CanActivate, PublicBookingPolicy {
 
     if (!resource) {
       throw new NotFoundException(
-        'Resource not found or booking link is invalid',
+        bStatic('errors.auto.backend.ke32af7ecb8a2'),
       );
     }
 
@@ -61,17 +63,17 @@ export class PublicBookingGuard implements CanActivate, PublicBookingPolicy {
 
   validateBookingDates(startDate: Date, endDate: Date): void {
     if (Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime())) {
-      throw new BadRequestException('Invalid start or end time');
+      throw new BadRequestException(bStatic('errors.auto.backend.k8abd49d2623c'));
     }
     if (startDate >= endDate) {
-      throw new BadRequestException('End time must be after start time');
+      throw new BadRequestException(bStatic('errors.auto.backend.k468339327f19'));
     }
   }
 
   validateBookingResource(resourceId: number): void {
     if (!resourceId || Number.isNaN(resourceId)) {
       throw new NotFoundException(
-        'Resource not found or booking link is invalid',
+        bStatic('errors.auto.backend.ke32af7ecb8a2'),
       );
     }
   }

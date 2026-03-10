@@ -22,6 +22,8 @@ import { NotificationsService } from '../notifications/notifications.service';
 
 import { logError } from '../common/errors/error-logger';
 import { buildErrorContext } from '../common/errors/error-context';
+import { bStatic } from '../i18n/runtime';
+
 @Injectable()
 export class CalendarsService {
   private readonly logger = new Logger(CalendarsService.name);
@@ -121,7 +123,7 @@ export class CalendarsService {
     });
 
     if (!calendar) {
-      throw new NotFoundException('Calendar not found');
+      throw new NotFoundException(bStatic('errors.auto.backend.k22a8217d832e'));
     }
 
     // Check if user has access (owner or shared)
@@ -130,7 +132,7 @@ export class CalendarsService {
       calendar.sharedWith.some((user) => user.id === userId);
 
     if (!hasAccess) {
-      throw new ForbiddenException('Access denied to this calendar');
+      throw new ForbiddenException(bStatic('errors.auto.backend.kd445628ea741'));
     }
 
     return calendar;
@@ -151,7 +153,7 @@ export class CalendarsService {
         sharePermission !== SharePermission.ADMIN
       ) {
         throw new ForbiddenException(
-          'Insufficient permissions to update this calendar',
+          bStatic('errors.auto.backend.kb24e1e4fb0ff'),
         );
       }
     }
@@ -160,7 +162,7 @@ export class CalendarsService {
     if (updateCalendarDto.groupId !== undefined) {
       if (calendar.ownerId !== userId) {
         throw new ForbiddenException(
-          'Only the calendar owner can change its group',
+          bStatic('errors.auto.backend.keb5c10a10acd'),
         );
       }
 
@@ -181,7 +183,7 @@ export class CalendarsService {
 
     // Only owner can delete calendar
     if (calendar.ownerId !== userId) {
-      throw new ForbiddenException('Only the calendar owner can delete it');
+      throw new ForbiddenException(bStatic('errors.auto.backend.k60b385f09fd9'));
     }
 
     calendar.isActive = false;
@@ -200,7 +202,7 @@ export class CalendarsService {
       const sharePermission = await this.getSharePermission(id, userId);
       if (sharePermission !== SharePermission.ADMIN) {
         throw new ForbiddenException(
-          'Insufficient permissions to share this calendar',
+          bStatic('errors.auto.backend.kb99c142cf51d'),
         );
       }
     }
@@ -250,7 +252,7 @@ export class CalendarsService {
       const sharePermission = await this.getSharePermission(id, userId);
       if (sharePermission !== SharePermission.ADMIN) {
         throw new ForbiddenException(
-          'Insufficient permissions to unshare this calendar',
+          bStatic('errors.auto.backend.k511d76f4b467'),
         );
       }
     }
@@ -351,7 +353,7 @@ export class CalendarsService {
 
     if (!group) {
       throw new ForbiddenException(
-        'Calendar group not found or not accessible',
+        bStatic('errors.auto.backend.kfdf1de5a3262'),
       );
     }
 

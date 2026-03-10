@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react';
 import type { TaskLabel } from '../../types/Task';
 
+import { tStatic } from '../../i18n';
+
 interface TaskLabelsSelectProps {
   labels: TaskLabel[];
   selectedIds: number[];
@@ -32,8 +34,7 @@ export const TaskLabelsSelect: React.FC<TaskLabelsSelectProps> = ({
   return (
     <div className="flex flex-col gap-2">
       <label className="text-xs font-semibold uppercase text-gray-500">
-        Labels
-      </label>
+        {tStatic('common:auto.frontend.k2228985493d9')}</label>
       <div className="flex flex-wrap gap-2">
         {labels.map((label) => {
           const isActive = selectedSet.has(label.id);
@@ -61,7 +62,7 @@ export const TaskLabelsSelect: React.FC<TaskLabelsSelectProps> = ({
             value={newLabelName}
             onChange={(event) => setNewLabelName(event.target.value)}
             className="w-32 rounded-full border border-gray-200 px-3 py-1 text-xs focus:border-blue-500 focus:outline-none"
-            placeholder="New label"
+            placeholder={tStatic('common:auto.frontend.k8a881f87013f')}
           />
           <button
             type="button"
@@ -69,8 +70,7 @@ export const TaskLabelsSelect: React.FC<TaskLabelsSelectProps> = ({
             className="text-xs font-semibold"
             style={{ color: themeColor }}
           >
-            Add
-          </button>
+            {tStatic('common:auto.frontend.k61cc55aa0453')}</button>
         </div>
       </div>
     </div>

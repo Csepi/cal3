@@ -14,6 +14,8 @@
 import React, { useRef } from 'react';
 import { useScreenSize } from '../../../hooks/useScreenSize';
 
+import { tStatic } from '../../../i18n';
+
 interface MobileLayoutProps {
   children: React.ReactNode;
   showBottomNav?: boolean;
@@ -130,8 +132,7 @@ export const MobileLayout: React.FC<MobileLayoutProps> = ({
                   border: `1px solid ${withAlpha(themeColor, 0.18)}`,
                 }}
               >
-                Live
-              </span>
+                {tStatic('common:auto.frontend.k65c821a596ce')}</span>
               {initials && (
                 <div
                   className="h-9 w-9 rounded-full bg-white shadow-sm flex items-center justify-center text-sm font-semibold"

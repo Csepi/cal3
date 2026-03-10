@@ -11,6 +11,8 @@ import { Button } from '../ui';
 import { loadAdminData, formatAdminError } from './adminApiService';
 import type { AdminTab, DatabaseStats } from './types';
 
+import { tStatic } from '../../i18n';
+
 export interface AdminStatsPanelProps {
   /** Current theme color for styling */
   themeColor?: string;
@@ -367,18 +369,14 @@ export const AdminStatsPanel: React.FC<AdminStatsPanelProps> = ({
                   <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-white opacity-50" />
                   <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-white" />
                 </span>
-                Live executive feed
-              </span>
-              <span className="text-white/70">Updated at {liveUpdatedAt}</span>
+                {tStatic('common:auto.frontend.k206ad63a51d1')}</span>
+              <span className="text-white/70">{tStatic('common:auto.frontend.k307fd06961c6')}{liveUpdatedAt}</span>
             </div>
 
             <h2 className="mt-5 text-3xl font-semibold leading-tight text-white lg:text-4xl">
-              Command the entire platform from one live surface.
-            </h2>
+              {tStatic('common:auto.frontend.k97557304da7f')}</h2>
             <p className="mt-3 text-white/80">
-              Track adoption, calendar throughput, and collaboration velocity with instant drill-downs into deeper admin
-              tools.
-            </p>
+              {tStatic('common:auto.frontend.k5abf8ccd038c')}</p>
 
             <div className="mt-6 flex flex-wrap gap-3">
               <Button
@@ -388,8 +386,7 @@ export const AdminStatsPanel: React.FC<AdminStatsPanelProps> = ({
                 themeColor={themeColor}
                 className="bg-white/20 text-white hover:bg-white/30"
               >
-                Refresh data
-              </Button>
+                {tStatic('common:auto.frontend.k5212504351fa')}</Button>
               <Button
                 size="sm"
                 variant="outline"
@@ -397,52 +394,48 @@ export const AdminStatsPanel: React.FC<AdminStatsPanelProps> = ({
                 className="border-white/60 text-white hover:bg-white/10"
                 onClick={() => handleNavigate('logs')}
               >
-                View live logs
-              </Button>
+                {tStatic('common:auto.frontend.kf58be77a0719')}</Button>
               <a
                 href="mailto:ops@executive-hq"
                 className="inline-flex items-center text-sm font-semibold text-white/80 underline-offset-4 hover:text-white hover:underline"
               >
-                Escalate to ops
-              </a>
+                {tStatic('common:auto.frontend.k1c190d1bb54f')}</a>
             </div>
 
             <div className="mt-6 grid gap-4 text-sm text-white/80 md:grid-cols-2">
               <div className="rounded-2xl border border-white/20 bg-white/10 p-4 backdrop-blur-sm">
-                <p className="text-xs uppercase tracking-wide text-white/70">Manual refresh</p>
+                <p className="text-xs uppercase tracking-wide text-white/70">{tStatic('common:auto.frontend.ka053a9f049a5')}</p>
                 <p className="text-2xl font-semibold text-white">{manualRefreshLabel}</p>
-                <p className="text-xs text-white/70">Auto refresh every 60s</p>
+                <p className="text-xs text-white/70">{tStatic('common:auto.frontend.ke7de4154537b')}</p>
               </div>
               <div className="rounded-2xl border border-white/20 bg-white/10 p-4 backdrop-blur-sm">
-                <p className="text-xs uppercase tracking-wide text-white/70">Live source</p>
+                <p className="text-xs uppercase tracking-wide text-white/70">{tStatic('common:auto.frontend.kc88a7e0381c4')}</p>
                 <p className="text-2xl font-semibold text-white">{process.env.NODE_ENV || 'development'}</p>
-                <p className="text-xs text-white/70">Runtime environment</p>
+                <p className="text-xs text-white/70">{tStatic('common:auto.frontend.k42634c0242bb')}</p>
               </div>
             </div>
           </div>
 
           <div className="rounded-2xl border bg-white/70 p-6 backdrop-blur">
             <div className="flex items-center justify-between">
-              <p className="text-sm font-semibold text-gray-500">Executive signal</p>
-              <span className="text-xs font-semibold text-emerald-600">LIVE</span>
+              <p className="text-sm font-semibold text-gray-500">{tStatic('common:auto.frontend.k643c2ad5a649')}</p>
+              <span className="text-xs font-semibold text-emerald-600">{tStatic('common:auto.frontend.k6990f01ad9d2')}</span>
             </div>
             <div className="mt-4 space-y-4">
               <div>
-                <p className="text-xs uppercase tracking-wide text-gray-500">Active accounts</p>
+                <p className="text-xs uppercase tracking-wide text-gray-500">{tStatic('common:auto.frontend.k5da70508d443')}</p>
                 <p className="text-3xl font-bold text-gray-900">{stats ? stats.users.active.toLocaleString() : '—'}</p>
               </div>
               <div>
-                <p className="text-xs uppercase tracking-wide text-gray-500">Calendars deployed</p>
+                <p className="text-xs uppercase tracking-wide text-gray-500">{tStatic('common:auto.frontend.ka73bcca740f7')}</p>
                 <p className="text-3xl font-bold text-gray-900">{stats ? stats.calendars.total.toLocaleString() : '—'}</p>
               </div>
               <div>
-                <p className="text-xs uppercase tracking-wide text-gray-500">Event flow</p>
+                <p className="text-xs uppercase tracking-wide text-gray-500">{tStatic('common:auto.frontend.k5e58c9a2ce27')}</p>
                 <p className="text-3xl font-bold text-gray-900">{stats ? stats.events.total.toLocaleString() : '—'}</p>
               </div>
               <div className="rounded-2xl border border-dashed border-gray-200 p-4 text-sm text-gray-600">
-                Keep the data stream open in a dedicated screen or pop out the logs to supervise incident response in
-                real time.
-              </div>
+                {tStatic('common:auto.frontend.k5fd454e591a7')}</div>
             </div>
           </div>
         </div>
@@ -456,7 +449,7 @@ export const AdminStatsPanel: React.FC<AdminStatsPanelProps> = ({
               ⚠️
             </span>
             <div>
-              <p className="font-semibold">Unable to load live metrics</p>
+              <p className="font-semibold">{tStatic('common:auto.frontend.ke24374ec4bcc')}</p>
               <p className="text-sm text-red-700">{error}</p>
             </div>
           </div>
@@ -467,7 +460,7 @@ export const AdminStatsPanel: React.FC<AdminStatsPanelProps> = ({
       {loading && !stats && (
         <div className="rounded-2xl border border-gray-200 bg-white p-10 text-center shadow-sm">
           <div className="mx-auto mb-4 h-10 w-10 animate-spin rounded-full border-2 border-gray-300 border-t-gray-600" />
-          <p className="text-gray-600">Activating live executive data…</p>
+          <p className="text-gray-600">{tStatic('common:auto.frontend.k2ed68ba54b31')}</p>
         </div>
       )}
 
@@ -491,7 +484,7 @@ export const AdminStatsPanel: React.FC<AdminStatsPanelProps> = ({
                 <p className="text-3xl font-semibold text-gray-900">{card.value}</p>
                 <p className="mt-1 text-sm text-gray-600">{card.caption}</p>
                 <span className="mt-4 inline-flex items-center text-sm font-semibold text-gray-600 transition group-hover:text-gray-900">
-                  Open {card.cta}
+                  {tStatic('common:auto.frontend.kcf9b77061f7b')}{card.cta}
                   <svg className="ml-1 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                   </svg>
@@ -505,10 +498,10 @@ export const AdminStatsPanel: React.FC<AdminStatsPanelProps> = ({
               <div className="rounded-2xl border bg-white p-6 shadow-sm">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-xs uppercase tracking-wide text-gray-500">Adoption intelligence</p>
-                    <h3 className="text-lg font-semibold text-gray-900">Engagement & capacity</h3>
+                    <p className="text-xs uppercase tracking-wide text-gray-500">{tStatic('common:auto.frontend.kc77add053d85')}</p>
+                    <h3 className="text-lg font-semibold text-gray-900">{tStatic('common:auto.frontend.k0496d099a1bf')}</h3>
                   </div>
-                  <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">Live</span>
+                  <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">{tStatic('common:auto.frontend.k65c821a596ce')}</span>
                 </div>
                 <div className="mt-6 space-y-5">
                   {adoptionItems.map((item) => (
@@ -543,12 +536,11 @@ export const AdminStatsPanel: React.FC<AdminStatsPanelProps> = ({
               <div className="rounded-2xl border bg-white p-6 shadow-sm">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-xs uppercase tracking-wide text-gray-500">Insights</p>
-                    <h3 className="text-lg font-semibold text-gray-900">Operational intelligence</h3>
+                    <p className="text-xs uppercase tracking-wide text-gray-500">{tStatic('common:auto.frontend.kb4510362a5c5')}</p>
+                    <h3 className="text-lg font-semibold text-gray-900">{tStatic('common:auto.frontend.kdb49a170c760')}</h3>
                   </div>
                   <Button size="sm" variant="ghost" themeColor={themeColor} onClick={() => handleNavigate('logs')}>
-                    Audit last 24h
-                  </Button>
+                    {tStatic('common:auto.frontend.ke2385a67f113')}</Button>
                 </div>
                 <div className="mt-6 space-y-4">
                   {insights.map((insight) => {
@@ -578,7 +570,7 @@ export const AdminStatsPanel: React.FC<AdminStatsPanelProps> = ({
                             onClick={() => handleNavigate(insight.tab)}
                             className="mt-2 inline-flex items-center text-xs font-semibold underline-offset-4 hover:underline"
                           >
-                            Jump to {insight.tab.replace('-', ' ')}
+                            {tStatic('common:auto.frontend.kcfd6869bbed1')}{insight.tab.replace('-', ' ')}
                             <svg className="ml-1 h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
                               <path d="M6 4l7 6-7 6V4z" />
                             </svg>
@@ -595,10 +587,10 @@ export const AdminStatsPanel: React.FC<AdminStatsPanelProps> = ({
               <div className="rounded-2xl border bg-white p-6 shadow-sm">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-xs uppercase tracking-wide text-gray-500">Quick actions</p>
-                    <h3 className="text-lg font-semibold text-gray-900">One-tap command</h3>
+                    <p className="text-xs uppercase tracking-wide text-gray-500">{tStatic('common:auto.frontend.ke47e804262aa')}</p>
+                    <h3 className="text-lg font-semibold text-gray-900">{tStatic('common:auto.frontend.kca1939a72c31')}</h3>
                   </div>
-                  <span className="rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-600">Clickable</span>
+                  <span className="rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-600">{tStatic('common:auto.frontend.kd84530cc9eff')}</span>
                 </div>
                 <div className="mt-6 grid gap-4">
                   {quickActions.map((action) => (
@@ -628,10 +620,10 @@ export const AdminStatsPanel: React.FC<AdminStatsPanelProps> = ({
               <div className="rounded-2xl border bg-white p-6 shadow-sm">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-xs uppercase tracking-wide text-gray-500">Executive notices</p>
-                    <h3 className="text-lg font-semibold text-gray-900">Stay ahead</h3>
+                    <p className="text-xs uppercase tracking-wide text-gray-500">{tStatic('common:auto.frontend.k428fbc0566e4')}</p>
+                    <h3 className="text-lg font-semibold text-gray-900">{tStatic('common:auto.frontend.k5365d87a301b')}</h3>
                   </div>
-                  <span className="text-xs font-semibold text-gray-500">LIVE</span>
+                  <span className="text-xs font-semibold text-gray-500">{tStatic('common:auto.frontend.k6990f01ad9d2')}</span>
                 </div>
                 <div className="mt-6 space-y-4">
                   {notices.map((notice) => (
@@ -673,11 +665,10 @@ export const AdminStatsPanel: React.FC<AdminStatsPanelProps> = ({
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gray-100 text-3xl">
             📊
           </div>
-          <p className="text-xl font-semibold text-gray-900">No statistics yet</p>
-          <p className="mt-1 text-gray-600">Connect to the admin API to stream live executive data.</p>
+          <p className="text-xl font-semibold text-gray-900">{tStatic('common:auto.frontend.k72236bfcff0a')}</p>
+          <p className="mt-1 text-gray-600">{tStatic('common:auto.frontend.k45b62a55fc60')}</p>
           <Button variant="primary" onClick={loadStats} themeColor={themeColor} className="mt-6">
-            Load statistics
-          </Button>
+            {tStatic('common:auto.frontend.k7ba46fafa817')}</Button>
         </div>
       )}
     </div>

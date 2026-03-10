@@ -5,6 +5,8 @@ import type {
   NotificationThreadSummary,
 } from '../../types/Notification';
 
+import { tStatic } from '../../i18n';
+
 const formatTimestamp = (iso: string): string => {
   try {
     const dt = new Date(iso);
@@ -185,16 +187,14 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ onOpenSe
             onClick={() => markUnread(notification.id)}
             className="px-3 py-1.5 text-sm rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100"
           >
-            Mark as unread
-          </button>
+            {tStatic('common:auto.frontend.k5eeffe7d4550')}</button>
         ) : (
           <button
             type="button"
             onClick={() => markRead(notification.id)}
             className="px-3 py-1.5 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-700"
           >
-            Mark as read
-          </button>
+            {tStatic('common:auto.frontend.kc1ee860bc3a9')}</button>
         )}
 
         {thread && (
@@ -241,10 +241,9 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ onOpenSe
     <div className="max-w-6xl mx-auto px-4 py-8 space-y-6">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900">Notification Center</h1>
+          <h1 className="text-2xl font-semibold text-gray-900">{tStatic('common:auto.frontend.kb72611ad0992')}</h1>
           <p className="text-sm text-gray-500">
-            Stay on top of updates across calendars, reservations, organisations, and automation.
-          </p>
+            {tStatic('common:auto.frontend.k9cb54d0bc76d')}</p>
         </div>
         <div className="flex gap-2">
           <button
@@ -252,8 +251,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ onOpenSe
             onClick={onOpenSettings}
             className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100"
           >
-            Settings
-          </button>
+            {tStatic('common:auto.frontend.kc7f73bb54d92')}</button>
           <button
             type="button"
             onClick={async () => {
@@ -263,8 +261,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ onOpenSe
             className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
             disabled={unreadCount === 0}
           >
-            Mark all read
-          </button>
+            {tStatic('common:auto.frontend.k8958e22c23d1')}</button>
         </div>
       </div>
 
@@ -277,22 +274,21 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ onOpenSe
               checked={showUnreadOnly}
               onChange={(event) => setShowUnreadOnly(event.target.checked)}
             />
-            Show unread only ({unreadCount})
+            {tStatic('common:auto.frontend.k0d348a272c83')}{unreadCount})
           </label>
           <button
             type="button"
             className="text-sm text-blue-600 hover:text-blue-700"
             onClick={handleRefresh}
           >
-            Refresh
-          </button>
+            {tStatic('common:auto.frontend.k56e3badc4e6c')}</button>
         </div>
         <div className="md:w-80">
           <input
             type="search"
             value={searchTerm}
             onChange={(event) => setSearchTerm(event.target.value)}
-            placeholder="Search notifications"
+            placeholder={tStatic('common:auto.frontend.ke974fc6c13a0')}
             className="w-full rounded-lg border border-gray-300 py-2 px-3 text-sm focus:border-blue-500 focus:ring focus:ring-blue-200"
           />
         </div>
@@ -302,11 +298,9 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ onOpenSe
         <aside className="space-y-4">
           <div>
             <h2 className="text-sm font-semibold text-gray-600 uppercase tracking-wide">
-              Conversations
-            </h2>
+              {tStatic('common:auto.frontend.k07c59b44128d')}</h2>
             <p className="text-xs text-gray-500">
-              Threads group related notifications. Mute or archive them to keep focus.
-            </p>
+              {tStatic('common:auto.frontend.kbdc441d31b50')}</p>
           </div>
 
           <div
@@ -326,21 +320,19 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ onOpenSe
             }`}
           >
             <div className="flex items-center justify-between">
-              <span className="text-sm font-semibold">All notifications</span>
+              <span className="text-sm font-semibold">{tStatic('common:auto.frontend.ka0293096fb84')}</span>
               <span className="rounded-full bg-blue-600 px-2 py-0.5 text-xs font-medium text-white">
                 {unreadCount}
               </span>
             </div>
             <p className="mt-1 text-xs text-gray-500">
-              View everything across calendars, reservations, organisations, and more.
-            </p>
+              {tStatic('common:auto.frontend.k7048e0b1d9f8')}</p>
           </div>
 
           <div className="space-y-3">
             {sortedThreads.length === 0 ? (
               <div className="rounded-2xl border border-dashed border-gray-300 px-4 py-6 text-center text-xs text-gray-500">
-                Threads appear automatically as new activity arrives.
-              </div>
+                {tStatic('common:auto.frontend.k8689c541fc90')}</div>
             ) : (
               sortedThreads.map((thread) => {
                 const scopedMute =
@@ -376,18 +368,15 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ onOpenSe
                           )}
                           {thread.isMuted && (
                             <span className="rounded-full bg-yellow-100 px-2 py-0.5 text-yellow-700">
-                              Thread muted
-                            </span>
+                              {tStatic('common:auto.frontend.k88347f3e0998')}</span>
                           )}
                           {thread.isArchived && (
                             <span className="rounded-full bg-purple-100 px-2 py-0.5 text-purple-700">
-                              Archived
-                            </span>
+                              {tStatic('common:auto.frontend.keddc813f35b1')}</span>
                           )}
                           {scopedMute && (
                             <span className="rounded-full bg-green-100 px-2 py-0.5 text-green-700">
-                              Scope muted
-                            </span>
+                              {tStatic('common:auto.frontend.kb6d2295af5f5')}</span>
                           )}
                         </div>
                       </div>
@@ -430,7 +419,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ onOpenSe
 
         <section>
           {loading ? (
-            <div className="py-24 text-center text-gray-500">Loading notifications...</div>
+            <div className="py-24 text-center text-gray-500">{tStatic('common:auto.frontend.kf5e60c3a10a5')}</div>
           ) : filteredNotifications.length === 0 ? (
             <div className="py-24 text-center text-gray-500">
               {selectedThreadId
@@ -464,8 +453,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ onOpenSe
                                 </p>
                                 {evaluationMeta.scopeMuted && (
                                   <span className="rounded-full bg-green-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-green-700">
-                                    Scope muted
-                                  </span>
+                                    {tStatic('common:auto.frontend.kb6d2295af5f5')}</span>
                                 )}
                                 {evaluationMeta.notes && Array.isArray(evaluationMeta.notes) && evaluationMeta.notes.length > 0 && (
                                   <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-gray-600">
@@ -488,8 +476,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ onOpenSe
                           {notification.data && Object.keys(notification.data).length > 0 && (
                             <details className="mt-3 bg-white/70 rounded-lg border border-dashed border-gray-300 p-3 text-xs text-gray-600">
                               <summary className="cursor-pointer font-medium text-gray-500">
-                                Details
-                              </summary>
+                                {tStatic('common:auto.frontend.kdc3decbb9384')}</summary>
                               <pre className="mt-2 whitespace-pre-wrap break-words">
                                 {JSON.stringify(notification.data, null, 2)}
                               </pre>

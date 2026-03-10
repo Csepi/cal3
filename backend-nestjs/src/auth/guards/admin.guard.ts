@@ -6,6 +6,8 @@ import {
 } from '@nestjs/common';
 import { UserRole } from '../../entities/user.entity';
 
+import { bStatic } from '../../i18n/runtime';
+
 @Injectable()
 export class AdminGuard implements CanActivate {
   canActivate(context: ExecutionContext): boolean {
@@ -13,11 +15,11 @@ export class AdminGuard implements CanActivate {
     const user = request.user;
 
     if (!user) {
-      throw new ForbiddenException('User not authenticated');
+      throw new ForbiddenException(bStatic('errors.auto.backend.kdc8648114cf5'));
     }
 
     if (user.role !== UserRole.ADMIN) {
-      throw new ForbiddenException('Admin access required');
+      throw new ForbiddenException(bStatic('errors.auto.backend.k737b16b6a8b5'));
     }
 
     return true;

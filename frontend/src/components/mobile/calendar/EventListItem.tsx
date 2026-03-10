@@ -15,6 +15,8 @@ import { getMeetingLinkFromEvent } from '../../../utils/meetingLinks';
 import { TouchableArea } from '../atoms/TouchableArea';
 import { Icon } from '../atoms/Icon';
 
+import { tStatic } from '../../../i18n';
+
 interface EventListItemProps {
   event: Event;
   onClick: (event: Event) => void;
@@ -55,7 +57,7 @@ export const EventListItem: React.FC<EventListItemProps> = ({
         {/* Time Column */}
         <div className="flex-shrink-0 w-16 text-right">
           {event.isAllDay ? (
-            <div className="text-xs font-medium text-gray-500">All day</div>
+            <div className="text-xs font-medium text-gray-500">{tStatic('common:auto.frontend.k114574336ac7')}</div>
           ) : (
             <>
               <div className="text-sm font-semibold text-gray-900">
@@ -103,8 +105,7 @@ export const EventListItem: React.FC<EventListItemProps> = ({
               }}
               aria-label={`Join ${event.title} meeting`}
             >
-              Join
-            </button>
+              {tStatic('common:auto.frontend.ke0d73143de80')}</button>
           )}
 
           {/* Calendar Name */}

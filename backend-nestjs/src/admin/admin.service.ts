@@ -39,6 +39,8 @@ import { CreateEventDto, UpdateEventDto } from '../dto/event.dto';
 import { AuditTrailService } from '../logging/audit-trail.service';
 import { AuditEventQueryDto } from './dto/audit-events.dto';
 
+import { bStatic } from '../i18n/runtime';
+
 export interface DatabaseStatsOverview {
   users: {
     total: number;
@@ -218,7 +220,7 @@ export class AdminService {
   async updateUserRole(userId: number, role: UserRole): Promise<User> {
     const user = await this.userRepository.findOne({ where: { id: userId } });
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException(bStatic('errors.auto.backend.k01eb94695483'));
     }
 
     user.role = role;
@@ -231,7 +233,7 @@ export class AdminService {
   ): Promise<User> {
     const user = await this.userRepository.findOne({ where: { id: userId } });
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException(bStatic('errors.auto.backend.k01eb94695483'));
     }
 
     user.usagePlans = usagePlans;
@@ -241,7 +243,7 @@ export class AdminService {
   async deleteUser(userId: number): Promise<{ message: string }> {
     const user = await this.userRepository.findOne({ where: { id: userId } });
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException(bStatic('errors.auto.backend.k01eb94695483'));
     }
 
     // Delete related records first to avoid foreign key constraint violations
@@ -260,7 +262,7 @@ export class AdminService {
 
     // Finally delete the user
     await this.userRepository.remove(user);
-    return { message: 'User deleted successfully' };
+    return { message: bStatic('errors.auto.backend.kc73f99152b03') };
   }
 
   async deleteCalendar(calendarId: number): Promise<{ message: string }> {
@@ -268,11 +270,11 @@ export class AdminService {
       where: { id: calendarId },
     });
     if (!calendar) {
-      throw new NotFoundException('Calendar not found');
+      throw new NotFoundException(bStatic('errors.auto.backend.k22a8217d832e'));
     }
 
     await this.calendarRepository.remove(calendar);
-    return { message: 'Calendar deleted successfully' };
+    return { message: bStatic('errors.auto.backend.k9ee5ec7cfddc') };
   }
 
   async deleteEvent(eventId: number): Promise<{ message: string }> {
@@ -280,11 +282,11 @@ export class AdminService {
       where: { id: eventId },
     });
     if (!event) {
-      throw new NotFoundException('Event not found');
+      throw new NotFoundException(bStatic('errors.auto.backend.k231b810d5be3'));
     }
 
     await this.eventRepository.remove(event);
-    return { message: 'Event deleted successfully' };
+    return { message: bStatic('errors.auto.backend.k6f048ca1a9ee') };
   }
 
   // CREATE OPERATIONS
@@ -332,7 +334,7 @@ export class AdminService {
   ): Promise<User> {
     const user = await this.userRepository.findOne({ where: { id: userId } });
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException(bStatic('errors.auto.backend.k01eb94695483'));
     }
 
     // Don't update password here, use separate endpoint
@@ -344,7 +346,7 @@ export class AdminService {
   async updateUserPassword(userId: number, newPassword: string): Promise<User> {
     const user = await this.userRepository.findOne({ where: { id: userId } });
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException(bStatic('errors.auto.backend.k01eb94695483'));
     }
 
     user.password = await bcrypt.hash(newPassword, 10);
@@ -360,7 +362,7 @@ export class AdminService {
       relations: ['owner'],
     });
     if (!calendar) {
-      throw new NotFoundException('Calendar not found');
+      throw new NotFoundException(bStatic('errors.auto.backend.k22a8217d832e'));
     }
 
     Object.assign(calendar, updateCalendarDto);
@@ -376,7 +378,7 @@ export class AdminService {
       relations: ['calendar', 'createdBy'],
     });
     if (!event) {
-      throw new NotFoundException('Event not found');
+      throw new NotFoundException(bStatic('errors.auto.backend.k231b810d5be3'));
     }
 
     const { startDate, endDate, ...rest } = updateEventDto;
@@ -408,7 +410,7 @@ export class AdminService {
       ],
     });
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException(bStatic('errors.auto.backend.k01eb94695483'));
     }
     return user;
   }
@@ -419,7 +421,7 @@ export class AdminService {
       relations: ['owner'],
     });
     if (!calendar) {
-      throw new NotFoundException('Calendar not found');
+      throw new NotFoundException(bStatic('errors.auto.backend.k22a8217d832e'));
     }
     return calendar;
   }
@@ -430,7 +432,7 @@ export class AdminService {
       relations: ['calendar', 'createdBy'],
     });
     if (!event) {
-      throw new NotFoundException('Event not found');
+      throw new NotFoundException(bStatic('errors.auto.backend.k231b810d5be3'));
     }
     return event;
   }
@@ -482,7 +484,7 @@ export class AdminService {
   async getUserOrganizations(userId: number): Promise<Organisation[]> {
     const user = await this.userRepository.findOne({ where: { id: userId } });
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException(bStatic('errors.auto.backend.k01eb94695483'));
     }
 
     const orgUsers = await this.organisationUserRepository.find({
@@ -499,14 +501,14 @@ export class AdminService {
   ): Promise<{ message: string }> {
     const user = await this.userRepository.findOne({ where: { id: userId } });
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException(bStatic('errors.auto.backend.k01eb94695483'));
     }
 
     const organization = await this.organisationRepository.findOne({
       where: { id: organizationId },
     });
     if (!organization) {
-      throw new NotFoundException('Organization not found');
+      throw new NotFoundException(bStatic('errors.auto.backend.k353e7ffcdf5a'));
     }
 
     // Check if user is already in the organization
@@ -515,7 +517,7 @@ export class AdminService {
     });
 
     if (existingOrgUser) {
-      return { message: 'User is already a member of this organization' };
+      return { message: bStatic('errors.auto.backend.k92c26eda1238') };
     }
 
     // Add user to organization
@@ -525,7 +527,7 @@ export class AdminService {
     });
 
     await this.organisationUserRepository.save(orgUser);
-    return { message: 'User added to organization successfully' };
+    return { message: bStatic('errors.auto.backend.k912fa91ef28f') };
   }
 
   async removeUserFromOrganization(
@@ -537,11 +539,11 @@ export class AdminService {
     });
 
     if (!orgUser) {
-      throw new NotFoundException('User is not a member of this organization');
+      throw new NotFoundException(bStatic('errors.auto.backend.kd054405dbff4'));
     }
 
     await this.organisationUserRepository.remove(orgUser);
-    return { message: 'User removed from organization successfully' };
+    return { message: bStatic('errors.auto.backend.kb71fad33e7a5') };
   }
 
   async getOrganizationUsers(
@@ -551,7 +553,7 @@ export class AdminService {
       where: { id: organizationId },
     });
     if (!organization) {
-      throw new NotFoundException('Organization not found');
+      throw new NotFoundException(bStatic('errors.auto.backend.k353e7ffcdf5a'));
     }
 
     console.log(
@@ -622,14 +624,14 @@ export class AdminService {
   ): Promise<{ message: string }> {
     const user = await this.userRepository.findOne({ where: { id: userId } });
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException(bStatic('errors.auto.backend.k01eb94695483'));
     }
 
     const organization = await this.organisationRepository.findOne({
       where: { id: organizationId },
     });
     if (!organization) {
-      throw new NotFoundException('Organization not found');
+      throw new NotFoundException(bStatic('errors.auto.backend.k353e7ffcdf5a'));
     }
 
     // Check if user is already in the organization
@@ -641,7 +643,7 @@ export class AdminService {
       // Update existing role
       existingOrgUser.role = role;
       await this.organisationUserRepository.save(existingOrgUser);
-      return { message: 'User role updated in organization successfully' };
+      return { message: bStatic('errors.auto.backend.kebd97026550c') };
     }
 
     // Add user to organization with specified role
@@ -652,7 +654,7 @@ export class AdminService {
     });
 
     await this.organisationUserRepository.save(orgUser);
-    return { message: 'User added to organization successfully' };
+    return { message: bStatic('errors.auto.backend.k912fa91ef28f') };
   }
 
   // PUBLIC BOOKING INITIALIZATION
@@ -731,7 +733,7 @@ export class AdminService {
 
       return {
         success: true,
-        message: 'Public booking initialization completed',
+        message: bStatic('errors.auto.backend.kab3be8c1ca9e'),
         ...results,
       };
     } catch (error: unknown) {
@@ -740,7 +742,7 @@ export class AdminService {
       console.error('Error initializing public booking:', normalizedError);
       return {
         success: false,
-        message: 'Public booking initialization failed',
+        message: bStatic('errors.auto.backend.k00f0e628a1ca'),
         error: normalizedError.message,
         ...results,
       };

@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { BASE_URL } from '../config/apiConfig';
 
+import { tStatic } from '../i18n';
+
 const getErrorMessage = (error: unknown, fallback: string) =>
   error instanceof Error ? error.message : fallback;
 
@@ -229,7 +231,7 @@ const PublicBookingPage: React.FC = () => {
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
         <div className="bg-white rounded-lg shadow-xl p-8 max-w-md w-full text-center">
           <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading booking information...</p>
+          <p className="text-gray-600">{tStatic('common:auto.frontend.kab424e525c46')}</p>
         </div>
       </div>
     );
@@ -245,14 +247,13 @@ const PublicBookingPage: React.FC = () => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Booking Not Available</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">{tStatic('common:auto.frontend.k6a561dc278fd')}</h2>
             <p className="text-gray-600 mb-6">{error}</p>
             <button
               onClick={() => window.history.back()}
               className="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded transition"
             >
-              Go Back
-            </button>
+              {tStatic('common:auto.frontend.kf03e2d07687c')}</button>
           </div>
         </div>
       </div>
@@ -282,7 +283,7 @@ const PublicBookingPage: React.FC = () => {
                     <svg className="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                     </svg>
-                    Capacity: {resource.capacity}
+                    {tStatic('common:auto.frontend.k218347e0b411')}{resource.capacity}
                   </span>
                 )}
               </div>
@@ -292,7 +293,7 @@ const PublicBookingPage: React.FC = () => {
           {/* Operating Hours */}
           {resource?.operatingHours && resource.operatingHours.length > 0 && (
             <div className="mt-4 pt-4 border-t border-gray-200">
-              <h3 className="text-sm font-semibold text-gray-700 mb-2">Operating Hours</h3>
+              <h3 className="text-sm font-semibold text-gray-700 mb-2">{tStatic('common:auto.frontend.k0298a1cafb7c')}</h3>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
                 {resource.operatingHours
                   .filter(oh => oh.isActive)
@@ -316,10 +317,9 @@ const PublicBookingPage: React.FC = () => {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
             <div>
-              <h3 className="text-green-900 font-semibold">Booking Confirmed!</h3>
+              <h3 className="text-green-900 font-semibold">{tStatic('common:auto.frontend.k0b5ae9244118')}</h3>
               <p className="text-green-700 text-sm mt-1">
-                Your reservation has been successfully created. You should receive a confirmation email shortly.
-              </p>
+                {tStatic('common:auto.frontend.k9cc046ee4b0b')}</p>
             </div>
           </div>
         )}
@@ -331,7 +331,7 @@ const PublicBookingPage: React.FC = () => {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
             <div>
-              <h3 className="text-red-900 font-semibold">Error</h3>
+              <h3 className="text-red-900 font-semibold">{tStatic('common:auto.frontend.k7f2f6a15cf8d')}</h3>
               <p className="text-red-700 text-sm mt-1">{error}</p>
             </div>
           </div>
@@ -340,13 +340,12 @@ const PublicBookingPage: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Left Column - Date & Time Selection */}
           <div className="bg-white rounded-lg shadow-lg p-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">Select Date & Time</h2>
+            <h2 className="text-xl font-bold text-gray-900 mb-4">{tStatic('common:auto.frontend.keba09500a0b5')}</h2>
 
             {/* Date Picker */}
             <div className="mb-6">
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Select Date
-              </label>
+                {tStatic('common:auto.frontend.k49398473b903')}</label>
               <input
                 type="date"
                 value={selectedDate}
@@ -363,21 +362,20 @@ const PublicBookingPage: React.FC = () => {
             {/* Available Time Slots */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Available Time Slots
-              </label>
+                {tStatic('common:auto.frontend.k79caeaa00b31')}</label>
 
               {loadingSlots ? (
                 <div className="text-center py-8">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
-                  <p className="text-gray-500 text-sm">Loading available slots...</p>
+                  <p className="text-gray-500 text-sm">{tStatic('common:auto.frontend.k634860321320')}</p>
                 </div>
               ) : availableSlots.length === 0 ? (
                 <div className="text-center py-8 bg-gray-50 rounded-lg">
                   <svg className="w-12 h-12 text-gray-400 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
-                  <p className="text-gray-600 font-medium">No available slots</p>
-                  <p className="text-gray-500 text-sm mt-1">Try selecting a different date</p>
+                  <p className="text-gray-600 font-medium">{tStatic('common:auto.frontend.kf26569449254')}</p>
+                  <p className="text-gray-500 text-sm mt-1">{tStatic('common:auto.frontend.ked3b2369e139')}</p>
                 </div>
               ) : (
                 <div className="grid grid-cols-2 gap-2 max-h-96 overflow-y-auto">
@@ -405,8 +403,7 @@ const PublicBookingPage: React.FC = () => {
                               : 'text-gray-500'
                           }`}
                         >
-                          {slot.availableQuantity} {slot.availableQuantity === 1 ? 'spot' : 'spots'} left
-                        </span>
+                          {slot.availableQuantity} {slot.availableQuantity === 1 ? 'spot' : 'spots'} {tStatic('common:auto.frontend.k12c0f1fbadc4')}</span>
                       )}
                     </button>
                   ))}
@@ -417,21 +414,21 @@ const PublicBookingPage: React.FC = () => {
 
           {/* Right Column - Booking Form */}
           <div className="bg-white rounded-lg shadow-lg p-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">Your Information</h2>
+            <h2 className="text-xl font-bold text-gray-900 mb-4">{tStatic('common:auto.frontend.keaadadf3aad8')}</h2>
 
             {!selectedSlot ? (
               <div className="text-center py-12 bg-gray-50 rounded-lg">
                 <svg className="w-16 h-16 text-gray-400 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
-                <p className="text-gray-600 font-medium">Select a time slot to continue</p>
-                <p className="text-gray-500 text-sm mt-1">Choose an available time from the left panel</p>
+                <p className="text-gray-600 font-medium">{tStatic('common:auto.frontend.kae52e6cabeef')}</p>
+                <p className="text-gray-500 text-sm mt-1">{tStatic('common:auto.frontend.kee612c4599ad')}</p>
               </div>
             ) : (
               <form onSubmit={handleSubmitBooking} className="space-y-4">
                 {/* Selected Slot Display */}
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-                  <p className="text-sm text-blue-700 font-medium mb-1">Selected Time</p>
+                  <p className="text-sm text-blue-700 font-medium mb-1">{tStatic('common:auto.frontend.ke2901d00eb0c')}</p>
                   <p className="text-lg font-bold text-blue-900">
                     {new Date(selectedDate).toLocaleDateString('en-US', {
                       weekday: 'long',
@@ -446,15 +443,14 @@ const PublicBookingPage: React.FC = () => {
                   {typeof selectedSlot.availableQuantity === 'number' && (
                     <p className="text-sm text-blue-600 mt-1">
                       {selectedSlot.availableQuantity}{' '}
-                      {selectedSlot.availableQuantity === 1 ? 'spot' : 'spots'} remaining
-                    </p>
+                      {selectedSlot.availableQuantity === 1 ? 'spot' : 'spots'} {tStatic('common:auto.frontend.k398658a601d9')}</p>
                   )}
                 </div>
 
                 {/* Customer Name */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Full Name <span className="text-red-500">*</span>
+                    {tStatic('common:auto.frontend.k64346b483c0a')}<span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
@@ -462,14 +458,14 @@ const PublicBookingPage: React.FC = () => {
                     value={customerName}
                     onChange={(e) => setCustomerName(e.target.value)}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="John Doe"
+                    placeholder={tStatic('common:auto.frontend.kae6e4d1209f1')}
                   />
                 </div>
 
                 {/* Customer Email */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Email <span className="text-red-500">*</span>
+                    {tStatic('common:auto.frontend.k84add5b29527')}<span className="text-red-500">*</span>
                   </label>
                   <input
                     type="email"
@@ -477,14 +473,14 @@ const PublicBookingPage: React.FC = () => {
                     value={customerEmail}
                     onChange={(e) => setCustomerEmail(e.target.value)}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="john@example.com"
+                    placeholder={tStatic('common:auto.frontend.k5224cb6fdd5b')}
                   />
                 </div>
 
                 {/* Customer Phone */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Phone Number <span className="text-red-500">*</span>
+                    {tStatic('common:auto.frontend.kab25d61bb124')}<span className="text-red-500">*</span>
                   </label>
                   <input
                     type="tel"
@@ -519,7 +515,7 @@ const PublicBookingPage: React.FC = () => {
                 {/* Quantity */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Number of Spots <span className="text-red-500">*</span>
+                    {tStatic('common:auto.frontend.k28e60313c5bf')}<span className="text-red-500">*</span>
                   </label>
                   <input
                     type="number"
@@ -541,23 +537,20 @@ const PublicBookingPage: React.FC = () => {
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
                   <p className="text-xs text-gray-500 mt-1">
-                    Up to {maxQuantityForSlot}{' '}
-                    {maxQuantityForSlot === 1 ? 'spot' : 'spots'} available for
-                    this time.
-                  </p>
+                    {tStatic('common:auto.frontend.k69a84cfb374d')}{maxQuantityForSlot}{' '}
+                    {maxQuantityForSlot === 1 ? 'spot' : 'spots'} {tStatic('common:auto.frontend.k863b11ac48d1')}</p>
                 </div>
 
                 {/* Booking Notes */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Additional Notes (Optional)
-                  </label>
+                    {tStatic('common:auto.frontend.kd0f5343c7bc7')}</label>
                   <textarea
                     value={bookingNotes}
                     onChange={(e) => setBookingNotes(e.target.value)}
                     rows={3}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="Any special requests or information..."
+                    placeholder={tStatic('common:auto.frontend.k3e89a2c792f9')}
                   />
                 </div>
 
@@ -577,8 +570,7 @@ const PublicBookingPage: React.FC = () => {
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                       </svg>
-                      Creating Booking...
-                    </span>
+                      {tStatic('common:auto.frontend.k89bbcf050559')}</span>
                   ) : (
                     'Confirm Booking'
                   )}
@@ -590,7 +582,7 @@ const PublicBookingPage: React.FC = () => {
 
         {/* Footer */}
         <div className="text-center mt-8 text-gray-500 text-sm">
-          <p>Powered by PrimeCal Booking System</p>
+          <p>{tStatic('common:auto.frontend.k9d8cbfa62af5')}</p>
         </div>
       </div>
     </div>

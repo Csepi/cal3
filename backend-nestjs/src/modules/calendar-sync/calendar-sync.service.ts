@@ -37,6 +37,8 @@ import {
 import { logError } from '../../common/errors/error-logger';
 import { buildErrorContext } from '../../common/errors/error-context';
 
+import { bStatic } from '../../i18n/runtime';
+
 type ExternalEventData = Record<string, unknown> & {
   id?: string;
   subject?: string;
@@ -215,7 +217,7 @@ export class CalendarSyncService implements OnModuleInit, OnModuleDestroy {
     });
 
     if (!syncConnection) {
-      throw new NotFoundException('No active sync connection found');
+      throw new NotFoundException(bStatic('errors.auto.backend.kbedfa7213201'));
     }
 
     for (const calendarData of syncData.calendars) {
@@ -336,7 +338,7 @@ export class CalendarSyncService implements OnModuleInit, OnModuleDestroy {
     });
 
     if (syncConnections.length === 0) {
-      throw new NotFoundException('No active sync connection found');
+      throw new NotFoundException(bStatic('errors.auto.backend.kbedfa7213201'));
     }
 
     for (const syncConnection of syncConnections) {

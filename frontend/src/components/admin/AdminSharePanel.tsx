@@ -10,6 +10,8 @@ import { Card, CardHeader, Button } from '../ui';
 import { loadAdminData, formatAdminError, adminApiCall } from './adminApiService';
 import type { CalendarShare } from './types';
 
+import { tStatic } from '../../i18n';
+
 export interface AdminSharePanelProps {
   /** Current theme color for styling */
   themeColor?: string;
@@ -51,7 +53,7 @@ export const AdminSharePanel: React.FC<AdminSharePanelProps> = ({
    * Delete a calendar share
    */
   const deleteShare = async (shareId: number) => {
-    if (!confirm('Are you sure you want to delete this calendar share? This action cannot be undone.')) {
+    if (!confirm(tStatic('common:auto.frontend.k13a5abed9566'))) {
       return;
     }
 
@@ -103,7 +105,7 @@ export const AdminSharePanel: React.FC<AdminSharePanelProps> = ({
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
                 <span>🤝</span>
-                <h2 className="text-xl font-bold text-gray-800">Calendar Share Management</h2>
+                <h2 className="text-xl font-bold text-gray-800">{tStatic('common:auto.frontend.kf2d8f5549b17')}</h2>
               </div>
               <Button
                 variant="outline"
@@ -134,7 +136,7 @@ export const AdminSharePanel: React.FC<AdminSharePanelProps> = ({
         {loading && shares.length === 0 && (
           <div className="text-center py-12">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading calendar shares...</p>
+            <p className="text-gray-600">{tStatic('common:auto.frontend.k0c164baefeec')}</p>
           </div>
         )}
 
@@ -169,14 +171,14 @@ export const AdminSharePanel: React.FC<AdminSharePanelProps> = ({
                       </div>
 
                       <div className="space-y-1 text-sm text-gray-600">
-                        <p>👤 Owner: {share.calendar?.owner?.firstName} {share.calendar?.owner?.lastName} ({share.calendar?.owner?.username})</p>
-                        <p>🤝 Shared with: {share.sharedWith?.firstName} {share.sharedWith?.lastName} ({share.sharedWith?.username})</p>
-                        <p>📅 Shared on: {formatDate(share.createdAt)}</p>
+                        <p>{tStatic('common:auto.frontend.k0bd03b9057b4')}{share.calendar?.owner?.firstName} {share.calendar?.owner?.lastName} ({share.calendar?.owner?.username})</p>
+                        <p>{tStatic('common:auto.frontend.k1206ac5b24dc')}{share.sharedWith?.firstName} {share.sharedWith?.lastName} ({share.sharedWith?.username})</p>
+                        <p>{tStatic('common:auto.frontend.k33909265edbe')}{formatDate(share.createdAt)}</p>
                       </div>
                     </div>
                     <div className="flex items-center space-x-2 ml-4">
                       <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full">
-                        ID: {share.id}
+                        {tStatic('common:auto.frontend.kd789a1e992ad')}{share.id}
                       </span>
                       <Button
                         variant="outline"
@@ -184,8 +186,7 @@ export const AdminSharePanel: React.FC<AdminSharePanelProps> = ({
                         onClick={() => deleteShare(share.id)}
                         className="text-red-600 border-red-300 hover:bg-red-50"
                       >
-                        Delete
-                      </Button>
+                        {tStatic('common:auto.frontend.kf6fdbe48dc54')}</Button>
                     </div>
                   </div>
                 </div>
@@ -198,14 +199,13 @@ export const AdminSharePanel: React.FC<AdminSharePanelProps> = ({
         {!loading && shares.length === 0 && !error && (
           <div className="text-center py-12">
             <div className="text-gray-400 text-4xl mb-4">🤝</div>
-            <p className="text-gray-600 mb-4">No calendar shares found</p>
+            <p className="text-gray-600 mb-4">{tStatic('common:auto.frontend.ke2175a5ae653')}</p>
             <Button
               variant="primary"
               onClick={loadShares}
               themeColor={themeColor}
             >
-              Refresh
-            </Button>
+              {tStatic('common:auto.frontend.k56e3badc4e6c')}</Button>
           </div>
         )}
       </Card>

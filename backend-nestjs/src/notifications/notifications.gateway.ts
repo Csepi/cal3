@@ -19,6 +19,8 @@ import {
 } from './notifications.constants';
 import { resolveAllowedOrigins } from '../common/security/security.config';
 
+import { bStatic } from '../i18n/runtime';
+
 interface AuthenticatedSocket extends Socket {
   userId?: number;
 }
@@ -55,14 +57,14 @@ export class NotificationsGateway
     try {
       const token = this.extractToken(client);
       if (!token) {
-        throw new UnauthorizedException('Missing token');
+        throw new UnauthorizedException(bStatic('errors.auto.backend.k83c5c9c6bc74'));
       }
       const payload = await this.jwtService.verifyAsync(token, {
         secret: this.jwtSecret,
       });
       const userId = Number(payload.sub);
       if (!Number.isInteger(userId)) {
-        throw new UnauthorizedException('Invalid token payload');
+        throw new UnauthorizedException(bStatic('errors.auto.backend.k4cc2a1355828'));
       }
       client.userId = userId;
       await client.join(`user:${userId}`);
@@ -97,7 +99,7 @@ export class NotificationsGateway
     @MessageBody() body: unknown,
   ): { type: string; data: unknown } {
     if (!client.userId) {
-      throw new UnauthorizedException('Unauthenticated');
+      throw new UnauthorizedException(bStatic('errors.auto.backend.k9fd2ff4fc1fb'));
     }
     return { type: 'pong', data: body ?? null };
   }

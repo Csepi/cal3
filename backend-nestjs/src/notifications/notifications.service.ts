@@ -6,7 +6,7 @@ import {
   OnModuleInit,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import {
   NotificationEvaluationInput,
   NotificationPreferenceSummary,
@@ -25,6 +25,7 @@ import { NotificationMessage } from '../entities/notification-message.entity';
 import { NotificationDelivery } from '../entities/notification-delivery.entity';
 import { PushDeviceToken } from '../entities/push-device-token.entity';
 import { NotificationThread } from '../entities/notification-thread.entity';
+import { User } from '../entities/user.entity';
 import { InjectQueue } from '@nestjs/bull';
 import type { Queue } from 'bull';
 import {
@@ -35,6 +36,9 @@ import {
 import { logError } from '../common/errors/error-logger';
 import { buildErrorContext } from '../common/errors/error-context';
 import { ModuleRef } from '@nestjs/core';
+import { NotificationI18nService } from './notification-i18n.service';
+import { bStatic } from '../i18n/runtime';
+
 export interface PublishNotificationOptions {
   eventType: string;
   actorId?: number | null;
@@ -97,12 +101,15 @@ export class NotificationsService implements OnModuleInit {
     private readonly pushDeviceRepository: Repository<PushDeviceToken>,
     @InjectRepository(NotificationThread)
     private readonly threadRepository: Repository<NotificationThread>,
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
     @InjectQueue(NOTIFICATIONS_DISPATCH_QUEUE)
     private readonly dispatchQueue: Queue,
     @InjectQueue(NOTIFICATIONS_DIGEST_QUEUE)
     private readonly digestQueue: Queue,
     private readonly rulesService: NotificationRulesService,
     private readonly moduleRef: ModuleRef,
+    private readonly notificationI18nService: NotificationI18nService,
   ) {}
 
   private threadsService?: NotificationThreadsService;
@@ -201,6 +208,7 @@ export class NotificationsService implements OnModuleInit {
 
   async publish(options: PublishNotificationOptions): Promise<void> {
     const createdMessages: NotificationMessage[] = [];
+    const recipientLanguageMap = await this.loadRecipientLanguages(options.recipients);
 
     const preferenceMap = await this.loadEffectivePreferences(
       options.recipients,
@@ -257,7 +265,13 @@ export class NotificationsService implements OnModuleInit {
       const message = this.messageRepository.create({
         userId: recipientId,
         eventType: options.eventType,
-        title: options.title ?? null,
+        title:
+          options.title ??
+          this.notificationI18nService.localizeTitle(
+            options.eventType,
+            recipientLanguageMap.get(recipientId) ?? 'en',
+            options.data ?? undefined,
+          ),
         body: options.body,
         data: options.data ?? null,
         isRead: evaluation.markRead,
@@ -523,11 +537,11 @@ export class NotificationsService implements OnModuleInit {
     });
 
     if (!device) {
-      throw new NotFoundException('Device not found');
+      throw new NotFoundException(bStatic('errors.auto.backend.kb9114e95e7f7'));
     }
 
     if (device.userId !== userId) {
-      throw new ForbiddenException('Cannot remove device for another user');
+      throw new ForbiddenException(bStatic('errors.auto.backend.k1fb64cef4251'));
     }
 
     await this.pushDeviceRepository.remove(device);
@@ -542,7 +556,7 @@ export class NotificationsService implements OnModuleInit {
     });
 
     if (!message) {
-      throw new NotFoundException('Notification not found');
+      throw new NotFoundException(bStatic('errors.auto.backend.k4ada2ba4114f'));
     }
 
     return message;
@@ -745,6 +759,26 @@ export class NotificationsService implements OnModuleInit {
 
     prefs.forEach((pref) => {
       map.set(pref.userId, pref);
+    });
+
+    return map;
+  }
+
+  private async loadRecipientLanguages(
+    userIds: number[],
+  ): Promise<Map<number, string>> {
+    const map = new Map<number, string>();
+    if (userIds.length === 0) {
+      return map;
+    }
+
+    const users = await this.userRepository.find({
+      where: { id: In(userIds) },
+      select: ['id', 'preferredLanguage', 'language'],
+    });
+
+    users.forEach((user) => {
+      map.set(user.id, user.preferredLanguage || user.language || 'en');
     });
 
     return map;

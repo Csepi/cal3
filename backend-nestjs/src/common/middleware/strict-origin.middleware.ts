@@ -10,6 +10,8 @@ import {
   resolveAllowedOrigins,
 } from '../security/security.config';
 
+import { bStatic } from '../../i18n/runtime';
+
 const MUTATING_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
 
 @Injectable()
@@ -38,7 +40,7 @@ export class StrictOriginMiddleware implements NestMiddleware {
       this.logger.warn(
         `Blocked mutating request from disallowed origin ${originHeader} (${req.method} ${req.originalUrl ?? req.url})`,
       );
-      next(new ForbiddenException('Origin not allowed'));
+      next(new ForbiddenException(bStatic('errors.auto.backend.k9d020e8e8211')));
       return;
     }
 

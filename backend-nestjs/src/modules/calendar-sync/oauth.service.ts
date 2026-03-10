@@ -10,6 +10,8 @@ import { ConfigurationService } from '../../configuration/configuration.service'
 import { logError } from '../../common/errors/error-logger';
 import { buildErrorContext } from '../../common/errors/error-context';
 
+import { bStatic } from '../../i18n/runtime';
+
 type TokenExchangeResult = {
   accessToken: string;
   refreshToken?: string | null;
@@ -75,7 +77,7 @@ export class CalendarSyncOAuthService {
       );
     }
 
-    throw new BadRequestException('Unsupported provider');
+    throw new BadRequestException(bStatic('errors.auto.backend.kffd03e839f30'));
   }
 
   async handleOAuthCallback(
@@ -207,7 +209,7 @@ export class CalendarSyncOAuthService {
         this.logger.warn(
           `[exchangeCodeForTokens] Google - User info fetch failed: ${userInfoResponse.status} - ${errorText}`,
         );
-        throw new BadRequestException('Google user info fetch failed');
+        throw new BadRequestException(bStatic('errors.auto.backend.kb0b9d3606854'));
       }
 
       const userInfo = await userInfoResponse.json();
@@ -273,7 +275,7 @@ export class CalendarSyncOAuthService {
         this.logger.warn(
           `[exchangeCodeForTokens] Microsoft - User info fetch failed: ${userInfoResponse.status} - ${errorText}`,
         );
-        throw new BadRequestException('Microsoft user info fetch failed');
+        throw new BadRequestException(bStatic('errors.auto.backend.k17d71387d1d4'));
       }
 
       const userInfo = await userInfoResponse.json();
@@ -288,6 +290,6 @@ export class CalendarSyncOAuthService {
       };
     }
 
-    throw new BadRequestException('Unsupported provider');
+    throw new BadRequestException(bStatic('errors.auto.backend.kffd03e839f30'));
   }
 }

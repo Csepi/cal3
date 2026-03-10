@@ -12,6 +12,8 @@ import {
 } from '../decorators/skip-idempotency.decorator';
 import { IdempotencyService } from '../services/idempotency.service';
 
+import { bStatic } from '../../i18n/runtime';
+
 const MUTATING_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
 
 type IdempotentRequest = {
@@ -89,7 +91,7 @@ export class IdempotencyInterceptor implements NestInterceptor {
     const key = this.extractIdempotencyKey(request);
     if (!key && this.strictMode) {
       throw new BadRequestException(
-        'Missing Idempotency-Key header for mutating endpoint.',
+        bStatic('errors.auto.backend.ka9b53864b9d1'),
       );
     }
 

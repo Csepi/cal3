@@ -10,6 +10,8 @@ import { Card, CardHeader, Button } from '../ui';
 import { loadAdminData, formatAdminError, adminApiCall } from './adminApiService';
 import type { Calendar } from './types';
 
+import { tStatic } from '../../i18n';
+
 export interface AdminCalendarPanelProps {
   /** Current theme color for styling */
   themeColor?: string;
@@ -51,7 +53,7 @@ export const AdminCalendarPanel: React.FC<AdminCalendarPanelProps> = ({
    * Delete a calendar
    */
   const deleteCalendar = async (calendarId: number) => {
-    if (!confirm('Are you sure you want to delete this calendar? This action cannot be undone.')) {
+    if (!confirm(tStatic('common:auto.frontend.ka99d34ad8a92'))) {
       return;
     }
 
@@ -93,7 +95,7 @@ export const AdminCalendarPanel: React.FC<AdminCalendarPanelProps> = ({
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
                 <span>📅</span>
-                <h2 className="text-xl font-bold text-gray-800">Calendar Management</h2>
+                <h2 className="text-xl font-bold text-gray-800">{tStatic('common:auto.frontend.k7c6b9e95c532')}</h2>
               </div>
               <Button
                 variant="outline"
@@ -124,7 +126,7 @@ export const AdminCalendarPanel: React.FC<AdminCalendarPanelProps> = ({
         {loading && calendars.length === 0 && (
           <div className="text-center py-12">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading calendars...</p>
+            <p className="text-gray-600">{tStatic('common:auto.frontend.kafbb957bc6ef')}</p>
           </div>
         )}
 
@@ -148,7 +150,7 @@ export const AdminCalendarPanel: React.FC<AdminCalendarPanelProps> = ({
                       <div>
                         <h3 className="font-medium text-gray-900">{calendar.name}</h3>
                         <p className="text-sm text-gray-500">
-                          Owner: {calendar.owner?.firstName} {calendar.owner?.lastName} ({calendar.owner?.username})
+                          {tStatic('common:auto.frontend.k719379ae1580')}{calendar.owner?.firstName} {calendar.owner?.lastName} ({calendar.owner?.username})
                         </p>
                         {calendar.description && (
                           <p className="text-xs text-gray-400 mt-1">{calendar.description}</p>
@@ -157,7 +159,7 @@ export const AdminCalendarPanel: React.FC<AdminCalendarPanelProps> = ({
                     </div>
                     <div className="flex items-center space-x-2">
                       <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full">
-                        ID: {calendar.id}
+                        {tStatic('common:auto.frontend.kd789a1e992ad')}{calendar.id}
                       </span>
                       <Button
                         variant="outline"
@@ -165,8 +167,7 @@ export const AdminCalendarPanel: React.FC<AdminCalendarPanelProps> = ({
                         onClick={() => deleteCalendar(calendar.id)}
                         className="text-red-600 border-red-300 hover:bg-red-50"
                       >
-                        Delete
-                      </Button>
+                        {tStatic('common:auto.frontend.kf6fdbe48dc54')}</Button>
                     </div>
                   </div>
                 </div>
@@ -179,14 +180,13 @@ export const AdminCalendarPanel: React.FC<AdminCalendarPanelProps> = ({
         {!loading && calendars.length === 0 && !error && (
           <div className="text-center py-12">
             <div className="text-gray-400 text-4xl mb-4">📅</div>
-            <p className="text-gray-600 mb-4">No calendars found</p>
+            <p className="text-gray-600 mb-4">{tStatic('common:auto.frontend.k30390f456845')}</p>
             <Button
               variant="primary"
               onClick={loadCalendars}
               themeColor={themeColor}
             >
-              Refresh
-            </Button>
+              {tStatic('common:auto.frontend.k56e3badc4e6c')}</Button>
           </div>
         )}
       </Card>

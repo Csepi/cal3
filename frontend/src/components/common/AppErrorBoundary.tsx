@@ -2,6 +2,8 @@ import React from 'react';
 import ErrorBox from './ErrorBox';
 import { errorReportingService } from '../../services/errorReportingService';
 
+import { tStatic } from '../../i18n';
+
 interface AppErrorBoundaryProps {
   children: React.ReactNode;
   fallbackTitle?: string;
@@ -75,8 +77,7 @@ export class AppErrorBoundary extends React.Component<
               onClick={this.handleReload}
               className="inline-flex items-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
             >
-              Reload application
-            </button>
+              {tStatic('common:auto.frontend.kf2e51592c94f')}</button>
           </div>
         </div>
       </div>

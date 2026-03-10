@@ -5,6 +5,8 @@ import { TaskLabel } from '../entities/task-label.entity';
 import { CreateTaskLabelDto } from './dto/create-task-label.dto';
 import { UpdateTaskLabelDto } from './dto/update-task-label.dto';
 
+import { bStatic } from '../i18n/runtime';
+
 @Injectable()
 export class TaskLabelsService {
   constructor(
@@ -34,7 +36,7 @@ export class TaskLabelsService {
       relations: ['tasks'],
     });
     if (!label) {
-      throw new NotFoundException('Label not found');
+      throw new NotFoundException(bStatic('errors.auto.backend.k08875c8fe2ce'));
     }
     return label;
   }

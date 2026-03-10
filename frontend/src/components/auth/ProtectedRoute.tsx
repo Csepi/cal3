@@ -15,6 +15,8 @@
 import React, { useEffect, useState } from 'react';
 import { authErrorHandler } from '../../services/authErrorHandler';
 
+import { tStatic } from '../../i18n';
+
 interface ProtectedRouteProps {
   children: React.ReactNode;
   requireAuth?: boolean; // Default true
@@ -28,7 +30,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     <div className="flex items-center justify-center min-h-screen bg-gray-50">
       <div className="text-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-        <p className="text-gray-600">Verifying authentication...</p>
+        <p className="text-gray-600">{tStatic('common:auto.frontend.kaef26a464c9b')}</p>
       </div>
     </div>
   ),

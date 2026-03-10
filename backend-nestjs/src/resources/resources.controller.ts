@@ -22,6 +22,8 @@ import { RequireResourceAccess } from '../common/decorators/require-resource-acc
 import type { RequestWithUser } from '../common/types/request-with-user';
 import { ResourceListQueryDto } from './dto/resource.query.dto';
 
+import { bStatic } from '../i18n/runtime';
+
 @Controller('resources')
 @UseGuards(JwtAuthGuard)
 export class ResourcesController {
@@ -91,7 +93,7 @@ export class ResourcesController {
   @Delete(':id')
   async remove(@Param('id', ParseIntPipe) id: number) {
     await this.resourcesService.remove(id);
-    return { message: 'Resource deleted successfully' };
+    return { message: bStatic('errors.auto.backend.kd9527bb7ed14') };
   }
 
   // === Phase 2: Cascade deletion and token management ===
@@ -181,7 +183,7 @@ export class ResourcesController {
       resourceName: resource.name,
       publicBookingToken: newToken,
       publicBookingUrl: `${this.configurationService.getFrontendBaseUrl()}/public-booking/${newToken}`,
-      message: 'Public booking token regenerated successfully',
+      message: bStatic('errors.auto.backend.k2a77d88a054d'),
     };
   }
 }

@@ -6,6 +6,8 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '../../ui';
 import type { User, MemberWithRole } from '../types';
 
+import { tStatic } from '../../../i18n';
+
 export interface RoleAssignmentModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -43,7 +45,7 @@ export const RoleAssignmentModal: React.FC<RoleAssignmentModalProps> = ({
 
   const handleSubmit = async () => {
     if (!selectedUserId) {
-      setError('Please select a user');
+      setError(tStatic('common:auto.frontend.k4bb9782bc031'));
       return;
     }
 
@@ -63,7 +65,7 @@ export const RoleAssignmentModal: React.FC<RoleAssignmentModalProps> = ({
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Assign User to Organization</h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">{tStatic('common:auto.frontend.ka674b3abc49c')}</h3>
 
         {error && (
           <div className="mb-4 bg-red-50 border border-red-200 rounded-lg p-3">
@@ -75,15 +77,14 @@ export const RoleAssignmentModal: React.FC<RoleAssignmentModalProps> = ({
           {/* User Selection */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Select User *
-            </label>
+              {tStatic('common:auto.frontend.k00311eec184f')}</label>
             <select
               value={selectedUserId || ''}
               onChange={(e) => setSelectedUserId(Number(e.target.value))}
               className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
               disabled={loading}
             >
-              <option value="">-- Select a user --</option>
+              <option value="">{tStatic('common:auto.frontend.k48ff73f37ba0')}</option>
               {availableForAssignment.map(user => (
                 <option key={user.id} value={user.id}>
                   {user.username} ({user.email})
@@ -91,24 +92,23 @@ export const RoleAssignmentModal: React.FC<RoleAssignmentModalProps> = ({
               ))}
             </select>
             {availableForAssignment.length === 0 && (
-              <p className="text-sm text-gray-500 mt-1">All users are already members of this organization</p>
+              <p className="text-sm text-gray-500 mt-1">{tStatic('common:auto.frontend.k64dc2c947e6b')}</p>
             )}
           </div>
 
           {/* Role Selection */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Role *
-            </label>
+              {tStatic('common:auto.frontend.k9861a735d776')}</label>
             <select
               value={selectedRole}
               onChange={(e) => setSelectedRole(e.target.value as 'admin' | 'editor' | 'user')}
               className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
               disabled={loading}
             >
-              <option value="user">User - Standard access</option>
-              <option value="editor">Editor - Can modify organization content</option>
-              <option value="admin">Admin - Full organization management</option>
+              <option value="user">{tStatic('common:auto.frontend.kbc0b059e211d')}</option>
+              <option value="editor">{tStatic('common:auto.frontend.kcee2e77d82bd')}</option>
+              <option value="admin">{tStatic('common:auto.frontend.k484c3c667836')}</option>
             </select>
           </div>
 
@@ -128,8 +128,7 @@ export const RoleAssignmentModal: React.FC<RoleAssignmentModalProps> = ({
             disabled={loading}
             className="bg-gray-300 hover:bg-gray-400 text-gray-700"
           >
-            Cancel
-          </Button>
+            {tStatic('common:auto.frontend.k77dfd2135f4d')}</Button>
           <Button
             onClick={handleSubmit}
             disabled={loading || !selectedUserId || availableForAssignment.length === 0}

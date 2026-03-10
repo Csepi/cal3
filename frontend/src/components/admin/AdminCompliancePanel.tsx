@@ -13,6 +13,8 @@ import type {
   DataSubjectRequestItem,
 } from './types';
 
+import { tStatic } from '../../i18n';
+
 interface AdminCompliancePanelProps {
   isActive?: boolean;
   themeColor?: string;
@@ -181,12 +183,9 @@ export const AdminCompliancePanel: React.FC<AdminCompliancePanelProps> = ({
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <h2 className="text-2xl font-semibold text-slate-900">
-              Compliance Command Center
-            </h2>
+              {tStatic('common:auto.frontend.kaf16df2c74f2')}</h2>
             <p className="text-sm text-slate-600">
-              GDPR, SOC 2, ISO 27001, and ASVS controls with live evidence from
-              production telemetry.
-            </p>
+              {tStatic('common:auto.frontend.kfc8231a6fe20')}</p>
           </div>
           <div className="flex gap-2">
             <button
@@ -194,22 +193,19 @@ export const AdminCompliancePanel: React.FC<AdminCompliancePanelProps> = ({
               onClick={() => void loadAll()}
               className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50"
             >
-              Refresh
-            </button>
+              {tStatic('common:auto.frontend.k56e3badc4e6c')}</button>
             <button
               type="button"
               onClick={() => void handleAuditExport('json')}
               className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50"
             >
-              Export JSON
-            </button>
+              {tStatic('common:auto.frontend.kbc399052d420')}</button>
             <button
               type="button"
               onClick={() => void handleAuditExport('csv')}
               className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50"
             >
-              Export CSV
-            </button>
+              {tStatic('common:auto.frontend.k5755f9ac0aa1')}</button>
           </div>
         </div>
         {error && (
@@ -227,8 +223,7 @@ export const AdminCompliancePanel: React.FC<AdminCompliancePanelProps> = ({
       <div className="grid gap-4 border-b border-slate-200 bg-gradient-to-r from-slate-50 to-white px-6 py-4 md:grid-cols-2 xl:grid-cols-4">
         <article className="rounded-xl border border-slate-200 bg-white p-4">
           <p className="text-xs uppercase tracking-wide text-slate-500">
-            MFA Coverage
-          </p>
+            {tStatic('common:auto.frontend.k4b2fd92536a6')}</p>
           <p className="mt-1 text-2xl font-semibold text-slate-900">
             {mfaCoverage
               ? `${Math.round(mfaCoverage.ratio * 100)}%`
@@ -244,8 +239,7 @@ export const AdminCompliancePanel: React.FC<AdminCompliancePanelProps> = ({
         </article>
         <article className="rounded-xl border border-slate-200 bg-white p-4">
           <p className="text-xs uppercase tracking-wide text-slate-500">
-            Privacy Acceptance
-          </p>
+            {tStatic('common:auto.frontend.k1f23ac61f226')}</p>
           <p className="mt-1 text-2xl font-semibold text-slate-900">
             {consentCoverage
               ? `${Math.round(consentCoverage.ratio * 100)}%`
@@ -261,32 +255,29 @@ export const AdminCompliancePanel: React.FC<AdminCompliancePanelProps> = ({
         </article>
         <article className="rounded-xl border border-slate-200 bg-white p-4">
           <p className="text-xs uppercase tracking-wide text-slate-500">
-            DSR Queue
-          </p>
+            {tStatic('common:auto.frontend.k1fa47a742f82')}</p>
           <p className="mt-1 text-2xl font-semibold text-slate-900">
             {pendingRequestCount}
           </p>
-          <p className="text-xs text-slate-500">{requestCount} total tracked</p>
+          <p className="text-xs text-slate-500">{requestCount} {tStatic('common:auto.frontend.k4b9c5f16461c')}</p>
         </article>
         <article className="rounded-xl border border-slate-200 bg-white p-4">
           <p className="text-xs uppercase tracking-wide text-slate-500">
-            Access Drift
-          </p>
+            {tStatic('common:auto.frontend.k67259e752394')}</p>
           <p className="mt-1 text-2xl font-semibold text-slate-900">
             {staleCount}
           </p>
           <p className="text-xs text-slate-500">
-            stale accounts; top error {topErrorCode?.code ?? 'n/a'}
+            {tStatic('common:auto.frontend.k3be898f9775f')}{topErrorCode?.code ?? 'n/a'}
           </p>
         </article>
       </div>
 
       <div className="grid gap-4 border-b border-slate-200 px-6 py-5 xl:grid-cols-[2fr_1fr]">
         <section className="rounded-2xl border border-slate-200 bg-slate-50/60 p-4">
-          <h3 className="text-sm font-semibold text-slate-800">Control Matrix</h3>
+          <h3 className="text-sm font-semibold text-slate-800">{tStatic('common:auto.frontend.k579efc8a8e78')}</h3>
           <p className="mt-1 text-xs text-slate-500">
-            Automated control checks mapped to compliance frameworks.
-          </p>
+            {tStatic('common:auto.frontend.k6f2cf10d5e6b')}</p>
           <div className="mt-3 space-y-2">
             {(dashboard?.controls ?? []).map((control) => (
               <article
@@ -310,36 +301,34 @@ export const AdminCompliancePanel: React.FC<AdminCompliancePanelProps> = ({
                 </div>
                 <p className="mt-1 text-xs text-slate-600">{control.detail}</p>
                 <p className="mt-1 font-mono text-[11px] text-slate-500">
-                  evidence: {control.evidence}
+                  {tStatic('common:auto.frontend.kb934ed78d338')}{control.evidence}
                 </p>
               </article>
             ))}
             {!loading && (dashboard?.controls.length ?? 0) === 0 && (
-              <p className="text-sm text-slate-500">No controls returned yet.</p>
+              <p className="text-sm text-slate-500">{tStatic('common:auto.frontend.k886aff973bbd')}</p>
             )}
           </div>
         </section>
 
         <aside className="space-y-4">
           <section className="rounded-2xl border border-slate-200 bg-slate-50/60 p-4">
-            <h3 className="text-sm font-semibold text-slate-800">Retention</h3>
+            <h3 className="text-sm font-semibold text-slate-800">{tStatic('common:auto.frontend.kc7199d9e9593')}</h3>
             <div className="mt-2 space-y-1 text-xs text-slate-600">
               <p>
-                App logs: {dashboard?.settings.appLogRetentionDays ?? 'n/a'} days
-              </p>
+                {tStatic('common:auto.frontend.kee89f9707762')}{dashboard?.settings.appLogRetentionDays ?? 'n/a'} {tStatic('common:auto.frontend.k5548ae4f34cb')}</p>
               <p>
-                Audit logs: {dashboard?.settings.auditRetentionDays ?? 'n/a'} days
-              </p>
+                {tStatic('common:auto.frontend.k88bb2f3c8fa4')}{dashboard?.settings.auditRetentionDays ?? 'n/a'} {tStatic('common:auto.frontend.k5548ae4f34cb')}</p>
             </div>
           </section>
           <section className="rounded-2xl border border-slate-200 bg-slate-50/60 p-4">
-            <h3 className="text-sm font-semibold text-slate-800">Critical Errors</h3>
+            <h3 className="text-sm font-semibold text-slate-800">{tStatic('common:auto.frontend.kf4f2c9bf780e')}</h3>
             <div className="mt-2 space-y-1 text-xs text-slate-600">
               <p>
-                Last 24h: {dashboard?.summary.errorSummary.criticalCount ?? 'n/a'}
+                {tStatic('common:auto.frontend.k6ea1f001e6f2')}{dashboard?.summary.errorSummary.criticalCount ?? 'n/a'}
               </p>
               <p>
-                Failures: {dashboard?.summary.errorSummary.failureCount ?? 'n/a'}
+                {tStatic('common:auto.frontend.k13928441cadb')}{dashboard?.summary.errorSummary.failureCount ?? 'n/a'}
               </p>
             </div>
           </section>
@@ -350,8 +339,7 @@ export const AdminCompliancePanel: React.FC<AdminCompliancePanelProps> = ({
         <section className="rounded-2xl border border-slate-200 bg-white p-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <h3 className="text-sm font-semibold text-slate-900">
-              Data Subject Requests
-            </h3>
+              {tStatic('common:auto.frontend.k4bb1b5d90977')}</h3>
             <div className="flex flex-wrap gap-2">
               {STATUS_OPTIONS.map((status) => (
                 <button
@@ -392,7 +380,7 @@ export const AdminCompliancePanel: React.FC<AdminCompliancePanelProps> = ({
               type="text"
               value={search}
               onChange={(event) => setSearch(event.target.value)}
-              placeholder="Search reason/notes"
+              placeholder={tStatic('common:auto.frontend.ke2813534065b')}
               className="ml-auto rounded-lg border border-slate-300 px-3 py-1.5 text-xs"
             />
             <button
@@ -401,19 +389,18 @@ export const AdminCompliancePanel: React.FC<AdminCompliancePanelProps> = ({
               className="rounded-lg px-3 py-1.5 text-xs font-semibold text-white"
               style={{ backgroundColor: themeColor }}
             >
-              Apply
-            </button>
+              {tStatic('common:auto.frontend.kcfea419c3b4e')}</button>
           </div>
           <div className="mt-3 max-h-[480px] overflow-auto">
             <table className="min-w-full text-left text-xs">
               <thead className="sticky top-0 bg-slate-100 text-slate-600">
                 <tr>
-                  <th className="px-3 py-2 font-semibold">ID</th>
-                  <th className="px-3 py-2 font-semibold">Type</th>
-                  <th className="px-3 py-2 font-semibold">Status</th>
-                  <th className="px-3 py-2 font-semibold">Created</th>
-                  <th className="px-3 py-2 font-semibold">Reason</th>
-                  <th className="px-3 py-2 font-semibold">Actions</th>
+                  <th className="px-3 py-2 font-semibold">{tStatic('common:auto.frontend.k89f89c02cf47')}</th>
+                  <th className="px-3 py-2 font-semibold">{tStatic('common:auto.frontend.k3deb74565196')}</th>
+                  <th className="px-3 py-2 font-semibold">{tStatic('common:auto.frontend.kbae7d5be7082')}</th>
+                  <th className="px-3 py-2 font-semibold">{tStatic('common:auto.frontend.kaccf40c89baa')}</th>
+                  <th className="px-3 py-2 font-semibold">{tStatic('common:auto.frontend.kf219cc0614ae')}</th>
+                  <th className="px-3 py-2 font-semibold">{tStatic('common:auto.frontend.kc3cd636a585b')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -447,8 +434,7 @@ export const AdminCompliancePanel: React.FC<AdminCompliancePanelProps> = ({
                             }
                             className="rounded border border-slate-300 px-2 py-1 text-[11px] text-slate-700 hover:bg-slate-50 disabled:opacity-50"
                           >
-                            In Progress
-                          </button>
+                            {tStatic('common:auto.frontend.kf61eadaf153a')}</button>
                         )}
                         {request.status !== 'completed' && (
                           <button
@@ -459,8 +445,7 @@ export const AdminCompliancePanel: React.FC<AdminCompliancePanelProps> = ({
                             }
                             className="rounded border border-emerald-300 px-2 py-1 text-[11px] text-emerald-700 hover:bg-emerald-50 disabled:opacity-50"
                           >
-                            Complete
-                          </button>
+                            {tStatic('common:auto.frontend.k1f5a1abf2f08')}</button>
                         )}
                         {request.status !== 'rejected' && (
                           <button
@@ -471,8 +456,7 @@ export const AdminCompliancePanel: React.FC<AdminCompliancePanelProps> = ({
                             }
                             className="rounded border border-rose-300 px-2 py-1 text-[11px] text-rose-700 hover:bg-rose-50 disabled:opacity-50"
                           >
-                            Reject
-                          </button>
+                            {tStatic('common:auto.frontend.k2b03b59293b6')}</button>
                         )}
                       </div>
                     </td>
@@ -481,8 +465,7 @@ export const AdminCompliancePanel: React.FC<AdminCompliancePanelProps> = ({
                 {!loading && requests.length === 0 && (
                   <tr>
                     <td colSpan={6} className="px-3 py-8 text-center text-slate-500">
-                      No requests found for current filter set.
-                    </td>
+                      {tStatic('common:auto.frontend.k543cd56ffa8f')}</td>
                   </tr>
                 )}
               </tbody>
@@ -491,31 +474,27 @@ export const AdminCompliancePanel: React.FC<AdminCompliancePanelProps> = ({
         </section>
 
         <section className="rounded-2xl border border-slate-200 bg-white p-4">
-          <h3 className="text-sm font-semibold text-slate-900">Access Review</h3>
+          <h3 className="text-sm font-semibold text-slate-900">{tStatic('common:auto.frontend.k9334cf926691')}</h3>
           <p className="mt-1 text-xs text-slate-500">
-            Privileged account posture and stale access candidates.
-          </p>
+            {tStatic('common:auto.frontend.k2a71660143ae')}</p>
           <div className="mt-3 space-y-3">
             <article className="rounded-xl border border-slate-200 bg-slate-50 p-3">
               <p className="text-xs uppercase tracking-wide text-slate-500">
-                Privileged accounts
-              </p>
+                {tStatic('common:auto.frontend.k3acd55c5f1c5')}</p>
               <p className="mt-1 text-xl font-semibold text-slate-900">
                 {accessReview?.privilegedAccounts.length ?? 'n/a'}
               </p>
             </article>
             <article className="rounded-xl border border-slate-200 bg-slate-50 p-3">
               <p className="text-xs uppercase tracking-wide text-slate-500">
-                Org admins
-              </p>
+                {tStatic('common:auto.frontend.kf959dc3ba2de')}</p>
               <p className="mt-1 text-xl font-semibold text-slate-900">
                 {accessReview?.organisationAdmins.length ?? 'n/a'}
               </p>
             </article>
             <article className="rounded-xl border border-slate-200 bg-slate-50 p-3">
               <p className="text-xs uppercase tracking-wide text-slate-500">
-                Stale access candidates
-              </p>
+                {tStatic('common:auto.frontend.k6af75f37e960')}</p>
               <p className="mt-1 text-xl font-semibold text-slate-900">
                 {staleCount}
               </p>
@@ -525,10 +504,10 @@ export const AdminCompliancePanel: React.FC<AdminCompliancePanelProps> = ({
             <table className="min-w-full text-left text-xs">
               <thead className="bg-slate-100 text-slate-600">
                 <tr>
-                  <th className="px-3 py-2 font-semibold">User</th>
-                  <th className="px-3 py-2 font-semibold">Role</th>
-                  <th className="px-3 py-2 font-semibold">MFA</th>
-                  <th className="px-3 py-2 font-semibold">Last Login</th>
+                  <th className="px-3 py-2 font-semibold">{tStatic('common:auto.frontend.k9f8a2389a20c')}</th>
+                  <th className="px-3 py-2 font-semibold">{tStatic('common:auto.frontend.kc3f104d13657')}</th>
+                  <th className="px-3 py-2 font-semibold">{tStatic('common:auto.frontend.k40faba968903')}</th>
+                  <th className="px-3 py-2 font-semibold">{tStatic('common:auto.frontend.k2df48ad223be')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -550,8 +529,7 @@ export const AdminCompliancePanel: React.FC<AdminCompliancePanelProps> = ({
                 {!loading && (accessReview?.staleAccessCandidates.length ?? 0) === 0 && (
                   <tr>
                     <td colSpan={4} className="px-3 py-6 text-center text-slate-500">
-                      No stale access candidates in current snapshot.
-                    </td>
+                      {tStatic('common:auto.frontend.k393e1532f2a8')}</td>
                   </tr>
                 )}
               </tbody>

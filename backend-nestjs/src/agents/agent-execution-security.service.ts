@@ -9,6 +9,8 @@ import { SecurityStoreService } from '../api-security/services/security-store.se
 import { AgentActionKey } from './agent-actions.registry';
 import { ThrottlerException } from '@nestjs/throttler';
 
+import { bStatic } from '../i18n/runtime';
+
 @Injectable()
 export class AgentExecutionSecurityService {
   private readonly maxPayloadBytes = this.readPositiveNumber(
@@ -83,7 +85,7 @@ export class AgentExecutionSecurityService {
   private assertPayloadSafe(parameters: Record<string, unknown>): void {
     const serialized = JSON.stringify(parameters ?? {});
     if (Buffer.byteLength(serialized, 'utf8') > this.maxPayloadBytes) {
-      throw new PayloadTooLargeException('Agent action payload is too large.');
+      throw new PayloadTooLargeException(bStatic('errors.auto.backend.k7dbe923cf672'));
     }
 
     this.scanForBlockedKeys(parameters);

@@ -7,6 +7,8 @@ import { SmartValuePicker } from '../SmartValuePicker';
 import { calendarApi } from '../../../services/calendarApi';
 import type { Calendar } from '../../../types/Calendar';
 
+import { tStatic } from '../../../i18n';
+
 interface ActionRowProps {
   action: ActionFormData;
   onUpdate: (updates: Partial<ActionFormData>) => void;
@@ -97,14 +99,13 @@ export const ActionRow: React.FC<ActionRowProps> = ({
   const renderAddEventTagForm = () => (
     <div className="space-y-2">
       <label className="block text-sm font-medium text-gray-700">
-        Tag(s) *
-      </label>
+        {tStatic('common:auto.frontend.k0652198a6a3f')}</label>
       <div className="flex flex-col gap-2 sm:flex-row sm:items-start">
         <input
           type="text"
           value={action.actionConfig?.tag || ''}
           onChange={(e) => handleConfigChange({ tag: e.target.value })}
-          placeholder="e.g., important, client"
+          placeholder={tStatic('common:auto.frontend.k8da1f3ac87ee')}
           className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
         <SmartValuePicker
@@ -113,8 +114,7 @@ export const ActionRow: React.FC<ActionRowProps> = ({
         />
       </div>
       <p className="text-xs text-gray-500">
-        Separate multiple tags with commas. Smart values are supported.
-      </p>
+        {tStatic('common:auto.frontend.k657267be1475')}</p>
     </div>
   );
 
@@ -122,7 +122,7 @@ export const ActionRow: React.FC<ActionRowProps> = ({
     <div className="space-y-4">
       <div>
         <div className="flex items-center justify-between mb-2">
-          <label className="block text-sm font-medium text-gray-700">Title</label>
+          <label className="block text-sm font-medium text-gray-700">{tStatic('common:auto.frontend.k768e0c1c6957')}</label>
           <SmartValuePicker
             triggerType={triggerType ?? null}
             onInsert={(value) => appendSmartValue('title', value)}
@@ -132,13 +132,13 @@ export const ActionRow: React.FC<ActionRowProps> = ({
           type="text"
           value={action.actionConfig?.title || ''}
           onChange={(e) => handleConfigChange({ title: e.target.value })}
-          placeholder="Reminder"
+          placeholder={tStatic('common:auto.frontend.kb87a1929f78b')}
           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
       </div>
       <div>
         <div className="flex items-center justify-between mb-2">
-          <label className="block text-sm font-medium text-gray-700">Message *</label>
+          <label className="block text-sm font-medium text-gray-700">{tStatic('common:auto.frontend.k8addb891254a')}</label>
           <SmartValuePicker
             triggerType={triggerType ?? null}
             onInsert={(value) => appendSmartValue('message', value)}
@@ -147,21 +147,21 @@ export const ActionRow: React.FC<ActionRowProps> = ({
         <textarea
           value={action.actionConfig?.message || ''}
           onChange={(e) => handleConfigChange({ message: e.target.value })}
-          placeholder="Don't forget to review the agenda before the meeting."
+          placeholder={tStatic('common:auto.frontend.k0bee800bf92c')}
           rows={3}
           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Priority</label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">{tStatic('common:auto.frontend.k886cbff9d9df')}</label>
         <select
           value={action.actionConfig?.priority || 'normal'}
           onChange={(e) => handleConfigChange({ priority: e.target.value })}
           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
-          <option value="low">Low</option>
-          <option value="normal">Normal</option>
-          <option value="high">High</option>
+          <option value="low">{tStatic('common:auto.frontend.ka124947cbd2d')}</option>
+          <option value="normal">{tStatic('common:auto.frontend.k45e118d0563e')}</option>
+          <option value="high">{tStatic('common:auto.frontend.kb1a5954a483f')}</option>
         </select>
       </div>
     </div>
@@ -171,7 +171,7 @@ export const ActionRow: React.FC<ActionRowProps> = ({
     <div className="space-y-4">
       <div>
         <div className="flex items-center justify-between mb-2">
-          <label className="block text-sm font-medium text-gray-700">New Title *</label>
+          <label className="block text-sm font-medium text-gray-700">{tStatic('common:auto.frontend.kb7e8513f7ceb')}</label>
           <SmartValuePicker
             triggerType={triggerType ?? null}
             onInsert={(value) => appendSmartValue('newTitle', value)}
@@ -181,20 +181,20 @@ export const ActionRow: React.FC<ActionRowProps> = ({
           type="text"
           value={action.actionConfig?.newTitle || ''}
           onChange={(e) => handleConfigChange({ newTitle: e.target.value })}
-          placeholder="[WORK] {{event.title}}"
+          placeholder={tStatic('common:auto.frontend.kab14207f1a32')}
           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Mode</label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">{tStatic('common:auto.frontend.ka7b93d2128e8')}</label>
         <select
           value={action.actionConfig?.mode || 'replace'}
           onChange={(e) => handleConfigChange({ mode: e.target.value })}
           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
-          <option value="replace">Replace</option>
-          <option value="append">Append</option>
-          <option value="prepend">Prepend</option>
+          <option value="replace">{tStatic('common:auto.frontend.ka7cf7b25a703')}</option>
+          <option value="append">{tStatic('common:auto.frontend.k6b3a602280be')}</option>
+          <option value="prepend">{tStatic('common:auto.frontend.k9d1c97452d9e')}</option>
         </select>
       </div>
     </div>
@@ -204,7 +204,7 @@ export const ActionRow: React.FC<ActionRowProps> = ({
     <div className="space-y-4">
       <div>
         <div className="flex items-center justify-between mb-2">
-          <label className="block text-sm font-medium text-gray-700">New Description *</label>
+          <label className="block text-sm font-medium text-gray-700">{tStatic('common:auto.frontend.kba4221b15791')}</label>
           <SmartValuePicker
             triggerType={triggerType ?? null}
             onInsert={(value) => appendSmartValue('newDescription', value, '\n')}
@@ -213,21 +213,21 @@ export const ActionRow: React.FC<ActionRowProps> = ({
         <textarea
           value={action.actionConfig?.newDescription || ''}
           onChange={(e) => handleConfigChange({ newDescription: e.target.value })}
-          placeholder="Add additional details here..."
+          placeholder={tStatic('common:auto.frontend.kd53809162ea7')}
           rows={4}
           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Mode</label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">{tStatic('common:auto.frontend.ka7b93d2128e8')}</label>
         <select
           value={action.actionConfig?.mode || 'replace'}
           onChange={(e) => handleConfigChange({ mode: e.target.value })}
           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
-          <option value="replace">Replace</option>
-          <option value="append">Append (adds below existing text)</option>
-          <option value="prepend">Prepend (adds above existing text)</option>
+          <option value="replace">{tStatic('common:auto.frontend.ka7cf7b25a703')}</option>
+          <option value="append">{tStatic('common:auto.frontend.k535817c4a13f')}</option>
+          <option value="prepend">{tStatic('common:auto.frontend.kec4218b7ddc7')}</option>
         </select>
       </div>
     </div>
@@ -235,13 +235,13 @@ export const ActionRow: React.FC<ActionRowProps> = ({
 
   const renderMoveToCalendarForm = () => (
     <div className="space-y-3">
-      <label className="block text-sm font-medium text-gray-700">Target Calendar *</label>
+      <label className="block text-sm font-medium text-gray-700">{tStatic('common:auto.frontend.kdb51e805dbc2')}</label>
       {calendarsLoading ? (
-        <p className="text-sm text-gray-500">Loading calendars...</p>
+        <p className="text-sm text-gray-500">{tStatic('common:auto.frontend.kafbb957bc6ef')}</p>
       ) : calendarError ? (
         <p className="text-sm text-red-600">{calendarError}</p>
       ) : calendars.length === 0 ? (
-        <p className="text-sm text-gray-500">No calendars available.</p>
+        <p className="text-sm text-gray-500">{tStatic('common:auto.frontend.kd177e41549a8')}</p>
       ) : (
         <select
           value={action.actionConfig?.targetCalendarId ?? ''}
@@ -258,7 +258,7 @@ export const ActionRow: React.FC<ActionRowProps> = ({
           }}
           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
-          <option value="">Select calendar...</option>
+          <option value="">{tStatic('common:auto.frontend.k40980074fc63')}</option>
           {calendars.map((calendar) => (
             <option key={calendar.id} value={calendar.id}>
               {calendar.name}
@@ -267,15 +267,14 @@ export const ActionRow: React.FC<ActionRowProps> = ({
         </select>
       )}
       <p className="text-xs text-gray-500">
-        Events are moved immediately to the selected calendar.
-      </p>
+        {tStatic('common:auto.frontend.kcb8943ab6b72')}</p>
     </div>
   );
 
   const renderCancelEventForm = () => (
     <div className="space-y-3">
       <div className="flex items-center justify-between mb-1">
-        <label className="block text-sm font-medium text-gray-700">Reason (optional)</label>
+        <label className="block text-sm font-medium text-gray-700">{tStatic('common:auto.frontend.kf6826f8fc9b4')}</label>
         <SmartValuePicker
           triggerType={triggerType ?? null}
           onInsert={(value) => appendSmartValue('reason', value)}
@@ -284,13 +283,12 @@ export const ActionRow: React.FC<ActionRowProps> = ({
       <textarea
         value={action.actionConfig?.reason || ''}
         onChange={(e) => handleConfigChange({ reason: e.target.value })}
-        placeholder="Provide additional context for the cancellation"
+        placeholder={tStatic('common:auto.frontend.k8b7e8ea70ec6')}
         rows={3}
         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
       />
       <p className="text-xs text-gray-500">
-        The reason will be stored with the event notes for audit purposes.
-      </p>
+        {tStatic('common:auto.frontend.k4eb653bfeb01')}</p>
     </div>
   );
 
@@ -298,7 +296,7 @@ export const ActionRow: React.FC<ActionRowProps> = ({
     <div className="space-y-4">
       <div>
         <div className="flex items-center justify-between mb-2">
-          <label className="block text-sm font-medium text-gray-700">Task Title *</label>
+          <label className="block text-sm font-medium text-gray-700">{tStatic('common:auto.frontend.kcf7812873df1')}</label>
           <SmartValuePicker
             triggerType={triggerType ?? null}
             onInsert={(value) => appendSmartValue('taskTitle', value)}
@@ -308,13 +306,13 @@ export const ActionRow: React.FC<ActionRowProps> = ({
           type="text"
           value={action.actionConfig?.taskTitle || ''}
           onChange={(e) => handleConfigChange({ taskTitle: e.target.value })}
-          placeholder="Prepare slides for {{event.title}}"
+          placeholder={tStatic('common:auto.frontend.k2754fb488bc3')}
           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
       </div>
       <div>
         <div className="flex items-center justify-between mb-2">
-          <label className="block text-sm font-medium text-gray-700">Task Description</label>
+          <label className="block text-sm font-medium text-gray-700">{tStatic('common:auto.frontend.kb2386426a37d')}</label>
           <SmartValuePicker
             triggerType={triggerType ?? null}
             onInsert={(value) => appendSmartValue('taskDescription', value, '\n')}
@@ -323,15 +321,14 @@ export const ActionRow: React.FC<ActionRowProps> = ({
         <textarea
           value={action.actionConfig?.taskDescription || ''}
           onChange={(e) => handleConfigChange({ taskDescription: e.target.value })}
-          placeholder="List agenda topics, attach documents, etc."
+          placeholder={tStatic('common:auto.frontend.k07e0b7e519b0')}
           rows={3}
           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
       </div>
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
-          Due (minutes before event)
-        </label>
+          {tStatic('common:auto.frontend.kd18f0f94d2e3')}</label>
         <input
           type="number"
           min={0}
@@ -356,8 +353,7 @@ export const ActionRow: React.FC<ActionRowProps> = ({
           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
         <p className="text-xs text-gray-500">
-          Leave blank to skip a due time. Tasks are stored with the event for quick reference.
-        </p>
+          {tStatic('common:auto.frontend.k2663646b507b')}</p>
       </div>
     </div>
   );
@@ -366,8 +362,7 @@ export const ActionRow: React.FC<ActionRowProps> = ({
     <div className="space-y-4">
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
-          Webhook URL *
-        </label>
+          {tStatic('common:auto.frontend.k87e72bd1d316')}</label>
         <input
           type="url"
           value={action.actionConfig?.url || ''}
@@ -375,7 +370,7 @@ export const ActionRow: React.FC<ActionRowProps> = ({
           placeholder="https://example.com/webhook"
           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
         />
-        <p className="mt-1 text-xs text-gray-500">The HTTP/HTTPS endpoint to call.</p>
+        <p className="mt-1 text-xs text-gray-500">{tStatic('common:auto.frontend.k670df386d3af')}</p>
       </div>
       <div className="flex items-start gap-2">
         <input
@@ -386,16 +381,14 @@ export const ActionRow: React.FC<ActionRowProps> = ({
           className="mt-1 w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
         />
         <label htmlFor={`includeEventData-${action.tempId}`} className="text-sm text-gray-700 cursor-pointer">
-          <div className="font-medium">Include Event Data</div>
+          <div className="font-medium">{tStatic('common:auto.frontend.k0d9fd20dca2f')}</div>
           <div className="text-xs text-gray-500">
-            Send event details (title, time, description, etc.) in the webhook payload.
-          </div>
+            {tStatic('common:auto.frontend.ka51e4d96e5f9')}</div>
         </label>
       </div>
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
-          Custom Headers (JSON, optional)
-        </label>
+          {tStatic('common:auto.frontend.ka4dcc11e84e1')}</label>
         <textarea
           value={
             typeof action.actionConfig?.headers === 'object'
@@ -411,13 +404,12 @@ export const ActionRow: React.FC<ActionRowProps> = ({
               handleConfigChange({ headers: value });
             }
           }}
-          placeholder='{"Authorization": "Bearer token"}'
+          placeholder={tStatic('common:auto.frontend.k90b72e8a8ac1')}
           rows={3}
           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm font-mono"
         />
         <p className="mt-1 text-xs text-gray-500">
-          Optional custom HTTP headers as a JSON object.
-        </p>
+          {tStatic('common:auto.frontend.k7589d66bd0ec')}</p>
       </div>
     </div>
   );
@@ -430,8 +422,7 @@ export const ActionRow: React.FC<ActionRowProps> = ({
     if (!isSelectedActionAvailable) {
       return (
         <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg text-sm text-yellow-800">
-          This action is currently unavailable. Please choose another action type.
-        </div>
+          {tStatic('common:auto.frontend.k3e61a75bbce0')}</div>
       );
     }
 
@@ -463,8 +454,7 @@ export const ActionRow: React.FC<ActionRowProps> = ({
       default:
         return (
           <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg text-sm text-yellow-800">
-            This action type is not recognized.
-          </div>
+            {tStatic('common:auto.frontend.k6bd9babb0ca9')}</div>
         );
     }
   };
@@ -476,7 +466,7 @@ export const ActionRow: React.FC<ActionRowProps> = ({
           <div
             {...dragHandleProps}
             className="flex-shrink-0 cursor-move text-gray-400 hover:text-gray-600"
-            title="Drag to reorder"
+            title={tStatic('common:auto.frontend.ke7541faf0a7e')}
           >
             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
               <path d="M9 3C9 2.44772 9.44772 2 10 2C10.5523 2 11 2.44772 11 3V21C11 21.5523 10.5523 22 10 22C9.44772 22 9 21.5523 9 21V3ZM13 3C13 2.44772 13.4477 2 14 2C14.5523 2 15 2.44772 15 3V21C15 21.5523 14.5523 22 14 22C13.4477 22 13 21.5523 13 21V3Z" />
@@ -490,7 +480,7 @@ export const ActionRow: React.FC<ActionRowProps> = ({
             onChange={handleActionTypeChange}
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm font-medium"
           >
-            <option value="">Select action...</option>
+            <option value="">{tStatic('common:auto.frontend.kcaa5e5b1c7cb')}</option>
             {actionTypes.map((actionType) => (
               <option
                 key={actionType.value}
@@ -510,7 +500,7 @@ export const ActionRow: React.FC<ActionRowProps> = ({
           <button
             onClick={onDelete}
             className="flex-shrink-0 p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded transition-colors"
-            title="Remove action"
+            title={tStatic('common:auto.frontend.ke115f4aa51d4')}
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -523,14 +513,13 @@ export const ActionRow: React.FC<ActionRowProps> = ({
         <div className="p-4 space-y-4">{renderActionForm()}</div>
       ) : (
         <div className="p-4">
-          <p className="text-sm text-gray-500 text-center">Select an action type above</p>
+          <p className="text-sm text-gray-500 text-center">{tStatic('common:auto.frontend.kc102d520ea02')}</p>
         </div>
       )}
 
       <div className="p-3 bg-gray-50 border-t border-gray-200 rounded-b-lg">
         <p className="text-xs text-gray-500">
-          Actions run sequentially. If an action updates the event, later actions will use the updated values.
-        </p>
+          {tStatic('common:auto.frontend.k1502da18cfab')}</p>
       </div>
     </div>
   );

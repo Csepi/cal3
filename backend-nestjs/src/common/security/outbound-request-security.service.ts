@@ -7,6 +7,8 @@ import { createHmac } from 'crypto';
 import { lookup } from 'dns/promises';
 import { isIP } from 'net';
 
+import { bStatic } from '../../i18n/runtime';
+
 export interface SecureOutboundRequestOptions {
   url: string;
   method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
@@ -97,24 +99,24 @@ export class OutboundRequestSecurityService {
     try {
       parsed = new URL(rawUrl);
     } catch {
-      throw new BadRequestException('Outbound URL is invalid.');
+      throw new BadRequestException(bStatic('errors.auto.backend.kb2a5738f8030'));
     }
 
     if (!['https:', 'http:'].includes(parsed.protocol)) {
       throw new ForbiddenException(
-        'Outbound URL must use http or https protocols.',
+        bStatic('errors.auto.backend.k4ffb224133b1'),
       );
     }
 
     if (parsed.protocol === 'http:' && !this.allowHttp) {
       throw new ForbiddenException(
-        'HTTP outbound requests are disabled. Use HTTPS endpoints.',
+        bStatic('errors.auto.backend.kc541e7425166'),
       );
     }
 
     if (parsed.username || parsed.password) {
       throw new ForbiddenException(
-        'Outbound URLs with embedded credentials are not allowed.',
+        bStatic('errors.auto.backend.k8d39d043e2ce'),
       );
     }
 
@@ -125,7 +127,7 @@ export class OutboundRequestSecurityService {
     const hostname = url.hostname.toLowerCase();
 
     if (hostname === 'localhost' || hostname.endsWith('.local')) {
-      throw new ForbiddenException('Local destinations are not allowed.');
+      throw new ForbiddenException(bStatic('errors.auto.backend.kbb06fc37b17e'));
     }
 
     if (this.allowedHostPatterns.length > 0) {

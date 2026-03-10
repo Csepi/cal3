@@ -11,6 +11,8 @@ import {
 } from '../../entities/reservation.entity';
 import { Resource } from '../../entities/resource.entity';
 
+import { bStatic } from '../../i18n/runtime';
+
 const ACTIVE_RESERVATION_STATUSES = [
   ReservationStatus.PENDING,
   ReservationStatus.CONFIRMED,
@@ -41,10 +43,10 @@ export class ReservationAvailabilityService {
     excludeReservationId?: number,
   ): Promise<number> {
     if (!(startTime instanceof Date) || Number.isNaN(startTime.getTime())) {
-      throw new InternalServerErrorException('Invalid start time provided');
+      throw new InternalServerErrorException(bStatic('errors.auto.backend.kf4303c696cec'));
     }
     if (!(endTime instanceof Date) || Number.isNaN(endTime.getTime())) {
-      throw new InternalServerErrorException('Invalid end time provided');
+      throw new InternalServerErrorException(bStatic('errors.auto.backend.k978289e77229'));
     }
 
     const qb = this.reservationRepository
@@ -81,19 +83,19 @@ export class ReservationAvailabilityService {
     excludeReservationId?: number,
   ): Promise<void> {
     if (!resource) {
-      throw new BadRequestException('Resource not found');
+      throw new BadRequestException(bStatic('errors.auto.backend.k2d1d4c2765a8'));
     }
 
     if (!resource.isActive) {
-      throw new BadRequestException('Resource is not active');
+      throw new BadRequestException(bStatic('errors.auto.backend.k90bb48f66fb2'));
     }
 
     if (requestedQuantity < 1) {
-      throw new BadRequestException('Quantity must be at least 1');
+      throw new BadRequestException(bStatic('errors.auto.backend.k1382d8917699'));
     }
 
     if (resource.capacity < 1) {
-      throw new BadRequestException('Resource capacity is not configured');
+      throw new BadRequestException(bStatic('errors.auto.backend.k46643489dc02'));
     }
 
     if (requestedQuantity > resource.capacity) {
@@ -103,7 +105,7 @@ export class ReservationAvailabilityService {
     }
 
     if (startTime >= endTime) {
-      throw new BadRequestException('End time must be after start time');
+      throw new BadRequestException(bStatic('errors.auto.backend.k468339327f19'));
     }
 
     const reservedQuantity = await this.getReservedQuantity(

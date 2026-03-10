@@ -8,6 +8,8 @@ import React, { memo, useCallback, useMemo } from 'react';
 import type { CalendarDayCellProps } from '../types';
 import { formatDate } from '../../../utils/calendar';
 
+import { tStatic } from '../../../i18n';
+
 export const CalendarDayCell = memo<CalendarDayCellProps>(({
   date,
   events,
@@ -194,8 +196,7 @@ export const CalendarDayCell = memo<CalendarDayCellProps>(({
         {/* More events indicator */}
         {hasMoreEvents && showEventCount && (
           <div className="text-xs text-gray-500 px-1 py-0.5">
-            +{events.length - maxVisibleEvents} more
-          </div>
+            +{events.length - maxVisibleEvents} {tStatic('common:auto.frontend.ke7c95b4c2824')}</div>
         )}
       </div>
 

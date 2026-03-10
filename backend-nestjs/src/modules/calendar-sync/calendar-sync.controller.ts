@@ -24,6 +24,8 @@ import {
   OAuthCallbackQueryDto,
 } from './dto/oauth-callback.query.dto';
 
+import { bStatic } from '../../i18n/runtime';
+
 @Controller('calendar-sync')
 export class CalendarSyncController {
   private readonly logger = new Logger(CalendarSyncController.name);
@@ -126,7 +128,7 @@ export class CalendarSyncController {
       this.logger.log(
         `[syncCalendars] Successfully synced calendars for user: ${req.user.id}`,
       );
-      return { message: 'Calendars synced successfully' };
+      return { message: bStatic('errors.auto.backend.kc908e7298efd') };
     } catch (error: unknown) {
       this.logger.error(
         `[syncCalendars] Error syncing calendars for user ${req.user.id}:`,
@@ -142,7 +144,7 @@ export class CalendarSyncController {
     @Request() req: RequestWithUser,
   ): Promise<{ message: string }> {
     await this.calendarSyncService.disconnect(req.user.id);
-    return { message: 'All calendar providers disconnected successfully' };
+    return { message: bStatic('errors.auto.backend.ke08d7fc99c29') };
   }
 
   @Post('disconnect/:provider')
@@ -168,7 +170,7 @@ export class CalendarSyncController {
     @Request() req: RequestWithUser,
   ): Promise<{ message: string }> {
     await this.calendarSyncService.forceSync(req.user.id);
-    return { message: 'Sync completed successfully' };
+    return { message: bStatic('errors.auto.backend.k03b6a36f2008') };
   }
 
   private resolveUserId(state?: string, userIdFromQuery?: number): number {
@@ -186,6 +188,6 @@ export class CalendarSyncController {
       return userIdFromQuery;
     }
 
-    throw new BadRequestException('Missing user context for OAuth callback');
+    throw new BadRequestException(bStatic('errors.auto.backend.kcfc1bb257f4e'));
   }
 }

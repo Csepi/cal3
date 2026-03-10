@@ -8,6 +8,8 @@ import { useSingleAuditLog } from '../../hooks/useAuditLogs';
 import { useAutomationMetadata } from '../../hooks/useAutomationMetadata';
 import { getStatusColor } from '../../services/automationService';
 
+import { tStatic } from '../../i18n';
+
 interface AuditLogDetailModalProps {
   logId: number;
   ruleId?: number;
@@ -59,7 +61,7 @@ export const AuditLogDetailModal: React.FC<AuditLogDetailModalProps> = ({
       <div className="bg-white rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
         <div className="p-6 border-b border-gray-200 flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-gray-900">Execution Details</h2>
+          <h2 className="text-2xl font-bold text-gray-900">{tStatic('common:auto.frontend.kaf5e075775bb')}</h2>
           <button onClick={onClose} className="text-gray-500 hover:text-gray-700 text-2xl">
             ×
           </button>
@@ -75,7 +77,7 @@ export const AuditLogDetailModal: React.FC<AuditLogDetailModalProps> = ({
                   className="inline-block w-8 h-8 border-4 border-gray-200 border-t-blue-500 rounded-full animate-spin"
                   style={{ borderTopColor: themeColor }}
                 />
-                <p className="mt-3 text-sm text-gray-600">Loading execution details...</p>
+                <p className="mt-3 text-sm text-gray-600">{tStatic('common:auto.frontend.kcda75660f888')}</p>
               </div>
             </div>
           )}
@@ -95,31 +97,31 @@ export const AuditLogDetailModal: React.FC<AuditLogDetailModalProps> = ({
                 <div className="flex items-center gap-3">
                   <span className="text-2xl">📊</span>
                   <div>
-                    <h3 className="font-semibold text-gray-900">Status</h3>
+                    <h3 className="font-semibold text-gray-900">{tStatic('common:auto.frontend.kbae7d5be7082')}</h3>
                     <div className="mt-1">{getStatusBadge()}</div>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4 mt-4">
                   <div>
-                    <p className="text-xs font-medium text-gray-600">Executed At</p>
+                    <p className="text-xs font-medium text-gray-600">{tStatic('common:auto.frontend.k189800ade71b')}</p>
                     <p className="text-sm text-gray-900 mt-1">
                       {new Date(log.executedAt).toLocaleString()}
                     </p>
                   </div>
                   <div>
-                    <p className="text-xs font-medium text-gray-600">Duration</p>
-                    <p className="text-sm text-gray-900 mt-1">{log.executionTimeMs}ms</p>
+                    <p className="text-xs font-medium text-gray-600">{tStatic('common:auto.frontend.k1370004da76f')}</p>
+                    <p className="text-sm text-gray-900 mt-1">{log.executionTimeMs}{tStatic('common:auto.frontend.k26cc3217be64')}</p>
                   </div>
                 </div>
 
                 {log.executedByUsername && (
                   <div>
-                    <p className="text-xs font-medium text-gray-600">Executed By</p>
+                    <p className="text-xs font-medium text-gray-600">{tStatic('common:auto.frontend.k9838a52fad53')}</p>
                     <p className="text-sm text-gray-900 mt-1">
                       {log.executedByUsername}
                       {log.executedByUserId && (
-                        <span className="text-gray-500"> (ID: {log.executedByUserId})</span>
+                        <span className="text-gray-500"> {tStatic('common:auto.frontend.k4c660d947eec')}{log.executedByUserId})</span>
                       )}
                     </p>
                   </div>
@@ -130,23 +132,22 @@ export const AuditLogDetailModal: React.FC<AuditLogDetailModalProps> = ({
               <div className="border-t border-gray-200 pt-6">
                 <div className="flex items-center gap-3 mb-3">
                   <span className="text-2xl">🎯</span>
-                  <h3 className="font-semibold text-gray-900">Trigger</h3>
+                  <h3 className="font-semibold text-gray-900">{tStatic('common:auto.frontend.kd3f06a581b2b')}</h3>
                 </div>
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                   <p className="text-sm">
-                    <strong>Type:</strong> {getTriggerTypeLabel(log.triggerType)}
+                    <strong>{tStatic('common:auto.frontend.kee3fb11d05c9')}</strong> {getTriggerTypeLabel(log.triggerType)}
                   </p>
                   {log.eventTitle && (
                     <p className="text-sm mt-2">
-                      <strong>Event:</strong> {log.eventTitle}
-                      {log.eventId && <span className="text-gray-600"> (ID: {log.eventId})</span>}
+                      <strong>{tStatic('common:auto.frontend.ke1d1873098d3')}</strong> {log.eventTitle}
+                      {log.eventId && <span className="text-gray-600"> {tStatic('common:auto.frontend.k4c660d947eec')}{log.eventId})</span>}
                     </p>
                   )}
                   {log.triggerContext && Object.keys(log.triggerContext).length > 0 && (
                     <details className="mt-2">
                       <summary className="text-sm font-medium cursor-pointer hover:text-blue-600">
-                        View trigger context
-                      </summary>
+                        {tStatic('common:auto.frontend.k6369c79c8b45')}</summary>
                       <pre className="mt-2 text-xs bg-white p-2 rounded border border-blue-200 overflow-x-auto">
                         {JSON.stringify(log.triggerContext, null, 2)}
                       </pre>
@@ -160,9 +161,8 @@ export const AuditLogDetailModal: React.FC<AuditLogDetailModalProps> = ({
                 <div className="flex items-center gap-3 mb-3">
                   <span className="text-2xl">✅</span>
                   <h3 className="font-semibold text-gray-900">
-                    Conditions ({log.conditionsResult.evaluations.filter((e) => e.passed).length}/
-                    {log.conditionsResult.evaluations.length} passed)
-                  </h3>
+                    {tStatic('common:auto.frontend.k5f838a2688fd')}{log.conditionsResult.evaluations.filter((e) => e.passed).length}/
+                    {log.conditionsResult.evaluations.length} {tStatic('common:auto.frontend.k1b3bc02a3f22')}</h3>
                 </div>
                 <div className="space-y-2">
                   {log.conditionsResult.evaluations.map((evaluation, index) => (
@@ -189,13 +189,13 @@ export const AuditLogDetailModal: React.FC<AuditLogDetailModalProps> = ({
                           </p>
                           <div className="mt-1 text-xs space-y-1">
                             <p>
-                              <strong>Expected:</strong>{' '}
+                              <strong>{tStatic('common:auto.frontend.k74576fed5c59')}</strong>{' '}
                               <code className="bg-white px-1 py-0.5 rounded">
                                 {evaluation.expectedValue}
                               </code>
                             </p>
                             <p>
-                              <strong>Actual:</strong>{' '}
+                              <strong>{tStatic('common:auto.frontend.k102e577fa021')}</strong>{' '}
                               <code className="bg-white px-1 py-0.5 rounded">
                                 {JSON.stringify(evaluation.actualValue)}
                               </code>
@@ -208,7 +208,7 @@ export const AuditLogDetailModal: React.FC<AuditLogDetailModalProps> = ({
                 </div>
                 {log.conditionsResult.logicExpression && (
                   <p className="mt-2 text-xs text-gray-600">
-                    Logic: {log.conditionsResult.logicExpression}
+                    {tStatic('common:auto.frontend.k76a492f90d95')}{log.conditionsResult.logicExpression}
                   </p>
                 )}
                 <div className={`mt-3 p-3 rounded-lg border ${
@@ -230,9 +230,8 @@ export const AuditLogDetailModal: React.FC<AuditLogDetailModalProps> = ({
                   <div className="flex items-center gap-3 mb-3">
                     <span className="text-2xl">⚡</span>
                     <h3 className="font-semibold text-gray-900">
-                      Actions ({log.actionResults.filter((a) => a.success).length}/
-                      {log.actionResults.length} successful)
-                    </h3>
+                      {tStatic('common:auto.frontend.kb0889f263e2e')}{log.actionResults.filter((a) => a.success).length}/
+                      {log.actionResults.length} {tStatic('common:auto.frontend.k1d0f31106247')}</h3>
                   </div>
                   <div className="space-y-2">
                     {log.actionResults.map((action, index) => (
@@ -252,14 +251,13 @@ export const AuditLogDetailModal: React.FC<AuditLogDetailModalProps> = ({
                             </p>
                             {action.error && (
                               <p className="mt-1 text-xs text-red-700">
-                                <strong>Error:</strong> {action.error}
+                                <strong>{tStatic('common:auto.frontend.k787aa1617c37')}</strong> {action.error}
                               </p>
                             )}
                             {action.data && Object.keys(action.data).length > 0 && (
                               <details className="mt-1">
                                 <summary className="text-xs font-medium cursor-pointer hover:text-blue-600">
-                                  View action data
-                                </summary>
+                                  {tStatic('common:auto.frontend.kebb835d8fea1')}</summary>
                                 <pre className="mt-1 text-xs bg-white p-2 rounded border overflow-x-auto">
                                   {JSON.stringify(action.data, null, 2)}
                                 </pre>
@@ -277,7 +275,7 @@ export const AuditLogDetailModal: React.FC<AuditLogDetailModalProps> = ({
               {log.errorMessage && (
                 <div className="border-t border-gray-200 pt-6">
                   <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-                    <p className="text-sm font-medium text-red-900">Error</p>
+                    <p className="text-sm font-medium text-red-900">{tStatic('common:auto.frontend.k7f2f6a15cf8d')}</p>
                     <p className="text-sm text-red-700 mt-1">{log.errorMessage}</p>
                   </div>
                 </div>
@@ -292,8 +290,7 @@ export const AuditLogDetailModal: React.FC<AuditLogDetailModalProps> = ({
             onClick={onClose}
             className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
           >
-            Close
-          </button>
+            {tStatic('common:auto.frontend.kbbfa773e5a63')}</button>
         </div>
       </div>
     </div>

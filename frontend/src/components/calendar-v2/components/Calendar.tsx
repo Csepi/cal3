@@ -19,6 +19,8 @@ import {
 } from '../../../utils/calendar';
 import { CALENDAR_THEMES } from '../types';
 
+import { tStatic } from '../../../i18n';
+
 export const Calendar = memo<CalendarContainerProps>(({
   currentDate,
   view,
@@ -168,7 +170,7 @@ export const Calendar = memo<CalendarContainerProps>(({
         <div className="flex items-center justify-center h-64">
           <div className="flex items-center space-x-2">
             <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
-            <span className="text-gray-600">Loading calendar...</span>
+            <span className="text-gray-600">{tStatic('common:auto.frontend.k7eb8f548ab10')}</span>
           </div>
         </div>
       );
@@ -178,7 +180,7 @@ export const Calendar = memo<CalendarContainerProps>(({
       return (
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
-            <div className="text-red-600 mb-2">⚠️ Error loading calendar</div>
+            <div className="text-red-600 mb-2">{tStatic('common:auto.frontend.k07f2acca97d3')}</div>
             <div className="text-gray-600 text-sm">{error}</div>
           </div>
         </div>
@@ -236,7 +238,7 @@ export const Calendar = memo<CalendarContainerProps>(({
       default:
         return (
           <div className="flex items-center justify-center h-64">
-            <div className="text-gray-600">Unsupported view: {state.view}</div>
+            <div className="text-gray-600">{tStatic('common:auto.frontend.kb8584ab0355d')}{state.view}</div>
           </div>
         );
     }
@@ -248,7 +250,7 @@ export const Calendar = memo<CalendarContainerProps>(({
       style={style}
       data-testid={testId}
       role="application"
-      aria-label="Calendar application"
+      aria-label={tStatic('common:auto.frontend.ka0b62e4fa88a')}
     >
       {/* Header */}
       {renderHeader()}
@@ -260,7 +262,7 @@ export const Calendar = memo<CalendarContainerProps>(({
           <div className="flex-shrink-0 w-64 border-r border-gray-200 bg-gray-50 overflow-y-auto">
             {typeof sidebar === 'boolean' ? (
               <div className="p-4">
-                <div className="text-sm text-gray-600">Sidebar content</div>
+                <div className="text-sm text-gray-600">{tStatic('common:auto.frontend.kaa7202506b5d')}</div>
               </div>
             ) : (
               sidebar
@@ -279,7 +281,7 @@ export const Calendar = memo<CalendarContainerProps>(({
         <div className="flex-shrink-0 border-t border-gray-200 bg-gray-50">
           {typeof footer === 'boolean' ? (
             <div className="p-4">
-              <div className="text-sm text-gray-600">Footer content</div>
+              <div className="text-sm text-gray-600">{tStatic('common:auto.frontend.kf39dcedec162')}</div>
             </div>
           ) : (
             footer

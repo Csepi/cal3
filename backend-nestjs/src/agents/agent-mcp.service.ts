@@ -26,6 +26,8 @@ import { Event } from '../entities/event.entity';
 import { AgentExecutionSecurityService } from './agent-execution-security.service';
 import { AuditTrailService } from '../logging/audit-trail.service';
 
+import { bStatic } from '../i18n/runtime';
+
 @Injectable()
 export class AgentMcpService {
   constructor(
@@ -250,7 +252,7 @@ export class AgentMcpService {
   ) {
     const calendarId = Number(parameters.calendarId);
     if (!calendarId || Number.isNaN(calendarId)) {
-      throw new BadRequestException('calendarId is required to read events.');
+      throw new BadRequestException(bStatic('errors.auto.backend.k9126fa26f78c'));
     }
 
     this.agentAuthorization.ensureCalendarAccess(
@@ -279,7 +281,7 @@ export class AgentMcpService {
     const eventInput = parameters.event;
     if (!eventInput || typeof eventInput !== 'object') {
       throw new BadRequestException(
-        'event payload is required to create an event.',
+        bStatic('errors.auto.backend.kf7ea3170a9e0'),
       );
     }
 
@@ -289,7 +291,7 @@ export class AgentMcpService {
     );
     if (!calendarId || Number.isNaN(calendarId)) {
       throw new BadRequestException(
-        'calendarId is required to create an event.',
+        bStatic('errors.auto.backend.k039f84b733cf'),
       );
     }
 
@@ -316,12 +318,12 @@ export class AgentMcpService {
         : null;
     const eventId = Number(parameters.eventId ?? parameters.id ?? eventRef?.id);
     if (!eventId || Number.isNaN(eventId)) {
-      throw new BadRequestException('eventId is required to update an event.');
+      throw new BadRequestException(bStatic('errors.auto.backend.k98160364b11e'));
     }
 
     const existing = await this.eventsService.findOne(eventId, context.user.id);
     if (!existing) {
-      throw new NotFoundException('Event not found.');
+      throw new NotFoundException(bStatic('errors.auto.backend.k0f7c1f48dc1b'));
     }
 
     this.agentAuthorization.ensureCalendarAccess(
@@ -335,7 +337,7 @@ export class AgentMcpService {
       const nextCalendarId = Number(updatePayload.calendarId);
       if (!nextCalendarId || Number.isNaN(nextCalendarId)) {
         throw new BadRequestException(
-          'calendarId must be a valid identifier when provided.',
+          bStatic('errors.auto.backend.k02563150667b'),
         );
       }
       this.agentAuthorization.ensureCalendarAccess(
@@ -365,12 +367,12 @@ export class AgentMcpService {
   ) {
     const eventId = Number(parameters.eventId ?? parameters.id);
     if (!eventId || Number.isNaN(eventId)) {
-      throw new BadRequestException('eventId is required to delete an event.');
+      throw new BadRequestException(bStatic('errors.auto.backend.k28879b5a11c4'));
     }
 
     const event = await this.eventsService.findOne(eventId, context.user.id);
     if (!event) {
-      throw new NotFoundException('Event not found.');
+      throw new NotFoundException(bStatic('errors.auto.backend.k0f7c1f48dc1b'));
     }
 
     this.agentAuthorization.ensureCalendarAccess(
@@ -436,7 +438,7 @@ export class AgentMcpService {
     const ruleId = Number(parameters.ruleId);
     if (!ruleId || Number.isNaN(ruleId)) {
       throw new BadRequestException(
-        'ruleId is required to trigger automation.',
+        bStatic('errors.auto.backend.k2fa197221fa6'),
       );
     }
 
@@ -508,7 +510,7 @@ export class AgentMcpService {
 
     const title = (parameters.title ?? '').toString().trim();
     if (!title) {
-      throw new BadRequestException('title is required to create a task.');
+      throw new BadRequestException(bStatic('errors.auto.backend.kba59f0402f6e'));
     }
 
     const payload: CreateTaskDto = {
@@ -573,14 +575,14 @@ export class AgentMcpService {
 
     const taskId = Number(parameters.taskId ?? parameters.id);
     if (!taskId || Number.isNaN(taskId)) {
-      throw new BadRequestException('taskId is required to update a task.');
+      throw new BadRequestException(bStatic('errors.auto.backend.k98b8de601da5'));
     }
 
     const payload: UpdateTaskDto = {};
     if ('title' in parameters) {
       const title = (parameters.title ?? '').toString().trim();
       if (!title) {
-        throw new BadRequestException('title cannot be empty.');
+        throw new BadRequestException(bStatic('errors.auto.backend.k62168ead07c0'));
       }
       payload.title = title;
     }
@@ -644,7 +646,7 @@ export class AgentMcpService {
 
     const taskId = Number(parameters.taskId ?? parameters.id);
     if (!taskId || Number.isNaN(taskId)) {
-      throw new BadRequestException('taskId is required to delete a task.');
+      throw new BadRequestException(bStatic('errors.auto.backend.k5b4331bd71e6'));
     }
 
     await this.tasksService.remove(context.user.id, taskId);
@@ -670,7 +672,7 @@ export class AgentMcpService {
 
     const name = (parameters.name ?? '').toString().trim();
     if (!name) {
-      throw new BadRequestException('name is required to create a label.');
+      throw new BadRequestException(bStatic('errors.auto.backend.k8ed2450656dc'));
     }
 
     const payload: CreateTaskLabelDto = { name };
@@ -692,14 +694,14 @@ export class AgentMcpService {
 
     const labelId = Number(parameters.labelId ?? parameters.id);
     if (!labelId || Number.isNaN(labelId)) {
-      throw new BadRequestException('labelId is required to update a label.');
+      throw new BadRequestException(bStatic('errors.auto.backend.kd7726f406033'));
     }
 
     const payload: UpdateTaskLabelDto = {};
     if ('name' in parameters) {
       const name = (parameters.name ?? '').toString().trim();
       if (!name) {
-        throw new BadRequestException('name cannot be empty.');
+        throw new BadRequestException(bStatic('errors.auto.backend.kc5d751854341'));
       }
       payload.name = name;
     }
@@ -723,7 +725,7 @@ export class AgentMcpService {
 
     const labelId = Number(parameters.labelId ?? parameters.id);
     if (!labelId || Number.isNaN(labelId)) {
-      throw new BadRequestException('labelId is required to delete a label.');
+      throw new BadRequestException(bStatic('errors.auto.backend.kc3132a1f9d0e'));
     }
 
     await this.taskLabelsService.remove(context.user.id, labelId);
@@ -760,7 +762,7 @@ export class AgentMcpService {
       return normalized as TaskPriority;
     }
     throw new BadRequestException(
-      'Invalid task priority. Expected high, medium, or low.',
+      bStatic('errors.auto.backend.k352c512ea028'),
     );
   }
 
@@ -777,7 +779,7 @@ export class AgentMcpService {
       return normalized as TaskStatus;
     }
     throw new BadRequestException(
-      'Invalid task status. Expected todo, in_progress, or done.',
+      bStatic('errors.auto.backend.k438f5ca2e18c'),
     );
   }
 
@@ -795,18 +797,18 @@ export class AgentMcpService {
         ? new Date(value)
         : new Date(NaN);
     if (Number.isNaN(date.getTime())) {
-      throw new BadRequestException('Invalid date value. Use ISO8601 strings.');
+      throw new BadRequestException(bStatic('errors.auto.backend.k1b519c4aa2fe'));
     }
     return date.toISOString();
   }
 
   private normalizeHexColor(value: unknown): string {
     if (!value) {
-      throw new BadRequestException('Color must be a 6-digit hex string.');
+      throw new BadRequestException(bStatic('errors.auto.backend.ke2de007d9fec'));
     }
     const hex = String(value).trim();
     if (!/^#?[0-9a-fA-F]{6}$/.test(hex)) {
-      throw new BadRequestException('Color must be a 6-digit hex string.');
+      throw new BadRequestException(bStatic('errors.auto.backend.ke2de007d9fec'));
     }
     return hex.startsWith('#') ? hex : `#${hex}`;
   }

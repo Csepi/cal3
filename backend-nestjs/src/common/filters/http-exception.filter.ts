@@ -19,6 +19,8 @@ import { DomainException } from '../exceptions/domain.exception';
 import { AppLoggerService } from '../../logging/app-logger.service';
 import { AuditTrailService } from '../../logging/audit-trail.service';
 
+import { bStatic } from '../../i18n/runtime';
+
 interface ExceptionResolution {
   status: number;
   code: ErrorCode;
@@ -158,7 +160,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
         return {
           status: HttpStatus.CONFLICT,
           code: ERROR_CODES.CONFLICT,
-          message: 'Unique constraint violation',
+          message: bStatic('errors.auto.backend.kd345d572102d'),
           userMessage: 'A record with these details already exists.',
           details: dbError,
           recoverable: true,
@@ -168,7 +170,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
         return {
           status: HttpStatus.BAD_REQUEST,
           code: ERROR_CODES.BAD_REQUEST,
-          message: 'Foreign key violation',
+          message: bStatic('errors.auto.backend.k7bc70e1749a2'),
           userMessage: 'Referenced record does not exist.',
           details: dbError,
           recoverable: true,
@@ -178,7 +180,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
         return {
           status: HttpStatus.BAD_REQUEST,
           code: ERROR_CODES.BAD_REQUEST,
-          message: 'Required field missing',
+          message: bStatic('errors.auto.backend.k16a6ca1bac4e'),
           userMessage: 'A required field is missing.',
           details: dbError,
           recoverable: true,
@@ -187,7 +189,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
       return {
         status: HttpStatus.BAD_REQUEST,
         code: ERROR_CODES.DATABASE_ERROR,
-        message: 'Database operation failed',
+        message: bStatic('errors.auto.backend.k2b731cc8e95a'),
         userMessage: 'The request could not be completed due to data constraints.',
         details: dbError,
         recoverable: true,

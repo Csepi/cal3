@@ -15,6 +15,8 @@ import {
 } from '../dto/calendar-group.dto';
 import { CalendarsService } from './calendars.service';
 
+import { bStatic } from '../i18n/runtime';
+
 @Injectable()
 export class CalendarGroupsService {
   constructor(
@@ -114,13 +116,13 @@ export class CalendarGroupsService {
     });
 
     if (calendars.length !== uniqueIds.length) {
-      throw new NotFoundException('One or more calendars were not found');
+      throw new NotFoundException(bStatic('errors.auto.backend.ke2c877b94873'));
     }
 
     const unauthorised = calendars.find((cal) => cal.ownerId !== userId);
     if (unauthorised) {
       throw new ForbiddenException(
-        'Only calendar owners can change calendar grouping',
+        bStatic('errors.auto.backend.k8dc03a87db3e'),
       );
     }
 
@@ -153,7 +155,7 @@ export class CalendarGroupsService {
     const unauthorised = calendars.find((cal) => cal.ownerId !== userId);
     if (unauthorised) {
       throw new ForbiddenException(
-        'Only calendar owners can change calendar grouping',
+        bStatic('errors.auto.backend.k8dc03a87db3e'),
       );
     }
 
@@ -180,7 +182,7 @@ export class CalendarGroupsService {
     });
 
     if (calendars.length === 0) {
-      throw new NotFoundException('No calendars found in this group to share');
+      throw new NotFoundException(bStatic('errors.auto.backend.k44cd027dec26'));
     }
 
     const sharedCalendarIds: number[] = [];
@@ -232,7 +234,7 @@ export class CalendarGroupsService {
     });
 
     if (!group) {
-      throw new NotFoundException('Calendar group not found');
+      throw new NotFoundException(bStatic('errors.auto.backend.k2345bc1053fc'));
     }
 
     return group;

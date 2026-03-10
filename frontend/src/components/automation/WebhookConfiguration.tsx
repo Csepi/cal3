@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { BASE_URL } from '../../config/apiConfig';
 import { TriggerType } from '../../types/Automation';
 
+import { tStatic } from '../../i18n';
+
 interface WebhookConfigurationProps {
   ruleId: number | null;
   triggerType: TriggerType | null;
@@ -47,7 +49,7 @@ export const WebhookConfiguration: React.FC<WebhookConfigurationProps> = ({
   const handleRegenerateToken = async () => {
     if (!onRegenerateToken || !ruleId) return;
 
-    if (!confirm('Are you sure you want to regenerate the webhook token? The old URL will stop working.')) {
+    if (!confirm(tStatic('common:auto.frontend.ka42a6e9442a1'))) {
       return;
     }
 
@@ -56,7 +58,7 @@ export const WebhookConfiguration: React.FC<WebhookConfigurationProps> = ({
       await onRegenerateToken();
     } catch (error) {
       console.error('Failed to regenerate token:', error);
-      alert('Failed to regenerate token. Please try again.');
+      alert(tStatic('common:auto.frontend.k0582e2e2bf0a'));
     } finally {
       setRegenerating(false);
     }
@@ -75,7 +77,7 @@ export const WebhookConfiguration: React.FC<WebhookConfigurationProps> = ({
 
     try {
       await navigator.clipboard.writeText(example);
-      alert('Payload example copied to clipboard!');
+      alert(tStatic('common:auto.frontend.k1c64f8fcbf5f'));
     } catch (error) {
       console.error('Failed to copy:', error);
     }
@@ -85,15 +87,13 @@ export const WebhookConfiguration: React.FC<WebhookConfigurationProps> = ({
     <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg">
       <h4 className="text-sm font-semibold text-blue-900 dark:text-blue-100 mb-3 flex items-center gap-2">
         <span className="text-lg">🌐</span>
-        Webhook Configuration
-      </h4>
+        {tStatic('common:auto.frontend.k8a1fd526c14f')}</h4>
 
       {!ruleId ? (
         <div className="text-sm text-blue-700 dark:text-blue-300">
-          <p className="mb-2">Save this rule to generate a webhook URL.</p>
+          <p className="mb-2">{tStatic('common:auto.frontend.k3952fd7ef892')}</p>
           <p className="text-xs">
-            Once saved, you'll receive a unique webhook URL that external systems can use to trigger this automation.
-          </p>
+            {tStatic('common:auto.frontend.k220dc121d4fd')}</p>
         </div>
       ) : (
         <>
@@ -101,8 +101,7 @@ export const WebhookConfiguration: React.FC<WebhookConfigurationProps> = ({
             {/* Webhook URL */}
             <div>
               <label className="block text-xs font-medium text-blue-700 dark:text-blue-300 mb-1">
-                Webhook URL
-              </label>
+                {tStatic('common:auto.frontend.kfa7517b6b6b0')}</label>
               <div className="flex gap-2">
                 <input
                   type="text"
@@ -117,12 +116,12 @@ export const WebhookConfiguration: React.FC<WebhookConfigurationProps> = ({
                   {copied ? (
                     <>
                       <span>✓</span>
-                      <span>Copied!</span>
+                      <span>{tStatic('common:auto.frontend.kb7c3ca0ee379')}</span>
                     </>
                   ) : (
                     <>
                       <span>📋</span>
-                      <span>Copy</span>
+                      <span>{tStatic('common:auto.frontend.kaf74f7c5362a')}</span>
                     </>
                   )}
                 </button>
@@ -141,22 +140,20 @@ export const WebhookConfiguration: React.FC<WebhookConfigurationProps> = ({
                   <span>{regenerating ? 'Regenerating...' : 'Regenerate Token'}</span>
                 </button>
                 <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
-                  Warning: Regenerating will invalidate the current webhook URL
-                </p>
+                  {tStatic('common:auto.frontend.kcd5943ef1c93')}</p>
               </div>
             )}
 
             {/* Usage Instructions */}
             <div className="mt-4 p-3 bg-white dark:bg-gray-800 border border-blue-200 dark:border-blue-700 rounded-md">
               <h5 className="text-xs font-semibold text-blue-900 dark:text-blue-100 mb-2">
-                How to Use
-              </h5>
+                {tStatic('common:auto.frontend.k962248bc7070')}</h5>
               <ol className="text-xs text-blue-700 dark:text-blue-300 space-y-1 list-decimal list-inside">
-                <li>Copy the webhook URL above</li>
-                <li>Configure your external system to send POST requests to this URL</li>
-                <li>Send JSON data in the request body</li>
-                <li>Use conditions to check webhook data fields (e.g., <code className="bg-blue-100 dark:bg-blue-900 px-1 py-0.5 rounded">webhook.data.status</code>)</li>
-                <li>Define actions to execute when conditions match</li>
+                <li>{tStatic('common:auto.frontend.k9a6933728c0d')}</li>
+                <li>{tStatic('common:auto.frontend.kf87ed23f1f42')}</li>
+                <li>{tStatic('common:auto.frontend.kb69290101ab5')}</li>
+                <li>{tStatic('common:auto.frontend.k9371234e38a3')}<code className="bg-blue-100 dark:bg-blue-900 px-1 py-0.5 rounded">{tStatic('common:auto.frontend.kab3e505b6a6e')}</code>)</li>
+                <li>{tStatic('common:auto.frontend.k5e717181416b')}</li>
               </ol>
             </div>
 
@@ -164,14 +161,12 @@ export const WebhookConfiguration: React.FC<WebhookConfigurationProps> = ({
             <div className="mt-4 p-3 bg-white dark:bg-gray-800 border border-blue-200 dark:border-blue-700 rounded-md">
               <div className="flex items-center justify-between mb-2">
                 <h5 className="text-xs font-semibold text-blue-900 dark:text-blue-100">
-                  Example Payload
-                </h5>
+                  {tStatic('common:auto.frontend.kc4479296fc39')}</h5>
                 <button
                   onClick={handleCopyPayloadExample}
                   className="text-xs text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
                 >
-                  Copy Example
-                </button>
+                  {tStatic('common:auto.frontend.ke33f55244c62')}</button>
               </div>
               <pre className="text-xs text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/30 p-2 rounded overflow-x-auto">
 {`{
@@ -185,20 +180,17 @@ export const WebhookConfiguration: React.FC<WebhookConfigurationProps> = ({
 }`}
               </pre>
               <p className="text-xs text-blue-600 dark:text-blue-400 mt-2">
-                Access fields using dot notation: <code className="bg-blue-100 dark:bg-blue-900 px-1 py-0.5 rounded">webhook.data.customer_id</code>,
-                <code className="bg-blue-100 dark:bg-blue-900 px-1 py-0.5 rounded ml-1">webhook.data.metadata.priority</code>
+                {tStatic('common:auto.frontend.kcf21ea8c08e2')}<code className="bg-blue-100 dark:bg-blue-900 px-1 py-0.5 rounded">{tStatic('common:auto.frontend.kd63f67049140')}</code>,
+                <code className="bg-blue-100 dark:bg-blue-900 px-1 py-0.5 rounded ml-1">{tStatic('common:auto.frontend.kb1234dd65850')}</code>
               </p>
             </div>
 
             {/* Smart Values Info */}
             <div className="mt-4 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-md">
               <h5 className="text-xs font-semibold text-green-900 dark:text-green-100 mb-2">
-                💡 Using Smart Values
-              </h5>
+                {tStatic('common:auto.frontend.k833f68e4f84d')}</h5>
               <p className="text-xs text-green-700 dark:text-green-300">
-                Webhook data is automatically available as smart values in conditions.
-                Select "Webhook Data" as the condition field, then specify the JSON path
-                in the value (e.g., <code className="bg-green-100 dark:bg-green-900 px-1 py-0.5 rounded">webhook.data.customer_id</code>).
+                {tStatic('common:auto.frontend.kddd0b1829c50')}<code className="bg-green-100 dark:bg-green-900 px-1 py-0.5 rounded">{tStatic('common:auto.frontend.kd63f67049140')}</code>).
               </p>
             </div>
           </div>

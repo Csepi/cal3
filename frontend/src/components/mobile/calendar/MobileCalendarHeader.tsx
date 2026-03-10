@@ -13,6 +13,8 @@ import React from 'react';
 import { TouchableArea } from '../atoms/TouchableArea';
 import { Icon } from '../atoms/Icon';
 
+import { tStatic } from '../../../i18n';
+
 interface MobileCalendarHeaderProps {
   currentDate: Date;
   currentView: 'month' | 'week' | 'timeline';
@@ -116,7 +118,7 @@ export const MobileCalendarHeader: React.FC<MobileCalendarHeaderProps> = ({
               )}
               size="sm"
             />
-            <span>Calendars</span>
+            <span>{tStatic('common:auto.frontend.k9444501818e6')}</span>
             <Icon icon="▼" size="xs" className="text-gray-500" />
           </div>
         </TouchableArea>
@@ -138,8 +140,7 @@ export const MobileCalendarHeader: React.FC<MobileCalendarHeaderProps> = ({
           className="px-3 py-2 rounded-xl bg-gray-50 text-gray-800 text-sm font-semibold shadow-sm border border-gray-200"
           minSize="sm"
         >
-          Today
-        </TouchableArea>
+          {tStatic('common:auto.frontend.k24345a14377f')}</TouchableArea>
       </div>
 
       <div className="flex items-center justify-between px-4 pb-3 gap-3">

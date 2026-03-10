@@ -8,6 +8,8 @@ import {
   Matches,
 } from 'class-validator';
 
+import { bStatic } from '../i18n/runtime';
+
 export class CreateOperatingHoursDto {
   @IsInt()
   @Min(0)
@@ -16,13 +18,13 @@ export class CreateOperatingHoursDto {
 
   @IsString()
   @Matches(/^([01]\d|2[0-3]):([0-5]\d)$/, {
-    message: 'openTime must be in HH:MM format',
+    message: bStatic('errors.auto.backend.kd347e6b22acf'),
   })
   openTime!: string;
 
   @IsString()
   @Matches(/^([01]\d|2[0-3]):([0-5]\d)$/, {
-    message: 'closeTime must be in HH:MM format',
+    message: bStatic('errors.auto.backend.kd21691767631'),
   })
   closeTime!: string;
 
@@ -40,14 +42,14 @@ export class UpdateOperatingHoursDto {
   @IsOptional()
   @IsString()
   @Matches(/^([01]\d|2[0-3]):([0-5]\d)$/, {
-    message: 'openTime must be in HH:MM format',
+    message: bStatic('errors.auto.backend.kd347e6b22acf'),
   })
   openTime?: string;
 
   @IsOptional()
   @IsString()
   @Matches(/^([01]\d|2[0-3]):([0-5]\d)$/, {
-    message: 'closeTime must be in HH:MM format',
+    message: bStatic('errors.auto.backend.kd21691767631'),
   })
   closeTime?: string;
 

@@ -1,0 +1,6 @@
+{
+  "bookingConfirmed": "Booking confirmed.",
+  "bookingCancelled": "Booking cancelled.",
+  "bookingRescheduled": "Booking rescheduled.",
+  "slotUnavailable": "Selected time slot is unavailable."
+}

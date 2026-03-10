@@ -7,6 +7,7 @@ import {
   OneToMany,
   ManyToMany,
   JoinTable,
+  Index,
 } from 'typeorm';
 import { User } from './user.entity';
 import { ResourceType } from './resource-type.entity';
@@ -46,6 +47,10 @@ export class Organisation {
 
   @Column({ length: 7, default: '#f97316' })
   color!: string;
+
+  @Index('IDX_organisations_default_language')
+  @Column({ name: 'default_language', length: 8, default: 'en' })
+  defaultLanguage!: string;
 
   @ManyToMany(() => User, (user) => user.organisations)
   @JoinTable({

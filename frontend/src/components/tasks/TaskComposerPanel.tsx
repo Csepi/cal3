@@ -4,6 +4,8 @@ import type { Task, TaskLabel } from '../../types/Task';
 import { TaskPriority, TaskStatus } from '../../types/Task';
 import type { TaskComposerDraft } from '../../hooks/useTaskComposer';
 
+import { tStatic } from '../../i18n';
+
 interface TaskComposerPanelProps {
   mode: 'hidden' | 'new' | 'edit';
   draft: TaskComposerDraft;
@@ -58,8 +60,7 @@ export const TaskComposerPanel: React.FC<TaskComposerPanelProps> = ({
           onClick={onClose}
           className="rounded-full border border-gray-200 px-3 py-1 text-xs uppercase tracking-wide text-gray-500 hover:border-gray-300"
         >
-          Close
-        </button>
+          {tStatic('common:auto.frontend.kbbfa773e5a63')}</button>
       </div>
 
       {error && (
@@ -74,14 +75,13 @@ export const TaskComposerPanel: React.FC<TaskComposerPanelProps> = ({
           value={draft.title}
           onChange={(event) => onChange('title', event.target.value)}
           className="w-full rounded-lg border border-gray-200 px-3 py-2 text-lg font-semibold text-gray-900 focus:border-blue-500 focus:outline-none"
-          placeholder="Task title"
+          placeholder={tStatic('common:auto.frontend.k624d94d8245e')}
         />
 
         <div className="grid gap-3 lg:grid-cols-2">
           <div className="flex flex-col gap-1">
             <label className="text-xs font-semibold uppercase text-gray-500">
-              Status
-            </label>
+              {tStatic('common:auto.frontend.kbae7d5be7082')}</label>
             <select
               value={draft.status}
               onChange={(event) =>
@@ -89,15 +89,14 @@ export const TaskComposerPanel: React.FC<TaskComposerPanelProps> = ({
               }
               className="rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
             >
-              <option value="todo">To Do</option>
-              <option value="in_progress">In Progress</option>
-              <option value="done">Done</option>
+              <option value="todo">{tStatic('common:auto.frontend.k353a23d95e3c')}</option>
+              <option value="in_progress">{tStatic('common:auto.frontend.kf61eadaf153a')}</option>
+              <option value="done">{tStatic('common:auto.frontend.ke9b450d14bc2')}</option>
             </select>
           </div>
           <div className="flex flex-col gap-1">
             <label className="text-xs font-semibold uppercase text-gray-500">
-              Priority
-            </label>
+              {tStatic('common:auto.frontend.k886cbff9d9df')}</label>
             <select
               value={draft.priority}
               onChange={(event) =>
@@ -105,9 +104,9 @@ export const TaskComposerPanel: React.FC<TaskComposerPanelProps> = ({
               }
               className="rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
             >
-              <option value="high">High</option>
-              <option value="medium">Medium</option>
-              <option value="low">Low</option>
+              <option value="high">{tStatic('common:auto.frontend.kb1a5954a483f')}</option>
+              <option value="medium">{tStatic('common:auto.frontend.kd404968ea90b')}</option>
+              <option value="low">{tStatic('common:auto.frontend.ka124947cbd2d')}</option>
             </select>
           </div>
         </div>
@@ -115,8 +114,7 @@ export const TaskComposerPanel: React.FC<TaskComposerPanelProps> = ({
         <div className="grid gap-3 lg:grid-cols-2">
           <div className="flex flex-col gap-1">
             <label className="text-xs font-semibold uppercase text-gray-500">
-              Due Date
-            </label>
+              {tStatic('common:auto.frontend.ka1b308ec704a')}</label>
             <input
               type="datetime-local"
               value={draft.dueDate ?? ''}
@@ -126,14 +124,13 @@ export const TaskComposerPanel: React.FC<TaskComposerPanelProps> = ({
           </div>
           <div className="flex flex-col gap-1">
             <label className="text-xs font-semibold uppercase text-gray-500">
-              Location
-            </label>
+              {tStatic('common:auto.frontend.kd219c68101f5')}</label>
             <input
               type="text"
               value={draft.place ?? ''}
               onChange={(event) => onChange('place', event.target.value)}
               className="rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
-              placeholder="Add a place or link"
+              placeholder={tStatic('common:auto.frontend.k6d1819bbf804')}
             />
           </div>
         </div>
@@ -159,8 +156,7 @@ export const TaskComposerPanel: React.FC<TaskComposerPanelProps> = ({
             onClick={onDelete}
             className="rounded-lg border border-red-200 px-4 py-2 text-sm font-semibold text-red-600 hover:bg-red-50"
           >
-            Delete
-          </button>
+            {tStatic('common:auto.frontend.kf6fdbe48dc54')}</button>
         )}
         <button
           type="button"
@@ -174,7 +170,7 @@ export const TaskComposerPanel: React.FC<TaskComposerPanelProps> = ({
       </div>
       {selectedTask && selectedTask.calendarEventId && (
         <p className="text-xs text-gray-500">
-          Mirrored to calendar event #{selectedTask.calendarEventId}
+          {tStatic('common:auto.frontend.ke05485e0294f')}{selectedTask.calendarEventId}
         </p>
       )}
     </aside>

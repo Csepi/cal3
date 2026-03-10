@@ -3,6 +3,8 @@ import { BASE_URL } from '../../config/apiConfig';
 import { secureFetch } from '../../services/authErrorHandler';
 import { TriggerType } from '../../types/Automation';
 
+import { tStatic } from '../../i18n';
+
 interface SmartValue {
   field: string;
   label: string;
@@ -85,7 +87,7 @@ export const SmartValuePicker: React.FC<SmartValuePickerProps> = ({
         className="inline-flex items-center gap-2 px-3 py-1.5 text-sm bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-md hover:from-purple-700 hover:to-indigo-700 transition-all shadow-sm"
       >
         <span>✨</span>
-        <span>Insert Smart Value</span>
+        <span>{tStatic('common:auto.frontend.k1be3e34654f9')}</span>
       </button>
 
       {isOpen && (
@@ -102,8 +104,7 @@ export const SmartValuePicker: React.FC<SmartValuePickerProps> = ({
             <div className="p-3 border-b border-gray-200 dark:border-gray-700">
               <div className="flex items-center justify-between mb-2">
                 <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
-                  Smart Values
-                </h4>
+                  {tStatic('common:auto.frontend.k011fb775267b')}</h4>
                 <button
                   onClick={() => setIsOpen(false)}
                   className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
@@ -115,7 +116,7 @@ export const SmartValuePicker: React.FC<SmartValuePickerProps> = ({
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Search smart values..."
+                placeholder={tStatic('common:auto.frontend.k72be04219780')}
                 className="w-full px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                 autoFocus
               />
@@ -125,12 +126,10 @@ export const SmartValuePicker: React.FC<SmartValuePickerProps> = ({
             <div className="overflow-y-auto max-h-80">
               {loading ? (
                 <div className="p-4 text-center text-gray-500 dark:text-gray-400">
-                  Loading smart values...
-                </div>
+                  {tStatic('common:auto.frontend.kb2d4e500c646')}</div>
               ) : filteredValues.length === 0 ? (
                 <div className="p-4 text-center text-gray-500 dark:text-gray-400">
-                  No smart values found
-                </div>
+                  {tStatic('common:auto.frontend.ke90bf3a967a4')}</div>
               ) : (
                 Object.entries(groupedValues).map(([category, values]) => (
                   <div key={category} className="border-b border-gray-200 dark:border-gray-700 last:border-b-0">
@@ -165,8 +164,7 @@ export const SmartValuePicker: React.FC<SmartValuePickerProps> = ({
             {/* Footer */}
             <div className="p-3 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
               <p className="text-xs text-gray-600 dark:text-gray-400">
-                💡 Smart values are replaced with actual data when the action executes
-              </p>
+                {tStatic('common:auto.frontend.kced2bb83c801')}</p>
             </div>
           </div>
         </>

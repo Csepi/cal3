@@ -5,6 +5,8 @@ import { useAuditLogs } from '../../hooks/useAuditLogs';
 import { formatRelativeTime, getStatusColor } from '../../services/automationService';
 import { AuditLogDetailModal } from './AuditLogDetailModal';
 
+import { tStatic } from '../../i18n';
+
 interface AuditLogViewerProps {
   ruleId?: number;
   themeColor?: string;
@@ -86,13 +88,12 @@ export const AuditLogViewer: React.FC<AuditLogViewerProps> = ({
       {/* Header with Stats */}
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-lg font-semibold text-gray-900">Execution History</h3>
+          <h3 className="text-lg font-semibold text-gray-900">{tStatic('common:auto.frontend.k9215c729df82')}</h3>
           {stats && (
             <p className="text-sm text-gray-600 mt-1">
-              {stats.totalExecutions} total executions • {stats.successCount} successful •{' '}
-              {stats.failureCount} failed
-              {stats.lastExecutedAt && (
-                <> • Last run: {formatRelativeTime(stats.lastExecutedAt)}</>
+              {stats.totalExecutions} {tStatic('common:auto.frontend.k7edf30a51e2b')}{stats.successCount} {tStatic('common:auto.frontend.kde6a766415ef')}{' '}
+              {stats.failureCount} {tStatic('common:auto.frontend.k5f5f8758f5f2')}{stats.lastExecutedAt && (
+                <> {tStatic('common:auto.frontend.kc2aca646d5d9')}{formatRelativeTime(stats.lastExecutedAt)}</>
               )}
             </p>
           )}
@@ -115,15 +116,14 @@ export const AuditLogViewer: React.FC<AuditLogViewerProps> = ({
               d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
             />
           </svg>
-          Refresh
-        </button>
+          {tStatic('common:auto.frontend.k56e3badc4e6c')}</button>
       </div>
 
       {/* Filters */}
       <div className="flex flex-wrap gap-3">
         {/* Status Filter */}
         <div>
-          <label className="block text-xs font-medium text-gray-600 mb-1">Status</label>
+          <label className="block text-xs font-medium text-gray-600 mb-1">{tStatic('common:auto.frontend.kbae7d5be7082')}</label>
           <select
             value={statusFilter}
             onChange={(e) =>
@@ -131,26 +131,26 @@ export const AuditLogViewer: React.FC<AuditLogViewerProps> = ({
             }
             className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
-            <option value="all">All Statuses</option>
-            <option value="success">Success</option>
-            <option value="partial_success">Partial Success</option>
-            <option value="failure">Failed</option>
-            <option value="skipped">Skipped</option>
+            <option value="all">{tStatic('common:auto.frontend.k9cb29e734a6c')}</option>
+            <option value="success">{tStatic('common:auto.frontend.k42a8f651d79f')}</option>
+            <option value="partial_success">{tStatic('common:auto.frontend.kb9e9c3170d42')}</option>
+            <option value="failure">{tStatic('common:auto.frontend.k09fef5d8d9a3')}</option>
+            <option value="skipped">{tStatic('common:auto.frontend.k5a000ad7bd1b')}</option>
           </select>
         </div>
 
         {/* Date Range Filter */}
         <div>
-          <label className="block text-xs font-medium text-gray-600 mb-1">Date Range</label>
+          <label className="block text-xs font-medium text-gray-600 mb-1">{tStatic('common:auto.frontend.k6bb4b674b323')}</label>
           <select
             value={dateRange}
             onChange={(e) => setDateRange(e.target.value as DateRangeOption)}
             className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
-            <option value="last_7_days">Last 7 days</option>
-            <option value="last_30_days">Last 30 days</option>
-            <option value="last_90_days">Last 90 days</option>
-            <option value="all">All time</option>
+            <option value="last_7_days">{tStatic('common:auto.frontend.kdf833fe88d38')}</option>
+            <option value="last_30_days">{tStatic('common:auto.frontend.k6b32985251a1')}</option>
+            <option value="last_90_days">{tStatic('common:auto.frontend.kc328508badd7')}</option>
+            <option value="all">{tStatic('common:auto.frontend.kdbad49d89123')}</option>
           </select>
         </div>
       </div>
@@ -170,7 +170,7 @@ export const AuditLogViewer: React.FC<AuditLogViewerProps> = ({
               className="inline-block w-8 h-8 border-4 border-gray-200 border-t-blue-500 rounded-full animate-spin"
               style={{ borderTopColor: themeColor }}
             />
-            <p className="mt-3 text-sm text-gray-600">Loading execution history...</p>
+            <p className="mt-3 text-sm text-gray-600">{tStatic('common:auto.frontend.kf780261e93a1')}</p>
           </div>
         </div>
       )}
@@ -180,7 +180,7 @@ export const AuditLogViewer: React.FC<AuditLogViewerProps> = ({
         <div className="flex items-center justify-center py-12 bg-gray-50 border border-gray-200 rounded-lg">
           <div className="text-center max-w-md">
             <div className="text-4xl mb-3">📊</div>
-            <h4 className="text-lg font-semibold text-gray-900 mb-2">No Execution History</h4>
+            <h4 className="text-lg font-semibold text-gray-900 mb-2">{tStatic('common:auto.frontend.k0eb39cd6d7a4')}</h4>
             <p className="text-sm text-gray-600">
               {ruleId
                 ? 'This rule has not been executed yet. Enable the rule and trigger events to see execution history.'
@@ -198,25 +198,19 @@ export const AuditLogViewer: React.FC<AuditLogViewerProps> = ({
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
-                    Date/Time
-                  </th>
+                    {tStatic('common:auto.frontend.k853aab7f564c')}</th>
                   {!ruleId && (
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
-                      Rule
-                    </th>
+                      {tStatic('common:auto.frontend.k78e1790e29a5')}</th>
                   )}
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
-                    Event
-                  </th>
+                    {tStatic('common:auto.frontend.kad8919ace091')}</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
-                    Status
-                  </th>
+                    {tStatic('common:auto.frontend.kbae7d5be7082')}</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
-                    Duration
-                  </th>
+                    {tStatic('common:auto.frontend.k1370004da76f')}</th>
                   <th className="px-4 py-3 text-right text-xs font-medium text-gray-600 uppercase tracking-wider">
-                    Actions
-                  </th>
+                    {tStatic('common:auto.frontend.kc3cd636a585b')}</th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
@@ -236,7 +230,7 @@ export const AuditLogViewer: React.FC<AuditLogViewerProps> = ({
                     )}
                     <td className="px-4 py-3 text-sm text-gray-900">
                       <div className="max-w-xs truncate">
-                        {log.eventTitle || <span className="text-gray-400 italic">Event deleted</span>}
+                        {log.eventTitle || <span className="text-gray-400 italic">{tStatic('common:auto.frontend.kec4347fc4cff')}</span>}
                       </div>
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap text-sm">
@@ -246,8 +240,7 @@ export const AuditLogViewer: React.FC<AuditLogViewerProps> = ({
                       </div>
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
-                      {log.executionTimeMs}ms
-                    </td>
+                      {log.executionTimeMs}{tStatic('common:auto.frontend.k26cc3217be64')}</td>
                     <td className="px-4 py-3 whitespace-nowrap text-sm text-right">
                       <button
                         onClick={(e) => {
@@ -256,8 +249,7 @@ export const AuditLogViewer: React.FC<AuditLogViewerProps> = ({
                         }}
                         className="text-blue-600 hover:text-blue-700 font-medium"
                       >
-                        View →
-                      </button>
+                        {tStatic('common:auto.frontend.kcf3dbdab782e')}</button>
                     </td>
                   </tr>
                 ))}
@@ -270,7 +262,7 @@ export const AuditLogViewer: React.FC<AuditLogViewerProps> = ({
       {/* Results Count */}
       {logs.length > 0 && (
         <div className="text-sm text-gray-600">
-          Showing {logs.length} execution{logs.length !== 1 ? 's' : ''}
+          {tStatic('common:auto.frontend.k163d8174ff4b')}{logs.length} {tStatic('common:auto.frontend.k1e2147459888')}{logs.length !== 1 ? 's' : ''}
         </div>
       )}
 

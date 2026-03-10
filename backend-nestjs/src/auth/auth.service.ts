@@ -20,6 +20,8 @@ import { AbusePreventionService } from '../api-security/services/abuse-preventio
 import { CaptchaVerificationService } from '../api-security/services/captcha-verification.service';
 import { MfaService } from './services/mfa.service';
 
+import { bStatic } from '../i18n/runtime';
+
 export interface AuthRequestMetadata {
   ip?: string;
   userAgent?: string;
@@ -68,7 +70,7 @@ export class AuthService {
     });
 
     if (existingUser) {
-      throw new ConflictException('Username or email already exists');
+      throw new ConflictException(bStatic('errors.auto.backend.k2ecb24ae5a71'));
     }
 
     // Hash password
@@ -116,7 +118,7 @@ export class AuthService {
         reason: 'honeypot_filled',
         ip: metadata.ip,
       });
-      throw new UnauthorizedException('Invalid credentials');
+      throw new UnauthorizedException(bStatic('errors.auto.backend.ke417846ec08a'));
     }
 
     const requiresCaptcha = await this.abusePreventionService.requiresCaptcha(
@@ -138,7 +140,7 @@ export class AuthService {
           reason: 'captcha_failed',
           ip: metadata.ip,
         });
-        throw new UnauthorizedException('CAPTCHA validation failed');
+        throw new UnauthorizedException(bStatic('errors.auto.backend.kce377da800dc'));
       }
     }
 
@@ -157,7 +159,7 @@ export class AuthService {
         reason: 'user_not_found',
         ip: metadata.ip,
       });
-      throw new UnauthorizedException('Invalid credentials');
+      throw new UnauthorizedException(bStatic('errors.auto.backend.ke417846ec08a'));
     }
 
     // Verify password
@@ -174,12 +176,12 @@ export class AuthService {
         accountLocked: state.accountLocked,
         ipBlocked: state.ipBlocked,
       });
-      throw new UnauthorizedException('Invalid credentials');
+      throw new UnauthorizedException(bStatic('errors.auto.backend.ke417846ec08a'));
     }
 
     // Check if user is active
     if (!user.isActive) {
-      throw new UnauthorizedException('Account is disabled');
+      throw new UnauthorizedException(bStatic('errors.auto.backend.kf60b18c7d371'));
     }
 
     try {
@@ -220,7 +222,7 @@ export class AuthService {
     });
 
     if (!user) {
-      throw new UnauthorizedException('User not found or inactive');
+      throw new UnauthorizedException(bStatic('errors.auto.backend.kdf19e5c63dda'));
     }
 
     return user;
@@ -246,7 +248,7 @@ export class AuthService {
     });
 
     if (!user) {
-      throw new UnauthorizedException('User not found');
+      throw new UnauthorizedException(bStatic('errors.auto.backend.k01eb94695483'));
     }
 
     return user;
@@ -289,7 +291,7 @@ export class AuthService {
 
     if (!email) {
       throw new UnauthorizedException(
-        'Email is required for Microsoft authentication',
+        bStatic('errors.auto.backend.k045ef2ac90b1'),
       );
     }
 
@@ -323,7 +325,7 @@ export class AuthService {
     metadata: AuthRequestMetadata = {},
   ): Promise<AuthSessionResult> {
     if (!refreshToken) {
-      throw new UnauthorizedException('Refresh token missing');
+      throw new UnauthorizedException(bStatic('errors.auto.backend.kaa55202f05e0'));
     }
 
     const { user, ...tokens } = await this.tokenService.rotateRefreshToken(

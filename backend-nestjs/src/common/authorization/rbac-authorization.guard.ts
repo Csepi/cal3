@@ -22,6 +22,8 @@ import type { RequestWithUser } from '../types/request-with-user';
 import { UserRole } from '../../entities/user.entity';
 import { AuditTrailService } from '../../logging/audit-trail.service';
 
+import { bStatic } from '../../i18n/runtime';
+
 @Injectable()
 export class RbacAuthorizationGuard implements CanActivate {
   constructor(
@@ -48,7 +50,7 @@ export class RbacAuthorizationGuard implements CanActivate {
     const req = context.switchToHttp().getRequest<RequestWithUser>();
     const user = req.user;
     if (!user) {
-      throw new UnauthorizedException('Authentication required');
+      throw new UnauthorizedException(bStatic('errors.auto.backend.k682810de81b7'));
     }
 
     if (requiredRoles.length > 0) {
@@ -60,7 +62,7 @@ export class RbacAuthorizationGuard implements CanActivate {
           userId: user.id,
           metadata: { requiredRoles },
         });
-        throw new ForbiddenException('Required role is missing');
+        throw new ForbiddenException(bStatic('errors.auto.backend.k81f2d4bc1f3e'));
       }
     }
 
@@ -79,7 +81,7 @@ export class RbacAuthorizationGuard implements CanActivate {
           organisationId: contextData.organisationId,
           metadata: { permission: permission.permission },
         });
-        throw new ForbiddenException('Required permission is missing');
+        throw new ForbiddenException(bStatic('errors.auto.backend.ke3a814983e72'));
       }
       void this.auditTrailService?.logPermissionCheck({
         action: 'rbac.permission.requirement',
