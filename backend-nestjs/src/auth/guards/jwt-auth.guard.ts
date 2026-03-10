@@ -1,4 +1,4 @@
-import { Injectable, ExecutionContext } from '@nestjs/common';
+import { Injectable, ExecutionContext, Optional } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { AuthGuard } from '@nestjs/passport';
 import type { Request } from 'express';
@@ -15,7 +15,7 @@ type AuthRequest = Request & {
 export class JwtAuthGuard extends AuthGuard('jwt') {
   constructor(
     private readonly reflector: Reflector,
-    private readonly apiKeyService: ApiKeyService,
+    @Optional() private readonly apiKeyService?: ApiKeyService,
   ) {
     super();
   }
@@ -33,7 +33,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
 
     const request = context.switchToHttp().getRequest<AuthRequest>();
     const apiKey = this.extractApiKey(request);
-    if (apiKey) {
+    if (apiKey && this.apiKeyService) {
       const authResult = await this.apiKeyService.authenticate(
         apiKey,
         request.method,
