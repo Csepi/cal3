@@ -11,6 +11,7 @@ import {
 } from './action-executor.interface';
 import { ActionExecutorRegistry } from './action-executor-registry';
 import { AutomationSmartValuesService } from '../automation-smart-values.service';
+import { OutboundRequestSecurityService } from '../../common/security/outbound-request-security.service';
 
 /**
  * Executor for WEBHOOK action
@@ -25,6 +26,7 @@ export class WebhookExecutor implements IActionExecutor, OnModuleInit {
   constructor(
     private readonly registry: ActionExecutorRegistry,
     private readonly smartValuesService: AutomationSmartValuesService,
+    private readonly outboundRequestSecurity: OutboundRequestSecurityService,
   ) {}
 
   onModuleInit() {
@@ -81,28 +83,31 @@ export class WebhookExecutor implements IActionExecutor, OnModuleInit {
         'User-Agent': 'PrimeCal-Automation/1.0',
         ...((headers || {}) as Record<string, string>),
       };
+      const timeoutMs =
+        typeof interpolatedConfig.timeoutMs === 'number'
+          ? interpolatedConfig.timeoutMs
+          : undefined;
+      const maxResponseBytes =
+        typeof interpolatedConfig.maxResponseBytes === 'number'
+          ? interpolatedConfig.maxResponseBytes
+          : undefined;
+      const signingSecret =
+        typeof interpolatedConfig.signingSecret === 'string'
+          ? interpolatedConfig.signingSecret
+          : null;
 
-      // Send webhook request
-      const response = await fetch(webhookUrl, {
+      const response = await this.outboundRequestSecurity.send({
+        url: webhookUrl,
         method: 'POST',
         headers: requestHeaders,
         body: JSON.stringify(payload),
-        // Timeout after 10 seconds
-        signal: AbortSignal.timeout(10000),
+        timeoutMs,
+        maxResponseBytes,
+        signingSecret,
       });
 
       if (!response.ok) {
-        throw new Error(
-          `Webhook returned ${response.status} ${response.statusText}`,
-        );
-      }
-
-      const responseText = await response.text();
-      let responseBody: unknown;
-      try {
-        responseBody = JSON.parse(responseText);
-      } catch {
-        responseBody = responseText;
+        throw new Error(`Webhook returned HTTP ${response.status}`);
       }
 
       this.logger.log(
@@ -117,7 +122,7 @@ export class WebhookExecutor implements IActionExecutor, OnModuleInit {
           url: webhookUrl,
           includedEventData: includeEventData,
           statusCode: response.status,
-          responseBody,
+          responseBody: response.bodyJson ?? response.bodyText,
         },
         executedAt,
       };

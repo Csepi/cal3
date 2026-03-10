@@ -12,9 +12,10 @@ import { AdvancedRateLimitService } from './services/advanced-rate-limit.service
 import { ApiKeyService } from './services/api-key.service';
 import { CaptchaVerificationService } from './services/captcha-verification.service';
 import { SecurityStoreService } from './services/security-store.service';
+import { LoggingModule } from '../logging/logging.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([ApiKey, User])],
+  imports: [TypeOrmModule.forFeature([ApiKey, User]), LoggingModule],
   controllers: [ApiKeyController, HoneypotController],
   providers: [
     SecurityStoreService,

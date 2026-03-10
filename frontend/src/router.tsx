@@ -20,6 +20,7 @@ export const router = createBrowserRouter(
         <Route path="app/reservations" element={<Dashboard initialView="reservations" />} />
         <Route path="app/automation" element={<Dashboard initialView="automation" />} />
         <Route path="app/profile" element={<Dashboard initialView="profile" />} />
+        <Route path="app/personal-logs" element={<Dashboard initialView="personal-logs" />} />
         <Route path="app/notifications" element={<Dashboard initialView="notifications" />} />
         <Route path="app/*" element={<Dashboard />} />
         <Route path="auth/callback" element={<AuthCallback />} />

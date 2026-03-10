@@ -43,6 +43,7 @@ import { TasksWorkspace, type TasksWorkspaceHandle } from './tasks/TasksWorkspac
 import { clientLogger } from '../utils/clientLogger';
 import { isNativeClient } from '../services/clientPlatform';
 import AppErrorBoundary from './common/AppErrorBoundary';
+import PersonalLogsPanel from './profile/PersonalLogsPanel';
 import {
   hasOfflineTimelineSnapshot,
   isNavigatorOffline,
@@ -61,7 +62,8 @@ type DashboardView =
   | 'automation'
   | 'agent'
   | 'notifications'
-  | 'notification-settings';
+  | 'notification-settings'
+  | 'personal-logs';
 
 interface DashboardProps {
   initialView?: DashboardView;
@@ -361,6 +363,8 @@ const Dashboard: React.FC<DashboardProps> = ({ initialView = 'calendar' }) => {
       case 'notifications':
       case 'notification-settings':
         return 'Notifications';
+      case 'personal-logs':
+        return 'Personal Logs';
       default:
         return 'Profile';
     }
@@ -433,6 +437,11 @@ const Dashboard: React.FC<DashboardProps> = ({ initialView = 'calendar' }) => {
                 onThemeChange={handleThemeChange}
                 currentTheme={themeColor}
               />
+            </AppErrorBoundary>
+          )}
+          {currentView === 'personal-logs' && (
+            <AppErrorBoundary fallbackTitle="Personal logs module failed" inline>
+              <PersonalLogsPanel themeColor={themeColor} />
             </AppErrorBoundary>
           )}
           {currentView === 'sync' && featureFlags.calendarSync && (

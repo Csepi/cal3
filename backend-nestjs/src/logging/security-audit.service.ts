@@ -20,6 +20,17 @@ export class SecurityAuditService {
   ) {}
 
   async log(event: SecurityAuditEvent, metadata: Record<string, unknown>) {
+    const userIdRaw = metadata.userId;
+    const orgIdRaw = metadata.organisationId ?? metadata.organizationId;
+    const userId =
+      typeof userIdRaw === 'number' && Number.isFinite(userIdRaw)
+        ? userIdRaw
+        : null;
+    const organisationId =
+      typeof orgIdRaw === 'number' && Number.isFinite(orgIdRaw)
+        ? orgIdRaw
+        : null;
+
     await this.loggingService.persistLog(
       'info',
       `Security event: ${event}`,
@@ -28,6 +39,8 @@ export class SecurityAuditService {
       metadata,
     );
     await this.auditTrailService.logSecurityEvent(event, metadata, {
+      userId,
+      organisationId,
       severity:
         event.includes('failure') || event.includes('suspicious')
           ? 'warn'

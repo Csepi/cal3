@@ -23,6 +23,10 @@ import { MoveToCalendarExecutor } from './executors/move-to-calendar.executor';
 import { CancelEventExecutor } from './executors/cancel-event.executor';
 import { CreateTaskExecutor } from './executors/create-task.executor';
 import { NotificationsModule } from '../notifications/notifications.module';
+import { ApiSecurityModule } from '../api-security/api-security.module';
+import { LoggingModule } from '../logging/logging.module';
+import { WebhookSecurityService } from './security/webhook-security.service';
+import { AutomationSecurityService } from './security/automation-security.service';
 
 @Module({
   imports: [
@@ -35,6 +39,8 @@ import { NotificationsModule } from '../notifications/notifications.module';
       Calendar,
     ]),
     NotificationsModule,
+    ApiSecurityModule,
+    LoggingModule,
   ],
   controllers: [AutomationController],
   providers: [
@@ -53,6 +59,8 @@ import { NotificationsModule } from '../notifications/notifications.module';
     CancelEventExecutor,
     CreateTaskExecutor,
     WebhookExecutor,
+    WebhookSecurityService,
+    AutomationSecurityService,
   ],
   exports: [
     AutomationService,

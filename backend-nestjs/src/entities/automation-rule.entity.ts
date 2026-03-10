@@ -71,6 +71,27 @@ export class AutomationRule {
   @Column({ type: 'varchar', length: 128, nullable: true })
   webhookSecret!: string;
 
+  @Column({ type: 'varchar', length: 128, nullable: true })
+  webhookSecretPrevious!: string | null;
+
+  @Column({ type: timestampType, nullable: true })
+  webhookSecretRotatedAt!: Date | null;
+
+  @Column({ type: timestampType, nullable: true })
+  webhookSecretGraceUntil!: Date | null;
+
+  @Column({ default: false })
+  isApprovalRequired!: boolean;
+
+  @Column({ type: timestampType, nullable: true })
+  approvedAt!: Date | null;
+
+  @ManyToOne(() => User, { nullable: true, onDelete: 'SET NULL' })
+  approvedBy!: User | null;
+
+  @Column({ type: 'integer', nullable: true })
+  approvedByUserId!: number | null;
+
   @ManyToOne(() => User, { onDelete: 'CASCADE' })
   createdBy!: User;
 

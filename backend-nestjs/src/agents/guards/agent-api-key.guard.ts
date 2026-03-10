@@ -7,6 +7,7 @@ import {
 import { Request } from 'express';
 import { AgentAuthorizationService } from '../agent-authorization.service';
 import { AgentContext } from '../interfaces/agent-context.interface';
+import { AuditTrailService } from '../../logging/audit-trail.service';
 
 type AgentRequest = Request & { agentContext?: AgentContext; user?: unknown };
 
@@ -14,17 +15,53 @@ type AgentRequest = Request & { agentContext?: AgentContext; user?: unknown };
 export class AgentApiKeyGuard implements CanActivate {
   constructor(
     private readonly agentAuthorizationService: AgentAuthorizationService,
+    private readonly auditTrailService: AuditTrailService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<AgentRequest>();
-    const token = this.extractToken(request);
+    try {
+      const token = this.extractToken(request);
+      const agentContext =
+        await this.agentAuthorizationService.validateApiKey(token);
+      request.agentContext = agentContext;
+      request.user = agentContext.user;
 
-    const agentContext =
-      await this.agentAuthorizationService.validateApiKey(token);
-    request.agentContext = agentContext;
-    request.user = agentContext.user;
-    return true;
+      void this.auditTrailService
+        .logSecurityEvent(
+          'mcp.endpoint.request',
+          {
+            agentId: agentContext.agent.id,
+            agentApiKeyId: agentContext.apiKey.id,
+            method: request.method,
+            path: request.originalUrl ?? request.url,
+          },
+          {
+            userId: agentContext.user.id,
+            outcome: 'success',
+            severity: 'info',
+          },
+        )
+        .catch(() => undefined);
+
+      return true;
+    } catch (error) {
+      void this.auditTrailService
+        .logSecurityEvent(
+          'mcp.endpoint.request',
+          {
+            method: request.method,
+            path: request.originalUrl ?? request.url,
+            error: error instanceof Error ? error.message : String(error),
+          },
+          {
+            outcome: 'failure',
+            severity: 'warn',
+          },
+        )
+        .catch(() => undefined);
+      throw error;
+    }
   }
 
   private extractToken(request: AgentRequest): string {

@@ -76,6 +76,30 @@ export class SecurityStoreService implements OnModuleDestroy {
     });
   }
 
+  async setIfAbsent(
+    key: string,
+    value: string,
+    ttlSeconds: number,
+  ): Promise<boolean> {
+    const ttl = Math.max(1, ttlSeconds);
+    const redis = await this.getRedisClient();
+    if (redis) {
+      const result = await redis.set(key, value, 'EX', ttl, 'NX');
+      return result === 'OK';
+    }
+
+    const now = Date.now();
+    const existing = this.readMemoryValue(key, now);
+    if (existing) {
+      return false;
+    }
+    this.memoryValues.set(key, {
+      value,
+      expiresAtMs: now + ttl * 1000,
+    });
+    return true;
+  }
+
   async getString(key: string): Promise<string | null> {
     const redis = await this.getRedisClient();
     if (redis) {

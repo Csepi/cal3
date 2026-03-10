@@ -18,7 +18,8 @@ export type TabId =
   | 'automation'
   | 'agent'
   | 'admin'
-  | 'notifications';
+  | 'notifications'
+  | 'personal-logs';
 
 interface Tab {
   id: TabId;
@@ -116,6 +117,13 @@ const icons = {
       <path d="M9 21a3 3 0 0 0 6 0" />
     </svg>
   ),
+  personalLogs: (
+    <svg viewBox="0 0 24 24" {...iconProps}>
+      <path d="M6 3h9l4 4v14H6z" />
+      <path d="M15 3v4h4" />
+      <path d="M9 12h6M9 16h6M9 8h3" />
+    </svg>
+  ),
   admin: (
     <svg viewBox="0 0 24 24" {...iconProps}>
       <circle cx="8" cy="13" r="4" />
@@ -170,6 +178,12 @@ export const BottomTabBar: React.FC<BottomTabBarProps> = ({
       visible: true, // Always visible
     },
     {
+      id: 'personal-logs',
+      icon: icons.personalLogs,
+      label: 'Logs',
+      visible: true,
+    },
+    {
       id: 'agent',
       icon: icons.agent,
       label: 'Agents',
@@ -214,10 +228,11 @@ export const BottomTabBar: React.FC<BottomTabBarProps> = ({
     reservations: 2,
     notifications: 3,
     profile: 4,
-    automation: 5,
-    agent: 6,
-    sync: 7,
-    admin: 8,
+    'personal-logs': 5,
+    automation: 6,
+    agent: 7,
+    sync: 8,
+    admin: 9,
   };
 
   const visibleTabs = allTabs

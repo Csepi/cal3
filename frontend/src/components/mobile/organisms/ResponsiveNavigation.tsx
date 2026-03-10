@@ -45,6 +45,14 @@ const ProfileIcon = (
   </svg>
 );
 
+const PersonalLogsIcon = (
+  <svg viewBox="0 0 24 24" {...iconProps}>
+    <path d="M6 3h9l4 4v14H6z" />
+    <path d="M15 3v4h4" />
+    <path d="M9 8h3M9 12h6M9 16h6" />
+  </svg>
+);
+
 const SyncIcon = (
   <svg viewBox="0 0 24 24" {...iconProps}>
     <path d="M21 12a9 9 0 0 0-15-6.7V3L3 6l3 3V6.7A7 7 0 1 1 12 19a6.9 6.9 0 0 1-4.9-2" />
@@ -183,6 +191,14 @@ export const ResponsiveNavigation: React.FC<ResponsiveNavigationProps> = React.m
       label: 'Profile',
       visible: true,
       isFeature: false,
+    },
+    {
+      id: 'personal-logs' as TabId,
+      icon: PersonalLogsIcon,
+      label: 'Personal Logs',
+      shortLabel: 'Logs',
+      visible: true,
+      isFeature: true,
     },
     {
       id: 'sync' as TabId,

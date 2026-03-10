@@ -73,7 +73,16 @@ async function bootstrap() {
     app.enableShutdownHooks();
     app.enable('trust proxy');
     const requestBodyLimit = process.env.REQUEST_MAX_BYTES || '1mb';
-    app.use(json({ limit: requestBodyLimit }));
+    app.use(
+      json({
+        limit: requestBodyLimit,
+        verify: (req, _res, buffer) => {
+          (req as Request & { rawBody?: string }).rawBody = buffer.toString(
+            'utf8',
+          );
+        },
+      }),
+    );
     app.use(urlencoded({ extended: true, limit: requestBodyLimit }));
     dbLogger.log('Shutdown hooks and proxy settings enabled.');
 

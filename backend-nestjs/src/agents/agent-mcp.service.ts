@@ -23,6 +23,8 @@ import { CreateTaskLabelDto } from '../tasks/dto/create-task-label.dto';
 import { UpdateTaskLabelDto } from '../tasks/dto/update-task-label.dto';
 import { CreateEventDto, UpdateEventDto } from '../dto/event.dto';
 import { Event } from '../entities/event.entity';
+import { AgentExecutionSecurityService } from './agent-execution-security.service';
+import { AuditTrailService } from '../logging/audit-trail.service';
 
 @Injectable()
 export class AgentMcpService {
@@ -33,6 +35,8 @@ export class AgentMcpService {
     private readonly tasksService: TasksService,
     private readonly taskLabelsService: TaskLabelsService,
     private readonly agentAuthorization: AgentAuthorizationService,
+    private readonly executionSecurity: AgentExecutionSecurityService,
+    private readonly auditTrailService: AuditTrailService,
   ) {}
 
   listAllowedActions(context: AgentContext) {
@@ -73,6 +77,57 @@ export class AgentMcpService {
   }
 
   async executeAction(context: AgentContext, dto: ExecuteAgentActionDto) {
+    try {
+      const result = await this.executionSecurity.executeGuarded({
+        agentId: context.agent.id,
+        action: dto.action,
+        parameters: dto.parameters ?? {},
+        run: () => this.executeActionInternal(context, dto),
+      });
+
+      void this.auditTrailService
+        .logSecurityEvent(
+          'mcp.action.execute',
+          {
+            action: dto.action,
+            agentId: context.agent.id,
+            apiKeyId: context.apiKey.id,
+            parameters: Object.keys(dto.parameters ?? {}),
+          },
+          {
+            userId: context.user.id,
+            outcome: 'success',
+            severity: 'info',
+          },
+        )
+        .catch(() => undefined);
+
+      return result;
+    } catch (error) {
+      void this.auditTrailService
+        .logSecurityEvent(
+          'mcp.action.execute',
+          {
+            action: dto.action,
+            agentId: context.agent.id,
+            apiKeyId: context.apiKey.id,
+            error: error instanceof Error ? error.message : String(error),
+          },
+          {
+            userId: context.user.id,
+            outcome: 'failure',
+            severity: 'warn',
+          },
+        )
+        .catch(() => undefined);
+      throw error;
+    }
+  }
+
+  private async executeActionInternal(
+    context: AgentContext,
+    dto: ExecuteAgentActionDto,
+  ) {
     switch (dto.action) {
       case AgentActionKey.USER_PROFILE_READ:
         this.agentAuthorization.ensureActionAllowed(
@@ -394,6 +449,8 @@ export class AgentMcpService {
     const executionId = await this.automationService.executeRuleNow(
       context.user.id,
       ruleId,
+      'agent',
+      `agent:${context.agent.id}`,
     );
     return {
       status: 'queued',

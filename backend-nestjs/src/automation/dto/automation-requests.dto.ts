@@ -1,5 +1,14 @@
 import { Transform, Type } from 'class-transformer';
-import { IsBoolean, IsInt, IsObject, IsOptional, Max, Min } from 'class-validator';
+import {
+  IsBoolean,
+  IsInt,
+  IsObject,
+  IsOptional,
+  IsString,
+  Max,
+  MaxLength,
+  Min,
+} from 'class-validator';
 
 export class ListAutomationRulesQueryDto {
   @IsOptional()
@@ -31,3 +40,9 @@ export class WebhookPayloadDto {
   payload?: Record<string, unknown>;
 }
 
+export class ApproveAutomationRuleDto {
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  note?: string;
+}

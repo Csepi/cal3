@@ -282,6 +282,18 @@ export class AutomationRuleDto {
   })
   webhookToken!: string | null;
 
+  @ApiProperty({
+    description:
+      'Whether this rule requires explicit approval before execution',
+    default: false,
+  })
+  isApprovalRequired!: boolean;
+
+  @ApiPropertyOptional({
+    description: 'Timestamp when approval was granted',
+  })
+  approvedAt!: Date | null;
+
   @ApiProperty()
   createdAt!: Date;
 

@@ -22,6 +22,15 @@ import { Event } from '../entities/event.entity';
 import { AutomationEvaluatorService } from './automation-evaluator.service';
 import { ActionExecutorRegistry } from './executors/action-executor-registry';
 import {
+  AutomationExecutionSource,
+  AutomationSecurityService,
+} from './security/automation-security.service';
+import {
+  IncomingWebhookSecurityInput,
+  WebhookSecurityService,
+} from './security/webhook-security.service';
+import { SecurityAuditService } from '../logging/security-audit.service';
+import {
   CreateAutomationRuleDto,
   UpdateAutomationRuleDto,
   AutomationRuleDto,
@@ -40,13 +49,16 @@ import {
 
 import { logError } from '../common/errors/error-logger';
 import { buildErrorContext } from '../common/errors/error-context';
+
+export interface WebhookExecutionRequestMetadata {
+  rawBody: string;
+  headers: Record<string, string | string[] | undefined>;
+  sourceIp?: string | null;
+}
+
 @Injectable()
 export class AutomationService {
   private readonly logger = new Logger(AutomationService.name);
-
-  // Rate limiting: Track last execution time per rule
-  private readonly executionTimestamps = new Map<number, number>();
-  private readonly RATE_LIMIT_MS = 60000; // 1 minute cooldown between executions
 
   constructor(
     @InjectRepository(AutomationRule)
@@ -61,6 +73,9 @@ export class AutomationService {
     private readonly eventRepository: Repository<Event>,
     private readonly evaluatorService: AutomationEvaluatorService,
     private readonly executorRegistry: ActionExecutorRegistry,
+    private readonly webhookSecurity: WebhookSecurityService,
+    private readonly automationSecurity: AutomationSecurityService,
+    private readonly securityAudit: SecurityAuditService,
   ) {}
 
   // ========================================
@@ -96,7 +111,7 @@ export class AutomationService {
     // Generate webhook token if this is a webhook trigger
     if (createRuleDto.triggerType === TriggerType.WEBHOOK_INCOMING) {
       rule.webhookToken = this.generateWebhookToken();
-      rule.webhookSecret = this.generateWebhookSecret();
+      rule.webhookSecret = this.webhookSecurity.generateWebhookSecret();
     }
 
     // Save rule first to get ID
@@ -125,7 +140,22 @@ export class AutomationService {
         order: actDto.order ?? index,
       }),
     );
-    await this.actionRepository.save(actions);
+    const savedActions = await this.actionRepository.save(actions);
+
+    const requiresApproval = this.automationSecurity.applyApprovalRequirement(
+      savedActions,
+      false,
+    );
+    if (savedRule.isApprovalRequired !== requiresApproval) {
+      await this.ruleRepository.update(
+        { id: savedRule.id },
+        {
+          isApprovalRequired: requiresApproval,
+          approvedAt: null,
+          approvedByUserId: null,
+        },
+      );
+    }
 
     // Load complete rule with relations
     return this.getRule(userId, savedRule.id);
@@ -250,6 +280,8 @@ export class AutomationService {
       await this.conditionRepository.save(newConditions);
     }
 
+    let effectiveActions = rule.actions;
+
     // Replace actions if provided
     if (updateRuleDto.actions) {
       // Delete old actions
@@ -264,8 +296,28 @@ export class AutomationService {
           order: actDto.order ?? index,
         }),
       );
-      await this.actionRepository.save(newActions);
+      effectiveActions = await this.actionRepository.save(newActions);
     }
+
+    const requiresApproval = this.automationSecurity.applyApprovalRequirement(
+      effectiveActions,
+      rule.isApprovalRequired,
+    );
+    const requiresReapproval = Boolean(
+      requiresApproval &&
+        (updateRuleDto.actions ||
+          updateRuleDto.triggerConfig !== undefined ||
+          updateRuleDto.isEnabled !== undefined),
+    );
+    rule.isApprovalRequired = requiresApproval;
+    if (!requiresApproval) {
+      rule.approvedAt = null;
+      rule.approvedByUserId = null;
+    } else if (requiresReapproval) {
+      rule.approvedAt = null;
+      rule.approvedByUserId = null;
+    }
+    await this.ruleRepository.save(rule);
 
     // Return updated rule with relations
     return this.getRule(userId, ruleId);
@@ -286,7 +338,12 @@ export class AutomationService {
     await this.ruleRepository.remove(rule);
   }
 
-  async executeRuleNow(userId: number, ruleId: number): Promise<number> {
+  async executeRuleNow(
+    userId: number,
+    ruleId: number,
+    source: AutomationExecutionSource = 'manual',
+    actorKey = `user:${userId}`,
+  ): Promise<number> {
     const rule = await this.ruleRepository.findOne({
       where: { id: ruleId },
       relations: ['conditions', 'actions'],
@@ -300,21 +357,19 @@ export class AutomationService {
       throw new ForbiddenException('You do not have access to this rule');
     }
 
-    // Rate limiting check
-    const now = Date.now();
-    const lastExecution = this.executionTimestamps.get(ruleId);
+    this.automationSecurity.assertKillSwitchDisabled();
+    this.automationSecurity.assertApprovalSatisfied(rule);
+    await this.automationSecurity.assertWithinRateLimits(
+      rule.id,
+      source,
+      actorKey,
+    );
 
-    if (lastExecution && now - lastExecution < this.RATE_LIMIT_MS) {
-      const remainingSeconds = Math.ceil(
-        (this.RATE_LIMIT_MS - (now - lastExecution)) / 1000,
-      );
-      throw new BadRequestException(
-        `Rate limit exceeded. Please wait ${remainingSeconds} seconds before running this rule again.`,
-      );
-    }
-
-    // Update execution timestamp
-    this.executionTimestamps.set(ruleId, now);
+    await this.securityAudit.log('automation.invocation', {
+      userId,
+      ruleId,
+      source,
+    });
 
     this.logger.log(
       `Executing rule ${ruleId} retroactively for user ${userId}`,
@@ -362,6 +417,9 @@ export class AutomationService {
     executedByUserId?: number,
     webhookData: Record<string, unknown> | null = null,
   ): Promise<void> {
+    this.automationSecurity.assertKillSwitchDisabled();
+    this.automationSecurity.assertApprovalSatisfied(rule);
+
     const startTime = Date.now();
     const executedAt = new Date();
 
@@ -720,6 +778,8 @@ export class AutomationService {
       lastExecutedAt: rule.lastExecutedAt,
       executionCount: rule.executionCount,
       webhookToken: rule.webhookToken,
+      isApprovalRequired: rule.isApprovalRequired,
+      approvedAt: rule.approvedAt,
       createdAt: rule.createdAt,
       updatedAt: rule.updatedAt,
     };
@@ -823,6 +883,7 @@ export class AutomationService {
   async executeRuleFromWebhook(
     webhookToken: string,
     webhookData: Record<string, unknown>,
+    metadata: WebhookExecutionRequestMetadata,
   ): Promise<{ success: boolean; ruleId: number; message: string }> {
     this.logger.log(`Webhook received for token: ${webhookToken}`);
 
@@ -849,8 +910,41 @@ export class AutomationService {
       );
     }
 
+    this.automationSecurity.assertKillSwitchDisabled();
+    this.automationSecurity.assertApprovalSatisfied(rule);
+    await this.automationSecurity.assertWithinRateLimits(
+      rule.id,
+      'webhook',
+      `ip:${metadata.sourceIp ?? 'unknown'}`,
+    );
+
+    const verificationInput: IncomingWebhookSecurityInput = {
+      rule,
+      token: webhookToken,
+      headers: metadata.headers,
+      rawBody: metadata.rawBody ?? JSON.stringify(webhookData),
+      sourceIp: metadata.sourceIp ?? null,
+    };
+    const verification =
+      await this.webhookSecurity.verifyIncomingRequest(verificationInput);
+
+    await this.securityAudit.log('webhook.received', {
+      userId: rule.createdById,
+      ruleId: rule.id,
+      sourceIp: metadata.sourceIp ?? null,
+      usedPreviousSecret: verification.usedPreviousSecret,
+      webhookTimestamp: verification.webhookTimestamp.toISOString(),
+    });
+
     // Execute the rule with webhook data (no event needed)
-    await this.executeRuleOnEvent(rule, null, undefined, webhookData);
+    await this.executeRuleOnEvent(rule, null, undefined, {
+      ...webhookData,
+      __webhook: {
+        receivedAt: new Date().toISOString(),
+        verifiedTimestamp: verification.webhookTimestamp.toISOString(),
+        sourceIp: metadata.sourceIp ?? null,
+      },
+    });
 
     this.logger.log(`Webhook rule ${rule.id} executed successfully`);
 
@@ -866,13 +960,6 @@ export class AutomationService {
    */
   private generateWebhookToken(): string {
     return crypto.randomBytes(32).toString('hex');
-  }
-
-  /**
-   * Generate a webhook secret for signature validation (64 bytes = 128 hex chars)
-   */
-  private generateWebhookSecret(): string {
-    return crypto.randomBytes(64).toString('hex');
   }
 
   /**
@@ -899,14 +986,81 @@ export class AutomationService {
       throw new BadRequestException('This rule is not a webhook trigger');
     }
 
-    // Generate new tokens
+    // Generate new token + secret pair and clear rotated-secret metadata
     rule.webhookToken = this.generateWebhookToken();
-    rule.webhookSecret = this.generateWebhookSecret();
+    rule.webhookSecret = this.webhookSecurity.generateWebhookSecret();
+    rule.webhookSecretPrevious = null;
+    rule.webhookSecretRotatedAt = null;
+    rule.webhookSecretGraceUntil = null;
 
     await this.ruleRepository.save(rule);
 
     this.logger.log(`Webhook token regenerated for rule ${ruleId}`);
 
     return rule.webhookToken;
+  }
+
+  async rotateWebhookSecret(
+    userId: number,
+    ruleId: number,
+  ): Promise<{ webhookSecret: string; graceUntil: string | null }> {
+    const rule = await this.ruleRepository.findOne({ where: { id: ruleId } });
+    if (!rule) {
+      throw new NotFoundException(`Rule with ID ${ruleId} not found`);
+    }
+    if (rule.createdById !== userId) {
+      throw new ForbiddenException('You do not have access to this rule');
+    }
+    if (rule.triggerType !== TriggerType.WEBHOOK_INCOMING) {
+      throw new BadRequestException('This rule is not a webhook trigger');
+    }
+
+    const rotated = this.webhookSecurity.computeRotatedSecretState(rule);
+    rule.webhookSecret = rotated.webhookSecret;
+    rule.webhookSecretPrevious = rotated.webhookSecretPrevious;
+    rule.webhookSecretRotatedAt = rotated.webhookSecretRotatedAt;
+    rule.webhookSecretGraceUntil = rotated.webhookSecretGraceUntil;
+    await this.ruleRepository.save(rule);
+
+    await this.securityAudit.log('automation.invocation', {
+      userId,
+      ruleId,
+      source: 'webhook_secret_rotation',
+    });
+
+    return {
+      webhookSecret: rotated.webhookSecret,
+      graceUntil: rotated.webhookSecretGraceUntil.toISOString(),
+    };
+  }
+
+  async approveRule(userId: number, ruleId: number, note?: string): Promise<Date> {
+    const rule = await this.ruleRepository.findOne({ where: { id: ruleId } });
+    if (!rule) {
+      throw new NotFoundException(`Rule with ID ${ruleId} not found`);
+    }
+    if (rule.createdById !== userId) {
+      throw new ForbiddenException('You do not have access to this rule');
+    }
+
+    if (!rule.isApprovalRequired) {
+      throw new BadRequestException(
+        'This automation rule does not require explicit approval.',
+      );
+    }
+
+    const approvedAt = new Date();
+    rule.approvedAt = approvedAt;
+    rule.approvedByUserId = userId;
+    await this.ruleRepository.save(rule);
+
+    await this.securityAudit.log('automation.invocation', {
+      userId,
+      ruleId,
+      source: 'approval',
+      note: note ?? null,
+    });
+
+    return approvedAt;
   }
 }

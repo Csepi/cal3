@@ -23,6 +23,7 @@ import {
   ApiParam,
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import type { Request } from 'express';
 
 // Decorator to mark routes as public (bypass JWT auth)
 export const Public = () => SetMetadata('isPublic', true);
@@ -44,7 +45,7 @@ import {
 import type { RequestWithUser } from '../common/types/request-with-user';
 import {
   ListAutomationRulesQueryDto,
-  WebhookPayloadDto,
+  ApproveAutomationRuleDto,
 } from './dto/automation-requests.dto';
 
 @ApiTags('automation')
@@ -279,11 +280,24 @@ export class AutomationController {
   })
   async handleWebhook(
     @Param('token') token: string,
-    @Body() body: WebhookPayloadDto,
+    @Body() body: Record<string, unknown>,
+    @Req() req: Request,
   ): Promise<{ success: boolean; ruleId: number; message: string }> {
+    const payload =
+      body && typeof body === 'object' && !Array.isArray(body)
+        ? ((body.payload as Record<string, unknown> | undefined) ?? body)
+        : {};
     return this.automationService.executeRuleFromWebhook(
       token,
-      body.payload ?? {},
+      payload,
+      {
+        rawBody:
+          typeof (req as Request & { rawBody?: unknown }).rawBody === 'string'
+            ? ((req as Request & { rawBody?: string }).rawBody ?? '')
+            : JSON.stringify(payload),
+        headers: req.headers as Record<string, string | string[] | undefined>,
+        sourceIp: req.ip ?? null,
+      },
     );
   }
 
@@ -313,6 +327,58 @@ export class AutomationController {
       id,
     );
     return { webhookToken };
+  }
+
+  @Post('rules/:id/webhook/rotate-secret')
+  @ApiOperation({ summary: 'Rotate webhook signing secret for a rule' })
+  @ApiParam({ name: 'id', description: 'Rule ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'Webhook secret rotated successfully',
+    schema: {
+      properties: {
+        webhookSecret: { type: 'string' },
+        graceUntil: { type: 'string', format: 'date-time' },
+      },
+    },
+  })
+  async rotateWebhookSecret(
+    @Param('id', ParseIntPipe) id: number,
+    @Req() req: RequestWithUser,
+  ): Promise<{ webhookSecret: string; graceUntil: string | null }> {
+    const userId = req.user.id;
+    return this.automationService.rotateWebhookSecret(userId, id);
+  }
+
+  @Post('rules/:id/approve')
+  @ApiOperation({ summary: 'Approve automation rule for sensitive actions' })
+  @ApiParam({ name: 'id', description: 'Rule ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'Automation rule approved',
+    schema: {
+      properties: {
+        approved: { type: 'boolean', example: true },
+        approvedAt: { type: 'string', format: 'date-time' },
+      },
+    },
+  })
+  async approveRule(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: ApproveAutomationRuleDto,
+    @Req() req: RequestWithUser,
+  ): Promise<{ approved: boolean; approvedAt: string; note?: string }> {
+    const userId = req.user.id;
+    const approvedAt = await this.automationService.approveRule(
+      userId,
+      id,
+      dto.note,
+    );
+    return {
+      approved: true,
+      approvedAt: approvedAt.toISOString(),
+      ...(dto.note ? { note: dto.note } : {}),
+    };
   }
 
   // ========================================

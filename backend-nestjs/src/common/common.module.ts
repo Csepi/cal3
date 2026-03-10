@@ -30,6 +30,7 @@ import { RbacAuthorizationGuard } from './authorization/rbac-authorization.guard
 import { RlsSessionService } from './database/rls-session.service';
 import { SecurityReportsController } from './security/security-reports.controller';
 import { CsrfService } from './security/csrf.service';
+import { OutboundRequestSecurityService } from './security/outbound-request-security.service';
 import { ParameterizedQueryService } from './database/parameterized-query.service';
 import { ErrorRecoveryService } from './exceptions/error-recovery.service';
 import { IdempotencyInterceptor } from './interceptors/idempotency.interceptor';
@@ -71,6 +72,7 @@ import { IdempotencyInterceptor } from './interceptors/idempotency.interceptor';
     RbacAuthorizationGuard,
     RlsSessionService,
     CsrfService,
+    OutboundRequestSecurityService,
     ParameterizedQueryService,
     ErrorRecoveryService,
     IdempotencyInterceptor,
@@ -93,6 +95,7 @@ import { IdempotencyInterceptor } from './interceptors/idempotency.interceptor';
     RbacAuthorizationGuard,
     RlsSessionService,
     CsrfService,
+    OutboundRequestSecurityService,
     ParameterizedQueryService,
     ErrorRecoveryService,
     IdempotencyInterceptor,

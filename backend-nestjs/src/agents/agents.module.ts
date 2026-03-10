@@ -18,6 +18,9 @@ import { User } from '../entities/user.entity';
 import { FeatureFlagsService } from '../common/feature-flags.service';
 import { ConfigurationModule } from '../configuration/configuration.module';
 import { TasksModule } from '../tasks/tasks.module';
+import { ApiSecurityModule } from '../api-security/api-security.module';
+import { LoggingModule } from '../logging/logging.module';
+import { AgentExecutionSecurityService } from './agent-execution-security.service';
 
 @Module({
   imports: [
@@ -32,6 +35,8 @@ import { TasksModule } from '../tasks/tasks.module';
     AutomationModule,
     TasksModule,
     ConfigurationModule,
+    ApiSecurityModule,
+    LoggingModule,
   ],
   controllers: [AgentsController, AgentMcpController, AgentMcpStreamController],
   providers: [
@@ -40,6 +45,7 @@ import { TasksModule } from '../tasks/tasks.module';
     AgentAuthorizationService,
     AgentMcpService,
     AgentMcpHttpService,
+    AgentExecutionSecurityService,
     FeatureFlagsService,
   ],
   exports: [AgentsService, AgentAuthorizationService],

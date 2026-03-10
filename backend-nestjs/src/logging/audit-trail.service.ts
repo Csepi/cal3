@@ -34,6 +34,9 @@ export interface AuditEventQuery {
   categories?: AuditEventCategory[];
   severities?: AuditEventSeverity[];
   outcomes?: AuditEventOutcome[];
+  actions?: string[];
+  userId?: number;
+  organisationId?: number;
   search?: string;
   from?: Date;
   to?: Date;
@@ -177,6 +180,11 @@ export class AuditTrailService {
         categories: query.categories,
       });
     }
+    if (query.actions?.length) {
+      qb.andWhere('event.action IN (:...actions)', {
+        actions: query.actions,
+      });
+    }
     if (query.severities?.length) {
       qb.andWhere('event.severity IN (:...severities)', {
         severities: query.severities,
@@ -199,6 +207,14 @@ export class AuditTrailService {
     }
     if (query.to) {
       qb.andWhere('event.createdAt <= :to', { to: query.to.toISOString() });
+    }
+    if (typeof query.userId === 'number') {
+      qb.andWhere('event.userId = :userId', { userId: query.userId });
+    }
+    if (typeof query.organisationId === 'number') {
+      qb.andWhere('event.organisationId = :organisationId', {
+        organisationId: query.organisationId,
+      });
     }
 
     const offset = Math.max(query.offset ?? 0, 0);

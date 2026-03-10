@@ -10,6 +10,7 @@ import {
 import { UsersService } from './users.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { ListUsersQueryDto } from './dto/list-users.query.dto';
+import { PersonalAuditQueryDto } from './dto/personal-audit.query.dto';
 
 @ApiTags('Users')
 @Controller('users')
@@ -29,6 +30,40 @@ export class UsersController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   findAll(@Query() query: ListUsersQueryDto) {
     return this.usersService.findAll(query.search);
+  }
+
+  @Get('me/audit')
+  @ApiOperation({ summary: 'Get personal audit trail for current user' })
+  @ApiResponse({
+    status: 200,
+    description: 'Personal audit trail retrieved successfully',
+  })
+  getPersonalAudit(
+    @Request() req: RequestWithUser,
+    @Query() query: PersonalAuditQueryDto,
+  ) {
+    return this.usersService.getPersonalAuditFeed(req.user.id, query);
+  }
+
+  @Get('me/audit/summary')
+  @ApiOperation({ summary: 'Get personal audit summary for current user' })
+  @ApiResponse({
+    status: 200,
+    description: 'Personal audit summary retrieved successfully',
+  })
+  async getPersonalAuditSummary(
+    @Request() req: RequestWithUser,
+    @Query() query: PersonalAuditQueryDto,
+  ) {
+    const result = await this.usersService.getPersonalAuditFeed(req.user.id, {
+      ...query,
+      limit: 1,
+      offset: 0,
+      includeAutomation: true,
+    });
+    return {
+      summary: result.summary,
+    };
   }
 
   @Get('me')

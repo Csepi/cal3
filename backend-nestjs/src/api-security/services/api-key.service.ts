@@ -11,6 +11,7 @@ import { UsagePlan, User } from '../../entities/user.entity';
 import { ApiKey, ApiKeyScope, ApiKeyTier } from '../../entities/api-key.entity';
 import type { ApiKeyAuthContext } from '../types';
 import { CreateApiKeyDto } from '../dto/api-key.dto';
+import { AuditTrailService } from '../../logging/audit-trail.service';
 
 interface ParsedApiKey {
   prefix: string;
@@ -36,6 +37,7 @@ export class ApiKeyService {
     private readonly apiKeyRepository: Repository<ApiKey>,
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+    private readonly auditTrailService: AuditTrailService,
   ) {}
 
   async createForUser(userId: number, dto: CreateApiKeyDto) {
@@ -177,6 +179,24 @@ export class ApiKeyService {
         { lastUsedAt: new Date(now) },
       ),
     ]);
+
+    void this.auditTrailService
+      .logSecurityEvent(
+        'api_key.request',
+        {
+          apiKeyId: key.id,
+          scope: requiredScope,
+          method,
+          path,
+          tier: key.tier,
+        },
+        {
+          userId: user.id,
+          outcome: 'success',
+          severity: 'info',
+        },
+      )
+      .catch(() => undefined);
 
     return {
       context: {
