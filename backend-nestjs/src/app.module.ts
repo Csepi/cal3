@@ -2,8 +2,6 @@ import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
-import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
-import { APP_GUARD } from '@nestjs/core';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
@@ -38,18 +36,15 @@ import { RequestSanitizationMiddleware } from './common/middleware/request-sanit
 import { StrictOriginMiddleware } from './common/middleware/strict-origin.middleware';
 import { CsrfProtectionMiddleware } from './common/middleware/csrf-protection.middleware';
 import { MonitoringModule } from './monitoring/monitoring.module';
+import { ApiSecurityModule } from './api-security/api-security.module';
+import { IpBlockMiddleware } from './api-security/middleware/ip-block.middleware';
+import { RequestHardeningMiddleware } from './api-security/middleware/request-hardening.middleware';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    ThrottlerModule.forRoot([
-      {
-        ttl: parseInt(process.env.RATE_LIMIT_WINDOW_SEC ?? '60', 10),
-        limit: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS ?? '120', 10),
-      },
-    ]),
     ScheduleModule.forRoot(),
     DatabaseModule,
     AuthModule,
@@ -70,6 +65,7 @@ import { MonitoringModule } from './monitoring/monitoring.module';
     ConfigurationModule,
     TasksModule,
     MonitoringModule,
+    ApiSecurityModule,
     TypeOrmModule.forFeature([
       User,
       Calendar,
@@ -88,10 +84,6 @@ import { MonitoringModule } from './monitoring/monitoring.module';
     AppService,
     DatabaseDiagnosticsService,
     FeatureFlagsService,
-    {
-      provide: APP_GUARD,
-      useClass: ThrottlerGuard,
-    },
   ],
 })
 export class AppModule implements NestModule {
@@ -99,6 +91,8 @@ export class AppModule implements NestModule {
     consumer
       .apply(
         RequestContextMiddleware,
+        IpBlockMiddleware,
+        RequestHardeningMiddleware,
         RequestSanitizationMiddleware,
         StrictOriginMiddleware,
         CsrfProtectionMiddleware,

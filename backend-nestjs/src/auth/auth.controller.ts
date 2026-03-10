@@ -25,7 +25,6 @@ import {
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { ConfigurationService } from '../configuration/configuration.service';
 import { type Response, type Request as ExpressRequest } from 'express';
-import { Throttle } from '@nestjs/throttler';
 import type { AuthSessionResult, AuthRequestMetadata } from './auth.service';
 import type { RequestWithUser } from '../common/types/request-with-user';
 import {
@@ -105,7 +104,6 @@ export class AuthController {
   }
 
   @Post('login')
-  @Throttle({ login: { limit: 5, ttl: 60 } })
   @ApiOperation({ summary: 'Login user' })
   @ApiResponse({
     status: 200,
@@ -146,7 +144,6 @@ export class AuthController {
   }
 
   @Post('refresh')
-  @Throttle({ refresh: { limit: 10, ttl: 60 } })
   @ApiOperation({ summary: 'Rotate refresh token and issue new access token' })
   async refresh(
     @Body() body: RefreshTokenRequestDto,

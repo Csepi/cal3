@@ -106,6 +106,7 @@ const BASE_ALLOWED_HEADERS = [
   'X-Requested-With',
   'X-Organisation-Id',
   'X-Idempotency-Key',
+  'X-API-Key',
   'X-CSRF-Token',
   'X-PrimeCal-Client',
 ] as const;

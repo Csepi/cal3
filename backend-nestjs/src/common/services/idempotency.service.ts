@@ -22,6 +22,15 @@ export interface IdempotencyOptions<T> {
 @Injectable()
 export class IdempotencyService {
   private readonly logger = new Logger(IdempotencyService.name);
+  private readonly keyPattern = /^[A-Za-z0-9:_-]{8,128}$/;
+  private readonly minTtlSeconds = parseInt(
+    process.env.IDEMPOTENCY_MIN_TTL_SEC || '30',
+    10,
+  );
+  private readonly maxTtlSeconds = parseInt(
+    process.env.IDEMPOTENCY_MAX_TTL_SEC || '86400',
+    10,
+  );
   private readonly defaultTtlSeconds = parseInt(
     process.env.IDEMPOTENCY_DEFAULT_TTL_SEC || '3600',
     10,
@@ -46,10 +55,19 @@ export class IdempotencyService {
     if (key.length > 128) {
       throw new BadRequestException('Idempotency key is too long.');
     }
+    if (!this.keyPattern.test(key)) {
+      throw new BadRequestException(
+        'Idempotency key must match [A-Za-z0-9:_-] and be 8-128 chars.',
+      );
+    }
 
     const normalizedScope = options.scope;
     const requestHash = this.hashPayload(options.payload);
-    const ttlSeconds = options.ttlSeconds ?? this.defaultTtlSeconds;
+    const requestedTtl = options.ttlSeconds ?? this.defaultTtlSeconds;
+    const ttlSeconds = Math.max(
+      this.minTtlSeconds,
+      Math.min(this.maxTtlSeconds, requestedTtl),
+    );
     const now = new Date();
 
     const existing = await this.repository.findOne({
@@ -64,7 +82,15 @@ export class IdempotencyService {
           'Conflicting request payload for supplied Idempotency-Key.',
         );
       } else if (existing.responsePayload) {
-        return JSON.parse(existing.responsePayload) as TResult;
+        try {
+          return JSON.parse(existing.responsePayload) as TResult;
+        } catch {
+          this.logger.warn(
+            `Failed to parse cached idempotent response for key ${key}; replay cache discarded.`,
+          );
+          existing.responsePayload = null;
+          await this.repository.save(existing);
+        }
       }
     }
 
@@ -94,6 +120,16 @@ export class IdempotencyService {
       );
       throw error;
     }
+  }
+
+  async purgeExpired(referenceDate = new Date()): Promise<number> {
+    const result = await this.repository
+      .createQueryBuilder()
+      .delete()
+      .from(IdempotencyRecord)
+      .where('expiresAt < :now', { now: referenceDate.toISOString() })
+      .execute();
+    return result.affected ?? 0;
   }
 
   private hashPayload(payload: unknown): string {

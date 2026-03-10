@@ -87,6 +87,26 @@ export class LoginDto {
   @MinLength(1)
   @MaxLength(128)
   password!: string;
+
+  @ApiPropertyOptional({
+    description:
+      'Captcha token required when suspicious activity is detected.',
+  })
+  @IsOptional()
+  @SanitizeText({ trim: true })
+  @IsString()
+  @MaxLength(2048)
+  captchaToken?: string;
+
+  @ApiPropertyOptional({
+    description:
+      'Honeypot field (must stay empty). Any value indicates bot activity.',
+  })
+  @IsOptional()
+  @SanitizeText({ trim: true })
+  @IsString()
+  @MaxLength(120)
+  honeypot?: string;
 }
 
 export class AuthResponseDto {

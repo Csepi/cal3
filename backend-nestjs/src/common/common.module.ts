@@ -32,6 +32,7 @@ import { SecurityReportsController } from './security/security-reports.controlle
 import { CsrfService } from './security/csrf.service';
 import { ParameterizedQueryService } from './database/parameterized-query.service';
 import { ErrorRecoveryService } from './exceptions/error-recovery.service';
+import { IdempotencyInterceptor } from './interceptors/idempotency.interceptor';
 
 @Global() // Make this module global so its exports are available everywhere
 @Module({
@@ -72,6 +73,7 @@ import { ErrorRecoveryService } from './exceptions/error-recovery.service';
     CsrfService,
     ParameterizedQueryService,
     ErrorRecoveryService,
+    IdempotencyInterceptor,
   ],
   exports: [
     UserPermissionsService,
@@ -93,6 +95,7 @@ import { ErrorRecoveryService } from './exceptions/error-recovery.service';
     CsrfService,
     ParameterizedQueryService,
     ErrorRecoveryService,
+    IdempotencyInterceptor,
     TypeOrmModule,
   ],
 })

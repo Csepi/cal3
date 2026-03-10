@@ -14,9 +14,10 @@ import {
   WidgetTokenIssueResult,
 } from './token.service';
 import { SecurityAuditService } from '../logging/security-audit.service';
-import { LoginAttemptService } from './services/login-attempt.service';
 import { UserBootstrapService } from '../tasks/user-bootstrap.service';
 import { JwtRevocationService } from './services/jwt-revocation.service';
+import { AbusePreventionService } from '../api-security/services/abuse-prevention.service';
+import { CaptchaVerificationService } from '../api-security/services/captcha-verification.service';
 
 export interface AuthRequestMetadata {
   ip?: string;
@@ -46,7 +47,8 @@ export class AuthService {
     private userRepository: Repository<User>,
     private readonly tokenService: TokenService,
     private readonly securityAudit: SecurityAuditService,
-    private readonly loginAttemptService: LoginAttemptService,
+    private readonly abusePreventionService: AbusePreventionService,
+    private readonly captchaVerificationService: CaptchaVerificationService,
     private readonly userBootstrapService: UserBootstrapService,
     private readonly jwtRevocationService: JwtRevocationService,
   ) {}
@@ -98,6 +100,45 @@ export class AuthService {
     metadata: AuthRequestMetadata = {},
   ): Promise<AuthSessionResult> {
     const { username, password } = loginDto;
+    const normalizedUsername = username.trim().toLowerCase();
+    await this.abusePreventionService.assertIpAllowed(metadata.ip);
+    await this.abusePreventionService.assertAccountAllowed(normalizedUsername);
+
+    if (loginDto.honeypot && loginDto.honeypot.trim().length > 0) {
+      await this.abusePreventionService.markHoneypotHit(
+        metadata.ip,
+        '/api/auth/login',
+      );
+      await this.securityAudit.log('auth.login.failure', {
+        username: normalizedUsername,
+        reason: 'honeypot_filled',
+        ip: metadata.ip,
+      });
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    const requiresCaptcha = await this.abusePreventionService.requiresCaptcha(
+      normalizedUsername,
+      metadata.ip,
+    );
+    if (requiresCaptcha) {
+      const captchaValid = await this.captchaVerificationService.verify(
+        loginDto.captchaToken,
+        metadata.ip,
+      );
+      if (!captchaValid) {
+        await this.abusePreventionService.registerLoginFailure(
+          normalizedUsername,
+          metadata.ip,
+        );
+        await this.securityAudit.log('auth.login.failure', {
+          username: normalizedUsername,
+          reason: 'captcha_failed',
+          ip: metadata.ip,
+        });
+        throw new UnauthorizedException('CAPTCHA validation failed');
+      }
+    }
 
     // Find user by username or email
     const user = await this.userRepository.findOne({
@@ -105,9 +146,12 @@ export class AuthService {
     });
 
     if (!user) {
-      this.loginAttemptService.registerFailure(username, metadata.ip);
+      await this.abusePreventionService.registerLoginFailure(
+        normalizedUsername,
+        metadata.ip,
+      );
       await this.securityAudit.log('auth.login.failure', {
-        username,
+        username: normalizedUsername,
         reason: 'user_not_found',
         ip: metadata.ip,
       });
@@ -117,11 +161,16 @@ export class AuthService {
     // Verify password
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
-      this.loginAttemptService.registerFailure(username, metadata.ip);
+      const state = await this.abusePreventionService.registerLoginFailure(
+        normalizedUsername,
+        metadata.ip,
+      );
       await this.securityAudit.log('auth.login.failure', {
         userId: user.id,
         reason: 'bad_password',
         ip: metadata.ip,
+        accountLocked: state.accountLocked,
+        ipBlocked: state.ipBlocked,
       });
       throw new UnauthorizedException('Invalid credentials');
     }
@@ -131,7 +180,10 @@ export class AuthService {
       throw new UnauthorizedException('Account is disabled');
     }
 
-    this.loginAttemptService.reset(username, metadata.ip);
+    await this.abusePreventionService.resetLoginFailures(
+      normalizedUsername,
+      metadata.ip,
+    );
 
     const session = await this.createSession(user, metadata);
     await this.securityAudit.log('auth.login.success', {

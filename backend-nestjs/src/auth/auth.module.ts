@@ -12,12 +12,12 @@ import { User } from '../entities/user.entity';
 import { ConfigurationModule } from '../configuration/configuration.module';
 import { TokenService } from './token.service';
 import { RefreshToken } from '../entities/refresh-token.entity';
-import { LoginAttemptService } from './services/login-attempt.service';
 import { LoggingModule } from '../logging/logging.module';
 import { TasksModule } from '../tasks/tasks.module';
 import { RefreshTokenFamilyService } from './services/refresh-token-family.service';
 import { JwtRevocationService } from './services/jwt-revocation.service';
 import { TokenFingerprintService } from './services/token-fingerprint.service';
+import { ApiSecurityModule } from '../api-security/api-security.module';
 
 @Module({
   imports: [
@@ -25,6 +25,7 @@ import { TokenFingerprintService } from './services/token-fingerprint.service';
     ConfigurationModule,
     TasksModule,
     LoggingModule,
+    ApiSecurityModule,
     PassportModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
@@ -45,7 +46,6 @@ import { TokenFingerprintService } from './services/token-fingerprint.service';
     GoogleStrategy,
     MicrosoftStrategy,
     TokenService,
-    LoginAttemptService,
     RefreshTokenFamilyService,
     JwtRevocationService,
     TokenFingerprintService,

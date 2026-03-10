@@ -34,8 +34,10 @@ import {
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 import { NestExpressApplication } from '@nestjs/platform-express';
-import { NextFunction, Request, Response } from 'express';
+import { json, urlencoded, NextFunction, Request, Response } from 'express';
 import { ParameterizedQueryService } from './common/database/parameterized-query.service';
+import { RateLimitInterceptor } from './api-security/interceptors/rate-limit.interceptor';
+import { IdempotencyInterceptor } from './common/interceptors/idempotency.interceptor';
 
 const logger = new Logger('Bootstrap');
 const dbLogger = new Logger('DatabaseConnection');
@@ -70,6 +72,9 @@ async function bootstrap() {
     dbLogger.log('Enabling shutdown hooks and proxy settings...');
     app.enableShutdownHooks();
     app.enable('trust proxy');
+    const requestBodyLimit = process.env.REQUEST_MAX_BYTES || '1mb';
+    app.use(json({ limit: requestBodyLimit }));
+    app.use(urlencoded({ extended: true, limit: requestBodyLimit }));
     dbLogger.log('Shutdown hooks and proxy settings enabled.');
 
     // Get DataSource to monitor connection
@@ -241,6 +246,8 @@ async function bootstrap() {
     const responseInterceptor = new ResponseInterceptor(requestContext);
     app.useGlobalInterceptors(
       new RequestContextUserInterceptor(requestContext),
+      app.get(RateLimitInterceptor),
+      app.get(IdempotencyInterceptor),
       requestLoggingInterceptor,
       metricsInterceptor,
       responseInterceptor,
@@ -259,17 +266,95 @@ async function bootstrap() {
 
     // Swagger documentation
     dbLogger.log('Building Swagger documentation...');
+    const swaggerUser = process.env.SWAGGER_USER?.trim();
+    const swaggerPassword = process.env.SWAGGER_PASSWORD?.trim();
+    const swaggerEnabled =
+      process.env.NODE_ENV !== 'production' || Boolean(swaggerUser && swaggerPassword);
+    if (swaggerUser && swaggerPassword) {
+      app.use(['/api/docs', '/api/docs-json'], (req: Request, res: Response, next: NextFunction) => {
+        const header = req.headers.authorization;
+        if (!header || !header.startsWith('Basic ')) {
+          res.setHeader('WWW-Authenticate', 'Basic realm="PrimeCal API Docs"');
+          res.status(401).send('Swagger authentication required');
+          return;
+        }
+        const credentials = Buffer.from(
+          header.replace('Basic ', ''),
+          'base64',
+        ).toString('utf8');
+        const [username, password] = credentials.split(':');
+        if (username !== swaggerUser || password !== swaggerPassword) {
+          res.setHeader('WWW-Authenticate', 'Basic realm="PrimeCal API Docs"');
+          res.status(401).send('Invalid Swagger credentials');
+          return;
+        }
+        next();
+      });
+    }
+
     const config = new DocumentBuilder()
       .setTitle('Calendar Sharing API')
       .setDescription(
-        'A comprehensive calendar sharing application with multi-user support',
+        'A comprehensive calendar sharing application with multi-user support, enterprise API security, abuse prevention, and idempotency safeguards.',
       )
       .setVersion('1.0')
-      .addBearerAuth()
+      .addBearerAuth(
+        {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+          description: 'JWT access token',
+        },
+        'bearer',
+      )
+      .addApiKey(
+        {
+          type: 'apiKey',
+          in: 'header',
+          name: 'X-API-Key',
+          description:
+            'Scoped API key (read/write/admin). Supported together with JWT authentication.',
+        },
+        'apiKey',
+      )
       .build();
     const document = SwaggerModule.createDocument(app, config);
-    SwaggerModule.setup('api/docs', app, document);
-    dbLogger.log('Swagger documentation registered.');
+    document.security = [{ bearer: [] }, { apiKey: [] }];
+    document.components = document.components || {};
+    document.components.responses = document.components.responses || {};
+    document.components.responses.RateLimited = {
+      description: 'Too many requests',
+      headers: {
+        'X-RateLimit-Limit': {
+          description: 'Rate limit ceiling for the current window',
+          schema: { type: 'integer' },
+        },
+        'X-RateLimit-Remaining': {
+          description: 'Remaining requests in the current window',
+          schema: { type: 'integer' },
+        },
+        'X-RateLimit-Reset': {
+          description: 'Unix epoch seconds when the window resets',
+          schema: { type: 'integer' },
+        },
+      },
+      content: {
+        'application/json': {
+          example: {
+            statusCode: 429,
+            message: 'Rate limit exceeded. Please retry later.',
+          },
+        },
+      },
+    };
+    if (swaggerEnabled) {
+      SwaggerModule.setup('api/docs', app, document);
+      dbLogger.log('Swagger documentation registered.');
+    } else {
+      dbLogger.warn(
+        'Swagger disabled in production because SWAGGER_USER/SWAGGER_PASSWORD are not configured.',
+      );
+    }
 
     dbLogger.log('Starting HTTP server...');
     await app.listen(backendPort, backendHost);
