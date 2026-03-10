@@ -46,7 +46,13 @@
     "scripts:verify:migration": "node scripts/verify/verify-migration.js",
     "scripts:verify:org-access": "node scripts/verify/verify-org-access.js",
     "coverage:backend": "npm --prefix backend-nestjs run test:cov",
-    "coverage:frontend": "npm --prefix frontend run test:cov"
+    "coverage:frontend": "npm --prefix frontend run test:cov",
+    "docs:restructure": "node scripts/docs/restructure-docs.cjs",
+    "docs:check-links": "node scripts/docs/check-links.cjs",
+    "docs:check-metadata": "node scripts/docs/check-metadata.cjs",
+    "docs:check": "npm run docs:check-links && npm run docs:check-metadata",
+    "docs:portal:dev": "npm --prefix docs-portal run start",
+    "docs:portal:build": "npm --prefix docs-portal run build"
   },
   "keywords": [
     "cal3",

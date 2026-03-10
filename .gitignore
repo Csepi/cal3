@@ -116,3 +116,7 @@ app_screenshot.png
 
 # Android
 frontend/android/local.properties
+
+# Docs portal generated files
+docs-portal/.docusaurus/
+docs-portal/build/

@@ -1,0 +1,82 @@
+:root {
+  --ifm-color-primary: #1f6feb;
+  --ifm-color-primary-dark: #1a5fc8;
+  --ifm-color-primary-darker: #1759bb;
+  --ifm-color-primary-light: #357cf5;
+  --ifm-color-primary-lighter: #4a8af6;
+  --ifm-background-color: #f6f8fa;
+}
+
+html[data-doc-font-size='small'] {
+  font-size: 14px;
+}
+
+html[data-doc-font-size='medium'] {
+  font-size: 16px;
+}
+
+html[data-doc-font-size='large'] {
+  font-size: 18px;
+}
+
+.theme-doc-markdown {
+  line-height: 1.7;
+}
+
+.pc-doc-tools {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  padding: 0.5rem;
+  margin-bottom: 0.75rem;
+  border: 1px solid var(--ifm-color-emphasis-300);
+  background: linear-gradient(90deg, #eef4ff 0%, #f8fbff 100%);
+  border-radius: 0.5rem;
+}
+
+[data-theme='dark'] .pc-doc-tools {
+  background: linear-gradient(90deg, #1b2230 0%, #1e2a3f 100%);
+}
+
+.pc-doc-tools__group {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.pc-doc-tools button {
+  border: 1px solid var(--ifm-color-emphasis-300);
+  background: var(--ifm-background-surface-color);
+  color: var(--ifm-font-color-base);
+  border-radius: 0.4rem;
+  padding: 0.2rem 0.6rem;
+  cursor: pointer;
+}
+
+.pc-doc-tools button.is-active {
+  border-color: var(--ifm-color-primary);
+  color: var(--ifm-color-primary);
+}
+
+.pc-back-to-top {
+  margin-left: auto;
+}
+
+@media (max-width: 996px) {
+  .pc-doc-tools {
+    position: static;
+  }
+}
+
+@media print {
+  .pc-doc-tools,
+  .theme-doc-sidebar-container,
+  .navbar,
+  .footer {
+    display: none !important;
+  }
+}

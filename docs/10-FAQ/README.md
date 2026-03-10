@@ -1,13 +1,6 @@
-# 10 - FAQ: Fast Answers for Real Work
+# Documentation Moved
 
-Last updated: 2026-02-03
+This page has moved to the consolidated structure.
 
-[Documentation Home](../README.md)
-
-This FAQ section is your quick decision layer. Use it when you need a direct answer before jumping into deeper implementation or operations docs.
-
-- [General FAQ](./general.md)
-- [Technical FAQ](./technical.md)
-- [Deployment FAQ](./deployment.md)
-
-If a question repeats in team channels, add it here with a short answer and a link to the full guide.
+- Canonical page: [index.md](../index.md)
+- Archived snapshot: [archives/pre-consolidation/10-FAQ/README.md](../archives/pre-consolidation/10-FAQ/README.md)

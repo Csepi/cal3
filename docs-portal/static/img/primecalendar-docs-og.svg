@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" role="img" aria-label="PrimeCalendar Documentation">
+  <defs>
+    <linearGradient id="g" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#0f172a" />
+      <stop offset="100%" stop-color="#1f6feb" />
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#g)" />
+  <rect x="90" y="90" width="220" height="180" rx="24" fill="#ffffff" />
+  <rect x="90" y="90" width="220" height="48" rx="24" fill="#bfdbfe" />
+  <circle cx="145" cy="192" r="14" fill="#1f6feb" />
+  <circle cx="200" cy="192" r="14" fill="#1f6feb" />
+  <circle cx="255" cy="192" r="14" fill="#1f6feb" />
+  <text x="360" y="220" fill="#ffffff" font-size="78" font-family="Segoe UI, Arial, sans-serif" font-weight="700">
+    PrimeCalendar Docs
+  </text>
+  <text x="360" y="290" fill="#dbeafe" font-size="34" font-family="Segoe UI, Arial, sans-serif">
+    Consolidated guides, references, troubleshooting, and best practices
+  </text>
+</svg>
