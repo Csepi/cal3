@@ -100,7 +100,7 @@ export class UserProfileController {
 
     const currentUser = await this.userRepository.findOne({
       where: { id: userId },
-      select: ['id', 'username', 'email'],
+      select: ['id', 'username', 'email', 'defaultTasksCalendarId'],
     });
 
     if (!currentUser) {
@@ -158,8 +158,15 @@ export class UserProfileController {
       updatePayload.preferredLanguage = resolvedLanguage;
     }
 
-    if (defaultTasksCalendarId !== undefined) {
-      const calendarId = defaultTasksCalendarId;
+    const defaultCalendarProvided = defaultTasksCalendarId !== undefined;
+    const currentDefaultCalendarId = currentUser.defaultTasksCalendarId ?? null;
+    const requestedDefaultCalendarId = defaultTasksCalendarId ?? null;
+    const defaultCalendarChanged =
+      defaultCalendarProvided &&
+      requestedDefaultCalendarId !== currentDefaultCalendarId;
+
+    if (defaultCalendarChanged) {
+      const calendarId = requestedDefaultCalendarId;
 
       if (calendarId === null) {
         updatePayload.defaultTasksCalendarId = () => 'NULL';
@@ -232,12 +239,9 @@ export class UserProfileController {
       }
     }
 
-    const defaultCalendarChanged =
-      defaultTasksCalendarId !== undefined && defaultTasksCalendarId !== null;
-
     await this.userRepository.update(userId, updatePayload);
 
-    if (defaultCalendarChanged) {
+    if (defaultCalendarChanged && requestedDefaultCalendarId !== null) {
       const tasksNeedingSync = await this.taskRepository.find({
         where: { ownerId: userId, dueDate: Not(IsNull()) },
         select: ['id'],
