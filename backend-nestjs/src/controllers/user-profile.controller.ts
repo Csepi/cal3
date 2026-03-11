@@ -98,20 +98,44 @@ export class UserProfileController {
   ) {
     const userId = req.user.id;
 
-    // Check for existing username/email conflicts
-    if (updateProfileDto.username || updateProfileDto.email) {
+    const currentUser = await this.userRepository.findOne({
+      where: { id: userId },
+      select: ['id', 'username', 'email'],
+    });
+
+    if (!currentUser) {
+      throw new ConflictException(
+        this.i18nService.t('errors.notFound', {
+          lang: this.resolveLanguage(req),
+          defaultValue: 'User not found',
+        }),
+      );
+    }
+
+    // Only run uniqueness checks for fields that actually changed.
+    const usernameChanged =
+      typeof updateProfileDto.username === 'string' &&
+      updateProfileDto.username.trim().length > 0 &&
+      updateProfileDto.username.trim() !== (currentUser.username ?? '').trim();
+    const emailChanged =
+      typeof updateProfileDto.email === 'string' &&
+      updateProfileDto.email.trim().length > 0 &&
+      updateProfileDto.email.trim().toLowerCase() !==
+        (currentUser.email ?? '').trim().toLowerCase();
+
+    if (usernameChanged || emailChanged) {
       const conflicts = await this.userRepository.findOne({
         where: [
-          ...(updateProfileDto.username
-            ? [{ username: updateProfileDto.username }]
+          ...(usernameChanged
+            ? [{ username: updateProfileDto.username!.trim(), id: Not(userId) }]
             : []),
-          ...(updateProfileDto.email
-            ? [{ email: updateProfileDto.email }]
+          ...(emailChanged
+            ? [{ email: updateProfileDto.email!.trim(), id: Not(userId) }]
             : []),
         ],
       });
 
-      if (conflicts && conflicts.id !== userId) {
+      if (conflicts) {
         throw new ConflictException(
           this.i18nService.t('auth.usernameAlreadyExists', {
             lang: this.resolveLanguage(req),
