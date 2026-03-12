@@ -186,6 +186,17 @@ export class AllExceptionsFilter implements ExceptionFilter {
           recoverable: true,
         };
       }
+      if (dbError.type === 'connection' || dbError.type === 'timeout') {
+        return {
+          status: HttpStatus.SERVICE_UNAVAILABLE,
+          code: ERROR_CODES.SERVICE_UNAVAILABLE,
+          message: dbError.message,
+          userMessage:
+            'Service is temporarily unavailable. Please try again shortly.',
+          details: dbError,
+          recoverable: true,
+        };
+      }
       return {
         status: HttpStatus.BAD_REQUEST,
         code: ERROR_CODES.DATABASE_ERROR,

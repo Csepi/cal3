@@ -5,6 +5,7 @@ import { isNativeClient } from './clientPlatform';
 
 const MUTATING_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
 const IDEMPOTENT_METHODS = new Set(['GET', 'HEAD', 'OPTIONS']);
+const DEFAULT_REQUEST_TIMEOUT_MS = 15_000;
 const generateTraceId = (): string =>
   Math.random().toString(36).substring(2, 8);
 
@@ -34,6 +35,65 @@ const delay = async (ms: number) => {
   await new Promise((resolve) => setTimeout(resolve, ms));
 };
 
+const isAbortError = (error: unknown): boolean => {
+  if (!error || typeof error !== 'object') {
+    return false;
+  }
+  const candidate = error as { name?: string; message?: string };
+  const name = candidate.name?.toLowerCase() ?? '';
+  const message = candidate.message?.toLowerCase() ?? '';
+  return (
+    name === 'aborterror' ||
+    message.includes('aborterror') ||
+    message.includes('aborted')
+  );
+};
+
+const normalizeNetworkError = (
+  error: unknown,
+  requestUrl: string,
+): Error => {
+  if (!(error instanceof Error)) {
+    return new Error('Unable to reach the server. Please try again shortly.');
+  }
+
+  const lower = error.message.toLowerCase();
+  if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+    const offlineError = new Error(
+      'You appear to be offline. Check your internet connection and try again.',
+    );
+    offlineError.name = 'NetworkRequestError';
+    return offlineError;
+  }
+
+  if (isAbortError(error)) {
+    const timeoutError = new Error(
+      'The server is not responding right now. Please try again in a moment.',
+    );
+    timeoutError.name = 'NetworkRequestError';
+    return timeoutError;
+  }
+
+  if (
+    lower.includes('failed to fetch') ||
+    lower.includes('networkerror') ||
+    lower.includes('network request failed') ||
+    lower.includes('load failed')
+  ) {
+    const unavailableError = new Error(
+      'Unable to reach the server. Please try again shortly.',
+    );
+    unavailableError.name = 'NetworkRequestError';
+    return unavailableError;
+  }
+
+  clientLogger.warn('[network] returning unmodified error', {
+    requestUrl,
+    errorName: error.name,
+  });
+  return error;
+};
+
 const isRetriableNetworkError = (error: unknown): boolean => {
   if (typeof navigator !== 'undefined' && navigator.onLine === false) {
     return false;
@@ -43,6 +103,9 @@ const isRetriableNetworkError = (error: unknown): boolean => {
   }
   const message = error.message.toLowerCase();
   return (
+    isAbortError(error) ||
+    message.includes('timeout') ||
+    message.includes('timed out') ||
     message.includes('failed to fetch') ||
     message.includes('networkerror') ||
     message.includes('network request failed') ||
@@ -268,6 +331,7 @@ export async function secureFetch(
     credentials: rest.credentials ?? 'include',
     body: originalBody,
   };
+  const timeoutMs = DEFAULT_REQUEST_TIMEOUT_MS;
   const requestUrl = resolveRequestUrl(input);
   const traceId = generateTraceId();
   const startedAt = now();
@@ -294,7 +358,28 @@ export async function secureFetch(
   }
 
   const executeOnce = async (): Promise<Response> => {
-    const response = await fetch(input, requestInit);
+    let timeoutHandle: ReturnType<typeof setTimeout> | undefined;
+    let signal = requestInit.signal;
+
+    if (!signal && typeof AbortController !== 'undefined') {
+      const controller = new AbortController();
+      signal = controller.signal;
+      timeoutHandle = setTimeout(() => controller.abort(), timeoutMs);
+    }
+
+    let response: Response;
+    try {
+      response = await fetch(input, {
+        ...requestInit,
+        body: originalBody,
+        signal,
+      });
+    } finally {
+      if (timeoutHandle) {
+        clearTimeout(timeoutHandle);
+      }
+    }
+
     const duration = Math.round(now() - startedAt);
     clientLogger.debug(
       `[network:${traceId}] ${method} ${requestUrl} <- ${response.status} (${duration}ms)`,
@@ -315,7 +400,25 @@ export async function secureFetch(
           clientLogger.debug(
             `[network:${traceId}] retrying ${method} ${requestUrl} after refresh`,
           );
-          return fetch(input, retryInit);
+          let timeoutHandle: ReturnType<typeof setTimeout> | undefined;
+          let signal = retryInit.signal;
+          if (!signal && typeof AbortController !== 'undefined') {
+            const controller = new AbortController();
+            signal = controller.signal;
+            timeoutHandle = setTimeout(() => controller.abort(), timeoutMs);
+          }
+          let retryResponse: Response;
+          try {
+            retryResponse = await fetch(input, {
+              ...retryInit,
+              signal,
+            });
+          } finally {
+            if (timeoutHandle) {
+              clearTimeout(timeoutHandle);
+            }
+          }
+          return retryResponse;
         }
       }
 
@@ -374,7 +477,7 @@ export async function secureFetch(
         typeof input === 'string' ? input : undefined,
       );
     }
-    throw error;
+    throw normalizeNetworkError(error, requestUrl);
   }
 }
 

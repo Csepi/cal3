@@ -166,6 +166,34 @@ export function extractErrorDetails(error: unknown): ErrorDetails {
   }
 
   if (error instanceof Error) {
+    const lowerMessage = error.message.toLowerCase();
+    if (
+      error.name === 'NetworkRequestError' ||
+      lowerMessage.includes('failed to fetch') ||
+      lowerMessage.includes('networkerror') ||
+      lowerMessage.includes('network request failed')
+    ) {
+      return {
+        message: 'Unable to reach the server right now. Please try again shortly.',
+        stack: error.stack,
+        timestamp: new Date().toISOString(),
+        errorType: error.name,
+        isNetworkError: true,
+      };
+    }
+    if (
+      error.name === 'AbortError' ||
+      lowerMessage.includes('timed out') ||
+      lowerMessage.includes('timeout')
+    ) {
+      return {
+        message: 'The request timed out. Please try again in a moment.',
+        stack: error.stack,
+        timestamp: new Date().toISOString(),
+        errorType: error.name,
+        isTimeout: true,
+      };
+    }
     return {
       message: error.message,
       stack: error.stack,

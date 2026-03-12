@@ -63,6 +63,32 @@ interface AuthResponse {
   user: UserProfile;
 }
 
+const extractApiErrorMessage = (
+  payload: unknown,
+  fallback: string,
+): string => {
+  if (!payload || typeof payload !== 'object') {
+    return fallback;
+  }
+  const body = payload as Record<string, unknown>;
+  const directMessage =
+    (typeof body.message === 'string' && body.message) ||
+    (typeof body.error === 'string' && body.error);
+  if (directMessage) {
+    return directMessage;
+  }
+
+  const nestedError = body.error;
+  if (nestedError && typeof nestedError === 'object') {
+    const nestedMessage = (nestedError as Record<string, unknown>).message;
+    if (typeof nestedMessage === 'string' && nestedMessage.length > 0) {
+      return nestedMessage;
+    }
+  }
+
+  return fallback;
+};
+
 export interface CompleteOnboardingPayload {
   firstName?: string;
   lastName?: string;
@@ -709,8 +735,10 @@ class ApiService {
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || 'Login failed');
+      const errorData = await response.json().catch(() => null);
+      throw new Error(
+        extractApiErrorMessage(errorData, 'Unable to sign in right now.'),
+      );
     }
 
     const data = await response.json();
@@ -730,8 +758,13 @@ class ApiService {
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || 'Registration failed');
+      const errorData = await response.json().catch(() => null);
+      throw new Error(
+        extractApiErrorMessage(
+          errorData,
+          'Unable to create your account right now.',
+        ),
+      );
     }
 
     const data = await response.json();
@@ -766,7 +799,9 @@ class ApiService {
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || 'Failed to complete onboarding');
+      throw new Error(
+        extractApiErrorMessage(errorData, 'Failed to complete onboarding'),
+      );
     }
 
     const data = await response.json() as {
