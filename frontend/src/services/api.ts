@@ -46,6 +46,7 @@ interface UserProfile {
   email?: string;
   firstName?: string;
   lastName?: string;
+  profilePictureUrl?: string | null;
   role?: string;
   onboardingCompleted?: boolean;
   onboardingCompletedAt?: string;
@@ -80,6 +81,10 @@ export interface CompleteOnboardingPayload {
   calendarUseCase?: 'personal' | 'business' | 'team' | 'other';
   setupGoogleCalendarSync?: boolean;
   setupMicrosoftCalendarSync?: boolean;
+}
+
+export interface UploadProfilePictureResponse {
+  profilePictureUrl: string;
 }
 
 interface LoginOptions {
@@ -812,6 +817,26 @@ class ApiService {
     }
 
     return await response.json();
+  }
+
+  async uploadProfilePicture(file: File): Promise<UploadProfilePictureResponse> {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const response = await this.secureApiFetch(
+      `${BASE_URL}/api/user/profile-picture`,
+      {
+        method: 'POST',
+        body: formData,
+      },
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || 'Failed to upload profile picture');
+    }
+
+    return (await response.json()) as UploadProfilePictureResponse;
   }
 
   async updateUserProfile(profileData: Partial<UserProfile>): Promise<UserProfile> {

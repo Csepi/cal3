@@ -8,6 +8,18 @@ type RuntimeConfigScope = {
 
 const getRuntimeConfig = (): RuntimeConfigScope => globalThis as RuntimeConfigScope;
 
+const getImportMetaEnv = (): Record<string, unknown> | undefined => {
+  try {
+    return Function(
+      'return typeof import.meta !== "undefined" ? import.meta.env : undefined;',
+    )() as Record<string, unknown> | undefined;
+  } catch {
+    return undefined;
+  }
+};
+
+const importMetaEnv = getImportMetaEnv();
+
 const readStringValue = (
   keys: string[],
   fallback: string,
@@ -18,7 +30,7 @@ const readStringValue = (
       runtime.ENV?.[key],
       runtime.CONFIG?.[key],
       runtime.process?.env?.[key],
-      import.meta.env[key as keyof ImportMetaEnv],
+      importMetaEnv?.[key],
     ];
     for (const value of candidates) {
       if (typeof value === 'string' && value.trim().length > 0) {

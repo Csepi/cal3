@@ -51,6 +51,7 @@ interface UserProfileData {
   email?: string;
   firstName?: string;
   lastName?: string;
+  profilePictureUrl?: string | null;
   timezone?: string;
   timeFormat?: string;
   language?: string;

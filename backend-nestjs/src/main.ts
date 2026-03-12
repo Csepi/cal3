@@ -35,6 +35,7 @@ import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { json, urlencoded, NextFunction, Request, Response } from 'express';
+import { join } from 'node:path';
 import { ParameterizedQueryService } from './common/database/parameterized-query.service';
 import { RateLimitInterceptor } from './api-security/interceptors/rate-limit.interceptor';
 import { IdempotencyInterceptor } from './common/interceptors/idempotency.interceptor';
@@ -74,6 +75,9 @@ async function bootstrap() {
     dbLogger.log('Enabling shutdown hooks and proxy settings...');
     app.enableShutdownHooks();
     app.enable('trust proxy');
+    app.useStaticAssets(join(process.cwd(), 'uploads'), {
+      prefix: '/uploads/',
+    });
     const requestBodyLimit = process.env.REQUEST_MAX_BYTES || '1mb';
     app.use(
       json({

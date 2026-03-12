@@ -183,6 +183,11 @@ describeDockerBacked('Auth flow integration (postgres testcontainer)', ({
     expect(accessToken).toBeTruthy();
 
     await request(server)
+      .get('/user/profile')
+      .set('Authorization', `Bearer ${accessToken}`)
+      .expect(403);
+
+    await request(server)
       .post('/auth/complete-onboarding')
       .set('Authorization', `Bearer ${accessToken}`)
       .send({
@@ -206,6 +211,11 @@ describeDockerBacked('Auth flow integration (postgres testcontainer)', ({
         expect(response.body.success).toBe(true);
         expect(response.body.user?.onboardingCompleted).toBe(true);
       });
+
+    await request(server)
+      .get('/user/profile')
+      .set('Authorization', `Bearer ${accessToken}`)
+      .expect(200);
 
     const loginResponse = await request(server)
       .post('/auth/login')

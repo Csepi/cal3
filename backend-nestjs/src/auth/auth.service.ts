@@ -4,7 +4,7 @@ import {
   ConflictException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, EntityManager } from 'typeorm';
 import * as bcrypt from 'bcryptjs';
 import { User, UserRole } from '../entities/user.entity';
 import { RegisterDto, LoginDto, AuthResponseDto } from '../dto/auth.dto';
@@ -55,8 +55,6 @@ export class AuthService {
   constructor(
     @InjectRepository(User)
     private userRepository: Repository<User>,
-    @InjectRepository(UserConsent)
-    private readonly userConsentRepository: Repository<UserConsent>,
     private readonly tokenService: TokenService,
     private readonly securityAudit: SecurityAuditService,
     private readonly abusePreventionService: AbusePreventionService,
@@ -248,6 +246,7 @@ export class AuthService {
         'email',
         'firstName',
         'lastName',
+        'profilePictureUrl',
         'role',
         'themeColor',
         'onboardingCompleted',
@@ -385,15 +384,6 @@ export class AuthService {
     dto: CompleteOnboardingDto,
     metadata: AuthRequestMetadata = {},
   ): Promise<Partial<User>> {
-    const user = await this.userRepository.findOne({
-      where: { id: userId, isActive: true },
-    });
-
-    if (!user) {
-      throw new UnauthorizedException(bStatic('errors.auto.backend.kdf19e5c63dda'));
-    }
-
-    const now = new Date();
     const privacyPolicyVersion = this.resolvePolicyVersion(
       dto.privacyPolicyVersion,
       'PRIVACY_POLICY_VERSION',
@@ -408,55 +398,78 @@ export class AuthService {
       termsOfServiceVersion,
     );
 
-    if (dto.firstName !== undefined) {
-      user.firstName = dto.firstName;
-    }
-    if (dto.lastName !== undefined) {
-      user.lastName = dto.lastName;
-    }
+    const savedUser = await this.userRepository.manager.transaction(
+      async (manager) => {
+        const userRepository = manager.getRepository(User);
+        const user = await userRepository.findOne({
+          where: { id: userId, isActive: true },
+        });
 
-    user.language = dto.language;
-    user.preferredLanguage = dto.language;
-    user.timezone = dto.timezone;
-    user.timeFormat = dto.timeFormat;
-    user.weekStartDay = dto.weekStartDay;
-    user.defaultCalendarView = dto.defaultCalendarView;
-    user.themeColor = dto.themeColor;
-    user.privacyPolicyAcceptedAt = now;
-    user.privacyPolicyVersion = privacyPolicyVersion;
-    user.onboardingCompleted = true;
-    user.onboardingCompletedAt = now;
-    user.onboardingUseCase = dto.calendarUseCase ?? null;
-    user.onboardingGoogleCalendarSyncRequested =
-      dto.setupGoogleCalendarSync ?? false;
-    user.onboardingMicrosoftCalendarSyncRequested =
-      dto.setupMicrosoftCalendarSync ?? false;
+        if (!user) {
+          throw new UnauthorizedException(
+            bStatic('errors.auto.backend.kdf19e5c63dda'),
+          );
+        }
 
-    const savedUser = await this.userRepository.save(user);
+        const now = new Date();
+        if (dto.firstName !== undefined) {
+          user.firstName = dto.firstName;
+        }
+        if (dto.lastName !== undefined) {
+          user.lastName = dto.lastName;
+        }
+        if (dto.profilePictureUrl !== undefined) {
+          user.profilePictureUrl = dto.profilePictureUrl;
+        }
 
-    await Promise.all([
-      this.appendConsentRecord(
-        savedUser.id,
-        'privacy_policy',
-        'accepted',
-        privacyPolicyVersion,
-        metadata,
-      ),
-      this.appendConsentRecord(
-        savedUser.id,
-        'terms_of_service',
-        'accepted',
-        termsOfServiceVersion,
-        metadata,
-      ),
-      this.appendConsentRecord(
-        savedUser.id,
-        'marketing_email',
-        dto.productUpdatesEmailConsent ? 'accepted' : 'revoked',
-        marketingConsentVersion,
-        metadata,
-      ),
-    ]);
+        user.language = dto.language;
+        user.preferredLanguage = dto.language;
+        user.timezone = dto.timezone;
+        user.timeFormat = dto.timeFormat;
+        user.weekStartDay = dto.weekStartDay;
+        user.defaultCalendarView = dto.defaultCalendarView;
+        user.themeColor = dto.themeColor;
+        user.privacyPolicyAcceptedAt = now;
+        user.privacyPolicyVersion = privacyPolicyVersion;
+        user.onboardingCompleted = true;
+        user.onboardingCompletedAt = now;
+        user.onboardingUseCase = dto.calendarUseCase ?? null;
+        user.onboardingGoogleCalendarSyncRequested =
+          dto.setupGoogleCalendarSync ?? false;
+        user.onboardingMicrosoftCalendarSyncRequested =
+          dto.setupMicrosoftCalendarSync ?? false;
+
+        const persistedUser = await userRepository.save(user);
+        await Promise.all([
+          this.appendConsentRecord(
+            manager,
+            persistedUser.id,
+            'privacy_policy',
+            'accepted',
+            privacyPolicyVersion,
+            metadata,
+          ),
+          this.appendConsentRecord(
+            manager,
+            persistedUser.id,
+            'terms_of_service',
+            'accepted',
+            termsOfServiceVersion,
+            metadata,
+          ),
+          this.appendConsentRecord(
+            manager,
+            persistedUser.id,
+            'marketing_email',
+            dto.productUpdatesEmailConsent ? 'accepted' : 'revoked',
+            marketingConsentVersion,
+            metadata,
+          ),
+        ]);
+
+        return persistedUser;
+      },
+    );
 
     await this.securityAudit.log('auth.onboarding.completed', {
       userId: savedUser.id,
@@ -476,6 +489,7 @@ export class AuthService {
       email: savedUser.email,
       firstName: savedUser.firstName,
       lastName: savedUser.lastName,
+      profilePictureUrl: savedUser.profilePictureUrl ?? null,
       themeColor: savedUser.themeColor,
       language: savedUser.language,
       timezone: savedUser.timezone,
@@ -527,6 +541,7 @@ export class AuthService {
   }
 
   private async appendConsentRecord(
+    manager: EntityManager,
     userId: number,
     consentType: UserConsentType,
     decision: UserConsentDecision,
@@ -534,7 +549,8 @@ export class AuthService {
     metadata: AuthRequestMetadata,
   ): Promise<void> {
     const now = new Date();
-    const record = this.userConsentRepository.create({
+    const repository = manager.getRepository(UserConsent);
+    const record = repository.create({
       userId,
       consentType,
       policyVersion,
@@ -547,7 +563,7 @@ export class AuthService {
         ? metadata.userAgent.slice(0, 255)
         : null,
     });
-    await this.userConsentRepository.save(record);
+    await repository.save(record);
   }
 
   private buildResponse(user: User, tokens: TokenIssueResult): AuthResponseDto {
@@ -563,6 +579,7 @@ export class AuthService {
         email: user.email,
         firstName: user.firstName,
         lastName: user.lastName,
+        profilePictureUrl: user.profilePictureUrl ?? null,
         role: user.role,
         themeColor: user.themeColor,
         onboardingCompleted: user.onboardingCompleted,

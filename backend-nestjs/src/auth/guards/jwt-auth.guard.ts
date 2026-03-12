@@ -1,10 +1,16 @@
-import { Injectable, ExecutionContext, Optional } from '@nestjs/common';
+import {
+  Injectable,
+  ExecutionContext,
+  Optional,
+  ForbiddenException,
+} from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { AuthGuard } from '@nestjs/passport';
 import type { Request } from 'express';
 import { firstValueFrom, isObservable } from 'rxjs';
 import type { ApiKeyAuthContext } from '../../api-security/types';
 import { ApiKeyService } from '../../api-security/services/api-key.service';
+import { ALLOW_INCOMPLETE_ONBOARDING_KEY } from '../decorators/allow-incomplete-onboarding.decorator';
 
 type AuthRequest = Request & {
   apiKey?: ApiKeyAuthContext;
@@ -46,9 +52,13 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
 
     const activationResult = super.canActivate(context);
     if (isObservable(activationResult)) {
-      return firstValueFrom(activationResult);
+      const activated = await firstValueFrom(activationResult);
+      this.assertOnboardingCompletedOrAllowed(context, request);
+      return activated;
     }
-    return Boolean(await activationResult);
+    const activated = Boolean(await activationResult);
+    this.assertOnboardingCompletedOrAllowed(context, request);
+    return activated;
   }
 
   private extractApiKey(request: AuthRequest): string | null {
@@ -71,5 +81,38 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
       return null;
     }
     return token.trim();
+  }
+
+  private assertOnboardingCompletedOrAllowed(
+    context: ExecutionContext,
+    request: AuthRequest,
+  ): void {
+    if (request.apiKey) {
+      return;
+    }
+
+    const allowIncomplete = this.reflector.getAllAndOverride<boolean>(
+      ALLOW_INCOMPLETE_ONBOARDING_KEY,
+      [context.getHandler(), context.getClass()],
+    );
+    if (allowIncomplete) {
+      return;
+    }
+
+    const path = request.path || request.originalUrl || request.url || '';
+    if (path.startsWith('/api/auth') || path.startsWith('/auth')) {
+      return;
+    }
+
+    const user = request.user as { onboardingCompleted?: boolean } | undefined;
+    if (!user) {
+      return;
+    }
+
+    if (user.onboardingCompleted === false) {
+      throw new ForbiddenException(
+        'Onboarding must be completed before accessing this resource.',
+      );
+    }
   }
 }

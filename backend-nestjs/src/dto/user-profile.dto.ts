@@ -11,6 +11,8 @@ import {
   IsArray,
   IsEnum,
   IsBoolean,
+  IsUrl,
+  MaxLength,
 } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { UsagePlan } from '../entities/user.entity';
@@ -48,6 +50,16 @@ export class UpdateProfileDto {
   @IsOptional()
   @IsString()
   lastName?: string;
+
+  @ApiPropertyOptional({
+    example: 'https://cdn.example.com/avatar.jpg',
+    description: 'Profile picture URL',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(2048)
+  @IsUrl({ require_tld: false })
+  profilePictureUrl?: string;
 
   @ApiPropertyOptional({
     example: 1,

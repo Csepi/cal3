@@ -10,14 +10,22 @@ import PersonalizationStep from './steps/PersonalizationStep';
 import ComplianceStep from './steps/ComplianceStep';
 import CalendarPreferencesStep from './steps/CalendarPreferencesStep';
 import ReviewStep from './steps/ReviewStep';
+import { profileApi } from '../../services/profileApi';
+import { useAppTranslation } from '../../i18n/useAppTranslation';
 
 const TOTAL_STEPS = 5;
 
 const OnboardingWizard: React.FC = () => {
   const navigate = useNavigate();
   const { currentUser } = useAuth();
+  const { t } = useAppTranslation('auth');
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isUploadingProfilePicture, setIsUploadingProfilePicture] =
+    useState(false);
+  const [profilePictureError, setProfilePictureError] = useState<string | null>(
+    null,
+  );
   const [submissionError, setSubmissionError] = useState<string | null>(null);
   const [isComplete, setIsComplete] = useState(false);
   const [redirectCountdown, setRedirectCountdown] = useState(2);
@@ -135,12 +143,31 @@ const OnboardingWizard: React.FC = () => {
       setRedirectCountdown(2);
     } catch (error) {
       const message =
-        error instanceof Error
-          ? error.message
-          : 'Failed to complete onboarding. Please try again.';
+        error instanceof Error ? error.message : t('onboarding.completeFailed');
       setSubmissionError(message);
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleUploadProfilePicture = async (file: File) => {
+    setProfilePictureError(null);
+    setIsUploadingProfilePicture(true);
+    try {
+      const response = await profileApi.uploadProfilePicture(file);
+      setState((previous) => ({
+        ...previous,
+        profile: {
+          ...previous.profile,
+          profilePictureUrl: response.profilePictureUrl,
+        },
+      }));
+    } catch (error) {
+      setProfilePictureError(
+        error instanceof Error ? error.message : t('onboarding.uploadFailed'),
+      );
+    } finally {
+      setIsUploadingProfilePicture(false);
     }
   };
 
@@ -152,6 +179,8 @@ const OnboardingWizard: React.FC = () => {
           firstName={state.profile.firstName}
           lastName={state.profile.lastName}
           profilePicturePreview={state.profile.profilePictureUrl}
+          isUploadingProfilePicture={isUploadingProfilePicture}
+          profilePictureError={profilePictureError}
           onFirstNameChange={(value) =>
             setState((previous) => ({
               ...previous,
@@ -164,12 +193,7 @@ const OnboardingWizard: React.FC = () => {
               profile: { ...previous.profile, lastName: value },
             }))
           }
-          onProfilePictureChange={(value) =>
-            setState((previous) => ({
-              ...previous,
-              profile: { ...previous.profile, profilePictureUrl: value },
-            }))
-          }
+          onUploadProfilePicture={handleUploadProfilePicture}
         />
       );
     }
@@ -224,11 +248,15 @@ const OnboardingWizard: React.FC = () => {
       <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-blue-50 to-white px-4">
         <div className="w-full max-w-md rounded-2xl border border-green-200 bg-white p-6 text-center shadow-sm">
           <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-green-100">
-            <span className="text-lg text-green-700">✓</span>
+            <span className="text-xs font-semibold text-green-700" aria-hidden="true">
+              OK
+            </span>
           </div>
-          <h2 className="text-xl font-semibold text-gray-900">Setup complete</h2>
+          <h2 className="text-xl font-semibold text-gray-900">
+            {t('onboarding.setupCompleteTitle')}
+          </h2>
           <p className="mt-2 text-sm text-gray-600">
-            Redirecting to your calendar in {redirectCountdown}...
+            {t('onboarding.redirectMessage', { seconds: redirectCountdown })}
           </p>
         </div>
       </div>
@@ -241,12 +269,25 @@ const OnboardingWizard: React.FC = () => {
         <div className="rounded-2xl border border-blue-100 bg-white p-6 shadow-sm sm:p-8">
           <div className="mb-6">
             <div className="mb-2 flex items-center justify-between text-sm text-gray-600">
-              <span>Onboarding</span>
+              <span>{t('onboarding.title')}</span>
               <span>
-                Step {currentStep} of {TOTAL_STEPS}
+                {t('onboarding.stepCounter', {
+                  current: currentStep,
+                  total: TOTAL_STEPS,
+                })}
               </span>
             </div>
-            <div className="h-2 w-full overflow-hidden rounded-full bg-gray-100">
+            <div
+              className="h-2 w-full overflow-hidden rounded-full bg-gray-100"
+              role="progressbar"
+              aria-valuemin={1}
+              aria-valuemax={TOTAL_STEPS}
+              aria-valuenow={currentStep}
+              aria-label={t('onboarding.stepCounter', {
+                current: currentStep,
+                total: TOTAL_STEPS,
+              })}
+            >
               <div
                 className="h-full rounded-full bg-blue-500 transition-all duration-300"
                 style={{ width: `${(currentStep / TOTAL_STEPS) * 100}%` }}
@@ -257,7 +298,10 @@ const OnboardingWizard: React.FC = () => {
           {renderStep()}
 
           {submissionError && (
-            <div className="mt-5 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+            <div
+              className="mt-5 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
+              role="alert"
+            >
               {submissionError}
             </div>
           )}
@@ -270,7 +314,7 @@ const OnboardingWizard: React.FC = () => {
                   onClick={goBack}
                   className="rounded-xl border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
                 >
-                  Back
+                  {t('onboarding.back')}
                 </button>
               )}
               {(currentStep === 2 || currentStep === 4) && (
@@ -279,7 +323,7 @@ const OnboardingWizard: React.FC = () => {
                   onClick={handleSkip}
                   className="rounded-xl border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 transition hover:bg-gray-50"
                 >
-                  Skip for now
+                  {t('onboarding.skipForNow')}
                 </button>
               )}
             </div>
@@ -291,19 +335,21 @@ const OnboardingWizard: React.FC = () => {
                 disabled={!canProceed}
                 className="rounded-xl bg-blue-600 px-5 py-2 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-300"
               >
-                Next
+                {t('onboarding.next')}
               </button>
             ) : (
               <button
                 type="button"
                 onClick={handleComplete}
-                disabled={isSubmitting || !onboardingService.canProceedToNextStep(5, state)}
+                disabled={
+                  isSubmitting || !onboardingService.canProceedToNextStep(5, state)
+                }
                 className="inline-flex items-center justify-center gap-2 rounded-xl bg-green-600 px-5 py-2 text-sm font-semibold text-white transition hover:bg-green-700 disabled:cursor-not-allowed disabled:bg-green-300"
               >
                 {isSubmitting && (
                   <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
                 )}
-                Complete Setup
+                {t('onboarding.completeSetup')}
               </button>
             )}
           </div>

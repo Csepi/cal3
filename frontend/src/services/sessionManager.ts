@@ -16,6 +16,7 @@ interface SessionUser {
   email?: string;
   firstName?: string;
   lastName?: string;
+  profilePictureUrl?: string | null;
   role?: string;
   themeColor?: string;
   onboardingCompleted?: boolean;

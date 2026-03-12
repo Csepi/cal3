@@ -12,6 +12,7 @@ import {
 } from '../../services/onboardingGuard.service';
 import { apiService } from '../../services/api';
 import { sessionManager } from '../../services/sessionManager';
+import { useAppTranslation } from '../../i18n/useAppTranslation';
 
 interface OnboardingRouteGuardProps {
   mode: OnboardingRouteMode;
@@ -24,6 +25,7 @@ const OnboardingRouteGuard: React.FC<OnboardingRouteGuardProps> = ({
 }) => {
   const location = useLocation();
   const { isAuthenticated, currentUser } = useAuth();
+  const { t } = useAppTranslation('auth');
   const [isResolving, setIsResolving] = useState(false);
   const profileLookupAttemptedRef = useRef(false);
 
@@ -73,7 +75,9 @@ const OnboardingRouteGuard: React.FC<OnboardingRouteGuardProps> = ({
       <div className="flex min-h-screen items-center justify-center bg-gray-50">
         <div className="flex items-center gap-3 rounded-xl bg-white px-4 py-3 shadow-sm">
           <span className="h-5 w-5 animate-spin rounded-full border-2 border-blue-500 border-t-transparent" />
-          <span className="text-sm font-medium text-gray-700">Loading account...</span>
+          <span className="text-sm font-medium text-gray-700">
+            {t('onboarding.loadingAccount')}
+          </span>
         </div>
       </div>
     );

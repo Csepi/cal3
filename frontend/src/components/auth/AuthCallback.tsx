@@ -33,28 +33,6 @@ const AuthCallback: React.FC = () => {
   };
 
   useEffect(() => {
-    const parseBooleanQueryValue = (value: string | null): boolean | undefined => {
-      if (!value) {
-        return undefined;
-      }
-      const normalized = value.trim().toLowerCase();
-      if (normalized === '1' || normalized === 'true') {
-        return true;
-      }
-      if (normalized === '0' || normalized === 'false') {
-        return false;
-      }
-      return undefined;
-    };
-
-    const parseNumberQueryValue = (value: string | null): number | undefined => {
-      if (!value) {
-        return undefined;
-      }
-      const parsed = Number.parseInt(value, 10);
-      return Number.isFinite(parsed) ? parsed : undefined;
-    };
-
     const urlParams = new URLSearchParams(location.search);
     const token = urlParams.get('token');
     const provider = urlParams.get('provider');
@@ -70,22 +48,8 @@ const AuthCallback: React.FC = () => {
         provider,
       });
       const payload = decodeTokenPayload(token);
-      const queryUsername = urlParams.get('username');
-      const queryRole = urlParams.get('role');
-      const username = queryUsername || payload?.username || `${provider}_user`;
-      const role = queryRole || payload?.role || 'user';
-      const callbackUser = {
-        id: parseNumberQueryValue(urlParams.get('id')),
-        username,
-        role,
-        email: urlParams.get('email') || undefined,
-        firstName: urlParams.get('firstName') || undefined,
-        lastName: urlParams.get('lastName') || undefined,
-        themeColor: urlParams.get('themeColor') || undefined,
-        onboardingCompleted: parseBooleanQueryValue(
-          urlParams.get('onboardingCompleted'),
-        ),
-      };
+      const username = payload?.username || `${provider}_user`;
+      const role = payload?.role || 'user';
       clientLogger.info('auth-callback', 'session initialised from callback', {
         username,
         role,
@@ -95,19 +59,16 @@ const AuthCallback: React.FC = () => {
         token,
         username,
         role,
-        user: callbackUser,
       }).then(async () => {
-        if (typeof callbackUser.onboardingCompleted !== 'boolean') {
-          try {
-            const authProfile = await apiService.getAuthProfile();
-            sessionManager.updateUser(authProfile);
-          } catch (error) {
-            clientLogger.warn(
-              'auth-callback',
-              'failed to fetch auth profile after callback',
-              error,
-            );
-          }
+        try {
+          const authProfile = await apiService.getAuthProfile();
+          sessionManager.updateUser(authProfile);
+        } catch (error) {
+          clientLogger.warn(
+            'auth-callback',
+            'failed to fetch auth profile after callback',
+            error,
+          );
         }
       }).finally(() => {
         window.location.href = '/app';

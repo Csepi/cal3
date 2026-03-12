@@ -513,21 +513,6 @@ export class AuthController {
       token: session.response.access_token,
       provider,
     });
-    const user = session.response.user;
-    params.set('onboardingCompleted', user.onboardingCompleted ? '1' : '0');
-    params.set('id', String(user.id));
-    params.set('username', user.username);
-    params.set('role', user.role);
-    params.set('email', user.email);
-    if (user.firstName) {
-      params.set('firstName', user.firstName);
-    }
-    if (user.lastName) {
-      params.set('lastName', user.lastName);
-    }
-    if (user.themeColor) {
-      params.set('themeColor', user.themeColor);
-    }
     return `${frontendUrl}/auth/callback?${params.toString()}`;
   }
 }

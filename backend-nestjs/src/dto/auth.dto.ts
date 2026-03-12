@@ -172,6 +172,7 @@ export class AuthResponseDto {
     email: string;
     firstName?: string;
     lastName?: string;
+    profilePictureUrl?: string | null;
     role: UserRole;
     themeColor: string;
     onboardingCompleted: boolean;

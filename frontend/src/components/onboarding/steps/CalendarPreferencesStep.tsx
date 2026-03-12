@@ -1,4 +1,5 @@
 import type { OnboardingCalendarStepState } from '../../../services/onboarding.service';
+import { useAppTranslation } from '../../../i18n/useAppTranslation';
 
 interface CalendarPreferencesStepProps {
   state: OnboardingCalendarStepState;
@@ -6,29 +7,33 @@ interface CalendarPreferencesStepProps {
 }
 
 const useCaseOptions: Array<{ value: NonNullable<OnboardingCalendarStepState['calendarUseCase']>; label: string }> = [
-  { value: 'personal', label: 'Personal' },
-  { value: 'business', label: 'Business' },
-  { value: 'team', label: 'Team / Organization' },
-  { value: 'other', label: 'Other' },
+  { value: 'personal', label: 'onboarding.calendar.useCasePersonal' },
+  { value: 'business', label: 'onboarding.calendar.useCaseBusiness' },
+  { value: 'team', label: 'onboarding.calendar.useCaseTeam' },
+  { value: 'other', label: 'onboarding.calendar.useCaseOther' },
 ];
 
 const CalendarPreferencesStep: React.FC<CalendarPreferencesStepProps> = ({
   state,
   onChange,
 }) => {
+  const { t } = useAppTranslation('auth');
+
   return (
     <div className="space-y-5">
       <div>
-        <h2 className="text-2xl font-semibold text-gray-900">Calendar Preferences</h2>
+        <h2 className="text-2xl font-semibold text-gray-900">
+          {t('onboarding.calendar.title')}
+        </h2>
         <p className="mt-2 text-sm text-gray-600">
-          Help us tailor your default calendar experience.
+          {t('onboarding.calendar.description')}
         </p>
       </div>
 
-      <div className="space-y-3">
-        <p className="text-sm font-medium text-gray-700">
-          What do you want to use this calendar for?
-        </p>
+      <fieldset className="space-y-3">
+        <legend className="text-sm font-medium text-gray-700">
+          {t('onboarding.calendar.useCaseQuestion')}
+        </legend>
         {useCaseOptions.map((option) => (
           <label
             key={option.value}
@@ -47,10 +52,10 @@ const CalendarPreferencesStep: React.FC<CalendarPreferencesStepProps> = ({
               }
               className="h-4 w-4 border-gray-300 text-blue-600 focus:ring-blue-500"
             />
-            <span>{option.label}</span>
+            <span>{t(option.label)}</span>
           </label>
         ))}
-      </div>
+      </fieldset>
 
       <div className="space-y-3">
         <label className="flex items-start gap-2 rounded-xl border border-gray-200 p-3 text-sm text-gray-700">
@@ -65,7 +70,7 @@ const CalendarPreferencesStep: React.FC<CalendarPreferencesStepProps> = ({
             }
             className="mt-0.5 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
           />
-          <span>Set up calendar sync with Google Calendar.</span>
+          <span>{t('onboarding.calendar.syncGoogle')}</span>
         </label>
         <label className="flex items-start gap-2 rounded-xl border border-gray-200 p-3 text-sm text-gray-700">
           <input
@@ -79,7 +84,7 @@ const CalendarPreferencesStep: React.FC<CalendarPreferencesStepProps> = ({
             }
             className="mt-0.5 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
           />
-          <span>Set up calendar sync with Microsoft Outlook.</span>
+          <span>{t('onboarding.calendar.syncMicrosoft')}</span>
         </label>
       </div>
     </div>

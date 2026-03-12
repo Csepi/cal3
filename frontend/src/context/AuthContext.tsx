@@ -18,6 +18,7 @@ export type AuthUser = {
   themeColor?: string;
   firstName?: string;
   lastName?: string;
+  profilePictureUrl?: string | null;
   onboardingCompleted?: boolean;
   onboardingCompletedAt?: string;
   onboardingUseCase?: string | null;

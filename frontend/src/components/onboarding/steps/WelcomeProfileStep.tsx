@@ -1,11 +1,15 @@
+import { useAppTranslation } from '../../../i18n/useAppTranslation';
+
 interface WelcomeProfileStepProps {
   email: string;
   firstName: string;
   lastName: string;
   profilePicturePreview: string;
+  isUploadingProfilePicture: boolean;
+  profilePictureError: string | null;
   onFirstNameChange: (value: string) => void;
   onLastNameChange: (value: string) => void;
-  onProfilePictureChange: (value: string) => void;
+  onUploadProfilePicture: (file: File) => Promise<void>;
 }
 
 const WelcomeProfileStep: React.FC<WelcomeProfileStepProps> = ({
@@ -13,37 +17,35 @@ const WelcomeProfileStep: React.FC<WelcomeProfileStepProps> = ({
   firstName,
   lastName,
   profilePicturePreview,
+  isUploadingProfilePicture,
+  profilePictureError,
   onFirstNameChange,
   onLastNameChange,
-  onProfilePictureChange,
+  onUploadProfilePicture,
 }) => {
-  const handleProfilePictureUpload = (file?: File) => {
+  const { t } = useAppTranslation('auth');
+
+  const handleProfilePictureUpload = async (file?: File) => {
     if (!file) {
-      onProfilePictureChange('');
       return;
     }
-
-    const reader = new FileReader();
-    reader.onload = () => {
-      if (typeof reader.result === 'string') {
-        onProfilePictureChange(reader.result);
-      }
-    };
-    reader.readAsDataURL(file);
+    await onUploadProfilePicture(file);
   };
 
   return (
     <div className="space-y-5">
       <div>
-        <h2 className="text-2xl font-semibold text-gray-900">Welcome</h2>
+        <h2 className="text-2xl font-semibold text-gray-900">
+          {t('onboarding.welcome.title')}
+        </h2>
         <p className="mt-2 text-sm text-gray-600">
-          Let&apos;s set up your account in a few quick steps.
+          {t('onboarding.welcome.description')}
         </p>
       </div>
 
       <div>
         <label className="mb-2 block text-sm font-medium text-gray-700">
-          Email
+          {t('onboarding.welcome.email')}
         </label>
         <input
           type="email"
@@ -56,45 +58,54 @@ const WelcomeProfileStep: React.FC<WelcomeProfileStepProps> = ({
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div>
           <label className="mb-2 block text-sm font-medium text-gray-700">
-            First name
+            {t('onboarding.welcome.firstName')}
           </label>
           <input
             type="text"
             value={firstName}
             onChange={(event) => onFirstNameChange(event.target.value)}
             className="w-full rounded-xl border border-gray-300 px-3 py-2 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-            placeholder="Optional"
+            placeholder={t('onboarding.welcome.optional')}
           />
         </div>
         <div>
           <label className="mb-2 block text-sm font-medium text-gray-700">
-            Last name
+            {t('onboarding.welcome.lastName')}
           </label>
           <input
             type="text"
             value={lastName}
             onChange={(event) => onLastNameChange(event.target.value)}
             className="w-full rounded-xl border border-gray-300 px-3 py-2 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-            placeholder="Optional"
+            placeholder={t('onboarding.welcome.optional')}
           />
         </div>
       </div>
 
       <div>
         <label className="mb-2 block text-sm font-medium text-gray-700">
-          Profile picture (optional)
+          {t('onboarding.welcome.profilePicture')}
         </label>
         <input
           type="file"
           accept="image/*"
           onChange={(event) => handleProfilePictureUpload(event.target.files?.[0])}
+          disabled={isUploadingProfilePicture}
           className="block w-full text-sm text-gray-600 file:mr-4 file:rounded-lg file:border-0 file:bg-blue-50 file:px-3 file:py-2 file:text-sm file:font-medium file:text-blue-700 hover:file:bg-blue-100"
         />
+        {isUploadingProfilePicture && (
+          <p className="mt-2 text-sm text-blue-700" aria-live="polite">
+            {t('onboarding.uploadingProfilePicture')}
+          </p>
+        )}
+        {profilePictureError && (
+          <p className="mt-2 text-sm text-red-700" role="alert">{profilePictureError}</p>
+        )}
         {profilePicturePreview && (
           <div className="mt-3">
             <img
               src={profilePicturePreview}
-              alt="Profile preview"
+              alt={t('onboarding.welcome.previewAlt')}
               className="h-16 w-16 rounded-full border border-gray-200 object-cover"
             />
           </div>

@@ -53,6 +53,9 @@ export class User {
   @Column({ length: 100, nullable: true })
   lastName!: string;
 
+  @Column({ type: 'varchar', length: 2048, nullable: true })
+  profilePictureUrl?: string | null;
+
   @Column({ default: true })
   isActive!: boolean;
 

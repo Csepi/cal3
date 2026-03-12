@@ -1,11 +1,15 @@
 import {
   Controller,
   Get,
+  Post,
   Patch,
   Body,
   UseGuards,
   Request,
   ConflictException,
+  BadRequestException,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
 import type { RequestWithUser } from '../common/types/request-with-user';
 import {
@@ -13,12 +17,16 @@ import {
   ApiOperation,
   ApiResponse,
   ApiBearerAuth,
+  ApiBody,
+  ApiConsumes,
 } from '@nestjs/swagger';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Not, IsNull } from 'typeorm';
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
 import * as bcrypt from 'bcryptjs';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { AllowIncompleteOnboarding } from '../auth/decorators/allow-incomplete-onboarding.decorator';
 import { User } from '../entities/user.entity';
 import {
   Calendar,
@@ -33,6 +41,24 @@ import {
 import { Task } from '../entities/task.entity';
 import { TaskCalendarBridgeService } from '../tasks/task-calendar-bridge.service';
 import { I18nService } from 'nestjs-i18n';
+import { ConfigurationService } from '../configuration/configuration.service';
+import { promises as fs } from 'node:fs';
+import { join } from 'node:path';
+import { randomUUID } from 'node:crypto';
+
+interface UploadedImageFile {
+  originalname: string;
+  mimetype: string;
+  size: number;
+  buffer: Buffer;
+}
+
+const ALLOWED_PROFILE_PICTURE_MIME_TYPES = new Set([
+  'image/jpeg',
+  'image/png',
+  'image/gif',
+  'image/webp',
+]);
 
 @ApiTags('User Profile')
 @Controller('user')
@@ -50,6 +76,7 @@ export class UserProfileController {
     private readonly taskRepository: Repository<Task>,
     private readonly taskCalendarBridgeService: TaskCalendarBridgeService,
     private readonly i18nService: I18nService,
+    private readonly configurationService: ConfigurationService,
   ) {}
 
   @Get('profile')
@@ -65,6 +92,7 @@ export class UserProfileController {
         'email',
         'firstName',
         'lastName',
+        'profilePictureUrl',
         'role',
         'themeColor',
         'weekStartDay',
@@ -92,6 +120,64 @@ export class UserProfileController {
     });
 
     return user;
+  }
+
+  @Post('profile-picture')
+  @AllowIncompleteOnboarding()
+  @UseInterceptors(FileInterceptor('file'))
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        file: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+      required: ['file'],
+    },
+  })
+  @ApiOperation({ summary: 'Upload and set user profile picture' })
+  async uploadProfilePicture(
+    @Request() req: RequestWithUser,
+    @UploadedFile() file?: UploadedImageFile,
+  ) {
+    if (!file) {
+      throw new BadRequestException('Profile picture file is required.');
+    }
+    if (!file.mimetype || !ALLOWED_PROFILE_PICTURE_MIME_TYPES.has(file.mimetype)) {
+      throw new BadRequestException(
+        'Only JPG, PNG, GIF, and WEBP images are allowed.',
+      );
+    }
+    const maxBytes = 2 * 1024 * 1024;
+    if (file.size > maxBytes) {
+      throw new BadRequestException('Profile picture must be 2MB or smaller.');
+    }
+
+    const extension = this.resolveExtension(file.originalname, file.mimetype);
+    const filename = `${req.user.id}-${randomUUID()}${extension}`;
+    const relativePath = `profile-pictures/${filename}`;
+    const absolutePath = join(this.getUploadsRootDir(), relativePath);
+
+    await fs.mkdir(join(this.getUploadsRootDir(), 'profile-pictures'), {
+      recursive: true,
+    });
+    await fs.writeFile(absolutePath, file.buffer);
+
+    const profilePictureUrl = `${this.configurationService.getBackendBaseUrl()}/uploads/${relativePath}`.replace(
+      /\\/g,
+      '/',
+    );
+
+    await this.userRepository.update(req.user.id, {
+      profilePictureUrl,
+    });
+
+    return {
+      profilePictureUrl,
+    };
   }
 
   @Patch('profile')
@@ -267,6 +353,7 @@ export class UserProfileController {
         'email',
         'firstName',
         'lastName',
+        'profilePictureUrl',
         'role',
         'themeColor',
         'weekStartDay',
@@ -318,6 +405,7 @@ export class UserProfileController {
         'email',
         'firstName',
         'lastName',
+        'profilePictureUrl',
         'role',
         'themeColor',
         'weekStartDay',
@@ -407,5 +495,29 @@ export class UserProfileController {
   private resolveLanguage(req: RequestWithUser): string {
     const value = req.headers['x-user-language'];
     return typeof value === 'string' ? value : 'en';
+  }
+
+  private getUploadsRootDir(): string {
+    return join(process.cwd(), 'uploads');
+  }
+
+  private resolveExtension(originalname: string, mimeType: string): string {
+    const extensionByMime: Record<string, string> = {
+      'image/jpeg': '.jpg',
+      'image/png': '.png',
+      'image/gif': '.gif',
+      'image/webp': '.webp',
+    };
+    const fromMime = extensionByMime[mimeType];
+    if (fromMime) {
+      return fromMime;
+    }
+
+    const lastDot = originalname.lastIndexOf('.');
+    if (lastDot < 0) {
+      return '.img';
+    }
+    const extension = originalname.slice(lastDot).toLowerCase();
+    return extension.length <= 8 ? extension : '.img';
   }
 }
