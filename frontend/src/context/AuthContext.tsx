@@ -18,6 +18,11 @@ export type AuthUser = {
   themeColor?: string;
   firstName?: string;
   lastName?: string;
+  onboardingCompleted?: boolean;
+  onboardingCompletedAt?: string;
+  onboardingUseCase?: string | null;
+  privacyPolicyAcceptedAt?: string | null;
+  privacyPolicyVersion?: string | null;
   isActive?: boolean;
   usagePlans?: string[];
   [key: string]: any;

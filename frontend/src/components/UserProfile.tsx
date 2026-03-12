@@ -17,6 +17,7 @@ import {
 } from '../services/widgetDiagnostics';
 import { useAppTranslation } from '../i18n/useAppTranslation';
 import { applyLanguagePreference } from '../i18n';
+import { onboardingConfig } from '../config/onboardingConfig';
 
 /**
  * UserProfile component - Main user profile management interface
@@ -57,6 +58,13 @@ interface UserProfileData {
   hideReservationsTab?: boolean;
   usagePlans?: string[];
   defaultTasksCalendarId?: number | null;
+  onboardingCompleted?: boolean;
+  onboardingCompletedAt?: string;
+  onboardingUseCase?: string | null;
+  onboardingGoogleCalendarSyncRequested?: boolean;
+  onboardingMicrosoftCalendarSyncRequested?: boolean;
+  privacyPolicyAcceptedAt?: string | null;
+  privacyPolicyVersion?: string | null;
 }
 
 const UserProfile: React.FC<UserProfileProps> = ({ onThemeChange, currentTheme }) => {
@@ -103,6 +111,17 @@ const UserProfile: React.FC<UserProfileProps> = ({ onThemeChange, currentTheme }
   const [tasksCalendarsLoading, setTasksCalendarsLoading] = useState(false);
   const [widgetLogBusy, setWidgetLogBusy] = useState(false);
   const [widgetLogStatus, setWidgetLogStatus] = useState<string | null>(null);
+
+  const formatDateValue = (value?: string | null): string => {
+    if (!value) {
+      return t('common:app.notAvailable', { defaultValue: 'Not available' });
+    }
+    const parsed = new Date(value);
+    if (Number.isNaN(parsed.getTime())) {
+      return value;
+    }
+    return parsed.toLocaleString();
+  };
 
   const loadTasksCalendars = async (currentUserId?: number) => {
     if (!currentUserId) {
@@ -535,6 +554,57 @@ const UserProfile: React.FC<UserProfileProps> = ({ onThemeChange, currentTheme }
 
           {/* Right Column */}
           <div className="space-y-8">
+            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+              <div className="flex flex-col gap-3">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-800">Onboarding & compliance</h3>
+                  <p className="text-sm text-gray-600 mt-1">
+                    Privacy and onboarding details saved for your account.
+                  </p>
+                </div>
+                <dl className="grid grid-cols-1 gap-2 text-sm text-gray-700">
+                  <div>
+                    <dt className="font-medium text-gray-900">Onboarding status</dt>
+                    <dd>{user?.onboardingCompleted ? 'Completed' : 'Pending'}</dd>
+                  </div>
+                  <div>
+                    <dt className="font-medium text-gray-900">Completed at</dt>
+                    <dd>{formatDateValue(user?.onboardingCompletedAt)}</dd>
+                  </div>
+                  <div>
+                    <dt className="font-medium text-gray-900">Privacy accepted</dt>
+                    <dd>{formatDateValue(user?.privacyPolicyAcceptedAt)}</dd>
+                  </div>
+                  <div>
+                    <dt className="font-medium text-gray-900">Privacy policy version</dt>
+                    <dd>{user?.privacyPolicyVersion ?? onboardingConfig.privacyPolicyVersion}</dd>
+                  </div>
+                  <div>
+                    <dt className="font-medium text-gray-900">Calendar use case</dt>
+                    <dd>{user?.onboardingUseCase ?? t('common:app.notAvailable', { defaultValue: 'Not available' })}</dd>
+                  </div>
+                </dl>
+                <div className="flex flex-wrap gap-3 text-sm">
+                  <a
+                    href={onboardingConfig.privacyPolicyUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="font-medium text-blue-700 underline"
+                  >
+                    Privacy policy
+                  </a>
+                  <a
+                    href={onboardingConfig.termsOfServiceUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="font-medium text-blue-700 underline"
+                  >
+                    Terms of service
+                  </a>
+                </div>
+              </div>
+            </div>
+
             {/* Theme Selector */}
             <ThemeSelector
               currentTheme={currentTheme}

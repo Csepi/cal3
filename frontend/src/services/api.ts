@@ -47,12 +47,39 @@ interface UserProfile {
   firstName?: string;
   lastName?: string;
   role?: string;
+  onboardingCompleted?: boolean;
+  onboardingCompletedAt?: string;
+  onboardingUseCase?: string | null;
+  onboardingGoogleCalendarSyncRequested?: boolean;
+  onboardingMicrosoftCalendarSyncRequested?: boolean;
+  privacyPolicyAcceptedAt?: string | null;
+  privacyPolicyVersion?: string | null;
   [key: string]: unknown;
 }
 
 interface AuthResponse {
   token: string;
   user: UserProfile;
+}
+
+export interface CompleteOnboardingPayload {
+  firstName?: string;
+  lastName?: string;
+  profilePictureUrl?: string;
+  language: 'en' | 'de' | 'fr' | 'hu';
+  timezone: string;
+  timeFormat: '12h' | '24h';
+  weekStartDay: number;
+  defaultCalendarView: 'month' | 'week';
+  themeColor: string;
+  privacyPolicyAccepted: boolean;
+  termsOfServiceAccepted: boolean;
+  productUpdatesEmailConsent?: boolean;
+  privacyPolicyVersion?: string;
+  termsOfServiceVersion?: string;
+  calendarUseCase?: 'personal' | 'business' | 'team' | 'other';
+  setupGoogleCalendarSync?: boolean;
+  setupMicrosoftCalendarSync?: boolean;
 }
 
 interface LoginOptions {
@@ -705,6 +732,47 @@ class ApiService {
     const data = await response.json();
     sessionManager.setSessionFromResponse(data);
     return { token: data.access_token, user: data.user };
+  }
+
+  async getAuthProfile(): Promise<UserProfile> {
+    const response = await this.secureApiFetch(`${BASE_URL}/api/auth/profile`);
+    if (!response.ok) {
+      if (response.status === 401) {
+        throw new Error('Authentication required. Please log in to continue.');
+      }
+      throw new Error('Failed to fetch authenticated user profile');
+    }
+    return await response.json();
+  }
+
+  async completeOnboarding(
+    payload: CompleteOnboardingPayload,
+  ): Promise<{ success: boolean; onboardingCompleted: boolean; user: UserProfile }> {
+    const response = await this.secureApiFetch(
+      `${BASE_URL}/api/auth/complete-onboarding`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      },
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || 'Failed to complete onboarding');
+    }
+
+    const data = await response.json() as {
+      success: boolean;
+      onboardingCompleted: boolean;
+      user: UserProfile;
+    };
+    if (data.user) {
+      sessionManager.updateUser(data.user);
+    }
+    return data;
   }
 
   async logout(): Promise<void> {

@@ -8,6 +8,12 @@ import { Repository } from 'typeorm';
 import * as bcrypt from 'bcryptjs';
 import { User, UserRole } from '../entities/user.entity';
 import { RegisterDto, LoginDto, AuthResponseDto } from '../dto/auth.dto';
+import { CompleteOnboardingDto } from '../dto/onboarding.dto';
+import {
+  UserConsent,
+  type UserConsentDecision,
+  type UserConsentType,
+} from '../entities/user-consent.entity';
 import {
   TokenService,
   TokenIssueResult,
@@ -19,6 +25,7 @@ import { JwtRevocationService } from './services/jwt-revocation.service';
 import { AbusePreventionService } from '../api-security/services/abuse-prevention.service';
 import { CaptchaVerificationService } from '../api-security/services/captcha-verification.service';
 import { MfaService } from './services/mfa.service';
+import { ConfigurationService } from '../configuration/configuration.service';
 
 import { bStatic } from '../i18n/runtime';
 
@@ -48,6 +55,8 @@ export class AuthService {
   constructor(
     @InjectRepository(User)
     private userRepository: Repository<User>,
+    @InjectRepository(UserConsent)
+    private readonly userConsentRepository: Repository<UserConsent>,
     private readonly tokenService: TokenService,
     private readonly securityAudit: SecurityAuditService,
     private readonly abusePreventionService: AbusePreventionService,
@@ -55,6 +64,7 @@ export class AuthService {
     private readonly userBootstrapService: UserBootstrapService,
     private readonly jwtRevocationService: JwtRevocationService,
     private readonly mfaService: MfaService,
+    private readonly configurationService: ConfigurationService,
   ) {}
 
   async register(
@@ -85,6 +95,7 @@ export class AuthService {
       firstName,
       lastName,
       role: email === 'admin@example.com' ? UserRole.ADMIN : role,
+      onboardingCompleted: false,
     });
 
     const savedUser = await this.userRepository.save(user);
@@ -239,6 +250,11 @@ export class AuthService {
         'lastName',
         'role',
         'themeColor',
+        'onboardingCompleted',
+        'onboardingCompletedAt',
+        'onboardingUseCase',
+        'privacyPolicyAcceptedAt',
+        'privacyPolicyVersion',
         'mfaEnabled',
         'mfaEnrolledAt',
         'sessionTimeoutMinutes',
@@ -275,6 +291,7 @@ export class AuthService {
         lastName,
         role: UserRole.USER,
         isActive: true,
+        onboardingCompleted: false,
       });
 
       user = await this.userRepository.save(user);
@@ -311,6 +328,7 @@ export class AuthService {
         lastName: lastName || displayName?.split(' ').slice(1).join(' ') || '',
         role: UserRole.USER,
         isActive: true,
+        onboardingCompleted: false,
       });
 
       user = await this.userRepository.save(user);
@@ -362,6 +380,121 @@ export class AuthService {
     return this.tokenService.issueWidgetToken(user);
   }
 
+  async completeOnboarding(
+    userId: number,
+    dto: CompleteOnboardingDto,
+    metadata: AuthRequestMetadata = {},
+  ): Promise<Partial<User>> {
+    const user = await this.userRepository.findOne({
+      where: { id: userId, isActive: true },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException(bStatic('errors.auto.backend.kdf19e5c63dda'));
+    }
+
+    const now = new Date();
+    const privacyPolicyVersion = this.resolvePolicyVersion(
+      dto.privacyPolicyVersion,
+      'PRIVACY_POLICY_VERSION',
+    );
+    const termsOfServiceVersion = this.resolvePolicyVersion(
+      dto.termsOfServiceVersion,
+      'TERMS_OF_SERVICE_VERSION',
+    );
+    const marketingConsentVersion = this.resolvePolicyVersion(
+      undefined,
+      'MARKETING_CONSENT_VERSION',
+      termsOfServiceVersion,
+    );
+
+    if (dto.firstName !== undefined) {
+      user.firstName = dto.firstName;
+    }
+    if (dto.lastName !== undefined) {
+      user.lastName = dto.lastName;
+    }
+
+    user.language = dto.language;
+    user.preferredLanguage = dto.language;
+    user.timezone = dto.timezone;
+    user.timeFormat = dto.timeFormat;
+    user.weekStartDay = dto.weekStartDay;
+    user.defaultCalendarView = dto.defaultCalendarView;
+    user.themeColor = dto.themeColor;
+    user.privacyPolicyAcceptedAt = now;
+    user.privacyPolicyVersion = privacyPolicyVersion;
+    user.onboardingCompleted = true;
+    user.onboardingCompletedAt = now;
+    user.onboardingUseCase = dto.calendarUseCase ?? null;
+    user.onboardingGoogleCalendarSyncRequested =
+      dto.setupGoogleCalendarSync ?? false;
+    user.onboardingMicrosoftCalendarSyncRequested =
+      dto.setupMicrosoftCalendarSync ?? false;
+
+    const savedUser = await this.userRepository.save(user);
+
+    await Promise.all([
+      this.appendConsentRecord(
+        savedUser.id,
+        'privacy_policy',
+        'accepted',
+        privacyPolicyVersion,
+        metadata,
+      ),
+      this.appendConsentRecord(
+        savedUser.id,
+        'terms_of_service',
+        'accepted',
+        termsOfServiceVersion,
+        metadata,
+      ),
+      this.appendConsentRecord(
+        savedUser.id,
+        'marketing_email',
+        dto.productUpdatesEmailConsent ? 'accepted' : 'revoked',
+        marketingConsentVersion,
+        metadata,
+      ),
+    ]);
+
+    await this.securityAudit.log('auth.onboarding.completed', {
+      userId: savedUser.id,
+      ip: metadata.ip,
+      onboardingUseCase: savedUser.onboardingUseCase,
+      setupGoogleCalendarSync: savedUser.onboardingGoogleCalendarSyncRequested,
+      setupMicrosoftCalendarSync:
+        savedUser.onboardingMicrosoftCalendarSyncRequested,
+      productUpdatesEmailConsent: dto.productUpdatesEmailConsent ?? false,
+      privacyPolicyVersion,
+      termsOfServiceVersion,
+    });
+
+    return {
+      id: savedUser.id,
+      username: savedUser.username,
+      email: savedUser.email,
+      firstName: savedUser.firstName,
+      lastName: savedUser.lastName,
+      themeColor: savedUser.themeColor,
+      language: savedUser.language,
+      timezone: savedUser.timezone,
+      timeFormat: savedUser.timeFormat,
+      weekStartDay: savedUser.weekStartDay,
+      defaultCalendarView: savedUser.defaultCalendarView,
+      onboardingCompleted: savedUser.onboardingCompleted,
+      onboardingCompletedAt: savedUser.onboardingCompletedAt,
+      onboardingUseCase: savedUser.onboardingUseCase,
+      onboardingGoogleCalendarSyncRequested:
+        savedUser.onboardingGoogleCalendarSyncRequested,
+      onboardingMicrosoftCalendarSyncRequested:
+        savedUser.onboardingMicrosoftCalendarSyncRequested,
+      privacyPolicyAcceptedAt: savedUser.privacyPolicyAcceptedAt,
+      privacyPolicyVersion: savedUser.privacyPolicyVersion,
+      updatedAt: savedUser.updatedAt,
+    };
+  }
+
   private async createSession(
     user: User,
     metadata: AuthRequestMetadata = {},
@@ -373,6 +506,48 @@ export class AuthService {
       refreshExpiresAt: tokens.refreshExpiresAt,
       user,
     };
+  }
+
+  private resolvePolicyVersion(
+    explicitVersion: string | undefined,
+    configKey: string,
+    fallbackVersion = 'v1.0',
+  ): string {
+    const trimmed = explicitVersion?.trim();
+    if (trimmed && trimmed.length > 0) {
+      return trimmed.slice(0, 64);
+    }
+
+    const configured = this.configurationService.getValue(configKey)?.trim();
+    if (configured && configured.length > 0) {
+      return configured.slice(0, 64);
+    }
+
+    return fallbackVersion;
+  }
+
+  private async appendConsentRecord(
+    userId: number,
+    consentType: UserConsentType,
+    decision: UserConsentDecision,
+    policyVersion: string,
+    metadata: AuthRequestMetadata,
+  ): Promise<void> {
+    const now = new Date();
+    const record = this.userConsentRepository.create({
+      userId,
+      consentType,
+      policyVersion,
+      decision,
+      acceptedAt: decision === 'accepted' ? now : null,
+      revokedAt: decision === 'revoked' ? now : null,
+      source: 'onboarding',
+      ip: metadata.ip ? metadata.ip.slice(0, 64) : null,
+      userAgent: metadata.userAgent
+        ? metadata.userAgent.slice(0, 255)
+        : null,
+    });
+    await this.userConsentRepository.save(record);
   }
 
   private buildResponse(user: User, tokens: TokenIssueResult): AuthResponseDto {
@@ -390,6 +565,7 @@ export class AuthService {
         lastName: user.lastName,
         role: user.role,
         themeColor: user.themeColor,
+        onboardingCompleted: user.onboardingCompleted,
         mfaEnabled: user.mfaEnabled,
       },
     };

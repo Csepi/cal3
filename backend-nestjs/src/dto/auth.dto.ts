@@ -174,6 +174,7 @@ export class AuthResponseDto {
     lastName?: string;
     role: UserRole;
     themeColor: string;
+    onboardingCompleted: boolean;
     mfaEnabled?: boolean;
   };
 }

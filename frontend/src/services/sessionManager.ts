@@ -14,8 +14,15 @@ interface SessionUser {
   id?: number;
   username?: string;
   email?: string;
+  firstName?: string;
+  lastName?: string;
   role?: string;
   themeColor?: string;
+  onboardingCompleted?: boolean;
+  onboardingCompletedAt?: string;
+  onboardingUseCase?: string | null;
+  privacyPolicyAcceptedAt?: string | null;
+  privacyPolicyVersion?: string | null;
   [key: string]: unknown;
 }
 
@@ -381,8 +388,8 @@ class SessionManager {
     this.applyToken(token, undefined, exp);
     this.recordActivity(Date.now(), true);
     const resolvedUser: SessionUser = {
-      ...fallback,
       ...this.currentUser,
+      ...fallback,
       username: decoded?.username ?? fallback?.username ?? this.currentUser?.username,
       role: decoded?.role ?? fallback?.role ?? this.currentUser?.role,
       id: decoded?.sub ?? fallback?.id ?? this.currentUser?.id,
@@ -398,6 +405,15 @@ class SessionManager {
       expiresAt: exp ? new Date(exp).toISOString() : null,
     });
     void syncWidgetToken(token);
+    this.notify();
+  }
+
+  updateUser(partial: SessionUser): void {
+    this.currentUser = {
+      ...(this.currentUser ?? {}),
+      ...partial,
+    };
+    this.persistUserMetadata(this.currentUser);
     this.notify();
   }
 

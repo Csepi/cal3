@@ -29,7 +29,7 @@ describeDockerBacked('Auth flow integration (postgres testcontainer)', ({
     const suffix = uniqueSuffix();
     const username = `integration_user_${suffix}`;
     const email = `integration_user_${suffix}@example.com`;
-    const password = 'ValidPass123';
+    const password = 'ValidPass#123';
 
     const registerResponse = await request(server)
       .post('/auth/register')
@@ -105,7 +105,7 @@ describeDockerBacked('Auth flow integration (postgres testcontainer)', ({
     const suffix = uniqueSuffix();
     const username = `integration_replay_${suffix}`;
     const email = `integration_replay_${suffix}@example.com`;
-    const password = 'ValidPass123';
+    const password = 'ValidPass#123';
 
     await request(server)
       .post('/auth/register')
@@ -146,5 +146,79 @@ describeDockerBacked('Auth flow integration (postgres testcontainer)', ({
       .set(DEVICE_FINGERPRINT_HEADER, fingerprint)
       .send({ refreshToken })
       .expect(401);
+  });
+
+  it('completes onboarding and persists onboarding status in auth responses', async () => {
+    if (isUnavailable()) {
+      expect(unavailabilityReason()).toBeTruthy();
+      return;
+    }
+
+    const harness = getHarness();
+    expect(harness).not.toBeNull();
+    if (!harness) {
+      return;
+    }
+
+    const server = harness.app.getHttpServer() as Parameters<typeof request>[0];
+    const suffix = uniqueSuffix();
+    const username = `integration_onboarding_${suffix}`;
+    const email = `integration_onboarding_${suffix}@example.com`;
+    const password = 'ValidPass#123';
+
+    const registerResponse = await request(server)
+      .post('/auth/register')
+      .set('x-primecal-client', 'mobile-native')
+      .set(DEVICE_FINGERPRINT_HEADER, 'integration-device-onboarding-register')
+      .send({
+        username,
+        email,
+        password,
+      })
+      .expect(201);
+
+    expect(registerResponse.body.user?.onboardingCompleted).toBe(false);
+
+    const accessToken = registerResponse.body.access_token as string;
+    expect(accessToken).toBeTruthy();
+
+    await request(server)
+      .post('/auth/complete-onboarding')
+      .set('Authorization', `Bearer ${accessToken}`)
+      .send({
+        language: 'en',
+        timezone: 'UTC',
+        timeFormat: '24h',
+        weekStartDay: 1,
+        defaultCalendarView: 'month',
+        themeColor: '#3b82f6',
+        privacyPolicyAccepted: true,
+        termsOfServiceAccepted: true,
+        productUpdatesEmailConsent: false,
+        privacyPolicyVersion: 'v1.0',
+        termsOfServiceVersion: 'v1.0',
+        calendarUseCase: 'personal',
+        setupGoogleCalendarSync: false,
+        setupMicrosoftCalendarSync: false,
+      })
+      .expect(201)
+      .expect((response) => {
+        expect(response.body.success).toBe(true);
+        expect(response.body.user?.onboardingCompleted).toBe(true);
+      });
+
+    const loginResponse = await request(server)
+      .post('/auth/login')
+      .set('x-primecal-client', 'mobile-native')
+      .set(DEVICE_FINGERPRINT_HEADER, 'integration-device-onboarding-login')
+      .send({
+        username,
+        password,
+      })
+      .expect((response) => {
+        expect([200, 201]).toContain(response.status);
+      });
+
+    expect(loginResponse.body.user?.onboardingCompleted).toBe(true);
   });
 });

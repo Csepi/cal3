@@ -24,6 +24,7 @@ import {
   EnableMfaDto,
   DisableMfaDto,
 } from '../dto/auth.dto';
+import { CompleteOnboardingDto } from '../dto/onboarding.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { ConfigurationService } from '../configuration/configuration.service';
 import { type Response, type Request as ExpressRequest } from 'express';
@@ -145,6 +146,26 @@ export class AuthController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   async getProfile(@Request() req: RequestWithUser) {
     return this.authService.getUserProfile(req.user.id);
+  }
+
+  @Post('complete-onboarding')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Complete onboarding for the current user' })
+  async completeOnboarding(
+    @Req() req: RequestWithUser,
+    @Body() completeOnboardingDto: CompleteOnboardingDto,
+  ) {
+    const user = await this.authService.completeOnboarding(
+      req.user.id,
+      completeOnboardingDto,
+      this.extractMetadata(req),
+    );
+    return {
+      success: true,
+      onboardingCompleted: true,
+      user,
+    };
   }
 
   @Post('refresh')
@@ -290,8 +311,11 @@ export class AuthController {
       authResult.refreshToken,
       authResult.refreshExpiresAt,
     );
-    const token = authResult.response.access_token;
-    const redirectUrl = `${frontendUrl}/auth/callback?token=${token}&provider=google`;
+    const redirectUrl = this.buildOAuthRedirectUrl(
+      frontendUrl,
+      'google',
+      authResult,
+    );
     console.log('Google OAuth callback - redirectUrl:', redirectUrl);
     return res.redirect(redirectUrl);
   }
@@ -339,8 +363,11 @@ export class AuthController {
       authResult.refreshToken,
       authResult.refreshExpiresAt,
     );
-    const token = authResult.response.access_token;
-    const redirectUrl = `${frontendUrl}/auth/callback?token=${token}&provider=microsoft`;
+    const redirectUrl = this.buildOAuthRedirectUrl(
+      frontendUrl,
+      'microsoft',
+      authResult,
+    );
     console.log('Microsoft OAuth callback - redirectUrl:', redirectUrl);
     return res.redirect(redirectUrl);
   }
@@ -475,5 +502,32 @@ export class AuthController {
   private getRefreshTokenFromCookies(req: ExpressRequest): string | undefined {
     const cookieValue = req.cookies?.cal3_refresh_token;
     return typeof cookieValue === 'string' ? cookieValue : undefined;
+  }
+
+  private buildOAuthRedirectUrl(
+    frontendUrl: string,
+    provider: 'google' | 'microsoft',
+    session: AuthSessionResult,
+  ): string {
+    const params = new URLSearchParams({
+      token: session.response.access_token,
+      provider,
+    });
+    const user = session.response.user;
+    params.set('onboardingCompleted', user.onboardingCompleted ? '1' : '0');
+    params.set('id', String(user.id));
+    params.set('username', user.username);
+    params.set('role', user.role);
+    params.set('email', user.email);
+    if (user.firstName) {
+      params.set('firstName', user.firstName);
+    }
+    if (user.lastName) {
+      params.set('lastName', user.lastName);
+    }
+    if (user.themeColor) {
+      params.set('themeColor', user.themeColor);
+    }
+    return `${frontendUrl}/auth/callback?${params.toString()}`;
   }
 }

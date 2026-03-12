@@ -12,6 +12,7 @@ import { User } from '../entities/user.entity';
 import { ConfigurationModule } from '../configuration/configuration.module';
 import { TokenService } from './token.service';
 import { RefreshToken } from '../entities/refresh-token.entity';
+import { UserConsent } from '../entities/user-consent.entity';
 import { LoggingModule } from '../logging/logging.module';
 import { TasksModule } from '../tasks/tasks.module';
 import { RefreshTokenFamilyService } from './services/refresh-token-family.service';
@@ -23,7 +24,7 @@ import { ApiSecurityModule } from '../api-security/api-security.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User, RefreshToken]),
+    TypeOrmModule.forFeature([User, RefreshToken, UserConsent]),
     ConfigurationModule,
     TasksModule,
     LoggingModule,

@@ -9,6 +9,7 @@ export type SecurityAuditEvent =
   | 'auth.register'
   | 'auth.refresh'
   | 'auth.refresh.suspicious'
+  | 'auth.onboarding.completed'
   | 'auth.mfa.setup'
   | 'auth.mfa.enabled'
   | 'auth.mfa.disabled'

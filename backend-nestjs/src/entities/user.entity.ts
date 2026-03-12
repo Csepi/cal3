@@ -116,6 +116,21 @@ export class User {
   @Column({ type: 'varchar', length: 64, nullable: true })
   privacyPolicyVersion?: string | null;
 
+  @Column({ default: false })
+  onboardingCompleted!: boolean;
+
+  @Column({ type: 'timestamptz', nullable: true })
+  onboardingCompletedAt?: Date | null;
+
+  @Column({ type: 'varchar', length: 32, nullable: true })
+  onboardingUseCase?: string | null;
+
+  @Column({ default: false })
+  onboardingGoogleCalendarSyncRequested!: boolean;
+
+  @Column({ default: false })
+  onboardingMicrosoftCalendarSyncRequested!: boolean;
+
   @Column({ type: 'int', default: 480 })
   sessionTimeoutMinutes!: number;
 
