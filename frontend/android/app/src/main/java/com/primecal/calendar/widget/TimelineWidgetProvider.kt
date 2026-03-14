@@ -192,7 +192,11 @@ class TimelineWidgetProvider : AppWidgetProvider() {
         TimelineWidgetPreferences.saveState(
             context,
             appWidgetId,
-            state.copy(isLoading = true, lastError = null),
+            state.copy(
+                isLoading = true,
+                lastError = null,
+                loadingStartedAt = System.currentTimeMillis(),
+            ),
         )
         TimelineWidgetPreferences.markForceRefresh(context, appWidgetId, forceRefresh)
 
@@ -207,6 +211,12 @@ class TimelineWidgetProvider : AppWidgetProvider() {
         appWidgetId: Int,
     ) {
         val state = TimelineWidgetPreferences.loadState(context, appWidgetId)
+        val loadingAgeMs = if (state.loadingStartedAt > 0L) {
+            System.currentTimeMillis() - state.loadingStartedAt
+        } else {
+            0L
+        }
+        val isLoadingStale = state.isLoading && loadingAgeMs > LOADING_TIMEOUT_MS
         TimelineWidgetDebugLogger.log(
             context,
             stage = "provider.renderState",
@@ -214,6 +224,8 @@ class TimelineWidgetProvider : AppWidgetProvider() {
             appWidgetId = appWidgetId,
             details = mapOf(
                 "isLoading" to state.isLoading,
+                "loadingAgeMs" to loadingAgeMs,
+                "loadingStale" to isLoadingStale,
                 "entryCount" to state.entryCount,
                 "hasError" to !state.lastError.isNullOrBlank(),
             ),
@@ -230,6 +242,13 @@ class TimelineWidgetProvider : AppWidgetProvider() {
     ): RemoteViews {
         val config = TimelineWidgetPreferences.loadConfig(context, appWidgetId)
         val state = TimelineWidgetPreferences.loadState(context, appWidgetId)
+        val loadingAgeMs = if (state.loadingStartedAt > 0L) {
+            System.currentTimeMillis() - state.loadingStartedAt
+        } else {
+            0L
+        }
+        val isLoadingStale = state.isLoading && loadingAgeMs > LOADING_TIMEOUT_MS
+        val effectiveLoading = state.isLoading && !isLoadingStale
         val offset = TimelineWidgetPreferences.loadDateOffset(context, appWidgetId)
         val options = manager.getAppWidgetOptions(appWidgetId)
         val size = resolveSize(options)
@@ -258,7 +277,7 @@ class TimelineWidgetProvider : AppWidgetProvider() {
             )
 
             val stateText = when {
-                state.isLoading -> context.getString(R.string.widget_state_loading)
+                effectiveLoading && state.entryCount == 0 -> context.getString(R.string.widget_state_loading)
                 !state.lastError.isNullOrBlank() && state.entryCount == 0 ->
                     context.getString(R.string.widget_state_error_retry)
                 state.entryCount == 0 -> context.getString(R.string.widget_state_empty)
@@ -271,7 +290,11 @@ class TimelineWidgetProvider : AppWidgetProvider() {
             )
             setViewVisibility(
                 R.id.widgetLoadingView,
-                if (state.isLoading) android.view.View.VISIBLE else android.view.View.GONE,
+                if (effectiveLoading && state.entryCount == 0) {
+                    android.view.View.VISIBLE
+                } else {
+                    android.view.View.GONE
+                },
             )
 
             setEmptyView(R.id.widgetTimelineList, R.id.widgetStateText)
@@ -394,6 +417,7 @@ class TimelineWidgetProvider : AppWidgetProvider() {
         private const val APP_BASE_URL = "https://app.primecal.eu"
         private const val WIDGET_ADAPTER_URI_SCHEME = "primecal-widget"
         private const val WIDGET_ADAPTER_URI_AUTHORITY = "timeline"
+        private const val LOADING_TIMEOUT_MS = 45_000L
 
         fun refreshAllWidgets(context: Context, forceRefresh: Boolean) {
             val manager = AppWidgetManager.getInstance(context)

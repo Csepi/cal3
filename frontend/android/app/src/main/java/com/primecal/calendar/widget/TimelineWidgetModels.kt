@@ -114,6 +114,7 @@ data class TimelineWidgetState(
     val entryCount: Int = 0,
     val lastUpdatedAt: Long = 0L,
     val lastError: String? = null,
+    val loadingStartedAt: Long = 0L,
 )
 
 data class TimelineEntry(
@@ -131,4 +132,3 @@ data class TimelineEntry(
 fun enumLabels(resources: Resources, values: List<Pair<Int, String>>): List<String> {
     return values.map { (labelId, _) -> resources.getString(labelId) }
 }
-

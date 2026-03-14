@@ -2,6 +2,7 @@ package com.primecal.calendar.widget
 
 import android.appwidget.AppWidgetManager
 import android.content.Intent
+import android.content.res.Configuration
 import android.graphics.Color
 import android.view.View
 import android.widget.RemoteViews
@@ -23,6 +24,10 @@ private class TimelineWidgetRemoteViewsFactory(
         intent.getIntExtra(TimelineWidgetProvider.EXTRA_ENTRY_LIMIT, 5).coerceIn(1, 20)
     private val repository = TimelineWidgetRepository(context)
     private var entries: List<TimelineEntry> = emptyList()
+    private var rowPalette: WidgetRowPalette = WidgetRowPalette.resolve(
+        context = context,
+        colorScheme = TimelineWidgetColorScheme.SYSTEM,
+    )
 
     override fun onCreate() = Unit
 
@@ -42,6 +47,7 @@ private class TimelineWidgetRemoteViewsFactory(
                     previous.copy(
                         isLoading = false,
                         lastError = context.getString(R.string.widget_error_generic),
+                        loadingStartedAt = 0L,
                     ),
                 )
                 context.sendBroadcast(
@@ -69,10 +75,12 @@ private class TimelineWidgetRemoteViewsFactory(
                 isLoading = true,
                 entryCount = entries.size,
                 lastError = null,
+                loadingStartedAt = System.currentTimeMillis(),
             )
         )
         runCatching {
             val config = TimelineWidgetPreferences.loadConfig(context, appWidgetId)
+            rowPalette = WidgetRowPalette.resolve(context, config.colorScheme)
             val offset = TimelineWidgetPreferences.loadDateOffset(context, appWidgetId)
             val range = TimelineWidgetDateUtils.resolveRangeWindow(config.dateRange, offset)
             val forceRefresh = TimelineWidgetPreferences.consumeForceRefresh(context, appWidgetId)
@@ -108,6 +116,7 @@ private class TimelineWidgetRemoteViewsFactory(
                     entryCount = entries.size,
                     lastUpdatedAt = result.lastUpdatedAt,
                     lastError = result.errorMessage,
+                    loadingStartedAt = 0L,
                 ),
             )
             TimelineWidgetDebugLogger.log(
@@ -131,6 +140,7 @@ private class TimelineWidgetRemoteViewsFactory(
                     entryCount = 0,
                     lastUpdatedAt = previousState.lastUpdatedAt,
                     lastError = context.getString(R.string.widget_error_generic),
+                    loadingStartedAt = 0L,
                 ),
             )
             TimelineWidgetDebugLogger.log(
@@ -158,7 +168,9 @@ private class TimelineWidgetRemoteViewsFactory(
     override fun getViewAt(position: Int): RemoteViews? {
         val item = entries.getOrNull(position) ?: return null
         val row = RemoteViews(context.packageName, R.layout.widget_timeline_item)
+        row.setInt(R.id.widgetItemRoot, "setBackgroundColor", rowPalette.itemBackground)
         row.setTextViewText(R.id.widgetItemTitle, item.title)
+        row.setTextColor(R.id.widgetItemTitle, rowPalette.title)
         row.setTextViewText(
             R.id.widgetItemTime,
             TimelineWidgetDateUtils.formatEntryTime(
@@ -167,12 +179,16 @@ private class TimelineWidgetRemoteViewsFactory(
                 isAllDayFallback = item.startAtMillis <= 0L,
             ),
         )
+        row.setTextColor(R.id.widgetItemTime, rowPalette.muted)
         row.setTextViewText(R.id.widgetItemCategory, item.category ?: "")
+        row.setTextColor(R.id.widgetItemCategory, rowPalette.body)
+        row.setInt(R.id.widgetItemCategory, "setBackgroundColor", rowPalette.chipBackground)
         row.setViewVisibility(
             R.id.widgetItemCategory,
             if (item.category.isNullOrBlank()) View.GONE else View.VISIBLE,
         )
         row.setTextViewText(R.id.widgetItemTypeIcon, item.icon ?: "\uD83D\uDCC5")
+        row.setTextColor(R.id.widgetItemTypeIcon, rowPalette.body)
         row.setInt(
             R.id.widgetItemPriorityBar,
             "setBackgroundColor",
@@ -182,6 +198,7 @@ private class TimelineWidgetRemoteViewsFactory(
             R.id.widgetItemDescription,
             item.description ?: "",
         )
+        row.setTextColor(R.id.widgetItemDescription, rowPalette.body)
         row.setViewVisibility(
             R.id.widgetItemDescription,
             if (item.description.isNullOrBlank()) View.GONE else View.VISIBLE,
@@ -245,5 +262,47 @@ private class TimelineWidgetRemoteViewsFactory(
     private fun parseColorSafe(value: String?, fallback: Int): Int {
         if (value.isNullOrBlank()) return fallback
         return runCatching { Color.parseColor(value) }.getOrDefault(fallback)
+    }
+}
+
+private data class WidgetRowPalette(
+    val itemBackground: Int,
+    val chipBackground: Int,
+    val title: Int,
+    val body: Int,
+    val muted: Int,
+) {
+    companion object {
+        fun resolve(
+            context: android.content.Context,
+            colorScheme: TimelineWidgetColorScheme,
+        ): WidgetRowPalette {
+            val useDark = when (colorScheme) {
+                TimelineWidgetColorScheme.DARK -> true
+                TimelineWidgetColorScheme.LIGHT -> false
+                TimelineWidgetColorScheme.SYSTEM -> {
+                    (context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) ==
+                        Configuration.UI_MODE_NIGHT_YES
+                }
+            }
+
+            return if (useDark) {
+                WidgetRowPalette(
+                    itemBackground = Color.TRANSPARENT,
+                    chipBackground = context.getColor(R.color.widget_surface_dark),
+                    title = context.getColor(R.color.widget_text_title_dark),
+                    body = context.getColor(R.color.widget_text_body_dark),
+                    muted = context.getColor(R.color.widget_text_muted_dark),
+                )
+            } else {
+                WidgetRowPalette(
+                    itemBackground = Color.TRANSPARENT,
+                    chipBackground = context.getColor(R.color.widget_chip_bg),
+                    title = context.getColor(R.color.widget_text_title_light),
+                    body = context.getColor(R.color.widget_text_body_light),
+                    muted = context.getColor(R.color.widget_text_muted_light),
+                )
+            }
+        }
     }
 }

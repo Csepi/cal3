@@ -59,6 +59,7 @@ object TimelineWidgetPreferences {
             put("entryCount", state.entryCount)
             put("updatedAt", state.lastUpdatedAt)
             put("lastError", state.lastError ?: JSONObject.NULL)
+            put("loadingStartedAt", state.loadingStartedAt)
         }
         prefs(context).edit().putString("$KEY_STATE_PREFIX$appWidgetId", json.toString()).apply()
     }
@@ -72,6 +73,7 @@ object TimelineWidgetPreferences {
                 entryCount = json.optInt("entryCount", 0),
                 lastUpdatedAt = json.optLong("updatedAt", 0L),
                 lastError = json.optString("lastError").takeIf { it.isNotBlank() && it != "null" },
+                loadingStartedAt = json.optLong("loadingStartedAt", 0L),
             )
         }.getOrDefault(TimelineWidgetState())
     }
@@ -150,4 +152,3 @@ object TimelineWidgetPreferences {
             .toSet()
     }
 }
-
