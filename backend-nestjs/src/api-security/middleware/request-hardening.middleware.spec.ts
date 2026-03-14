@@ -75,4 +75,34 @@ describe('RequestHardeningMiddleware', () => {
     expect(result.error).toBeNull();
     expect(result.called).toBe(true);
   });
+
+  it('allows multipart upload on default profile-picture path', () => {
+    const result = invoke({
+      method: 'POST',
+      headers: {
+        'content-type': 'multipart/form-data; boundary=----x',
+        'content-length': '128',
+      },
+      path: '/api/user/profile-picture',
+      url: '/api/user/profile-picture',
+    });
+
+    expect(result.error).toBeNull();
+    expect(result.called).toBe(true);
+  });
+
+  it('rejects multipart upload on non-whitelisted path', () => {
+    const result = invoke({
+      method: 'POST',
+      headers: {
+        'content-type': 'multipart/form-data; boundary=----x',
+        'content-length': '128',
+      },
+      path: '/api/admin/import',
+      url: '/api/admin/import',
+    });
+
+    expect(result.error).toBeTruthy();
+    expect(result.called).toBe(false);
+  });
 });

@@ -12,6 +12,10 @@ import { bStatic } from '../../i18n/runtime';
 
 const MUTATING_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
 const URL_FIELD_PATTERN = /(url|uri|webhook)/i;
+const DEFAULT_ALLOWED_UPLOAD_PATH_PREFIXES = [
+  '/api/user/profile-picture',
+  '/user/profile-picture',
+] as const;
 
 interface JsonShapeStats {
   maxDepth: number;
@@ -35,12 +39,15 @@ export class RequestHardeningMiddleware implements NestMiddleware {
     'REQUEST_MAX_JSON_ARRAY_LENGTH',
     1000,
   );
-  private readonly allowedUploadPathPrefixes = (
-    process.env.SECURITY_ALLOWED_UPLOAD_PATHS ?? ''
-  )
-    .split(',')
-    .map((entry) => entry.trim())
-    .filter(Boolean);
+  private readonly allowedUploadPathPrefixes = Array.from(
+    new Set([
+      ...DEFAULT_ALLOWED_UPLOAD_PATH_PREFIXES,
+      ...(process.env.SECURITY_ALLOWED_UPLOAD_PATHS ?? '')
+        .split(',')
+        .map((entry) => entry.trim())
+        .filter(Boolean),
+    ]),
+  );
   private readonly allowPrivateWebhookUrls =
     process.env.SECURITY_ALLOW_PRIVATE_WEBHOOK_URLS === 'true';
 

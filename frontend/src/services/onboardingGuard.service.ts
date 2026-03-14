@@ -6,7 +6,9 @@ export type OnboardingRouteMode = 'require-complete' | 'require-incomplete';
 
 export const onboardingGuardService = {
   isOnboardingComplete(user: GuardUser | null | undefined): boolean {
-    return user?.onboardingCompleted === true;
+    // Legacy backends may omit onboardingCompleted entirely.
+    // Treat only explicit false as incomplete to avoid dead-end redirects.
+    return user?.onboardingCompleted !== false;
   },
 
   shouldRedirect(

@@ -849,6 +849,9 @@ class ApiService {
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
+      if (response.status === 404) {
+        return this.completeOnboardingLegacyFallback(payload);
+      }
       throw new Error(
         extractApiErrorMessage(errorData, 'Failed to complete onboarding'),
       );
@@ -863,6 +866,41 @@ class ApiService {
       sessionManager.updateUser(data.user);
     }
     return data;
+  }
+
+  private async completeOnboardingLegacyFallback(
+    payload: CompleteOnboardingPayload,
+  ): Promise<{ success: boolean; onboardingCompleted: boolean; user: UserProfile }> {
+    const legacyProfilePayload: Partial<UserProfile> = {
+      firstName: payload.firstName,
+      lastName: payload.lastName,
+      language: payload.language,
+      timezone: payload.timezone,
+      timeFormat: payload.timeFormat,
+      weekStartDay: payload.weekStartDay,
+      defaultCalendarView: payload.defaultCalendarView,
+    };
+
+    if (payload.profilePictureUrl) {
+      legacyProfilePayload.profilePictureUrl = payload.profilePictureUrl;
+    }
+
+    const updatedUser = await this.updateUserProfile(legacyProfilePayload);
+    const normalizedUser: UserProfile = {
+      ...updatedUser,
+      onboardingCompleted: true,
+      onboardingCompletedAt:
+        typeof updatedUser.onboardingCompletedAt === 'string'
+          ? updatedUser.onboardingCompletedAt
+          : new Date().toISOString(),
+    };
+
+    sessionManager.updateUser(normalizedUser);
+    return {
+      success: true,
+      onboardingCompleted: true,
+      user: normalizedUser,
+    };
   }
 
   async logout(): Promise<void> {
@@ -918,7 +956,14 @@ class ApiService {
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || 'Failed to upload profile picture');
+      if (response.status === 404 || response.status === 415) {
+        throw new Error(
+          'Profile picture upload is not available on this server yet. You can continue and add it later in Profile settings.',
+        );
+      }
+      throw new Error(
+        extractApiErrorMessage(errorData, 'Failed to upload profile picture'),
+      );
     }
 
     return (await response.json()) as UploadProfilePictureResponse;
