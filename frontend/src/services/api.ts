@@ -63,6 +63,41 @@ interface AuthResponse {
   user: UserProfile;
 }
 
+const extractFieldValidationMessage = (details: unknown): string | null => {
+  if (!details || typeof details !== 'object') {
+    return null;
+  }
+
+  const fields = (details as Record<string, unknown>).fields;
+  if (!Array.isArray(fields)) {
+    return null;
+  }
+
+  for (const fieldEntry of fields) {
+    if (!fieldEntry || typeof fieldEntry !== 'object') {
+      continue;
+    }
+    const fieldRecord = fieldEntry as Record<string, unknown>;
+    const reasons = fieldRecord.reasons;
+    if (!Array.isArray(reasons)) {
+      continue;
+    }
+    const reason = reasons.find(
+      (entry): entry is string =>
+        typeof entry === 'string' && entry.trim().length > 0,
+    );
+    if (!reason) {
+      continue;
+    }
+
+    const fieldName =
+      typeof fieldRecord.field === 'string' ? fieldRecord.field.trim() : '';
+    return fieldName.length > 0 ? `${fieldName}: ${reason}` : reason;
+  }
+
+  return null;
+};
+
 const extractApiErrorMessage = (
   payload: unknown,
   fallback: string,
@@ -70,7 +105,23 @@ const extractApiErrorMessage = (
   if (!payload || typeof payload !== 'object') {
     return fallback;
   }
+
   const body = payload as Record<string, unknown>;
+  const topLevelValidationMessage = extractFieldValidationMessage(body.details);
+  if (topLevelValidationMessage) {
+    return topLevelValidationMessage;
+  }
+
+  const nestedError = body.error;
+  if (nestedError && typeof nestedError === 'object') {
+    const nestedValidationMessage = extractFieldValidationMessage(
+      (nestedError as Record<string, unknown>).details,
+    );
+    if (nestedValidationMessage) {
+      return nestedValidationMessage;
+    }
+  }
+
   const directMessage =
     (typeof body.message === 'string' && body.message) ||
     (typeof body.error === 'string' && body.error);
@@ -78,7 +129,6 @@ const extractApiErrorMessage = (
     return directMessage;
   }
 
-  const nestedError = body.error;
   if (nestedError && typeof nestedError === 'object') {
     const nestedMessage = (nestedError as Record<string, unknown>).message;
     if (typeof nestedMessage === 'string' && nestedMessage.length > 0) {

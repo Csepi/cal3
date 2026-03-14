@@ -9,6 +9,9 @@ import { useAppTranslation } from '../../i18n/useAppTranslation';
 
 import { tStatic } from '../../i18n';
 
+const STRONG_PASSWORD_REGEX =
+  /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[ !"#$%&'()*+,\-./:;<=>?@[\\\]^_`{|}~]).{10,128}$/;
+
 const Login: React.FC = () => {
   const [isRegistering, setIsRegistering] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -44,8 +47,8 @@ const Login: React.FC = () => {
       errors.push(t('auth:errors.invalidCredentials'));
     } else if (username.trim().length < 3) {
       errors.push(t('validation:minLength', { min: 3 }));
-    } else if (username.trim().length > 20) {
-      errors.push(t('validation:maxLength', { max: 20 }));
+    } else if (username.trim().length > 64) {
+      errors.push(t('validation:maxLength', { max: 64 }));
     } else if (!/^[a-zA-Z0-9_]+$/.test(username.trim())) {
       errors.push(t('auth:errors.usernameAlreadyExists'));
     }
@@ -58,20 +61,20 @@ const Login: React.FC = () => {
 
     if (!password) {
       errors.push(t('validation:required'));
-    } else if (password.length < 6) {
-      errors.push(t('validation:minLength', { min: 6 }));
-    } else if (password.length > 100) {
-      errors.push(t('validation:maxLength', { max: 100 }));
-    } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(password)) {
+    } else if (password.length < 10) {
+      errors.push(t('validation:minLength', { min: 10 }));
+    } else if (password.length > 128) {
+      errors.push(t('validation:maxLength', { max: 128 }));
+    } else if (!STRONG_PASSWORD_REGEX.test(password)) {
       errors.push(t('auth:errors.weakPassword'));
     }
 
-    if (firstName && firstName.length > 50) {
-      errors.push('First name must be less than 50 characters');
+    if (firstName && firstName.length > 80) {
+      errors.push('First name must be less than 80 characters');
     }
 
-    if (lastName && lastName.length > 50) {
-      errors.push('Last name must be less than 50 characters');
+    if (lastName && lastName.length > 80) {
+      errors.push('Last name must be less than 80 characters');
     }
 
     return errors;
@@ -316,7 +319,7 @@ const Login: React.FC = () => {
                 isRegistering
                   ? t('auth:hints.passwordStrength', {
                       defaultValue:
-                        'Use at least 8 characters with upper/lowercase letters and numbers.',
+                        'Use 10-128 characters with uppercase, lowercase, number, and special character.',
                     })
                   : t('auth:placeholders.password')
               }
