@@ -91,6 +91,23 @@ describe('RequestHardeningMiddleware', () => {
     expect(result.called).toBe(true);
   });
 
+  it('allows multipart upload when middleware receives mounted route path', () => {
+    const result = invoke({
+      method: 'POST',
+      headers: {
+        'content-type': 'multipart/form-data; boundary=----x',
+        'content-length': '128',
+      },
+      path: '/',
+      url: '/',
+      baseUrl: '/api/user/profile-picture',
+      originalUrl: '/api/user/profile-picture?source=onboarding',
+    });
+
+    expect(result.error).toBeNull();
+    expect(result.called).toBe(true);
+  });
+
   it('rejects multipart upload on non-whitelisted path', () => {
     const result = invoke({
       method: 'POST',

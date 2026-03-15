@@ -109,7 +109,8 @@ export class RequestHardeningMiddleware implements NestMiddleware {
       );
     }
 
-    if (isMultipart && !this.isUploadPathAllowed(req.path || req.url || '')) {
+    const requestPath = this.resolveRequestPath(req);
+    if (isMultipart && !this.isUploadPathAllowed(requestPath)) {
       throw new UnsupportedMediaTypeException(
         bStatic('errors.auto.backend.k8b135a6ebfca'),
       );
@@ -301,6 +302,26 @@ export class RequestHardeningMiddleware implements NestMiddleware {
     return this.allowedUploadPathPrefixes.some((prefix) =>
       path.startsWith(prefix),
     );
+  }
+
+  private resolveRequestPath(req: Request): string {
+    const candidatePaths = [
+      typeof req.originalUrl === 'string' ? req.originalUrl : '',
+      typeof req.baseUrl === 'string' && typeof req.path === 'string'
+        ? `${req.baseUrl}${req.path}`
+        : '',
+      typeof req.path === 'string' ? req.path : '',
+      typeof req.url === 'string' ? req.url : '',
+    ];
+
+    for (const candidate of candidatePaths) {
+      const normalized = candidate.split('?')[0].trim();
+      if (normalized.length > 0 && normalized !== '/') {
+        return normalized;
+      }
+    }
+
+    return '/';
   }
 
   private readNumber(name: string, fallback: number): number {
