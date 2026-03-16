@@ -18,6 +18,7 @@ const CalendarPreferencesStep: React.FC<CalendarPreferencesStepProps> = ({
   onChange,
 }) => {
   const { t } = useAppTranslation('auth');
+  const syncDisabled = true;
 
   return (
     <div className="space-y-5">
@@ -58,7 +59,13 @@ const CalendarPreferencesStep: React.FC<CalendarPreferencesStepProps> = ({
       </fieldset>
 
       <div className="space-y-3">
-        <label className="flex items-start gap-2 rounded-xl border border-gray-200 p-3 text-sm text-gray-700">
+        <label
+          className={`flex items-start gap-2 rounded-xl border p-3 text-sm ${
+            syncDisabled
+              ? 'cursor-not-allowed border-gray-200 bg-gray-50 text-gray-500'
+              : 'border-gray-200 text-gray-700'
+          }`}
+        >
           <input
             type="checkbox"
             checked={state.setupGoogleCalendarSync}
@@ -68,11 +75,18 @@ const CalendarPreferencesStep: React.FC<CalendarPreferencesStepProps> = ({
                 setupGoogleCalendarSync: event.target.checked,
               })
             }
+            disabled={syncDisabled}
             className="mt-0.5 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
           />
           <span>{t('onboarding.calendar.syncGoogle')}</span>
         </label>
-        <label className="flex items-start gap-2 rounded-xl border border-gray-200 p-3 text-sm text-gray-700">
+        <label
+          className={`flex items-start gap-2 rounded-xl border p-3 text-sm ${
+            syncDisabled
+              ? 'cursor-not-allowed border-gray-200 bg-gray-50 text-gray-500'
+              : 'border-gray-200 text-gray-700'
+          }`}
+        >
           <input
             type="checkbox"
             checked={state.setupMicrosoftCalendarSync}
@@ -82,10 +96,18 @@ const CalendarPreferencesStep: React.FC<CalendarPreferencesStepProps> = ({
                 setupMicrosoftCalendarSync: event.target.checked,
               })
             }
+            disabled={syncDisabled}
             className="mt-0.5 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
           />
           <span>{t('onboarding.calendar.syncMicrosoft')}</span>
         </label>
+      </div>
+
+      <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+        {t('onboarding.calendar.syncBetaNotice', {
+          defaultValue:
+            'Calendar sync setup is temporarily unavailable during beta testing and will be enabled for the production service release.',
+        })}
       </div>
     </div>
   );

@@ -117,6 +117,7 @@ export interface SecureFetchOptions extends RequestInit {
   auth?: boolean;
   autoRefresh?: boolean;
   csrf?: boolean;
+  timeoutMs?: number;
 }
 
 /**
@@ -319,6 +320,7 @@ export async function secureFetch(
     auth = true,
     autoRefresh = true,
     csrf,
+    timeoutMs,
     ...rest
   } = options;
 
@@ -331,7 +333,10 @@ export async function secureFetch(
     credentials: rest.credentials ?? 'include',
     body: originalBody,
   };
-  const timeoutMs = DEFAULT_REQUEST_TIMEOUT_MS;
+  const effectiveTimeoutMs =
+    typeof timeoutMs === 'number' && timeoutMs > 0
+      ? timeoutMs
+      : DEFAULT_REQUEST_TIMEOUT_MS;
   const requestUrl = resolveRequestUrl(input);
   const traceId = generateTraceId();
   const startedAt = now();
@@ -364,7 +369,7 @@ export async function secureFetch(
     if (!signal && typeof AbortController !== 'undefined') {
       const controller = new AbortController();
       signal = controller.signal;
-      timeoutHandle = setTimeout(() => controller.abort(), timeoutMs);
+      timeoutHandle = setTimeout(() => controller.abort(), effectiveTimeoutMs);
     }
 
     let response: Response;
@@ -405,7 +410,10 @@ export async function secureFetch(
           if (!signal && typeof AbortController !== 'undefined') {
             const controller = new AbortController();
             signal = controller.signal;
-            timeoutHandle = setTimeout(() => controller.abort(), timeoutMs);
+            timeoutHandle = setTimeout(
+              () => controller.abort(),
+              effectiveTimeoutMs,
+            );
           }
           let retryResponse: Response;
           try {
@@ -467,10 +475,17 @@ export async function secureFetch(
     return await executeWithNetworkRetry();
   } catch (error) {
     // If it's a network error, check if we still have a valid token
-    clientLogger.error(
-      `[network:${traceId}] ${method} ${requestUrl} request failed`,
-      error,
-    );
+    if (isAbortError(error)) {
+      clientLogger.warn(
+        `[network:${traceId}] ${method} ${requestUrl} request timed out`,
+        { timeoutMs: effectiveTimeoutMs },
+      );
+    } else {
+      clientLogger.error(
+        `[network:${traceId}] ${method} ${requestUrl} request failed`,
+        error,
+      );
+    }
     if (auth && !authHandler.hasValidTokenFormat() && !isNativeClient()) {
       authHandler.handleAuthError(
         401,

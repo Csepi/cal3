@@ -1,7 +1,6 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
-import { apiService, type AvailabilityCheckError } from '../../services/api';
 import {
   onboardingService,
   type OnboardingWizardState,
@@ -11,38 +10,9 @@ import PersonalizationStep from './steps/PersonalizationStep';
 import ComplianceStep from './steps/ComplianceStep';
 import CalendarPreferencesStep from './steps/CalendarPreferencesStep';
 import ReviewStep from './steps/ReviewStep';
-import { profileApi } from '../../services/profileApi';
 import { useAppTranslation } from '../../i18n/useAppTranslation';
 
 const TOTAL_STEPS = 5;
-const USERNAME_PATTERN = /^[a-zA-Z0-9_]+$/;
-const USERNAME_AVAILABILITY_DEBOUNCE_MS = 700;
-type UsernameStatus =
-  | 'idle'
-  | 'checking'
-  | 'available'
-  | 'unavailable'
-  | 'invalid'
-  | 'rate-limited'
-  | 'error';
-
-const isAvailabilityRateLimited = (
-  error: unknown,
-): error is AvailabilityCheckError => {
-  if (!(error instanceof Error)) {
-    return false;
-  }
-  const typedError = error as AvailabilityCheckError;
-  return (
-    typedError.code === 'RATE_LIMITED' ||
-    typedError.name === 'AvailabilityRateLimitError' ||
-    typedError.message.toLowerCase().includes('too many')
-  );
-};
-
-const isAbortError = (error: unknown): boolean => {
-  return error instanceof Error && error.name.toLowerCase() === 'aborterror';
-};
 
 const OnboardingWizard: React.FC = () => {
   const navigate = useNavigate();
@@ -50,16 +20,6 @@ const OnboardingWizard: React.FC = () => {
   const { t } = useAppTranslation('auth');
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isUploadingProfilePicture, setIsUploadingProfilePicture] =
-    useState(false);
-  const [profilePictureError, setProfilePictureError] = useState<string | null>(
-    null,
-  );
-  const [usernameStatus, setUsernameStatus] = useState<UsernameStatus>('idle');
-  const [usernameStatusMessage, setUsernameStatusMessage] = useState<
-    string | null
-  >(null);
-  const usernameAvailabilityCacheRef = useRef<Map<string, boolean>>(new Map());
   const [submissionError, setSubmissionError] = useState<string | null>(null);
   const [isComplete, setIsComplete] = useState(false);
   const [redirectCountdown, setRedirectCountdown] = useState(2);
@@ -104,151 +64,6 @@ const OnboardingWizard: React.FC = () => {
   ]);
 
   useEffect(() => {
-    const username = state.profile.username.trim();
-    const normalizedCurrentUsername = currentUser?.username?.trim().toLowerCase();
-
-    if (username.length === 0) {
-      setUsernameStatus('invalid');
-      setUsernameStatusMessage(
-        t('onboarding.welcome.usernameRequired', {
-          defaultValue: 'Username is required.',
-        }),
-      );
-      return;
-    }
-
-    if (username.length < 3) {
-      setUsernameStatus('invalid');
-      setUsernameStatusMessage(
-        t('onboarding.welcome.usernameTooShort', {
-          min: 3,
-          defaultValue: 'Username must be at least 3 characters.',
-        }),
-      );
-      return;
-    }
-
-    if (username.length > 64) {
-      setUsernameStatus('invalid');
-      setUsernameStatusMessage(
-        t('onboarding.welcome.usernameTooLong', {
-          max: 64,
-          defaultValue: 'Username must be at most 64 characters.',
-        }),
-      );
-      return;
-    }
-
-    if (!USERNAME_PATTERN.test(username)) {
-      setUsernameStatus('invalid');
-      setUsernameStatusMessage(
-        t('onboarding.welcome.usernamePattern', {
-          defaultValue: 'Use only letters, numbers, and underscores.',
-        }),
-      );
-      return;
-    }
-
-    if (
-      normalizedCurrentUsername &&
-      username.toLowerCase() === normalizedCurrentUsername
-    ) {
-      setUsernameStatus('available');
-      setUsernameStatusMessage(
-        t('onboarding.welcome.usernameCurrent', {
-          defaultValue: 'Using your current username.',
-        }),
-      );
-      return;
-    }
-
-    const cachedAvailability =
-      usernameAvailabilityCacheRef.current.get(username);
-    if (typeof cachedAvailability === 'boolean') {
-      setUsernameStatus(cachedAvailability ? 'available' : 'unavailable');
-      setUsernameStatusMessage(
-        cachedAvailability
-          ? t('onboarding.welcome.usernameAvailable', {
-              defaultValue: 'Username is available.',
-            })
-          : t('onboarding.welcome.usernameTaken', {
-              defaultValue: 'This username is already taken.',
-            }),
-      );
-      return;
-    }
-
-    setUsernameStatus('checking');
-    setUsernameStatusMessage(
-      t('onboarding.welcome.usernameChecking', {
-        defaultValue: 'Checking username availability...',
-      }),
-    );
-
-    let isCancelled = false;
-    const controller = new AbortController();
-    const timer = window.setTimeout(async () => {
-      try {
-        const available = await apiService.checkUsernameAvailability(
-          username,
-          controller.signal,
-        );
-        if (isCancelled) {
-          return;
-        }
-        usernameAvailabilityCacheRef.current.set(username, available);
-        setUsernameStatus(available ? 'available' : 'unavailable');
-        setUsernameStatusMessage(
-          available
-            ? t('onboarding.welcome.usernameAvailable', {
-                defaultValue: 'Username is available.',
-              })
-            : t('onboarding.welcome.usernameTaken', {
-                defaultValue: 'This username is already taken.',
-              }),
-        );
-      } catch (error) {
-        if (isCancelled || isAbortError(error)) {
-          return;
-        }
-        if (isAvailabilityRateLimited(error)) {
-          const retryAfter = Math.max(
-            1,
-            Math.min(
-              120,
-              Math.round(
-                Number((error as AvailabilityCheckError).retryAfterSeconds) ||
-                  30,
-              ),
-            ),
-          );
-          setUsernameStatus('rate-limited');
-          setUsernameStatusMessage(
-            t('auth:validation.availabilityRateLimited', {
-              seconds: retryAfter,
-              defaultValue:
-                'Too many checks right now. Please wait {{seconds}} seconds and try again.',
-            }),
-          );
-          return;
-        }
-        setUsernameStatus('error');
-        setUsernameStatusMessage(
-          t('onboarding.welcome.usernameCheckFailed', {
-            defaultValue: 'Could not validate username right now.',
-          }),
-        );
-      }
-    }, USERNAME_AVAILABILITY_DEBOUNCE_MS);
-
-    return () => {
-      isCancelled = true;
-      controller.abort();
-      window.clearTimeout(timer);
-    };
-  }, [currentUser?.username, state.profile.username, t]);
-
-  useEffect(() => {
     if (!isComplete) {
       return;
     }
@@ -267,17 +82,8 @@ const OnboardingWizard: React.FC = () => {
   }, [isComplete, navigate]);
 
   const canProceed = useMemo(
-    () => {
-      const canContinue = onboardingService.canProceedToNextStep(
-        currentStep,
-        state,
-      );
-      if (currentStep === 1 || currentStep === TOTAL_STEPS) {
-        return canContinue && usernameStatus === 'available';
-      }
-      return canContinue;
-    },
-    [currentStep, state, usernameStatus],
+    () => onboardingService.canProceedToNextStep(currentStep, state),
+    [currentStep, state],
   );
 
   const goNext = () => {
@@ -346,46 +152,14 @@ const OnboardingWizard: React.FC = () => {
     }
   };
 
-  const handleUploadProfilePicture = async (file: File) => {
-    setProfilePictureError(null);
-    setIsUploadingProfilePicture(true);
-    try {
-      const response = await profileApi.uploadProfilePicture(file);
-      setState((previous) => ({
-        ...previous,
-        profile: {
-          ...previous.profile,
-          profilePictureUrl: response.profilePictureUrl,
-        },
-      }));
-    } catch (error) {
-      setProfilePictureError(
-        error instanceof Error ? error.message : t('onboarding.uploadFailed'),
-      );
-    } finally {
-      setIsUploadingProfilePicture(false);
-    }
-  };
-
   const renderStep = () => {
     if (currentStep === 1) {
       return (
         <WelcomeProfileStep
-          username={state.profile.username}
           email={state.profile.email}
           firstName={state.profile.firstName}
           lastName={state.profile.lastName}
-          usernameStatus={usernameStatus}
-          usernameStatusMessage={usernameStatusMessage}
           profilePicturePreview={state.profile.profilePictureUrl}
-          isUploadingProfilePicture={isUploadingProfilePicture}
-          profilePictureError={profilePictureError}
-          onUsernameChange={(value) =>
-            setState((previous) => ({
-              ...previous,
-              profile: { ...previous.profile, username: value },
-            }))
-          }
           onFirstNameChange={(value) =>
             setState((previous) => ({
               ...previous,
@@ -398,7 +172,12 @@ const OnboardingWizard: React.FC = () => {
               profile: { ...previous.profile, lastName: value },
             }))
           }
-          onUploadProfilePicture={handleUploadProfilePicture}
+          onUseGravatar={(value) =>
+            setState((previous) => ({
+              ...previous,
+              profile: { ...previous.profile, profilePictureUrl: value },
+            }))
+          }
         />
       );
     }

@@ -69,14 +69,7 @@ const isHexColor = (value: string): boolean =>
 const isSupportedThemeColor = (value: string): boolean =>
   SUPPORTED_THEME_COLORS.has(value);
 
-const isValidUsername = (value: string): boolean => {
-  const normalized = value.trim();
-  return (
-    normalized.length >= 3 &&
-    normalized.length <= 64 &&
-    /^[a-zA-Z0-9_]+$/.test(normalized)
-  );
-};
+const isValidOptionalName = (value: string): boolean => value.length <= 80;
 
 const sanitizeLanguage = (value: string | undefined): SupportedLanguage => {
   if (value === 'en' || value === 'de' || value === 'fr' || value === 'hu') {
@@ -183,7 +176,10 @@ export const onboardingService = {
   },
 
   validateProfile(state: OnboardingProfileStepState): boolean {
-    return isValidUsername(state.username);
+    return (
+      isValidOptionalName(state.firstName.trim()) &&
+      isValidOptionalName(state.lastName.trim())
+    );
   },
 
   validatePersonalization(

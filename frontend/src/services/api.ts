@@ -209,7 +209,7 @@ const mapRecurrenceType = (type: RecurrenceType): string => {
 
 // Import centralized API configuration
 import { BASE_URL } from '../config/apiConfig';
-import { secureFetch } from './authErrorHandler';
+import { secureFetch, type SecureFetchOptions } from './authErrorHandler';
 import { sessionManager } from './sessionManager';
 
 class ApiService {
@@ -217,7 +217,10 @@ class ApiService {
    * Secure fetch wrapper that handles auth errors automatically
    * Use this for all API calls to ensure consistent security handling
    */
-  private async secureApiFetch(url: string, options: RequestInit = {}): Promise<Response> {
+  private async secureApiFetch(
+    url: string,
+    options: SecureFetchOptions = {},
+  ): Promise<Response> {
     return secureFetch(url, options);
   }
 
@@ -927,6 +930,7 @@ class ApiService {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(payload),
+        timeoutMs: 45_000,
       },
     );
 

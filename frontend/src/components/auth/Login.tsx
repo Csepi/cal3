@@ -60,8 +60,6 @@ const Login: React.FC = () => {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
   const [mfaCode, setMfaCode] = useState('');
   const [mfaRecoveryCode, setMfaRecoveryCode] = useState('');
   const [mfaRequired, setMfaRequired] = useState(false);
@@ -452,14 +450,6 @@ const Login: React.FC = () => {
       errors.push(t('auth:errors.weakPassword'));
     }
 
-    if (firstName && firstName.length > 80) {
-      errors.push('First name must be less than 80 characters');
-    }
-
-    if (lastName && lastName.length > 80) {
-      errors.push('Last name must be less than 80 characters');
-    }
-
     return errors;
   };
 
@@ -512,8 +502,6 @@ const Login: React.FC = () => {
           username,
           email,
           password,
-          firstName,
-          lastName
         });
 
         await login({
@@ -605,55 +593,6 @@ const Login: React.FC = () => {
         >
           {isRegistering && (
             <>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-2">
-                    {t('auth:labels.firstName')}
-                  </label>
-                  <input
-                    type="text"
-                    id="firstName"
-                    value={firstName}
-                    onChange={(e) => setFirstName(e.target.value)}
-                    disabled={isSubmitting}
-                    className="w-full px-4 py-3 bg-white border border-blue-300 text-gray-800 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-300 placeholder:text-gray-500"
-                    placeholder={t('auth:placeholders.firstName')}
-                  />
-                  {firstName.length > 0 && (
-                    <p
-                      className={`mt-2 text-xs ${
-                        firstName.length <= 80 ? 'text-gray-600' : 'text-red-700'
-                      }`}
-                    >
-                      {firstName.length}/80
-                    </p>
-                  )}
-                </div>
-                <div>
-                  <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-2">
-                    {t('auth:labels.lastName')}
-                  </label>
-                  <input
-                    type="text"
-                    id="lastName"
-                    value={lastName}
-                    onChange={(e) => setLastName(e.target.value)}
-                    disabled={isSubmitting}
-                    className="w-full px-4 py-3 bg-white border border-blue-300 text-gray-800 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-300 placeholder:text-gray-500"
-                    placeholder={t('auth:placeholders.lastName')}
-                  />
-                  {lastName.length > 0 && (
-                    <p
-                      className={`mt-2 text-xs ${
-                        lastName.length <= 80 ? 'text-gray-600' : 'text-red-700'
-                      }`}
-                    >
-                      {lastName.length}/80
-                    </p>
-                  )}
-                </div>
-              </div>
-
               <div>
                 <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-2">
                   {t('auth:labels.username')} *
