@@ -56,6 +56,7 @@ describe('OnboardingWizard flow', () => {
     mockedUseAuth.mockReturnValue({
       isAuthenticated: true,
       currentUser: {
+        username: 'wizard_user',
         email: 'wizard@example.com',
         firstName: 'Wizard',
         lastName: 'User',
@@ -68,6 +69,7 @@ describe('OnboardingWizard flow', () => {
 
     mockedOnboardingService.createInitialState.mockReturnValue({
       profile: {
+        username: 'wizard_user',
         email: 'wizard@example.com',
         firstName: 'Wizard',
         lastName: 'User',

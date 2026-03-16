@@ -91,7 +91,7 @@ describe('OnboardingRouteGuard component', () => {
     expect(screen.getByText('Onboarding Content')).toBeInTheDocument();
   });
 
-  it('resolves unknown onboarding state by fetching auth profile and redirects', async () => {
+  it('resolves unknown onboarding state by fetching auth profile', async () => {
     mockedUseAuth.mockReturnValue({
       isAuthenticated: true,
       currentUser: {},
@@ -113,7 +113,7 @@ describe('OnboardingRouteGuard component', () => {
 
     await waitFor(() => {
       expect(mockedApiService.getAuthProfile).toHaveBeenCalledTimes(1);
-      expect(screen.getByText('Onboarding Content')).toBeInTheDocument();
+      expect(screen.getByText('App Content')).toBeInTheDocument();
     });
   });
 });

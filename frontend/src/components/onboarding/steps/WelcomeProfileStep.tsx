@@ -1,24 +1,38 @@
 import { useAppTranslation } from '../../../i18n/useAppTranslation';
 
 interface WelcomeProfileStepProps {
+  username: string;
   email: string;
   firstName: string;
   lastName: string;
+  usernameStatus:
+    | 'idle'
+    | 'checking'
+    | 'available'
+    | 'unavailable'
+    | 'invalid'
+    | 'error';
+  usernameStatusMessage?: string | null;
   profilePicturePreview: string;
   isUploadingProfilePicture: boolean;
   profilePictureError: string | null;
+  onUsernameChange: (value: string) => void;
   onFirstNameChange: (value: string) => void;
   onLastNameChange: (value: string) => void;
   onUploadProfilePicture: (file: File) => Promise<void>;
 }
 
 const WelcomeProfileStep: React.FC<WelcomeProfileStepProps> = ({
+  username,
   email,
   firstName,
   lastName,
+  usernameStatus,
+  usernameStatusMessage,
   profilePicturePreview,
   isUploadingProfilePicture,
   profilePictureError,
+  onUsernameChange,
   onFirstNameChange,
   onLastNameChange,
   onUploadProfilePicture,
@@ -41,6 +55,35 @@ const WelcomeProfileStep: React.FC<WelcomeProfileStepProps> = ({
         <p className="mt-2 text-sm text-gray-600">
           {t('onboarding.welcome.description')}
         </p>
+      </div>
+
+      <div>
+        <label className="mb-2 block text-sm font-medium text-gray-700">
+          {t('onboarding.welcome.username', { defaultValue: 'Username' })}
+        </label>
+        <input
+          type="text"
+          value={username}
+          onChange={(event) => onUsernameChange(event.target.value)}
+          className="w-full rounded-xl border border-gray-300 px-3 py-2 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+          placeholder={t('onboarding.welcome.usernamePlaceholder', {
+            defaultValue: 'Choose your username',
+          })}
+        />
+        {usernameStatus !== 'idle' && (
+          <p
+            className={`mt-2 text-xs ${
+              usernameStatus === 'available'
+                ? 'text-green-700'
+                : usernameStatus === 'checking'
+                  ? 'text-blue-700'
+                  : 'text-red-700'
+            }`}
+            role={usernameStatus === 'available' ? 'status' : 'alert'}
+          >
+            {usernameStatusMessage}
+          </p>
+        )}
       </div>
 
       <div>

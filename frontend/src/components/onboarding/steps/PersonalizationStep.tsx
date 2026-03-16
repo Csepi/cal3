@@ -5,6 +5,7 @@ import type {
   TimeFormatPreference,
 } from '../../../services/onboarding.service';
 import { useAppTranslation } from '../../../i18n/useAppTranslation';
+import { THEME_COLOR_OPTIONS } from '../../../constants';
 
 interface PersonalizationStepProps {
   state: OnboardingPersonalizationStepState;
@@ -169,19 +170,40 @@ const PersonalizationStep: React.FC<PersonalizationStepProps> = ({
 
         <label className="block text-sm font-medium text-gray-700">
           {t('onboarding.personalization.themeColor')}
-          <div className="mt-2 flex items-center gap-3">
-            <input
-              type="color"
-              value={state.themeColor}
-              onChange={(event) =>
-                onChange({
-                  ...state,
-                  themeColor: event.target.value,
-                })
-              }
-              className="h-10 w-16 cursor-pointer rounded border border-gray-300 bg-white p-1"
-            />
-            <span className="text-sm text-gray-600">{state.themeColor}</span>
+          <div className="mt-2 grid grid-cols-4 gap-3">
+            {THEME_COLOR_OPTIONS.map((option) => {
+              const isActive = state.themeColor === option.value;
+              return (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() =>
+                    onChange({
+                      ...state,
+                      themeColor: option.value,
+                    })
+                  }
+                  className={`relative rounded-lg border-2 p-2 transition-all duration-200 ${
+                    isActive
+                      ? 'border-gray-800 shadow-lg ring-2 ring-offset-2 ring-gray-300'
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                  aria-label={option.name}
+                  title={option.name}
+                >
+                  <div
+                    className={`mx-auto mb-1 h-6 w-6 rounded-full bg-gradient-to-r ${option.gradient}`}
+                    style={{ backgroundColor: option.value }}
+                  />
+                  <div className="text-[11px] font-medium text-gray-700">
+                    {option.name}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+          <div className="mt-2 text-sm text-gray-600">
+            {state.themeColor}
           </div>
         </label>
       </div>

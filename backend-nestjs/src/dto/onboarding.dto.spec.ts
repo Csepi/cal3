@@ -7,6 +7,7 @@ import {
 } from './onboarding.dto';
 
 const validPayload: CompleteOnboardingDto = {
+  username: 'john_doe',
   firstName: 'John',
   lastName: 'Doe',
   language: OnboardingLanguage.EN,
@@ -65,12 +66,20 @@ describe('CompleteOnboardingDto', () => {
     expect(hasError(errors, 'weekStartDay')).toBe(true);
   });
 
-  it('rejects invalid hex theme colors', () => {
+  it('rejects unsupported theme colors', () => {
     const errors = validateDto({
       ...validPayload,
       themeColor: 'blue',
     });
     expect(hasError(errors, 'themeColor')).toBe(true);
+  });
+
+  it('rejects invalid usernames', () => {
+    const errors = validateDto({
+      ...validPayload,
+      username: 'bad username',
+    });
+    expect(hasError(errors, 'username')).toBe(true);
   });
 
   it('requires privacy policy acceptance', () => {

@@ -2,9 +2,10 @@ import {
   Injectable,
   UnauthorizedException,
   ConflictException,
+  BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, EntityManager } from 'typeorm';
+import { Repository, EntityManager, Not } from 'typeorm';
 import * as bcrypt from 'bcryptjs';
 import { User, UserRole } from '../entities/user.entity';
 import { RegisterDto, LoginDto, AuthResponseDto } from '../dto/auth.dto';
@@ -106,6 +107,45 @@ export class AuthService {
       ip: metadata.ip,
     });
     return session;
+  }
+
+  async isUsernameAvailable(username: string): Promise<boolean> {
+    const normalizedUsername = username.trim();
+    if (normalizedUsername.length < 3 || normalizedUsername.length > 64) {
+      throw new BadRequestException(
+        'username must be between 3 and 64 characters.',
+      );
+    }
+    if (!/^[a-zA-Z0-9_]+$/.test(normalizedUsername)) {
+      throw new BadRequestException(
+        'username can only contain letters, numbers, and underscores.',
+      );
+    }
+
+    const existingUser = await this.userRepository.findOne({
+      where: { username: normalizedUsername },
+      select: ['id'],
+    });
+    return !existingUser;
+  }
+
+  async isEmailAvailable(email: string): Promise<boolean> {
+    const normalizedEmail = email.trim().toLowerCase();
+    if (normalizedEmail.length === 0) {
+      throw new BadRequestException('email is required.');
+    }
+    if (normalizedEmail.length > 254) {
+      throw new BadRequestException('email must be at most 254 characters.');
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+      throw new BadRequestException('email must be a valid email address.');
+    }
+
+    const existingUser = await this.userRepository.findOne({
+      where: { email: normalizedEmail },
+      select: ['id'],
+    });
+    return !existingUser;
   }
 
   async login(
@@ -412,6 +452,22 @@ export class AuthService {
         }
 
         const now = new Date();
+        if (dto.username !== undefined) {
+          const normalizedUsername = dto.username.trim();
+          if (normalizedUsername.length > 0 && normalizedUsername !== user.username) {
+            const conflictingUser = await userRepository.findOne({
+              where: { username: normalizedUsername, id: Not(userId) },
+              select: ['id'],
+            });
+            if (conflictingUser) {
+              throw new ConflictException(
+                bStatic('errors.auto.backend.k2ecb24ae5a71'),
+              );
+            }
+            user.username = normalizedUsername;
+          }
+        }
+
         if (dto.firstName !== undefined) {
           user.firstName = dto.firstName;
         }

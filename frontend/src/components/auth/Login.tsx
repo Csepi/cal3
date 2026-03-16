@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { apiService } from '../../services/api';
 import { useFeatureFlags } from '../../hooks/useFeatureFlags';
 import { ErrorBox } from '../common/ErrorBox';
@@ -11,6 +11,25 @@ import { tStatic } from '../../i18n';
 
 const STRONG_PASSWORD_REGEX =
   /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[ !"#$%&'()*+,\-./:;<=>?@[\\\]^_`{|}~]).{10,128}$/;
+const LOWERCASE_REGEX = /[a-z]/;
+const UPPERCASE_REGEX = /[A-Z]/;
+const NUMBER_REGEX = /\d/;
+const SPECIAL_CHAR_REGEX = /[ !"#$%&'()*+,\-./:;<=>?@[\\\]^_`{|}~]/;
+const USERNAME_REGEX = /^[a-zA-Z0-9_]+$/;
+type UsernameAvailabilityState =
+  | 'idle'
+  | 'checking'
+  | 'available'
+  | 'unavailable'
+  | 'invalid'
+  | 'error';
+type EmailAvailabilityState =
+  | 'idle'
+  | 'checking'
+  | 'available'
+  | 'unavailable'
+  | 'invalid'
+  | 'error';
 
 const Login: React.FC = () => {
   const [isRegistering, setIsRegistering] = useState(false);
@@ -25,8 +44,223 @@ const Login: React.FC = () => {
   const [mfaRequired, setMfaRequired] = useState(false);
   const [mfaRecoveryMode, setMfaRecoveryMode] = useState(false);
   const [error, setError] = useState<ErrorDetails | null>(null);
+  const [usernameAvailability, setUsernameAvailability] =
+    useState<UsernameAvailabilityState>('idle');
+  const [usernameAvailabilityMessage, setUsernameAvailabilityMessage] =
+    useState<string | null>(null);
+  const [emailAvailability, setEmailAvailability] =
+    useState<EmailAvailabilityState>('idle');
+  const [emailAvailabilityMessage, setEmailAvailabilityMessage] = useState<
+    string | null
+  >(null);
   const { login } = useAuth();
   const { t } = useAppTranslation(['auth', 'validation']);
+
+  const passwordRuleChecks = [
+    {
+      key: 'minLength',
+      met: password.length >= 10 && password.length <= 128,
+      label: t('auth:passwordRules.minLength', {
+        defaultValue: '10-128 characters',
+      }),
+    },
+    {
+      key: 'lowercase',
+      met: LOWERCASE_REGEX.test(password),
+      label: t('auth:passwordRules.lowercase', {
+        defaultValue: 'At least one lowercase letter',
+      }),
+    },
+    {
+      key: 'uppercase',
+      met: UPPERCASE_REGEX.test(password),
+      label: t('auth:passwordRules.uppercase', {
+        defaultValue: 'At least one uppercase letter',
+      }),
+    },
+    {
+      key: 'number',
+      met: NUMBER_REGEX.test(password),
+      label: t('auth:passwordRules.number', {
+        defaultValue: 'At least one number',
+      }),
+    },
+    {
+      key: 'special',
+      met: SPECIAL_CHAR_REGEX.test(password),
+      label: t('auth:passwordRules.special', {
+        defaultValue: 'At least one special character',
+      }),
+    },
+  ];
+  const isPasswordCompliant = passwordRuleChecks.every((rule) => rule.met);
+
+  useEffect(() => {
+    if (!isRegistering) {
+      setUsernameAvailability('idle');
+      setUsernameAvailabilityMessage(null);
+      return;
+    }
+
+    const normalizedUsername = username.trim();
+
+    if (normalizedUsername.length === 0) {
+      setUsernameAvailability('invalid');
+      setUsernameAvailabilityMessage(
+        t('onboarding.welcome.usernameRequired', {
+          defaultValue: 'Username is required.',
+        }),
+      );
+      return;
+    }
+
+    if (normalizedUsername.length < 3) {
+      setUsernameAvailability('invalid');
+      setUsernameAvailabilityMessage(
+        t('onboarding.welcome.usernameTooShort', {
+          min: 3,
+          defaultValue: 'Username must be at least 3 characters.',
+        }),
+      );
+      return;
+    }
+
+    if (normalizedUsername.length > 64) {
+      setUsernameAvailability('invalid');
+      setUsernameAvailabilityMessage(
+        t('onboarding.welcome.usernameTooLong', {
+          max: 64,
+          defaultValue: 'Username must be at most 64 characters.',
+        }),
+      );
+      return;
+    }
+
+    if (!USERNAME_REGEX.test(normalizedUsername)) {
+      setUsernameAvailability('invalid');
+      setUsernameAvailabilityMessage(
+        t('onboarding.welcome.usernamePattern', {
+          defaultValue: 'Use only letters, numbers, and underscores.',
+        }),
+      );
+      return;
+    }
+
+    setUsernameAvailability('checking');
+    setUsernameAvailabilityMessage(
+      t('onboarding.welcome.usernameChecking', {
+        defaultValue: 'Checking username availability...',
+      }),
+    );
+
+    let isCancelled = false;
+    const timer = window.setTimeout(async () => {
+      try {
+        const available =
+          await apiService.checkUsernameAvailability(normalizedUsername);
+        if (isCancelled) {
+          return;
+        }
+        setUsernameAvailability(available ? 'available' : 'unavailable');
+        setUsernameAvailabilityMessage(
+          available
+            ? t('onboarding.welcome.usernameAvailable', {
+                defaultValue: 'Username is available.',
+              })
+            : t('onboarding.welcome.usernameTaken', {
+                defaultValue: 'This username is already taken.',
+              }),
+        );
+      } catch {
+        if (isCancelled) {
+          return;
+        }
+        setUsernameAvailability('error');
+        setUsernameAvailabilityMessage(
+          t('onboarding.welcome.usernameCheckFailed', {
+            defaultValue: 'Could not validate username right now.',
+          }),
+        );
+      }
+    }, 350);
+
+    return () => {
+      isCancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, [isRegistering, t, username]);
+
+  useEffect(() => {
+    if (!isRegistering) {
+      setEmailAvailability('idle');
+      setEmailAvailabilityMessage(null);
+      return;
+    }
+
+    const normalizedEmail = email.trim().toLowerCase();
+
+    if (normalizedEmail.length === 0) {
+      setEmailAvailability('invalid');
+      setEmailAvailabilityMessage(
+        t('auth:validation.emailRequired', {
+          defaultValue: 'Email is required.',
+        }),
+      );
+      return;
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+      setEmailAvailability('invalid');
+      setEmailAvailabilityMessage(
+        t('auth:validation.emailInvalid', {
+          defaultValue: 'Please enter a valid email address.',
+        }),
+      );
+      return;
+    }
+
+    setEmailAvailability('checking');
+    setEmailAvailabilityMessage(
+      t('auth:validation.emailChecking', {
+        defaultValue: 'Checking email availability...',
+      }),
+    );
+
+    let isCancelled = false;
+    const timer = window.setTimeout(async () => {
+      try {
+        const available = await apiService.checkEmailAvailability(normalizedEmail);
+        if (isCancelled) {
+          return;
+        }
+        setEmailAvailability(available ? 'available' : 'unavailable');
+        setEmailAvailabilityMessage(
+          available
+            ? t('auth:validation.emailAvailable', {
+                defaultValue: 'Email is available.',
+              })
+            : t('auth:validation.emailTaken', {
+                defaultValue: 'An account with this email already exists.',
+              }),
+        );
+      } catch {
+        if (isCancelled) {
+          return;
+        }
+        setEmailAvailability('error');
+        setEmailAvailabilityMessage(
+          t('auth:validation.emailCheckFailed', {
+            defaultValue: 'Could not validate email right now.',
+          }),
+        );
+      }
+    }, 350);
+
+    return () => {
+      isCancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, [email, isRegistering, t]);
 
   // Feature flags to control OAuth visibility
   const { flags: featureFlags } = useFeatureFlags();
@@ -49,14 +283,46 @@ const Login: React.FC = () => {
       errors.push(t('validation:minLength', { min: 3 }));
     } else if (username.trim().length > 64) {
       errors.push(t('validation:maxLength', { max: 64 }));
-    } else if (!/^[a-zA-Z0-9_]+$/.test(username.trim())) {
+    } else if (!USERNAME_REGEX.test(username.trim())) {
       errors.push(t('auth:errors.usernameAlreadyExists'));
+    }
+
+    if (usernameAvailability === 'unavailable') {
+      errors.push(
+        t('onboarding.welcome.usernameTaken', {
+          defaultValue: 'This username is already taken.',
+        }),
+      );
+    }
+
+    if (usernameAvailability === 'checking') {
+      errors.push(
+        t('onboarding.welcome.usernameChecking', {
+          defaultValue: 'Checking username availability...',
+        }),
+      );
     }
 
     if (!email.trim()) {
       errors.push(t('validation:required'));
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
       errors.push(t('validation:invalidEmail'));
+    }
+
+    if (emailAvailability === 'unavailable') {
+      errors.push(
+        t('auth:validation.emailTaken', {
+          defaultValue: 'An account with this email already exists.',
+        }),
+      );
+    }
+
+    if (emailAvailability === 'checking') {
+      errors.push(
+        t('auth:validation.emailChecking', {
+          defaultValue: 'Checking email availability...',
+        }),
+      );
     }
 
     if (!password) {
@@ -236,6 +502,15 @@ const Login: React.FC = () => {
                     className="w-full px-4 py-3 bg-white border border-blue-300 text-gray-800 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-300 placeholder:text-gray-500"
                     placeholder={t('auth:placeholders.firstName')}
                   />
+                  {firstName.length > 0 && (
+                    <p
+                      className={`mt-2 text-xs ${
+                        firstName.length <= 80 ? 'text-gray-600' : 'text-red-700'
+                      }`}
+                    >
+                      {firstName.length}/80
+                    </p>
+                  )}
                 </div>
                 <div>
                   <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-2">
@@ -250,6 +525,15 @@ const Login: React.FC = () => {
                     className="w-full px-4 py-3 bg-white border border-blue-300 text-gray-800 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-300 placeholder:text-gray-500"
                     placeholder={t('auth:placeholders.lastName')}
                   />
+                  {lastName.length > 0 && (
+                    <p
+                      className={`mt-2 text-xs ${
+                        lastName.length <= 80 ? 'text-gray-600' : 'text-red-700'
+                      }`}
+                    >
+                      {lastName.length}/80
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -267,6 +551,19 @@ const Login: React.FC = () => {
                   placeholder={t('auth:placeholders.username')}
                   required
                 />
+                {usernameAvailability !== 'idle' && (
+                  <p
+                    className={`mt-2 text-xs ${
+                      usernameAvailability === 'available'
+                        ? 'text-green-700'
+                        : usernameAvailability === 'checking'
+                          ? 'text-blue-700'
+                          : 'text-red-700'
+                    }`}
+                  >
+                    {usernameAvailabilityMessage}
+                  </p>
+                )}
               </div>
 
               <div>
@@ -283,6 +580,19 @@ const Login: React.FC = () => {
                   placeholder={t('auth:placeholders.email')}
                   required
                 />
+                {emailAvailability !== 'idle' && (
+                  <p
+                    className={`mt-2 text-xs ${
+                      emailAvailability === 'available'
+                        ? 'text-green-700'
+                        : emailAvailability === 'checking'
+                          ? 'text-blue-700'
+                          : 'text-red-700'
+                    }`}
+                  >
+                    {emailAvailabilityMessage}
+                  </p>
+                )}
               </div>
             </>
           )}
@@ -325,6 +635,51 @@ const Login: React.FC = () => {
               }
               required
             />
+            {isRegistering && (
+              <div className="mt-3 rounded-xl border border-gray-200 bg-gray-50 p-3">
+                <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-600">
+                  {t('auth:passwordRules.title', {
+                    defaultValue: 'Password requirements',
+                  })}
+                </div>
+                <ul className="space-y-1">
+                  {passwordRuleChecks.map((rule) => (
+                    <li
+                      key={rule.key}
+                      className={`flex items-center gap-2 text-xs ${
+                        rule.met ? 'text-green-700' : 'text-gray-600'
+                      }`}
+                    >
+                      <span
+                        className={`inline-flex h-4 w-4 items-center justify-center rounded-full border text-[10px] ${
+                          rule.met
+                            ? 'border-green-600 bg-green-600 text-white'
+                            : 'border-gray-300 bg-white text-gray-400'
+                        }`}
+                        aria-hidden="true"
+                      >
+                        {rule.met ? '✓' : '•'}
+                      </span>
+                      <span>{rule.label}</span>
+                    </li>
+                  ))}
+                </ul>
+                <p
+                  className={`mt-2 text-xs font-medium ${
+                    isPasswordCompliant ? 'text-green-700' : 'text-amber-700'
+                  }`}
+                >
+                  {isPasswordCompliant
+                    ? t('auth:passwordRules.valid', {
+                        defaultValue: 'Password is valid',
+                      })
+                    : t('auth:passwordRules.invalid', {
+                        defaultValue:
+                          'Password does not meet all requirements yet',
+                      })}
+                </p>
+              </div>
+            )}
           </div>
 
           {!isRegistering && mfaRequired && (

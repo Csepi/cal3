@@ -1,6 +1,7 @@
 import type { CompleteOnboardingPayload } from './api';
 import { apiService } from './api';
 import { onboardingConfig } from '../config/onboardingConfig';
+import { THEME_COLOR_OPTIONS } from '../constants';
 
 export type OnboardingUseCase = 'personal' | 'business' | 'team' | 'other';
 export type SupportedLanguage = 'en' | 'de' | 'fr' | 'hu';
@@ -8,6 +9,7 @@ export type TimeFormatPreference = '12h' | '24h';
 export type CalendarViewPreference = 'month' | 'week';
 
 export interface OnboardingProfileStepState {
+  username: string;
   email: string;
   firstName: string;
   lastName: string;
@@ -43,6 +45,7 @@ export interface OnboardingWizardState {
 }
 
 type PartialUserState = {
+  username?: string;
   email?: string;
   firstName?: string;
   lastName?: string;
@@ -56,9 +59,24 @@ type PartialUserState = {
 
 const FALLBACK_THEME_COLOR = '#3b82f6';
 const FALLBACK_TIMEZONE = 'UTC';
+const SUPPORTED_THEME_COLORS = new Set<string>(
+  THEME_COLOR_OPTIONS.map((option) => option.value),
+);
 
 const isHexColor = (value: string): boolean =>
   /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(value);
+
+const isSupportedThemeColor = (value: string): boolean =>
+  SUPPORTED_THEME_COLORS.has(value);
+
+const isValidUsername = (value: string): boolean => {
+  const normalized = value.trim();
+  return (
+    normalized.length >= 3 &&
+    normalized.length <= 64 &&
+    /^[a-zA-Z0-9_]+$/.test(normalized)
+  );
+};
 
 const sanitizeLanguage = (value: string | undefined): SupportedLanguage => {
   if (value === 'en' || value === 'de' || value === 'fr' || value === 'hu') {
@@ -95,12 +113,15 @@ export const onboardingService = {
         ? user.weekStartDay
         : 1;
     const themeColor =
-      typeof user?.themeColor === 'string' && isHexColor(user.themeColor)
+      typeof user?.themeColor === 'string' &&
+      isHexColor(user.themeColor) &&
+      isSupportedThemeColor(user.themeColor)
         ? user.themeColor
         : FALLBACK_THEME_COLOR;
 
     return {
       profile: {
+        username: user?.username ?? '',
         email: user?.email ?? '',
         firstName: user?.firstName ?? '',
         lastName: user?.lastName ?? '',
@@ -131,7 +152,7 @@ export const onboardingService = {
 
   canProceedToNextStep(step: number, state: OnboardingWizardState): boolean {
     if (step === 1) {
-      return true;
+      return this.validateProfile(state.profile);
     }
 
     if (step === 2) {
@@ -151,6 +172,7 @@ export const onboardingService = {
 
     if (step === 5) {
       return (
+        this.validateProfile(state.profile) &&
         this.validatePersonalization(state.personalization) &&
         state.compliance.privacyPolicyAccepted &&
         state.compliance.termsOfServiceAccepted
@@ -158,6 +180,10 @@ export const onboardingService = {
     }
 
     return false;
+  },
+
+  validateProfile(state: OnboardingProfileStepState): boolean {
+    return isValidUsername(state.username);
   },
 
   validatePersonalization(
@@ -171,7 +197,8 @@ export const onboardingService = {
       state.weekStartDay <= 6 &&
       (state.defaultCalendarView === 'month' ||
         state.defaultCalendarView === 'week') &&
-      isHexColor(state.themeColor)
+      isHexColor(state.themeColor) &&
+      isSupportedThemeColor(state.themeColor)
     );
   },
 
@@ -185,6 +212,7 @@ export const onboardingService = {
         : undefined;
 
     return {
+      username: state.profile.username.trim() || undefined,
       firstName: state.profile.firstName || undefined,
       lastName: state.profile.lastName || undefined,
       profilePictureUrl,

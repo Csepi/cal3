@@ -3,6 +3,7 @@ import {
   Post,
   Get,
   Body,
+  Query,
   UseGuards,
   Request,
   Res,
@@ -133,6 +134,38 @@ export class AuthController {
       session.refreshExpiresAt,
     );
     return this.buildAuthResponse(session, req);
+  }
+
+  @Get('username-availability')
+  @ApiOperation({ summary: 'Check if a username is available' })
+  @ApiResponse({
+    status: 200,
+    description: 'Username availability result',
+    schema: {
+      example: {
+        available: true,
+      },
+    },
+  })
+  async getUsernameAvailability(@Query('username') username: string) {
+    const available = await this.authService.isUsernameAvailable(username ?? '');
+    return { available };
+  }
+
+  @Get('email-availability')
+  @ApiOperation({ summary: 'Check if an email is available' })
+  @ApiResponse({
+    status: 200,
+    description: 'Email availability result',
+    schema: {
+      example: {
+        available: true,
+      },
+    },
+  })
+  async getEmailAvailability(@Query('email') email: string) {
+    const available = await this.authService.isEmailAvailable(email ?? '');
+    return { available };
   }
 
   @Get('profile')

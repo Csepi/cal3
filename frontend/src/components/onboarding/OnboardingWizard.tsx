@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
+import { apiService } from '../../services/api';
 import {
   onboardingService,
   type OnboardingWizardState,
@@ -14,6 +15,14 @@ import { profileApi } from '../../services/profileApi';
 import { useAppTranslation } from '../../i18n/useAppTranslation';
 
 const TOTAL_STEPS = 5;
+const USERNAME_PATTERN = /^[a-zA-Z0-9_]+$/;
+type UsernameStatus =
+  | 'idle'
+  | 'checking'
+  | 'available'
+  | 'unavailable'
+  | 'invalid'
+  | 'error';
 
 const OnboardingWizard: React.FC = () => {
   const navigate = useNavigate();
@@ -26,11 +35,16 @@ const OnboardingWizard: React.FC = () => {
   const [profilePictureError, setProfilePictureError] = useState<string | null>(
     null,
   );
+  const [usernameStatus, setUsernameStatus] = useState<UsernameStatus>('idle');
+  const [usernameStatusMessage, setUsernameStatusMessage] = useState<
+    string | null
+  >(null);
   const [submissionError, setSubmissionError] = useState<string | null>(null);
   const [isComplete, setIsComplete] = useState(false);
   const [redirectCountdown, setRedirectCountdown] = useState(2);
   const [state, setState] = useState<OnboardingWizardState>(() =>
     onboardingService.createInitialState({
+      username: currentUser?.username,
       email: currentUser?.email,
       firstName: currentUser?.firstName,
       lastName: currentUser?.lastName,
@@ -55,12 +69,120 @@ const OnboardingWizard: React.FC = () => {
       ...previous,
       profile: {
         ...previous.profile,
+        username: previous.profile.username || currentUser.username || '',
         email: currentUser.email ?? previous.profile.email,
         firstName: previous.profile.firstName || currentUser.firstName || '',
         lastName: previous.profile.lastName || currentUser.lastName || '',
       },
     }));
-  }, [currentUser?.email, currentUser?.firstName, currentUser?.lastName]);
+  }, [
+    currentUser?.email,
+    currentUser?.firstName,
+    currentUser?.lastName,
+    currentUser?.username,
+  ]);
+
+  useEffect(() => {
+    const username = state.profile.username.trim();
+    const normalizedCurrentUsername = currentUser?.username?.trim().toLowerCase();
+
+    if (username.length === 0) {
+      setUsernameStatus('invalid');
+      setUsernameStatusMessage(
+        t('onboarding.welcome.usernameRequired', {
+          defaultValue: 'Username is required.',
+        }),
+      );
+      return;
+    }
+
+    if (username.length < 3) {
+      setUsernameStatus('invalid');
+      setUsernameStatusMessage(
+        t('onboarding.welcome.usernameTooShort', {
+          min: 3,
+          defaultValue: 'Username must be at least 3 characters.',
+        }),
+      );
+      return;
+    }
+
+    if (username.length > 64) {
+      setUsernameStatus('invalid');
+      setUsernameStatusMessage(
+        t('onboarding.welcome.usernameTooLong', {
+          max: 64,
+          defaultValue: 'Username must be at most 64 characters.',
+        }),
+      );
+      return;
+    }
+
+    if (!USERNAME_PATTERN.test(username)) {
+      setUsernameStatus('invalid');
+      setUsernameStatusMessage(
+        t('onboarding.welcome.usernamePattern', {
+          defaultValue: 'Use only letters, numbers, and underscores.',
+        }),
+      );
+      return;
+    }
+
+    if (
+      normalizedCurrentUsername &&
+      username.toLowerCase() === normalizedCurrentUsername
+    ) {
+      setUsernameStatus('available');
+      setUsernameStatusMessage(
+        t('onboarding.welcome.usernameCurrent', {
+          defaultValue: 'Using your current username.',
+        }),
+      );
+      return;
+    }
+
+    setUsernameStatus('checking');
+    setUsernameStatusMessage(
+      t('onboarding.welcome.usernameChecking', {
+        defaultValue: 'Checking username availability...',
+      }),
+    );
+
+    let isCancelled = false;
+    const timer = window.setTimeout(async () => {
+      try {
+        const available = await apiService.checkUsernameAvailability(username);
+        if (isCancelled) {
+          return;
+        }
+        setUsernameStatus(available ? 'available' : 'unavailable');
+        setUsernameStatusMessage(
+          available
+            ? t('onboarding.welcome.usernameAvailable', {
+                defaultValue: 'Username is available.',
+              })
+            : t('onboarding.welcome.usernameTaken', {
+                defaultValue: 'This username is already taken.',
+              }),
+        );
+      } catch {
+        if (isCancelled) {
+          return;
+        }
+        setUsernameStatus('error');
+        setUsernameStatusMessage(
+          t('onboarding.welcome.usernameCheckFailed', {
+            defaultValue: 'Could not validate username right now.',
+          }),
+        );
+      }
+    }, 350);
+
+    return () => {
+      isCancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, [currentUser?.username, state.profile.username, t]);
 
   useEffect(() => {
     if (!isComplete) {
@@ -81,8 +203,17 @@ const OnboardingWizard: React.FC = () => {
   }, [isComplete, navigate]);
 
   const canProceed = useMemo(
-    () => onboardingService.canProceedToNextStep(currentStep, state),
-    [currentStep, state],
+    () => {
+      const canContinue = onboardingService.canProceedToNextStep(
+        currentStep,
+        state,
+      );
+      if (currentStep === 1 || currentStep === TOTAL_STEPS) {
+        return canContinue && usernameStatus === 'available';
+      }
+      return canContinue;
+    },
+    [currentStep, state, usernameStatus],
   );
 
   const goNext = () => {
@@ -104,6 +235,7 @@ const OnboardingWizard: React.FC = () => {
   const handleSkip = () => {
     if (currentStep === 2) {
       const defaults = onboardingService.createInitialState({
+        username: state.profile.username,
         email: state.profile.email,
         firstName: state.profile.firstName,
         lastName: state.profile.lastName,
@@ -175,12 +307,21 @@ const OnboardingWizard: React.FC = () => {
     if (currentStep === 1) {
       return (
         <WelcomeProfileStep
+          username={state.profile.username}
           email={state.profile.email}
           firstName={state.profile.firstName}
           lastName={state.profile.lastName}
+          usernameStatus={usernameStatus}
+          usernameStatusMessage={usernameStatusMessage}
           profilePicturePreview={state.profile.profilePictureUrl}
           isUploadingProfilePicture={isUploadingProfilePicture}
           profilePictureError={profilePictureError}
+          onUsernameChange={(value) =>
+            setState((previous) => ({
+              ...previous,
+              profile: { ...previous.profile, username: value },
+            }))
+          }
           onFirstNameChange={(value) =>
             setState((previous) => ({
               ...previous,

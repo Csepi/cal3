@@ -140,6 +140,7 @@ const extractApiErrorMessage = (
 };
 
 export interface CompleteOnboardingPayload {
+  username?: string;
   firstName?: string;
   lastName?: string;
   profilePictureUrl?: string;
@@ -820,6 +821,52 @@ class ApiService {
     const data = await response.json();
     sessionManager.setSessionFromResponse(data);
     return { token: data.access_token, user: data.user };
+  }
+
+  async checkUsernameAvailability(username: string): Promise<boolean> {
+    const response = await secureFetch(
+      `${BASE_URL}/api/auth/username-availability?username=${encodeURIComponent(username)}`,
+      {
+        method: 'GET',
+        auth: false,
+      },
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => null);
+      throw new Error(
+        extractApiErrorMessage(
+          errorData,
+          'Unable to validate username availability right now.',
+        ),
+      );
+    }
+
+    const data = (await response.json()) as { available?: boolean };
+    return data.available === true;
+  }
+
+  async checkEmailAvailability(email: string): Promise<boolean> {
+    const response = await secureFetch(
+      `${BASE_URL}/api/auth/email-availability?email=${encodeURIComponent(email)}`,
+      {
+        method: 'GET',
+        auth: false,
+      },
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => null);
+      throw new Error(
+        extractApiErrorMessage(
+          errorData,
+          'Unable to validate email availability right now.',
+        ),
+      );
+    }
+
+    const data = (await response.json()) as { available?: boolean };
+    return data.available === true;
   }
 
   async getAuthProfile(): Promise<UserProfile> {

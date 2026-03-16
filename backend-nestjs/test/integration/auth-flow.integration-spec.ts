@@ -163,6 +163,7 @@ describeDockerBacked('Auth flow integration (postgres testcontainer)', ({
     const server = harness.app.getHttpServer() as Parameters<typeof request>[0];
     const suffix = uniqueSuffix();
     const username = `integration_onboarding_${suffix}`;
+    const onboardingUsername = `integration_onboarded_${suffix}`;
     const email = `integration_onboarding_${suffix}@example.com`;
     const password = 'ValidPass#123';
 
@@ -191,6 +192,7 @@ describeDockerBacked('Auth flow integration (postgres testcontainer)', ({
       .post('/auth/complete-onboarding')
       .set('Authorization', `Bearer ${accessToken}`)
       .send({
+        username: onboardingUsername,
         language: 'en',
         timezone: 'UTC',
         timeFormat: '24h',
@@ -222,7 +224,7 @@ describeDockerBacked('Auth flow integration (postgres testcontainer)', ({
       .set('x-primecal-client', 'mobile-native')
       .set(DEVICE_FINGERPRINT_HEADER, 'integration-device-onboarding-login')
       .send({
-        username,
+        username: onboardingUsername,
         password,
       })
       .expect((response) => {
@@ -230,5 +232,96 @@ describeDockerBacked('Auth flow integration (postgres testcontainer)', ({
       });
 
     expect(loginResponse.body.user?.onboardingCompleted).toBe(true);
+    expect(loginResponse.body.user?.username).toBe(onboardingUsername);
+  });
+
+  it('exposes username availability checks for signup and onboarding', async () => {
+    if (isUnavailable()) {
+      expect(unavailabilityReason()).toBeTruthy();
+      return;
+    }
+
+    const harness = getHarness();
+    expect(harness).not.toBeNull();
+    if (!harness) {
+      return;
+    }
+
+    const server = harness.app.getHttpServer() as Parameters<typeof request>[0];
+    const suffix = uniqueSuffix();
+    const username = `integration_available_${suffix}`;
+    const email = `integration_available_${suffix}@example.com`;
+
+    await request(server)
+      .post('/auth/register')
+      .set('x-primecal-client', 'mobile-native')
+      .set(DEVICE_FINGERPRINT_HEADER, 'integration-device-availability-register')
+      .send({
+        username,
+        email,
+        password: 'ValidPass#123',
+      })
+      .expect(201);
+
+    await request(server)
+      .get('/auth/username-availability')
+      .query({ username })
+      .expect(200)
+      .expect((response) => {
+        expect(response.body.available).toBe(false);
+      });
+
+    await request(server)
+      .get('/auth/username-availability')
+      .query({ username: `free_${suffix}` })
+      .expect(200)
+      .expect((response) => {
+        expect(response.body.available).toBe(true);
+      });
+  });
+
+  it('exposes email availability checks for signup', async () => {
+    if (isUnavailable()) {
+      expect(unavailabilityReason()).toBeTruthy();
+      return;
+    }
+
+    const harness = getHarness();
+    expect(harness).not.toBeNull();
+    if (!harness) {
+      return;
+    }
+
+    const server = harness.app.getHttpServer() as Parameters<typeof request>[0];
+    const suffix = uniqueSuffix();
+    const username = `integration_email_${suffix}`;
+    const email = `integration_email_${suffix}@example.com`;
+
+    await request(server)
+      .post('/auth/register')
+      .set('x-primecal-client', 'mobile-native')
+      .set(DEVICE_FINGERPRINT_HEADER, 'integration-device-email-availability-register')
+      .send({
+        username,
+        email,
+        password: 'ValidPass#123',
+      })
+      .expect(201);
+
+    await request(server)
+      .get('/auth/email-availability')
+      .query({ email })
+      .expect(200)
+      .expect((response) => {
+        expect(response.body.available).toBe(false);
+      });
+
+    await request(server)
+      .get('/auth/email-availability')
+      .query({ email: `free_${suffix}@example.com` })
+      .expect(200)
+      .expect((response) => {
+        expect(response.body.available).toBe(true);
+      });
   });
 });

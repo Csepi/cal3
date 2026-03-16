@@ -5,6 +5,7 @@ import {
   IsEnum,
   IsIn,
   IsInt,
+  MinLength,
   IsOptional,
   IsString,
   IsUrl,
@@ -35,6 +36,24 @@ export enum CalendarUseCase {
 
 const ONBOARDING_TIME_FORMATS = ['12h', '24h'] as const;
 const ONBOARDING_CALENDAR_VIEWS = ['month', 'week'] as const;
+const ONBOARDING_THEME_COLORS = [
+  '#ef4444',
+  '#f59e0b',
+  '#eab308',
+  '#84cc16',
+  '#10b981',
+  '#22c55e',
+  '#14b8a6',
+  '#06b6d4',
+  '#0ea5e9',
+  '#3b82f6',
+  '#6366f1',
+  '#7c3aed',
+  '#8b5cf6',
+  '#ec4899',
+  '#f43f5e',
+  '#64748b',
+] as const;
 
 const isIanaTimezone = (value: unknown): boolean => {
   if (typeof value !== 'string' || value.trim().length === 0) {
@@ -69,6 +88,22 @@ function IsIanaTimezone(validationOptions?: ValidationOptions): PropertyDecorato
 }
 
 export class CompleteOnboardingDto {
+  @ApiPropertyOptional({
+    example: 'john_doe',
+    description: 'Optional username update during onboarding.',
+  })
+  @IsOptional()
+  @SanitizeText({ trim: true })
+  @IsString()
+  @MinLength(3)
+  @MaxLength(64)
+  @Matches(/^[a-zA-Z0-9_]+$/, {
+    message:
+      'username can only contain letters, numbers, and underscores.',
+  })
+  @IsSafeText()
+  username?: string;
+
   @ApiPropertyOptional({ example: 'John' })
   @IsOptional()
   @SanitizeText({ trim: true })
@@ -121,10 +156,12 @@ export class CompleteOnboardingDto {
   @IsIn(ONBOARDING_CALENDAR_VIEWS)
   defaultCalendarView!: (typeof ONBOARDING_CALENDAR_VIEWS)[number];
 
-  @ApiProperty({ example: '#3b82f6' })
-  @IsString()
-  @Matches(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, {
-    message: 'themeColor must be a valid hex color.',
+  @ApiProperty({
+    example: '#3b82f6',
+    enum: ONBOARDING_THEME_COLORS,
+  })
+  @IsIn(ONBOARDING_THEME_COLORS, {
+    message: 'themeColor must be one of the supported theme colors.',
   })
   themeColor!: string;
 

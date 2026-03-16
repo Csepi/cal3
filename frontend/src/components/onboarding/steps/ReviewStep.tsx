@@ -52,6 +52,12 @@ const ReviewStep: React.FC<ReviewStepProps> = ({ state }) => {
 
       <div className="space-y-3 rounded-xl border border-gray-200 bg-gray-50 p-4 text-sm text-gray-700">
         <div>
+          <span className="font-medium text-gray-900">
+            {t('onboarding.review.username', { defaultValue: 'Username' })}:
+          </span>{' '}
+          {state.profile.username || t('onboarding.review.notProvided')}
+        </div>
+        <div>
           <span className="font-medium text-gray-900">{t('onboarding.review.name')}:</span>{' '}
           {state.profile.firstName || state.profile.lastName
             ? `${state.profile.firstName} ${state.profile.lastName}`.trim()
