@@ -46,6 +46,7 @@ interface SessionSnapshot {
 const EXPIRY_BUFFER_MS = 5_000;
 const WEB_IDLE_TIMEOUT_MS = 24 * 60 * 60 * 1000;
 const ACTIVITY_PERSIST_THROTTLE_MS = 15_000;
+const DEFAULT_REFRESH_RETRY_AFTER_MS = 30_000;
 const STORAGE_ACCESS_TOKEN_KEY = 'cal3_access_token';
 const STORAGE_ACCESS_TOKEN_EXPIRY_KEY = 'cal3_access_token_expires_at';
 const STORAGE_REFRESH_TOKEN_KEY = 'cal3_refresh_token';
@@ -95,12 +96,34 @@ interface JwtClaims {
 
 type SessionListener = (snapshot: SessionSnapshot) => void;
 
+const parseRetryAfterMs = (retryAfterHeader: string | null): number => {
+  if (!retryAfterHeader) {
+    return DEFAULT_REFRESH_RETRY_AFTER_MS;
+  }
+
+  const asSeconds = Number.parseFloat(retryAfterHeader);
+  if (Number.isFinite(asSeconds) && asSeconds > 0) {
+    return Math.round(asSeconds * 1000);
+  }
+
+  const asDateMs = Date.parse(retryAfterHeader);
+  if (Number.isFinite(asDateMs)) {
+    const delta = asDateMs - Date.now();
+    if (delta > 0) {
+      return delta;
+    }
+  }
+
+  return DEFAULT_REFRESH_RETRY_AFTER_MS;
+};
+
 class SessionManager {
   private accessToken: string | null = null;
   private accessTokenExpiresAt = 0;
   private refreshToken: string | null = null;
   private currentUser: SessionUser | null = null;
   private refreshPromise: Promise<string | null> | null = null;
+  private refreshRateLimitedUntil = 0;
   private listeners = new Set<SessionListener>();
   private lastActivityAt = 0;
   private lastPersistedActivityAt = 0;
@@ -366,6 +389,7 @@ class SessionManager {
   setSessionFromResponse(payload: AuthSessionPayload): void {
     this.applyToken(payload.access_token, payload.expires_in);
     this.refreshToken = payload.refresh_token ?? null;
+    this.refreshRateLimitedUntil = 0;
     this.recordActivity(Date.now(), true);
     if (payload.user) {
       this.currentUser = { ...this.currentUser, ...payload.user };
@@ -397,6 +421,7 @@ class SessionManager {
     };
     this.currentUser = resolvedUser;
     this.refreshToken = null;
+    this.refreshRateLimitedUntil = 0;
     this.persistUserMetadata(resolvedUser);
     this.persistSessionState();
     ensureCsrfToken();
@@ -471,6 +496,14 @@ class SessionManager {
         return null;
       }
 
+      const nowMs = Date.now();
+      if (!force && this.refreshRateLimitedUntil > nowMs) {
+        clientLogger.debug('[session] skipping refresh during cooldown', {
+          retryInMs: this.refreshRateLimitedUntil - nowMs,
+        });
+        return null;
+      }
+
       const nativeClient = isNativeClient();
       const headers = new Headers({
         'Content-Type': 'application/json',
@@ -496,12 +529,30 @@ class SessionManager {
             status: response.status,
             body: errorBody,
           });
-          if (!nativeClient) {
+          if (response.status === 429) {
+            const retryAfterMs = parseRetryAfterMs(
+              response.headers.get('Retry-After'),
+            );
+            this.refreshRateLimitedUntil = Date.now() + retryAfterMs;
+            clientLogger.warn('[session] refresh rate limited', {
+              retryAfterMs,
+              retryAt: new Date(this.refreshRateLimitedUntil).toISOString(),
+            });
+            return null;
+          }
+
+          if (
+            !nativeClient &&
+            (response.status === 400 ||
+              response.status === 401 ||
+              response.status === 403)
+          ) {
             this.clearSession();
           }
           return null;
         }
         const data: AuthSessionPayload = await response.json();
+        this.refreshRateLimitedUntil = 0;
         this.setSessionFromResponse(data);
         clientLogger.debug('[session] refresh succeeded', {
           expiresIn: data.expires_in,
@@ -509,9 +560,7 @@ class SessionManager {
         return this.accessToken;
       } catch (error) {
         clientLogger.error('[session] failed to refresh access token', error);
-        if (!nativeClient) {
-          this.clearSession();
-        }
+        // Preserve local session metadata for transient network failures.
         return null;
       }
     };
@@ -528,6 +577,7 @@ class SessionManager {
     this.accessTokenExpiresAt = 0;
     this.refreshToken = null;
     this.refreshPromise = null;
+    this.refreshRateLimitedUntil = 0;
     this.currentUser = null;
     this.lastActivityAt = 0;
     this.lastPersistedActivityAt = 0;

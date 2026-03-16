@@ -148,7 +148,7 @@ describe('AuthErrorHandler + secureFetch', () => {
     expect(fetchSpy).toHaveBeenCalledTimes(2);
   });
 
-  test('secureFetch throws and invokes auth handling for forbidden responses', async () => {
+  test('secureFetch returns forbidden responses without clearing session', async () => {
     const fetchSpy = jest.fn().mockResolvedValue({
       status: 403,
       ok: false,
@@ -156,9 +156,28 @@ describe('AuthErrorHandler + secureFetch', () => {
     });
     (global as unknown as { fetch: typeof fetch }).fetch = fetchSpy as unknown as typeof fetch;
 
+    const response = await secureFetch('https://example.test/api/admin', {
+      method: 'GET',
+    });
+
+    expect(response.status).toBe(403);
+    expect(mockedSession.clearSession).not.toHaveBeenCalled();
+  });
+
+  test('secureFetch handles 401 by clearing session when refresh fails', async () => {
+    mockedSession.refreshAccessToken.mockResolvedValue(null);
+
+    const fetchSpy = jest.fn().mockResolvedValue({
+      status: 401,
+      ok: false,
+      text: async () => '',
+    });
+    (global as unknown as { fetch: typeof fetch }).fetch =
+      fetchSpy as unknown as typeof fetch;
+
     await expect(
-      secureFetch('https://example.test/api/admin', { method: 'GET' }),
-    ).rejects.toThrow('Authentication error: 403');
+      secureFetch('https://example.test/api/protected', { method: 'GET' }),
+    ).rejects.toThrow('Authentication error: 401');
 
     expect(mockedSession.clearSession).toHaveBeenCalled();
   });

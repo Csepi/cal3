@@ -144,7 +144,7 @@ export class AuthErrorHandler {
 
   /**
    * Handle authentication/authorization errors
-   * Called when API returns 401 (Unauthorized) or 403 (Forbidden)
+   * Called when API returns 401 (Unauthorized) or explicit auth-denied 403
    */
   handleAuthError(statusCode: 401 | 403, endpoint?: string): void {
     // Prevent recursive calls if already handling an auth error
@@ -390,8 +390,8 @@ export async function secureFetch(
       `[network:${traceId}] ${method} ${requestUrl} <- ${response.status} (${duration}ms)`,
     );
 
-    if (auth && (response.status === 401 || response.status === 403)) {
-      if (response.status === 401 && autoRefresh) {
+    if (auth && response.status === 401) {
+      if (autoRefresh) {
         clientLogger.warn(
           `[network:${traceId}] ${method} ${requestUrl} returned 401 - attempting token refresh`,
         );
@@ -431,10 +431,19 @@ export async function secureFetch(
       }
 
       authHandler.handleAuthError(
-        response.status as 401 | 403,
+        401,
         typeof input === 'string' ? input : undefined,
       );
-      throw new Error(`Authentication error: ${response.status}`);
+      throw new Error('Authentication error: 401');
+    }
+
+    if (auth && response.status === 403) {
+      // Forbidden usually means missing permissions, not an invalid/expired session.
+      // Return the response so callers can show feature-level access errors.
+      clientLogger.warn(
+        `[network:${traceId}] ${method} ${requestUrl} returned 403 - authorization denied`,
+      );
+      return response;
     }
 
     return response;

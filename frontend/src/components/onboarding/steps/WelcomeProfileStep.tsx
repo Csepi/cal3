@@ -11,14 +11,26 @@ interface WelcomeProfileStepProps {
   onUseGravatar: (value: string) => void;
 }
 
-const toSha256Hex = async (value: string): Promise<string> => {
+const fallbackHashHex = (value: string): string => {
+  // Deterministic fallback for environments where Web Crypto is unavailable.
+  let hash = 2166136261;
+  for (let index = 0; index < value.length; index += 1) {
+    hash ^= value.charCodeAt(index);
+    hash = Math.imul(hash, 16777619);
+  }
+  const segment = (hash >>> 0).toString(16).padStart(8, '0');
+  return segment.repeat(8).slice(0, 64);
+};
+
+const toGravatarHashHex = async (value: string): Promise<string> => {
   if (
     typeof TextEncoder === 'undefined' ||
     typeof globalThis.crypto === 'undefined' ||
     !globalThis.crypto.subtle
   ) {
-    throw new Error('Web crypto is not available.');
+    return fallbackHashHex(value);
   }
+
   const encoded = new TextEncoder().encode(value);
   const digest = await globalThis.crypto.subtle.digest('SHA-256', encoded);
   const bytes = new Uint8Array(digest);
@@ -48,16 +60,9 @@ const WelcomeProfileStep: React.FC<WelcomeProfileStepProps> = ({
 
     let isCancelled = false;
     const resolveGravatar = async () => {
-      try {
-        const hash = await toSha256Hex(normalizedEmail);
-        if (isCancelled) {
-          return;
-        }
+      const hash = await toGravatarHashHex(normalizedEmail);
+      if (!isCancelled) {
         setGravatarUrl(`https://www.gravatar.com/avatar/${hash}?s=256&d=identicon`);
-      } catch {
-        if (!isCancelled) {
-          setGravatarUrl(null);
-        }
       }
     };
 
@@ -69,8 +74,8 @@ const WelcomeProfileStep: React.FC<WelcomeProfileStepProps> = ({
   }, [email]);
 
   const previewImage = useMemo(
-    () => profilePicturePreview || gravatarUrl || '',
-    [gravatarUrl, profilePicturePreview],
+    () => profilePicturePreview || '',
+    [profilePicturePreview],
   );
 
   return (
@@ -124,9 +129,9 @@ const WelcomeProfileStep: React.FC<WelcomeProfileStepProps> = ({
           })}
         </p>
         <div className="mt-3 flex items-center gap-3">
-          {previewImage ? (
+          {gravatarUrl ? (
             <img
-              src={previewImage}
+              src={gravatarUrl}
               alt={t('onboarding.welcome.previewAlt')}
               className="h-16 w-16 rounded-full border border-gray-200 object-cover"
             />
@@ -149,6 +154,34 @@ const WelcomeProfileStep: React.FC<WelcomeProfileStepProps> = ({
               defaultValue: 'Use Gravatar Photo',
             })}
           </button>
+        </div>
+        {gravatarUrl && profilePicturePreview === gravatarUrl && (
+          <p className="mt-2 text-xs text-green-700">
+            {t('onboarding.welcome.gravatarSelected', {
+              defaultValue: 'Gravatar photo selected.',
+            })}
+          </p>
+        )}
+      </div>
+
+      <div className="rounded-xl border border-gray-200 bg-white p-4">
+        <h3 className="text-sm font-semibold text-gray-800">
+          {t('onboarding.welcome.selectedProfilePicture', {
+            defaultValue: 'Selected Profile Picture',
+          })}
+        </h3>
+        <div className="mt-3">
+          {previewImage ? (
+            <img
+              src={previewImage}
+              alt={t('onboarding.welcome.previewAlt')}
+              className="h-16 w-16 rounded-full border border-gray-200 object-cover"
+            />
+          ) : (
+            <div className="flex h-16 w-16 items-center justify-center rounded-full border border-gray-200 bg-gray-100 text-xs text-gray-500">
+              N/A
+            </div>
+          )}
         </div>
       </div>
 
