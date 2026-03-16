@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
-import { apiService } from '../../services/api';
+import { apiService, type AvailabilityCheckError } from '../../services/api';
 import {
   onboardingService,
   type OnboardingWizardState,
@@ -16,13 +16,33 @@ import { useAppTranslation } from '../../i18n/useAppTranslation';
 
 const TOTAL_STEPS = 5;
 const USERNAME_PATTERN = /^[a-zA-Z0-9_]+$/;
+const USERNAME_AVAILABILITY_DEBOUNCE_MS = 700;
 type UsernameStatus =
   | 'idle'
   | 'checking'
   | 'available'
   | 'unavailable'
   | 'invalid'
+  | 'rate-limited'
   | 'error';
+
+const isAvailabilityRateLimited = (
+  error: unknown,
+): error is AvailabilityCheckError => {
+  if (!(error instanceof Error)) {
+    return false;
+  }
+  const typedError = error as AvailabilityCheckError;
+  return (
+    typedError.code === 'RATE_LIMITED' ||
+    typedError.name === 'AvailabilityRateLimitError' ||
+    typedError.message.toLowerCase().includes('too many')
+  );
+};
+
+const isAbortError = (error: unknown): boolean => {
+  return error instanceof Error && error.name.toLowerCase() === 'aborterror';
+};
 
 const OnboardingWizard: React.FC = () => {
   const navigate = useNavigate();
@@ -39,6 +59,7 @@ const OnboardingWizard: React.FC = () => {
   const [usernameStatusMessage, setUsernameStatusMessage] = useState<
     string | null
   >(null);
+  const usernameAvailabilityCacheRef = useRef<Map<string, boolean>>(new Map());
   const [submissionError, setSubmissionError] = useState<string | null>(null);
   const [isComplete, setIsComplete] = useState(false);
   const [redirectCountdown, setRedirectCountdown] = useState(2);
@@ -141,6 +162,22 @@ const OnboardingWizard: React.FC = () => {
       return;
     }
 
+    const cachedAvailability =
+      usernameAvailabilityCacheRef.current.get(username);
+    if (typeof cachedAvailability === 'boolean') {
+      setUsernameStatus(cachedAvailability ? 'available' : 'unavailable');
+      setUsernameStatusMessage(
+        cachedAvailability
+          ? t('onboarding.welcome.usernameAvailable', {
+              defaultValue: 'Username is available.',
+            })
+          : t('onboarding.welcome.usernameTaken', {
+              defaultValue: 'This username is already taken.',
+            }),
+      );
+      return;
+    }
+
     setUsernameStatus('checking');
     setUsernameStatusMessage(
       t('onboarding.welcome.usernameChecking', {
@@ -149,12 +186,17 @@ const OnboardingWizard: React.FC = () => {
     );
 
     let isCancelled = false;
+    const controller = new AbortController();
     const timer = window.setTimeout(async () => {
       try {
-        const available = await apiService.checkUsernameAvailability(username);
+        const available = await apiService.checkUsernameAvailability(
+          username,
+          controller.signal,
+        );
         if (isCancelled) {
           return;
         }
+        usernameAvailabilityCacheRef.current.set(username, available);
         setUsernameStatus(available ? 'available' : 'unavailable');
         setUsernameStatusMessage(
           available
@@ -165,8 +207,29 @@ const OnboardingWizard: React.FC = () => {
                 defaultValue: 'This username is already taken.',
               }),
         );
-      } catch {
-        if (isCancelled) {
+      } catch (error) {
+        if (isCancelled || isAbortError(error)) {
+          return;
+        }
+        if (isAvailabilityRateLimited(error)) {
+          const retryAfter = Math.max(
+            1,
+            Math.min(
+              120,
+              Math.round(
+                Number((error as AvailabilityCheckError).retryAfterSeconds) ||
+                  30,
+              ),
+            ),
+          );
+          setUsernameStatus('rate-limited');
+          setUsernameStatusMessage(
+            t('auth:validation.availabilityRateLimited', {
+              seconds: retryAfter,
+              defaultValue:
+                'Too many checks right now. Please wait {{seconds}} seconds and try again.',
+            }),
+          );
           return;
         }
         setUsernameStatus('error');
@@ -176,10 +239,11 @@ const OnboardingWizard: React.FC = () => {
           }),
         );
       }
-    }, 350);
+    }, USERNAME_AVAILABILITY_DEBOUNCE_MS);
 
     return () => {
       isCancelled = true;
+      controller.abort();
       window.clearTimeout(timer);
     };
   }, [currentUser?.username, state.profile.username, t]);

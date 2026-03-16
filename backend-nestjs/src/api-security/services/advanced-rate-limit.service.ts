@@ -27,18 +27,21 @@ export class AdvancedRateLimitService {
   private readonly ruleMatrix: RuleMatrix = {
     guest: {
       auth: this.buildRule('guest', 'auth', 8, 60),
+      availability: this.buildRule('guest', 'availability', 30, 60),
       booking: this.buildRule('guest', 'booking', 20, 60),
       admin: this.buildRule('guest', 'admin', 4, 60),
       default: this.buildRule('guest', 'default', 40, 60),
     },
     user: {
       auth: this.buildRule('user', 'auth', 20, 60),
+      availability: this.buildRule('user', 'availability', 80, 60),
       booking: this.buildRule('user', 'booking', 120, 60),
       admin: this.buildRule('user', 'admin', 30, 60),
       default: this.buildRule('user', 'default', 180, 60),
     },
     premium: {
       auth: this.buildRule('premium', 'auth', 40, 60),
+      availability: this.buildRule('premium', 'availability', 180, 60),
       booking: this.buildRule('premium', 'booking', 300, 60),
       admin: this.buildRule('premium', 'admin', 120, 60),
       default: this.buildRule('premium', 'default', 450, 60),
@@ -120,6 +123,12 @@ export class AdvancedRateLimitService {
 
   private resolveCategory(request: SecurityRequest): EndpointCategory {
     const path = (request.path || request.originalUrl || '').toLowerCase();
+    if (
+      path.includes('/auth/username-availability') ||
+      path.includes('/auth/email-availability')
+    ) {
+      return 'availability';
+    }
     if (path.includes('/auth')) {
       return 'auth';
     }

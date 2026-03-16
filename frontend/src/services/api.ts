@@ -63,6 +63,11 @@ interface AuthResponse {
   user: UserProfile;
 }
 
+export interface AvailabilityCheckError extends Error {
+  code?: 'RATE_LIMITED';
+  retryAfterSeconds?: number;
+}
+
 const extractFieldValidationMessage = (details: unknown): string | null => {
   if (!details || typeof details !== 'object') {
     return null;
@@ -137,6 +142,23 @@ const extractApiErrorMessage = (
   }
 
   return fallback;
+};
+
+const buildAvailabilityRateLimitError = (
+  retryAfterHeader: string | null,
+): AvailabilityCheckError => {
+  const retryAfterSeconds = Number(retryAfterHeader);
+  const hasRetryAfter = Number.isFinite(retryAfterSeconds) && retryAfterSeconds > 0;
+  const errorMessage = hasRetryAfter
+    ? `Too many checks right now. Please wait ${Math.round(retryAfterSeconds)} seconds and try again.`
+    : 'Too many checks right now. Please wait a moment and try again.';
+  const error = new Error(errorMessage) as AvailabilityCheckError;
+  error.name = 'AvailabilityRateLimitError';
+  error.code = 'RATE_LIMITED';
+  if (hasRetryAfter) {
+    error.retryAfterSeconds = Math.round(retryAfterSeconds);
+  }
+  return error;
 };
 
 export interface CompleteOnboardingPayload {
@@ -823,16 +845,23 @@ class ApiService {
     return { token: data.access_token, user: data.user };
   }
 
-  async checkUsernameAvailability(username: string): Promise<boolean> {
+  async checkUsernameAvailability(
+    username: string,
+    signal?: AbortSignal,
+  ): Promise<boolean> {
     const response = await secureFetch(
       `${BASE_URL}/api/auth/username-availability?username=${encodeURIComponent(username)}`,
       {
         method: 'GET',
         auth: false,
+        signal,
       },
     );
 
     if (!response.ok) {
+      if (response.status === 429) {
+        throw buildAvailabilityRateLimitError(response.headers.get('Retry-After'));
+      }
       const errorData = await response.json().catch(() => null);
       throw new Error(
         extractApiErrorMessage(
@@ -846,16 +875,23 @@ class ApiService {
     return data.available === true;
   }
 
-  async checkEmailAvailability(email: string): Promise<boolean> {
+  async checkEmailAvailability(
+    email: string,
+    signal?: AbortSignal,
+  ): Promise<boolean> {
     const response = await secureFetch(
       `${BASE_URL}/api/auth/email-availability?email=${encodeURIComponent(email)}`,
       {
         method: 'GET',
         auth: false,
+        signal,
       },
     );
 
     if (!response.ok) {
+      if (response.status === 429) {
+        throw buildAvailabilityRateLimitError(response.headers.get('Retry-After'));
+      }
       const errorData = await response.json().catch(() => null);
       throw new Error(
         extractApiErrorMessage(

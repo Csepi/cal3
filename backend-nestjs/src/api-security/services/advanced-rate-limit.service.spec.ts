@@ -39,6 +39,18 @@ describe('AdvancedRateLimitService', () => {
     expect(decision.remaining).toBeGreaterThanOrEqual(0);
   });
 
+  it('classifies auth availability endpoints separately from auth login flow', async () => {
+    const decision = await service.evaluate({
+      method: 'GET',
+      path: '/auth/email-availability',
+      ip: '1.2.3.4',
+    } as never);
+
+    expect(decision.category).toBe('availability');
+    expect(decision.tier).toBe('guest');
+    expect(decision.limit).toBeGreaterThanOrEqual(30);
+  });
+
   it('marks premium tier when enterprise usage plan is present', async () => {
     await service.evaluate({
       method: 'GET',

@@ -1,6 +1,11 @@
 export type ApiRateTier = 'guest' | 'user' | 'premium';
 
-export type EndpointCategory = 'auth' | 'booking' | 'admin' | 'default';
+export type EndpointCategory =
+  | 'auth'
+  | 'availability'
+  | 'booking'
+  | 'admin'
+  | 'default';
 
 export type ApiKeyScope = 'read' | 'write' | 'admin';
 

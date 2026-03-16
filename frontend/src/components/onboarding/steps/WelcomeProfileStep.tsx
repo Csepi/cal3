@@ -11,6 +11,7 @@ interface WelcomeProfileStepProps {
     | 'available'
     | 'unavailable'
     | 'invalid'
+    | 'rate-limited'
     | 'error';
   usernameStatusMessage?: string | null;
   profilePicturePreview: string;

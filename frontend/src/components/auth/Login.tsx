@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { apiService } from '../../services/api';
+import { useEffect, useRef, useState } from 'react';
+import { apiService, type AvailabilityCheckError } from '../../services/api';
 import { useFeatureFlags } from '../../hooks/useFeatureFlags';
 import { ErrorBox } from '../common/ErrorBox';
 import type { ErrorDetails } from '../common/ErrorBox';
@@ -16,12 +16,34 @@ const UPPERCASE_REGEX = /[A-Z]/;
 const NUMBER_REGEX = /\d/;
 const SPECIAL_CHAR_REGEX = /[ !"#$%&'()*+,\-./:;<=>?@[\\\]^_`{|}~]/;
 const USERNAME_REGEX = /^[a-zA-Z0-9_]+$/;
+const AVAILABILITY_DEBOUNCE_MS = 700;
+const MIN_EMAIL_LENGTH_FOR_AVAILABILITY = 6;
+
+const isAvailabilityRateLimited = (
+  error: unknown,
+): error is AvailabilityCheckError => {
+  if (!(error instanceof Error)) {
+    return false;
+  }
+  const typedError = error as AvailabilityCheckError;
+  return (
+    typedError.code === 'RATE_LIMITED' ||
+    typedError.name === 'AvailabilityRateLimitError' ||
+    typedError.message.toLowerCase().includes('too many')
+  );
+};
+
+const isAbortError = (error: unknown): boolean => {
+  return error instanceof Error && error.name.toLowerCase() === 'aborterror';
+};
+
 type UsernameAvailabilityState =
   | 'idle'
   | 'checking'
   | 'available'
   | 'unavailable'
   | 'invalid'
+  | 'rate-limited'
   | 'error';
 type EmailAvailabilityState =
   | 'idle'
@@ -29,6 +51,7 @@ type EmailAvailabilityState =
   | 'available'
   | 'unavailable'
   | 'invalid'
+  | 'rate-limited'
   | 'error';
 
 const Login: React.FC = () => {
@@ -53,6 +76,8 @@ const Login: React.FC = () => {
   const [emailAvailabilityMessage, setEmailAvailabilityMessage] = useState<
     string | null
   >(null);
+  const usernameAvailabilityCacheRef = useRef<Map<string, boolean>>(new Map());
+  const emailAvailabilityCacheRef = useRef<Map<string, boolean>>(new Map());
   const { login } = useAuth();
   const { t } = useAppTranslation(['auth', 'validation']);
 
@@ -146,6 +171,22 @@ const Login: React.FC = () => {
       return;
     }
 
+    const cachedAvailability =
+      usernameAvailabilityCacheRef.current.get(normalizedUsername);
+    if (typeof cachedAvailability === 'boolean') {
+      setUsernameAvailability(cachedAvailability ? 'available' : 'unavailable');
+      setUsernameAvailabilityMessage(
+        cachedAvailability
+          ? t('onboarding.welcome.usernameAvailable', {
+              defaultValue: 'Username is available.',
+            })
+          : t('onboarding.welcome.usernameTaken', {
+              defaultValue: 'This username is already taken.',
+            }),
+      );
+      return;
+    }
+
     setUsernameAvailability('checking');
     setUsernameAvailabilityMessage(
       t('onboarding.welcome.usernameChecking', {
@@ -154,13 +195,18 @@ const Login: React.FC = () => {
     );
 
     let isCancelled = false;
+    const controller = new AbortController();
     const timer = window.setTimeout(async () => {
       try {
         const available =
-          await apiService.checkUsernameAvailability(normalizedUsername);
+          await apiService.checkUsernameAvailability(
+            normalizedUsername,
+            controller.signal,
+          );
         if (isCancelled) {
           return;
         }
+        usernameAvailabilityCacheRef.current.set(normalizedUsername, available);
         setUsernameAvailability(available ? 'available' : 'unavailable');
         setUsernameAvailabilityMessage(
           available
@@ -171,8 +217,29 @@ const Login: React.FC = () => {
                 defaultValue: 'This username is already taken.',
               }),
         );
-      } catch {
-        if (isCancelled) {
+      } catch (error) {
+        if (isCancelled || isAbortError(error)) {
+          return;
+        }
+        if (isAvailabilityRateLimited(error)) {
+          const retryAfter = Math.max(
+            1,
+            Math.min(
+              120,
+              Math.round(
+                Number((error as AvailabilityCheckError).retryAfterSeconds) ||
+                  30,
+              ),
+            ),
+          );
+          setUsernameAvailability('rate-limited');
+          setUsernameAvailabilityMessage(
+            t('auth:validation.availabilityRateLimited', {
+              seconds: retryAfter,
+              defaultValue:
+                'Too many checks right now. Please wait {{seconds}} seconds and try again.',
+            }),
+          );
           return;
         }
         setUsernameAvailability('error');
@@ -182,10 +249,11 @@ const Login: React.FC = () => {
           }),
         );
       }
-    }, 350);
+    }, AVAILABILITY_DEBOUNCE_MS);
 
     return () => {
       isCancelled = true;
+      controller.abort();
       window.clearTimeout(timer);
     };
   }, [isRegistering, t, username]);
@@ -219,6 +287,28 @@ const Login: React.FC = () => {
       return;
     }
 
+    if (normalizedEmail.length < MIN_EMAIL_LENGTH_FOR_AVAILABILITY) {
+      setEmailAvailability('idle');
+      setEmailAvailabilityMessage(null);
+      return;
+    }
+
+    const cachedAvailability =
+      emailAvailabilityCacheRef.current.get(normalizedEmail);
+    if (typeof cachedAvailability === 'boolean') {
+      setEmailAvailability(cachedAvailability ? 'available' : 'unavailable');
+      setEmailAvailabilityMessage(
+        cachedAvailability
+          ? t('auth:validation.emailAvailable', {
+              defaultValue: 'Email is available.',
+            })
+          : t('auth:validation.emailTaken', {
+              defaultValue: 'An account with this email already exists.',
+            }),
+      );
+      return;
+    }
+
     setEmailAvailability('checking');
     setEmailAvailabilityMessage(
       t('auth:validation.emailChecking', {
@@ -227,12 +317,17 @@ const Login: React.FC = () => {
     );
 
     let isCancelled = false;
+    const controller = new AbortController();
     const timer = window.setTimeout(async () => {
       try {
-        const available = await apiService.checkEmailAvailability(normalizedEmail);
+        const available = await apiService.checkEmailAvailability(
+          normalizedEmail,
+          controller.signal,
+        );
         if (isCancelled) {
           return;
         }
+        emailAvailabilityCacheRef.current.set(normalizedEmail, available);
         setEmailAvailability(available ? 'available' : 'unavailable');
         setEmailAvailabilityMessage(
           available
@@ -243,8 +338,29 @@ const Login: React.FC = () => {
                 defaultValue: 'An account with this email already exists.',
               }),
         );
-      } catch {
-        if (isCancelled) {
+      } catch (error) {
+        if (isCancelled || isAbortError(error)) {
+          return;
+        }
+        if (isAvailabilityRateLimited(error)) {
+          const retryAfter = Math.max(
+            1,
+            Math.min(
+              120,
+              Math.round(
+                Number((error as AvailabilityCheckError).retryAfterSeconds) ||
+                  30,
+              ),
+            ),
+          );
+          setEmailAvailability('rate-limited');
+          setEmailAvailabilityMessage(
+            t('auth:validation.availabilityRateLimited', {
+              seconds: retryAfter,
+              defaultValue:
+                'Too many checks right now. Please wait {{seconds}} seconds and try again.',
+            }),
+          );
           return;
         }
         setEmailAvailability('error');
@@ -254,10 +370,11 @@ const Login: React.FC = () => {
           }),
         );
       }
-    }, 350);
+    }, AVAILABILITY_DEBOUNCE_MS);
 
     return () => {
       isCancelled = true;
+      controller.abort();
       window.clearTimeout(timer);
     };
   }, [email, isRegistering, t]);
