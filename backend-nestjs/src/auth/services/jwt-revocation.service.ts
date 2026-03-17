@@ -123,6 +123,15 @@ export class JwtRevocationService implements OnModuleDestroy {
       maxRetriesPerRequest: 1,
       enableReadyCheck: false,
     });
+    client.on('error', (error: unknown) => {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.warn(`JWT revocation Redis client error: ${message}`);
+    });
+    client.on('end', () => {
+      if (this.redisClient === client) {
+        this.redisClient = null;
+      }
+    });
 
     try {
       await client.connect();
@@ -141,4 +150,3 @@ export class JwtRevocationService implements OnModuleDestroy {
     }
   }
 }
-

@@ -83,6 +83,7 @@ interface QuietHoursConfig {
 
 interface QueueClientLike {
   status?: string;
+  on?: (event: string, handler: (error?: unknown) => void) => void;
   off?: (event: string, handler: () => void) => void;
   once?: (event: string, handler: () => void) => void;
 }
@@ -91,6 +92,7 @@ interface QueueClientLike {
 export class NotificationsService implements OnModuleInit {
   private readonly logger = new Logger(NotificationsService.name);
   private readonly activeSockets = new Map<number, Set<string>>();
+  private queueErrorHandlersAttached = false;
 
   constructor(
     @InjectRepository(NotificationMessage)
@@ -124,6 +126,8 @@ export class NotificationsService implements OnModuleInit {
   }
 
   async onModuleInit(): Promise<void> {
+    this.attachQueueErrorHandlers();
+
     try {
       const bootstrapTimeout = parseInt(
         process.env.NOTIFICATIONS_QUEUE_BOOTSTRAP_TIMEOUT_MS || '4000',
@@ -203,6 +207,31 @@ export class NotificationsService implements OnModuleInit {
 
       client.once?.('ready', onReady);
       client.once?.('error', onError);
+    });
+  }
+
+  private attachQueueErrorHandlers(): void {
+    if (this.queueErrorHandlersAttached) {
+      return;
+    }
+
+    this.queueErrorHandlersAttached = true;
+    this.attachQueueErrorHandler(this.dispatchQueue, 'dispatch');
+    this.attachQueueErrorHandler(this.digestQueue, 'digest');
+  }
+
+  private attachQueueErrorHandler(queue: Queue, label: string): void {
+    const queueName = `${label}:${queue.name}`;
+
+    queue.on('error', (error: unknown) => {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.warn(`Queue ${queueName} error: ${message}`);
+    });
+
+    const client = (queue as Queue & { client?: QueueClientLike }).client;
+    client?.on?.('error', (error: unknown) => {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.warn(`Queue ${queueName} Redis client error: ${message}`);
     });
   }
 
