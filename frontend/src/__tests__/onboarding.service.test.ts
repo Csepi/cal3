@@ -39,9 +39,16 @@ describe('onboardingService username normalization', () => {
     expect(payload.username).toBe('valid_user_123');
   });
 
-  it('normalizes OAuth-style usernames with dots', () => {
+  it('keeps OAuth-style usernames with dots', () => {
     const payload = onboardingService.buildCompletePayload(
       buildState('john.doe_microsoft'),
+    );
+    expect(payload.username).toBe('john.doe_microsoft');
+  });
+
+  it('normalizes disallowed characters to underscores', () => {
+    const payload = onboardingService.buildCompletePayload(
+      buildState('john-doe_microsoft'),
     );
     expect(payload.username).toBe('john_doe_microsoft');
   });

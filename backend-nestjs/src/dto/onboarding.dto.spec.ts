@@ -82,6 +82,14 @@ describe('CompleteOnboardingDto', () => {
     expect(hasError(errors, 'username')).toBe(true);
   });
 
+  it('accepts usernames containing dots', () => {
+    const errors = validateDto({
+      ...validPayload,
+      username: 'john.doe',
+    });
+    expect(hasError(errors, 'username')).toBe(false);
+  });
+
   it('requires privacy policy acceptance', () => {
     const errors = validateDto({
       ...validPayload,

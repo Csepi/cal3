@@ -97,9 +97,9 @@ export class CompleteOnboardingDto {
   @IsString()
   @MinLength(3)
   @MaxLength(64)
-  @Matches(/^[a-zA-Z0-9_]+$/, {
+  @Matches(/^[a-zA-Z0-9_.]+$/, {
     message:
-      'username can only contain letters, numbers, and underscores.',
+      'username can only contain letters, numbers, dots, and underscores.',
   })
   @IsSafeText()
   username?: string;

@@ -38,5 +38,13 @@ export class OAuthCallbackQueryDto {
   @IsInt()
   @Min(1)
   userId?: number;
-}
 
+  @IsOptional()
+  @SanitizeText({ trim: true, maxLength: 256 })
+  @IsString()
+  @MaxLength(256)
+  @Matches(/^[\w\-:.]+$/, {
+    message: bStatic('errors.auto.backend.k741143339954'),
+  })
+  session_state?: string;
+}

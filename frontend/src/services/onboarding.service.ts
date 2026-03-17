@@ -59,7 +59,7 @@ type PartialUserState = {
 
 const FALLBACK_THEME_COLOR = '#3b82f6';
 const FALLBACK_TIMEZONE = 'UTC';
-const USERNAME_ALLOWED_PATTERN = /^[a-zA-Z0-9_]+$/;
+const USERNAME_ALLOWED_PATTERN = /^[a-zA-Z0-9_.]+$/;
 const SUPPORTED_THEME_COLORS = new Set<string>(
   THEME_COLOR_OPTIONS.map((option) => option.value),
 );
@@ -87,9 +87,9 @@ const normalizeOnboardingUsername = (value: string): string | undefined => {
   }
 
   const sanitized = trimmed
-    .replace(/[^a-zA-Z0-9_]+/g, '_')
+    .replace(/[^a-zA-Z0-9_.]+/g, '_')
     .replace(/_+/g, '_')
-    .replace(/^_+|_+$/g, '');
+    .replace(/^[_\.]+|[_\.]+$/g, '');
 
   if (sanitized.length < 3) {
     return undefined;

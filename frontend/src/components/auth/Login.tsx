@@ -15,7 +15,7 @@ const LOWERCASE_REGEX = /[a-z]/;
 const UPPERCASE_REGEX = /[A-Z]/;
 const NUMBER_REGEX = /\d/;
 const SPECIAL_CHAR_REGEX = /[ !"#$%&'()*+,\-./:;<=>?@[\\\]^_`{|}~]/;
-const USERNAME_REGEX = /^[a-zA-Z0-9_]+$/;
+const USERNAME_REGEX = /^[a-zA-Z0-9_.]+$/;
 const AVAILABILITY_DEBOUNCE_MS = 700;
 const MIN_EMAIL_LENGTH_FOR_AVAILABILITY = 6;
 
@@ -163,7 +163,7 @@ const Login: React.FC = () => {
       setUsernameAvailability('invalid');
       setUsernameAvailabilityMessage(
         t('onboarding.welcome.usernamePattern', {
-          defaultValue: 'Use only letters, numbers, and underscores.',
+          defaultValue: 'Use only letters, numbers, dots, and underscores.',
         }),
       );
       return;

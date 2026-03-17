@@ -57,7 +57,7 @@ type OAuthProvider = 'google' | 'microsoft';
 export class AuthService {
   private static readonly USERNAME_MIN_LENGTH = 3;
   private static readonly USERNAME_MAX_LENGTH = 64;
-  private static readonly USERNAME_ALLOWED_PATTERN = /^[a-zA-Z0-9_]+$/;
+  private static readonly USERNAME_ALLOWED_PATTERN = /^[a-zA-Z0-9_.]+$/;
 
   constructor(
     @InjectRepository(User)
@@ -127,7 +127,7 @@ export class AuthService {
     }
     if (!AuthService.USERNAME_ALLOWED_PATTERN.test(normalizedUsername)) {
       throw new BadRequestException(
-        'username can only contain letters, numbers, and underscores.',
+        'username can only contain letters, numbers, dots, and underscores.',
       );
     }
 
@@ -717,9 +717,9 @@ export class AuthService {
     return seed
       .trim()
       .toLowerCase()
-      .replace(/[^a-zA-Z0-9_]+/g, '_')
+      .replace(/[^a-zA-Z0-9_.]+/g, '_')
       .replace(/_+/g, '_')
-      .replace(/^_+|_+$/g, '');
+      .replace(/^[_\.]+|[_\.]+$/g, '');
   }
 
   private isValidUsername(value: string | undefined | null): boolean {
