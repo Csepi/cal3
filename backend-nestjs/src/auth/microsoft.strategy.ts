@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { Strategy } from 'passport-microsoft';
 import { AuthService } from './auth.service';
@@ -45,9 +45,15 @@ export class MicrosoftStrategy extends PassportStrategy(Strategy, 'microsoft') {
 
   async validate(
     accessToken: string,
-    profile: MicrosoftProfile,
-    done: (error: Error | null, user?: unknown) => void,
-  ): Promise<void> {
+    _refreshToken: string | undefined,
+    profile: MicrosoftProfile | undefined,
+  ): Promise<unknown> {
+    if (!profile) {
+      throw new UnauthorizedException(
+        'Microsoft profile is missing from OAuth callback.',
+      );
+    }
+
     const { id, displayName, emails } = profile;
     const email = emails?.[0]?.value ?? '';
 
@@ -63,7 +69,6 @@ export class MicrosoftStrategy extends PassportStrategy(Strategy, 'microsoft') {
       accessToken,
     };
 
-    const validatedUser = await this.authService.validateMicrosoftUser(user);
-    done(null, validatedUser);
+    return this.authService.validateMicrosoftUser(user);
   }
 }

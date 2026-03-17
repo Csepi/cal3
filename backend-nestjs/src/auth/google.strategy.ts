@@ -1,6 +1,6 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
-import { Strategy, VerifyCallback } from 'passport-google-oauth20';
+import { Strategy } from 'passport-google-oauth20';
 import { AuthService } from './auth.service';
 import { ConfigurationService } from '../configuration/configuration.service';
 
@@ -39,9 +39,15 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
 
   async validate(
     accessToken: string,
-    profile: GoogleProfile,
-    done: VerifyCallback,
-  ): Promise<void> {
+    _refreshToken: string | undefined,
+    profile: GoogleProfile | undefined,
+  ): Promise<unknown> {
+    if (!profile) {
+      throw new UnauthorizedException(
+        'Google profile is missing from OAuth callback.',
+      );
+    }
+
     const { id, name, emails, photos } = profile;
 
     const user = {
@@ -53,7 +59,6 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
       accessToken,
     };
 
-    const validatedUser = await this.authService.validateGoogleUser(user);
-    done(null, validatedUser);
+    return this.authService.validateGoogleUser(user);
   }
 }
