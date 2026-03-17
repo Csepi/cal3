@@ -1,9 +1,9 @@
 {
   "actions": {
-    "cancel": "Foglal?s lemond?sa",
-    "confirm": "Foglal?s meger?s?t?se",
-    "copyLink": "Foglal?si link m?sol?sa",
-    "reschedule": "?tfoglal?s"
+    "cancel": "Foglalás lemondása",
+    "confirm": "Foglalás megerősítése",
+    "copyLink": "Foglalási link másolása",
+    "reschedule": "Átfoglalás"
   },
   "catalog": {
     "generated": {
@@ -144,49 +144,49 @@
     }
   },
   "fields": {
-    "date": "D?tum",
-    "duration": "Id?tartam",
+    "date": "Dátum",
+    "duration": "Időtartam",
     "email": "E-mail",
-    "message": "?zenet",
-    "name": "Teljes n?v",
-    "phone": "Telefonsz?m",
-    "time": "Id?pont",
-    "timezone": "Id?z?na"
+    "message": "Üzenet",
+    "name": "Teljes név",
+    "phone": "Telefonszám",
+    "time": "Időpont",
+    "timezone": "Időzóna"
   },
   "notifications": {
-    "cancelled": "A foglal?s lemondva.",
-    "confirmed": "A foglal?s meger?s?tve.",
-    "reminder": "Foglal?si eml?keztet?",
-    "rescheduled": "A foglal?s ?tfoglalva."
+    "cancelled": "A foglalás lemondva.",
+    "confirmed": "A foglalás megerősítve.",
+    "reminder": "Foglalási emlékeztető",
+    "rescheduled": "Foglalását átütemeztük."
   },
   "page": {
-    "availability": "El?rhet?s?g",
-    "subtitle": "V?lassza ki az ?nnek megfelel? d?tumot ?s id?pontot.",
-    "title": "Id?pontfoglal?s",
-    "unavailable": "A kiv?lasztott napon nincs szabad id?pont."
+    "availability": "Elérhetőség",
+    "subtitle": "Válassza ki az Önnek megfelelő dátumot és időpontot.",
+    "title": "Időpontfoglalás",
+    "unavailable": "Nincs szabad időpont a kiválasztott dátumhoz."
   },
   "placeholders": {
     "email": "on@example.com",
-    "message": "Megjegyz?s a szervez?nek",
-    "name": "Adja meg teljes nev?t",
-    "phone": "Opcion?lis telefonsz?m"
+    "message": "Megjegyzés a szervezőnek",
+    "name": "Adja meg teljes nevét",
+    "phone": "Opcionális telefonszám"
   },
   "publicLink": {
-    "disabled": "A nyilv?nos foglal?s le van tiltva",
-    "enabled": "A nyilv?nos foglal?s enged?lyezve van",
-    "title": "Nyilv?nos foglal?si link"
+    "disabled": "A nyilvános foglalás le van tiltva",
+    "enabled": "A nyilvános foglalás engedélyezve van",
+    "title": "Nyilvános foglalási link"
   },
   "status": {
     "cancelled": "Lemondva",
-    "confirmed": "Meger?s?tve",
+    "confirmed": "Megerősítve",
     "pending": "Folyamatban",
-    "rescheduled": "?tfoglalva"
+    "rescheduled": "Átfoglalva"
   },
   "validation": {
-    "dateRequired": "K?rj?k, v?lasszon d?tumot.",
-    "emailRequired": "K?rj?k, adja meg az e-mail-c?m?t.",
-    "invalidEmail": "K?rj?k, val?s e-mail-c?met adjon meg.",
-    "nameRequired": "K?rj?k, adja meg a nev?t.",
-    "timeRequired": "K?rj?k, v?lasszon id?pontot."
+    "dateRequired": "Kérjük, válasszon dátumot.",
+    "emailRequired": "Kérjük, adja meg az e-mail-címét.",
+    "invalidEmail": "Kérjük, valós e-mail-címet adjon meg.",
+    "nameRequired": "Kérjük, adja meg a nevét.",
+    "timeRequired": "Kérjük, válasszon időpontot."
   }
 }

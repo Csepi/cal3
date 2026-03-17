@@ -1,7 +1,7 @@
 {
   "a11y": {
-    "languageChanged": "A nyelv erre v?ltozott: {{language}}.",
-    "languageSwitcherLabel": "Alkalmaz?s nyelve"
+    "languageChanged": "A nyelv a következőre módosult: {{language}}.",
+    "languageSwitcherLabel": "Alkalmazás nyelve"
   },
   "catalog": {
     "generated": {
@@ -180,67 +180,67 @@
     }
   },
   "integrations": {
-    "connect": "Kapcsol?d?s",
-    "disconnect": "Lev?laszt?s",
-    "google": "Google Napt?r",
-    "microsoft": "Microsoft Napt?r",
-    "syncNow": "Szinkroniz?l?s most"
+    "connect": "Csatlakozás",
+    "disconnect": "Leválasztás",
+    "google": "Google Naptár",
+    "microsoft": "Microsoft Naptár",
+    "syncNow": "Szinkronizálás most"
   },
   "languageNames": {
-    "de": "N?met",
+    "de": "Német",
     "en": "Angol",
     "fr": "Francia",
     "hu": "Magyar"
   },
   "messages": {
-    "saved": "A be?ll?t?sok sikeresen friss?ltek.",
-    "saveFailed": "A be?ll?t?sok friss?t?se nem siker?lt.",
-    "syncing": "Be?ll?t?sok szinkroniz?l?sa..."
+    "saved": "A beállítások sikeresen frissültek.",
+    "saveFailed": "A beállítások frissítése nem sikerült.",
+    "syncing": "Beállítások szinkronizálása..."
   },
   "notifications": {
-    "digest": "?sszefoglal? gyakoris?ga",
-    "email": "E-mail ?rtes?t?sek",
-    "push": "Push ?rtes?t?sek",
-    "reminders": "Eml?keztet? be?ll?t?sok"
+    "digest": "Összefoglaló gyakorisága",
+    "email": "E-mail értesítések",
+    "push": "Push értesítések",
+    "reminders": "Emlékeztető beállítások"
   },
   "organization": {
-    "billing": "Sz?ml?z?s",
+    "billing": "Számlázás",
     "members": "Tagok",
-    "permissions": "Jogosults?gok",
-    "roles": "Szerepk?r?k",
-    "usagePlans": "Haszn?lati csomagok",
-    "usagePlansHelp": "A haszn?lati csomagokat a rendszergazd?k kezelik, ezek szab?lyozz?k az el?rhet? funkci?kat."
+    "permissions": "Jogosultságok",
+    "roles": "Szerepkörök",
+    "usagePlans": "Használati csomagok",
+    "usagePlansHelp": "A használati csomagokat a rendszergazdák kezelik, ezek szabályozzák az elérhető funkciókat."
   },
   "preferences": {
-    "dateFormat": "D?tumform?tum",
-    "hideReservationsTab": "Foglal?sok f?l elrejt?se",
-    "hideReservationsTabHelp": "Bekapcsolva a Foglal?sok f?l el lesz rejtve a f? ir?ny?t?pulton.",
+    "dateFormat": "Dátumformátum",
+    "hideReservationsTab": "Foglalások fül elrejtése",
+    "hideReservationsTabHelp": "Bekapcsolva a Foglalások fül el lesz rejtve a fő irányítópulton.",
     "language": "Nyelv",
-    "theme": "T?ma",
-    "timeFormat": "Id?form?tum",
-    "timezone": "Id?z?na",
-    "weekStart": "A h?t kezdete"
+    "theme": "Téma",
+    "timeFormat": "Időformátum",
+    "timezone": "Időzóna",
+    "weekStart": "A hét kezdete"
   },
   "profile": {
-    "changePassword": "Jelsz? m?dos?t?sa",
-    "defaultTasksCalendar": "Alap?rtelmezett Feladatok napt?r",
-    "defaultTasksCalendarHelp": "V?lassza ki, melyik jogosult napt?rba ker?ljenek a t?kr?z?tt feladat hat?rid?k. ?resen hagyva a PrimeCal automatikusan l?trehoz egy priv?t Feladatok napt?rat.",
-    "personalInformation": "Szem?lyes adatok",
-    "profilePhoto": "Profilk?p",
-    "updateProfile": "Profil friss?t?se"
+    "changePassword": "Jelszó módosítása",
+    "defaultTasksCalendar": "Alapértelmezett Feladatok naptár",
+    "defaultTasksCalendarHelp": "Válassza ki, melyik jogosult naptárba kerüljenek a tükrözött feladat határidők. Üresen hagyva a PrimeCal automatikusan létrehoz egy privát Feladatok naptárat.",
+    "personalInformation": "Személyes adatok",
+    "profilePhoto": "Profilkép",
+    "updateProfile": "Profil frissítése"
   },
   "sections": {
-    "integrations": "Integr?ci?k",
-    "notifications": "?rtes?t?sek",
-    "organization": "Szervezeti be?ll?t?sok",
-    "preferences": "Be?ll?t?sok",
-    "profile": "Profilbe?ll?t?sok",
-    "security": "Biztons?g"
+    "integrations": "Integrációk",
+    "notifications": "Értesítések",
+    "organization": "Szervezeti beállítások",
+    "preferences": "Beállítások",
+    "profile": "Profilbeállítások",
+    "security": "Biztonság"
   },
   "security": {
-    "clearWidgetLog": "Widget napl? t?rl?se",
-    "copyWidgetLog": "Widget napl? m?sol?sa",
+    "clearWidgetLog": "Widgetnapló törlése",
+    "copyWidgetLog": "Widgetnapló másolása",
     "widgetDiagnostics": "Widget diagnosztika",
-    "widgetDiagnosticsHelp": "M?solja az Android widget napl?kat a gyors hibakeres?shez."
+    "widgetDiagnosticsHelp": "Másolja az Android widget naplókat a gyors hibakereséshez."
   }
 }

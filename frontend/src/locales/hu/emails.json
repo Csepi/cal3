@@ -1,12 +1,12 @@
 {
   "body": {
-    "bookingIntro": "Foglal?sa a k?vetkez? adatokkal meger?s?tve.",
-    "closing": "?dv?zlettel,",
+    "bookingIntro": "Foglalása a következő adatokkal megerősítve.",
+    "closing": "Üdvözlettel,",
     "greeting": "Kedves {{name}}!",
-    "reminderIntro": "Ez eml?keztet? a k?zelg? esem?ny?r?l.",
-    "resetIntro": "A jelsz? vissza?ll?t?s?hoz haszn?lja az al?bbi hivatkoz?st.",
+    "reminderIntro": "Ez egy emlékeztető a közelgő eseményről.",
+    "resetIntro": "A jelszó visszaállításához használja az alábbi hivatkozást.",
     "signature": "PrimeCalendar csapat",
-    "unsubscribe": "Az ?rtes?t?seket a fi?kbe?ll?t?sokban kezelheti."
+    "unsubscribe": "Az értesítéseket a fiókbeállításokban kezelheti."
   },
   "catalog": {
     "generated": {
@@ -114,21 +114,21 @@
     }
   },
   "cta": {
-    "confirmBooking": "Foglal?s meger?s?t?se",
-    "manageBooking": "Foglal?s kezel?se",
-    "resetPassword": "Jelsz? vissza?ll?t?sa",
-    "viewEvent": "Esem?ny megtekint?se"
+    "confirmBooking": "Foglalás megerősítése",
+    "manageBooking": "Foglalás kezelése",
+    "resetPassword": "Jelszó visszaállítása",
+    "viewEvent": "Esemény megtekintése"
   },
   "legal": {
-    "privacy": "Adatv?delmi t?j?koztat?",
-    "terms": "Felhaszn?l?si felt?telek",
-    "unsubscribeInfo": "Ha nem szeretne ilyen e-maileket, m?dos?tsa a be?ll?t?sait."
+    "privacy": "Adatvédelmi tájékoztató",
+    "terms": "Felhasználási feltételek",
+    "unsubscribeInfo": "Ha nem szeretne ilyen e-maileket, módosítsa a beállításait."
   },
   "subjects": {
-    "bookingCancelled": "Foglal?s lemondva",
-    "bookingConfirmation": "Foglal?s meger?s?tve: {{date}}",
-    "emailVerification": "PrimeCalendar e-mail meger?s?t?s",
-    "eventReminder": "Esem?ny eml?keztet?: {{title}}",
-    "passwordReset": "PrimeCalendar jelsz? vissza?ll?t?sa"
+    "bookingCancelled": "Foglalás lemondva",
+    "bookingConfirmation": "Foglalás megerősítve: {{date}}",
+    "emailVerification": "PrimeCalendar e-mail megerősítés",
+    "eventReminder": "Esemény emlékeztető: {{title}}",
+    "passwordReset": "PrimeCalendar jelszó visszaállítása"
   }
 }

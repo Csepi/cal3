@@ -1,15 +1,15 @@
 {
   "actions": {
-    "clear": "?rtes?t?s t?rl?se",
-    "markAllRead": "?sszes olvasottnak jel?l?se",
-    "markRead": "Olvasottnak jel?l?s",
-    "markUnread": "Olvasatlannak jel?l?s"
+    "clear": "Értesítés törlése",
+    "markAllRead": "Összes olvasottnak jelölése",
+    "markRead": "Olvasottnak jelölés",
+    "markUnread": "Olvasatlannak jelölés"
   },
   "booking": {
-    "cancelled": "Foglal?s lemondva",
-    "confirmed": "Foglal?s meger?s?tve",
-    "new": "?j foglal?s ?rkezett",
-    "rescheduled": "Foglal?s ?tfoglalva"
+    "cancelled": "Foglalás lemondva",
+    "confirmed": "Foglalás megerősítve",
+    "new": "Új foglalás érkezett",
+    "rescheduled": "Foglalás átfoglalva"
   },
   "catalog": {
     "generated": {
@@ -119,18 +119,18 @@
     }
   },
   "event": {
-    "cancelled": "Esem?ny t?r?lve",
-    "reminder": "Eml?keztet?",
-    "startingSoon": "Az esem?ny hamarosan kezd?dik",
-    "updated": "Esem?ny friss?tve"
+    "cancelled": "Esemény törölve",
+    "reminder": "Emlékeztető",
+    "startingSoon": "Az esemény hamarosan kezdődik",
+    "updated": "Az esemény frissítve"
   },
   "sharing": {
-    "calendarShared": "Megosztottak ?nnel egy napt?rat",
-    "permissionsChanged": "Megv?ltoztak a napt?rjogosults?gai"
+    "calendarShared": "Megosztottak Önnel egy naptárat",
+    "permissionsChanged": "Megváltoztak a naptárjogosultságai"
   },
   "system": {
-    "featureAnnouncement": "?j funkci? ?rhet? el",
-    "maintenance": "Tervezett karbantart?s",
-    "updateAvailable": "?j friss?t?s ?rhet? el"
+    "featureAnnouncement": "Új funkció elérhető",
+    "maintenance": "Tervezett karbantartás",
+    "updateAvailable": "Új frissítés érhető el"
   }
 }

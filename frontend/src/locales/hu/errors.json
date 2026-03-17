@@ -156,31 +156,31 @@
     }
   },
   "generic": {
-    "tryAgain": "K?rj?k, pr?b?lja ?jra.",
-    "unexpected": "V?ratlan hiba t?rt?nt."
+    "tryAgain": "Kérjük, próbálja újra.",
+    "unexpected": "Váratlan hiba történt."
   },
   "http": {
-    "badRequest": "Hib?s k?r?s.",
-    "conflict": "?tk?z?s t?rt?nt. Friss?tsen ?s pr?b?lja ?jra.",
-    "forbidden": "Nincs jogosults?ga ehhez a m?velethez.",
-    "internal": "Bels? szerverhiba.",
-    "notFound": "A k?rt er?forr?s nem tal?lhat?.",
-    "serviceUnavailable": "A szolg?ltat?s ?tmenetileg nem ?rhet? el.",
-    "tooManyRequests": "T?l sok k?r?s. Pr?b?lja ?jra k?s?bb.",
-    "unauthorized": "Nincs jogosults?ga. K?rj?k, jelentkezzen be ?jra."
+    "badRequest": "Hibás kérés.",
+    "conflict": "Ütközés történt. Frissítsen és próbálja újra.",
+    "forbidden": "Nincs jogosultsága ehhez a művelethez.",
+    "internal": "Belső szerverhiba.",
+    "notFound": "A kért erőforrás nem található.",
+    "serviceUnavailable": "A szolgáltatás átmenetileg nem elérhető.",
+    "tooManyRequests": "Túl sok kérés. Próbálja újra később.",
+    "unauthorized": "Nincs jogosultsága. Kérjük, jelentkezzen be újra."
   },
   "network": {
-    "connectionFailed": "Kapcsol?d?si hiba. Ellen?rizze az internetkapcsolatot.",
-    "offline": "Jelenleg offline ?llapotban van.",
-    "timeout": "A k?r?s id?t?ll?p?ssel megszakadt."
+    "connectionFailed": "A csatlakozás sikertelen. Ellenőrizze az internetkapcsolatot.",
+    "offline": "Jelenleg offline állapotban van.",
+    "timeout": "A kérés időtúllépéssel megszakadt."
   },
   "permissions": {
-    "insufficientPrivileges": "Nincs elegend? jogosults?g.",
-    "noAccess": "Hozz?f?r?s megtagadva."
+    "insufficientPrivileges": "Nincs elegendő jogosultság.",
+    "noAccess": "Hozzáférés megtagadva."
   },
   "sync": {
-    "conflict": "Szinkroniz?ci?s ?tk?z?s t?rt?nt.",
-    "failed": "A szinkroniz?l?s sikertelen.",
-    "retry": "Most nem siker?lt a szinkron. Pr?b?lja ?jra."
+    "conflict": "Szinkronizációs ütközés történt.",
+    "failed": "A szinkronizálás nem sikerült.",
+    "retry": "Most nem sikerült a szinkron. Próbálja újra."
   }
 }
