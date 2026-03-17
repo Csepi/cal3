@@ -254,6 +254,9 @@ export interface ConfigurationSettingSummary {
   valueType: ConfigurationValueType;
   value: string | boolean | null;
   hasValue: boolean;
+  source: 'database' | 'environment' | 'default';
+  isUsingDefault: boolean;
+  defaultValue: string | boolean | null;
   isSensitive: boolean;
   isEditable: boolean;
   isReadOnly: boolean;
@@ -263,7 +266,7 @@ export interface ConfigurationSettingSummary {
 }
 
 export interface ConfigurationCategorySummary {
-  key: 'environment' | 'oauth' | 'feature-flags';
+  key: 'environment' | 'oauth' | 'feature-flags' | 'notifications';
   label: string;
   description?: string;
   settings: ConfigurationSettingSummary[];

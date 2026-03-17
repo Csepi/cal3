@@ -1,22 +1,61 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import type {
   ConfigurationOverview,
   ConfigurationSettingSummary,
 } from './types';
 import {
   fetchConfigurationOverview,
-  updateConfigurationSetting,
   formatAdminError,
+  updateConfigurationSetting,
 } from './adminApiService';
-
-import { tStatic } from '../../i18n';
 
 interface AdminConfigurationPanelProps {
   themeColor?: string;
-  isActive?: boolean;
 }
 
-const booleanDisplay = (value: boolean) => (value ? 'Enabled' : 'Disabled');
+type DraftValue = string | boolean;
+
+type SettingSource = ConfigurationSettingSummary['source'];
+
+const SOURCE_LABELS: Record<SettingSource, string> = {
+  database: 'Database override',
+  environment: 'Environment variable',
+  default: 'Default fallback',
+};
+
+const SOURCE_STYLES: Record<SettingSource, string> = {
+  database: 'border-blue-200 bg-blue-50 text-blue-700',
+  environment: 'border-amber-200 bg-amber-50 text-amber-700',
+  default: 'border-emerald-200 bg-emerald-50 text-emerald-700',
+};
+
+const CATEGORY_ORDER: ConfigurationOverview['categories'][number]['key'][] = [
+  'oauth',
+  'environment',
+  'feature-flags',
+  'notifications',
+];
+
+const asString = (value: string | boolean | null | undefined): string =>
+  typeof value === 'string' ? value : '';
+
+const asBoolean = (value: string | boolean | null | undefined): boolean =>
+  value === true || value === 'true';
+
+const displayValue = (
+  setting: ConfigurationSettingSummary,
+  value: string | boolean | null,
+): string => {
+  if (value === null || value === undefined || value === '') {
+    return 'Not set';
+  }
+
+  if (setting.valueType === 'boolean') {
+    return value === true || value === 'true' ? 'Enabled' : 'Disabled';
+  }
+
+  return String(value);
+};
 
 const AdminConfigurationPanel: React.FC<AdminConfigurationPanelProps> = ({
   themeColor = '#3b82f6',
@@ -26,91 +65,187 @@ const AdminConfigurationPanel: React.FC<AdminConfigurationPanelProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [updatingKey, setUpdatingKey] = useState<string | null>(null);
-  const [draftValues, setDraftValues] = useState<Record<string, string>>({});
+  const [draftValues, setDraftValues] = useState<Record<string, DraftValue>>({});
+  const [activeCategory, setActiveCategory] =
+    useState<ConfigurationOverview['categories'][number]['key']>('oauth');
+  const [searchTerm, setSearchTerm] = useState('');
 
   const themeGradient = useMemo(
-    () => ({
-      gradient: `linear-gradient(135deg, ${themeColor}, #1d4ed8)`,
-    }),
+    () =>
+      `linear-gradient(135deg, ${themeColor} 0%, ${themeColor}CC 40%, #1d4ed8 100%)`,
     [themeColor],
   );
 
-  useEffect(() => {
-    const loadConfiguration = async () => {
-      try {
-        setLoading(true);
-        const data = await fetchConfigurationOverview();
-        setOverview(data);
-        setError(null);
-      } catch (err) {
-        setError(formatAdminError(err));
-      } finally {
-        setLoading(false);
-      }
-    };
+  const loadConfiguration = useCallback(async () => {
+    try {
+      setLoading(true);
+      const data = await fetchConfigurationOverview();
+      setOverview(data);
+      setError(null);
+    } catch (err) {
+      setError(formatAdminError(err));
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
+  useEffect(() => {
     loadConfiguration().catch((err) => {
       setError(formatAdminError(err));
       setLoading(false);
     });
-  }, []);
+  }, [loadConfiguration]);
 
   useEffect(() => {
     if (!overview) {
       return;
     }
-    const nextDrafts: Record<string, string> = {};
+
+    const nextDrafts: Record<string, DraftValue> = {};
     overview.categories.forEach((category) => {
       category.settings.forEach((setting) => {
-        if (typeof setting.value === 'string') {
-          nextDrafts[setting.key] = setting.value;
-        } else {
-          nextDrafts[setting.key] = '';
+        if (setting.valueType === 'boolean') {
+          nextDrafts[setting.key] = asBoolean(setting.value);
+          return;
         }
+
+        if (setting.valueType === 'enum') {
+          nextDrafts[setting.key] =
+            asString(setting.value) || setting.options?.[0] || '';
+          return;
+        }
+
+        nextDrafts[setting.key] = asString(setting.value);
       });
     });
+
     setDraftValues(nextDrafts);
+
+    if (!overview.categories.some((category) => category.key === activeCategory)) {
+      const ordered = [...overview.categories].sort((a, b) => {
+        const left = CATEGORY_ORDER.indexOf(a.key);
+        const right = CATEGORY_ORDER.indexOf(b.key);
+        return (left < 0 ? Number.MAX_SAFE_INTEGER : left) -
+          (right < 0 ? Number.MAX_SAFE_INTEGER : right);
+      });
+      setActiveCategory(ordered[0]?.key ?? 'oauth');
+    }
+  }, [activeCategory, overview]);
+
+  const orderedCategories = useMemo(() => {
+    if (!overview) {
+      return [];
+    }
+
+    return [...overview.categories].sort((a, b) => {
+      const left = CATEGORY_ORDER.indexOf(a.key);
+      const right = CATEGORY_ORDER.indexOf(b.key);
+      return (left < 0 ? Number.MAX_SAFE_INTEGER : left) -
+        (right < 0 ? Number.MAX_SAFE_INTEGER : right);
+    });
   }, [overview]);
 
-  const applyUpdatedSetting = (updated: ConfigurationSettingSummary) => {
-    setOverview((prev) => {
-      if (!prev) {
-        return prev;
-      }
+  const activeCategorySettings = useMemo(() => {
+    const category = orderedCategories.find((entry) => entry.key === activeCategory);
+    if (!category) {
+      return [];
+    }
 
-      return {
-        ...prev,
-        categories: prev.categories.map((category) => {
-          if (!category.settings.some((setting) => setting.key === updated.key)) {
-            return category;
-          }
-          return {
-            ...category,
-            settings: category.settings.map((setting) =>
-              setting.key === updated.key ? { ...setting, ...updated } : setting,
-            ),
-          };
-        }),
-      };
+    const normalizedSearch = searchTerm.trim().toLowerCase();
+    if (!normalizedSearch) {
+      return category.settings;
+    }
+
+    return category.settings.filter((setting) => {
+      const haystack = [setting.label, setting.description, setting.key]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase();
+      return haystack.includes(normalizedSearch);
     });
+  }, [activeCategory, orderedCategories, searchTerm]);
+
+  const activeCategorySummary = useMemo(
+    () => orderedCategories.find((entry) => entry.key === activeCategory) ?? null,
+    [activeCategory, orderedCategories],
+  );
+
+  const getDraftValue = (setting: ConfigurationSettingSummary): DraftValue => {
+    const cached = draftValues[setting.key];
+
+    if (cached !== undefined) {
+      return cached;
+    }
+
+    if (setting.valueType === 'boolean') {
+      return asBoolean(setting.value);
+    }
+
+    if (setting.valueType === 'enum') {
+      return asString(setting.value) || setting.options?.[0] || '';
+    }
+
+    return asString(setting.value);
+  };
+
+  const isDirty = (setting: ConfigurationSettingSummary): boolean => {
+    const draft = getDraftValue(setting);
+
+    if (setting.valueType === 'secret') {
+      return typeof draft === 'string' && draft.trim().length > 0;
+    }
+
+    if (setting.valueType === 'boolean') {
+      return Boolean(draft) !== asBoolean(setting.value);
+    }
+
+    const current =
+      setting.valueType === 'enum'
+        ? asString(setting.value) || setting.options?.[0] || ''
+        : asString(setting.value);
+
+    return String(draft) !== current;
+  };
+
+  const handleRevertDraft = (setting: ConfigurationSettingSummary) => {
+    const resetValue =
+      setting.valueType === 'boolean'
+        ? asBoolean(setting.value)
+        : setting.valueType === 'enum'
+          ? asString(setting.value) || setting.options?.[0] || ''
+          : asString(setting.value);
 
     setDraftValues((prev) => ({
       ...prev,
-      [updated.key]:
-        typeof updated.value === 'string' ? updated.value : '',
+      [setting.key]: resetValue,
     }));
   };
 
-  const handleSettingUpdate = async (
-    setting: ConfigurationSettingSummary,
-    value: string | boolean | null,
-  ) => {
+  const handleSaveSetting = async (setting: ConfigurationSettingSummary) => {
+    const draft = getDraftValue(setting);
+
+    let payload: string | boolean | null;
+    if (setting.valueType === 'boolean') {
+      payload = Boolean(draft);
+    } else if (setting.valueType === 'enum') {
+      const nextValue = String(draft).trim();
+      payload = nextValue === '' ? null : nextValue;
+    } else if (setting.valueType === 'secret') {
+      const nextValue = String(draft);
+      if (nextValue.trim() === '') {
+        return;
+      }
+      payload = nextValue;
+    } else {
+      const nextValue = String(draft);
+      payload = nextValue.trim() === '' ? null : nextValue;
+    }
+
     try {
       setUpdatingKey(setting.key);
-      const updated = await updateConfigurationSetting(setting.key, value);
-      applyUpdatedSetting(updated);
-      setSuccessMessage(`${updated.label || updated.key} updated successfully`);
-      setTimeout(() => setSuccessMessage(null), 3500);
+      const updated = await updateConfigurationSetting(setting.key, payload);
+      setSuccessMessage(`${updated.label || updated.key} saved.`);
+      await loadConfiguration();
     } catch (err) {
       setError(formatAdminError(err));
     } finally {
@@ -118,191 +253,166 @@ const AdminConfigurationPanel: React.FC<AdminConfigurationPanelProps> = ({
     }
   };
 
-  const renderStringControl = (setting: ConfigurationSettingSummary) => {
-    const draft = draftValues[setting.key] ?? '';
-    const original = typeof setting.value === 'string' ? setting.value : '';
-    const isDirty = draft !== original;
-    const disabled = !setting.isEditable || setting.isReadOnly;
+  const handleRestoreDefault = async (setting: ConfigurationSettingSummary) => {
+    try {
+      setUpdatingKey(setting.key);
+      const updated = await updateConfigurationSetting(setting.key, null);
+      setSuccessMessage(`${updated.label || updated.key} now uses default.`);
+      await loadConfiguration();
+    } catch (err) {
+      setError(formatAdminError(err));
+    } finally {
+      setUpdatingKey(null);
+    }
+  };
 
-    return (
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-        <input
-          type="text"
-          className="w-full flex-1 rounded-lg border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-gray-100"
-          value={draft}
+  const renderControl = (setting: ConfigurationSettingSummary) => {
+    const disabled = !setting.isEditable || setting.isReadOnly || updatingKey === setting.key;
+    const draft = getDraftValue(setting);
+
+    if (setting.valueType === 'boolean') {
+      const boolDraft = Boolean(draft);
+      return (
+        <div className="inline-flex rounded-lg border border-gray-300 bg-white p-1">
+          <button
+            type="button"
+            onClick={() =>
+              setDraftValues((prev) => ({
+                ...prev,
+                [setting.key]: true,
+              }))
+            }
+            disabled={disabled}
+            className={`rounded-md px-3 py-1.5 text-sm font-medium transition ${
+              boolDraft
+                ? 'bg-emerald-600 text-white shadow'
+                : 'text-gray-600 hover:bg-gray-100'
+            } disabled:cursor-not-allowed disabled:opacity-60`}
+          >
+            Enabled
+          </button>
+          <button
+            type="button"
+            onClick={() =>
+              setDraftValues((prev) => ({
+                ...prev,
+                [setting.key]: false,
+              }))
+            }
+            disabled={disabled}
+            className={`rounded-md px-3 py-1.5 text-sm font-medium transition ${
+              !boolDraft
+                ? 'bg-slate-700 text-white shadow'
+                : 'text-gray-600 hover:bg-gray-100'
+            } disabled:cursor-not-allowed disabled:opacity-60`}
+          >
+            Disabled
+          </button>
+        </div>
+      );
+    }
+
+    if (setting.valueType === 'enum') {
+      return (
+        <select
+          className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-gray-100"
+          value={String(draft)}
           onChange={(event) =>
             setDraftValues((prev) => ({
               ...prev,
               [setting.key]: event.target.value,
             }))
           }
-          disabled={disabled || updatingKey === setting.key}
-          placeholder={setting.hasValue ? 'Value configured' : 'Not set'}
-        />
-        <div className="flex gap-2">
-          <button
-            type="button"
-            onClick={() =>
-              handleSettingUpdate(
-                setting,
-                draft.trim() === '' ? null : draft,
-              )
-            }
-            disabled={
-              disabled ||
-              updatingKey === setting.key ||
-              (!isDirty && draft.trim() !== '')
-            }
-            className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-300"
-          >
-            {tStatic('common:auto.frontend.kefc007a393f6')}</button>
-          <button
-            type="button"
-            onClick={() => {
-              setDraftValues((prev) => ({
-                ...prev,
-                [setting.key]: original,
-              }));
-            }}
-            disabled={disabled || updatingKey === setting.key || !isDirty}
-            className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 disabled:cursor-not-allowed disabled:text-gray-400"
-          >
-            {tStatic('common:auto.frontend.k272607a7bd01')}</button>
-          <button
-            type="button"
-            onClick={() => handleSettingUpdate(setting, null)}
-            disabled={disabled || updatingKey === setting.key}
-            className="rounded-lg border border-red-200 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 disabled:cursor-not-allowed disabled:text-red-300"
-          >
-            {tStatic('common:auto.frontend.kcd98ea26318e')}</button>
-        </div>
-      </div>
-    );
-  };
-
-  const renderEnumControl = (setting: ConfigurationSettingSummary) => {
-    const disabled = !setting.isEditable || setting.isReadOnly;
-    const currentValue =
-      (typeof setting.value === 'string' && setting.value) ||
-      setting.options?.[0] ||
-      '';
-
-    return (
-      <select
-        className="w-full rounded-lg border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-gray-100"
-        value={currentValue}
-        onChange={(event) =>
-          handleSettingUpdate(setting, event.target.value)
-        }
-        disabled={disabled || updatingKey === setting.key}
-      >
-        {setting.options?.map((option) => (
-          <option key={option} value={option}>
-            {option}
-          </option>
-        ))}
-      </select>
-    );
-  };
-
-  const renderBooleanControl = (setting: ConfigurationSettingSummary) => {
-    const disabled = !setting.isEditable || setting.isReadOnly;
-    const value = Boolean(setting.value);
-
-    return (
-      <label className="inline-flex items-center gap-3">
-        <span
-          className={`relative inline-flex h-6 w-11 items-center rounded-full transition ${
-            value ? 'bg-blue-600' : 'bg-gray-300'
-          } ${disabled ? 'opacity-60' : ''}`}
+          disabled={disabled}
         >
-          <input
-            type="checkbox"
-            className="sr-only"
-            checked={value}
-            onChange={() => handleSettingUpdate(setting, !value)}
-            disabled={disabled || updatingKey === setting.key}
-          />
-          <span
-            className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition ${
-              value ? 'translate-x-5' : 'translate-x-1'
-            }`}
-          />
-        </span>
-        <span className="text-sm font-medium text-gray-700">
-          {booleanDisplay(value)}
-        </span>
-      </label>
-    );
-  };
+          {(setting.options ?? []).map((option) => (
+            <option key={option} value={option}>
+              {option}
+            </option>
+          ))}
+        </select>
+      );
+    }
 
-  const renderSecretControl = (setting: ConfigurationSettingSummary) => {
-    const draft = draftValues[setting.key] ?? '';
-    const disabled = !setting.isEditable || setting.isReadOnly;
-
-    return (
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+    if (setting.valueType === 'secret') {
+      return (
         <input
           type="password"
-          className="w-full flex-1 rounded-lg border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-gray-100"
-          value={draft}
+          className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-gray-100"
+          value={String(draft)}
           onChange={(event) =>
             setDraftValues((prev) => ({
               ...prev,
               [setting.key]: event.target.value,
             }))
           }
-          disabled={disabled || updatingKey === setting.key}
+          disabled={disabled}
           placeholder={
-            setting.hasValue ? '••••••••' : 'Enter new secret value'
+            setting.hasValue
+              ? 'Secret configured. Enter a new value to replace it.'
+              : 'Enter secret value'
           }
+          autoComplete="off"
         />
-        <div className="flex gap-2">
-          <button
-            type="button"
-            onClick={() =>
-              handleSettingUpdate(
-                setting,
-                draft.trim() === '' ? null : draft,
-              )
-            }
-            disabled={
-              disabled ||
-              updatingKey === setting.key ||
-              draft.trim().length === 0
-            }
-            className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-300"
-          >
-            {tStatic('common:auto.frontend.k3216fb844520')}</button>
-          <button
-            type="button"
-            onClick={() => {
-              setDraftValues((prev) => ({
-                ...prev,
-                [setting.key]: '',
-              }));
-              handleSettingUpdate(setting, null);
-            }}
-            disabled={disabled || updatingKey === setting.key}
-            className="rounded-lg border border-red-200 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 disabled:cursor-not-allowed disabled:text-red-300"
-          >
-            {tStatic('common:auto.frontend.ke67d7364d446')}</button>
-        </div>
-      </div>
+      );
+    }
+
+    return (
+      <input
+        type="text"
+        className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-gray-100"
+        value={String(draft)}
+        onChange={(event) =>
+          setDraftValues((prev) => ({
+            ...prev,
+            [setting.key]: event.target.value,
+          }))
+        }
+        disabled={disabled}
+        placeholder={setting.hasValue ? 'Configured value' : 'Not set'}
+      />
     );
   };
 
-  const renderSettingControl = (setting: ConfigurationSettingSummary) => {
-    switch (setting.valueType) {
-      case 'boolean':
-        return renderBooleanControl(setting);
-      case 'enum':
-        return renderEnumControl(setting);
-      case 'secret':
-        return renderSecretControl(setting);
-      default:
-        return renderStringControl(setting);
-    }
+  const renderSettingActions = (setting: ConfigurationSettingSummary) => {
+    const disabled = !setting.isEditable || setting.isReadOnly || updatingKey === setting.key;
+    const dirty = isDirty(setting);
+
+    return (
+      <div className="flex flex-wrap items-center gap-2">
+        <button
+          type="button"
+          onClick={() => handleSaveSetting(setting)}
+          disabled={
+            disabled ||
+            !dirty ||
+            (setting.valueType === 'secret' &&
+              String(getDraftValue(setting)).trim().length === 0)
+          }
+          className="rounded-lg bg-blue-600 px-3 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-300"
+        >
+          Save
+        </button>
+
+        <button
+          type="button"
+          onClick={() => handleRevertDraft(setting)}
+          disabled={disabled || !dirty}
+          className="rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 disabled:cursor-not-allowed disabled:text-gray-400"
+        >
+          Revert draft
+        </button>
+
+        <button
+          type="button"
+          onClick={() => handleRestoreDefault(setting)}
+          disabled={disabled}
+          className="rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-sm font-medium text-amber-700 shadow-sm hover:bg-amber-100 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          Restore default
+        </button>
+      </div>
+    );
   };
 
   const renderSetting = (setting: ConfigurationSettingSummary) => {
@@ -310,66 +420,72 @@ const AdminConfigurationPanel: React.FC<AdminConfigurationPanelProps> = ({
     const isUpdating = updatingKey === setting.key;
 
     return (
-      <div
+      <article
         key={setting.key}
-        className="flex flex-col gap-3 rounded-2xl border border-gray-200 bg-white/70 p-4 shadow-sm transition hover:border-blue-200 hover:shadow-md"
+        className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm"
       >
-        <div className="flex flex-wrap items-start justify-between gap-2">
-          <div>
-            <h3 className="text-base font-semibold text-gray-900">
-              {setting.label}
-            </h3>
-            <p className="text-sm text-gray-500">{setting.description}</p>
-          </div>
-          <div className="flex items-center gap-2">
-            {setting.isSensitive && (
-              <span className="rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-medium text-amber-700">
-                {tStatic('common:auto.frontend.k561a19cf75e4')}</span>
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="min-w-0 flex-1">
+            <h3 className="text-base font-semibold text-gray-900">{setting.label}</h3>
+            {setting.description && (
+              <p className="mt-1 text-sm text-gray-600">{setting.description}</p>
             )}
-            {requiresRestart && (
-              <span className="rounded-full border border-purple-200 bg-purple-50 px-3 py-1 text-xs font-medium text-purple-700">
-                {tStatic('common:auto.frontend.k73aaeac855ba')}</span>
-            )}
-            {setting.isReadOnly && (
-              <span className="rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-xs font-medium text-gray-600">
-                {tStatic('common:auto.frontend.k601dcc1c87c3')}</span>
-            )}
-          </div>
-        </div>
 
-        {renderSettingControl(setting)}
+            <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
+              <code className="rounded bg-gray-100 px-2 py-1 font-mono text-gray-700">
+                {setting.key}
+              </code>
+              <span
+                className={`rounded-full border px-2 py-1 font-medium ${SOURCE_STYLES[setting.source]}`}
+              >
+                {SOURCE_LABELS[setting.source]}
+              </span>
+              {setting.isSensitive && (
+                <span className="rounded-full border border-rose-200 bg-rose-50 px-2 py-1 font-medium text-rose-700">
+                  Sensitive
+                </span>
+              )}
+              {requiresRestart && (
+                <span className="rounded-full border border-purple-200 bg-purple-50 px-2 py-1 font-medium text-purple-700">
+                  Restart required
+                </span>
+              )}
+              {setting.isReadOnly && (
+                <span className="rounded-full border border-gray-300 bg-gray-100 px-2 py-1 font-medium text-gray-600">
+                  Read only
+                </span>
+              )}
+              {isUpdating && (
+                <span className="rounded-full border border-blue-200 bg-blue-50 px-2 py-1 font-medium text-blue-700">
+                  Saving...
+                </span>
+              )}
+            </div>
+          </div>
 
-        <div className="flex flex-wrap items-center gap-3 text-xs text-gray-500">
-          <span className="font-mono text-gray-600">{setting.key}</span>
-          <span>•</span>
-          <span>
-            {tStatic('common:auto.frontend.k11dc9e195292')}{' '}
-            {setting.hasValue
-              ? 'Configured'
-              : setting.isEditable
-              ? 'Using default'
-              : 'Managed externally'}
-          </span>
-          {isUpdating && (
-            <>
-              <span>•</span>
-              <span className="text-blue-600">{tStatic('common:auto.frontend.k56a2285c5b11')}</span>
-            </>
-          )}
-          {setting.updatedAt && (
-            <>
-              <span>•</span>
-              <span>
-                {tStatic('common:auto.frontend.kf2f8570ddd7b')}{' '}
-                {new Date(setting.updatedAt).toLocaleString(undefined, {
+          <div className="min-w-[220px] space-y-1 rounded-lg border border-gray-200 bg-gray-50 p-3 text-xs text-gray-600">
+            <div>
+              Current value: <span className="font-medium text-gray-800">{displayValue(setting, setting.value)}</span>
+            </div>
+            <div>
+              Default value: <span className="font-medium text-gray-800">{displayValue(setting, setting.defaultValue)}</span>
+            </div>
+            {setting.updatedAt && (
+              <div>
+                Updated: {new Date(setting.updatedAt).toLocaleString(undefined, {
                   dateStyle: 'medium',
                   timeStyle: 'short',
                 })}
-              </span>
-            </>
-          )}
+              </div>
+            )}
+          </div>
         </div>
-      </div>
+
+        <div className="mt-4 grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
+          {renderControl(setting)}
+          {renderSettingActions(setting)}
+        </div>
+      </article>
     );
   };
 
@@ -378,7 +494,7 @@ const AdminConfigurationPanel: React.FC<AdminConfigurationPanelProps> = ({
       <div className="flex h-64 items-center justify-center">
         <div className="text-center">
           <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-b-2 border-blue-500" />
-          <p className="text-gray-600">{tStatic('common:auto.frontend.kb0f1327702a3')}</p>
+          <p className="text-gray-600">Loading runtime configuration...</p>
         </div>
       </div>
     );
@@ -386,96 +502,122 @@ const AdminConfigurationPanel: React.FC<AdminConfigurationPanelProps> = ({
 
   if (error) {
     return (
-      <div className="rounded-3xl border border-red-200 bg-red-50 p-6 text-red-700">
-        <h2 className="text-lg font-semibold">{tStatic('common:auto.frontend.k09a07e7630f3')}</h2>
-        <p className="mt-2">{error}</p>
+      <div className="rounded-2xl border border-red-200 bg-red-50 p-5 text-red-700">
+        <h2 className="text-lg font-semibold">Configuration error</h2>
+        <p className="mt-2 text-sm">{error}</p>
       </div>
     );
   }
 
   if (!overview) {
     return null;
-    }
+  }
 
   return (
-    <div className="space-y-8">
-      <div
-        className="rounded-3xl border border-blue-200 bg-white/80 p-6 shadow-xl"
-        style={{ backgroundImage: themeGradient.gradient }}
+    <div className="space-y-6">
+      <section
+        className="rounded-3xl border border-blue-200 p-6 shadow-lg"
+        style={{ backgroundImage: themeGradient }}
       >
-        <div className="rounded-2xl bg-white/90 p-6 shadow-inner">
-          <h1 className="text-2xl font-semibold text-gray-900">
-            {tStatic('common:auto.frontend.k222cad2bd37e')}</h1>
-          <p className="mt-2 text-sm text-gray-600">
-            {tStatic('common:auto.frontend.k0ed0836d86d7')}</p>
-          <div className="mt-4 grid gap-4 text-sm text-gray-700 sm:grid-cols-2">
-            <div>
-              <span className="font-medium text-gray-900">{tStatic('common:auto.frontend.ke8fe1675b47f')}</span>{' '}
-              <span className="font-mono">{overview.derived.backendBaseUrl}</span>
+        <div className="rounded-2xl border border-white/40 bg-white/90 p-5 backdrop-blur">
+          <h1 className="text-2xl font-semibold text-gray-900">Runtime Configuration</h1>
+          <p className="mt-2 text-sm text-gray-700">
+            Manage runtime overrides for OAuth, environment, feature flags, and notifications.
+            Use <strong>Restore default</strong> on any setting to return to calculated fallback behavior.
+          </p>
+
+          <div className="mt-4 grid gap-3 md:grid-cols-2">
+            <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm">
+              <span className="font-medium text-slate-700">Resolved backend URL:</span>{' '}
+              <code className="font-mono text-slate-900">{overview.derived.backendBaseUrl}</code>
             </div>
-            <div>
-              <span className="font-medium text-gray-900">{tStatic('common:auto.frontend.keed9938aa1bf')}</span>{' '}
-              <span className="font-mono">{overview.derived.frontendBaseUrl}</span>
+            <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm">
+              <span className="font-medium text-slate-700">Resolved frontend URL:</span>{' '}
+              <code className="font-mono text-slate-900">{overview.derived.frontendBaseUrl}</code>
             </div>
           </div>
+
           {successMessage && (
-            <div className="mt-4 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm text-emerald-700 shadow">
+            <div className="mt-4 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm text-emerald-700">
               {successMessage}
             </div>
           )}
         </div>
-      </div>
+      </section>
 
-      {overview.categories.map((category) => (
-        <section
-          key={category.key}
-          className="rounded-3xl border border-gray-200 bg-white/80 p-6 shadow-lg"
-        >
-          <div className="border-b border-gray-200 pb-4">
-            <h2 className="text-xl font-semibold text-gray-900">
-              {category.label}
-            </h2>
-            {category.description && (
-              <p className="mt-1 text-sm text-gray-600">
-                {category.description}
-              </p>
-            )}
+      <section className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex flex-wrap gap-2">
+            {orderedCategories.map((category) => {
+              const isActive = category.key === activeCategory;
+              return (
+                <button
+                  key={category.key}
+                  type="button"
+                  onClick={() => setActiveCategory(category.key)}
+                  className={`rounded-full px-4 py-2 text-sm font-medium transition ${
+                    isActive
+                      ? 'bg-blue-600 text-white shadow'
+                      : 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
+                  }`}
+                >
+                  {category.label} ({category.settings.length})
+                </button>
+              );
+            })}
           </div>
 
-          <div className="mt-6 grid gap-5">
-            {category.settings.map((setting) => renderSetting(setting))}
+          <div className="w-full lg:max-w-sm">
+            <input
+              type="search"
+              value={searchTerm}
+              onChange={(event) => setSearchTerm(event.target.value)}
+              placeholder="Search by key, label, or description"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            />
           </div>
-        </section>
-      ))}
-
-      <section className="rounded-3xl border border-indigo-200 bg-indigo-50/60 p-6 shadow-inner">
-        <div className="border-b border-indigo-200 pb-4">
-          <h2 className="text-xl font-semibold text-indigo-900">
-            {tStatic('common:auto.frontend.k7e9ea68864fe')}</h2>
-          <p className="mt-1 text-sm text-indigo-700">
-            {tStatic('common:auto.frontend.kfcd930c3b4b4')}</p>
         </div>
 
-        <div className="mt-6 grid gap-4 md:grid-cols-2">
+        {activeCategorySummary?.description && (
+          <p className="mt-3 text-sm text-gray-600">{activeCategorySummary.description}</p>
+        )}
+      </section>
+
+      <section className="space-y-3">
+        {activeCategorySettings.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-gray-300 bg-white p-8 text-center text-sm text-gray-600">
+            No settings match your current filter.
+          </div>
+        ) : (
+          activeCategorySettings.map((setting) => renderSetting(setting))
+        )}
+      </section>
+
+      <section className="rounded-2xl border border-indigo-200 bg-indigo-50/70 p-5 shadow-sm">
+        <h2 className="text-lg font-semibold text-indigo-900">Computed OAuth Callback Preview</h2>
+        <p className="mt-1 text-sm text-indigo-800">
+          These are the callback URLs currently resolved from your runtime configuration.
+        </p>
+
+        <div className="mt-4 grid gap-3 md:grid-cols-2">
           {overview.derived.oauthCallbacks.map((callback) => (
             <div
               key={callback.provider}
-              className="rounded-2xl border border-indigo-200 bg-white/80 p-4 shadow-sm"
+              className="rounded-xl border border-indigo-200 bg-white p-4"
             >
-              <h3 className="text-lg font-semibold capitalize text-indigo-900">
-                {callback.provider} {tStatic('common:auto.frontend.k90c5d1358d12')}</h3>
-              <div className="mt-3 space-y-3 text-sm text-indigo-900">
+              <h3 className="text-sm font-semibold uppercase tracking-wide text-indigo-900">
+                {callback.provider}
+              </h3>
+              <div className="mt-3 space-y-2 text-xs text-indigo-900">
                 <div>
-                  <p className="font-medium text-indigo-800">
-                    {tStatic('common:auto.frontend.k465e0290fa57')}</p>
-                  <code className="mt-1 block break-all rounded-md bg-indigo-100 px-2 py-1 text-xs font-mono">
+                  <p className="font-medium">Auth callback</p>
+                  <code className="mt-1 block break-all rounded bg-indigo-100 px-2 py-1 font-mono">
                     {callback.authCallback}
                   </code>
                 </div>
                 <div>
-                  <p className="font-medium text-indigo-800">
-                    {tStatic('common:auto.frontend.k5844a708e900')}</p>
-                  <code className="mt-1 block break-all rounded-md bg-indigo-100 px-2 py-1 text-xs font-mono">
+                  <p className="font-medium">Calendar sync callback</p>
+                  <code className="mt-1 block break-all rounded bg-indigo-100 px-2 py-1 font-mono">
                     {callback.calendarSyncCallback}
                   </code>
                 </div>

@@ -63,6 +63,78 @@ export const CONFIGURATION_DEFINITIONS: ConfigurationDefinition[] = [
     },
   },
   {
+    key: 'BASE_URL',
+    label: 'Base URL',
+    description:
+      'Base origin used to build frontend and backend URLs when explicit URLs are not set (for example, https://app.example.com).',
+    category: 'environment',
+    valueType: 'string',
+    defaultValue: process.env.BASE_URL ?? 'http://localhost',
+    metadata: {
+      affectsDerivedUrls: true,
+    },
+  },
+  {
+    key: 'BACKEND_URL',
+    label: 'Backend Base URL (Override)',
+    description:
+      'Optional full backend URL override (for example, https://api.example.com). Leave empty to use Base URL + Backend Port.',
+    category: 'environment',
+    valueType: 'string',
+    defaultValue: process.env.BACKEND_URL ?? '',
+    metadata: {
+      affectsDerivedUrls: true,
+    },
+  },
+  {
+    key: 'FRONTEND_URL',
+    label: 'Frontend Base URL (Override)',
+    description:
+      'Optional full frontend URL override (for example, https://app.example.com). Leave empty to use Base URL + Frontend Port.',
+    category: 'environment',
+    valueType: 'string',
+    defaultValue: process.env.FRONTEND_URL ?? '',
+    metadata: {
+      affectsDerivedUrls: true,
+    },
+  },
+  {
+    key: 'BACKEND_PORT',
+    label: 'Backend Port',
+    description:
+      'Backend port used when Backend Base URL override is empty.',
+    category: 'environment',
+    valueType: 'string',
+    defaultValue: process.env.BACKEND_PORT ?? process.env.PORT ?? '8081',
+    metadata: {
+      affectsDerivedUrls: true,
+    },
+  },
+  {
+    key: 'PORT',
+    label: 'Port Alias',
+    description:
+      'Compatibility alias for backend port. Keep this aligned with Backend Port.',
+    category: 'environment',
+    valueType: 'string',
+    defaultValue: process.env.PORT ?? process.env.BACKEND_PORT ?? '8081',
+    metadata: {
+      requiresRestart: true,
+    },
+  },
+  {
+    key: 'FRONTEND_PORT',
+    label: 'Frontend Port',
+    description:
+      'Frontend port used when Frontend Base URL override is empty.',
+    category: 'environment',
+    valueType: 'string',
+    defaultValue: process.env.FRONTEND_PORT ?? '8080',
+    metadata: {
+      affectsDerivedUrls: true,
+    },
+  },
+  {
     key: 'CALENDAR_SYNC_LOOKBACK_DAYS',
     label: 'Calendar Sync Lookback (Days)',
     description:
@@ -109,6 +181,30 @@ export const CONFIGURATION_DEFINITIONS: ConfigurationDefinition[] = [
     isSensitive: true,
   },
   {
+    key: 'GOOGLE_CALLBACK_URL',
+    label: 'Google Auth Callback URL',
+    description:
+      'OAuth callback URL for Google sign-in. Leave empty to auto-calculate from backend base URL.',
+    category: 'oauth',
+    valueType: 'string',
+    defaultValue: process.env.GOOGLE_CALLBACK_URL ?? '',
+    metadata: {
+      requiresRestart: true,
+    },
+  },
+  {
+    key: 'GOOGLE_CALENDAR_SYNC_CALLBACK_URL',
+    label: 'Google Calendar Sync Callback URL',
+    description:
+      'OAuth callback URL for Google calendar sync. Leave empty to auto-calculate from backend base URL.',
+    category: 'oauth',
+    valueType: 'string',
+    defaultValue: process.env.GOOGLE_CALENDAR_SYNC_CALLBACK_URL ?? '',
+    metadata: {
+      requiresRestart: true,
+    },
+  },
+  {
     key: 'MICROSOFT_CLIENT_ID',
     label: 'Microsoft Client ID',
     description:
@@ -135,6 +231,30 @@ export const CONFIGURATION_DEFINITIONS: ConfigurationDefinition[] = [
     category: 'oauth',
     valueType: 'string',
     defaultValue: process.env.MICROSOFT_TENANT_ID ?? 'common',
+  },
+  {
+    key: 'MICROSOFT_CALLBACK_URL',
+    label: 'Microsoft Auth Callback URL',
+    description:
+      'OAuth callback URL for Microsoft sign-in. Leave empty to auto-calculate from backend base URL.',
+    category: 'oauth',
+    valueType: 'string',
+    defaultValue: process.env.MICROSOFT_CALLBACK_URL ?? '',
+    metadata: {
+      requiresRestart: true,
+    },
+  },
+  {
+    key: 'MICROSOFT_CALENDAR_SYNC_CALLBACK_URL',
+    label: 'Microsoft Calendar Sync Callback URL',
+    description:
+      'OAuth callback URL for Microsoft calendar sync. Leave empty to auto-calculate from backend base URL.',
+    category: 'oauth',
+    valueType: 'string',
+    defaultValue: process.env.MICROSOFT_CALENDAR_SYNC_CALLBACK_URL ?? '',
+    metadata: {
+      requiresRestart: true,
+    },
   },
   {
     key: 'ENABLE_OAUTH',

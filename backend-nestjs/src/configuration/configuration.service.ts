@@ -27,6 +27,9 @@ export interface AdminConfigurationSetting {
   valueType: ConfigurationValueType;
   value: string | boolean | null;
   hasValue: boolean;
+  source: 'database' | 'environment' | 'default';
+  isUsingDefault: boolean;
+  defaultValue: string | boolean | null;
   isSensitive: boolean;
   isEditable: boolean;
   isReadOnly: boolean;
@@ -371,7 +374,18 @@ export class ConfigurationService implements OnModuleInit {
     definition: ConfigurationDefinition,
   ): AdminConfigurationSetting {
     const stored = this.cache.get(definition.key);
+    const storedValue = this.unwrapValue(stored?.value ?? null);
     const effective = this.getValue(definition.key);
+    const originalEnvValue =
+      this.unwrapValue(this.originalEnvValues.get(definition.key) ?? null) ??
+      this.unwrapValue(process.env[definition.key] ?? null);
+    const source: 'database' | 'environment' | 'default' =
+      storedValue !== null
+        ? 'database'
+        : originalEnvValue !== null
+          ? 'environment'
+          : 'default';
+    const defaultValue = this.getDefaultPreviewValue(definition);
 
     let value: string | boolean | null = null;
     if (definition.valueType === 'boolean') {
@@ -396,6 +410,9 @@ export class ConfigurationService implements OnModuleInit {
       valueType: definition.valueType,
       value,
       hasValue,
+      source,
+      isUsingDefault: source === 'default',
+      defaultValue,
       isSensitive: definition.isSensitive ?? false,
       isEditable: definition.isEditable ?? true,
       isReadOnly: definition.isReadOnly ?? false,
@@ -403,6 +420,68 @@ export class ConfigurationService implements OnModuleInit {
       metadata: definition.metadata ?? null,
       updatedAt: stored?.updatedAt?.toISOString() ?? null,
     };
+  }
+
+  private getDefaultPreviewValue(
+    definition: ConfigurationDefinition,
+  ): string | boolean | null {
+    if (definition.valueType === 'secret') {
+      return null;
+    }
+
+    const backendBaseDefault = this.getBackendBaseUrlWithoutOverride();
+    const frontendBaseDefault = this.getFrontendBaseUrlWithoutOverride();
+
+    const dynamicDefaults: Record<string, string> = {
+      BACKEND_URL: this.normalizeBaseUrl(backendBaseDefault),
+      FRONTEND_URL: this.normalizeBaseUrl(frontendBaseDefault),
+      GOOGLE_CALLBACK_URL: this.normalizeCallbackUrl(
+        `${backendBaseDefault}/api/auth/google/callback`,
+      ),
+      GOOGLE_CALENDAR_SYNC_CALLBACK_URL: this.normalizeCallbackUrl(
+        `${backendBaseDefault}/api/calendar-sync/callback/google`,
+      ),
+      MICROSOFT_CALLBACK_URL: this.normalizeCallbackUrl(
+        `${backendBaseDefault}/api/auth/microsoft/callback`,
+      ),
+      MICROSOFT_CALENDAR_SYNC_CALLBACK_URL: this.normalizeCallbackUrl(
+        `${backendBaseDefault}/api/calendar-sync/callback/microsoft`,
+      ),
+    };
+
+    const candidate =
+      this.unwrapValue(dynamicDefaults[definition.key] ?? null) ??
+      this.unwrapValue(definition.defaultValue ?? null);
+
+    if (definition.valueType === 'boolean') {
+      if (candidate === null) {
+        return null;
+      }
+      const normalized = candidate.toString().trim().toLowerCase();
+      return ['true', '1', 'yes', 'y', 'on'].includes(normalized);
+    }
+
+    return candidate;
+  }
+
+  private getBackendBaseUrlWithoutOverride(): string {
+    const baseUrl =
+      this.getValue('BASE_URL') ?? process.env.BASE_URL ?? 'http://localhost';
+    const backendPort =
+      this.getValue('BACKEND_PORT') ??
+      this.getValue('PORT') ??
+      process.env.BACKEND_PORT ??
+      process.env.PORT ??
+      '8081';
+    return this.ensurePort(baseUrl, backendPort);
+  }
+
+  private getFrontendBaseUrlWithoutOverride(): string {
+    const baseUrl =
+      this.getValue('BASE_URL') ?? process.env.BASE_URL ?? 'http://localhost';
+    const frontendPort =
+      this.getValue('FRONTEND_PORT') ?? process.env.FRONTEND_PORT ?? '8080';
+    return this.ensurePort(baseUrl, frontendPort);
   }
 
   private normalizeValue(
