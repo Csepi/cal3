@@ -59,6 +59,7 @@ type PartialUserState = {
 
 const FALLBACK_THEME_COLOR = '#3b82f6';
 const FALLBACK_TIMEZONE = 'UTC';
+const USERNAME_ALLOWED_PATTERN = /^[a-zA-Z0-9_]+$/;
 const SUPPORTED_THEME_COLORS = new Set<string>(
   THEME_COLOR_OPTIONS.map((option) => option.value),
 );
@@ -70,6 +71,32 @@ const isSupportedThemeColor = (value: string): boolean =>
   SUPPORTED_THEME_COLORS.has(value);
 
 const isValidOptionalName = (value: string): boolean => value.length <= 80;
+
+const normalizeOnboardingUsername = (value: string): string | undefined => {
+  const trimmed = value.trim();
+  if (trimmed.length === 0) {
+    return undefined;
+  }
+
+  if (
+    trimmed.length >= 3 &&
+    trimmed.length <= 64 &&
+    USERNAME_ALLOWED_PATTERN.test(trimmed)
+  ) {
+    return trimmed;
+  }
+
+  const sanitized = trimmed
+    .replace(/[^a-zA-Z0-9_]+/g, '_')
+    .replace(/_+/g, '_')
+    .replace(/^_+|_+$/g, '');
+
+  if (sanitized.length < 3) {
+    return undefined;
+  }
+
+  return sanitized.slice(0, 64);
+};
 
 const sanitizeLanguage = (value: string | undefined): SupportedLanguage => {
   if (value === 'en' || value === 'de' || value === 'fr' || value === 'hu') {
@@ -208,7 +235,7 @@ export const onboardingService = {
         : undefined;
 
     return {
-      username: state.profile.username.trim() || undefined,
+      username: normalizeOnboardingUsername(state.profile.username),
       firstName: state.profile.firstName || undefined,
       lastName: state.profile.lastName || undefined,
       profilePictureUrl,

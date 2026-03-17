@@ -51,8 +51,14 @@ interface OAuthUserProfile {
   displayName?: string;
 }
 
+type OAuthProvider = 'google' | 'microsoft';
+
 @Injectable()
 export class AuthService {
+  private static readonly USERNAME_MIN_LENGTH = 3;
+  private static readonly USERNAME_MAX_LENGTH = 64;
+  private static readonly USERNAME_ALLOWED_PATTERN = /^[a-zA-Z0-9_]+$/;
+
   constructor(
     @InjectRepository(User)
     private userRepository: Repository<User>,
@@ -111,12 +117,15 @@ export class AuthService {
 
   async isUsernameAvailable(username: string): Promise<boolean> {
     const normalizedUsername = username.trim();
-    if (normalizedUsername.length < 3 || normalizedUsername.length > 64) {
+    if (
+      normalizedUsername.length < AuthService.USERNAME_MIN_LENGTH ||
+      normalizedUsername.length > AuthService.USERNAME_MAX_LENGTH
+    ) {
       throw new BadRequestException(
         'username must be between 3 and 64 characters.',
       );
     }
-    if (!/^[a-zA-Z0-9_]+$/.test(normalizedUsername)) {
+    if (!AuthService.USERNAME_ALLOWED_PATTERN.test(normalizedUsername)) {
       throw new BadRequestException(
         'username can only contain letters, numbers, and underscores.',
       );
@@ -321,7 +330,7 @@ export class AuthService {
 
     if (!user) {
       // Create new user with Google profile
-      const username = email.split('@')[0] + '_google';
+      const username = await this.generateUniqueOAuthUsername(email, 'google');
       user = this.userRepository.create({
         username,
         email,
@@ -358,7 +367,10 @@ export class AuthService {
 
     if (!user) {
       // Create new user with Microsoft profile
-      const username = email.split('@')[0] + '_microsoft';
+      const username = await this.generateUniqueOAuthUsername(
+        email,
+        'microsoft',
+      );
       user = this.userRepository.create({
         username,
         email,
@@ -466,6 +478,10 @@ export class AuthService {
             }
             user.username = normalizedUsername;
           }
+        } else if (!this.isValidUsername(user.username)) {
+          user.username = await this.generateUniqueUsernameFromSeed(
+            user.username || user.email,
+          );
         }
 
         if (dto.firstName !== undefined) {
@@ -642,5 +658,79 @@ export class AuthService {
         mfaEnabled: user.mfaEnabled,
       },
     };
+  }
+
+  private async generateUniqueOAuthUsername(
+    email: string,
+    provider: OAuthProvider,
+  ): Promise<string> {
+    const localPart = email.split('@')[0] ?? '';
+    const providerSuffix = `_${provider}`;
+    const sanitizedBase = this.sanitizeUsernameSeed(localPart);
+    const effectiveBase =
+      sanitizedBase.length > 0 ? sanitizedBase : 'user';
+    const truncatedBase = effectiveBase.slice(
+      0,
+      AuthService.USERNAME_MAX_LENGTH - providerSuffix.length,
+    );
+    return this.generateUniqueUsername(`${truncatedBase}${providerSuffix}`);
+  }
+
+  private async generateUniqueUsernameFromSeed(seed: string): Promise<string> {
+    const sanitizedSeed = this.sanitizeUsernameSeed(seed);
+    let base = sanitizedSeed.length > 0 ? sanitizedSeed : 'user';
+    if (base.length < AuthService.USERNAME_MIN_LENGTH) {
+      base = `${base}${'user'.slice(0, AuthService.USERNAME_MIN_LENGTH - base.length)}`;
+    }
+    return this.generateUniqueUsername(
+      base.slice(0, AuthService.USERNAME_MAX_LENGTH),
+    );
+  }
+
+  private async generateUniqueUsername(baseCandidate: string): Promise<string> {
+    let candidate = baseCandidate.slice(0, AuthService.USERNAME_MAX_LENGTH);
+    let sequence = 0;
+
+    while (sequence < 10_000) {
+      const existingUser = await this.userRepository.findOne({
+        where: { username: candidate },
+        select: ['id'],
+      });
+      if (!existingUser) {
+        return candidate;
+      }
+
+      sequence += 1;
+      const sequenceSuffix = `_${sequence}`;
+      candidate = `${baseCandidate.slice(
+        0,
+        AuthService.USERNAME_MAX_LENGTH - sequenceSuffix.length,
+      )}${sequenceSuffix}`;
+    }
+
+    throw new ConflictException(
+      'Unable to allocate a unique username for this account.',
+    );
+  }
+
+  private sanitizeUsernameSeed(seed: string): string {
+    return seed
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-zA-Z0-9_]+/g, '_')
+      .replace(/_+/g, '_')
+      .replace(/^_+|_+$/g, '');
+  }
+
+  private isValidUsername(value: string | undefined | null): boolean {
+    if (typeof value !== 'string') {
+      return false;
+    }
+
+    return (
+      value.length >= AuthService.USERNAME_MIN_LENGTH &&
+      value.length <= AuthService.USERNAME_MAX_LENGTH &&
+      AuthService.USERNAME_ALLOWED_PATTERN.test(value)
+    );
   }
 }

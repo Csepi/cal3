@@ -12,6 +12,7 @@ import { io, type Socket } from 'socket.io-client';
 import { BASE_URL } from '../config/apiConfig';
 import { notificationsApi } from '../services/notificationsApi';
 import { sessionManager } from '../services/sessionManager';
+import { useAuth } from '../hooks/useAuth';
 import type {
   NotificationMessage,
   NotificationThreadSummary,
@@ -67,6 +68,7 @@ const buildSocketUrl = (): string => {
 const SOCKET_IO_PATH = '/socket.io';
 
 export const NotificationsProvider = ({ children }: { children: ReactNode }) => {
+  const { isAuthenticated, currentUser } = useAuth();
   const [notifications, setNotifications] = useState<NotificationMessage[]>([]);
   const [threads, setThreads] = useState<NotificationThreadSummary[]>([]);
   const [preferences, setPreferences] = useState<NotificationPreference[]>([]);
@@ -220,7 +222,12 @@ export const NotificationsProvider = ({ children }: { children: ReactNode }) => 
   }, []);
 
   const connectSocket = useCallback(() => {
-    if (socketRef.current || !sessionManager.hasActiveSession()) {
+    if (
+      socketRef.current ||
+      !sessionManager.hasActiveSession() ||
+      !isAuthenticated ||
+      currentUser?.onboardingCompleted === false
+    ) {
       return;
     }
 
@@ -257,12 +264,36 @@ export const NotificationsProvider = ({ children }: { children: ReactNode }) => 
     };
 
     void establishConnection();
-  }, [refreshNotifications, refreshThreads]);
+  }, [
+    currentUser?.onboardingCompleted,
+    isAuthenticated,
+    refreshNotifications,
+    refreshThreads,
+  ]);
 
   useEffect(() => {
     let cancelled = false;
     const initialise = async () => {
-      if (!sessionManager.hasActiveSession()) {
+      if (!sessionManager.hasActiveSession() || !isAuthenticated) {
+        setNotifications([]);
+        setThreads([]);
+        setPreferences([]);
+        setFilters([]);
+        setCatalog(null);
+        setScopeMutes([]);
+        setUnreadCount(0);
+        setLoading(false);
+        return;
+      }
+
+      if (currentUser?.onboardingCompleted === false) {
+        setNotifications([]);
+        setThreads([]);
+        setPreferences([]);
+        setFilters([]);
+        setCatalog(null);
+        setScopeMutes([]);
+        setUnreadCount(0);
         setLoading(false);
         return;
       }
@@ -299,6 +330,8 @@ export const NotificationsProvider = ({ children }: { children: ReactNode }) => 
     refreshCatalog,
     refreshScopeMutes,
     connectSocket,
+    currentUser?.onboardingCompleted,
+    isAuthenticated,
   ]);
 
   const addNotification = useCallback((notification: NotificationMessage) => {

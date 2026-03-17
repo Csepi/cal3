@@ -9,6 +9,7 @@ import {
 } from 'react';
 import { UserPermissionsService, type UserPermissions } from '../services/userPermissions';
 import { sessionManager } from '../services/sessionManager';
+import { useAuth } from '../hooks/useAuth';
 
 interface PermissionsContextValue {
   userPermissions: string[];
@@ -57,11 +58,18 @@ const defaultPermissions: UserPermissions = {
 };
 
 export const PermissionsProvider = ({ children }: { children: ReactNode }) => {
+  const { isAuthenticated, currentUser } = useAuth();
   const [permissions, setPermissions] = useState<UserPermissions>(defaultPermissions);
   const [loading, setLoading] = useState<boolean>(true);
 
   const refreshPermissions = useCallback(async () => {
-    if (!sessionManager.hasActiveSession()) {
+    if (!sessionManager.hasActiveSession() || !isAuthenticated) {
+      setPermissions(defaultPermissions);
+      setLoading(false);
+      return;
+    }
+
+    if (currentUser?.onboardingCompleted === false) {
       setPermissions(defaultPermissions);
       setLoading(false);
       return;
@@ -74,7 +82,7 @@ export const PermissionsProvider = ({ children }: { children: ReactNode }) => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [currentUser?.onboardingCompleted, isAuthenticated]);
 
   const resetPermissions = useCallback(() => {
     UserPermissionsService.clearCache();
