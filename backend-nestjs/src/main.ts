@@ -44,6 +44,31 @@ import { bStatic } from './i18n/runtime';
 
 const logger = new Logger('Bootstrap');
 const dbLogger = new Logger('DatabaseConnection');
+const runtimeFaultLogger = new Logger('RuntimeFault');
+let processFaultHandlersRegistered = false;
+
+function registerProcessFaultHandlers(): void {
+  if (processFaultHandlersRegistered) {
+    return;
+  }
+  processFaultHandlersRegistered = true;
+
+  process.on('unhandledRejection', (reason: unknown) => {
+    const message = reason instanceof Error ? reason.message : String(reason);
+    const stack = reason instanceof Error ? reason.stack : undefined;
+    runtimeFaultLogger.error(`Unhandled promise rejection: ${message}`);
+    if (stack) {
+      runtimeFaultLogger.error(stack);
+    }
+  });
+
+  process.on('uncaughtException', (error: Error) => {
+    runtimeFaultLogger.error(`Uncaught exception: ${error.message}`);
+    if (error.stack) {
+      runtimeFaultLogger.error(error.stack);
+    }
+  });
+}
 
 async function bootstrap() {
   const startTime = Date.now();
@@ -402,4 +427,6 @@ async function bootstrap() {
     process.exit(1);
   }
 }
+
+registerProcessFaultHandlers();
 void bootstrap();
