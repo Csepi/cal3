@@ -117,14 +117,14 @@ const formatTime = (date: Date, timeFormat: '12' | '24', timeZone?: string) => {
   return date.toLocaleTimeString([], options);
 };
 
-const formatTimeDot = (date: Date, timeZone?: string) => {
+const formatTime24Hour = (date: Date, timeZone?: string) => {
   const options: Intl.DateTimeFormatOptions = {
     hour: '2-digit',
     minute: '2-digit',
     hour12: false,
   };
   if (timeZone) options.timeZone = timeZone;
-  return date.toLocaleTimeString('en-GB', options).replace(':', '.');
+  return date.toLocaleTimeString('en-GB', options);
 };
 
 const formatTimeRange = (
@@ -308,8 +308,8 @@ const TimelineView: React.FC<TimelineViewProps> = ({
   }, [normalizedEvents, now]);
   const focusMeetingLink = getMeetingLinkFromEvent(focusEvent);
   const focusMeetingEndLabel = focusEvent
-    ? formatTimeDot(focusEvent.end, resolvedTimezone)
-    : '--.--';
+    ? formatTime24Hour(focusEvent.end, resolvedTimezone)
+    : '--:--';
 
   useEffect(() => {
     if (!focusEventId) return;
@@ -324,6 +324,29 @@ const TimelineView: React.FC<TimelineViewProps> = ({
   const remainingMs = focusEvent
     ? Math.max(0, focusEvent.end.getTime() - now.getTime())
     : 0;
+  const remainingMinutes = focusEvent
+    ? Math.max(0, Math.ceil(remainingMs / 60000))
+    : 0;
+  const nextEventLeadMs = nextEvent
+    ? Math.max(0, nextEvent.start.getTime() - now.getTime())
+    : 0;
+  const focusSummary = useMemo(() => {
+    if (focusEvent) {
+      const base = `${formatTimeRange(
+        focusEvent.start,
+        focusEvent.end,
+        timeFormat,
+        resolvedTimezone,
+        focusEvent.isAllDay,
+      )}${focusEvent.calendarName ? ` • ${focusEvent.calendarName}` : ''}${focusEvent.location ? ` • ${focusEvent.location}` : ''}`;
+      const normalizedNotes = focusEvent.notes?.replace(/\s+/g, ' ').trim();
+      return normalizedNotes ? `${base} • ${normalizedNotes}` : base;
+    }
+    if (nextEvent) {
+      return `Next meeting starts at ${formatTime(nextEvent.start, timeFormat, resolvedTimezone)}.`;
+    }
+    return 'No active meeting. Use this block for focused work.';
+  }, [focusEvent, nextEvent, resolvedTimezone, timeFormat]);
   const currentProgress = focusEvent
     ? currentDuration > 0
       ? clamp(
@@ -723,7 +746,7 @@ const TimelineView: React.FC<TimelineViewProps> = ({
 
       {/* Live focus header */}
       <div
-        className="rounded-3xl p-4 md:p-6 text-white shadow-xl border border-white/20 relative overflow-hidden"
+        className="rounded-3xl p-3 md:p-4 text-white shadow-xl border border-white/20 relative overflow-hidden"
         style={{
           background: `linear-gradient(135deg, ${withAlpha(focusColor, 0.95)}, ${withAlpha(focusColor, 0.7)})`,
           boxShadow: `0 25px 70px ${withAlpha(focusColor, 0.35)}`,
@@ -735,87 +758,149 @@ const TimelineView: React.FC<TimelineViewProps> = ({
             background: `radial-gradient(circle at 20% 20%, ${withAlpha(focusColor, 0.25)}, transparent 35%), radial-gradient(circle at 80% 0%, ${withAlpha(focusColor, 0.2)}, transparent 30%)`,
           }}
         />
-        <div className="relative flex flex-col md:flex-row md:items-start md:justify-between gap-4">
-          <div className="space-y-2">
-            <p className="text-xs uppercase tracking-[0.2em] opacity-80">
-              {tStatic('common:auto.frontend.kb67315fa1efe')}</p>
-            <h3 className="text-2xl md:text-3xl font-semibold leading-tight drop-shadow-sm">
-              {focusEvent ? focusEvent.title : 'No event right now'}
-            </h3>
-            <div className="flex flex-wrap items-center gap-2 pt-1">
-              <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-white/20 backdrop-blur-sm text-xs font-semibold">
-                <span className="w-2 h-2 rounded-full bg-white animate-pulse mr-2"></span>
-                {focusEvent
-                  ? `${formatDuration(remainingMs)} remaining`
-                  : nextEvent
-                    ? `Next starts in ${formatDuration(nextEvent.start.getTime() - now.getTime())}`
-                    : 'Free for now'}
-              </span>
-              {focusEvent?.calendarName && (
-                <span className="inline-flex items-center px-2 py-1 rounded-full bg-black/20 text-xs">
-                  {focusEvent.calendarName}
-                </span>
+        <div className="relative space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <span className="inline-flex items-center gap-2 rounded-full bg-black/20 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em]">
+              <span className="h-1.5 w-1.5 rounded-full bg-white animate-pulse"></span>
+              {tStatic('common:auto.frontend.kb67315fa1efe')}
+            </span>
+            <div className="flex flex-wrap items-center gap-1.5">
+              {focusMeetingLink && (
+                <button
+                  type="button"
+                  onClick={() => window.open(focusMeetingLink, '_blank', 'noopener,noreferrer')}
+                  className="inline-flex items-center justify-center rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-semibold text-gray-900 shadow-md transition hover:shadow-lg"
+                >
+                  {tStatic('common:auto.frontend.kfd1cbbd5175f')}</button>
               )}
-              {focusEvent?.location && (
-                <span className="inline-flex items-center px-2 py-1 rounded-full bg-white/20 text-xs">
-                  {tStatic('common:auto.frontend.k1bf3994417be')}{focusEvent.location}
-                </span>
+              {focusMode && hasCalendarControls && (
+                <button
+                  type="button"
+                  onClick={() => setShowCalendarFilters((prev) => !prev)}
+                  className="inline-flex items-center rounded-full border border-white/40 bg-white/15 px-2.5 py-1 text-[11px] font-semibold text-white shadow-sm transition hover:bg-white/20"
+                >
+                  {tStatic('common:auto.frontend.k9444501818e6')}{activeCalendarsCount}/{calendars.length}
+                </button>
+              )}
+              {focusMode && onToggleFocusMode && (
+                <button
+                  type="button"
+                  onClick={onToggleFocusMode}
+                  className="inline-flex items-center rounded-full border border-white/40 bg-white/15 px-2.5 py-1 text-[11px] font-semibold text-white shadow-sm transition hover:bg-white/20"
+                >
+                  {tStatic('common:auto.frontend.kec185d577a9e')}</button>
               )}
             </div>
           </div>
 
-          <div className="text-right space-y-2 min-w-[180px]">
-            {focusMode && (
-              <div className="flex flex-wrap justify-end gap-2">
-                {hasCalendarControls && (
-                  <button
-                    type="button"
-                    onClick={() => setShowCalendarFilters((prev) => !prev)}
-                    className="inline-flex items-center rounded-full border border-white/40 bg-white/15 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-white/20"
-                  >
-                    {tStatic('common:auto.frontend.k9444501818e6')}{activeCalendarsCount}/{calendars.length}
-                  </button>
+          <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_auto] md:items-start">
+            <div className="min-w-0 space-y-2">
+              <h3 className="text-lg md:text-2xl font-semibold leading-tight drop-shadow-sm line-clamp-2">
+                {focusEvent ? focusEvent.title : 'No event right now'}
+              </h3>
+              <p className="text-xs md:text-sm opacity-90 line-clamp-2">
+                {focusSummary}
+              </p>
+              <div className="flex flex-wrap items-center gap-1.5">
+                <span className="inline-flex items-center rounded-full bg-white/20 px-2 py-0.5 text-[11px] font-semibold">
+                  {focusEvent
+                    ? `${formatDuration(remainingMs)} remaining`
+                    : nextEvent
+                      ? `Next starts in ${formatDuration(nextEventLeadMs)}`
+                      : 'Free for now'}
+                </span>
+                {focusEvent?.calendarName && (
+                  <span className="inline-flex items-center rounded-full bg-black/20 px-2 py-0.5 text-[11px]">
+                    {focusEvent.calendarName}
+                  </span>
                 )}
-                {onToggleFocusMode && (
-                  <button
-                    type="button"
-                    onClick={onToggleFocusMode}
-                    className="inline-flex items-center rounded-full border border-white/40 bg-white/15 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-white/20"
-                  >
-                    {tStatic('common:auto.frontend.kec185d577a9e')}</button>
+                {focusEvent?.location && (
+                  <span className="inline-flex items-center rounded-full bg-white/20 px-2 py-0.5 text-[11px]">
+                    {tStatic('common:auto.frontend.k1bf3994417be')}{focusEvent.location}
+                  </span>
                 )}
               </div>
-            )}
-            <p className="text-[11px] uppercase tracking-[0.18em] opacity-85">
-              Curent time.
-            </p>
-            <div className="text-3xl font-bold tracking-tight">
-              {formatTime(now, timeFormat, resolvedTimezone)}
+
+              {sortedCurrentEvents.length > 1 && (
+                <div className="space-y-1">
+                  <p className="text-[10px] uppercase tracking-[0.18em] opacity-75">
+                    Switch focus
+                  </p>
+                  <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5">
+                    {sortedCurrentEvents.map((event) => {
+                      const isSelected = focusEvent?.id === event.id;
+                      const chipColor = event.calendarColor || event.color || focusColor;
+                      return (
+                        <button
+                          key={event.id}
+                          onClick={() => setFocusEventId(event.id)}
+                          aria-pressed={isSelected}
+                          className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold transition whitespace-nowrap ${
+                            isSelected
+                              ? 'bg-white text-gray-900 shadow'
+                              : 'bg-white/20 text-white hover:bg-white/30'
+                          }`}
+                        >
+                          <span
+                            className="h-2 w-2 rounded-full"
+                            style={{ backgroundColor: chipColor }}
+                          />
+                          <span className="max-w-[180px] truncate">{event.title}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {nextEvent && (
+                <button
+                  type="button"
+                  onClick={() => onEventClick(nextEvent)}
+                  className="inline-flex w-full items-center justify-between gap-2 rounded-xl border border-white/30 bg-black/15 px-2.5 py-1.5 text-left text-[11px] hover:bg-black/20"
+                >
+                  <span className="font-semibold uppercase tracking-[0.14em] opacity-80">Next</span>
+                  <span className="truncate font-semibold">
+                    {formatTime(nextEvent.start, timeFormat, resolvedTimezone)} {nextEvent.title}
+                  </span>
+                  <span className="opacity-85 whitespace-nowrap">in {formatDuration(nextEventLeadMs)}</span>
+                </button>
+              )}
             </div>
-            <p className="text-xs opacity-85">
-              meeting ending time: {focusMeetingEndLabel}
-            </p>
-            <p className="text-xs opacity-80">
-              {new Intl.DateTimeFormat('en-US', {
-                weekday: 'long',
-                month: 'short',
-                day: 'numeric',
-                timeZone: resolvedTimezone,
-              }).format(currentDate)}
-            </p>
-            {focusMeetingLink && (
-              <button
-                type="button"
-                onClick={() => window.open(focusMeetingLink, '_blank', 'noopener,noreferrer')}
-                className="inline-flex items-center justify-center px-3 py-2 text-sm font-semibold bg-white/90 text-gray-900 rounded-xl shadow-md hover:shadow-lg transition-all"
-              >
-                {tStatic('common:auto.frontend.kfd1cbbd5175f')}</button>
-            )}
+
+            <div className="min-w-[176px] rounded-2xl border border-white/25 bg-black/15 px-3 py-2.5 text-white">
+              <p className="text-[10px] uppercase tracking-[0.18em] opacity-85">
+                Current time
+              </p>
+              <div className="text-2xl md:text-3xl font-bold tracking-tight leading-none mt-0.5">
+                {formatTime(now, timeFormat, resolvedTimezone)}
+              </div>
+              <div className="mt-2 grid grid-cols-2 gap-2 text-[11px]">
+                <div className="rounded-lg bg-white/15 px-2 py-1.5">
+                  <p className="uppercase tracking-[0.14em] opacity-75 text-[10px]">Remaining</p>
+                  <p className="font-semibold mt-0.5">
+                    {focusEvent ? `${remainingMinutes} min` : '--'}
+                  </p>
+                </div>
+                <div className="rounded-lg bg-white/15 px-2 py-1.5">
+                  <p className="uppercase tracking-[0.14em] opacity-75 text-[10px]">Ends</p>
+                  <p className="font-semibold mt-0.5">{focusMeetingEndLabel}</p>
+                </div>
+              </div>
+              <p className="mt-2 text-[11px] opacity-80">
+                {new Intl.DateTimeFormat('en-US', {
+                  weekday: 'short',
+                  month: 'short',
+                  day: 'numeric',
+                  timeZone: resolvedTimezone,
+                }).format(currentDate)}
+              </p>
+            </div>
           </div>
         </div>
 
         {focusEvent && (
-          <div className="relative mt-4">
+          <div className="relative mt-3">
             <div className="h-2.5 w-full bg-white/30 rounded-full overflow-hidden backdrop-blur-sm">
               <div
                 className="h-full rounded-full transition-all duration-300"
@@ -830,37 +915,6 @@ const TimelineView: React.FC<TimelineViewProps> = ({
                 {tStatic('common:auto.frontend.kfaa9e7e7ef5a')}{formatTime(focusEvent.start, timeFormat, resolvedTimezone)}
               </span>
               <span>{formatDuration(remainingMs)} {tStatic('common:auto.frontend.k12c0f1fbadc4')}</span>
-            </div>
-          </div>
-        )}
-
-        {sortedCurrentEvents.length > 1 && (
-          <div className="relative mt-4">
-            <p className="text-[10px] uppercase tracking-[0.2em] opacity-70">
-              {tStatic('common:auto.frontend.kb1bb51670915')}</p>
-            <div className="mt-2 flex flex-wrap gap-2">
-              {sortedCurrentEvents.map((event) => {
-                const isSelected = focusEvent?.id === event.id;
-                const chipColor = event.calendarColor || event.color || focusColor;
-                return (
-                  <button
-                    key={event.id}
-                    onClick={() => setFocusEventId(event.id)}
-                    aria-pressed={isSelected}
-                    className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold transition ${
-                      isSelected
-                        ? 'bg-white text-gray-900 shadow'
-                        : 'bg-white/20 text-white hover:bg-white/30'
-                    }`}
-                  >
-                    <span
-                      className="w-2 h-2 rounded-full"
-                      style={{ backgroundColor: chipColor }}
-                    />
-                    <span className="max-w-[180px] truncate">{event.title}</span>
-                  </button>
-                );
-              })}
             </div>
           </div>
         )}
