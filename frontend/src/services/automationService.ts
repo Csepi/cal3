@@ -258,6 +258,108 @@ const saveRuleWithCompatibility = async (
   );
 };
 
+const toCreateConditionDto = (
+  source: AutomationRuleDetailDto['conditions'][number],
+): CreateAutomationRuleDto['conditions'][number] => ({
+  field: source.field,
+  operator: source.operator,
+  value: source.value,
+  ...(source.groupId ? { groupId: source.groupId } : {}),
+  logicOperator: source.logicOperator,
+  order: source.order,
+});
+
+const toCreateActionDto = (
+  source: AutomationRuleDetailDto['actions'][number],
+): CreateAutomationRuleDto['actions'][number] => ({
+  actionType: source.actionType,
+  actionConfig: source.actionConfig,
+  order: source.order,
+});
+
+const buildCreatePayloadFromUpdate = (
+  existingRule: AutomationRuleDetailDto,
+  updateData: UpdateAutomationRuleDto,
+): CreateAutomationRuleDto => {
+  const conditions =
+    updateData.conditions ??
+    existingRule.conditions.map((condition) => toCreateConditionDto(condition));
+  const actions =
+    updateData.actions ??
+    existingRule.actions.map((action) => toCreateActionDto(action));
+
+  return {
+    name: updateData.name ?? existingRule.name,
+    ...(updateData.description !== undefined
+      ? { description: updateData.description }
+      : existingRule.description !== null
+        ? { description: existingRule.description }
+        : {}),
+    triggerType: existingRule.triggerType,
+    ...(updateData.triggerConfig !== undefined
+      ? { triggerConfig: updateData.triggerConfig }
+      : existingRule.triggerConfig
+        ? { triggerConfig: existingRule.triggerConfig }
+        : {}),
+    isEnabled: updateData.isEnabled ?? existingRule.isEnabled,
+    conditionLogic: updateData.conditionLogic ?? existingRule.conditionLogic,
+    conditions,
+    actions,
+  };
+};
+
+const shouldFallbackToRuleRecreate = (
+  updateData: UpdateAutomationRuleDto,
+  error: unknown,
+): boolean => {
+  if (!updateData.conditions && !updateData.actions) {
+    return false;
+  }
+
+  const message =
+    error instanceof Error && typeof error.message === 'string'
+      ? error.message.toLowerCase()
+      : '';
+
+  return (
+    message.includes('400') ||
+    message.includes('validation') ||
+    message.includes('should not exist') ||
+    message.includes('must be one of the following values') ||
+    message.length === 0
+  );
+};
+
+const updateRuleWithLegacyFallback = async (
+  ruleId: number,
+  updateData: UpdateAutomationRuleDto,
+): Promise<AutomationRuleDetailDto> => {
+  const existingRule = await getAutomationRule(ruleId);
+  const createPayload = buildCreatePayloadFromUpdate(existingRule, updateData);
+
+  const desiredName = createPayload.name;
+  const shouldUseTemporaryName = desiredName === existingRule.name;
+  const tempSuffix = ` [m${Date.now().toString(36)}]`;
+  const maxBaseLength = Math.max(1, 200 - tempSuffix.length);
+  const temporaryName = `${desiredName.slice(0, maxBaseLength)}${tempSuffix}`;
+
+  const recreatedRule = await createAutomationRule({
+    ...createPayload,
+    name: shouldUseTemporaryName ? temporaryName : desiredName,
+  });
+  await deleteAutomationRule(ruleId);
+
+  if (shouldUseTemporaryName) {
+    return saveRuleWithCompatibility(
+      `${BASE_URL}/api/automation/rules/${recreatedRule.id}`,
+      'PUT',
+      { name: desiredName },
+    );
+  }
+
+  return recreatedRule;
+};
+
 /**
  * Handle API response and throw errors for non-2xx responses
  */
@@ -337,11 +439,18 @@ export async function updateAutomationRule(
   ruleId: number,
   updateData: UpdateAutomationRuleDto
 ): Promise<AutomationRuleDetailDto> {
-  return saveRuleWithCompatibility(
-    `${BASE_URL}/api/automation/rules/${ruleId}`,
-    'PUT',
-    updateData,
-  );
+  try {
+    return await saveRuleWithCompatibility(
+      `${BASE_URL}/api/automation/rules/${ruleId}`,
+      'PUT',
+      updateData,
+    );
+  } catch (error) {
+    if (shouldFallbackToRuleRecreate(updateData, error)) {
+      return updateRuleWithLegacyFallback(ruleId, updateData);
+    }
+    throw error;
+  }
 }
 
 /**
