@@ -1,0 +1,26 @@
+- generic [ref=e8]:
+  - generic [ref=e9]:
+    - generic [ref=e10]:
+      - img "PrimeCal logo" [ref=e11]
+      - heading "PrimeCal" [level=1] [ref=e12]
+    - paragraph [ref=e13]: Be in sync with reality
+  - generic [ref=e14]:
+    - generic [ref=e15]:
+      - generic [ref=e16]: Email address / Username
+      - textbox "Email address / Username" [ref=e17]:
+        - /placeholder: Enter your username
+    - generic [ref=e18]:
+      - generic [ref=e19]: Password
+      - textbox "Password" [ref=e20]:
+        - /placeholder: Enter your password
+    - button "Sign in" [ref=e21] [cursor=pointer]
+    - button "Don't have an account? Sign up" [ref=e23] [cursor=pointer]
+    - generic [ref=e24]:
+      - generic [ref=e29]: Or continue with SSO
+      - generic [ref=e30]:
+        - button "Google" [ref=e31] [cursor=pointer]:
+          - img [ref=e32]
+          - generic [ref=e37]: Google
+        - button "Microsoft" [ref=e38] [cursor=pointer]:
+          - img [ref=e39]
+          - generic [ref=e44]: Microsoft

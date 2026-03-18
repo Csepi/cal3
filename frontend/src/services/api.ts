@@ -1008,11 +1008,13 @@ class ApiService {
 
   // OAuth methods
   initiateGoogleLogin(): void {
-    window.location.href = `${BASE_URL}/api/auth/google`;
+    const cacheBuster = Date.now();
+    window.location.href = `${BASE_URL}/api/auth/google?ts=${cacheBuster}`;
   }
 
   initiateMicrosoftLogin(): void {
-    window.location.href = `${BASE_URL}/api/auth/microsoft`;
+    const cacheBuster = Date.now();
+    window.location.href = `${BASE_URL}/api/auth/microsoft?ts=${cacheBuster}`;
   }
 
   // User Profile methods
