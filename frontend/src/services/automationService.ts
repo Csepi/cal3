@@ -12,6 +12,30 @@ import { BASE_URL } from '../config/apiConfig';
 import { secureFetch } from './authErrorHandler';
 import { sessionManager } from './sessionManager';
 
+type ConditionFieldMode = 'unknown' | 'canonical' | 'legacy';
+
+const canonicalToLegacyConditionFieldMap: Record<string, string> = {
+  'event.is_all_day': 'event.isAllDay',
+  'event.calendar.id': 'event.calendarId',
+  'event.calendar.name': 'event.calendarName',
+};
+
+const legacyToCanonicalConditionFieldMap: Record<string, string> = Object.entries(
+  canonicalToLegacyConditionFieldMap,
+).reduce<Record<string, string>>((accumulator, [canonical, legacy]) => {
+  accumulator[legacy] = canonical;
+  return accumulator;
+}, {});
+
+const canonicalConditionFields = new Set<string>(
+  Object.keys(canonicalToLegacyConditionFieldMap),
+);
+const legacyConditionFields = new Set<string>(
+  Object.values(canonicalToLegacyConditionFieldMap),
+);
+
+let conditionFieldMode: ConditionFieldMode = 'unknown';
+
 const apiFetch = async (url: string, init: RequestInit = {}): Promise<Response> => {
   const headers = new Headers(init.headers ?? {});
   if (
@@ -29,6 +53,10 @@ const apiFetch = async (url: string, init: RequestInit = {}): Promise<Response> 
 };
 
 const extractApiErrorMessage = (payload: unknown, fallback: string): string => {
+  if (typeof payload === 'string' && payload.trim().length > 0) {
+    return payload;
+  }
+
   if (!payload || typeof payload !== 'object') {
     return fallback;
   }
@@ -76,12 +104,166 @@ const extractApiErrorMessage = (payload: unknown, fallback: string): string => {
   return fallback;
 };
 
+const readErrorPayload = async (response: Response): Promise<unknown> => {
+  const jsonPayload = await response.clone().json().catch(() => null);
+  if (jsonPayload !== null) {
+    return jsonPayload;
+  }
+
+  const textPayload = await response.text().catch(() => '');
+  if (typeof textPayload === 'string' && textPayload.trim().length > 0) {
+    return textPayload;
+  }
+
+  return null;
+};
+
+const updateConditionFieldModeFromField = (field: unknown): void => {
+  if (typeof field !== 'string') {
+    return;
+  }
+
+  if (legacyConditionFields.has(field)) {
+    conditionFieldMode = 'legacy';
+    return;
+  }
+
+  if (canonicalConditionFields.has(field) && conditionFieldMode === 'unknown') {
+    conditionFieldMode = 'canonical';
+  }
+};
+
+const normalizeConditionFieldFromServer = (field: unknown): unknown => {
+  updateConditionFieldModeFromField(field);
+  if (typeof field !== 'string') {
+    return field;
+  }
+  return legacyToCanonicalConditionFieldMap[field] ?? field;
+};
+
+const normalizeAutomationRuleDetail = (
+  rule: AutomationRuleDetailDto,
+): AutomationRuleDetailDto => {
+  if (!Array.isArray(rule.conditions)) {
+    return rule;
+  }
+
+  return {
+    ...rule,
+    conditions: rule.conditions.map((condition) => ({
+      ...condition,
+      field: normalizeConditionFieldFromServer(
+        condition.field,
+      ) as typeof condition.field,
+    })),
+  };
+};
+
+const mapPayloadConditionFieldsForMode = <
+  T extends CreateAutomationRuleDto | UpdateAutomationRuleDto,
+>(
+  payload: T,
+  mode: ConditionFieldMode,
+): T => {
+  if (mode !== 'legacy' || !Array.isArray(payload.conditions)) {
+    return payload;
+  }
+
+  return {
+    ...payload,
+    conditions: payload.conditions.map((condition) => ({
+      ...condition,
+      field:
+        typeof condition.field === 'string'
+          ? canonicalToLegacyConditionFieldMap[condition.field] ?? condition.field
+          : condition.field,
+    })),
+  };
+};
+
+const shouldRetryRuleSaveWithLegacyFields = (
+  payload: unknown,
+): boolean => {
+  const serialized =
+    typeof payload === 'string'
+      ? payload
+      : JSON.stringify(payload ?? {});
+  const lower = serialized.toLowerCase();
+
+  const hasConditionFieldError =
+    lower.includes('conditions') &&
+    lower.includes('field');
+  const hasEnumValidationMessage = lower.includes(
+    'must be one of the following values',
+  );
+  const hasLegacyHint =
+    serialized.includes('event.isAllDay') ||
+    serialized.includes('event.calendarId') ||
+    serialized.includes('event.calendarName');
+
+  return (
+    hasConditionFieldError &&
+    (hasLegacyHint || hasEnumValidationMessage)
+  );
+};
+
+const saveRuleWithCompatibility = async (
+  url: string,
+  method: 'POST' | 'PUT',
+  payload: CreateAutomationRuleDto | UpdateAutomationRuleDto,
+): Promise<AutomationRuleDetailDto> => {
+  const preferredMode: ConditionFieldMode =
+    conditionFieldMode === 'legacy' ? 'legacy' : 'canonical';
+  const primaryPayload = mapPayloadConditionFieldsForMode(payload, preferredMode);
+
+  let response = await apiFetch(url, {
+    method,
+    body: JSON.stringify(primaryPayload),
+  });
+
+  if (response.ok) {
+    const body = (await response.json()) as AutomationRuleDetailDto;
+    return normalizeAutomationRuleDetail(body);
+  }
+
+  const primaryErrorPayload = await readErrorPayload(response);
+  const canRetryLegacy =
+    response.status === 400 &&
+    preferredMode !== 'legacy' &&
+    Array.isArray(payload.conditions) &&
+    payload.conditions.length > 0 &&
+    shouldRetryRuleSaveWithLegacyFields(primaryErrorPayload);
+
+  if (canRetryLegacy) {
+    conditionFieldMode = 'legacy';
+    const legacyPayload = mapPayloadConditionFieldsForMode(payload, 'legacy');
+    response = await apiFetch(url, {
+      method,
+      body: JSON.stringify(legacyPayload),
+    });
+
+    if (response.ok) {
+      const body = (await response.json()) as AutomationRuleDetailDto;
+      return normalizeAutomationRuleDetail(body);
+    }
+
+    const retryErrorPayload = await readErrorPayload(response);
+    throw new Error(
+      extractApiErrorMessage(retryErrorPayload, `HTTP ${response.status}`),
+    );
+  }
+
+  throw new Error(
+    extractApiErrorMessage(primaryErrorPayload, `HTTP ${response.status}`),
+  );
+};
+
 /**
  * Handle API response and throw errors for non-2xx responses
  */
 async function handleResponse<T>(response: Response): Promise<T> {
   if (!response.ok) {
-    const errorData = await response.json().catch(() => (null));
+    const errorData = await readErrorPayload(response);
     throw new Error(
       extractApiErrorMessage(errorData, `HTTP ${response.status}`),
     );
@@ -131,7 +313,8 @@ export async function getAutomationRule(
     }
   );
 
-  return handleResponse<AutomationRuleDetailDto>(response);
+  const rule = await handleResponse<AutomationRuleDetailDto>(response);
+  return normalizeAutomationRuleDetail(rule);
 }
 
 /**
@@ -140,12 +323,11 @@ export async function getAutomationRule(
 export async function createAutomationRule(
   ruleData: CreateAutomationRuleDto
 ): Promise<AutomationRuleDetailDto> {
-  const response = await apiFetch(`${BASE_URL}/api/automation/rules`, {
-    method: 'POST',
-    body: JSON.stringify(ruleData),
-  });
-
-  return handleResponse<AutomationRuleDetailDto>(response);
+  return saveRuleWithCompatibility(
+    `${BASE_URL}/api/automation/rules`,
+    'POST',
+    ruleData,
+  );
 }
 
 /**
@@ -155,15 +337,11 @@ export async function updateAutomationRule(
   ruleId: number,
   updateData: UpdateAutomationRuleDto
 ): Promise<AutomationRuleDetailDto> {
-  const response = await apiFetch(
+  return saveRuleWithCompatibility(
     `${BASE_URL}/api/automation/rules/${ruleId}`,
-    {
-      method: 'PUT',
-      body: JSON.stringify(updateData),
-    }
+    'PUT',
+    updateData,
   );
-
-  return handleResponse<AutomationRuleDetailDto>(response);
 }
 
 /**

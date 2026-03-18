@@ -145,6 +145,16 @@ const extractApiErrorMessage = (
   return fallback;
 };
 
+const shouldRetryWithoutHiddenFromLiveFocusTags = (
+  payload: unknown,
+): boolean => {
+  const serialized = JSON.stringify(payload ?? {}).toLowerCase();
+  return (
+    serialized.includes('hiddenfromlivefocustags') &&
+    serialized.includes('should not exist')
+  );
+};
+
 const buildAvailabilityRateLimitError = (
   retryAfterHeader: string | null,
 ): AvailabilityCheckError => {
@@ -1060,19 +1070,50 @@ class ApiService {
   }
 
   async updateUserProfile(profileData: Partial<UserProfile>): Promise<UserProfile> {
-    const response = await this.secureApiFetch(`${BASE_URL}/api/user/profile`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(profileData),
-    });
+    const sendPatch = (payload: Partial<UserProfile>): Promise<Response> =>
+      this.secureApiFetch(`${BASE_URL}/api/user/profile`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+
+    let response = await sendPatch(profileData);
 
     if (!response.ok) {
       if (response.status === 401) {
         throw new Error('Authentication required. Please log in to update profile.');
       }
+
       const errorData = await response.json().catch(() => ({}));
+      const hasHiddenTagField = Object.prototype.hasOwnProperty.call(
+        profileData,
+        'hiddenFromLiveFocusTags',
+      );
+      const shouldRetryWithoutField =
+        response.status === 400 &&
+        hasHiddenTagField &&
+        shouldRetryWithoutHiddenFromLiveFocusTags(errorData);
+
+      if (shouldRetryWithoutField) {
+        const retryPayload = { ...profileData };
+        delete retryPayload.hiddenFromLiveFocusTags;
+        response = await sendPatch(retryPayload);
+
+        if (!response.ok) {
+          if (response.status === 401) {
+            throw new Error('Authentication required. Please log in to update profile.');
+          }
+          const retryErrorData = await response.json().catch(() => ({}));
+          throw new Error(
+            extractApiErrorMessage(retryErrorData, 'Failed to update profile'),
+          );
+        }
+
+        return await response.json();
+      }
+
       throw new Error(
         extractApiErrorMessage(errorData, 'Failed to update profile'),
       );
