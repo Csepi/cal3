@@ -145,6 +145,9 @@ const extractApiErrorMessage = (
   return fallback;
 };
 
+type HiddenLiveFocusTagsSupport = 'unknown' | 'supported' | 'unsupported';
+let hiddenLiveFocusTagsSupport: HiddenLiveFocusTagsSupport = 'unknown';
+
 const buildAvailabilityRateLimitError = (
   retryAfterHeader: string | null,
 ): AvailabilityCheckError => {
@@ -1069,7 +1072,20 @@ class ApiService {
         body: JSON.stringify(payload),
       });
 
-    let response = await sendPatch(profileData);
+    const hasHiddenTagField = Object.prototype.hasOwnProperty.call(
+      profileData,
+      'hiddenFromLiveFocusTags',
+    );
+    const initialPayload: Partial<UserProfile> =
+      hasHiddenTagField && hiddenLiveFocusTagsSupport === 'unsupported'
+        ? (() => {
+            const payload = { ...profileData };
+            delete payload.hiddenFromLiveFocusTags;
+            return payload;
+          })()
+        : profileData;
+
+    let response = await sendPatch(initialPayload);
 
     if (!response.ok) {
       if (response.status === 401) {
@@ -1077,15 +1093,12 @@ class ApiService {
       }
 
       const errorData = await response.json().catch(() => ({}));
-      const hasHiddenTagField = Object.prototype.hasOwnProperty.call(
-        profileData,
-        'hiddenFromLiveFocusTags',
-      );
       const shouldRetryWithoutField =
         response.status === 400 &&
         hasHiddenTagField;
 
       if (shouldRetryWithoutField) {
+        hiddenLiveFocusTagsSupport = 'unsupported';
         const retryPayload = { ...profileData };
         delete retryPayload.hiddenFromLiveFocusTags;
         response = await sendPatch(retryPayload);
@@ -1106,6 +1119,10 @@ class ApiService {
       throw new Error(
         extractApiErrorMessage(errorData, 'Failed to update profile'),
       );
+    }
+
+    if (hasHiddenTagField && hiddenLiveFocusTagsSupport !== 'unsupported') {
+      hiddenLiveFocusTagsSupport = 'supported';
     }
 
     return await response.json();
