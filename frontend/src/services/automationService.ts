@@ -28,15 +28,63 @@ const apiFetch = async (url: string, init: RequestInit = {}): Promise<Response> 
   });
 };
 
+const extractApiErrorMessage = (payload: unknown, fallback: string): string => {
+  if (!payload || typeof payload !== 'object') {
+    return fallback;
+  }
+
+  const body = payload as Record<string, unknown>;
+  const details = body.details;
+  if (details && typeof details === 'object') {
+    const fields = (details as Record<string, unknown>).fields;
+    if (Array.isArray(fields) && fields.length > 0) {
+      const firstField = fields[0];
+      if (firstField && typeof firstField === 'object') {
+        const fieldRecord = firstField as Record<string, unknown>;
+        const fieldName =
+          typeof fieldRecord.field === 'string' ? fieldRecord.field : '';
+        const reasons = fieldRecord.reasons;
+        if (Array.isArray(reasons) && reasons.length > 0) {
+          const firstReason = reasons.find(
+            (reason): reason is string => typeof reason === 'string' && reason.length > 0,
+          );
+          if (firstReason) {
+            return fieldName ? `${fieldName}: ${firstReason}` : firstReason;
+          }
+        }
+      }
+    }
+  }
+
+  const message = body.message;
+  if (Array.isArray(message) && message.length > 0) {
+    const first = message.find(
+      (item): item is string => typeof item === 'string' && item.length > 0,
+    );
+    if (first) {
+      return first;
+    }
+  }
+  if (typeof message === 'string' && message.length > 0) {
+    return message;
+  }
+
+  if (typeof body.error === 'string' && body.error.length > 0) {
+    return body.error;
+  }
+
+  return fallback;
+};
+
 /**
  * Handle API response and throw errors for non-2xx responses
  */
 async function handleResponse<T>(response: Response): Promise<T> {
   if (!response.ok) {
-    const errorData = await response.json().catch(() => ({
-      message: 'An error occurred',
-    }));
-    throw new Error(errorData.message || `HTTP ${response.status}`);
+    const errorData = await response.json().catch(() => (null));
+    throw new Error(
+      extractApiErrorMessage(errorData, `HTTP ${response.status}`),
+    );
   }
   return response.json();
 }

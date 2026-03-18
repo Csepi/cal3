@@ -1072,8 +1072,10 @@ class ApiService {
       if (response.status === 401) {
         throw new Error('Authentication required. Please log in to update profile.');
       }
-      const errorData = await response.json();
-      throw new Error(errorData.message || 'Failed to update profile');
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(
+        extractApiErrorMessage(errorData, 'Failed to update profile'),
+      );
     }
 
     return await response.json();

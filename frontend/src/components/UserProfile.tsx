@@ -347,14 +347,26 @@ const UserProfile: React.FC<UserProfileProps> = ({ onThemeChange, currentTheme }
         hiddenLiveFocusTags,
         ...profileData
       } = profileForm;
-      await profileApi.updateUserProfile({
+      const parsedHiddenFromLiveFocusTags = parseHiddenLiveFocusTags(
+        hiddenLiveFocusTags || '',
+      );
+      const payload: Record<string, unknown> = {
         ...profileData,
-        hiddenFromLiveFocusTags:
-          parseHiddenLiveFocusTags(hiddenLiveFocusTags || ''),
         defaultTasksCalendarId: defaultTasksCalendarId
           ? Number(defaultTasksCalendarId)
           : null,
-      });
+      };
+
+      // Backward-compatible payload: only send this field if explicitly set
+      // or when clearing an already persisted value.
+      if (
+        parsedHiddenFromLiveFocusTags !== null ||
+        Array.isArray(user?.hiddenFromLiveFocusTags)
+      ) {
+        payload.hiddenFromLiveFocusTags = parsedHiddenFromLiveFocusTags;
+      }
+
+      await profileApi.updateUserProfile(payload);
 
       // Update i18n language if changed
       if (profileData.language) {

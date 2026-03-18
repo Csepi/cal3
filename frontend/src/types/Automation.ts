@@ -22,15 +22,14 @@ export enum ConditionLogic {
 export enum ConditionField {
   EVENT_TITLE = 'event.title',
   EVENT_DESCRIPTION = 'event.description',
+  EVENT_NOTES = 'event.notes',
   EVENT_LOCATION = 'event.location',
-  EVENT_IS_ALL_DAY = 'event.isAllDay',
+  EVENT_IS_ALL_DAY = 'event.is_all_day',
   EVENT_COLOR = 'event.color',
   EVENT_DURATION = 'event.duration',
-  EVENT_RECURRENCE_RULE = 'event.recurrenceRule',
-  EVENT_CALENDAR_ID = 'event.calendarId',
-  EVENT_CALENDAR_NAME = 'event.calendarName',
-  EVENT_TAGS = 'event.tags',
-  EVENT_PARTICIPANTS = 'event.participants',
+  EVENT_STATUS = 'event.status',
+  EVENT_CALENDAR_ID = 'event.calendar.id',
+  EVENT_CALENDAR_NAME = 'event.calendar.name',
   WEBHOOK_DATA = 'webhook.data',
 }
 

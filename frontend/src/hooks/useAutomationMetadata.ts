@@ -158,6 +158,18 @@ export function useAutomationMetadata(): UseAutomationMetadataReturn {
         ],
       },
       {
+        value: ConditionField.EVENT_NOTES,
+        label: 'Event Notes',
+        category: 'text',
+        dataType: 'string',
+        supportedOperators: [
+          ConditionOperator.CONTAINS,
+          ConditionOperator.NOT_CONTAINS,
+          ConditionOperator.IS_EMPTY,
+          ConditionOperator.IS_NOT_EMPTY,
+        ],
+      },
+      {
         value: ConditionField.EVENT_IS_ALL_DAY,
         label: 'Is All-Day Event',
         category: 'boolean',
@@ -190,14 +202,14 @@ export function useAutomationMetadata(): UseAutomationMetadataReturn {
         ],
       },
       {
-        value: ConditionField.EVENT_RECURRENCE_RULE,
-        label: 'Recurrence Rule',
+        value: ConditionField.EVENT_STATUS,
+        label: 'Event Status',
         category: 'text',
         dataType: 'string',
         supportedOperators: [
-          ConditionOperator.IS_EMPTY,
-          ConditionOperator.IS_NOT_EMPTY,
-          ConditionOperator.CONTAINS,
+          ConditionOperator.EQUALS,
+          ConditionOperator.NOT_EQUALS,
+          ConditionOperator.IN_LIST,
         ],
       },
       {
@@ -221,28 +233,6 @@ export function useAutomationMetadata(): UseAutomationMetadataReturn {
           ConditionOperator.NOT_EQUALS,
           ConditionOperator.CONTAINS,
           ConditionOperator.IN_LIST,
-        ],
-      },
-      {
-        value: ConditionField.EVENT_TAGS,
-        label: 'Event Tags',
-        category: 'array',
-        dataType: 'array',
-        supportedOperators: [
-          ConditionOperator.CONTAINS,
-          ConditionOperator.IS_EMPTY,
-          ConditionOperator.IS_NOT_EMPTY,
-        ],
-      },
-      {
-        value: ConditionField.EVENT_PARTICIPANTS,
-        label: 'Event Participants',
-        category: 'array',
-        dataType: 'array',
-        supportedOperators: [
-          ConditionOperator.CONTAINS,
-          ConditionOperator.IS_EMPTY,
-          ConditionOperator.IS_NOT_EMPTY,
         ],
       },
       {
