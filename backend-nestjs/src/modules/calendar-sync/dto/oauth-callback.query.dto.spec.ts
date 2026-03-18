@@ -15,6 +15,17 @@ const hasError = (errors: ValidationError[], property: string): boolean =>
   errors.some((item) => item.property === property);
 
 describe('OAuthCallbackQueryDto', () => {
+  it('accepts Google callback iss and scope parameters', () => {
+    const errors = validateDto({
+      code: 'abc123',
+      state: 'calendar-sync-18-olzfuyb7bq',
+      iss: 'https://accounts.google.com',
+      scope:
+        'profile https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/userinfo.profile',
+    });
+    expect(errors).toHaveLength(0);
+  });
+
   it('accepts Microsoft callback session_state parameter', () => {
     const errors = validateDto({
       code: 'abc123',

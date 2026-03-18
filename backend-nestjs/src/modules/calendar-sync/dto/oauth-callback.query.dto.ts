@@ -47,4 +47,16 @@ export class OAuthCallbackQueryDto {
     message: bStatic('errors.auto.backend.k741143339954'),
   })
   session_state?: string;
+
+  @IsOptional()
+  @SanitizeText({ trim: true, maxLength: 512 })
+  @IsString()
+  @MaxLength(512)
+  iss?: string;
+
+  @IsOptional()
+  @SanitizeText({ trim: true, maxLength: 2048 })
+  @IsString()
+  @MaxLength(2048)
+  scope?: string;
 }
