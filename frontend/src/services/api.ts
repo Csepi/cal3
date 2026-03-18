@@ -145,16 +145,6 @@ const extractApiErrorMessage = (
   return fallback;
 };
 
-const shouldRetryWithoutHiddenFromLiveFocusTags = (
-  payload: unknown,
-): boolean => {
-  const serialized = JSON.stringify(payload ?? {}).toLowerCase();
-  return (
-    serialized.includes('hiddenfromlivefocustags') &&
-    serialized.includes('should not exist')
-  );
-};
-
 const buildAvailabilityRateLimitError = (
   retryAfterHeader: string | null,
 ): AvailabilityCheckError => {
@@ -1093,8 +1083,7 @@ class ApiService {
       );
       const shouldRetryWithoutField =
         response.status === 400 &&
-        hasHiddenTagField &&
-        shouldRetryWithoutHiddenFromLiveFocusTags(errorData);
+        hasHiddenTagField;
 
       if (shouldRetryWithoutField) {
         const retryPayload = { ...profileData };

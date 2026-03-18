@@ -36,7 +36,9 @@ const legacyConditionFields = new Set<string>(
 
 let conditionFieldMode: ConditionFieldMode = 'unknown';
 
-const apiFetch = async (url: string, init: RequestInit = {}): Promise<Response> => {
+type ApiFetchOptions = RequestInit & { timeoutMs?: number };
+
+const apiFetch = async (url: string, init: ApiFetchOptions = {}): Promise<Response> => {
   const headers = new Headers(init.headers ?? {});
   if (
     init.body &&
@@ -510,6 +512,8 @@ export async function executeRuleNow(
     `${BASE_URL}/api/automation/rules/${ruleId}/execute`,
     {
       method: 'POST',
+      // Run-now can process many events and often exceeds default 15s timeout.
+      timeoutMs: 180_000,
     }
   );
 
