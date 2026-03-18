@@ -32,6 +32,8 @@ export interface CalendarEventModalProps {
   calendars: CalendarType[];
   /** Selected date (for new events) */
   selectedDate?: Date | null;
+  /** Optional selected end date/time (for range selection) */
+  selectedEndDate?: Date | null;
   /** Current theme color */
   themeColor: string;
   /** Optional preferred time format */
@@ -41,6 +43,25 @@ export interface CalendarEventModalProps {
   /** Whether the form is currently submitting */
   loading?: boolean;
 }
+
+const formatDateInputValue = (date: Date): string => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+const formatTimeInputValue = (date: Date): string => {
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  return `${hours}:${minutes}`;
+};
+
+const hasExplicitTime = (date: Date): boolean =>
+  date.getHours() !== 0 ||
+  date.getMinutes() !== 0 ||
+  date.getSeconds() !== 0 ||
+  date.getMilliseconds() !== 0;
 
 /**
  * Modal component for comprehensive event creation and editing
@@ -54,6 +75,7 @@ export const CalendarEventModal: React.FC<CalendarEventModalProps> = ({
   editingEvent,
   calendars,
   selectedDate,
+  selectedEndDate,
   themeColor,
   error,
   loading = false
@@ -107,15 +129,46 @@ export const CalendarEventModal: React.FC<CalendarEventModalProps> = ({
       } else {
         // Creating new event
         const defaultCalendar = calendars.find(cal => cal.name === 'Personal') || calendars[0];
-        const startDate = selectedDate && !isNaN(selectedDate.getTime()) ? selectedDate.toISOString().split('T')[0] : new Date().toISOString().split('T')[0];
+        const validSelectedStartDate =
+          selectedDate && !isNaN(selectedDate.getTime()) ? new Date(selectedDate) : null;
+        const validSelectedEndDate =
+          selectedEndDate && !isNaN(selectedEndDate.getTime())
+            ? new Date(selectedEndDate)
+            : null;
+
+        const startDate = validSelectedStartDate
+          ? formatDateInputValue(validSelectedStartDate)
+          : formatDateInputValue(new Date());
+        const startHasTime = Boolean(
+          validSelectedStartDate &&
+            (validSelectedEndDate || hasExplicitTime(validSelectedStartDate)),
+        );
+
+        let startTime = '09:00';
+        let endDate = startDate;
+        let endTime = '10:00';
+
+        if (validSelectedStartDate && startHasTime) {
+          startTime = formatTimeInputValue(validSelectedStartDate);
+          const resolvedEndDate = validSelectedEndDate
+            ? validSelectedEndDate
+            : new Date(validSelectedStartDate.getTime() + 60 * 60000);
+
+          if (resolvedEndDate.getTime() <= validSelectedStartDate.getTime()) {
+            resolvedEndDate.setTime(validSelectedStartDate.getTime() + 15 * 60000);
+          }
+
+          endDate = formatDateInputValue(resolvedEndDate);
+          endTime = formatTimeInputValue(resolvedEndDate);
+        }
 
         setEventForm({
           title: '',
           description: '',
           startDate,
-          startTime: '09:00',
-          endDate: startDate,
-          endTime: '10:00',
+          startTime,
+          endDate,
+          endTime,
           isAllDay: false,
           location: '',
           color: themeColor,
@@ -128,7 +181,7 @@ export const CalendarEventModal: React.FC<CalendarEventModalProps> = ({
       // Clear form errors
       setFormErrors({});
     }
-  }, [isOpen, editingEvent, calendars, selectedDate, themeColor]);
+  }, [isOpen, editingEvent, calendars, selectedDate, selectedEndDate, themeColor]);
 
   /**
    * Handle form field changes

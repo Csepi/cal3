@@ -43,6 +43,7 @@ import { tStatic } from '../../i18n';
 interface CalendarState {
   currentDate: Date;
   selectedDate: Date | null;
+  selectedEndDate: Date | null;
   currentView: 'month' | 'week' | 'timeline';
   events: Event[];
   calendars: CalendarType[];
@@ -63,7 +64,7 @@ interface CalendarActions {
   toggleOrganization: (org: Organization) => void;
   updateOrganizationColor: (orgId: number, color: string, cascadeToResourceTypes: boolean) => Promise<void>;
   updateResourceTypeColor: (resourceTypeId: number, color: string) => Promise<void>;
-  createEvent: (date?: Date) => void;
+  createEvent: (date?: Date, endDate?: Date) => void;
   editEvent: (event: Event) => void;
   refreshData: () => Promise<void>;
 }
@@ -119,6 +120,7 @@ function useCalendarState(
 
   const [currentDate, setCurrentDate] = useState(() => new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [selectedEndDate, setSelectedEndDate] = useState<Date | null>(null);
   const [currentView, setCurrentView] =
     useState<CalendarState['currentView']>(initialView);
   const [selectedCalendars, setSelectedCalendars] = useState<number[]>([]);
@@ -382,7 +384,7 @@ function useCalendarState(
       }
     },
 
-    createEvent: (date?: Date) => {
+    createEvent: (date?: Date, endDate?: Date) => {
       if (offlineMode) {
         return;
       }
@@ -391,6 +393,7 @@ function useCalendarState(
         editingEvent: null,
       }));
       setErrors((prev) => ({ ...prev, event: null }));
+      setSelectedEndDate(endDate ?? null);
 
       if (date) {
         setSelectedDate(date);
@@ -408,6 +411,7 @@ function useCalendarState(
         editingEvent: event,
       }));
       setErrors((prev) => ({ ...prev, event: null }));
+      setSelectedEndDate(null);
       setModals((prev) => ({ ...prev, eventModal: true }));
     },
 
@@ -418,6 +422,7 @@ function useCalendarState(
     () => ({
       currentDate,
       selectedDate,
+      selectedEndDate,
       currentView,
       events,
       calendars,
@@ -430,6 +435,7 @@ function useCalendarState(
     [
       currentDate,
       selectedDate,
+      selectedEndDate,
       currentView,
       events,
       calendars,
@@ -796,11 +802,11 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
           currentDate={currentDate}
           events={filteredEvents}
           onEventClick={handleEventClick}
-          onCreateEvent={(date) => {
+          onCreateEvent={(date, endDate) => {
             if (readOnly) {
               return;
             }
-            actions.createEvent(date);
+            actions.createEvent(date, endDate);
           }}
           accentColor={accentColor}
           focusMode={timelineFocusMode}
@@ -2064,6 +2070,7 @@ export const EnhancedCalendar: React.FC<EnhancedCalendarProps> = ({
             editingEvent={modalData.editingEvent}
             calendars={state.calendars}
             selectedDate={state.selectedDate}
+            selectedEndDate={state.selectedEndDate}
             themeColor={themeColor}
             timeFormat={timeFormat}
             error={errors.event}

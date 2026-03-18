@@ -9,7 +9,7 @@ interface TimelineViewProps {
   currentDate: Date;
   events: Event[];
   onEventClick: (event: Event) => void;
-  onCreateEvent?: (date?: Date) => void;
+  onCreateEvent?: (date?: Date, endDate?: Date) => void;
   accentColor: string;
   isMobile?: boolean;
   timeFormat?: '12' | '24';
@@ -34,6 +34,11 @@ type TimelineItem = Event & {
 type EventWithLegacyFields = Event & {
   start?: string;
   end?: string;
+};
+
+type DraftSelectionRange = {
+  startMinutes: number;
+  endMinutes: number;
 };
 
 const clamp = (value: number, min: number, max: number) =>
@@ -187,7 +192,12 @@ const TimelineView: React.FC<TimelineViewProps> = ({
   const [now, setNow] = useState(() => getZonedDate(new Date(), resolvedTimezone));
   const [focusEventId, setFocusEventId] = useState<number | null>(null);
   const [showCalendarFilters, setShowCalendarFilters] = useState(false);
+  const [draftSelection, setDraftSelection] = useState<DraftSelectionRange | null>(
+    null,
+  );
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
+  const dragAnchorMinutesRef = useRef<number | null>(null);
+  const dragPointerIdRef = useRef<number | null>(null);
   const previousFocusModeRef = useRef(focusMode);
   const focusColor = accentColor || '#06b6d4';
   const hasCalendarControls = calendars.length > 0 && !!onToggleCalendar;
@@ -372,6 +382,7 @@ const TimelineView: React.FC<TimelineViewProps> = ({
   const tickMinutes = 5;
   const majorTickMinutes = 30;
   const hourTickMinutes = 60;
+  const timelineSnapMinutes = 15;
   const pxPerMinute = isMobile ? 1.4 : 1.8;
   const minEventHeight = Math.max(8, pxPerMinute * 4);
   const labelColumnWidth = isMobile ? 52 : 68;
@@ -642,6 +653,115 @@ const TimelineView: React.FC<TimelineViewProps> = ({
     container.scrollTo({ top: anchorScrollTop, behavior: 'smooth' });
     setScrollTop(anchorScrollTop);
   };
+
+  const snapToSlotStart = (minutes: number) =>
+    clamp(
+      Math.floor(minutes / timelineSnapMinutes) * timelineSnapMinutes,
+      0,
+      dayMinutes - timelineSnapMinutes,
+    );
+
+  const resolveMinutesFromPointer = (clientY: number) => {
+    const container = scrollContainerRef.current;
+    if (!container) return 0;
+    const bounds = container.getBoundingClientRect();
+    const minutes = (clientY - bounds.top + container.scrollTop) / pxPerMinute;
+    return clamp(minutes, 0, dayMinutes - 1);
+  };
+
+  const clearDraftSelection = () => {
+    dragAnchorMinutesRef.current = null;
+    dragPointerIdRef.current = null;
+    setDraftSelection(null);
+  };
+
+  const handleTimelinePointerDown = (
+    event: React.PointerEvent<HTMLDivElement>,
+  ) => {
+    if (!onCreateEvent || isMobile || event.pointerType === 'touch') return;
+    if (event.button !== 0) return;
+
+    const target = event.target as HTMLElement | null;
+    if (!target) return;
+    if (target.closest('[data-timeline-event-block="true"]')) return;
+    if (target.closest('button, input, select, textarea, a')) return;
+
+    const container = scrollContainerRef.current;
+    if (!container) return;
+    container.setPointerCapture(event.pointerId);
+
+    const anchorMinutes = snapToSlotStart(
+      resolveMinutesFromPointer(event.clientY),
+    );
+    dragAnchorMinutesRef.current = anchorMinutes;
+    dragPointerIdRef.current = event.pointerId;
+    setDraftSelection({
+      startMinutes: anchorMinutes,
+      endMinutes: anchorMinutes + timelineSnapMinutes,
+    });
+    event.preventDefault();
+  };
+
+  const handleTimelinePointerMove = (
+    event: React.PointerEvent<HTMLDivElement>,
+  ) => {
+    if (dragPointerIdRef.current !== event.pointerId) return;
+    const anchorMinutes = dragAnchorMinutesRef.current;
+    if (anchorMinutes === null) return;
+
+    const pointerSlotMinutes = snapToSlotStart(
+      resolveMinutesFromPointer(event.clientY),
+    );
+    const startMinutes = Math.min(anchorMinutes, pointerSlotMinutes);
+    const endMinutes =
+      Math.max(anchorMinutes, pointerSlotMinutes) + timelineSnapMinutes;
+
+    setDraftSelection({
+      startMinutes,
+      endMinutes: clamp(endMinutes, timelineSnapMinutes, dayMinutes),
+    });
+    event.preventDefault();
+  };
+
+  const handleTimelinePointerUp = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (dragPointerIdRef.current !== event.pointerId) return;
+
+    const selection = draftSelection;
+    const container = scrollContainerRef.current;
+    if (container?.hasPointerCapture(event.pointerId)) {
+      container.releasePointerCapture(event.pointerId);
+    }
+
+    if (selection && onCreateEvent) {
+      const startDate = new Date(
+        dayStart.getTime() + selection.startMinutes * 60000,
+      );
+      const endDate = new Date(
+        dayStart.getTime() + selection.endMinutes * 60000,
+      );
+      onCreateEvent(startDate, endDate);
+    }
+
+    clearDraftSelection();
+    event.preventDefault();
+  };
+
+  const handleTimelinePointerCancel = (
+    event: React.PointerEvent<HTMLDivElement>,
+  ) => {
+    if (dragPointerIdRef.current !== event.pointerId) return;
+    clearDraftSelection();
+  };
+
+  const draftSelectionStart = useMemo(() => {
+    if (!draftSelection) return null;
+    return new Date(dayStart.getTime() + draftSelection.startMinutes * 60000);
+  }, [dayStart, draftSelection]);
+
+  const draftSelectionEnd = useMemo(() => {
+    if (!draftSelection) return null;
+    return new Date(dayStart.getTime() + draftSelection.endMinutes * 60000);
+  }, [dayStart, draftSelection]);
 
   const handleLogCurrentEvent = () => {
     if (focusEvent) {
@@ -976,6 +1096,10 @@ const TimelineView: React.FC<TimelineViewProps> = ({
               className="relative overflow-y-auto"
               style={{ height: timelineViewportHeight }}
               onScroll={handleTimelineScroll}
+              onPointerDown={handleTimelinePointerDown}
+              onPointerMove={handleTimelinePointerMove}
+              onPointerUp={handleTimelinePointerUp}
+              onPointerCancel={handleTimelinePointerCancel}
             >
               <div className="relative" style={{ height: timelineHeight }}>
                 <div
@@ -1092,6 +1216,7 @@ const TimelineView: React.FC<TimelineViewProps> = ({
                     return (
                       <div
                         key={item.id}
+                        data-timeline-event-block="true"
                         onClick={() => onEventClick(item)}
                         onKeyDown={(event) => {
                           if (event.key === 'Enter' || event.key === ' ') {
@@ -1178,6 +1303,28 @@ const TimelineView: React.FC<TimelineViewProps> = ({
                       </div>
                     );
                   })}
+
+                  {draftSelection && draftSelectionStart && draftSelectionEnd && (
+                    <div
+                      className="absolute z-20 pointer-events-none rounded-2xl border-2 border-white/80 bg-white/30 px-2 py-1 shadow-lg backdrop-blur-sm"
+                      style={{
+                        top: draftSelection.startMinutes * pxPerMinute,
+                        height: Math.max(
+                          minEventHeight,
+                          (draftSelection.endMinutes - draftSelection.startMinutes) *
+                            pxPerMinute,
+                        ),
+                        left: 0,
+                        right: 0,
+                      }}
+                    >
+                      <p className="text-[10px] font-semibold text-slate-800">
+                        {formatTime(draftSelectionStart, timeFormat, resolvedTimezone)} -{' '}
+                        {formatTime(draftSelectionEnd, timeFormat, resolvedTimezone)}
+                      </p>
+                      <p className="text-[10px] text-slate-700">New meeting</p>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
