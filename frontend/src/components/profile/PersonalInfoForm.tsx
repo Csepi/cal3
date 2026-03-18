@@ -19,6 +19,7 @@ export interface PersonalInfoFormData {
   timeFormat: string;
   language: string;
   hideReservationsTab?: boolean;
+  hiddenLiveFocusTags?: string;
   usagePlans?: string[];
   defaultTasksCalendarId?: string;
 }
@@ -256,6 +257,23 @@ export const PersonalInfoForm: React.FC<PersonalInfoFormProps> = ({
             </label>
             <p className="ml-7 mt-1 text-xs text-gray-500">
               {t('settings:preferences.hideReservationsTabHelp')}
+            </p>
+          </div>
+
+          <div>
+            <Input
+              label={t('settings:preferences.hiddenLiveFocusTags')}
+              type="text"
+              value={formData.hiddenLiveFocusTags || ''}
+              onChange={(event) =>
+                onFormDataChange('hiddenLiveFocusTags', event.target.value)
+              }
+              error={errors.hiddenLiveFocusTags}
+              themeColor={themeColor}
+              placeholder={t('settings:preferences.hiddenLiveFocusTagsPlaceholder')}
+            />
+            <p className="mt-1 text-xs text-gray-500">
+              {t('settings:preferences.hiddenLiveFocusTagsHelp')}
             </p>
           </div>
         </div>

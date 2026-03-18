@@ -55,6 +55,7 @@ interface UserProfile {
   onboardingMicrosoftCalendarSyncRequested?: boolean;
   privacyPolicyAcceptedAt?: string | null;
   privacyPolicyVersion?: string | null;
+  hiddenFromLiveFocusTags?: string[] | null;
   [key: string]: unknown;
 }
 

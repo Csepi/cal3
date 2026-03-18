@@ -219,7 +219,10 @@
     "theme": "Téma",
     "timeFormat": "Időformátum",
     "timezone": "Időzóna",
-    "weekStart": "A hét kezdete"
+    "weekStart": "A hét kezdete",
+    "hiddenLiveFocusTags": "Tag-ek elrejtese LIVE fokuszban",
+    "hiddenLiveFocusTagsHelp": "Az ezen tagek valamelyiket tartalmazo esemenyek nem jelennek meg a LIVE fokusz es timeline elonezetben. A tageket vesszovel valaszd el.",
+    "hiddenLiveFocusTagsPlaceholder": "no_focus, private"
   },
   "profile": {
     "changePassword": "Jelszó módosítása",

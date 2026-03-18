@@ -14,6 +14,7 @@ export interface Event {
   recurrenceType?: string;
   recurrenceRule?: RecurrencePattern | Record<string, unknown>;
   notes?: string;
+  tags?: string[];
   createdAt: string;
   updatedAt: string;
   // Recurring event properties

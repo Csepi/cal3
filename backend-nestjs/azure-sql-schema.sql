@@ -33,6 +33,7 @@ CREATE TABLE users (
     hiddenResourceIds NVARCHAR(MAX) NULL,
     visibleCalendarIds NVARCHAR(MAX) NULL,
     visibleResourceTypeIds NVARCHAR(MAX) NULL,
+    hiddenFromLiveFocusTags NVARCHAR(MAX) NULL,
     createdAt DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
     updatedAt DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
     CONSTRAINT CK_users_role CHECK (role IN ('observer', 'user', 'admin'))

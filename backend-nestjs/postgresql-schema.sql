@@ -51,6 +51,7 @@ CREATE TABLE users (
     "hiddenResourceIds" JSON,
     "visibleCalendarIds" JSON,
     "visibleResourceTypeIds" JSON,
+    "hiddenFromLiveFocusTags" JSON,
     "createdAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );

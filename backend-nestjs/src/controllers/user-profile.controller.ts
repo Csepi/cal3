@@ -106,6 +106,7 @@ export class UserProfileController {
         'hiddenResourceIds',
         'visibleCalendarIds',
         'visibleResourceTypeIds',
+        'hiddenFromLiveFocusTags',
         'defaultTasksCalendarId',
         'onboardingCompleted',
         'onboardingCompletedAt',
@@ -242,6 +243,7 @@ export class UserProfileController {
       defaultTasksCalendarId,
       language,
       preferredLanguage,
+      hiddenFromLiveFocusTags,
       ...rest
     } = updateProfileDto;
     const updatePayload: QueryDeepPartialEntity<User> = { ...rest };
@@ -249,6 +251,10 @@ export class UserProfileController {
     if (resolvedLanguage) {
       updatePayload.language = resolvedLanguage;
       updatePayload.preferredLanguage = resolvedLanguage;
+    }
+    if (hiddenFromLiveFocusTags !== undefined) {
+      updatePayload.hiddenFromLiveFocusTags =
+        this.normalizeHiddenFromLiveFocusTags(hiddenFromLiveFocusTags);
     }
 
     const defaultCalendarProvided = defaultTasksCalendarId !== undefined;
@@ -367,6 +373,7 @@ export class UserProfileController {
         'hiddenResourceIds',
         'visibleCalendarIds',
         'visibleResourceTypeIds',
+        'hiddenFromLiveFocusTags',
         'defaultTasksCalendarId',
         'onboardingCompleted',
         'onboardingCompletedAt',
@@ -419,6 +426,7 @@ export class UserProfileController {
         'hiddenResourceIds',
         'visibleCalendarIds',
         'visibleResourceTypeIds',
+        'hiddenFromLiveFocusTags',
         'defaultTasksCalendarId',
         'onboardingCompleted',
         'onboardingCompletedAt',
@@ -495,6 +503,34 @@ export class UserProfileController {
   private resolveLanguage(req: RequestWithUser): string {
     const value = req.headers['x-user-language'];
     return typeof value === 'string' ? value : 'en';
+  }
+
+  private normalizeHiddenFromLiveFocusTags(
+    tags: string[] | null,
+  ): string[] | null {
+    if (!Array.isArray(tags)) {
+      return null;
+    }
+
+    const normalized: string[] = [];
+    const seen = new Set<string>();
+    for (const rawTag of tags) {
+      const tag = typeof rawTag === 'string' ? rawTag.trim() : '';
+      if (!tag) {
+        continue;
+      }
+      const normalizedKey = tag.toLowerCase();
+      if (seen.has(normalizedKey)) {
+        continue;
+      }
+      seen.add(normalizedKey);
+      normalized.push(tag);
+      if (normalized.length >= 100) {
+        break;
+      }
+    }
+
+    return normalized.length > 0 ? normalized : null;
   }
 
   private getUploadsRootDir(): string {

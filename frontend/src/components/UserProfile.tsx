@@ -57,6 +57,7 @@ interface UserProfileData {
   language?: string;
   themeColor?: string;
   hideReservationsTab?: boolean;
+  hiddenFromLiveFocusTags?: string[] | null;
   usagePlans?: string[];
   defaultTasksCalendarId?: number | null;
   onboardingCompleted?: boolean;
@@ -67,6 +68,30 @@ interface UserProfileData {
   privacyPolicyAcceptedAt?: string | null;
   privacyPolicyVersion?: string | null;
 }
+
+const parseHiddenLiveFocusTags = (value: string): string[] | null => {
+  if (!value.trim()) {
+    return null;
+  }
+
+  const normalized: string[] = [];
+  const seen = new Set<string>();
+  const pieces = value.split(',');
+  for (const piece of pieces) {
+    const tag = piece.trim();
+    if (!tag) {
+      continue;
+    }
+    const key = tag.toLowerCase();
+    if (seen.has(key)) {
+      continue;
+    }
+    seen.add(key);
+    normalized.push(tag);
+  }
+
+  return normalized.length > 0 ? normalized : null;
+};
 
 const UserProfile: React.FC<UserProfileProps> = ({ onThemeChange, currentTheme }) => {
   // Hooks
@@ -90,6 +115,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ onThemeChange, currentTheme }
     timeFormat: '',
     language: 'en',
     hideReservationsTab: false,
+    hiddenLiveFocusTags: '',
     usagePlans: ['user'],
     defaultTasksCalendarId: '',
   });
@@ -193,6 +219,9 @@ const UserProfile: React.FC<UserProfileProps> = ({ onThemeChange, currentTheme }
         timeFormat: userData.timeFormat || '12h',
         language: userData.language || 'en',
         hideReservationsTab: Boolean(userData.hideReservationsTab),
+        hiddenLiveFocusTags: Array.isArray(userData.hiddenFromLiveFocusTags)
+          ? userData.hiddenFromLiveFocusTags.join(', ')
+          : '',
         usagePlans: userData.usagePlans || ['user'],
         defaultTasksCalendarId: userData.defaultTasksCalendarId
           ? String(userData.defaultTasksCalendarId)
@@ -312,9 +341,16 @@ const UserProfile: React.FC<UserProfileProps> = ({ onThemeChange, currentTheme }
       setProfileLoading(true);
       setError(null);
 
-      const { usagePlans, defaultTasksCalendarId, ...profileData } = profileForm;
+      const {
+        usagePlans,
+        defaultTasksCalendarId,
+        hiddenLiveFocusTags,
+        ...profileData
+      } = profileForm;
       await profileApi.updateUserProfile({
         ...profileData,
+        hiddenFromLiveFocusTags:
+          parseHiddenLiveFocusTags(hiddenLiveFocusTags || ''),
         defaultTasksCalendarId: defaultTasksCalendarId
           ? Number(defaultTasksCalendarId)
           : null,

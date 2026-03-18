@@ -151,6 +151,17 @@ export class UpdateProfileDto {
   visibleResourceTypeIds?: number[];
 
   @ApiPropertyOptional({
+    example: ['no_focus', 'private'],
+    description:
+      'Array of event tags that should be hidden from LIVE focus preview',
+  })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  @MaxLength(64, { each: true })
+  hiddenFromLiveFocusTags?: string[] | null;
+
+  @ApiPropertyOptional({
     example: 42,
     description:
       'Default calendar ID for mirrored Tasks events (must own a Tasks calendar)',

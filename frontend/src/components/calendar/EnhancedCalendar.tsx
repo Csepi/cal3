@@ -52,6 +52,7 @@ interface CalendarState {
   reservations: ReservationRecord[];
   organizations: Organization[];
   selectedResourceTypes: number[]; // Array of selected resource type IDs
+  hiddenFromLiveFocusTags: string[];
 }
 
 interface CalendarActions {
@@ -92,6 +93,32 @@ const sortCalendarsByRank = (calendars: CalendarType[]): CalendarType[] =>
     return a.id - b.id;
   });
 
+const normalizeTagList = (tags: unknown): string[] => {
+  if (!Array.isArray(tags)) {
+    return [];
+  }
+
+  const normalized: string[] = [];
+  const seen = new Set<string>();
+  for (const rawTag of tags) {
+    if (typeof rawTag !== 'string') {
+      continue;
+    }
+    const tag = rawTag.trim();
+    if (!tag) {
+      continue;
+    }
+    const key = tag.toLowerCase();
+    if (seen.has(key)) {
+      continue;
+    }
+    seen.add(key);
+    normalized.push(tag);
+  }
+
+  return normalized;
+};
+
 // Calendar hook for state management
 function useCalendarState(
   themeColor: string,
@@ -125,6 +152,7 @@ function useCalendarState(
     useState<CalendarState['currentView']>(initialView);
   const [selectedCalendars, setSelectedCalendars] = useState<number[]>([]);
   const [storedVisibleCalendarIds, setStoredVisibleCalendarIds] = useState<number[] | null>(null);
+  const [hiddenFromLiveFocusTags, setHiddenFromLiveFocusTags] = useState<string[]>([]);
   const [calendarPreferenceLoaded, setCalendarPreferenceLoaded] = useState(false);
   const [selectedResourceTypes, setSelectedResourceTypes] = useState<number[]>([]);
 
@@ -135,6 +163,7 @@ function useCalendarState(
   useEffect(() => {
     if (offlineMode) {
       setStoredVisibleCalendarIds(null);
+      setHiddenFromLiveFocusTags([]);
       setCalendarPreferenceLoaded(true);
       return;
     }
@@ -145,6 +174,7 @@ function useCalendarState(
       try {
         const profile = (await profileApi.getUserProfile()) as {
           visibleCalendarIds?: number[] | null;
+          hiddenFromLiveFocusTags?: string[] | null;
         };
 
         if (!isActive) return;
@@ -165,10 +195,15 @@ function useCalendarState(
           setStoredVisibleCalendarIds(null);
           lastSavedVisibleCalendarsRef.current = null;
         }
+
+        setHiddenFromLiveFocusTags(
+          normalizeTagList(profile.hiddenFromLiveFocusTags),
+        );
       } catch (error) {
         if (isActive) {
           console.warn('Failed to load visible calendar preference:', error);
           setStoredVisibleCalendarIds(null);
+          setHiddenFromLiveFocusTags([]);
         }
       } finally {
         if (isActive) {
@@ -431,6 +466,7 @@ function useCalendarState(
       reservations,
       organizations,
       selectedResourceTypes,
+      hiddenFromLiveFocusTags,
     }),
     [
       currentDate,
@@ -444,6 +480,7 @@ function useCalendarState(
       reservations,
       organizations,
       selectedResourceTypes,
+      hiddenFromLiveFocusTags,
     ],
   );
 
@@ -686,7 +723,16 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
   timezone,
   readOnly = false,
 }) => {
-  const { currentDate, currentView, events, selectedCalendars, reservations, selectedResourceTypes, organizations } = state;
+  const {
+    currentDate,
+    currentView,
+    events,
+    selectedCalendars,
+    reservations,
+    selectedResourceTypes,
+    organizations,
+    hiddenFromLiveFocusTags,
+  } = state;
 
   // Filter reservations based on selected resource types
   const filteredReservations = useMemo(() => {
@@ -741,6 +787,7 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
           color: resourceTypeColor,
           isAllDay: false,
           notes: r.description || r.notes || `${r.status} - ${r.customerName || 'No customer'}`,
+          tags: [] as string[],
           createdAt: r.startTime || fallbackTimestamp,
           updatedAt: r.endTime || r.startTime || fallbackTimestamp,
           calendar: {
@@ -761,6 +808,26 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
     // Combine calendar events and reservation events
     return [...calendarEvents, ...reservationEvents];
   }, [events, selectedCalendars, filteredReservations, organizations]);
+
+  const hiddenLiveFocusTagSet = useMemo(
+    () => new Set(hiddenFromLiveFocusTags.map((tag) => tag.toLowerCase())),
+    [hiddenFromLiveFocusTags],
+  );
+
+  const liveFilteredEvents = useMemo(() => {
+    if (hiddenLiveFocusTagSet.size === 0) {
+      return filteredEvents;
+    }
+
+    return filteredEvents.filter((event) => {
+      if (!Array.isArray(event.tags) || event.tags.length === 0) {
+        return true;
+      }
+      return !event.tags.some((tag) =>
+        hiddenLiveFocusTagSet.has(tag.trim().toLowerCase()),
+      );
+    });
+  }, [filteredEvents, hiddenLiveFocusTagSet]);
 
   const handleDateClick = useCallback((date: Date) => {
     actions.setSelectedDate(date);
@@ -800,7 +867,7 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
       <div {...wrapperProps}>
         <TimelineView
           currentDate={currentDate}
-          events={filteredEvents}
+          events={liveFilteredEvents}
           onEventClick={handleEventClick}
           onCreateEvent={(date, endDate) => {
             if (readOnly) {

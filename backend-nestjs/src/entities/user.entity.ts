@@ -149,6 +149,9 @@ export class User {
   @Column({ type: 'json', nullable: true }) // Array of resource type IDs visible in calendar view (null = all visible)
   visibleResourceTypeIds!: number[];
 
+  @Column({ type: 'json', nullable: true }) // Array of event tags to hide from LIVE focus preview
+  hiddenFromLiveFocusTags!: string[] | null;
+
   @CreateDateColumn()
   createdAt!: Date;
 
