@@ -68,6 +68,20 @@ interface SyncThemeColors {
   };
 }
 
+const isRequestTimeoutError = (error: unknown): error is Error => {
+  if (!(error instanceof Error)) {
+    return false;
+  }
+
+  const message = error.message.toLowerCase();
+  return (
+    error.name === 'AbortError' ||
+    message.includes('timed out') ||
+    message.includes('timeout') ||
+    message.includes('not responding right now')
+  );
+};
+
 const CalendarSync: React.FC<CalendarSyncProps> = ({ themeColor }) => {
   const [syncStatus, setSyncStatus] = useState<SyncStatus>({
     providers: []
@@ -715,6 +729,16 @@ const CalendarSync: React.FC<CalendarSyncProps> = ({ themeColor }) => {
         });
       }, `Syncing ${providerSelectedCalendars.length} calendars...`);
     } catch (err) {
+      if (isRequestTimeoutError(err)) {
+        clientLogger.warn('calendar-sync', 'sync request timed out; refreshing status', {
+          provider,
+        });
+        await loadSyncStatus().catch(() => undefined);
+        alert(
+          'Calendar sync is taking longer than expected. It may still complete in the background. Please refresh in a moment.',
+        );
+        return;
+      }
       alert(err instanceof Error ? err.message : 'Failed to sync calendars');
     }
   };
@@ -743,6 +767,14 @@ const CalendarSync: React.FC<CalendarSyncProps> = ({ themeColor }) => {
         await loadSyncStatus();
       }, 'Force syncing calendars...');
     } catch (err) {
+      if (isRequestTimeoutError(err)) {
+        clientLogger.warn('calendar-sync', 'force sync request timed out; refreshing status');
+        await loadSyncStatus().catch(() => undefined);
+        alert(
+          'Force sync is taking longer than expected. It may still complete in the background. Please refresh in a moment.',
+        );
+        return;
+      }
       alert(err instanceof Error ? err.message : 'Failed to sync');
     }
   };

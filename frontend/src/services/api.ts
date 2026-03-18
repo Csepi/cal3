@@ -1268,6 +1268,7 @@ class ApiService {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(syncData),
+      timeoutMs: 120_000,
     });
 
     if (!response.ok) {
@@ -1302,6 +1303,7 @@ class ApiService {
   async forceCalendarSync(): Promise<unknown> {
     const response = await this.secureApiFetch(`${BASE_URL}/api/calendar-sync/force`, {
       method: 'POST',
+      timeoutMs: 60_000,
     });
 
     if (!response.ok) {
