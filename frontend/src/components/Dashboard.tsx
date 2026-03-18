@@ -102,6 +102,7 @@ const Dashboard: React.FC<DashboardProps> = ({ initialView = 'calendar' }) => {
   const [isScreenVisible, setIsScreenVisible] = useState(false);
   const [isOfflineReadOnlyMode, setIsOfflineReadOnlyMode] = useState(false);
   const [globalErrorMessage, setGlobalErrorMessage] = useState<string | null>(null);
+  const [isCalendarTimelineFocusMode, setIsCalendarTimelineFocusMode] = useState(false);
 
   const tasksWorkspaceRef = useRef<TasksWorkspaceHandle | null>(null);
 
@@ -291,6 +292,12 @@ const Dashboard: React.FC<DashboardProps> = ({ initialView = 'calendar' }) => {
     }
   }, [currentView, isOfflineReadOnlyMode]);
 
+  useEffect(() => {
+    if (currentView !== 'calendar' && isCalendarTimelineFocusMode) {
+      setIsCalendarTimelineFocusMode(false);
+    }
+  }, [currentView, isCalendarTimelineFocusMode]);
+
   // Redirect to calendar if user loses access to current view
   useEffect(() => {
     if (featureFlagsLoading || permissionsLoading) return;
@@ -346,6 +353,8 @@ const Dashboard: React.FC<DashboardProps> = ({ initialView = 'calendar' }) => {
       ? 'notifications'
       : currentView) as TabId;
 
+  const shouldHideNavigation = currentView === 'calendar' && isCalendarTimelineFocusMode;
+
   const displayName = userProfile?.name || userProfile?.fullName || currentUser?.username || '';
   const mobileSurfaceLabel = (() => {
     if (isOfflineReadOnlyMode) {
@@ -384,20 +393,23 @@ const Dashboard: React.FC<DashboardProps> = ({ initialView = 'calendar' }) => {
       }`}
     >
       {/* Responsive Navigation - Adapts to screen size */}
-      <ResponsiveNavigation
-        activeTab={activeNavigationView}
-        onTabChange={handleTabChange}
-        hideReservationsTab={userProfile?.hideReservationsTab}
-      />
+      {!shouldHideNavigation && (
+        <ResponsiveNavigation
+          activeTab={activeNavigationView}
+          onTabChange={handleTabChange}
+          hideReservationsTab={userProfile?.hideReservationsTab}
+        />
+      )}
 
       {/* Main Content Area with Mobile Layout Wrapper */}
       <MobileLayout
-        showBottomNav={isMobile}
+        showBottomNav={isMobile && !shouldHideNavigation}
         onRefresh={handleRefresh}
         noPadding={currentView === 'calendar'}
         themeColor={themeColor}
         surfaceLabel={mobileSurfaceLabel}
         userName={displayName}
+        hideHeader={shouldHideNavigation}
       >
         <div className={isMobile ? '' : 'relative'}>
           {globalErrorMessage && (
@@ -424,6 +436,7 @@ const Dashboard: React.FC<DashboardProps> = ({ initialView = 'calendar' }) => {
                 timeFormat={userProfile?.timeFormat || '12h'}
                 timezone={userProfile?.timezone}
                 offlineMode={isOfflineReadOnlyMode}
+                onTimelineFocusModeChange={setIsCalendarTimelineFocusMode}
               />
             </AppErrorBoundary>
           )}
@@ -491,7 +504,7 @@ const Dashboard: React.FC<DashboardProps> = ({ initialView = 'calendar' }) => {
       </MobileLayout>
 
       {/* FAB quick actions */}
-      {currentView === 'calendar' && !isOfflineReadOnlyMode && (
+      {currentView === 'calendar' && !isOfflineReadOnlyMode && !isCalendarTimelineFocusMode && (
         <FloatingActionButton
           primaryAction={{
             icon: '+',

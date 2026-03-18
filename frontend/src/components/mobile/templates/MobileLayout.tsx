@@ -25,6 +25,7 @@ interface MobileLayoutProps {
   themeColor?: string;
   surfaceLabel?: string;
   userName?: string;
+  hideHeader?: boolean;
 }
 
 export const MobileLayout: React.FC<MobileLayoutProps> = ({
@@ -36,6 +37,7 @@ export const MobileLayout: React.FC<MobileLayoutProps> = ({
   themeColor = '#3b82f6',
   surfaceLabel,
   userName,
+  hideHeader = false,
 }) => {
   const { isMobile } = useScreenSize();
   const [isRefreshing, setIsRefreshing] = React.useState(false);
@@ -109,7 +111,7 @@ export const MobileLayout: React.FC<MobileLayoutProps> = ({
         ${className}
       `}
     >
-      {isMobile && (
+      {isMobile && !hideHeader && (
         <div className="sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b border-gray-100">
           <div className="flex items-center justify-between px-4 py-2.5">
             <div>

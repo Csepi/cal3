@@ -117,6 +117,16 @@ const formatTime = (date: Date, timeFormat: '12' | '24', timeZone?: string) => {
   return date.toLocaleTimeString([], options);
 };
 
+const formatTimeDot = (date: Date, timeZone?: string) => {
+  const options: Intl.DateTimeFormatOptions = {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  };
+  if (timeZone) options.timeZone = timeZone;
+  return date.toLocaleTimeString('en-GB', options).replace(':', '.');
+};
+
 const formatTimeRange = (
   start: Date,
   end: Date,
@@ -178,6 +188,7 @@ const TimelineView: React.FC<TimelineViewProps> = ({
   const [focusEventId, setFocusEventId] = useState<number | null>(null);
   const [showCalendarFilters, setShowCalendarFilters] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
+  const previousFocusModeRef = useRef(focusMode);
   const focusColor = accentColor || '#06b6d4';
   const hasCalendarControls = calendars.length > 0 && !!onToggleCalendar;
   const activeCalendarsCount = selectedCalendars.length;
@@ -296,6 +307,9 @@ const TimelineView: React.FC<TimelineViewProps> = ({
     return upcoming[0] ?? null;
   }, [normalizedEvents, now]);
   const focusMeetingLink = getMeetingLinkFromEvent(focusEvent);
+  const focusMeetingEndLabel = focusEvent
+    ? formatTimeDot(focusEvent.end, resolvedTimezone)
+    : '--.--';
 
   useEffect(() => {
     if (!focusEventId) return;
@@ -329,8 +343,8 @@ const TimelineView: React.FC<TimelineViewProps> = ({
     return ref;
   }, [isToday, now, zonedCurrentDate]);
 
-  const windowPastMinutes = 3 * 60;
-  const windowFutureMinutes = 5 * 60;
+  const windowPastMinutes = focusMode ? 1 * 60 : 3 * 60;
+  const windowFutureMinutes = focusMode ? 3 * 60 : 5 * 60;
   const windowMinutes = windowPastMinutes + windowFutureMinutes;
   const tickMinutes = 5;
   const majorTickMinutes = 30;
@@ -374,6 +388,16 @@ const TimelineView: React.FC<TimelineViewProps> = ({
     container.scrollTop = anchorScrollTop;
     setScrollTop(anchorScrollTop);
   }, [anchorScrollTop, followNow]);
+
+  useEffect(() => {
+    if (previousFocusModeRef.current === focusMode) return;
+    previousFocusModeRef.current = focusMode;
+    const container = scrollContainerRef.current;
+    if (container) {
+      container.scrollTop = anchorScrollTop;
+    }
+    setScrollTop(anchorScrollTop);
+  }, [focusMode, anchorScrollTop]);
 
   const windowStart = useMemo(
     () =>
@@ -449,7 +473,7 @@ const TimelineView: React.FC<TimelineViewProps> = ({
         )}`;
       }
     }
-    return 'No meetings scheduled in the next 5 hours.';
+    return `No meetings scheduled in the next ${Math.round(windowFutureMinutes / 60)} hours.`;
   }, [
     activeTimelineEvent,
     nextTimelineEvent,
@@ -718,17 +742,6 @@ const TimelineView: React.FC<TimelineViewProps> = ({
             <h3 className="text-2xl md:text-3xl font-semibold leading-tight drop-shadow-sm">
               {focusEvent ? focusEvent.title : 'No event right now'}
             </h3>
-            <p className="text-sm opacity-90">
-              {focusEvent
-                ? `${formatTimeRange(
-                    focusEvent.start,
-                    focusEvent.end,
-                    timeFormat,
-                    resolvedTimezone,
-                    focusEvent.isAllDay,
-                  )} - ${focusEvent.calendarName}`
-                : 'Use this gap to reset, stretch, or block a quick focus session.'}
-            </p>
             <div className="flex flex-wrap items-center gap-2 pt-1">
               <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-white/20 backdrop-blur-sm text-xs font-semibold">
                 <span className="w-2 h-2 rounded-full bg-white animate-pulse mr-2"></span>
@@ -773,9 +786,15 @@ const TimelineView: React.FC<TimelineViewProps> = ({
                 )}
               </div>
             )}
+            <p className="text-[11px] uppercase tracking-[0.18em] opacity-85">
+              Curent time.
+            </p>
             <div className="text-3xl font-bold tracking-tight">
               {formatTime(now, timeFormat, resolvedTimezone)}
             </div>
+            <p className="text-xs opacity-85">
+              meeting ending time: {focusMeetingEndLabel}
+            </p>
             <p className="text-xs opacity-80">
               {new Intl.DateTimeFormat('en-US', {
                 weekday: 'long',
@@ -792,13 +811,6 @@ const TimelineView: React.FC<TimelineViewProps> = ({
               >
                 {tStatic('common:auto.frontend.kfd1cbbd5175f')}</button>
             )}
-            {onCreateEvent && (
-              <button
-                onClick={handleLogCurrentEvent}
-                className="inline-flex items-center justify-center px-3 py-2 text-sm font-semibold bg-white text-gray-900 rounded-xl shadow-md hover:shadow-lg transition-all"
-              >
-                {tStatic('common:auto.frontend.kfe5be9b72906')}</button>
-            )}
           </div>
         </div>
 
@@ -809,7 +821,7 @@ const TimelineView: React.FC<TimelineViewProps> = ({
                 className="h-full rounded-full transition-all duration-300"
                 style={{
                   width: `${currentProgress}%`,
-                  background: `linear-gradient(90deg, ${withAlpha(focusEvent.color, 0.95)}, ${withAlpha(focusColor, 0.95)})`,
+                  background: `linear-gradient(90deg, ${withAlpha(focusColor, 0.95)}, ${withAlpha(focusEvent.color, 0.95)})`,
                 }}
               ></div>
             </div>

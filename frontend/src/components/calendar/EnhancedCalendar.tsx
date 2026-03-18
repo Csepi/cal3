@@ -74,6 +74,7 @@ interface EnhancedCalendarProps {
   className?: string;
   timezone?: string;
   offlineMode?: boolean;
+  onTimelineFocusModeChange?: (isActive: boolean) => void;
 }
 
 const getCalendarRankValue = (calendar?: CalendarType | null): number => {
@@ -1584,6 +1585,7 @@ export const EnhancedCalendar: React.FC<EnhancedCalendarProps> = ({
   className = '',
   timezone,
   offlineMode = false,
+  onTimelineFocusModeChange,
 }) => {
   // Mobile detection (used to choose the default calendar view)
   const { isMobile } = useScreenSize();
@@ -1615,6 +1617,16 @@ export const EnhancedCalendar: React.FC<EnhancedCalendarProps> = ({
       setTimelineFocusMode(false);
     }
   }, [state.currentView, timelineFocusMode]);
+
+  useEffect(() => {
+    onTimelineFocusModeChange?.(isTimelineFocusActive);
+  }, [isTimelineFocusActive, onTimelineFocusModeChange]);
+
+  useEffect(() => {
+    return () => {
+      onTimelineFocusModeChange?.(false);
+    };
+  }, [onTimelineFocusModeChange]);
 
   const queryClient = useQueryClient();
 

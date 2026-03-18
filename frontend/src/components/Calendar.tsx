@@ -18,6 +18,8 @@ interface CalendarProps {
   timezone?: string;
   /** Render calendar in offline read-only mode */
   offlineMode?: boolean;
+  /** Notify parent when timeline clean focus mode is active/inactive */
+  onTimelineFocusModeChange?: (isActive: boolean) => void;
 }
 
 /**
@@ -37,6 +39,7 @@ const Calendar: React.FC<CalendarProps> = ({
   timeFormat = '12h',
   timezone,
   offlineMode = false,
+  onTimelineFocusModeChange,
 }) => {
   return (
     <div className="container mx-auto px-4 py-6">
@@ -45,6 +48,7 @@ const Calendar: React.FC<CalendarProps> = ({
         timeFormat={timeFormat}
         timezone={timezone}
         offlineMode={offlineMode}
+        onTimelineFocusModeChange={onTimelineFocusModeChange}
         className="max-w-7xl mx-auto"
       />
     </div>
