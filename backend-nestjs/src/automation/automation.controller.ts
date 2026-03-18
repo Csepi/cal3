@@ -48,8 +48,6 @@ import {
   ApproveAutomationRuleDto,
 } from './dto/automation-requests.dto';
 
-import { bStatic } from '../i18n/runtime';
-
 @ApiTags('automation')
 @Controller('automation')
 @UseGuards(JwtAuthGuard)
@@ -186,7 +184,7 @@ export class AutomationController {
       id,
     );
     return {
-      message: bStatic('errors.auto.backend.k3ce34fb99326'),
+      message: 'Rule execution completed successfully',
       executionCount,
     };
   }
