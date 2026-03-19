@@ -277,7 +277,10 @@
     "iconStepTitle": "Ikon ?s azonos?t?s",
     "iconStepDescription": "El?sz?r v?lasszon ikont. Ezut?n old?dik fel a t?bbi mez?.",
     "iconRequiredToContinue": "V?lasszon esem?nyikont a t?bbi mez? felold?s?hoz.",
-    "iconRequired": "Esem?nyikon megad?sa k?telez?."
+    "iconRequired": "Eseményikon megadása kötelező.",
+    "calendarStepTitle": "Naptár és ikon",
+    "calendarStepDescription": "Először válasszon naptárt. Ezután oldódik fel a többi mező, az ikon pedig opcionális marad.",
+    "calendarRequiredToContinue": "A többi mező feloldásához válasszon naptárt."
   },
   "info": {
     "arrowKeys": "Használja a ← → nyílbillentyűket a navigáláshoz",

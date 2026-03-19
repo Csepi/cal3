@@ -277,7 +277,10 @@
     "iconStepTitle": "Symbol und Identit?t",
     "iconStepDescription": "W?hlen Sie zuerst ein Symbol. Danach werden die restlichen Felder freigeschaltet.",
     "iconRequiredToContinue": "W?hlen Sie ein Terminsymbol, um die ?brigen Felder freizuschalten.",
-    "iconRequired": "Ein Terminsymbol ist erforderlich."
+    "iconRequired": "Ein Terminsymbol ist erforderlich.",
+    "calendarStepTitle": "Kalender und Symbol",
+    "calendarStepDescription": "Wählen Sie zuerst einen Kalender. Danach werden die restlichen Felder freigeschaltet und das Symbol bleibt optional.",
+    "calendarRequiredToContinue": "Wählen Sie einen Kalender aus, um die übrigen Felder freizuschalten."
   },
   "info": {
     "arrowKeys": "Nutzen Sie ← → Pfeiltasten zur Navigation",

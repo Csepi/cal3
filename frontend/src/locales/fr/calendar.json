@@ -277,7 +277,10 @@
     "iconStepTitle": "Ic?ne et identit?",
     "iconStepDescription": "Choisissez d?abord une ic?ne. Le reste du formulaire se d?verrouille ensuite.",
     "iconRequiredToContinue": "S?lectionnez une ic?ne d??v?nement pour d?verrouiller les autres champs.",
-    "iconRequired": "L?ic?ne de l??v?nement est requise."
+    "iconRequired": "L’icône de l’événement est requise.",
+    "calendarStepTitle": "Calendrier et icône",
+    "calendarStepDescription": "Sélectionnez d’abord un calendrier. Le reste du formulaire se déverrouille ensuite, et l’icône reste optionnelle.",
+    "calendarRequiredToContinue": "Sélectionnez un calendrier pour déverrouiller les autres champs."
   },
   "info": {
     "arrowKeys": "Utilisez les touches ← → pour naviguer",

@@ -277,7 +277,10 @@
     "iconStepTitle": "Icon and identity",
     "iconStepDescription": "Pick an icon first. The rest of the form unlocks after selection.",
     "iconRequiredToContinue": "Select an event icon to unlock the remaining fields.",
-    "iconRequired": "Event icon is required."
+    "iconRequired": "Event icon is required.",
+    "calendarStepTitle": "Calendar and icon",
+    "calendarStepDescription": "Select a calendar first. The rest of the form unlocks after selection, and icon is optional.",
+    "calendarRequiredToContinue": "Select a calendar to unlock the remaining fields."
   },
   "info": {
     "arrowKeys": "Use ← → arrow keys to navigate",

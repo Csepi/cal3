@@ -201,8 +201,8 @@ export const CalendarEventModal: React.FC<CalendarEventModalProps> = ({
     );
   }, [eventForm, initialRecurrenceSnapshot, initialSnapshot, recurrencePattern]);
 
-  const iconRequired = !eventForm.icon;
-  const detailsLocked = iconRequired;
+  const calendarRequired = !eventForm.calendarId;
+  const detailsLocked = calendarRequired;
 
   const handleFormChange = (field: keyof CreateEventRequest, value: unknown) => {
     setEventForm((previous) => ({
@@ -228,9 +228,6 @@ export const CalendarEventModal: React.FC<CalendarEventModalProps> = ({
   const validateForm = (): boolean => {
     const errors: Record<string, string> = {};
 
-    if (!eventForm.icon) {
-      errors.icon = t('events.iconRequired', { defaultValue: 'Event icon is required.' });
-    }
     if (!eventForm.title?.trim()) {
       errors.title = t('events.titleRequired');
     }
@@ -338,24 +335,46 @@ export const CalendarEventModal: React.FC<CalendarEventModalProps> = ({
           <div className="grid gap-4 md:grid-cols-[1.15fr,1fr]">
             <div className="space-y-2">
               <h3 className="text-sm font-semibold text-slate-800">
-                {t('events.iconStepTitle', { defaultValue: 'Icon and identity' })}
+                {t('events.calendarStepTitle', { defaultValue: 'Calendar and icon' })}
               </h3>
               <p className="text-xs text-slate-500">
-                {t('events.iconStepDescription', {
-                  defaultValue: 'Pick an icon first. The rest of the form unlocks after selection.',
+                {t('events.calendarStepDescription', {
+                  defaultValue: 'Select a calendar first. The rest of the form unlocks after selection, and icon is optional.',
                 })}
               </p>
+              <div>
+                <label className="mb-2 block text-sm font-medium text-gray-700">
+                  {t('calendars.calendar')}
+                  <span className="ml-1 text-red-500">*</span>
+                </label>
+                <select
+                  value={eventForm.calendarId || ''}
+                  onChange={(event) =>
+                    handleFormChange(
+                      'calendarId',
+                      event.target.value ? Number.parseInt(event.target.value, 10) : undefined,
+                    )
+                  }
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+                >
+                  <option value="">{t('calendars.selectCalendar')}</option>
+                  {calendars.map((calendar) => (
+                    <option key={calendar.id} value={calendar.id}>
+                      {calendar.name}
+                    </option>
+                  ))}
+                </select>
+                {formErrors.calendarId && (
+                  <p className="mt-1 text-sm text-red-600">{formErrors.calendarId}</p>
+                )}
+              </div>
               <IconPicker
                 value={eventForm.icon}
                 onChange={(icon) => handleFormChange('icon', icon || undefined)}
                 category="event"
                 placeholder={t('events.selectIcon')}
+                disabled={detailsLocked}
               />
-              {formErrors.icon && (
-                <p className="text-xs text-red-600" role="alert">
-                  {formErrors.icon}
-                </p>
-              )}
             </div>
 
             <div className="rounded-xl border border-slate-200 bg-white p-3">
@@ -387,8 +406,8 @@ export const CalendarEventModal: React.FC<CalendarEventModalProps> = ({
             <>
               <div className="absolute inset-0 z-20 cursor-not-allowed rounded-2xl bg-white/65 backdrop-blur-[1px]" />
               <div className="pointer-events-none absolute inset-x-4 top-3 z-30 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-medium text-amber-800 opacity-85 group-hover:opacity-100">
-                {t('events.iconRequiredToContinue', {
-                  defaultValue: 'Select an event icon to unlock the remaining fields.',
+                {t('events.calendarRequiredToContinue', {
+                  defaultValue: 'Select a calendar to unlock the remaining fields.',
                 })}
               </div>
             </>
@@ -414,29 +433,6 @@ export const CalendarEventModal: React.FC<CalendarEventModalProps> = ({
                     placeholder={t('events.enterTitle')}
                   />
                 </div>
-
-                <div>
-                  <label className="mb-2 block text-sm font-medium text-gray-700">
-                    {t('calendars.calendar')}
-                    <span className="ml-1 text-red-500">*</span>
-                  </label>
-                  <select
-                    value={eventForm.calendarId || ''}
-                    onChange={(event) => handleFormChange('calendarId', Number.parseInt(event.target.value, 10))}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
-                  >
-                    <option value="">{t('calendars.selectCalendar')}</option>
-                    {calendars.map((calendar) => (
-                      <option key={calendar.id} value={calendar.id}>
-                        {calendar.name}
-                      </option>
-                    ))}
-                  </select>
-                  {formErrors.calendarId && (
-                    <p className="mt-1 text-sm text-red-600">{formErrors.calendarId}</p>
-                  )}
-                </div>
-
                 <Input
                   label={t('events.location')}
                   value={eventForm.location || ''}
