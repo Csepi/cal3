@@ -33,7 +33,7 @@ import { useFeatureFlags } from '../hooks/useFeatureFlags';
 import { useAuth } from '../hooks/useAuth';
 import { useTheme } from '../hooks/useTheme';
 import { usePermissions } from '../hooks/usePermissions';
-import { ResponsiveNavigation } from './mobile/organisms/ResponsiveNavigation';
+import { Navigation } from './Navigation';
 import { FloatingActionButton } from './mobile/organisms/FloatingActionButton';
 import { MobileLayout } from './mobile/templates/MobileLayout';
 import { useScreenSize } from '../hooks/useScreenSize';
@@ -328,6 +328,21 @@ const Dashboard: React.FC<DashboardProps> = ({ initialView = 'calendar' }) => {
     setCurrentView(tabId as DashboardView);
   };
 
+  const handleOpenGroups = () => {
+    setCurrentView('calendar');
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('primecal:open-groups'));
+    }
+  };
+
+  const handleOpenSettings = () => {
+    if (isOfflineReadOnlyMode) {
+      setCurrentView('calendar');
+      return;
+    }
+    setCurrentView('notification-settings');
+  };
+
   const handleCreateEvent = () => {
     clientLogger.debug('dashboard', 'floating action button pressed', {
       action: 'create-event',
@@ -392,12 +407,14 @@ const Dashboard: React.FC<DashboardProps> = ({ initialView = 'calendar' }) => {
         isMobile ? 'bg-white' : `bg-gradient-to-br ${themeConfig.gradient.background}`
       }`}
     >
-      {/* Responsive Navigation - Adapts to screen size */}
+      {/* Unified Navigation */}
       {!shouldHideNavigation && (
-        <ResponsiveNavigation
+        <Navigation
           activeTab={activeNavigationView}
           onTabChange={handleTabChange}
           hideReservationsTab={userProfile?.hideReservationsTab}
+          onOpenGroups={handleOpenGroups}
+          onOpenSettings={handleOpenSettings}
         />
       )}
 

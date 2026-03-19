@@ -15,3 +15,4 @@ export * from './LoadingSpinner';
 export * from './EmptyState';
 export * from './Modal';
 export * from './SimpleModal';
+export * from './IconPicker';

@@ -23,6 +23,12 @@ import { apiService } from '../../services/api';
 import { getThemeConfig, type ThemeConfig, LOADING_MESSAGES } from '../../constants';
 import { CalendarEventModal } from './CalendarEventModal';
 import { CalendarManager } from './CalendarManager';
+import {
+  CalendarGroupAssignment,
+  GroupList,
+  GroupManagementModal,
+  type CalendarGroupView,
+} from './groups';
 import { ConfirmationDialog } from '../dialogs';
 import { Button } from '../ui';
 import MonthView from '../views/MonthView';
@@ -33,6 +39,7 @@ import { MobileMonthView } from '../mobile/calendar/MobileMonthView';
 import { MobileWeekView } from '../mobile/calendar/MobileWeekView';
 import { MobileCalendarHeader } from '../mobile/calendar/MobileCalendarHeader';
 import { DayDetailSheet } from '../mobile/calendar/DayDetailSheet';
+import { EmojiGlyph } from '../EmojiPicker/EmojiGlyph';
 import { useCalendarData, calendarQueryKeys } from '../../hooks/useCalendarData';
 import type { Organization, ReservationRecord } from '../../hooks/useCalendarData';
 import { useScreenSize } from '../../hooks/useScreenSize';
@@ -983,7 +990,30 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
   onDeleteCalendar,
   readOnly = false,
 }) => {
-  const [creatingGroup, setCreatingGroup] = React.useState(false);
+  const [groupModalState, setGroupModalState] = React.useState<{
+    mode: 'create' | 'edit';
+    group?: CalendarGroupView;
+  } | null>(null);
+  const [assignmentTargetGroup, setAssignmentTargetGroup] =
+    React.useState<CalendarGroupView | null>(null);
+  const [groupActionLoading, setGroupActionLoading] = React.useState(false);
+  const [groupOrder, setGroupOrder] = React.useState<number[]>(() => {
+    const raw = localStorage.getItem('primecal:calendar-group-order');
+    if (!raw) {
+      return [];
+    }
+    try {
+      const parsed = JSON.parse(raw) as unknown;
+      if (!Array.isArray(parsed)) {
+        return [];
+      }
+      return parsed
+        .filter((entry): entry is number => Number.isFinite(entry))
+        .map((entry) => Number(entry));
+    } catch {
+      return [];
+    }
+  });
   // Collapsible sidebar state - persisted in localStorage
   const [isCollapsed, setIsCollapsed] = React.useState(() => {
     const saved = localStorage.getItem('enhancedCalendarSidebarCollapsed');
@@ -999,6 +1029,24 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
   React.useEffect(() => {
     localStorage.setItem('enhancedCalendarSidebarCollapsed', JSON.stringify(isCollapsed));
   }, [isCollapsed]);
+
+  React.useEffect(() => {
+    const handleOpenGroups = () => {
+      setIsCollapsed(false);
+    };
+
+    window.addEventListener('primecal:open-groups', handleOpenGroups as EventListener);
+    return () => {
+      window.removeEventListener(
+        'primecal:open-groups',
+        handleOpenGroups as EventListener,
+      );
+    };
+  }, []);
+
+  React.useEffect(() => {
+    localStorage.setItem('primecal:calendar-group-order', JSON.stringify(groupOrder));
+  }, [groupOrder]);
 
   React.useEffect(() => {
     if (!draggingCalendarId) {
@@ -1133,25 +1181,188 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
     setDraggingCalendarId(null);
   }, [draggingCalendarId, state.calendars]);
 
-  const handleCreateGroup = async () => {
+  const handleOpenCreateGroup = React.useCallback(() => {
     if (readOnly) {
       return;
     }
-    const name = window.prompt(tStatic('common:auto.frontend.k93ce14374ff4'));
-    if (!name || name.trim().length < 2) {
-      return;
-    }
-    try {
-      setCreatingGroup(true);
-      await calendarApi.createCalendarGroup({ name: name.trim(), isVisible: true });
-      await actions.refreshData();
-    } catch (err) {
-      console.error('Failed to create calendar group', err);
-      alert(err instanceof Error ? err.message : 'Failed to create group');
-    } finally {
-      setCreatingGroup(false);
-    }
-  };
+    setGroupModalState({ mode: 'create' });
+  }, [readOnly]);
+
+  const handleOpenEditGroup = React.useCallback(
+    (group: CalendarGroupView) => {
+      if (readOnly) {
+        return;
+      }
+      setGroupModalState({ mode: 'edit', group });
+    },
+    [readOnly],
+  );
+
+  const handleSubmitGroupModal = React.useCallback(
+    async (payload: { name: string; isVisible: boolean }) => {
+      if (!groupModalState) {
+        return;
+      }
+
+      setGroupActionLoading(true);
+      try {
+        if (groupModalState.mode === 'create') {
+          await calendarApi.createCalendarGroup({
+            name: payload.name,
+            isVisible: payload.isVisible,
+          });
+        } else if (groupModalState.group) {
+          await calendarApi.updateCalendarGroup(groupModalState.group.id, {
+            name: payload.name,
+            isVisible: payload.isVisible,
+          });
+        }
+
+        setGroupModalState(null);
+        await actions.refreshData();
+      } catch (error) {
+        console.error('Failed to save calendar group', error);
+        alert(error instanceof Error ? error.message : 'Failed to save group');
+      } finally {
+        setGroupActionLoading(false);
+      }
+    },
+    [actions, groupModalState],
+  );
+
+  const handleDeleteGroup = React.useCallback(
+    async (group: CalendarGroupView) => {
+      if (readOnly) {
+        return;
+      }
+
+      const confirmed = window.confirm(
+        `Delete group "${group.name}"? Calendars will remain and become ungrouped.`,
+      );
+      if (!confirmed) {
+        return;
+      }
+
+      setGroupActionLoading(true);
+      try {
+        await calendarApi.deleteCalendarGroup(group.id);
+        setAssignmentTargetGroup((current) =>
+          current?.id === group.id ? null : current,
+        );
+        await actions.refreshData();
+      } catch (error) {
+        console.error('Failed to delete calendar group', error);
+        alert(error instanceof Error ? error.message : 'Failed to delete group');
+      } finally {
+        setGroupActionLoading(false);
+      }
+    },
+    [actions, readOnly],
+  );
+
+  const handleToggleGroupVisibility = React.useCallback(
+    async (group: CalendarGroupView) => {
+      if (readOnly) {
+        return;
+      }
+
+      setGroupActionLoading(true);
+      try {
+        await calendarApi.updateCalendarGroup(group.id, {
+          isVisible: !group.isVisible,
+        });
+        await actions.refreshData();
+      } catch (error) {
+        console.error('Failed to toggle calendar group visibility', error);
+        alert(error instanceof Error ? error.message : 'Failed to update visibility');
+      } finally {
+        setGroupActionLoading(false);
+      }
+    },
+    [actions, readOnly],
+  );
+
+  const handleSaveGroupAssignment = React.useCallback(
+    async (nextCalendarIds: number[]) => {
+      if (!assignmentTargetGroup) {
+        return;
+      }
+
+      setGroupActionLoading(true);
+      try {
+        const currentlyAssigned = assignmentTargetGroup.calendars.map(
+          (calendar) => calendar.id,
+        );
+        const nextSet = new Set(nextCalendarIds);
+        const currentSet = new Set(currentlyAssigned);
+
+        const toAssign = nextCalendarIds.filter((calendarId) => !currentSet.has(calendarId));
+        const toUnassign = currentlyAssigned.filter((calendarId) => !nextSet.has(calendarId));
+
+        if (toAssign.length > 0) {
+          await calendarApi.assignCalendarsToGroup(assignmentTargetGroup.id, {
+            calendarIds: toAssign,
+          });
+        }
+        if (toUnassign.length > 0) {
+          await calendarApi.unassignCalendarsFromGroup(assignmentTargetGroup.id, {
+            calendarIds: toUnassign,
+          });
+        }
+
+        setAssignmentTargetGroup(null);
+        await actions.refreshData();
+      } catch (error) {
+        console.error('Failed to assign calendars to group', error);
+        alert(error instanceof Error ? error.message : 'Failed to assign calendars');
+      } finally {
+        setGroupActionLoading(false);
+      }
+    },
+    [actions, assignmentTargetGroup],
+  );
+
+  const handleToggleGroupCalendars = React.useCallback(
+    (group: CalendarGroupView, allSelected: boolean) => {
+      const groupCalendarIds = group.calendars.map((calendar) => calendar.id);
+      if (allSelected) {
+        groupCalendarIds.forEach((calendarId) => actions.toggleCalendar(calendarId));
+        return;
+      }
+      groupCalendarIds.forEach((calendarId) => {
+        if (!state.selectedCalendars.includes(calendarId)) {
+          actions.toggleCalendar(calendarId);
+        }
+      });
+    },
+    [actions, state.selectedCalendars],
+  );
+
+  const handleDropCalendarToGroup = React.useCallback(
+    async (group: CalendarGroupView, calendarId: number) => {
+      if (readOnly) {
+        return;
+      }
+
+      if (group.calendars.some((calendar) => calendar.id === calendarId)) {
+        return;
+      }
+
+      setGroupActionLoading(true);
+      try {
+        await calendarApi.assignCalendarsToGroup(group.id, {
+          calendarIds: [calendarId],
+        });
+        await actions.refreshData();
+      } catch (error) {
+        console.error('Failed to move calendar into group', error);
+        alert(error instanceof Error ? error.message : 'Failed to move calendar to group');
+      } finally {
+        setGroupActionLoading(false);
+      }
+    },
+    [actions, readOnly],
+  );
 
   const groupedCalendars = React.useMemo(() => {
     const byId = new Map<number, CalendarType>();
@@ -1164,13 +1375,38 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
       return { ...group, calendars: sortCalendarsByRank(calendars) };
     });
 
-    const groupedIds = new Set(groups.flatMap((g) => g.calendars.map((c) => c.id)));
+    const groupIndex = new Map(groups.map((group) => [group.id, group]));
+    const orderedGroupIds = [
+      ...groupOrder.filter((groupId) => groupIndex.has(groupId)),
+      ...groups.map((group) => group.id).filter((groupId) => !groupOrder.includes(groupId)),
+    ];
+    const orderedGroups = orderedGroupIds
+      .map((groupId) => groupIndex.get(groupId))
+      .filter((group): group is CalendarGroupView => Boolean(group));
+
+    const groupedIds = new Set(orderedGroups.flatMap((g) => g.calendars.map((c) => c.id)));
     const ungrouped = sortCalendarsByRank(
       state.calendars.filter((cal) => !groupedIds.has(cal.id)),
     );
 
-    return { groups, ungrouped };
-  }, [state.calendars, state.calendarGroups]);
+    return { groups: orderedGroups, ungrouped };
+  }, [groupOrder, state.calendars, state.calendarGroups]);
+
+  React.useEffect(() => {
+    const incomingIds = groupedCalendars.groups.map((group) => group.id);
+    setGroupOrder((previous) => {
+      const kept = previous.filter((groupId) => incomingIds.includes(groupId));
+      const missing = incomingIds.filter((groupId) => !kept.includes(groupId));
+      const merged = [...kept, ...missing];
+      if (
+        merged.length === previous.length &&
+        merged.every((groupId, index) => groupId === previous[index])
+      ) {
+        return previous;
+      }
+      return merged;
+    });
+  }, [groupedCalendars.groups]);
 
   const calendarsToRender =
     calendarOrder.length > 0 ? calendarOrder : state.calendars;
@@ -1208,7 +1444,7 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
       </div>
       {calendar.icon && (
         <div className="text-xl mr-2 flex-shrink-0">
-          {calendar.icon}
+          <EmojiGlyph value={calendar.icon} imageClassName="h-6 w-6 rounded object-cover" />
         </div>
       )}
       <div className="flex-1 min-w-0">
@@ -1284,7 +1520,7 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
                   />
                   {calendar.icon && (
                     <div className="absolute inset-0 flex items-center justify-center text-lg">
-                      {calendar.icon}
+                      <EmojiGlyph value={calendar.icon} imageClassName="h-6 w-6 rounded object-cover" />
                     </div>
                   )}
                 </div>
@@ -1328,58 +1564,29 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={handleCreateGroup}
-                disabled={creatingGroup}
+                onClick={handleOpenCreateGroup}
+                disabled={groupActionLoading}
                 className={`text-${themeConfig.primary}-600 hover:bg-${themeConfig.primary}-100`}
               >
-                {tStatic('common:auto.frontend.k74a33ebc8648')}</Button>
+                {tStatic('common:auto.frontend.k74a33ebc8648')}
+              </Button>
             )}
           </div>
 
-          {groupedCalendars.groups.map((group) => {
-            const groupCalendarIds = group.calendars.map((c) => c.id);
-            const allSelected = groupCalendarIds.length > 0 && groupCalendarIds.every((id) => state.selectedCalendars.includes(id));
-
-            return (
-              <div key={group.id} className="rounded-lg border border-gray-200 bg-white/70">
-                <div className="flex items-center justify-between px-3 py-2 border-b border-gray-100">
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => {
-                        if (allSelected) {
-                          groupCalendarIds.forEach((id) => actions.toggleCalendar(id));
-                        } else {
-                          groupCalendarIds.forEach((id) => {
-                            if (!state.selectedCalendars.includes(id)) {
-                              actions.toggleCalendar(id);
-                            }
-                          });
-                        }
-                      }}
-                      className="w-4 h-4 rounded border border-gray-400 flex items-center justify-center"
-                      aria-label={tStatic('common:auto.frontend.kbb7229ba35ec')}
-                    >
-                      {allSelected && <span className="text-xs">✓</span>}
-                    </button>
-                    <div>
-                      <div className="font-semibold text-gray-800">{group.name}</div>
-                      <div className="text-xs text-gray-500">
-                        {group.calendars.length} {tStatic('common:auto.frontend.k66a98b77f77d')}{group.isVisible ? 'Visible' : 'Hidden'}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div className="divide-y divide-gray-100">
-                  {group.calendars.map((calendar) => renderCalendarRow(calendar))}
-                  {group.calendars.length === 0 && (
-                    <div className="px-4 py-3 text-sm text-gray-500">{tStatic('common:auto.frontend.kbab7e2781755')}</div>
-                  )}
-                </div>
-              </div>
-            );
-          })}
+          <GroupList
+            groups={groupedCalendars.groups}
+            selectedCalendarIds={state.selectedCalendars}
+            readOnly={readOnly}
+            onToggleGroupCalendars={handleToggleGroupCalendars}
+            onRenameGroup={handleOpenEditGroup}
+            onDeleteGroup={handleDeleteGroup}
+            onAssignCalendars={setAssignmentTargetGroup}
+            onToggleVisibility={handleToggleGroupVisibility}
+            onReorderGroups={setGroupOrder}
+            onDropCalendarToGroup={handleDropCalendarToGroup}
+            renderCalendarRow={renderCalendarRow}
+          />
         </div>
-
         {/* Calendars List */}
         <div>
           <div className="flex items-start justify-between mb-4">
@@ -1457,7 +1664,7 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
                 </div>
                 {calendar.icon && (
                   <div className="text-xl mr-2 flex-shrink-0">
-                    {calendar.icon}
+                    <EmojiGlyph value={calendar.icon} imageClassName="h-6 w-6 rounded object-cover" />
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
@@ -1647,6 +1854,26 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
           </div>
         </div>
       </div>
+
+      <GroupManagementModal
+        isOpen={groupModalState !== null}
+        mode={groupModalState?.mode ?? 'create'}
+        initialName={groupModalState?.group?.name}
+        initialVisible={groupModalState?.group?.isVisible ?? true}
+        loading={groupActionLoading}
+        onClose={() => setGroupModalState(null)}
+        onSubmit={handleSubmitGroupModal}
+      />
+
+      <CalendarGroupAssignment
+        isOpen={Boolean(assignmentTargetGroup)}
+        groupName={assignmentTargetGroup?.name ?? 'group'}
+        calendars={sortCalendarsByRank(state.calendars)}
+        assignedCalendarIds={assignmentTargetGroup?.calendars.map((calendar) => calendar.id) ?? []}
+        loading={groupActionLoading}
+        onClose={() => setAssignmentTargetGroup(null)}
+        onSave={handleSaveGroupAssignment}
+      />
     </aside>
   );
 };
