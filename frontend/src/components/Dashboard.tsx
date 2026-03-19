@@ -44,6 +44,7 @@ import { clientLogger } from '../utils/clientLogger';
 import { isNativeClient } from '../services/clientPlatform';
 import AppErrorBoundary from './common/AppErrorBoundary';
 import PersonalLogsPanel from './profile/PersonalLogsPanel';
+import { CalendarPageTemplate } from './layout/CalendarPageTemplate';
 import {
   hasOfflineTimelineSnapshot,
   isNavigatorOffline,
@@ -328,21 +329,6 @@ const Dashboard: React.FC<DashboardProps> = ({ initialView = 'calendar' }) => {
     setCurrentView(tabId as DashboardView);
   };
 
-  const handleOpenGroups = () => {
-    setCurrentView('calendar');
-    if (typeof window !== 'undefined') {
-      window.dispatchEvent(new CustomEvent('primecal:open-groups'));
-    }
-  };
-
-  const handleOpenSettings = () => {
-    if (isOfflineReadOnlyMode) {
-      setCurrentView('calendar');
-      return;
-    }
-    setCurrentView('notification-settings');
-  };
-
   const handleCreateEvent = () => {
     clientLogger.debug('dashboard', 'floating action button pressed', {
       action: 'create-event',
@@ -369,6 +355,17 @@ const Dashboard: React.FC<DashboardProps> = ({ initialView = 'calendar' }) => {
       : currentView) as TabId;
 
   const shouldHideNavigation = currentView === 'calendar' && isCalendarTimelineFocusMode;
+  const usesCalendarPageTemplate = [
+    'tasks',
+    'notifications',
+    'notification-settings',
+    'profile',
+    'personal-logs',
+    'reservations',
+    'automation',
+    'agent',
+    'sync',
+  ].includes(currentView);
 
   const displayName = userProfile?.name || userProfile?.fullName || currentUser?.username || '';
   const mobileSurfaceLabel = (() => {
@@ -413,8 +410,6 @@ const Dashboard: React.FC<DashboardProps> = ({ initialView = 'calendar' }) => {
           activeTab={activeNavigationView}
           onTabChange={handleTabChange}
           hideReservationsTab={userProfile?.hideReservationsTab}
-          onOpenGroups={handleOpenGroups}
-          onOpenSettings={handleOpenSettings}
         />
       )}
 
@@ -422,7 +417,7 @@ const Dashboard: React.FC<DashboardProps> = ({ initialView = 'calendar' }) => {
       <MobileLayout
         showBottomNav={isMobile && !shouldHideNavigation}
         onRefresh={handleRefresh}
-        noPadding={currentView === 'calendar'}
+        noPadding={currentView === 'calendar' || usesCalendarPageTemplate}
         themeColor={themeColor}
         surfaceLabel={mobileSurfaceLabel}
         userName={displayName}
@@ -458,58 +453,76 @@ const Dashboard: React.FC<DashboardProps> = ({ initialView = 'calendar' }) => {
             </AppErrorBoundary>
           )}
           {currentView === 'tasks' && featureFlags.tasks && (
-            <AppErrorBoundary fallbackTitle="Tasks module failed" inline>
-              <TasksWorkspace
-                ref={tasksWorkspaceRef}
-                themeColor={themeColor}
-                timeFormat={userProfile?.timeFormat}
-                timezone={userProfile?.timezone}
-                locale={userProfile?.language}
-              />
-            </AppErrorBoundary>
+            <CalendarPageTemplate>
+              <AppErrorBoundary fallbackTitle="Tasks module failed" inline>
+                <TasksWorkspace
+                  ref={tasksWorkspaceRef}
+                  themeColor={themeColor}
+                  timeFormat={userProfile?.timeFormat}
+                  timezone={userProfile?.timezone}
+                  locale={userProfile?.language}
+                />
+              </AppErrorBoundary>
+            </CalendarPageTemplate>
           )}
           {currentView === 'profile' && (
-            <AppErrorBoundary fallbackTitle="Profile module failed" inline>
-              <UserProfile
-                onThemeChange={handleThemeChange}
-                currentTheme={themeColor}
-              />
-            </AppErrorBoundary>
+            <CalendarPageTemplate>
+              <AppErrorBoundary fallbackTitle="Profile module failed" inline>
+                <UserProfile
+                  onThemeChange={handleThemeChange}
+                  currentTheme={themeColor}
+                />
+              </AppErrorBoundary>
+            </CalendarPageTemplate>
           )}
           {currentView === 'personal-logs' && (
-            <AppErrorBoundary fallbackTitle="Personal logs module failed" inline>
-              <PersonalLogsPanel themeColor={themeColor} />
-            </AppErrorBoundary>
+            <CalendarPageTemplate>
+              <AppErrorBoundary fallbackTitle="Personal logs module failed" inline>
+                <PersonalLogsPanel themeColor={themeColor} />
+              </AppErrorBoundary>
+            </CalendarPageTemplate>
           )}
           {currentView === 'sync' && featureFlags.calendarSync && (
-            <AppErrorBoundary fallbackTitle="Calendar sync module failed" inline>
-              <CalendarSync themeColor={themeColor} />
-            </AppErrorBoundary>
+            <CalendarPageTemplate>
+              <AppErrorBoundary fallbackTitle="Calendar sync module failed" inline>
+                <CalendarSync themeColor={themeColor} />
+              </AppErrorBoundary>
+            </CalendarPageTemplate>
           )}
           {currentView === 'automation' && featureFlags.automation && (
-            <AppErrorBoundary fallbackTitle="Automation module failed" inline>
-              <AutomationPanel themeColor={themeColor} />
-            </AppErrorBoundary>
+            <CalendarPageTemplate>
+              <AppErrorBoundary fallbackTitle="Automation module failed" inline>
+                <AutomationPanel themeColor={themeColor} />
+              </AppErrorBoundary>
+            </CalendarPageTemplate>
           )}
           {currentView === 'agent' && featureFlags.agents && (
-            <AppErrorBoundary fallbackTitle="Agent module failed" inline>
-              <AgentSettingsPage themeColor={themeColor} />
-            </AppErrorBoundary>
+            <CalendarPageTemplate>
+              <AppErrorBoundary fallbackTitle="Agent module failed" inline>
+                <AgentSettingsPage themeColor={themeColor} />
+              </AppErrorBoundary>
+            </CalendarPageTemplate>
           )}
           {currentView === 'reservations' && featureFlags.reservations && canAccessReservations && !userProfile?.hideReservationsTab && (
-            <AppErrorBoundary fallbackTitle="Reservations module failed" inline>
-              <ReservationsPanel themeColor={themeColor} />
-            </AppErrorBoundary>
+            <CalendarPageTemplate>
+              <AppErrorBoundary fallbackTitle="Reservations module failed" inline>
+                <ReservationsPanel themeColor={themeColor} />
+              </AppErrorBoundary>
+            </CalendarPageTemplate>
           )}
           {currentView === 'notifications' && (
-            <AppErrorBoundary fallbackTitle="Notifications module failed" inline>
-              <NotificationCenter onOpenSettings={() => setCurrentView('notification-settings')} />
-            </AppErrorBoundary>
+            <CalendarPageTemplate>
+              <AppErrorBoundary fallbackTitle="Notifications module failed" inline>
+                <NotificationCenter onOpenSettings={() => setCurrentView('notification-settings')} />
+              </AppErrorBoundary>
+            </CalendarPageTemplate>
           )}
           {currentView === 'notification-settings' && (
-            <AppErrorBoundary fallbackTitle="Notification settings failed" inline>
-              <NotificationSettingsPanel onBack={() => setCurrentView('notifications')} />
-            </AppErrorBoundary>
+            <CalendarPageTemplate>
+              <AppErrorBoundary fallbackTitle="Notification settings failed" inline>
+                <NotificationSettingsPanel onBack={() => setCurrentView('notifications')} />
+              </AppErrorBoundary>
+            </CalendarPageTemplate>
           )}
           {/* Admin Panel - Only accessible to admin users */}
           {currentView === 'admin' && (currentUser?.role || 'user') === 'admin' && (

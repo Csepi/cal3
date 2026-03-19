@@ -8,7 +8,7 @@ import { usePermissions } from '../../hooks/usePermissions';
 import { useAppTranslation } from '../../i18n/useAppTranslation';
 import type { TabId } from '../mobile/organisms/BottomTabBar';
 
-export type NavigationIntent = 'default' | 'groups' | 'settings';
+export type NavigationIntent = 'default';
 
 export interface NavigationItem {
   key: string;
@@ -41,14 +41,6 @@ const TasksIcon = (
     <circle cx="7" cy="17" r="1" fill="currentColor" stroke="none" />
   </svg>
 );
-const GroupsIcon = (
-  <svg viewBox="0 0 24 24" className={iconClassName} fill="none" stroke="currentColor" strokeWidth="1.8">
-    <rect x="3" y="4" width="8" height="6" rx="1.5" />
-    <rect x="13" y="4" width="8" height="6" rx="1.5" />
-    <rect x="3" y="14" width="8" height="6" rx="1.5" />
-    <rect x="13" y="14" width="8" height="6" rx="1.5" />
-  </svg>
-);
 const BellIcon = (
   <svg viewBox="0 0 24 24" className={iconClassName} fill="none" stroke="currentColor" strokeWidth="1.8">
     <path d="M15 17h5l-1.4-1.4A2 2 0 0 1 18 13.8V11a6 6 0 0 0-12 0v2.8a2 2 0 0 1-.6 1.4L4 17h5" />
@@ -59,12 +51,6 @@ const ProfileIcon = (
   <svg viewBox="0 0 24 24" className={iconClassName} fill="none" stroke="currentColor" strokeWidth="1.8">
     <circle cx="12" cy="8" r="4" />
     <path d="M4 20c0-4 3.6-6 8-6s8 2 8 6" />
-  </svg>
-);
-const SettingsIcon = (
-  <svg viewBox="0 0 24 24" className={iconClassName} fill="none" stroke="currentColor" strokeWidth="1.8">
-    <circle cx="12" cy="12" r="3" />
-    <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H10a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V10a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z" />
   </svg>
 );
 const SyncIcon = (
@@ -123,20 +109,32 @@ const breadcrumbLabel = (tabId: TabId, t: ReturnType<typeof useAppTranslation>['
 const sortByRank = (items: NavigationItem[]): NavigationItem[] => {
   const rank: Record<string, number> = {
     calendar: 0,
-    groups: 1,
-    tasks: 2,
-    notifications: 3,
-    settings: 4,
-    profile: 5,
-    'personal-logs': 6,
-    reservations: 7,
-    automation: 8,
-    agent: 9,
-    sync: 10,
-    admin: 11,
+    tasks: 1,
+    notifications: 2,
+    profile: 3,
+    reservations: 4,
+    automation: 5,
+    agent: 6,
+    sync: 7,
+    'personal-logs': 8,
+    admin: 9,
   };
 
   return [...items].sort((left, right) => (rank[left.key] ?? 99) - (rank[right.key] ?? 99));
+};
+
+const sortDesktopSecondaryItems = (items: NavigationItem[]): NavigationItem[] => {
+  const overflowRank: Record<string, number> = {
+    automation: 0,
+    sync: 1,
+    reservations: 2,
+    agent: 3,
+    'personal-logs': 99,
+  };
+
+  return [...items].sort(
+    (left, right) => (overflowRank[left.key] ?? 50) - (overflowRank[right.key] ?? 50),
+  );
 };
 
 export const useNavigation = ({ activeTab, hideReservationsTab = false }: UseNavigationOptions) => {
@@ -157,13 +155,6 @@ export const useNavigation = ({ activeTab, hideReservationsTab = false }: UseNav
         icon: CalendarIcon,
       },
       {
-        key: 'groups',
-        tabId: 'calendar',
-        label: t('navigation.groups', { defaultValue: 'Groups' }),
-        icon: GroupsIcon,
-        intent: 'groups',
-      },
-      {
         key: 'tasks',
         tabId: 'tasks',
         label: t('navigation.tasks', { defaultValue: 'Tasks' }),
@@ -178,13 +169,6 @@ export const useNavigation = ({ activeTab, hideReservationsTab = false }: UseNav
         badge: unreadCount ?? 0,
       },
       {
-        key: 'settings',
-        tabId: 'notifications',
-        label: t('navigation.settings', { defaultValue: 'Settings' }),
-        icon: SettingsIcon,
-        intent: 'settings',
-      },
-      {
         key: 'profile',
         tabId: 'profile',
         label: t('navigation.profile'),
@@ -193,8 +177,8 @@ export const useNavigation = ({ activeTab, hideReservationsTab = false }: UseNav
       {
         key: 'personal-logs',
         tabId: 'personal-logs',
-        label: t('navigation.personalLogs', { defaultValue: 'Personal Logs' }),
-        shortLabel: t('navigation.logsShort', { defaultValue: 'Logs' }),
+        label: t('navigation.personalLogs', { defaultValue: 'Personal logs' }),
+        shortLabel: t('navigation.logsShort', { defaultValue: 'Personal logs' }),
         icon: LogsIcon,
       },
     ];
@@ -203,9 +187,9 @@ export const useNavigation = ({ activeTab, hideReservationsTab = false }: UseNav
       items.push({
         key: 'reservations',
         tabId: 'reservations',
-        label: t('navigation.reservations'),
-        shortLabel: t('navigation.reservationsShort'),
-        icon: GroupsIcon,
+        label: t('navigation.reservations', { defaultValue: 'Reservation' }),
+        shortLabel: t('navigation.reservationsShort', { defaultValue: 'Reservation' }),
+        icon: CalendarIcon,
       });
     }
 
@@ -214,7 +198,7 @@ export const useNavigation = ({ activeTab, hideReservationsTab = false }: UseNav
         key: 'automation',
         tabId: 'automation',
         label: t('navigation.automation'),
-        shortLabel: t('navigation.automationShort'),
+        shortLabel: t('navigation.automationShort', { defaultValue: 'Automation' }),
         icon: AutomationIcon,
       });
     }
@@ -223,8 +207,8 @@ export const useNavigation = ({ activeTab, hideReservationsTab = false }: UseNav
       items.push({
         key: 'agent',
         tabId: 'agent',
-        label: t('navigation.agentSettings', { defaultValue: 'Agent settings' }),
-        shortLabel: t('navigation.agentsShort', { defaultValue: 'Agents' }),
+        label: t('navigation.agentSettings', { defaultValue: 'AI Agents (MCP)' }),
+        shortLabel: t('navigation.agentsShort', { defaultValue: 'AI Agents (MCP)' }),
         icon: AdminIcon,
       });
     }
@@ -233,8 +217,8 @@ export const useNavigation = ({ activeTab, hideReservationsTab = false }: UseNav
       items.push({
         key: 'sync',
         tabId: 'sync',
-        label: t('navigation.sync'),
-        shortLabel: t('navigation.syncShort'),
+        label: t('navigation.sync', { defaultValue: 'External Sync' }),
+        shortLabel: t('navigation.syncShort', { defaultValue: 'External Sync' }),
         icon: SyncIcon,
       });
     }
@@ -271,6 +255,8 @@ export const useNavigation = ({ activeTab, hideReservationsTab = false }: UseNav
   const desktopSecondaryItems = baseItems.filter(
     (item) =>
       item.key !== 'notifications'
+      && item.key !== 'profile'
+      && item.key !== 'admin'
       && !desktopPrimaryItems.some((primary) => primary.key === item.key),
   );
 
@@ -284,7 +270,7 @@ export const useNavigation = ({ activeTab, hideReservationsTab = false }: UseNav
   return {
     allItems: baseItems,
     desktopPrimaryItems,
-    desktopSecondaryItems,
+    desktopSecondaryItems: sortDesktopSecondaryItems(desktopSecondaryItems),
     notificationItem,
     mobileItems,
     breadcrumbTrail,

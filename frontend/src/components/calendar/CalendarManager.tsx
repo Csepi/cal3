@@ -238,6 +238,7 @@ export const CalendarManager: React.FC<CalendarManagerProps> = ({
           header={<h3 className="text-lg font-semibold text-gray-800">{tStatic('common:auto.frontend.k266aabe1affe')}</h3>}
           padding="lg"
           themeColor={themeColor}
+          className="relative z-30"
         >
           <div className="space-y-4">
             {/* Calendar Name */}
@@ -265,7 +266,7 @@ export const CalendarManager: React.FC<CalendarManagerProps> = ({
             />
 
             {/* Icon Picker */}
-            <div>
+            <div className="relative z-40">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 {tStatic('common:auto.frontend.k43d899337131')}</label>
               <IconPicker
@@ -273,6 +274,7 @@ export const CalendarManager: React.FC<CalendarManagerProps> = ({
                 onChange={(icon) => handleFormChange('icon', icon || '')}
                 category="all"
                 placeholder={tStatic('common:auto.frontend.ke6e545f79f05')}
+                className="z-40"
               />
             </div>
           </div>
@@ -283,6 +285,7 @@ export const CalendarManager: React.FC<CalendarManagerProps> = ({
           header={<h3 className="text-lg font-semibold text-gray-800">{tStatic('common:auto.frontend.k7396350407d3')}</h3>}
           padding="lg"
           themeColor={themeColor}
+          className="relative z-10"
         >
           <div className="space-y-4">
             <p className="text-sm text-gray-600">

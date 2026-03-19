@@ -1580,40 +1580,6 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
           </button>
         </div>
 
-        {/* Calendar Groups */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <h3 className={`text-md font-semibold text-${themeConfig.text}`}>{tStatic('common:auto.frontend.kae9629f4ebb8')}</h3>
-              <span className="text-xs text-gray-500">{groupedCalendars.groups.length} {tStatic('common:auto.frontend.k5a537e209151')}</span>
-            </div>
-            {!readOnly && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleOpenCreateGroup}
-                disabled={groupActionLoading}
-                className={`text-${themeConfig.primary}-600 hover:bg-${themeConfig.primary}-100`}
-              >
-                {tStatic('common:auto.frontend.k74a33ebc8648')}
-              </Button>
-            )}
-          </div>
-
-          <GroupList
-            groups={groupedCalendars.groups}
-            selectedCalendarIds={state.selectedCalendars}
-            readOnly={readOnly}
-            onToggleGroupCalendars={handleToggleGroupCalendars}
-            onRenameGroup={handleOpenEditGroup}
-            onDeleteGroup={handleDeleteGroup}
-            onAssignCalendars={setAssignmentTargetGroup}
-            onToggleVisibility={handleToggleGroupVisibility}
-            onReorderGroups={setGroupOrder}
-            onDropCalendarToGroup={handleDropCalendarToGroup}
-            renderCalendarRow={renderCalendarRow}
-          />
-        </div>
         {/* Calendars List */}
         <div>
           <div className="flex items-start justify-between mb-4">
@@ -1728,6 +1694,41 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
                 </div>
               </div>
             ))}
+          </div>
+
+          {/* Calendar Groups live under My Calendars */}
+          <div className="mt-5 space-y-3 border-t border-gray-200 pt-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <h4 className={`text-sm font-semibold text-${themeConfig.text}`}>{tStatic('common:auto.frontend.kae9629f4ebb8')}</h4>
+                <span className="text-xs text-gray-500">{groupedCalendars.groups.length} {tStatic('common:auto.frontend.k5a537e209151')}</span>
+              </div>
+              {!readOnly && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleOpenCreateGroup}
+                  disabled={groupActionLoading}
+                  className={`text-${themeConfig.primary}-600 hover:bg-${themeConfig.primary}-100`}
+                >
+                  {tStatic('common:auto.frontend.k74a33ebc8648')}
+                </Button>
+              )}
+            </div>
+
+            <GroupList
+              groups={groupedCalendars.groups}
+              selectedCalendarIds={state.selectedCalendars}
+              readOnly={readOnly}
+              onToggleGroupCalendars={handleToggleGroupCalendars}
+              onRenameGroup={handleOpenEditGroup}
+              onDeleteGroup={handleDeleteGroup}
+              onAssignCalendars={setAssignmentTargetGroup}
+              onToggleVisibility={handleToggleGroupVisibility}
+              onReorderGroups={setGroupOrder}
+              onDropCalendarToGroup={handleDropCalendarToGroup}
+              renderCalendarRow={renderCalendarRow}
+            />
           </div>
         </div>
 

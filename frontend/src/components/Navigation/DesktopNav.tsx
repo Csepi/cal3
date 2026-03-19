@@ -100,7 +100,7 @@ export const DesktopNav: React.FC<DesktopNavProps> = ({
                   aria-expanded={isOverflowOpen}
                   onClick={() => setIsOverflowOpen((value) => !value)}
                 >
-                  {t('other', { defaultValue: 'Other' })}
+                  {t('navigation.more', { defaultValue: 'More' })}
                   <svg
                     className={`h-4 w-4 transition-transform ${isOverflowOpen ? 'rotate-180' : ''}`}
                     viewBox="0 0 24 24"
@@ -116,7 +116,7 @@ export const DesktopNav: React.FC<DesktopNavProps> = ({
                   <div
                     className="absolute right-0 z-20 mt-2 w-64 rounded-xl border border-slate-200 bg-white p-2 shadow-xl"
                     role="menu"
-                    aria-label={t('other', { defaultValue: 'Other' })}
+                    aria-label={t('navigation.more', { defaultValue: 'More' })}
                   >
                     {secondaryItems.map((item) => (
                       <div key={item.key} className="mb-1 last:mb-0">
