@@ -1470,7 +1470,13 @@
     "reservationsShort": "Reserv.",
     "sync": "Kalender-Sync",
     "syncShort": "Sync",
-    "tasks": "Aufgaben"
+    "tasks": "Aufgaben",
+    "groups": "Gruppen",
+    "settings": "Einstellungen",
+    "searchAria": "Navigationssuche",
+    "searchPlaceholder": "Kalender, Termine oder Gruppen durchsuchen",
+    "primaryMobileAria": "Prim?re mobile Navigation",
+    "breadcrumbAria": "Brotkrumenpfad"
   },
   "roles": {
     "admin": "Admin",
@@ -1507,5 +1513,52 @@
     "required": "Dieses Feld ist erforderlich",
     "tooLong": "Zu lang",
     "tooShort": "Zu kurz"
+  },
+  "emojiPicker": {
+    "title": "Emoji-Auswahl",
+    "open": "Emoji-Auswahl ?ffnen",
+    "close": "Emoji-Auswahl schlie?en",
+    "dialogAria": "Emoji-Auswahl",
+    "upload": "Benutzerdefiniertes Emoji hochladen",
+    "uploadHint": "Benutzerdefiniertes Emoji hochladen (PNG/JPG/GIF, max. 1 MB)",
+    "selectEmoji": "Emoji ausw?hlen",
+    "searchAria": "Emoji suchen",
+    "searchPlaceholder": "Emoji suchen",
+    "clearSearch": "Emoji-Suche l?schen",
+    "searchResults": "Suchergebnisse",
+    "customEmojis": "Benutzerdefinierte Emojis",
+    "emojis": "Emojis",
+    "recentlyUsed": "K?rzlich verwendet",
+    "recentlyUsedAria": "K?rzlich verwendete Emojis",
+    "emptySearch": "Keine Emojis f?r diese Suche gefunden.",
+    "emptyCategory": "In dieser Kategorie sind keine Emojis verf?gbar.",
+    "skinTone": "Hautfarbe",
+    "skinToneSelectorAria": "Hautfarbenauswahl",
+    "skinTones": {
+      "default": "Standard",
+      "light": "Hell",
+      "mediumLight": "Mittel-hell",
+      "medium": "Mittel",
+      "mediumDark": "Mittel-dunkel",
+      "dark": "Dunkel"
+    },
+    "categories": {
+      "smileys": "Smileys",
+      "people": "Personen",
+      "nature": "Natur",
+      "food": "Essen",
+      "travel": "Reisen",
+      "activities": "Aktivit?ten",
+      "objects": "Objekte",
+      "symbols": "Symbole"
+    },
+    "customEmojiName": "Benutzerdefiniertes Emoji",
+    "errors": {
+      "processFile": "Die ausgew?hlte Datei konnte nicht verarbeitet werden.",
+      "readFile": "Die ausgew?hlte Datei konnte nicht gelesen werden.",
+      "invalidFileType": "Nur PNG-, JPG- oder GIF-Dateien werden unterst?tzt.",
+      "maxUploadSize": "Die maximale Upload-Gr??e betr?gt 1 MB.",
+      "loadCustomEmojiFile": "Die benutzerdefinierte Emoji-Datei konnte nicht geladen werden."
+    }
   }
 }

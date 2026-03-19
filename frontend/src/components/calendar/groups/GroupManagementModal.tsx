@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
+import { useAppTranslation } from '../../../i18n/useAppTranslation';
 import { Button, Input, SimpleModal } from '../../ui';
 
 interface GroupManagementModalProps {
@@ -21,6 +22,7 @@ export const GroupManagementModal: React.FC<GroupManagementModalProps> = ({
   onClose,
   onSubmit,
 }) => {
+  const { t } = useAppTranslation('calendar');
   const [name, setName] = useState(initialName ?? '');
   const [isVisible, setIsVisible] = useState(initialVisible);
   const [error, setError] = useState<string | null>(null);
@@ -38,7 +40,11 @@ export const GroupManagementModal: React.FC<GroupManagementModalProps> = ({
   const handleSubmit = async () => {
     const trimmedName = name.trim();
     if (trimmedName.length < 2) {
-      setError('Group name must be at least 2 characters long.');
+      setError(
+        t('groups.groupNameMinLength', {
+          defaultValue: 'Group name must be at least 2 characters long.',
+        }),
+      );
       return;
     }
 
@@ -50,16 +56,20 @@ export const GroupManagementModal: React.FC<GroupManagementModalProps> = ({
     <SimpleModal
       isOpen={isOpen}
       onClose={onClose}
-      title={mode === 'create' ? 'Create group' : 'Edit group'}
+      title={mode === 'create'
+        ? t('groups.createGroup', { defaultValue: 'Create group' })
+        : t('groups.editGroup', { defaultValue: 'Edit group' })}
       size="md"
       fullScreenOnMobile
     >
       <div className="space-y-4">
         <Input
-          label="Group name"
+          label={t('groups.groupName', { defaultValue: 'Group name' })}
           value={name}
           onChange={(event) => setName(event.target.value)}
-          placeholder="Engineering, Personal, Family..."
+          placeholder={t('groups.groupNamePlaceholder', {
+            defaultValue: 'Engineering, Personal, Family...',
+          })}
           maxLength={120}
           required
           disabled={loading}
@@ -73,7 +83,7 @@ export const GroupManagementModal: React.FC<GroupManagementModalProps> = ({
             className="h-4 w-4 rounded border-slate-300 text-blue-600"
             disabled={loading}
           />
-          Visible by default
+          {t('groups.visibleByDefault', { defaultValue: 'Visible by default' })}
         </label>
 
         {error && (
@@ -84,10 +94,12 @@ export const GroupManagementModal: React.FC<GroupManagementModalProps> = ({
 
         <div className="flex justify-end gap-2 border-t border-slate-200 pt-4">
           <Button variant="outline" onClick={onClose} disabled={loading}>
-            Cancel
+            {t('common:actions.cancel', { defaultValue: 'Cancel' })}
           </Button>
           <Button variant="primary" onClick={handleSubmit} loading={loading}>
-            {mode === 'create' ? 'Create group' : 'Save changes'}
+            {mode === 'create'
+              ? t('groups.createGroup', { defaultValue: 'Create group' })
+              : t('common:actions.save', { defaultValue: 'Save' })}
           </Button>
         </div>
       </div>

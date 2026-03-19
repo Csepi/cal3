@@ -1470,7 +1470,13 @@
     "reservationsShort": "Reserve",
     "sync": "Calendar Sync",
     "syncShort": "Sync",
-    "tasks": "Tasks"
+    "tasks": "Tasks",
+    "groups": "Groups",
+    "settings": "Settings",
+    "searchAria": "Navigation search",
+    "searchPlaceholder": "Search calendars, events, or groups",
+    "primaryMobileAria": "Primary mobile navigation",
+    "breadcrumbAria": "Breadcrumb"
   },
   "roles": {
     "admin": "Admin",
@@ -1507,5 +1513,52 @@
     "required": "This field is required",
     "tooLong": "Too long",
     "tooShort": "Too short"
+  },
+  "emojiPicker": {
+    "title": "Emoji picker",
+    "open": "Open emoji picker",
+    "close": "Close emoji picker",
+    "dialogAria": "Emoji picker",
+    "upload": "Upload custom emoji",
+    "uploadHint": "Custom emoji upload (PNG/JPG/GIF, max 1MB)",
+    "selectEmoji": "Select emoji",
+    "searchAria": "Search emoji",
+    "searchPlaceholder": "Search emoji",
+    "clearSearch": "Clear emoji search",
+    "searchResults": "Search results",
+    "customEmojis": "Custom emojis",
+    "emojis": "Emojis",
+    "recentlyUsed": "Recently used",
+    "recentlyUsedAria": "Recently used emojis",
+    "emptySearch": "No emoji matched your search.",
+    "emptyCategory": "No emojis available in this category.",
+    "skinTone": "Skin tone",
+    "skinToneSelectorAria": "Skin tone selector",
+    "skinTones": {
+      "default": "Default",
+      "light": "Light",
+      "mediumLight": "Medium-light",
+      "medium": "Medium",
+      "mediumDark": "Medium-dark",
+      "dark": "Dark"
+    },
+    "categories": {
+      "smileys": "Smileys",
+      "people": "People",
+      "nature": "Nature",
+      "food": "Food",
+      "travel": "Travel",
+      "activities": "Activities",
+      "objects": "Objects",
+      "symbols": "Symbols"
+    },
+    "customEmojiName": "Custom emoji",
+    "errors": {
+      "processFile": "Failed to process selected file.",
+      "readFile": "Failed to read selected file.",
+      "invalidFileType": "Only PNG, JPG, or GIF files are supported.",
+      "maxUploadSize": "Max upload size is 1MB.",
+      "loadCustomEmojiFile": "Failed to load custom emoji file."
+    }
   }
 }

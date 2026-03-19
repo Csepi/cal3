@@ -1470,7 +1470,13 @@
     "reservationsShort": "Réserv.",
     "sync": "Synchronisation",
     "syncShort": "Sync",
-    "tasks": "T?ches"
+    "tasks": "T?ches",
+    "groups": "Groupes",
+    "settings": "Param?tres",
+    "searchAria": "Recherche de navigation",
+    "searchPlaceholder": "Rechercher des calendriers, ?v?nements ou groupes",
+    "primaryMobileAria": "Navigation mobile principale",
+    "breadcrumbAria": "Fil d?Ariane"
   },
   "roles": {
     "admin": "Administrateur",
@@ -1507,5 +1513,52 @@
     "required": "Ce champ est requis",
     "tooLong": "Trop long",
     "tooShort": "Trop court"
+  },
+  "emojiPicker": {
+    "title": "S?lecteur d?emojis",
+    "open": "Ouvrir le s?lecteur d?emojis",
+    "close": "Fermer le s?lecteur d?emojis",
+    "dialogAria": "S?lecteur d?emojis",
+    "upload": "T?l?verser un emoji personnalis?",
+    "uploadHint": "T?l?versement d?emoji personnalis? (PNG/JPG/GIF, max 1 Mo)",
+    "selectEmoji": "S?lectionner un emoji",
+    "searchAria": "Rechercher un emoji",
+    "searchPlaceholder": "Rechercher un emoji",
+    "clearSearch": "Effacer la recherche d?emoji",
+    "searchResults": "R?sultats de recherche",
+    "customEmojis": "Emojis personnalis?s",
+    "emojis": "Emojis",
+    "recentlyUsed": "R?cemment utilis?s",
+    "recentlyUsedAria": "Emojis r?cemment utilis?s",
+    "emptySearch": "Aucun emoji ne correspond ? votre recherche.",
+    "emptyCategory": "Aucun emoji disponible dans cette cat?gorie.",
+    "skinTone": "Teinte de peau",
+    "skinToneSelectorAria": "S?lecteur de teinte de peau",
+    "skinTones": {
+      "default": "Par d?faut",
+      "light": "Claire",
+      "mediumLight": "Moyennement claire",
+      "medium": "Moyenne",
+      "mediumDark": "Moyennement fonc?e",
+      "dark": "Fonc?e"
+    },
+    "categories": {
+      "smileys": "Smileys",
+      "people": "Personnes",
+      "nature": "Nature",
+      "food": "Nourriture",
+      "travel": "Voyage",
+      "activities": "Activit?s",
+      "objects": "Objets",
+      "symbols": "Symboles"
+    },
+    "customEmojiName": "Emoji personnalis?",
+    "errors": {
+      "processFile": "Impossible de traiter le fichier s?lectionn?.",
+      "readFile": "Impossible de lire le fichier s?lectionn?.",
+      "invalidFileType": "Seuls les fichiers PNG, JPG ou GIF sont pris en charge.",
+      "maxUploadSize": "La taille maximale est de 1 Mo.",
+      "loadCustomEmojiFile": "Impossible de charger le fichier d?emoji personnalis?."
+    }
   }
 }

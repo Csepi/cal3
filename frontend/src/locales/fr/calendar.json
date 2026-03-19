@@ -273,7 +273,11 @@
     "titleRequired": "Le titre de l'événement est requis",
     "unsavedChanges": "Vous avez des modifications non enregistrées. Êtes-vous sûr de vouloir fermer ?",
     "updateEvent": "Mettre à jour l'événement",
-    "updating": "Mise à jour..."
+    "updating": "Mise à jour...",
+    "iconStepTitle": "Ic?ne et identit?",
+    "iconStepDescription": "Choisissez d?abord une ic?ne. Le reste du formulaire se d?verrouille ensuite.",
+    "iconRequiredToContinue": "S?lectionnez une ic?ne d??v?nement pour d?verrouiller les autres champs.",
+    "iconRequired": "L?ic?ne de l??v?nement est requise."
   },
   "info": {
     "arrowKeys": "Utilisez les touches ← → pour naviguer",
@@ -348,5 +352,33 @@
     "monthlyView": "Vue calendrier mensuel",
     "week": "Semaine",
     "weeklyView": "Vue calendrier hebdomadaire"
+  },
+  "groups": {
+    "createGroup": "Cr?er un groupe",
+    "editGroup": "Modifier le groupe",
+    "groupName": "Nom du groupe",
+    "groupNamePlaceholder": "Ing?nierie, Personnel, Famille...",
+    "groupNameMinLength": "Le nom du groupe doit contenir au moins 2 caract?res.",
+    "visibleByDefault": "Visible par d?faut",
+    "assignCalendars": "Assigner des calendriers",
+    "assignCalendarsToGroup": "Assigner des calendriers ? {{group}}",
+    "renameGroup": "Renommer le groupe",
+    "deleteGroup": "Supprimer le groupe",
+    "toggleVisibility": "Basculer la visibilit?",
+    "searchCalendars": "Rechercher des calendriers",
+    "findCalendarsByName": "Trouver des calendriers par nom",
+    "noCalendarsFound": "Aucun calendrier trouv?.",
+    "noCalendarsInGroup": "Aucun calendrier dans ce groupe.",
+    "noGroupsYet": "Aucun groupe pour le moment. Cr?ez-en un pour organiser les calendriers.",
+    "saveAssignment": "Enregistrer l?assignation",
+    "toggleAllInGroup": "Basculer tous les calendriers dans {{group}}",
+    "calendarCount": "{{count}} calendriers",
+    "confirmDeleteGroup": "Supprimer le groupe \"{{group}}\" ? Les calendriers resteront et deviendront non group?s.",
+    "failedToSaveGroup": "Impossible d?enregistrer le groupe",
+    "failedToDeleteGroup": "Impossible de supprimer le groupe",
+    "failedToUpdateVisibility": "Impossible de mettre ? jour la visibilit?",
+    "failedToAssignCalendars": "Impossible d?assigner les calendriers",
+    "failedToMoveCalendarToGroup": "Impossible de d?placer le calendrier vers le groupe",
+    "groupFallbackName": "groupe"
   }
 }

@@ -23,11 +23,40 @@ export const DesktopNav: React.FC<DesktopNavProps> = ({
   onSelect,
 }) => {
   const { t } = useAppTranslation('common');
+  const [isOverflowOpen, setIsOverflowOpen] = React.useState(false);
+  const overflowRef = React.useRef<HTMLDivElement | null>(null);
+
+  React.useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (!overflowRef.current?.contains(event.target as Node)) {
+        setIsOverflowOpen(false);
+      }
+    };
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsOverflowOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleEscape);
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, []);
+
+  const handleSelect = (item: NavigationItem) => {
+    setIsOverflowOpen(false);
+    onSelect(item);
+  };
 
   return (
-    <nav className="sticky top-0 z-[100000] border-b border-slate-200 bg-white/90 backdrop-blur-md shadow-sm">
-      <div className="mx-auto max-w-7xl px-4 py-3">
-        <div className="flex items-center gap-4">
+    <nav className="sticky top-0 z-50 border-b border-slate-200 bg-white/95 backdrop-blur-md shadow-sm">
+      <div className="mx-auto max-w-7xl px-3 sm:px-4">
+        <div className="flex min-h-[4.25rem] items-center gap-2 sm:gap-3">
           <div className="flex shrink-0 items-center gap-3">
             <img src="/primecal-icon.png" alt={t('app.title')} className="h-10 w-10" />
             <div className="leading-tight">
@@ -38,43 +67,74 @@ export const DesktopNav: React.FC<DesktopNavProps> = ({
             </div>
           </div>
 
-          <SearchNav />
-
-          <div className="hidden flex-1 items-center justify-center gap-1 lg:flex">
-            {primaryItems.map((item) => (
-              <NavItem
-                key={item.key}
-                item={item}
-                active={activeKey === item.key}
-                onSelect={onSelect}
-              />
-            ))}
+          <div className="hidden min-w-0 flex-1 items-center gap-2 md:flex">
+            <div className="flex min-w-0 flex-1 items-center gap-1 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              {primaryItems.map((item) => (
+                <NavItem
+                  key={item.key}
+                  item={item}
+                  active={activeKey === item.key}
+                  onSelect={handleSelect}
+                />
+              ))}
+            </div>
 
             {secondaryItems.length > 0 && (
-              <details className="group relative">
-                <summary className="inline-flex min-h-11 cursor-pointer list-none items-center gap-2 rounded-xl border border-transparent px-3 py-2 text-sm font-medium text-slate-600 transition hover:border-slate-200 hover:bg-white">
-                  More
-                  <span aria-hidden="true" className="text-xs text-slate-400">?</span>
-                </summary>
-                <div className="absolute right-0 mt-1 w-56 rounded-xl border border-slate-200 bg-white p-2 shadow-xl">
-                  {secondaryItems.map((item) => (
-                    <div key={item.key} className="mb-1 last:mb-0">
-                      <NavItem
-                        item={item}
-                        active={activeKey === item.key}
-                        onSelect={onSelect}
-                      />
-                    </div>
-                  ))}
-                </div>
-              </details>
+              <div className="relative" ref={overflowRef}>
+                <button
+                  type="button"
+                  className={`inline-flex min-h-11 items-center gap-2 rounded-xl border px-3 py-2 text-sm font-medium transition ${
+                    isOverflowOpen
+                      ? 'border-blue-300 bg-blue-50 text-blue-700'
+                      : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
+                  }`}
+                  aria-haspopup="menu"
+                  aria-expanded={isOverflowOpen}
+                  onClick={() => setIsOverflowOpen((value) => !value)}
+                >
+                  {t('other', { defaultValue: 'More' })}
+                  <svg
+                    className={`h-4 w-4 transition-transform ${isOverflowOpen ? 'rotate-180' : ''}`}
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
+                    <path d="m6 9 6 6 6-6" />
+                  </svg>
+                </button>
+
+                {isOverflowOpen && (
+                  <div
+                    className="absolute right-0 z-20 mt-2 w-64 rounded-xl border border-slate-200 bg-white p-2 shadow-xl"
+                    role="menu"
+                    aria-label={t('other', { defaultValue: 'More' })}
+                  >
+                    {secondaryItems.map((item) => (
+                      <div key={item.key} className="mb-1 last:mb-0">
+                        <NavItem
+                          item={item}
+                          active={activeKey === item.key}
+                          onSelect={handleSelect}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             )}
           </div>
 
-          <UserMenu />
+          <SearchNav className="hidden xl:block xl:w-[20rem]" />
+
+          <div className="shrink-0">
+            <UserMenu />
+          </div>
         </div>
 
-        <Breadcrumb items={breadcrumbs} />
+        <div className="hidden pb-2 md:block">
+          <Breadcrumb items={breadcrumbs} />
+        </div>
       </div>
     </nav>
   );

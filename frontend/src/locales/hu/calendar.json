@@ -273,7 +273,11 @@
     "titleRequired": "Az esemény címe kötelező",
     "unsavedChanges": "Mentetlen módosításai vannak. Biztosan bezárja?",
     "updateEvent": "Esemény frissítése",
-    "updating": "Frissítés..."
+    "updating": "Frissítés...",
+    "iconStepTitle": "Ikon ?s azonos?t?s",
+    "iconStepDescription": "El?sz?r v?lasszon ikont. Ezut?n old?dik fel a t?bbi mez?.",
+    "iconRequiredToContinue": "V?lasszon esem?nyikont a t?bbi mez? felold?s?hoz.",
+    "iconRequired": "Esem?nyikon megad?sa k?telez?."
   },
   "info": {
     "arrowKeys": "Használja a ← → nyílbillentyűket a navigáláshoz",
@@ -348,5 +352,33 @@
     "monthlyView": "Havi naptár nézet",
     "week": "Hét",
     "weeklyView": "Heti naptár nézet"
+  },
+  "groups": {
+    "createGroup": "Csoport l?trehoz?sa",
+    "editGroup": "Csoport szerkeszt?se",
+    "groupName": "Csoport neve",
+    "groupNamePlaceholder": "M?rn?ks?g, Szem?lyes, Csal?d...",
+    "groupNameMinLength": "A csoportn?vnek legal?bb 2 karakter hossz?nak kell lennie.",
+    "visibleByDefault": "Alap?rtelmezetten l?that?",
+    "assignCalendars": "Napt?rak hozz?rendel?se",
+    "assignCalendarsToGroup": "Napt?rak hozz?rendel?se ehhez: {{group}}",
+    "renameGroup": "Csoport ?tnevez?se",
+    "deleteGroup": "Csoport t?rl?se",
+    "toggleVisibility": "L?that?s?g v?lt?sa",
+    "searchCalendars": "Napt?rak keres?se",
+    "findCalendarsByName": "Napt?rak keres?se n?v alapj?n",
+    "noCalendarsFound": "Nem tal?lhat? napt?r.",
+    "noCalendarsInGroup": "Ebben a csoportban nincs napt?r.",
+    "noGroupsYet": "M?g nincsenek csoportok. Hozzon l?tre egyet a napt?rak rendez?s?hez.",
+    "saveAssignment": "Hozz?rendel?s ment?se",
+    "toggleAllInGroup": "?sszes napt?r v?lt?sa ebben: {{group}}",
+    "calendarCount": "{{count}} napt?r",
+    "confirmDeleteGroup": "Biztosan t?rli a(z) \"{{group}}\" csoportot? A napt?rak megmaradnak, de csoport n?lk?l lesznek.",
+    "failedToSaveGroup": "A csoport ment?se sikertelen",
+    "failedToDeleteGroup": "A csoport t?rl?se sikertelen",
+    "failedToUpdateVisibility": "A l?that?s?g friss?t?se sikertelen",
+    "failedToAssignCalendars": "A napt?rak hozz?rendel?se sikertelen",
+    "failedToMoveCalendarToGroup": "A napt?r csoportba mozgat?sa sikertelen",
+    "groupFallbackName": "csoport"
   }
 }

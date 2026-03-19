@@ -273,7 +273,11 @@
     "titleRequired": "Event title is required",
     "unsavedChanges": "You have unsaved changes. Are you sure you want to close?",
     "updateEvent": "Update Event",
-    "updating": "Updating..."
+    "updating": "Updating...",
+    "iconStepTitle": "Icon and identity",
+    "iconStepDescription": "Pick an icon first. The rest of the form unlocks after selection.",
+    "iconRequiredToContinue": "Select an event icon to unlock the remaining fields.",
+    "iconRequired": "Event icon is required."
   },
   "info": {
     "arrowKeys": "Use ← → arrow keys to navigate",
@@ -348,5 +352,33 @@
     "monthlyView": "Monthly Calendar View",
     "week": "Week",
     "weeklyView": "Weekly Calendar View"
+  },
+  "groups": {
+    "createGroup": "Create group",
+    "editGroup": "Edit group",
+    "groupName": "Group name",
+    "groupNamePlaceholder": "Engineering, Personal, Family...",
+    "groupNameMinLength": "Group name must be at least 2 characters long.",
+    "visibleByDefault": "Visible by default",
+    "assignCalendars": "Assign calendars",
+    "assignCalendarsToGroup": "Assign calendars to {{group}}",
+    "renameGroup": "Rename group",
+    "deleteGroup": "Delete group",
+    "toggleVisibility": "Toggle visibility",
+    "searchCalendars": "Search calendars",
+    "findCalendarsByName": "Find calendars by name",
+    "noCalendarsFound": "No calendars found.",
+    "noCalendarsInGroup": "No calendars in this group.",
+    "noGroupsYet": "No groups yet. Create one to organize calendars.",
+    "saveAssignment": "Save assignment",
+    "toggleAllInGroup": "Toggle all calendars in {{group}}",
+    "calendarCount": "{{count}} calendars",
+    "confirmDeleteGroup": "Delete group \"{{group}}\"? Calendars will remain and become ungrouped.",
+    "failedToSaveGroup": "Failed to save group",
+    "failedToDeleteGroup": "Failed to delete group",
+    "failedToUpdateVisibility": "Failed to update visibility",
+    "failedToAssignCalendars": "Failed to assign calendars",
+    "failedToMoveCalendarToGroup": "Failed to move calendar to group",
+    "groupFallbackName": "group"
   }
 }

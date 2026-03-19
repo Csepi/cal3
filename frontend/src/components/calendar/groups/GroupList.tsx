@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 
+import { useAppTranslation } from '../../../i18n/useAppTranslation';
 import { GroupItem } from './GroupItem';
 import type { CalendarGroupView } from './types';
 import type { Calendar as CalendarType } from '../../../types/Calendar';
@@ -48,6 +49,7 @@ export const GroupList: React.FC<GroupListProps> = ({
   onDropCalendarToGroup,
   renderCalendarRow,
 }) => {
+  const { t } = useAppTranslation('calendar');
   const [orderedGroupIds, setOrderedGroupIds] = useState<number[]>(groups.map((group) => group.id));
   const [draggingGroupId, setDraggingGroupId] = useState<number | null>(null);
 
@@ -134,7 +136,9 @@ export const GroupList: React.FC<GroupListProps> = ({
             {group.calendars.length > 0 ? (
               group.calendars.map((calendar) => renderCalendarRow(calendar))
             ) : (
-              <p className="px-4 py-3 text-sm text-slate-500">No calendars in this group.</p>
+              <p className="px-4 py-3 text-sm text-slate-500">
+                {t('groups.noCalendarsInGroup', { defaultValue: 'No calendars in this group.' })}
+              </p>
             )}
           </GroupItem>
         );
@@ -142,7 +146,9 @@ export const GroupList: React.FC<GroupListProps> = ({
 
       {orderedGroups.length === 0 && (
         <div className="rounded-xl border border-dashed border-slate-300 bg-white px-4 py-8 text-center text-sm text-slate-500">
-          No groups yet. Create one to organize calendars.
+          {t('groups.noGroupsYet', {
+            defaultValue: 'No groups yet. Create one to organize calendars.',
+          })}
         </div>
       )}
     </div>

@@ -44,6 +44,7 @@ import { useCalendarData, calendarQueryKeys } from '../../hooks/useCalendarData'
 import type { Organization, ReservationRecord } from '../../hooks/useCalendarData';
 import { useScreenSize } from '../../hooks/useScreenSize';
 import { useSwipeGesture } from '../../hooks/useSwipeGesture';
+import { useAppTranslation } from '../../i18n/useAppTranslation';
 
 import { tStatic } from '../../i18n';
 
@@ -990,6 +991,7 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
   onDeleteCalendar,
   readOnly = false,
 }) => {
+  const { t } = useAppTranslation('calendar');
   const [groupModalState, setGroupModalState] = React.useState<{
     mode: 'create' | 'edit';
     group?: CalendarGroupView;
@@ -1222,12 +1224,16 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
         await actions.refreshData();
       } catch (error) {
         console.error('Failed to save calendar group', error);
-        alert(error instanceof Error ? error.message : 'Failed to save group');
+        alert(
+          error instanceof Error
+            ? error.message
+            : t('groups.failedToSaveGroup', { defaultValue: 'Failed to save group' }),
+        );
       } finally {
         setGroupActionLoading(false);
       }
     },
-    [actions, groupModalState],
+    [actions, groupModalState, t],
   );
 
   const handleDeleteGroup = React.useCallback(
@@ -1237,7 +1243,10 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
       }
 
       const confirmed = window.confirm(
-        `Delete group "${group.name}"? Calendars will remain and become ungrouped.`,
+        t('groups.confirmDeleteGroup', {
+          defaultValue: 'Delete group "{{group}}"? Calendars will remain and become ungrouped.',
+          group: group.name,
+        }),
       );
       if (!confirmed) {
         return;
@@ -1252,12 +1261,16 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
         await actions.refreshData();
       } catch (error) {
         console.error('Failed to delete calendar group', error);
-        alert(error instanceof Error ? error.message : 'Failed to delete group');
+        alert(
+          error instanceof Error
+            ? error.message
+            : t('groups.failedToDeleteGroup', { defaultValue: 'Failed to delete group' }),
+        );
       } finally {
         setGroupActionLoading(false);
       }
     },
-    [actions, readOnly],
+    [actions, readOnly, t],
   );
 
   const handleToggleGroupVisibility = React.useCallback(
@@ -1274,12 +1287,16 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
         await actions.refreshData();
       } catch (error) {
         console.error('Failed to toggle calendar group visibility', error);
-        alert(error instanceof Error ? error.message : 'Failed to update visibility');
+        alert(
+          error instanceof Error
+            ? error.message
+            : t('groups.failedToUpdateVisibility', { defaultValue: 'Failed to update visibility' }),
+        );
       } finally {
         setGroupActionLoading(false);
       }
     },
-    [actions, readOnly],
+    [actions, readOnly, t],
   );
 
   const handleSaveGroupAssignment = React.useCallback(
@@ -1314,12 +1331,16 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
         await actions.refreshData();
       } catch (error) {
         console.error('Failed to assign calendars to group', error);
-        alert(error instanceof Error ? error.message : 'Failed to assign calendars');
+        alert(
+          error instanceof Error
+            ? error.message
+            : t('groups.failedToAssignCalendars', { defaultValue: 'Failed to assign calendars' }),
+        );
       } finally {
         setGroupActionLoading(false);
       }
     },
-    [actions, assignmentTargetGroup],
+    [actions, assignmentTargetGroup, t],
   );
 
   const handleToggleGroupCalendars = React.useCallback(
@@ -1356,12 +1377,18 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
         await actions.refreshData();
       } catch (error) {
         console.error('Failed to move calendar into group', error);
-        alert(error instanceof Error ? error.message : 'Failed to move calendar to group');
+        alert(
+          error instanceof Error
+            ? error.message
+            : t('groups.failedToMoveCalendarToGroup', {
+              defaultValue: 'Failed to move calendar to group',
+            }),
+        );
       } finally {
         setGroupActionLoading(false);
       }
     },
-    [actions, readOnly],
+    [actions, readOnly, t],
   );
 
   const groupedCalendars = React.useMemo(() => {
@@ -1867,7 +1894,7 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
 
       <CalendarGroupAssignment
         isOpen={Boolean(assignmentTargetGroup)}
-        groupName={assignmentTargetGroup?.name ?? 'group'}
+        groupName={assignmentTargetGroup?.name ?? t('groups.groupFallbackName', { defaultValue: 'group' })}
         calendars={sortCalendarsByRank(state.calendars)}
         assignedCalendarIds={assignmentTargetGroup?.calendars.map((calendar) => calendar.id) ?? []}
         loading={groupActionLoading}

@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 
+import { useAppTranslation } from '../../i18n/useAppTranslation';
 import { EmojiCategory } from './EmojiCategory';
 import { EmojiGlyph } from './EmojiGlyph';
 import { EmojiSearch } from './EmojiSearch';
@@ -22,11 +23,12 @@ const GRID_COLUMNS = 8;
 export const EmojiPicker: React.FC<EmojiPickerProps> = ({
   value,
   onChange,
-  placeholder = 'Select emoji',
+  placeholder,
   category = 'all',
   className = '',
   disabled = false,
 }) => {
+  const { t } = useAppTranslation('common');
   const {
     categories,
     query,
@@ -94,17 +96,29 @@ export const EmojiPicker: React.FC<EmojiPickerProps> = ({
     setActiveIndex(0);
   }, [query, selectedCategory]);
 
+  const localizedCategories = useMemo(
+    () =>
+      categories.map((candidate) => ({
+        ...candidate,
+        label: t(`emojiPicker.categories.${candidate.id}`, { defaultValue: candidate.label }),
+      })),
+    [categories, t],
+  );
+
+  const resolvedPlaceholder = placeholder ?? t('emojiPicker.selectEmoji', { defaultValue: 'Select emoji' });
+
   const categoryLabel = useMemo(() => {
     if (query.trim().length > 0) {
-      return 'Search results';
+      return t('emojiPicker.searchResults', { defaultValue: 'Search results' });
     }
 
     if (selectedCategory === 'custom') {
-      return 'Custom emojis';
+      return t('emojiPicker.customEmojis', { defaultValue: 'Custom emojis' });
     }
 
-    return categories.find((candidate) => candidate.id === selectedCategory)?.label ?? 'Emojis';
-  }, [categories, query, selectedCategory]);
+    return localizedCategories.find((candidate) => candidate.id === selectedCategory)?.label
+      ?? t('emojiPicker.emojis', { defaultValue: 'Emojis' });
+  }, [localizedCategories, query, selectedCategory, t]);
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
     if (!isOpen) {
@@ -175,7 +189,7 @@ export const EmojiPicker: React.FC<EmojiPickerProps> = ({
         onClick={() => setIsOpen((previous) => !previous)}
         aria-haspopup="dialog"
         aria-expanded={isOpen}
-        aria-label="Open emoji picker"
+        aria-label={t('emojiPicker.open', { defaultValue: 'Open emoji picker' })}
         disabled={disabled}
       >
         <span className="flex min-w-0 items-center gap-2">
@@ -192,20 +206,31 @@ export const EmojiPicker: React.FC<EmojiPickerProps> = ({
               <span className="truncate text-slate-700">{selectedEmojiOption.name}</span>
             </>
           ) : (
-            <span className="truncate text-slate-400">{placeholder}</span>
+            <span className="truncate text-slate-400">{resolvedPlaceholder}</span>
           )}
         </span>
-        <span className="shrink-0 text-slate-500" aria-hidden="true">?</span>
+        <svg
+          className="h-4 w-4 shrink-0 text-slate-500"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          aria-hidden="true"
+        >
+          <path d="m6 9 6 6 6-6" />
+        </svg>
       </button>
 
       {isOpen && (
         <div
           className="absolute left-0 z-50 mt-2 w-[min(24rem,calc(100vw-2rem))] rounded-2xl border border-slate-200 bg-slate-50 p-3 shadow-2xl"
           role="dialog"
-          aria-label="Emoji picker"
+          aria-label={t('emojiPicker.dialogAria', { defaultValue: 'Emoji picker' })}
         >
           <div className="mb-2 flex items-center justify-between gap-2">
-            <h2 className="text-sm font-semibold text-slate-800">Emoji picker</h2>
+            <h2 className="text-sm font-semibold text-slate-800">
+              {t('emojiPicker.title', { defaultValue: 'Emoji picker' })}
+            </h2>
             <div className="flex items-center gap-1">
               {!!value && (
                 <button
@@ -213,16 +238,16 @@ export const EmojiPicker: React.FC<EmojiPickerProps> = ({
                   onClick={clearSelection}
                   className="rounded px-2 py-1 text-xs font-medium text-slate-500 hover:bg-slate-200 hover:text-slate-700"
                 >
-                  Clear
+                  {t('actions.clear')}
                 </button>
               )}
               <button
                 type="button"
                 onClick={() => setIsOpen(false)}
                 className="rounded px-2 py-1 text-xs font-medium text-slate-500 hover:bg-slate-200 hover:text-slate-700"
-                aria-label="Close emoji picker"
+                aria-label={t('emojiPicker.close', { defaultValue: 'Close emoji picker' })}
               >
-                Close
+                {t('actions.close')}
               </button>
             </div>
           </div>
@@ -249,7 +274,7 @@ export const EmojiPicker: React.FC<EmojiPickerProps> = ({
                         ? 'border-blue-300 bg-blue-50 text-blue-700'
                         : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-100'}
                     `}
-                    aria-label={pickerCategory.label}
+                    aria-label={t(`emojiPicker.categories.${pickerCategory.id}`, { defaultValue: pickerCategory.label })}
                     aria-pressed={selectedCategory === pickerCategory.id}
                   >
                     <span aria-hidden="true">{pickerCategory.icon}</span>
@@ -264,10 +289,10 @@ export const EmojiPicker: React.FC<EmojiPickerProps> = ({
                       ? 'border-blue-300 bg-blue-50 text-blue-700'
                       : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-100'}
                   `}
-                  aria-label="Custom emojis"
+                  aria-label={t('emojiPicker.customEmojis', { defaultValue: 'Custom emojis' })}
                   aria-pressed={selectedCategory === 'custom'}
                 >
-                  ??
+                  <span aria-hidden="true">🖼️</span>
                 </button>
               </div>
             </div>
@@ -286,14 +311,16 @@ export const EmojiPicker: React.FC<EmojiPickerProps> = ({
             <div className="space-y-2 rounded-xl border border-dashed border-slate-300 bg-white p-2.5">
               <div className="flex items-center justify-between gap-3">
                 <p className="text-xs text-slate-500">
-                  Custom emoji upload (PNG/JPG/GIF, max 1MB)
+                  {t('emojiPicker.uploadHint', {
+                    defaultValue: 'Custom emoji upload (PNG/JPG/GIF, max 1MB)',
+                  })}
                 </p>
                 <button
                   type="button"
                   onClick={onUploadButtonClick}
                   className="rounded-lg border border-slate-300 bg-slate-100 px-2.5 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-200"
                 >
-                  Upload
+                  {t('actions.upload')}
                 </button>
               </div>
               <input
@@ -302,7 +329,7 @@ export const EmojiPicker: React.FC<EmojiPickerProps> = ({
                 accept="image/png,image/jpeg,image/gif"
                 className="hidden"
                 onChange={onUploadChange}
-                aria-label="Upload custom emoji"
+                aria-label={t('emojiPicker.upload', { defaultValue: 'Upload custom emoji' })}
               />
               {uploadError && (
                 <p className="rounded-lg border border-red-200 bg-red-50 px-2 py-1 text-xs text-red-700" role="alert">
@@ -323,7 +350,7 @@ export const EmojiPicker: React.FC<EmojiPickerProps> = ({
                           className="rounded px-1 py-0.5 text-[11px] text-slate-500 hover:bg-slate-200 hover:text-slate-700"
                           onClick={() => removeCustomEmoji(emoji.value)}
                         >
-                          remove
+                          {t('actions.remove')}
                         </button>
                       </li>
                     ))}
@@ -338,7 +365,11 @@ export const EmojiPicker: React.FC<EmojiPickerProps> = ({
               activeIndex={activeIndex}
               onSelect={selectEmoji}
               onActivateIndex={setActiveIndex}
-              emptyLabel={query.trim() ? 'No emoji matched your search.' : 'No emojis available in this category.'}
+              emptyLabel={query.trim()
+                ? t('emojiPicker.emptySearch', { defaultValue: 'No emoji matched your search.' })
+                : t('emojiPicker.emptyCategory', {
+                  defaultValue: 'No emojis available in this category.',
+                })}
             />
           </div>
         </div>

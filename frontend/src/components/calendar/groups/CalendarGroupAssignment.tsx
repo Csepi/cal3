@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 
 import type { Calendar as CalendarType } from '../../../types/Calendar';
+import { useAppTranslation } from '../../../i18n/useAppTranslation';
 import { Button, Input, SimpleModal } from '../../ui';
 
 interface CalendarGroupAssignmentProps {
@@ -22,6 +23,7 @@ export const CalendarGroupAssignment: React.FC<CalendarGroupAssignmentProps> = (
   onClose,
   onSave,
 }) => {
+  const { t } = useAppTranslation('calendar');
   const [selectedIds, setSelectedIds] = useState<number[]>(assignedCalendarIds);
   const [search, setSearch] = useState('');
 
@@ -63,16 +65,21 @@ export const CalendarGroupAssignment: React.FC<CalendarGroupAssignmentProps> = (
     <SimpleModal
       isOpen={isOpen}
       onClose={onClose}
-      title={`Assign calendars to ${groupName}`}
+      title={t('groups.assignCalendarsToGroup', {
+        defaultValue: 'Assign calendars to {{group}}',
+        group: groupName,
+      })}
       size="lg"
       fullScreenOnMobile
     >
       <div className="space-y-4">
         <Input
-          label="Search calendars"
+          label={t('groups.searchCalendars', { defaultValue: 'Search calendars' })}
           value={search}
           onChange={(event) => setSearch(event.target.value)}
-          placeholder="Find calendars by name"
+          placeholder={t('groups.findCalendarsByName', {
+            defaultValue: 'Find calendars by name',
+          })}
         />
 
         <div className="max-h-96 space-y-2 overflow-y-auto rounded-xl border border-slate-200 bg-white p-2">
@@ -99,16 +106,18 @@ export const CalendarGroupAssignment: React.FC<CalendarGroupAssignmentProps> = (
             );
           })}
           {filteredCalendars.length === 0 && (
-            <p className="px-2 py-6 text-center text-sm text-slate-500">No calendars found.</p>
+            <p className="px-2 py-6 text-center text-sm text-slate-500">
+              {t('groups.noCalendarsFound', { defaultValue: 'No calendars found.' })}
+            </p>
           )}
         </div>
 
         <div className="flex justify-end gap-2 border-t border-slate-200 pt-4">
           <Button variant="outline" onClick={onClose} disabled={loading}>
-            Cancel
+            {t('common:actions.cancel', { defaultValue: 'Cancel' })}
           </Button>
           <Button variant="primary" onClick={handleSave} loading={loading}>
-            Save assignment
+            {t('groups.saveAssignment', { defaultValue: 'Save assignment' })}
           </Button>
         </div>
       </div>

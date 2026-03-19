@@ -1,5 +1,6 @@
 import React from 'react';
 
+import { useAppTranslation } from '../../i18n/useAppTranslation';
 import { EmojiItem } from './EmojiItem';
 import type { EmojiOption } from './types';
 
@@ -16,14 +17,18 @@ export const RecentlyUsed: React.FC<RecentlyUsedProps> = ({
   onSelect,
   onActivateIndex,
 }) => {
+  const { t } = useAppTranslation('common');
   if (emojis.length === 0) {
     return null;
   }
 
   return (
-    <section className="space-y-2" aria-label="Recently used emojis">
+    <section
+      className="space-y-2"
+      aria-label={t('emojiPicker.recentlyUsedAria', { defaultValue: 'Recently used emojis' })}
+    >
       <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-        Recently used
+        {t('emojiPicker.recentlyUsed', { defaultValue: 'Recently used' })}
       </h3>
       <div className="grid grid-cols-8 gap-1.5">
         {emojis.slice(0, 16).map((emoji, index) => (

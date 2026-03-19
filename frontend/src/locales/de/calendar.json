@@ -273,7 +273,11 @@
     "titleRequired": "Termintitel ist erforderlich",
     "unsavedChanges": "Sie haben ungespeicherte Änderungen. Sind Sie sicher, dass Sie schließen möchten?",
     "updateEvent": "Termin aktualisieren",
-    "updating": "Aktualisiert..."
+    "updating": "Aktualisiert...",
+    "iconStepTitle": "Symbol und Identit?t",
+    "iconStepDescription": "W?hlen Sie zuerst ein Symbol. Danach werden die restlichen Felder freigeschaltet.",
+    "iconRequiredToContinue": "W?hlen Sie ein Terminsymbol, um die ?brigen Felder freizuschalten.",
+    "iconRequired": "Ein Terminsymbol ist erforderlich."
   },
   "info": {
     "arrowKeys": "Nutzen Sie ← → Pfeiltasten zur Navigation",
@@ -348,5 +352,33 @@
     "monthlyView": "Monatsansicht Kalender",
     "week": "Woche",
     "weeklyView": "Wochenansicht Kalender"
+  },
+  "groups": {
+    "createGroup": "Gruppe erstellen",
+    "editGroup": "Gruppe bearbeiten",
+    "groupName": "Gruppenname",
+    "groupNamePlaceholder": "Engineering, Privat, Familie...",
+    "groupNameMinLength": "Der Gruppenname muss mindestens 2 Zeichen lang sein.",
+    "visibleByDefault": "Standardm??ig sichtbar",
+    "assignCalendars": "Kalender zuweisen",
+    "assignCalendarsToGroup": "Kalender {{group}} zuweisen",
+    "renameGroup": "Gruppe umbenennen",
+    "deleteGroup": "Gruppe l?schen",
+    "toggleVisibility": "Sichtbarkeit umschalten",
+    "searchCalendars": "Kalender suchen",
+    "findCalendarsByName": "Kalender nach Namen suchen",
+    "noCalendarsFound": "Keine Kalender gefunden.",
+    "noCalendarsInGroup": "Keine Kalender in dieser Gruppe.",
+    "noGroupsYet": "Noch keine Gruppen. Erstellen Sie eine Gruppe, um Kalender zu organisieren.",
+    "saveAssignment": "Zuweisung speichern",
+    "toggleAllInGroup": "Alle Kalender in {{group}} umschalten",
+    "calendarCount": "{{count}} Kalender",
+    "confirmDeleteGroup": "Gruppe \"{{group}}\" l?schen? Kalender bleiben erhalten und werden nicht zugeordnet.",
+    "failedToSaveGroup": "Gruppe konnte nicht gespeichert werden",
+    "failedToDeleteGroup": "Gruppe konnte nicht gel?scht werden",
+    "failedToUpdateVisibility": "Sichtbarkeit konnte nicht aktualisiert werden",
+    "failedToAssignCalendars": "Kalender konnten nicht zugewiesen werden",
+    "failedToMoveCalendarToGroup": "Kalender konnte nicht in die Gruppe verschoben werden",
+    "groupFallbackName": "Gruppe"
   }
 }

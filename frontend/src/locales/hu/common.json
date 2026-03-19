@@ -1470,7 +1470,13 @@
     "reservationsShort": "Foglalás",
     "sync": "Naptár Szinkronizálás",
     "syncShort": "Szinkr.",
-    "tasks": "Feladatok"
+    "tasks": "Feladatok",
+    "groups": "Csoportok",
+    "settings": "Be?ll?t?sok",
+    "searchAria": "Navig?ci?s keres?s",
+    "searchPlaceholder": "Napt?rak, esem?nyek vagy csoportok keres?se",
+    "primaryMobileAria": "Els?dleges mobil navig?ci?",
+    "breadcrumbAria": "Morzsa?tvonal"
   },
   "roles": {
     "admin": "Admin",
@@ -1507,5 +1513,52 @@
     "required": "Ez a mező kötelező",
     "tooLong": "Túl hosszú",
     "tooShort": "Túl rövid"
+  },
+  "emojiPicker": {
+    "title": "Emoji v?laszt?",
+    "open": "Emoji v?laszt? megnyit?sa",
+    "close": "Emoji v?laszt? bez?r?sa",
+    "dialogAria": "Emoji v?laszt?",
+    "upload": "Egy?ni emoji felt?lt?se",
+    "uploadHint": "Egy?ni emoji felt?lt?s (PNG/JPG/GIF, max. 1 MB)",
+    "selectEmoji": "Emoji kiv?laszt?sa",
+    "searchAria": "Emoji keres?se",
+    "searchPlaceholder": "Emoji keres?se",
+    "clearSearch": "Emoji keres?s t?rl?se",
+    "searchResults": "Keres?si tal?latok",
+    "customEmojis": "Egy?ni emojik",
+    "emojis": "Emojik",
+    "recentlyUsed": "Legut?bb haszn?lt",
+    "recentlyUsedAria": "Legut?bb haszn?lt emojik",
+    "emptySearch": "Nincs tal?lat a keres?sre.",
+    "emptyCategory": "Ebben a kateg?ri?ban nincs el?rhet? emoji.",
+    "skinTone": "B?rt?nus",
+    "skinToneSelectorAria": "B?rt?nus v?laszt?",
+    "skinTones": {
+      "default": "Alap?rtelmezett",
+      "light": "Vil?gos",
+      "mediumLight": "K?zepesen vil?gos",
+      "medium": "K?zepes",
+      "mediumDark": "K?zepesen s?t?t",
+      "dark": "S?t?t"
+    },
+    "categories": {
+      "smileys": "Mosolyg?k",
+      "people": "Emberek",
+      "nature": "Term?szet",
+      "food": "?tel",
+      "travel": "Utaz?s",
+      "activities": "Tev?kenys?gek",
+      "objects": "T?rgyak",
+      "symbols": "Szimb?lumok"
+    },
+    "customEmojiName": "Egy?ni emoji",
+    "errors": {
+      "processFile": "A kiv?lasztott f?jl feldolgoz?sa sikertelen.",
+      "readFile": "A kiv?lasztott f?jl beolvas?sa sikertelen.",
+      "invalidFileType": "Csak PNG, JPG vagy GIF f?jlok t?mogatottak.",
+      "maxUploadSize": "A maxim?lis felt?lt?si m?ret 1 MB.",
+      "loadCustomEmojiFile": "Az egy?ni emoji f?jl bet?lt?se sikertelen."
+    }
   }
 }

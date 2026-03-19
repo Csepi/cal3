@@ -1,46 +1,26 @@
-/**
- * CalendarEventModal component for creating and editing calendar events
- *
- * This component provides a comprehensive modal interface for event management,
- * including form validation, recurrence patterns, and theme integration.
- * It replaces the inline modal logic from the monolithic Calendar component.
- */
+import React, { useEffect, useMemo, useState } from 'react';
 
-import React, { useState, useEffect } from 'react';
-import { Button, Input, Card, SimpleModal } from '../ui';
-import { IconPicker } from '../ui/IconPicker';
+import { useAppTranslation } from '../../i18n/useAppTranslation';
 import { THEME_COLOR_OPTIONS } from '../../constants';
-import type { Event, CreateEventRequest, UpdateEventRequest, RecurrencePattern } from '../../types/Event';
 import type { Calendar as CalendarType } from '../../types/Calendar';
+import type { Event, CreateEventRequest, UpdateEventRequest, RecurrencePattern } from '../../types/Event';
+import { Button, Input, SimpleModal, Textarea } from '../ui';
+import { IconPicker } from '../ui/IconPicker';
 import RecurrenceSelector from '../RecurrenceSelector';
 import { EventCommentsPanel } from './EventCommentsPanel';
 
-import { tStatic } from '../../i18n';
-
 export interface CalendarEventModalProps {
-  /** Whether the modal is open */
   isOpen: boolean;
-  /** Function to close the modal */
   onClose: () => void;
-  /** Function to save the event */
   onSave: (eventData: CreateEventRequest | UpdateEventRequest) => Promise<void>;
-  /** Function to delete the event (optional, for edit mode) */
   onDelete?: (eventId: number) => Promise<void>;
-  /** Event being edited (null for creating new event) */
   editingEvent?: Event | null;
-  /** Available calendars for selection */
   calendars: CalendarType[];
-  /** Selected date (for new events) */
   selectedDate?: Date | null;
-  /** Optional selected end date/time (for range selection) */
   selectedEndDate?: Date | null;
-  /** Current theme color */
   themeColor: string;
-  /** Optional preferred time format */
   timeFormat?: string;
-  /** Error message to display */
   error?: string | null;
-  /** Whether the form is currently submitting */
   loading?: boolean;
 }
 
@@ -63,10 +43,37 @@ const hasExplicitTime = (date: Date): boolean =>
   date.getSeconds() !== 0 ||
   date.getMilliseconds() !== 0;
 
-/**
- * Modal component for comprehensive event creation and editing
- * Updated to use SimpleModal for better rendering
- */
+const toRgb = (hexColor: string): [number, number, number] | null => {
+  if (!hexColor.startsWith('#')) {
+    return null;
+  }
+  const stripped = hexColor.slice(1);
+  const normalized = stripped.length === 3
+    ? stripped.split('').map((entry) => entry + entry).join('')
+    : stripped;
+  if (!/^[0-9a-fA-F]{6}$/.test(normalized)) {
+    return null;
+  }
+  const int = Number.parseInt(normalized, 16);
+  return [(int >> 16) & 255, (int >> 8) & 255, int & 255];
+};
+
+const alpha = (color: string, opacity: number): string => {
+  const rgb = toRgb(color);
+  if (!rgb) {
+    return color;
+  }
+  const [r, g, b] = rgb;
+  return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+};
+
+const sanitizeEventForm = (
+  form: Partial<CreateEventRequest>,
+): Partial<CreateEventRequest> => ({
+  ...form,
+  icon: form.icon || undefined,
+});
+
 export const CalendarEventModal: React.FC<CalendarEventModalProps> = ({
   isOpen,
   onClose,
@@ -78,10 +85,9 @@ export const CalendarEventModal: React.FC<CalendarEventModalProps> = ({
   selectedEndDate,
   themeColor,
   error,
-  loading = false
+  loading = false,
 }) => {
-
-  // Form state
+  const { t } = useAppTranslation('calendar');
   const [eventForm, setEventForm] = useState<Partial<CreateEventRequest>>({
     title: '',
     description: '',
@@ -93,161 +99,165 @@ export const CalendarEventModal: React.FC<CalendarEventModalProps> = ({
     location: '',
     color: themeColor,
     icon: undefined,
-    calendarId: undefined
+    calendarId: undefined,
   });
-
   const [recurrencePattern, setRecurrencePattern] = useState<RecurrencePattern | null>(null);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+  const [initialSnapshot, setInitialSnapshot] = useState('');
+  const [initialRecurrenceSnapshot, setInitialRecurrenceSnapshot] = useState('');
 
-  /**
-   * Initialize form data when modal opens or editing event changes
-   */
   useEffect(() => {
-    if (isOpen) {
-      if (editingEvent) {
-        // Editing existing event
-        setEventForm({
-          title: editingEvent.title,
-          description: editingEvent.description || '',
-          startDate: editingEvent.startDate,
-          startTime: editingEvent.startTime || '',
-          endDate: editingEvent.endDate,
-          endTime: editingEvent.endTime || '',
-          isAllDay: editingEvent.isAllDay,
-          location: editingEvent.location || '',
-          color: editingEvent.color,
-          icon: editingEvent.icon,
-          calendarId: editingEvent.calendar?.id
-        });
+    if (!isOpen) {
+      return;
+    }
 
-        // Set recurrence pattern if event has recurrence
-        if (editingEvent.recurrenceRule) {
-          setRecurrencePattern(editingEvent.recurrenceRule as RecurrencePattern);
-        } else {
-          setRecurrencePattern(null);
+    if (editingEvent) {
+      const initialForm = sanitizeEventForm({
+        title: editingEvent.title,
+        description: editingEvent.description || '',
+        startDate: editingEvent.startDate,
+        startTime: editingEvent.startTime || '',
+        endDate: editingEvent.endDate,
+        endTime: editingEvent.endTime || '',
+        isAllDay: editingEvent.isAllDay,
+        location: editingEvent.location || '',
+        color: editingEvent.color,
+        icon: editingEvent.icon,
+        calendarId: editingEvent.calendar?.id,
+      });
+
+      const initialRecurrence = editingEvent.recurrenceRule
+        ? (editingEvent.recurrenceRule as RecurrencePattern)
+        : null;
+
+      setEventForm(initialForm);
+      setRecurrencePattern(initialRecurrence);
+      setInitialSnapshot(JSON.stringify(initialForm));
+      setInitialRecurrenceSnapshot(JSON.stringify(initialRecurrence));
+    } else {
+      const defaultCalendar = calendars.find((calendar) => calendar.name === 'Personal') || calendars[0];
+      const validSelectedStartDate =
+        selectedDate && !Number.isNaN(selectedDate.getTime()) ? new Date(selectedDate) : null;
+      const validSelectedEndDate =
+        selectedEndDate && !Number.isNaN(selectedEndDate.getTime())
+          ? new Date(selectedEndDate)
+          : null;
+
+      const startDate = validSelectedStartDate
+        ? formatDateInputValue(validSelectedStartDate)
+        : formatDateInputValue(new Date());
+      const startHasTime = Boolean(
+        validSelectedStartDate &&
+        (validSelectedEndDate || hasExplicitTime(validSelectedStartDate)),
+      );
+
+      let startTime = '09:00';
+      let endDate = startDate;
+      let endTime = '10:00';
+
+      if (validSelectedStartDate && startHasTime) {
+        startTime = formatTimeInputValue(validSelectedStartDate);
+        const resolvedEndDate = validSelectedEndDate
+          ? validSelectedEndDate
+          : new Date(validSelectedStartDate.getTime() + 60 * 60000);
+
+        if (resolvedEndDate.getTime() <= validSelectedStartDate.getTime()) {
+          resolvedEndDate.setTime(validSelectedStartDate.getTime() + 15 * 60000);
         }
-      } else {
-        // Creating new event
-        const defaultCalendar = calendars.find(cal => cal.name === 'Personal') || calendars[0];
-        const validSelectedStartDate =
-          selectedDate && !isNaN(selectedDate.getTime()) ? new Date(selectedDate) : null;
-        const validSelectedEndDate =
-          selectedEndDate && !isNaN(selectedEndDate.getTime())
-            ? new Date(selectedEndDate)
-            : null;
 
-        const startDate = validSelectedStartDate
-          ? formatDateInputValue(validSelectedStartDate)
-          : formatDateInputValue(new Date());
-        const startHasTime = Boolean(
-          validSelectedStartDate &&
-            (validSelectedEndDate || hasExplicitTime(validSelectedStartDate)),
-        );
-
-        let startTime = '09:00';
-        let endDate = startDate;
-        let endTime = '10:00';
-
-        if (validSelectedStartDate && startHasTime) {
-          startTime = formatTimeInputValue(validSelectedStartDate);
-          const resolvedEndDate = validSelectedEndDate
-            ? validSelectedEndDate
-            : new Date(validSelectedStartDate.getTime() + 60 * 60000);
-
-          if (resolvedEndDate.getTime() <= validSelectedStartDate.getTime()) {
-            resolvedEndDate.setTime(validSelectedStartDate.getTime() + 15 * 60000);
-          }
-
-          endDate = formatDateInputValue(resolvedEndDate);
-          endTime = formatTimeInputValue(resolvedEndDate);
-        }
-
-        setEventForm({
-          title: '',
-          description: '',
-          startDate,
-          startTime,
-          endDate,
-          endTime,
-          isAllDay: false,
-          location: '',
-          color: themeColor,
-          icon: undefined,
-          calendarId: defaultCalendar?.id
-        });
-        setRecurrencePattern(null);
+        endDate = formatDateInputValue(resolvedEndDate);
+        endTime = formatTimeInputValue(resolvedEndDate);
       }
 
-      // Clear form errors
-      setFormErrors({});
+      const initialForm = sanitizeEventForm({
+        title: '',
+        description: '',
+        startDate,
+        startTime,
+        endDate,
+        endTime,
+        isAllDay: false,
+        location: '',
+        color: themeColor,
+        icon: undefined,
+        calendarId: defaultCalendar?.id,
+      });
+
+      setEventForm(initialForm);
+      setRecurrencePattern(null);
+      setInitialSnapshot(JSON.stringify(initialForm));
+      setInitialRecurrenceSnapshot(JSON.stringify(null));
     }
+
+    setFormErrors({});
   }, [isOpen, editingEvent, calendars, selectedDate, selectedEndDate, themeColor]);
 
-  /**
-   * Handle form field changes
-   */
-  const handleFormChange = (field: keyof CreateEventRequest, value: any) => {
-    setEventForm(prev => ({
-      ...prev,
-      [field]: value
+  const hasUnsavedChanges = useMemo(() => {
+    const currentSnapshot = JSON.stringify(sanitizeEventForm(eventForm));
+    const currentRecurrenceSnapshot = JSON.stringify(recurrencePattern);
+    return (
+      currentSnapshot !== initialSnapshot
+      || currentRecurrenceSnapshot !== initialRecurrenceSnapshot
+    );
+  }, [eventForm, initialRecurrenceSnapshot, initialSnapshot, recurrencePattern]);
+
+  const iconRequired = !eventForm.icon;
+  const detailsLocked = iconRequired;
+
+  const handleFormChange = (field: keyof CreateEventRequest, value: unknown) => {
+    setEventForm((previous) => ({
+      ...previous,
+      [field]: value,
     }));
 
-    // Clear field-specific error when user starts typing
     if (formErrors[field]) {
-      setFormErrors(prev => ({
-        ...prev,
-        [field]: ''
+      setFormErrors((previous) => ({
+        ...previous,
+        [field]: '',
       }));
     }
 
-    // Auto-adjust end date when start date changes
     if (field === 'startDate' && eventForm.endDate === eventForm.startDate) {
-      setEventForm(prev => ({
-        ...prev,
-        endDate: value
+      setEventForm((previous) => ({
+        ...previous,
+        endDate: String(value),
       }));
     }
   };
 
-  /**
-   * Validate form data
-   */
   const validateForm = (): boolean => {
     const errors: Record<string, string> = {};
 
+    if (!eventForm.icon) {
+      errors.icon = t('events.iconRequired', { defaultValue: 'Event icon is required.' });
+    }
     if (!eventForm.title?.trim()) {
-      errors.title = 'Event title is required';
+      errors.title = t('events.titleRequired');
     }
-
     if (!eventForm.startDate) {
-      errors.startDate = 'Start date is required';
+      errors.startDate = t('events.startDateRequired');
     }
-
     if (!eventForm.endDate) {
-      errors.endDate = 'End date is required';
+      errors.endDate = t('events.endDateRequired');
     }
-
     if (!eventForm.calendarId) {
-      errors.calendarId = 'Please select a calendar';
+      errors.calendarId = t('calendars.selectCalendarRequired');
     }
 
-    // Date validation
     if (eventForm.startDate && eventForm.endDate) {
       const startDateTime = new Date(`${eventForm.startDate}T${eventForm.startTime || '00:00'}`);
       const endDateTime = new Date(`${eventForm.endDate}T${eventForm.endTime || '23:59'}`);
-
       if (endDateTime < startDateTime) {
-        errors.endDate = 'End date must be after start date';
+        errors.endDate = t('events.endAfterStart');
       }
     }
 
-    // Time validation for non-all-day events
     if (!eventForm.isAllDay) {
       if (!eventForm.startTime) {
-        errors.startTime = 'Start time is required';
+        errors.startTime = t('events.startTimeRequired');
       }
       if (!eventForm.endTime) {
-        errors.endTime = 'End time is required';
+        errors.endTime = t('events.endTimeRequired');
       }
     }
 
@@ -255,73 +265,51 @@ export const CalendarEventModal: React.FC<CalendarEventModalProps> = ({
     return Object.keys(errors).length === 0;
   };
 
-  /**
-   * Handle event deletion
-   */
   const handleDelete = async () => {
-    if (!editingEvent || !onDelete) return;
+    if (!editingEvent || !onDelete) {
+      return;
+    }
 
-    if (confirm(`Are you sure you want to delete "${editingEvent.title}"?`)) {
-      try {
-        await onDelete(editingEvent.id);
-        handleClose();
-      } catch (error) {
-        console.error('Failed to delete event:', error);
-      }
+    if (window.confirm(t('events.confirmDelete', { title: editingEvent.title }))) {
+      await onDelete(editingEvent.id);
+      onClose();
     }
   };
 
-  /**
-   * Handle form submission
-   */
   const handleSubmit = async () => {
-    if (!validateForm()) return;
+    if (!validateForm()) {
+      return;
+    }
 
-    try {
-      // Transform recurrence pattern to backend format
-      const recurrenceData = recurrencePattern ? {
+    const recurrenceData = recurrencePattern
+      ? {
         recurrenceType: recurrencePattern.type,
         recurrenceRule: {
           interval: recurrencePattern.interval,
           daysOfWeek: recurrencePattern.daysOfWeek,
           endType: recurrencePattern.endType,
           count: recurrencePattern.count,
-          endDate: recurrencePattern.endDate
-        }
-      } : {};
+          endDate: recurrencePattern.endDate,
+        },
+      }
+      : {};
 
-      const eventData = {
-        ...eventForm,
-        ...recurrenceData
-      } as CreateEventRequest | UpdateEventRequest;
+    const eventData = {
+      ...sanitizeEventForm(eventForm),
+      ...recurrenceData,
+    } as CreateEventRequest | UpdateEventRequest;
 
-      await onSave(eventData);
-      onClose();
-    } catch (err) {
-      // Error is handled by parent component
-      console.error('Error saving event:', err);
-    }
+    await onSave(eventData);
+    onClose();
   };
 
-  /**
-   * Handle modal close with confirmation if form has changes
-   */
   const handleClose = () => {
-    const editingEventRecord =
-      editingEvent as unknown as Record<string, unknown> | null;
-    const hasChanges = editingEvent
-      ? Object.keys(eventForm).some(
-          (key) =>
-            eventForm[key as keyof typeof eventForm] !==
-            editingEventRecord?.[key],
-        )
-      : Object.values(eventForm).some(value => value !== '' && value !== false && value !== undefined);
-
-    if (hasChanges) {
-      const confirmClose = window.confirm(tStatic('common:auto.frontend.k4761b5e2b6d1'));
-      if (!confirmClose) return;
+    if (hasUnsavedChanges) {
+      const confirmed = window.confirm(t('events.unsavedChanges'));
+      if (!confirmed) {
+        return;
+      }
     }
-
     onClose();
   };
 
@@ -329,310 +317,306 @@ export const CalendarEventModal: React.FC<CalendarEventModalProps> = ({
     <SimpleModal
       isOpen={isOpen}
       onClose={handleClose}
-      title={editingEvent ? 'Edit Event' : 'Create New Event'}
-      size="md"
-      fullScreenOnMobile={true}
+      title={editingEvent ? t('events.editEvent') : t('events.createEvent')}
+      size="xl"
+      fullScreenOnMobile
     >
-      <div className="space-y-6">
-        {/* Error Message */}
+      <div className="space-y-5">
         {error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-            <div className="flex items-center">
-              <svg className="w-5 h-5 text-red-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <p className="text-red-700">{error}</p>
-            </div>
+          <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            {error}
           </div>
         )}
 
-        {/* Basic Information */}
-        <Card
-          header={<h3 className="text-lg font-semibold text-gray-800">{tStatic('common:auto.frontend.k926affd7a838')}</h3>}
-          padding="lg"
-          themeColor={themeColor}
+        <section
+          className="rounded-2xl border bg-white p-4 shadow-sm"
+          style={{
+            borderColor: alpha(themeColor, 0.35),
+            background: `linear-gradient(135deg, ${alpha(themeColor, 0.1)}, #ffffff)`,
+          }}
         >
-          <div className="space-y-4">
-            {/* Event Title */}
-            <Input
-              label={tStatic('common:auto.frontend.k072cbaeaf68c')}
-              value={eventForm.title || ''}
-              onChange={(e) => handleFormChange('title', e.target.value)}
-              error={formErrors.title}
-              required
-              themeColor={themeColor}
-              placeholder={tStatic('common:auto.frontend.k6b82116e6f21')}
-            />
-
-            {/* Calendar Selection */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                {tStatic('common:auto.frontend.kadab5090ac6a')}<span className="text-red-500">*</span>
-              </label>
-              <select
-                value={eventForm.calendarId || ''}
-                onChange={(e) => handleFormChange('calendarId', parseInt(e.target.value))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="">{tStatic('common:auto.frontend.k403f89ec3c4e')}</option>
-                {calendars.map((calendar) => (
-                  <option key={calendar.id} value={calendar.id}>
-                    {calendar.name}
-                  </option>
-                ))}
-              </select>
-              {formErrors.calendarId && (
-                <p className="mt-1 text-sm text-red-600">{formErrors.calendarId}</p>
-              )}
-            </div>
-
-            {/* Description */}
-            <Input
-              label={tStatic('common:auto.frontend.k55f8ebc805e6')}
-              value={eventForm.description || ''}
-              onChange={(e) => handleFormChange('description', e.target.value)}
-              themeColor={themeColor}
-              placeholder={tStatic('common:auto.frontend.k99eaa5aa0805')}
-              multiline
-              rows={3}
-            />
-
-            {/* Location */}
-            <Input
-              label={tStatic('common:auto.frontend.kd219c68101f5')}
-              value={eventForm.location || ''}
-              onChange={(e) => handleFormChange('location', e.target.value)}
-              themeColor={themeColor}
-              placeholder={tStatic('common:auto.frontend.k39fa3b775dbe')}
-            />
-
-            {/* Icon Picker */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                {tStatic('common:auto.frontend.k93eab4a44abd')}</label>
+          <div className="grid gap-4 md:grid-cols-[1.15fr,1fr]">
+            <div className="space-y-2">
+              <h3 className="text-sm font-semibold text-slate-800">
+                {t('events.iconStepTitle', { defaultValue: 'Icon and identity' })}
+              </h3>
+              <p className="text-xs text-slate-500">
+                {t('events.iconStepDescription', {
+                  defaultValue: 'Pick an icon first. The rest of the form unlocks after selection.',
+                })}
+              </p>
               <IconPicker
                 value={eventForm.icon}
-                onChange={(icon) => handleFormChange('icon', icon || '')}
-                category="all"
-                placeholder={tStatic('common:auto.frontend.k760bd96da349')}
+                onChange={(icon) => handleFormChange('icon', icon || undefined)}
+                category="event"
+                placeholder={t('events.selectIcon')}
               />
-            </div>
-          </div>
-        </Card>
-
-        {/* Date & Time */}
-        <Card
-          header={<h3 className="text-lg font-semibold text-gray-800">{tStatic('common:auto.frontend.ke2288c4f8590')}</h3>}
-          padding="lg"
-          themeColor={themeColor}
-        >
-          <div className="space-y-4">
-            {/* All Day Toggle */}
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                id="isAllDay"
-                checked={eventForm.isAllDay || false}
-                onChange={(e) => handleFormChange('isAllDay', e.target.checked)}
-                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-              />
-              <label htmlFor="isAllDay" className="ml-3 text-sm text-gray-700">
-                {tStatic('common:auto.frontend.kb4f02de8fc39')}</label>
-            </div>
-
-            {/* Start Date & Time */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Input
-                label={tStatic('common:auto.frontend.k9d7ab1a55796')}
-                type="date"
-                value={eventForm.startDate || ''}
-                onChange={(e) => handleFormChange('startDate', e.target.value)}
-                error={formErrors.startDate}
-                required
-                themeColor={themeColor}
-              />
-
-              {!eventForm.isAllDay && (
-                <Input
-                  label={tStatic('common:auto.frontend.k41c1074ddb72')}
-                  type="time"
-                  value={eventForm.startTime || ''}
-                  onChange={(e) => handleFormChange('startTime', e.target.value)}
-                  error={formErrors.startTime}
-                  required
-                  themeColor={themeColor}
-                />
+              {formErrors.icon && (
+                <p className="text-xs text-red-600" role="alert">
+                  {formErrors.icon}
+                </p>
               )}
             </div>
 
-            {/* End Date & Time */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Input
-                label={tStatic('common:auto.frontend.k84b147812589')}
-                type="date"
-                value={eventForm.endDate || ''}
-                onChange={(e) => handleFormChange('endDate', e.target.value)}
-                error={formErrors.endDate}
-                required
-                themeColor={themeColor}
-              />
-
-              {!eventForm.isAllDay && (
-                <Input
-                  label={tStatic('common:auto.frontend.k4c640e925e8b')}
-                  type="time"
-                  value={eventForm.endTime || ''}
-                  onChange={(e) => handleFormChange('endTime', e.target.value)}
-                  error={formErrors.endTime}
-                  required
-                  themeColor={themeColor}
-                />
-              )}
-            </div>
-          </div>
-        </Card>
-
-        {/* Event Color */}
-        <Card
-          header={<h3 className="text-lg font-semibold text-gray-800">{tStatic('common:auto.frontend.kba8045568a8b')}</h3>}
-          padding="lg"
-          themeColor={themeColor}
-        >
-          <div className="space-y-4">
-            <p className="text-sm text-gray-600">
-              {tStatic('common:auto.frontend.kadac57e7dc8a')}</p>
-
-            {/* Color Grid */}
-            <div className="grid grid-cols-4 gap-3">
-              {THEME_COLOR_OPTIONS.map((colorOption) => (
-                <button
-                  key={colorOption.value}
-                  onClick={() => handleFormChange('color', colorOption.value)}
-                  disabled={loading}
-                  className={`
-                    relative p-3 rounded-lg border-2 transition-all duration-200 hover:scale-105
-                    ${eventForm.color === colorOption.value
-                      ? 'border-gray-800 shadow-lg ring-2 ring-offset-2 ring-gray-300'
-                      : 'border-gray-200 hover:border-gray-300'
-                    }
-                  `}
-                  title={`Select ${colorOption.name} color`}
+            <div className="rounded-xl border border-slate-200 bg-white p-3">
+              <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                {t('events.preview')}
+              </p>
+              <div className="flex items-center gap-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
+                <span
+                  className="inline-flex h-8 w-8 items-center justify-center rounded-full text-base"
+                  style={{ backgroundColor: alpha(eventForm.color || themeColor, 0.18) }}
                 >
-                  {/* Color Preview Circle */}
-                  <div
-                    className="w-8 h-8 rounded-full mx-auto mb-2 shadow-md"
-                    style={{ backgroundColor: colorOption.value }}
-                  />
-
-                  {/* Color Name */}
-                  <div className="text-xs font-medium text-gray-700 text-center">
-                    {colorOption.name}
-                  </div>
-
-                  {/* Selected Indicator */}
-                  {eventForm.color === colorOption.value && (
-                    <div className="absolute -top-1 -right-1 w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
-                      <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                    </div>
-                  )}
-                </button>
-              ))}
-            </div>
-
-            {/* Custom Color Input */}
-            <div className="pt-4 border-t border-gray-200">
-              <Input
-                label={tStatic('common:auto.frontend.k04644b6690e8')}
-                type="color"
-                value={eventForm.color || themeColor}
-                onChange={(e) => handleFormChange('color', e.target.value)}
-                themeColor={themeColor}
-              />
-            </div>
-
-            {/* Color Preview */}
-            <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
-              <div className="flex items-center space-x-3">
-                <div
-                  className="w-6 h-6 rounded-full border-2 border-white shadow-md"
-                  style={{ backgroundColor: eventForm.color || themeColor }}
-                />
-                <div>
-                  <p className="text-sm font-medium text-gray-800">{tStatic('common:auto.frontend.kf1fbb2b43dca')}</p>
-                  <p className="text-xs text-gray-500">
-                    {tStatic('common:auto.frontend.k1fa84e155e57')}</p>
+                  {eventForm.icon || '🗓️'}
+                </span>
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-semibold text-slate-800">
+                    {eventForm.title?.trim() || t('events.newEvent')}
+                  </p>
+                  <p className="truncate text-xs text-slate-500">
+                    {eventForm.location?.trim() || t('events.location')}
+                  </p>
                 </div>
               </div>
             </div>
           </div>
-        </Card>
+        </section>
 
-        {/* Recurrence Pattern */}
-        <Card
-          header={<h3 className="text-lg font-semibold text-gray-800">{tStatic('common:auto.frontend.k3a71dbdf29e7')}</h3>}
-          padding="lg"
-          themeColor={themeColor}
-        >
-        <RecurrenceSelector
-          value={recurrencePattern}
-          onChange={setRecurrencePattern}
-          themeColor={themeColor}
-        />
-      </Card>
+        <div className="group relative">
+          {detailsLocked && (
+            <>
+              <div className="absolute inset-0 z-20 cursor-not-allowed rounded-2xl bg-white/65 backdrop-blur-[1px]" />
+              <div className="pointer-events-none absolute inset-x-4 top-3 z-30 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-medium text-amber-800 opacity-85 group-hover:opacity-100">
+                {t('events.iconRequiredToContinue', {
+                  defaultValue: 'Select an event icon to unlock the remaining fields.',
+                })}
+              </div>
+            </>
+          )}
 
-      <EventCommentsPanel
-        eventId={editingEvent?.id}
-        eventTitle={editingEvent?.title}
-        eventVisibility={editingEvent?.calendar?.visibility}
-        themeColor={themeColor}
-        isOpen={isOpen}
-      />
+          <div
+            className={`space-y-5 rounded-2xl transition-opacity ${detailsLocked ? 'pointer-events-none select-none opacity-45' : ''}`}
+            aria-hidden={detailsLocked}
+          >
+            <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+              <h3 className="mb-3 text-sm font-semibold text-slate-800">
+                {t('events.eventDetails')}
+              </h3>
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="md:col-span-2">
+                  <Input
+                    label={t('events.eventTitle')}
+                    value={eventForm.title || ''}
+                    onChange={(event) => handleFormChange('title', event.target.value)}
+                    error={formErrors.title}
+                    required
+                    themeColor={themeColor}
+                    placeholder={t('events.enterTitle')}
+                  />
+                </div>
 
-      {/* Actions */}
-      <div className="flex justify-between items-center pt-6 border-t border-gray-200">
-        <div>
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-gray-700">
+                    {t('calendars.calendar')}
+                    <span className="ml-1 text-red-500">*</span>
+                  </label>
+                  <select
+                    value={eventForm.calendarId || ''}
+                    onChange={(event) => handleFormChange('calendarId', Number.parseInt(event.target.value, 10))}
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+                  >
+                    <option value="">{t('calendars.selectCalendar')}</option>
+                    {calendars.map((calendar) => (
+                      <option key={calendar.id} value={calendar.id}>
+                        {calendar.name}
+                      </option>
+                    ))}
+                  </select>
+                  {formErrors.calendarId && (
+                    <p className="mt-1 text-sm text-red-600">{formErrors.calendarId}</p>
+                  )}
+                </div>
+
+                <Input
+                  label={t('events.location')}
+                  value={eventForm.location || ''}
+                  onChange={(event) => handleFormChange('location', event.target.value)}
+                  themeColor={themeColor}
+                  placeholder={t('events.enterLocation')}
+                />
+
+                <div className="md:col-span-2">
+                  <Textarea
+                    label={t('events.description')}
+                    value={eventForm.description || ''}
+                    onChange={(event) => handleFormChange('description', event.target.value)}
+                    themeColor={themeColor}
+                    placeholder={t('events.enterDescription')}
+                    rows={4}
+                  />
+                </div>
+              </div>
+            </section>
+
+            <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+              <h3 className="mb-3 text-sm font-semibold text-slate-800">
+                {t('dateTime.dateTime', { ns: 'common', defaultValue: 'Date & Time' })}
+              </h3>
+
+              <label className="mb-4 inline-flex items-center gap-2 text-sm text-slate-700">
+                <input
+                  type="checkbox"
+                  checked={eventForm.isAllDay || false}
+                  onChange={(event) => handleFormChange('isAllDay', event.target.checked)}
+                  className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                />
+                {t('events.allDayEvent')}
+              </label>
+
+              <div className="grid gap-4 md:grid-cols-2">
+                <Input
+                  label={t('events.startDate')}
+                  type="date"
+                  value={eventForm.startDate || ''}
+                  onChange={(event) => handleFormChange('startDate', event.target.value)}
+                  error={formErrors.startDate}
+                  required
+                  themeColor={themeColor}
+                />
+                {!eventForm.isAllDay && (
+                  <Input
+                    label={t('events.startTime')}
+                    type="time"
+                    value={eventForm.startTime || ''}
+                    onChange={(event) => handleFormChange('startTime', event.target.value)}
+                    error={formErrors.startTime}
+                    required
+                    themeColor={themeColor}
+                  />
+                )}
+
+                <Input
+                  label={t('events.endDate')}
+                  type="date"
+                  value={eventForm.endDate || ''}
+                  onChange={(event) => handleFormChange('endDate', event.target.value)}
+                  error={formErrors.endDate}
+                  required
+                  themeColor={themeColor}
+                />
+                {!eventForm.isAllDay && (
+                  <Input
+                    label={t('events.endTime')}
+                    type="time"
+                    value={eventForm.endTime || ''}
+                    onChange={(event) => handleFormChange('endTime', event.target.value)}
+                    error={formErrors.endTime}
+                    required
+                    themeColor={themeColor}
+                  />
+                )}
+              </div>
+            </section>
+
+            <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+              <h3 className="mb-3 text-sm font-semibold text-slate-800">
+                {t('events.eventColor')}
+              </h3>
+              <p className="mb-3 text-xs text-slate-500">{t('events.colorHelp')}</p>
+
+              <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-5">
+                {THEME_COLOR_OPTIONS.map((colorOption) => (
+                  <button
+                    key={colorOption.value}
+                    type="button"
+                    onClick={() => handleFormChange('color', colorOption.value)}
+                    disabled={loading}
+                    className={`rounded-lg border p-2 text-left transition ${
+                      eventForm.color === colorOption.value
+                        ? 'border-slate-800 shadow'
+                        : 'border-slate-200 hover:border-slate-300'
+                    }`}
+                    title={colorOption.name}
+                  >
+                    <span
+                      className="mb-1 inline-flex h-5 w-5 rounded-full border border-white/80 shadow-sm"
+                      style={{ backgroundColor: colorOption.value }}
+                    />
+                    <span className="block truncate text-[11px] font-medium text-slate-700">
+                      {colorOption.name}
+                    </span>
+                  </button>
+                ))}
+              </div>
+
+              <div className="mt-4 grid gap-3 sm:grid-cols-[auto,1fr] sm:items-center">
+                <Input
+                  label={t('events.customColor')}
+                  type="color"
+                  value={eventForm.color || themeColor}
+                  onChange={(event) => handleFormChange('color', event.target.value)}
+                  themeColor={themeColor}
+                />
+                <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-600">
+                  {t('events.colorPreview')}
+                </div>
+              </div>
+            </section>
+
+            <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+              <h3 className="mb-3 text-sm font-semibold text-slate-800">
+                {t('recurrence.recurrence')}
+              </h3>
+              <RecurrenceSelector
+                value={recurrencePattern}
+                onChange={setRecurrencePattern}
+                themeColor={themeColor}
+              />
+            </section>
+
+            {editingEvent && (
+              <EventCommentsPanel
+                eventId={editingEvent.id}
+                eventTitle={editingEvent.title}
+                eventVisibility={editingEvent.calendar?.visibility}
+                themeColor={themeColor}
+                isOpen={isOpen}
+              />
+            )}
+          </div>
+        </div>
+
+        <div className="flex flex-wrap items-center justify-between gap-2 border-t border-slate-200 pt-4">
+          <div>
             {editingEvent && onDelete && (
               <Button
                 variant="outline"
                 onClick={handleDelete}
                 disabled={loading}
-                themeColor="#ef4444"
-                className="text-red-600 border-red-300 hover:bg-red-50"
+                className="border-red-300 text-red-600 hover:bg-red-50"
               >
-                {tStatic('common:auto.frontend.k17a53749b63b')}</Button>
+                {t('events.deleteEvent')}
+              </Button>
             )}
           </div>
-          <div className="flex space-x-3">
-            <Button
-              variant="outline"
-              onClick={handleClose}
-              disabled={loading}
-              themeColor={themeColor}
-            >
-              {tStatic('common:auto.frontend.k77dfd2135f4d')}</Button>
+          <div className="flex flex-1 justify-end gap-2 sm:flex-none">
+            <Button variant="outline" onClick={handleClose} disabled={loading} themeColor={themeColor}>
+              {t('common:actions.cancel', { defaultValue: 'Cancel' })}
+            </Button>
             <Button
               variant="primary"
               onClick={handleSubmit}
               loading={loading}
               themeColor={themeColor}
+              disabled={detailsLocked}
             >
               {loading
-                ? (editingEvent ? 'Updating...' : 'Creating...')
-                : (editingEvent ? 'Update Event' : 'Create Event')
-              }
+                ? (editingEvent ? t('events.updating') : t('events.creating'))
+                : (editingEvent ? t('events.updateEvent') : t('events.createEvent'))}
             </Button>
           </div>
         </div>
       </div>
-
-      {editingEvent && (
-        <div className="pt-3 text-center text-[11px] text-gray-400">
-          {tStatic('common:auto.frontend.k422e323a1bb1')}{editingEvent.id}
-        </div>
-      )}
     </SimpleModal>
   );
 };
-

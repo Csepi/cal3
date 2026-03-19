@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
+import { tStatic } from '../../i18n';
 import { EMOJI_CATEGORIES, EMOJI_DEFINITIONS } from './emojiCategories';
 import {
   createCustomEmojiToken,
@@ -73,9 +74,9 @@ const readFileAsDataUrl = (file: File): Promise<string> =>
         resolve(reader.result);
         return;
       }
-      reject(new Error('Failed to process selected file.'));
+      reject(new Error(tStatic('emojiPicker.errors.processFile')));
     };
-    reader.onerror = () => reject(new Error('Failed to read selected file.'));
+    reader.onerror = () => reject(new Error(tStatic('emojiPicker.errors.readFile')));
     reader.readAsDataURL(file);
   });
 
@@ -309,13 +310,13 @@ export const useEmojiPicker = ({
 
   const uploadCustomEmoji = useCallback(async (file: File): Promise<UploadResult> => {
     if (!['image/png', 'image/jpeg', 'image/gif'].includes(file.type)) {
-      const error = 'Only PNG, JPG, or GIF files are supported.';
+      const error = tStatic('emojiPicker.errors.invalidFileType');
       setUploadError(error);
       return { ok: false, error };
     }
 
     if (file.size > MAX_CUSTOM_EMOJI_FILE_SIZE) {
-      const error = 'Max upload size is 1MB.';
+      const error = tStatic('emojiPicker.errors.maxUploadSize');
       setUploadError(error);
       return { ok: false, error };
     }
@@ -325,7 +326,9 @@ export const useEmojiPicker = ({
       const token = createCustomEmojiToken(new Set(customEmojis.map((emoji) => emoji.token)));
       const nextCustomEmoji: CustomEmojiDefinition = {
         token,
-        name: file.name.replace(/\.[a-zA-Z0-9]+$/, '') || 'Custom emoji',
+        name:
+          file.name.replace(/\.[a-zA-Z0-9]+$/, '')
+          || tStatic('emojiPicker.customEmojiName'),
         mimeType: file.type,
         dataUrl,
         createdAt: new Date().toISOString(),
@@ -346,7 +349,7 @@ export const useEmojiPicker = ({
 
       return { ok: true };
     } catch {
-      const error = 'Failed to load custom emoji file.';
+      const error = tStatic('emojiPicker.errors.loadCustomEmojiFile');
       setUploadError(error);
       return { ok: false, error };
     }

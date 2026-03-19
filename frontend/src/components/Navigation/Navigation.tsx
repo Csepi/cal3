@@ -25,7 +25,7 @@ export const Navigation: React.FC<NavigationProps> = ({
   onOpenSettings,
 }) => {
   const { isMobile } = useScreenSize();
-  const { desktopPrimaryItems, desktopSecondaryItems, mobileItems, breadcrumbTrail } =
+  const { allItems, desktopPrimaryItems, desktopSecondaryItems, mobileItems, breadcrumbTrail } =
     useNavigation({ activeTab, hideReservationsTab });
 
   const [activePseudoKey, setActivePseudoKey] = React.useState<string | null>(null);
@@ -40,28 +40,36 @@ export const Navigation: React.FC<NavigationProps> = ({
   }, [activePseudoKey, activeTab]);
 
   const handleSelect = (item: NavigationItem) => {
-    onTabChange(item.tabId);
-
     if (item.intent === 'groups') {
       setActivePseudoKey('groups');
-      onOpenGroups?.();
+      if (onOpenGroups) {
+        onOpenGroups();
+      } else {
+        onTabChange('calendar');
+      }
       return;
     }
 
     if (item.intent === 'settings') {
       setActivePseudoKey('settings');
-      onOpenSettings?.();
+      if (onOpenSettings) {
+        onOpenSettings();
+      } else {
+        onTabChange('notifications');
+      }
       return;
     }
 
     setActivePseudoKey(null);
+    onTabChange(item.tabId);
   };
 
-  const activeKey =
-    activePseudoKey ??
-    desktopPrimaryItems.find((item) => item.tabId === activeTab && !isPseudoIntent(item))?.key ??
-    desktopSecondaryItems.find((item) => item.tabId === activeTab && !isPseudoIntent(item))?.key ??
-    activeTab;
+  const activeKey = React.useMemo(() => {
+    if (activePseudoKey) {
+      return activePseudoKey;
+    }
+    return allItems.find((item) => item.tabId === activeTab && !isPseudoIntent(item))?.key ?? activeTab;
+  }, [activePseudoKey, allItems, activeTab]);
 
   if (isMobile) {
     return (

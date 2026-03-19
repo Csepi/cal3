@@ -1,11 +1,11 @@
 import { useMemo } from 'react';
 import type { ReactNode } from 'react';
 
-import { useAppTranslation } from '../../i18n/useAppTranslation';
+import { useAuth } from '../../hooks/useAuth';
 import { useFeatureFlags } from '../../hooks/useFeatureFlags';
 import { useNotifications } from '../../hooks/useNotifications';
 import { usePermissions } from '../../hooks/usePermissions';
-import { useAuth } from '../../hooks/useAuth';
+import { useAppTranslation } from '../../i18n/useAppTranslation';
 import type { TabId } from '../mobile/organisms/BottomTabBar';
 
 export type NavigationIntent = 'default' | 'groups' | 'settings';
@@ -64,7 +64,26 @@ const ProfileIcon = (
 const SettingsIcon = (
   <svg viewBox="0 0 24 24" className={iconClassName} fill="none" stroke="currentColor" strokeWidth="1.8">
     <circle cx="12" cy="12" r="3" />
-    <path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-1.8-.3 1.6 1.6 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.6 1.6 0 0 0-1-1.5 1.6 1.6 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.6 1.6 0 0 0 .3-1.8 1.6 1.6 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.6 1.6 0 0 0 1.5-1 1.6 1.6 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.6 1.6 0 0 0 1.8.3H10a1.6 1.6 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.6 1.6 0 0 0 1 1.5 1.6 1.6 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0-.3 1.8V10a1.6 1.6 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.6 1.6 0 0 0-1.5 1z" />
+    <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H10a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V10a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z" />
+  </svg>
+);
+const SyncIcon = (
+  <svg viewBox="0 0 24 24" className={iconClassName} fill="none" stroke="currentColor" strokeWidth="1.8">
+    <path d="M21 12A9 9 0 0 0 6 5.3V3L3 6l3 3V7.2A7 7 0 1 1 12 19a6.8 6.8 0 0 1-4.8-2" />
+    <path d="M3 12h5" />
+  </svg>
+);
+const AutomationIcon = (
+  <svg viewBox="0 0 24 24" className={iconClassName} fill="none" stroke="currentColor" strokeWidth="1.8">
+    <circle cx="12" cy="12" r="3" />
+    <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H10a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V10a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z" />
+  </svg>
+);
+const LogsIcon = (
+  <svg viewBox="0 0 24 24" className={iconClassName} fill="none" stroke="currentColor" strokeWidth="1.8">
+    <path d="M6 3h9l4 4v14H6z" />
+    <path d="M15 3v4h4" />
+    <path d="M9 12h6M9 16h6M9 8h3" />
   </svg>
 );
 const AdminIcon = (
@@ -101,6 +120,25 @@ const breadcrumbLabel = (tabId: TabId, t: ReturnType<typeof useAppTranslation>['
   }
 };
 
+const sortByRank = (items: NavigationItem[]): NavigationItem[] => {
+  const rank: Record<string, number> = {
+    calendar: 0,
+    groups: 1,
+    tasks: 2,
+    notifications: 3,
+    settings: 4,
+    profile: 5,
+    'personal-logs': 6,
+    reservations: 7,
+    automation: 8,
+    agent: 9,
+    sync: 10,
+    admin: 11,
+  };
+
+  return [...items].sort((left, right) => (rank[left.key] ?? 99) - (rank[right.key] ?? 99));
+};
+
 export const useNavigation = ({ activeTab, hideReservationsTab = false }: UseNavigationOptions) => {
   const { t } = useAppTranslation('common');
   const { flags } = useFeatureFlags();
@@ -110,7 +148,7 @@ export const useNavigation = ({ activeTab, hideReservationsTab = false }: UseNav
 
   const userRole = currentUser?.role ?? 'user';
 
-  const allItems = useMemo<NavigationItem[]>(() => {
+  const baseItems = useMemo<NavigationItem[]>(() => {
     const items: NavigationItem[] = [
       {
         key: 'calendar',
@@ -119,17 +157,17 @@ export const useNavigation = ({ activeTab, hideReservationsTab = false }: UseNav
         icon: CalendarIcon,
       },
       {
-        key: 'tasks',
-        tabId: 'tasks',
-        label: t('navigation.tasks', { defaultValue: 'Tasks' }),
-        icon: TasksIcon,
-      },
-      {
         key: 'groups',
         tabId: 'calendar',
         label: t('navigation.groups', { defaultValue: 'Groups' }),
         icon: GroupsIcon,
         intent: 'groups',
+      },
+      {
+        key: 'tasks',
+        tabId: 'tasks',
+        label: t('navigation.tasks', { defaultValue: 'Tasks' }),
+        icon: TasksIcon,
       },
       {
         key: 'notifications',
@@ -152,6 +190,13 @@ export const useNavigation = ({ activeTab, hideReservationsTab = false }: UseNav
         label: t('navigation.profile'),
         icon: ProfileIcon,
       },
+      {
+        key: 'personal-logs',
+        tabId: 'personal-logs',
+        label: t('navigation.personalLogs', { defaultValue: 'Personal Logs' }),
+        shortLabel: t('navigation.logsShort', { defaultValue: 'Logs' }),
+        icon: LogsIcon,
+      },
     ];
 
     if (flags.reservations && canAccessReservations && !hideReservationsTab) {
@@ -159,6 +204,7 @@ export const useNavigation = ({ activeTab, hideReservationsTab = false }: UseNav
         key: 'reservations',
         tabId: 'reservations',
         label: t('navigation.reservations'),
+        shortLabel: t('navigation.reservationsShort'),
         icon: GroupsIcon,
       });
     }
@@ -168,7 +214,8 @@ export const useNavigation = ({ activeTab, hideReservationsTab = false }: UseNav
         key: 'automation',
         tabId: 'automation',
         label: t('navigation.automation'),
-        icon: SettingsIcon,
+        shortLabel: t('navigation.automationShort'),
+        icon: AutomationIcon,
       });
     }
 
@@ -177,6 +224,7 @@ export const useNavigation = ({ activeTab, hideReservationsTab = false }: UseNav
         key: 'agent',
         tabId: 'agent',
         label: t('navigation.agentSettings', { defaultValue: 'Agent settings' }),
+        shortLabel: t('navigation.agentsShort', { defaultValue: 'Agents' }),
         icon: AdminIcon,
       });
     }
@@ -186,7 +234,8 @@ export const useNavigation = ({ activeTab, hideReservationsTab = false }: UseNav
         key: 'sync',
         tabId: 'sync',
         label: t('navigation.sync'),
-        icon: CalendarIcon,
+        shortLabel: t('navigation.syncShort'),
+        icon: SyncIcon,
       });
     }
 
@@ -195,32 +244,41 @@ export const useNavigation = ({ activeTab, hideReservationsTab = false }: UseNav
         key: 'admin',
         tabId: 'admin',
         label: t('navigation.admin'),
+        shortLabel: t('navigation.adminShort'),
         icon: AdminIcon,
       });
     }
 
-    return items;
-  }, [canAccessReservations, flags.agents, flags.automation, flags.calendarSync, flags.reservations, hideReservationsTab, t, unreadCount, userRole]);
+    return sortByRank(items);
+  }, [
+    canAccessReservations,
+    flags.agents,
+    flags.automation,
+    flags.calendarSync,
+    flags.reservations,
+    hideReservationsTab,
+    t,
+    unreadCount,
+    userRole,
+  ]);
 
-  const desktopPrimaryItems = allItems.filter((item) =>
-    ['calendar', 'tasks', 'groups', 'settings', 'profile'].includes(item.key),
+  const desktopPrimaryItems = baseItems.filter((item) =>
+    ['calendar', 'groups', 'tasks', 'notifications', 'settings', 'profile'].includes(item.key),
   );
 
-  const desktopSecondaryItems = allItems.filter((item) => !desktopPrimaryItems.some((primary) => primary.key === item.key));
-
-  const mobileItems = allItems.filter((item) =>
-    ['calendar', 'groups', 'tasks', 'settings', 'profile'].includes(item.key),
+  const desktopSecondaryItems = baseItems.filter(
+    (item) => !desktopPrimaryItems.some((primary) => primary.key === item.key),
   );
+
+  const mobileItems = baseItems;
 
   const breadcrumbTrail = useMemo(
-    () => [
-      t('app.title'),
-      breadcrumbLabel(activeTab, t),
-    ],
+    () => [t('app.title'), breadcrumbLabel(activeTab, t)],
     [activeTab, t],
   );
 
   return {
+    allItems: baseItems,
     desktopPrimaryItems,
     desktopSecondaryItems,
     mobileItems,

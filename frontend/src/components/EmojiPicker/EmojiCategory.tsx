@@ -68,7 +68,7 @@ export const EmojiCategory: React.FC<EmojiCategoryProps> = ({
   }, [emojis, endRow, startRow]);
 
   return (
-    <section className="space-y-2" aria-label={`${title} emojis`}>
+    <section className="space-y-2" aria-label={title}>
       <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">{title}</h3>
       <div
         ref={containerRef}
