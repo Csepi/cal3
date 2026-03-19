@@ -25,8 +25,24 @@ export const Navigation: React.FC<NavigationProps> = ({
   onOpenSettings,
 }) => {
   const { isMobile } = useScreenSize();
-  const { allItems, desktopPrimaryItems, desktopSecondaryItems, mobileItems, breadcrumbTrail } =
+  const {
+    allItems,
+    desktopPrimaryItems,
+    desktopSecondaryItems,
+    notificationItem,
+    mobileItems,
+    breadcrumbTrail,
+  } =
     useNavigation({ activeTab, hideReservationsTab });
+
+  const profileItem = React.useMemo(
+    () => allItems.find((item) => item.key === 'profile') ?? null,
+    [allItems],
+  );
+  const adminItem = React.useMemo(
+    () => allItems.find((item) => item.key === 'admin') ?? null,
+    [allItems],
+  );
 
   const [activePseudoKey, setActivePseudoKey] = React.useState<string | null>(null);
 
@@ -91,6 +107,9 @@ export const Navigation: React.FC<NavigationProps> = ({
       activeKey={activeKey}
       primaryItems={desktopPrimaryItems}
       secondaryItems={desktopSecondaryItems}
+      notificationItem={notificationItem}
+      profileItem={profileItem}
+      adminItem={adminItem}
       breadcrumbs={breadcrumbTrail}
       onSelect={handleSelect}
     />

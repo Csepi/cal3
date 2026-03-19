@@ -13,7 +13,7 @@ export const NavItem: React.FC<NavItemProps> = ({ item, active, onSelect }) => (
     type="button"
     onClick={() => onSelect(item)}
     className={`
-      relative inline-flex min-h-11 items-center gap-2 rounded-xl border px-3 py-2 text-sm font-medium transition
+      relative inline-flex min-h-11 items-center gap-2 rounded-xl border px-3 py-2 text-sm font-medium transition whitespace-nowrap
       ${active
         ? 'border-blue-300 bg-blue-50 text-blue-700 shadow-sm'
         : 'border-transparent text-slate-600 hover:border-slate-200 hover:bg-white'}
@@ -22,7 +22,7 @@ export const NavItem: React.FC<NavItemProps> = ({ item, active, onSelect }) => (
     aria-current={active ? 'page' : undefined}
   >
     <span className="text-current" aria-hidden="true">{item.icon}</span>
-    <span className="truncate">{item.shortLabel ?? item.label}</span>
+    <span>{item.shortLabel ?? item.label}</span>
     {!!item.badge && item.badge > 0 && (
       <span className="inline-flex min-w-[1.1rem] items-center justify-center rounded-full bg-red-500 px-1 py-0.5 text-[0.65rem] font-semibold leading-none text-white">
         {item.badge > 99 ? '99+' : item.badge}

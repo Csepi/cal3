@@ -11,6 +11,9 @@ interface DesktopNavProps {
   activeKey: string;
   primaryItems: NavigationItem[];
   secondaryItems: NavigationItem[];
+  notificationItem?: NavigationItem | null;
+  profileItem?: NavigationItem | null;
+  adminItem?: NavigationItem | null;
   breadcrumbs: string[];
   onSelect: (item: NavigationItem) => void;
 }
@@ -19,6 +22,9 @@ export const DesktopNav: React.FC<DesktopNavProps> = ({
   activeKey,
   primaryItems,
   secondaryItems,
+  notificationItem,
+  profileItem,
+  adminItem,
   breadcrumbs,
   onSelect,
 }) => {
@@ -53,6 +59,8 @@ export const DesktopNav: React.FC<DesktopNavProps> = ({
     onSelect(item);
   };
 
+  const hasNotificationBadge = Boolean(notificationItem?.badge && notificationItem.badge > 0);
+
   return (
     <nav className="sticky top-0 z-50 border-b border-slate-200 bg-white/95 backdrop-blur-md shadow-sm">
       <div className="mx-auto max-w-7xl px-3 sm:px-4">
@@ -83,7 +91,7 @@ export const DesktopNav: React.FC<DesktopNavProps> = ({
               <div className="relative" ref={overflowRef}>
                 <button
                   type="button"
-                  className={`inline-flex min-h-11 items-center gap-2 rounded-xl border px-3 py-2 text-sm font-medium transition ${
+                  className={`inline-flex min-h-11 items-center gap-2 rounded-xl border px-3 py-2 text-sm font-medium uppercase tracking-wide transition ${
                     isOverflowOpen
                       ? 'border-blue-300 bg-blue-50 text-blue-700'
                       : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
@@ -92,7 +100,7 @@ export const DesktopNav: React.FC<DesktopNavProps> = ({
                   aria-expanded={isOverflowOpen}
                   onClick={() => setIsOverflowOpen((value) => !value)}
                 >
-                  {t('other', { defaultValue: 'More' })}
+                  {t('other', { defaultValue: 'Other' })}
                   <svg
                     className={`h-4 w-4 transition-transform ${isOverflowOpen ? 'rotate-180' : ''}`}
                     viewBox="0 0 24 24"
@@ -108,7 +116,7 @@ export const DesktopNav: React.FC<DesktopNavProps> = ({
                   <div
                     className="absolute right-0 z-20 mt-2 w-64 rounded-xl border border-slate-200 bg-white p-2 shadow-xl"
                     role="menu"
-                    aria-label={t('other', { defaultValue: 'More' })}
+                    aria-label={t('other', { defaultValue: 'Other' })}
                   >
                     {secondaryItems.map((item) => (
                       <div key={item.key} className="mb-1 last:mb-0">
@@ -125,10 +133,43 @@ export const DesktopNav: React.FC<DesktopNavProps> = ({
             )}
           </div>
 
-          <SearchNav className="hidden xl:block xl:w-[20rem]" />
+          <SearchNav className="hidden 2xl:block 2xl:w-[18rem]" />
+
+          {notificationItem && (
+            <button
+              type="button"
+              onClick={() => handleSelect(notificationItem)}
+              className={`relative inline-flex min-h-11 min-w-11 items-center justify-center rounded-xl border px-3 py-2 transition ${
+                activeKey === notificationItem.key
+                  ? 'border-blue-300 bg-blue-50 text-blue-700'
+                  : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
+              }`}
+              aria-label={t('navigation.openNotifications', {
+                defaultValue: 'Open notification center',
+              })}
+              aria-current={activeKey === notificationItem.key ? 'page' : undefined}
+            >
+              <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8">
+                <path d="M15 17h5l-1.4-1.4A2 2 0 0 1 18 13.8V11a6 6 0 0 0-12 0v2.8a2 2 0 0 1-.6 1.4L4 17h5" />
+                <path d="M9 21a3 3 0 0 0 6 0" />
+              </svg>
+              {hasNotificationBadge && (
+                <span className="absolute -right-1 -top-1 inline-flex min-w-[1rem] items-center justify-center rounded-full bg-red-500 px-1 text-[0.62rem] font-semibold leading-none text-white">
+                  {(notificationItem.badge ?? 0) > 99 ? '99+' : notificationItem.badge}
+                </span>
+              )}
+            </button>
+          )}
 
           <div className="shrink-0">
-            <UserMenu />
+            <UserMenu
+              onOpenProfileSettings={
+                profileItem ? () => handleSelect(profileItem) : undefined
+              }
+              onOpenAdmin={
+                adminItem ? () => handleSelect(adminItem) : undefined
+              }
+            />
           </div>
         </div>
 

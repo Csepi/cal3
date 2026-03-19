@@ -1476,7 +1476,10 @@
     "searchAria": "Navigationssuche",
     "searchPlaceholder": "Kalender, Termine oder Gruppen durchsuchen",
     "primaryMobileAria": "Prim?re mobile Navigation",
-    "breadcrumbAria": "Brotkrumenpfad"
+    "breadcrumbAria": "Brotkrumenpfad",
+    "profileSettings": "Profile-Einstellungen",
+    "openProfileMenu": "Profilmen? ?ffnen",
+    "openNotifications": "Benachrichtigungscenter ?ffnen"
   },
   "roles": {
     "admin": "Admin",

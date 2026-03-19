@@ -263,11 +263,15 @@ export const useNavigation = ({ activeTab, hideReservationsTab = false }: UseNav
   ]);
 
   const desktopPrimaryItems = baseItems.filter((item) =>
-    ['calendar', 'groups', 'tasks', 'notifications', 'settings', 'profile'].includes(item.key),
+    ['calendar', 'tasks'].includes(item.key),
   );
 
+  const notificationItem = baseItems.find((item) => item.key === 'notifications') ?? null;
+
   const desktopSecondaryItems = baseItems.filter(
-    (item) => !desktopPrimaryItems.some((primary) => primary.key === item.key),
+    (item) =>
+      item.key !== 'notifications'
+      && !desktopPrimaryItems.some((primary) => primary.key === item.key),
   );
 
   const mobileItems = baseItems;
@@ -281,6 +285,7 @@ export const useNavigation = ({ activeTab, hideReservationsTab = false }: UseNav
     allItems: baseItems,
     desktopPrimaryItems,
     desktopSecondaryItems,
+    notificationItem,
     mobileItems,
     breadcrumbTrail,
     activeTab,

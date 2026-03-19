@@ -1476,7 +1476,10 @@
     "searchAria": "Navig?ci?s keres?s",
     "searchPlaceholder": "Napt?rak, esem?nyek vagy csoportok keres?se",
     "primaryMobileAria": "Els?dleges mobil navig?ci?",
-    "breadcrumbAria": "Morzsa?tvonal"
+    "breadcrumbAria": "Morzsa?tvonal",
+    "profileSettings": "Profilbe?ll?t?sok",
+    "openProfileMenu": "Profil men? megnyit?sa",
+    "openNotifications": "?rtes?t?si k?zpont megnyit?sa"
   },
   "roles": {
     "admin": "Admin",

@@ -1476,7 +1476,10 @@
     "searchAria": "Recherche de navigation",
     "searchPlaceholder": "Rechercher des calendriers, ?v?nements ou groupes",
     "primaryMobileAria": "Navigation mobile principale",
-    "breadcrumbAria": "Fil d?Ariane"
+    "breadcrumbAria": "Fil d?Ariane",
+    "profileSettings": "Param?tres du profil",
+    "openProfileMenu": "Ouvrir le menu du profil",
+    "openNotifications": "Ouvrir le centre de notifications"
   },
   "roles": {
     "admin": "Administrateur",

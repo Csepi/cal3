@@ -2259,14 +2259,16 @@ export const EnhancedCalendar: React.FC<EnhancedCalendarProps> = ({
       )}
       {/* Header - Conditional Mobile/Desktop */}
       {isMobile ? (
-        <MobileCalendarHeader
-          currentDate={state.currentDate}
-          currentView={state.currentView}
-          onViewChange={(view) => actions.setCurrentView(view)}
-          onNavigate={(direction) => actions.navigateCalendar(direction)}
-          onOpenCalendarSelector={() => setModals(prev => ({ ...prev, mobileDrawer: true }))}
-          themeColor={themeConfig.primary}
-        />
+        !isTimelineFocusActive ? (
+          <MobileCalendarHeader
+            currentDate={state.currentDate}
+            currentView={state.currentView}
+            onViewChange={(view) => actions.setCurrentView(view)}
+            onNavigate={(direction) => actions.navigateCalendar(direction)}
+            onOpenCalendarSelector={() => setModals(prev => ({ ...prev, mobileDrawer: true }))}
+            themeColor={themeConfig.primary}
+          />
+        ) : null
       ) : !isTimelineFocusActive ? (
         <CalendarHeader
           state={state}

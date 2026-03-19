@@ -1476,7 +1476,10 @@
     "searchAria": "Navigation search",
     "searchPlaceholder": "Search calendars, events, or groups",
     "primaryMobileAria": "Primary mobile navigation",
-    "breadcrumbAria": "Breadcrumb"
+    "breadcrumbAria": "Breadcrumb",
+    "profileSettings": "Profile settings",
+    "openProfileMenu": "Open profile menu",
+    "openNotifications": "Open notification center"
   },
   "roles": {
     "admin": "Admin",
