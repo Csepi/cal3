@@ -23,7 +23,6 @@ export const Navigation: React.FC<NavigationProps> = ({
     desktopPrimaryItems,
     desktopSecondaryItems,
     notificationItem,
-    mobileItems,
     breadcrumbTrail,
   } =
     useNavigation({ activeTab, hideReservationsTab });
@@ -49,7 +48,9 @@ export const Navigation: React.FC<NavigationProps> = ({
   if (isMobile) {
     return (
       <MobileNav
-        items={mobileItems}
+        primaryItems={desktopPrimaryItems}
+        secondaryItems={desktopSecondaryItems}
+        notificationItem={notificationItem}
         onSelect={handleSelect}
         isItemActive={(item) => item.tabId === activeTab}
       />

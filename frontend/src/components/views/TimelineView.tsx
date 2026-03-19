@@ -817,13 +817,14 @@ const TimelineView: React.FC<TimelineViewProps> = ({
               <button
                 type="button"
                 onClick={onToggleFocusMode}
-                className={`inline-flex items-center rounded-full border px-3 py-1.5 text-xs font-semibold shadow-sm transition ${
-                  focusMode
-                    ? 'border-emerald-300 bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
-                    : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300'
-                }`}
+                className="inline-flex items-center rounded-full border px-3 py-1.5 text-xs font-semibold shadow-sm transition"
+                style={{
+                  borderColor: withAlpha(focusColor, 0.4),
+                  backgroundColor: withAlpha(focusColor, 0.12),
+                  color: focusColor,
+                }}
               >
-                {focusMode ? 'Exit clean focus' : 'Clean focus mode'}
+                {focusMode ? 'Exit focus mode' : 'Clean focus mode'}
               </button>
             )}
           </div>
@@ -906,9 +907,15 @@ const TimelineView: React.FC<TimelineViewProps> = ({
                 <button
                   type="button"
                   onClick={onToggleFocusMode}
-                  className="inline-flex items-center rounded-full border border-white/40 bg-white/15 px-2.5 py-1 text-[11px] font-semibold text-white shadow-sm transition hover:bg-white/20"
+                  className="inline-flex items-center rounded-full border px-2.5 py-1 text-[11px] font-semibold shadow-sm transition"
+                  style={{
+                    borderColor: withAlpha('#ffffff', 0.45),
+                    backgroundColor: '#ffffff',
+                    color: focusColor,
+                  }}
                 >
-                  {tStatic('common:auto.frontend.kec185d577a9e')}</button>
+                  Exit focus mode
+                </button>
               )}
             </div>
           </div>

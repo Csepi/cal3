@@ -19,6 +19,11 @@ export class SecurityStoreService implements OnModuleDestroy {
   private readonly memorySlidingWindows = new Map<string, number[]>();
   private redisClient: Redis | null = null;
   private redisInitPromise: Promise<Redis | null> | null = null;
+  private readonly redisInitRetryDelayMs = 30_000;
+  private readonly redisErrorLogThrottleMs = 60_000;
+  private redisRetryAfterMs = 0;
+  private lastRedisErrorLogAtMs = 0;
+  private lastRedisErrorMessage: string | null = null;
 
   async increment(key: string, ttlSeconds: number): Promise<number> {
     const redis = await this.getRedisClient();
@@ -224,6 +229,10 @@ export class SecurityStoreService implements OnModuleDestroy {
       return null;
     }
 
+    if (Date.now() < this.redisRetryAfterMs) {
+      return null;
+    }
+
     this.redisInitPromise = this.initializeRedis(redisUrl);
     return this.redisInitPromise;
   }
@@ -236,7 +245,7 @@ export class SecurityStoreService implements OnModuleDestroy {
     });
     client.on('error', (error: unknown) => {
       const message = error instanceof Error ? error.message : String(error);
-      this.logger.warn(`Security Redis client error: ${message}`);
+      this.logRedisClientError(message);
     });
     client.on('end', () => {
       if (this.redisClient === client) {
@@ -254,10 +263,25 @@ export class SecurityStoreService implements OnModuleDestroy {
       this.logger.warn(
         `Redis unavailable for security counters; falling back to in-memory mode. ${message}`,
       );
+      this.redisRetryAfterMs = Date.now() + this.redisInitRetryDelayMs;
       client.disconnect();
       return null;
     } finally {
       this.redisInitPromise = null;
     }
+  }
+
+  private logRedisClientError(message: string): void {
+    const now = Date.now();
+    const isSameMessage = this.lastRedisErrorMessage === message;
+    const isThrottled = now - this.lastRedisErrorLogAtMs < this.redisErrorLogThrottleMs;
+
+    if (isSameMessage && isThrottled) {
+      return;
+    }
+
+    this.lastRedisErrorLogAtMs = now;
+    this.lastRedisErrorMessage = message;
+    this.logger.warn(`Security Redis client error: ${message}`);
   }
 }

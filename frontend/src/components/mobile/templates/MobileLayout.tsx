@@ -13,8 +13,7 @@
 
 import React, { useRef } from 'react';
 import { useScreenSize } from '../../../hooks/useScreenSize';
-
-import { tStatic } from '../../../i18n';
+import { UserMenu } from '../../Navigation/UserMenu';
 
 interface MobileLayoutProps {
   children: React.ReactNode;
@@ -26,6 +25,8 @@ interface MobileLayoutProps {
   surfaceLabel?: string;
   userName?: string;
   hideHeader?: boolean;
+  onOpenProfileSettings?: () => void;
+  onOpenAdmin?: () => void;
 }
 
 export const MobileLayout: React.FC<MobileLayoutProps> = ({
@@ -38,6 +39,8 @@ export const MobileLayout: React.FC<MobileLayoutProps> = ({
   surfaceLabel,
   userName,
   hideHeader = false,
+  onOpenProfileSettings,
+  onOpenAdmin,
 }) => {
   const { isMobile } = useScreenSize();
   const [isRefreshing, setIsRefreshing] = React.useState(false);
@@ -126,18 +129,9 @@ export const MobileLayout: React.FC<MobileLayoutProps> = ({
               </p>
             </div>
             <div className="flex items-center gap-3">
-              <span
-                className="rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide"
-                style={{
-                  backgroundColor: withAlpha(themeColor, 0.12),
-                  color: themeColor,
-                  border: `1px solid ${withAlpha(themeColor, 0.18)}`,
-                }}
-              >
-                {tStatic('common:auto.frontend.k65c821a596ce')}</span>
               {initials && (
                 <div
-                  className="h-9 w-9 rounded-full bg-white shadow-sm flex items-center justify-center text-sm font-semibold"
+                  className="hidden h-9 w-9 rounded-full bg-white shadow-sm md:flex items-center justify-center text-sm font-semibold"
                   style={{
                     color: themeColor,
                     border: `1px solid ${withAlpha(themeColor, 0.22)}`,
@@ -147,6 +141,10 @@ export const MobileLayout: React.FC<MobileLayoutProps> = ({
                   {initials}
                 </div>
               )}
+              <UserMenu
+                onOpenProfileSettings={onOpenProfileSettings}
+                onOpenAdmin={onOpenAdmin}
+              />
             </div>
           </div>
         </div>

@@ -348,6 +348,24 @@ const Dashboard: React.FC<DashboardProps> = ({ initialView = 'calendar' }) => {
     await refreshPermissions();
   };
 
+  const handleOpenProfileSettings = () => {
+    if (isOfflineReadOnlyMode) {
+      setCurrentView('calendar');
+      return;
+    }
+    setCurrentView('profile');
+  };
+
+  const handleOpenAdminFromMenu = () => {
+    if (isOfflineReadOnlyMode) {
+      setCurrentView('calendar');
+      return;
+    }
+    if ((currentUser?.role || 'user') === 'admin') {
+      setCurrentView('admin');
+    }
+  };
+
   const activeNavigationView: TabId = (isOfflineReadOnlyMode
     ? 'calendar'
     : currentView === 'notification-settings'
@@ -383,18 +401,21 @@ const Dashboard: React.FC<DashboardProps> = ({ initialView = 'calendar' }) => {
       case 'automation':
         return t('navigation.automation');
       case 'agent':
-        return t('navigation.agentsShort', { defaultValue: 'Agents' });
+        return t('navigation.agentSettings', { defaultValue: 'AI Agents (MCP)' });
       case 'sync':
-        return t('navigation.syncShort');
+        return t('navigation.sync', { defaultValue: 'External Sync' });
       case 'admin':
-        return t('navigation.adminShort');
+        return t('navigation.admin');
       case 'notifications':
-      case 'notification-settings':
         return t('navigation.notifications', { defaultValue: 'Notifications' });
+      case 'notification-settings':
+        return t('navigation.notificationSettings', { defaultValue: 'Notification settings' });
+      case 'profile':
+        return t('navigation.profileSettings', { defaultValue: 'Profile settings' });
       case 'personal-logs':
-        return t('navigation.personalLogs', { defaultValue: 'Personal Logs' });
+        return t('navigation.personalLogs', { defaultValue: 'Personal logs' });
       default:
-        return t('navigation.profile');
+        return t('navigation.calendar');
     }
   })();
 
@@ -422,6 +443,8 @@ const Dashboard: React.FC<DashboardProps> = ({ initialView = 'calendar' }) => {
         surfaceLabel={mobileSurfaceLabel}
         userName={displayName}
         hideHeader={shouldHideNavigation}
+        onOpenProfileSettings={handleOpenProfileSettings}
+        onOpenAdmin={handleOpenAdminFromMenu}
       >
         <div className={isMobile ? '' : 'relative'}>
           {globalErrorMessage && (
