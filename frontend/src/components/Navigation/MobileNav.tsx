@@ -1,4 +1,5 @@
 import React from 'react';
+import { createPortal } from 'react-dom';
 
 import { useAppTranslation } from '../../i18n/useAppTranslation';
 import type { NavigationItem } from './useNavigation';
@@ -22,7 +23,32 @@ export const MobileNav: React.FC<MobileNavProps> = ({
   const itemRefs = React.useRef<Record<string, HTMLButtonElement | null>>({});
   const [isMoreOpen, setIsMoreOpen] = React.useState(false);
   const moreRef = React.useRef<HTMLLIElement | null>(null);
+  const moreButtonRef = React.useRef<HTMLButtonElement | null>(null);
+  const moreMenuRef = React.useRef<HTMLDivElement | null>(null);
+  const [moreMenuStyle, setMoreMenuStyle] = React.useState<React.CSSProperties | null>(null);
   const activeInMore = secondaryItems.some((item) => isItemActive(item));
+
+  const updateMoreMenuPosition = React.useCallback(() => {
+    const button = moreButtonRef.current;
+    if (!button) {
+      return;
+    }
+
+    const rect = button.getBoundingClientRect();
+    const menuWidth = Math.min(320, Math.max(220, window.innerWidth - 16));
+    const left = Math.min(
+      Math.max(8, rect.left),
+      Math.max(8, window.innerWidth - menuWidth - 8),
+    );
+
+    setMoreMenuStyle({
+      position: 'fixed',
+      left,
+      top: Math.max(8, rect.top - 8),
+      width: menuWidth,
+      transform: 'translateY(-100%)',
+    });
+  }, []);
 
   React.useEffect(() => {
     const allItems = [
@@ -41,9 +67,12 @@ export const MobileNav: React.FC<MobileNavProps> = ({
 
   React.useEffect(() => {
     const handlePointerDown = (event: MouseEvent) => {
-      if (!moreRef.current?.contains(event.target as Node)) {
-        setIsMoreOpen(false);
+      const target = event.target as Node;
+      if (moreRef.current?.contains(target) || moreMenuRef.current?.contains(target)) {
+        return;
       }
+
+      setIsMoreOpen(false);
     };
     const handleEscape = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
@@ -59,6 +88,26 @@ export const MobileNav: React.FC<MobileNavProps> = ({
       document.removeEventListener('keydown', handleEscape);
     };
   }, []);
+
+  React.useEffect(() => {
+    if (!isMoreOpen) {
+      return;
+    }
+
+    updateMoreMenuPosition();
+
+    const handleViewportChange = () => {
+      updateMoreMenuPosition();
+    };
+
+    window.addEventListener('resize', handleViewportChange);
+    window.addEventListener('scroll', handleViewportChange, true);
+
+    return () => {
+      window.removeEventListener('resize', handleViewportChange);
+      window.removeEventListener('scroll', handleViewportChange, true);
+    };
+  }, [isMoreOpen, updateMoreMenuPosition]);
 
   return (
     <nav
@@ -104,6 +153,7 @@ export const MobileNav: React.FC<MobileNavProps> = ({
           {secondaryItems.length > 0 && (
             <li className="relative shrink-0" ref={moreRef}>
               <button
+                ref={moreButtonRef}
                 type="button"
                 onClick={() => setIsMoreOpen((value) => !value)}
                 className={`flex min-h-[46px] min-w-[92px] flex-col items-center justify-center gap-1 rounded-xl border px-2 py-1.5 text-[11px] font-semibold transition ${
@@ -126,35 +176,6 @@ export const MobileNav: React.FC<MobileNavProps> = ({
                   {t('navigation.more', { defaultValue: 'More' })}
                 </span>
               </button>
-
-              {isMoreOpen && (
-                <div
-                  className="absolute bottom-full left-0 z-30 mb-2 w-[min(20rem,calc(100vw-1.5rem))] rounded-xl border border-slate-200 bg-white p-2 shadow-xl"
-                  role="menu"
-                  aria-label={t('navigation.more', { defaultValue: 'More' })}
-                >
-                  {secondaryItems.map((item) => (
-                    <button
-                      key={item.key}
-                      type="button"
-                      onClick={() => {
-                        setIsMoreOpen(false);
-                        onSelect(item);
-                      }}
-                      className={`mb-1 inline-flex min-h-11 w-full items-center gap-2 rounded-lg border px-3 py-2 text-left text-sm font-medium transition last:mb-0 ${
-                        isItemActive(item)
-                          ? 'border-blue-300 bg-blue-50 text-blue-700'
-                          : 'border-transparent text-slate-700 hover:border-slate-200 hover:bg-slate-50'
-                      }`}
-                      role="menuitem"
-                      aria-current={isItemActive(item) ? 'page' : undefined}
-                    >
-                      <span aria-hidden="true">{item.icon}</span>
-                      <span className="flex-1 truncate">{item.label}</span>
-                    </button>
-                  ))}
-                </div>
-              )}
             </li>
           )}
           {notificationItem && (
@@ -187,6 +208,37 @@ export const MobileNav: React.FC<MobileNavProps> = ({
           )}
         </ul>
       </div>
+      {isMoreOpen && moreMenuStyle && typeof document !== 'undefined' && createPortal(
+        <div
+          ref={moreMenuRef}
+          className="z-[120] rounded-xl border border-slate-200 bg-white p-2 shadow-xl"
+          style={moreMenuStyle}
+          role="menu"
+          aria-label={t('navigation.more', { defaultValue: 'More' })}
+        >
+          {secondaryItems.map((item) => (
+            <button
+              key={item.key}
+              type="button"
+              onClick={() => {
+                setIsMoreOpen(false);
+                onSelect(item);
+              }}
+              className={`mb-1 inline-flex min-h-11 w-full items-center gap-2 rounded-lg border px-3 py-2 text-left text-sm font-medium transition last:mb-0 ${
+                isItemActive(item)
+                  ? 'border-blue-300 bg-blue-50 text-blue-700'
+                  : 'border-transparent text-slate-700 hover:border-slate-200 hover:bg-slate-50'
+              }`}
+              role="menuitem"
+              aria-current={isItemActive(item) ? 'page' : undefined}
+            >
+              <span aria-hidden="true">{item.icon}</span>
+              <span className="flex-1 truncate">{item.label}</span>
+            </button>
+          ))}
+        </div>,
+        document.body,
+      )}
     </nav>
   );
 };

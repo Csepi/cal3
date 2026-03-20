@@ -28,7 +28,7 @@ export const EmojiPicker: React.FC<EmojiPickerProps> = ({
   className = '',
   disabled = false,
 }) => {
-  const { t } = useAppTranslation('common');
+  const { t, i18n } = useAppTranslation('common');
   const {
     categories,
     query,
@@ -49,7 +49,12 @@ export const EmojiPicker: React.FC<EmojiPickerProps> = ({
     clearSelection,
     uploadCustomEmoji,
     removeCustomEmoji,
-  } = useEmojiPicker({ value, category, onChange });
+  } = useEmojiPicker({
+    value,
+    category,
+    locale: i18n.resolvedLanguage ?? i18n.language,
+    onChange,
+  });
 
   const rootRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);

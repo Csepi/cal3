@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { tStatic } from '../../i18n';
 import { EMOJI_CATEGORIES, EMOJI_DEFINITIONS } from './emojiCategories';
+import { resolveEmojiLocalizedName } from './emojiNames';
 import {
   createCustomEmojiToken,
   loadCustomEmojis,
@@ -52,6 +53,7 @@ const CATEGORY_PRESETS: Record<PickerCategoryProp, Array<Exclude<EmojiCategoryId
 const toEmojiOption = (
   emoji: (typeof EMOJI_DEFINITIONS)[number],
   skinTone: SkinTone,
+  locale: string | undefined,
 ): EmojiOption => {
   const tonedValue =
     skinTone === 'default' ? undefined : emoji.skinTones?.[skinTone];
@@ -59,7 +61,7 @@ const toEmojiOption = (
   return {
     key: emoji.id,
     value: tonedValue ?? emoji.emoji,
-    name: emoji.name,
+    name: resolveEmojiLocalizedName(emoji.id, locale, emoji.name),
     keywords: emoji.keywords,
     category: emoji.category,
     isCustom: false,
@@ -110,6 +112,7 @@ const searchScore = (option: EmojiOption, normalizedQuery: string): number => {
 export interface UseEmojiPickerOptions {
   value?: string;
   category?: PickerCategoryProp;
+  locale?: string;
   onChange: (value: string | undefined) => void;
 }
 
@@ -121,6 +124,7 @@ export interface UploadResult {
 export const useEmojiPicker = ({
   value,
   category = 'all',
+  locale,
   onChange,
 }: UseEmojiPickerOptions) => {
   const allowedCategories = CATEGORY_PRESETS[category];
@@ -180,9 +184,9 @@ export const useEmojiPicker = ({
   const baseEmojiOptions = useMemo(
     () =>
       EMOJI_DEFINITIONS.filter((emoji) => allowedCategories.includes(emoji.category)).map((emoji) =>
-        toEmojiOption(emoji, skinTone),
+        toEmojiOption(emoji, skinTone, locale),
       ),
-    [allowedCategories, skinTone],
+    [allowedCategories, locale, skinTone],
   );
 
   const customEmojiOptions = useMemo<EmojiOption[]>(
