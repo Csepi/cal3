@@ -24,6 +24,7 @@ import { DatabaseDiagnosticsService } from './database/database-diagnostics.serv
 import { User } from './entities/user.entity';
 import { Calendar, CalendarShare } from './entities/calendar.entity';
 import { CalendarGroup } from './entities/calendar-group.entity';
+import { Event } from './entities/event.entity';
 import { Task } from './entities/task.entity';
 import { LoggingModule } from './logging/logging.module';
 import { AgentsModule } from './agents/agents.module';
@@ -77,6 +78,7 @@ import { UserLanguageController } from './controllers/user-language.controller';
       Calendar,
       CalendarShare,
       CalendarGroup,
+      Event,
       Task,
     ]),
   ],
