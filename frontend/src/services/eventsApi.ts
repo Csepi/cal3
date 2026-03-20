@@ -16,7 +16,42 @@ import type {
 import type { UpdateRecurringEventRequest } from './api';
 
 type EventLabelFieldSupport = 'unknown' | 'supported' | 'unsupported';
-let eventLabelFieldSupport: EventLabelFieldSupport = 'unknown';
+const EVENT_LABEL_SUPPORT_STORAGE_KEY = 'cal3_event_labels_support';
+
+const readPersistedEventLabelSupport = (): EventLabelFieldSupport => {
+  if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
+    return 'unknown';
+  }
+
+  try {
+    const persisted = localStorage.getItem(EVENT_LABEL_SUPPORT_STORAGE_KEY);
+    if (persisted === 'supported' || persisted === 'unsupported') {
+      return persisted;
+    }
+  } catch {
+    return 'unknown';
+  }
+
+  return 'unknown';
+};
+
+const persistEventLabelSupport = (support: EventLabelFieldSupport): void => {
+  if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
+    return;
+  }
+
+  try {
+    if (support === 'unknown') {
+      localStorage.removeItem(EVENT_LABEL_SUPPORT_STORAGE_KEY);
+      return;
+    }
+    localStorage.setItem(EVENT_LABEL_SUPPORT_STORAGE_KEY, support);
+  } catch {
+    // Ignore local storage persistence issues.
+  }
+};
+
+let eventLabelFieldSupport: EventLabelFieldSupport = readPersistedEventLabelSupport();
 const FALLBACK_REMOVABLE_EVENT_FIELDS = new Set([
   'description',
   'startTime',
@@ -486,8 +521,12 @@ const withEventLabelFieldFallback = async <T>(
 
   try {
     const result = await request(initialPayload);
-    if (eventLabelFieldSupport !== 'unsupported' && hasOwn(payload, 'tags')) {
+    if (
+      eventLabelFieldSupport !== 'unsupported' &&
+      (hasOwn(payload, 'tags') || hasOwn(payload, 'labels'))
+    ) {
       eventLabelFieldSupport = 'supported';
+      persistEventLabelSupport('supported');
     }
     return result;
   } catch (error) {
@@ -496,6 +535,7 @@ const withEventLabelFieldFallback = async <T>(
     }
 
     eventLabelFieldSupport = 'unsupported';
+    persistEventLabelSupport('unsupported');
     return request(stripEventLabelFields(payload));
   }
 };

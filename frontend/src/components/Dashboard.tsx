@@ -104,6 +104,12 @@ const Dashboard: React.FC<DashboardProps> = ({ initialView = 'calendar' }) => {
   const [isOfflineReadOnlyMode, setIsOfflineReadOnlyMode] = useState(false);
   const [globalErrorMessage, setGlobalErrorMessage] = useState<string | null>(null);
   const [isCalendarTimelineFocusMode, setIsCalendarTimelineFocusMode] = useState(false);
+  const [isAuthBootstrapPending, setIsAuthBootstrapPending] = useState(() => {
+    if (sessionManager.hasActiveSession()) {
+      return false;
+    }
+    return Boolean(sessionManager.peekRefreshToken());
+  });
 
   const tasksWorkspaceRef = useRef<TasksWorkspaceHandle | null>(null);
 
@@ -209,6 +215,41 @@ const Dashboard: React.FC<DashboardProps> = ({ initialView = 'calendar' }) => {
     isAuthenticated,
   ]);
 
+  useEffect(() => {
+    let isMounted = true;
+
+    const bootstrapSession = async () => {
+      if (isOfflineReadOnlyMode || isAuthenticated) {
+        if (isMounted) {
+          setIsAuthBootstrapPending(false);
+        }
+        return;
+      }
+
+      const hasRefreshToken = Boolean(sessionManager.peekRefreshToken());
+      if (!hasRefreshToken) {
+        if (isMounted) {
+          setIsAuthBootstrapPending(false);
+        }
+        return;
+      }
+
+      if (isMounted) {
+        setIsAuthBootstrapPending(true);
+      }
+      await sessionManager.refreshAccessToken();
+      if (isMounted) {
+        setIsAuthBootstrapPending(false);
+      }
+    };
+
+    void bootstrapSession();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [isAuthenticated, isOfflineReadOnlyMode]);
+
   // Initialize authentication state from localStorage on component mount
   useEffect(() => {
     if (isOfflineReadOnlyMode || isNavigatorOffline()) {
@@ -312,6 +353,13 @@ const Dashboard: React.FC<DashboardProps> = ({ initialView = 'calendar' }) => {
 
   // Get centralized theme configuration
   if ((!isAuthenticated || !currentUser?.username) && !isOfflineReadOnlyMode) {
+    if (isAuthBootstrapPending) {
+      return (
+        <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-100 to-blue-200">
+          <div className="h-11 w-11 animate-spin rounded-full border-4 border-blue-200 border-t-blue-600" />
+        </div>
+      );
+    }
     return <Login />;
   }
 

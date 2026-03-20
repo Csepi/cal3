@@ -188,7 +188,41 @@ const extractApiErrorMessage = (
 type HiddenLiveFocusTagsSupport = 'unknown' | 'supported' | 'unsupported';
 let hiddenLiveFocusTagsSupport: HiddenLiveFocusTagsSupport = 'unknown';
 type EventLabelsSupport = 'unknown' | 'supported' | 'unsupported';
-let eventLabelsSupport: EventLabelsSupport = 'unknown';
+const EVENT_LABELS_SUPPORT_STORAGE_KEY = 'cal3_event_labels_support';
+const readPersistedEventLabelsSupport = (): EventLabelsSupport => {
+  if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
+    return 'unknown';
+  }
+
+  try {
+    const persisted = localStorage.getItem(EVENT_LABELS_SUPPORT_STORAGE_KEY);
+    if (persisted === 'supported' || persisted === 'unsupported') {
+      return persisted;
+    }
+  } catch {
+    return 'unknown';
+  }
+
+  return 'unknown';
+};
+
+const persistEventLabelsSupport = (support: EventLabelsSupport): void => {
+  if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
+    return;
+  }
+
+  try {
+    if (support === 'unknown') {
+      localStorage.removeItem(EVENT_LABELS_SUPPORT_STORAGE_KEY);
+      return;
+    }
+    localStorage.setItem(EVENT_LABELS_SUPPORT_STORAGE_KEY, support);
+  } catch {
+    // Ignore local storage persistence issues.
+  }
+};
+
+let eventLabelsSupport: EventLabelsSupport = readPersistedEventLabelsSupport();
 let profileFieldSupportProbe: Promise<void> | null = null;
 
 const buildAvailabilityRateLimitError = (
@@ -296,8 +330,12 @@ class ApiService {
 
     if (hasEventLabelsField) {
       eventLabelsSupport = 'supported';
+      if (mode === 'strict') {
+        persistEventLabelsSupport('supported');
+      }
     } else if (mode === 'strict') {
       eventLabelsSupport = 'unsupported';
+      persistEventLabelsSupport('unsupported');
     }
   }
 
@@ -1243,6 +1281,7 @@ class ApiService {
 
         if (hasEventLabelsField && eventLabelsRejected) {
           eventLabelsSupport = 'unsupported';
+          persistEventLabelsSupport('unsupported');
           delete retryPayload.eventLabels;
           droppedAnyField = true;
         }
@@ -1278,6 +1317,7 @@ class ApiService {
     }
     if (hasEventLabelsField && eventLabelsSupport !== 'unsupported') {
       eventLabelsSupport = 'supported';
+      persistEventLabelsSupport('supported');
     }
 
     return await response.json();
