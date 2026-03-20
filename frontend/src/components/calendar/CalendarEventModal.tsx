@@ -374,11 +374,13 @@ export const CalendarEventModal: React.FC<CalendarEventModalProps> = ({
       }
       : {};
 
+    const normalizedLabels = normalizeEventLabels(eventForm.labels);
     const eventData = {
       ...sanitizeEventForm(eventForm),
       ...recurrenceData,
-      labels: normalizeEventLabels(eventForm.labels),
+      tags: normalizedLabels,
     } as CreateEventRequest | UpdateEventRequest;
+    delete (eventData as { labels?: string[] }).labels;
 
     await onSave(eventData);
     onClose();

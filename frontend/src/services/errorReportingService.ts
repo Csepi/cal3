@@ -36,6 +36,13 @@ const normalizeError = (error: unknown): { message: string; stack?: string } => 
 
 const nowIso = () => new Date().toISOString();
 
+const isNonRetriableReportError = (error: unknown): boolean => {
+  if (!(error instanceof Error)) {
+    return false;
+  }
+  return /status (401|403|404)\b/.test(error.message);
+};
+
 export class ErrorReportingService {
   private static singleton: ErrorReportingService;
   private installed = false;
@@ -138,6 +145,9 @@ export class ErrorReportingService {
         return;
       } catch (error) {
         lastError = error;
+        if (isNonRetriableReportError(error)) {
+          return;
+        }
         if (attempt >= REPORT_RETRIES) {
           break;
         }
