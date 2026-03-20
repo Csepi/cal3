@@ -262,7 +262,7 @@ const Dashboard: React.FC<DashboardProps> = ({ initialView = 'calendar' }) => {
 
   // Load user profile and permissions on component mount if logged in
   useEffect(() => {
-    if (isOfflineReadOnlyMode || !currentUser?.username) {
+    if (isOfflineReadOnlyMode || !isAuthenticated) {
       return;
     }
 
@@ -271,9 +271,9 @@ const Dashboard: React.FC<DashboardProps> = ({ initialView = 'calendar' }) => {
         if (isNativeClient() && isNavigatorOffline()) {
           const sessionUser = sessionManager.snapshotUserMetadata();
           const hasOfflineSnapshot = hasOfflineTimelineSnapshot({
-            id: currentUser.id ?? sessionUser?.id,
-            username: currentUser.username ?? sessionUser?.username,
-            email: currentUser.email ?? sessionUser?.email,
+            id: currentUser?.id ?? sessionUser?.id,
+            username: currentUser?.username ?? sessionUser?.username,
+            email: currentUser?.email ?? sessionUser?.email,
           });
           if (hasOfflineSnapshot) {
             setIsOfflineReadOnlyMode(true);
@@ -286,9 +286,9 @@ const Dashboard: React.FC<DashboardProps> = ({ initialView = 'calendar' }) => {
           if (isNativeClient() && isNavigatorOffline()) {
             const sessionUser = sessionManager.snapshotUserMetadata();
             const hasOfflineSnapshot = hasOfflineTimelineSnapshot({
-              id: currentUser.id ?? sessionUser?.id,
-              username: currentUser.username ?? sessionUser?.username,
-              email: currentUser.email ?? sessionUser?.email,
+              id: currentUser?.id ?? sessionUser?.id,
+              username: currentUser?.username ?? sessionUser?.username,
+              email: currentUser?.email ?? sessionUser?.email,
             });
             if (hasOfflineSnapshot) {
               setIsOfflineReadOnlyMode(true);
@@ -321,7 +321,13 @@ const Dashboard: React.FC<DashboardProps> = ({ initialView = 'calendar' }) => {
     };
 
     void initialise();
-  }, [currentUser?.username, isOfflineReadOnlyMode]);
+  }, [
+    currentUser?.email,
+    currentUser?.id,
+    currentUser?.username,
+    isAuthenticated,
+    isOfflineReadOnlyMode,
+  ]);
 
   useEffect(() => {
     if (isOfflineReadOnlyMode && currentView !== 'calendar') {
@@ -352,14 +358,15 @@ const Dashboard: React.FC<DashboardProps> = ({ initialView = 'calendar' }) => {
   }, [featureFlagsLoading, permissionsLoading, currentView, featureFlags, canAccessReservations]);
 
   // Get centralized theme configuration
-  if ((!isAuthenticated || !currentUser?.username) && !isOfflineReadOnlyMode) {
-    if (isAuthBootstrapPending) {
-      return (
-        <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-100 to-blue-200">
-          <div className="h-11 w-11 animate-spin rounded-full border-4 border-blue-200 border-t-blue-600" />
-        </div>
-      );
-    }
+  if (!isOfflineReadOnlyMode && isAuthBootstrapPending) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-100 to-blue-200">
+        <div className="h-11 w-11 animate-spin rounded-full border-4 border-blue-200 border-t-blue-600" />
+      </div>
+    );
+  }
+
+  if (!isAuthenticated && !isOfflineReadOnlyMode) {
     return <Login />;
   }
 
