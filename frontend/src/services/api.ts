@@ -105,6 +105,45 @@ const extractFieldValidationMessage = (details: unknown): string | null => {
   return null;
 };
 
+const extractFieldValidationNames = (details: unknown): string[] => {
+  if (!details || typeof details !== 'object') {
+    return [];
+  }
+
+  const fields = (details as Record<string, unknown>).fields;
+  if (!Array.isArray(fields)) {
+    return [];
+  }
+
+  return fields
+    .map((fieldEntry) => {
+      if (!fieldEntry || typeof fieldEntry !== 'object') {
+        return '';
+      }
+      const fieldName = (fieldEntry as Record<string, unknown>).field;
+      return typeof fieldName === 'string' ? fieldName.trim() : '';
+    })
+    .filter((fieldName) => fieldName.length > 0);
+};
+
+const extractApiValidationFieldNames = (payload: unknown): string[] => {
+  if (!payload || typeof payload !== 'object') {
+    return [];
+  }
+
+  const body = payload as Record<string, unknown>;
+  const topLevelNames = extractFieldValidationNames(body.details);
+  const nestedError = body.error;
+  const nestedNames =
+    nestedError && typeof nestedError === 'object'
+      ? extractFieldValidationNames(
+          (nestedError as Record<string, unknown>).details,
+        )
+      : [];
+
+  return [...new Set([...topLevelNames, ...nestedNames])];
+};
+
 const extractApiErrorMessage = (
   payload: unknown,
   fallback: string,
@@ -148,6 +187,8 @@ const extractApiErrorMessage = (
 
 type HiddenLiveFocusTagsSupport = 'unknown' | 'supported' | 'unsupported';
 let hiddenLiveFocusTagsSupport: HiddenLiveFocusTagsSupport = 'unknown';
+type EventLabelsSupport = 'unknown' | 'supported' | 'unsupported';
+let eventLabelsSupport: EventLabelsSupport = 'unknown';
 
 const buildAvailabilityRateLimitError = (
   retryAfterHeader: string | null,
@@ -1077,14 +1118,17 @@ class ApiService {
       profileData,
       'hiddenFromLiveFocusTags',
     );
-    const initialPayload: Partial<UserProfile> =
-      hasHiddenTagField && hiddenLiveFocusTagsSupport === 'unsupported'
-        ? (() => {
-            const payload = { ...profileData };
-            delete payload.hiddenFromLiveFocusTags;
-            return payload;
-          })()
-        : profileData;
+    const hasEventLabelsField = Object.prototype.hasOwnProperty.call(
+      profileData,
+      'eventLabels',
+    );
+    const initialPayload: Partial<UserProfile> = { ...profileData };
+    if (hasHiddenTagField && hiddenLiveFocusTagsSupport === 'unsupported') {
+      delete initialPayload.hiddenFromLiveFocusTags;
+    }
+    if (hasEventLabelsField && eventLabelsSupport === 'unsupported') {
+      delete initialPayload.eventLabels;
+    }
 
     let response = await sendPatch(initialPayload);
 
@@ -1096,12 +1140,44 @@ class ApiService {
       const errorData = await response.json().catch(() => ({}));
       const shouldRetryWithoutField =
         response.status === 400 &&
-        hasHiddenTagField;
+        (hasHiddenTagField || hasEventLabelsField);
 
       if (shouldRetryWithoutField) {
-        hiddenLiveFocusTagsSupport = 'unsupported';
+        const validationFieldNames = extractApiValidationFieldNames(errorData);
+        const rejectedFields = new Set(
+          validationFieldNames.map((fieldName) => fieldName.split('.')[0]),
+        );
         const retryPayload = { ...profileData };
-        delete retryPayload.hiddenFromLiveFocusTags;
+        let droppedAnyField = false;
+        const hasExplicitFieldHints = rejectedFields.size > 0;
+
+        const hiddenTagsRejected =
+          rejectedFields.has('hiddenFromLiveFocusTags') ||
+          hiddenLiveFocusTagsSupport === 'unsupported' ||
+          (hasHiddenTagField && !hasExplicitFieldHints);
+        const eventLabelsRejected =
+          rejectedFields.has('eventLabels') ||
+          eventLabelsSupport === 'unsupported' ||
+          (hasEventLabelsField && !hasExplicitFieldHints);
+
+        if (hasHiddenTagField && hiddenTagsRejected) {
+          hiddenLiveFocusTagsSupport = 'unsupported';
+          delete retryPayload.hiddenFromLiveFocusTags;
+          droppedAnyField = true;
+        }
+
+        if (hasEventLabelsField && eventLabelsRejected) {
+          eventLabelsSupport = 'unsupported';
+          delete retryPayload.eventLabels;
+          droppedAnyField = true;
+        }
+
+        if (!droppedAnyField) {
+          throw new Error(
+            extractApiErrorMessage(errorData, 'Failed to update profile'),
+          );
+        }
+
         response = await sendPatch(retryPayload);
 
         if (!response.ok) {
@@ -1124,6 +1200,9 @@ class ApiService {
 
     if (hasHiddenTagField && hiddenLiveFocusTagsSupport !== 'unsupported') {
       hiddenLiveFocusTagsSupport = 'supported';
+    }
+    if (hasEventLabelsField && eventLabelsSupport !== 'unsupported') {
+      eventLabelsSupport = 'supported';
     }
 
     return await response.json();

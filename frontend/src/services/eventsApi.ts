@@ -17,6 +17,24 @@ import type { UpdateRecurringEventRequest } from './api';
 
 type EventLabelFieldSupport = 'unknown' | 'supported' | 'unsupported';
 let eventLabelFieldSupport: EventLabelFieldSupport = 'unknown';
+const FALLBACK_REMOVABLE_EVENT_FIELDS = new Set([
+  'description',
+  'startTime',
+  'endDate',
+  'endTime',
+  'isAllDay',
+  'location',
+  'status',
+  'recurrenceType',
+  'recurrenceRule',
+  'color',
+  'icon',
+  'notes',
+  'tags',
+  'labels',
+  'calendarId',
+  'updateMode',
+]);
 
 const CUSTOM_EMOJI_TOKEN_PATTERN = /^:c[a-z0-9]{5}:$/;
 const DATE_ONLY_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
@@ -322,6 +340,58 @@ const shouldRetryWithoutIconField = (
   return hasOwn(payload, 'icon');
 };
 
+const extractValidationFieldNames = (error: unknown): string[] => {
+  if (!(error instanceof HttpError) || error.status !== 400) {
+    return [];
+  }
+
+  if (!error.details || typeof error.details !== 'object') {
+    return [];
+  }
+
+  const fields = (error.details as { fields?: unknown }).fields;
+  if (!Array.isArray(fields)) {
+    return [];
+  }
+
+  return fields
+    .map((entry) => {
+      if (!entry || typeof entry !== 'object') {
+        return '';
+      }
+      const field = (entry as { field?: unknown }).field;
+      return typeof field === 'string' ? field.trim() : '';
+    })
+    .filter((field) => field.length > 0);
+};
+
+const prunePayloadFromValidationErrors = (
+  payload: Record<string, unknown>,
+  error: unknown,
+): Record<string, unknown> | null => {
+  const invalidFields = extractValidationFieldNames(error);
+  if (invalidFields.length === 0) {
+    return null;
+  }
+
+  const nextPayload = { ...payload };
+  let changed = false;
+
+  for (const fieldPath of invalidFields) {
+    const topLevelField = fieldPath.split('.')[0];
+    if (!hasOwn(nextPayload, topLevelField)) {
+      continue;
+    }
+    if (!FALLBACK_REMOVABLE_EVENT_FIELDS.has(topLevelField)) {
+      continue;
+    }
+    delete nextPayload[topLevelField];
+    changed = true;
+  }
+
+  return changed ? nextPayload : null;
+};
+
 const withEventLabelFieldFallback = async <T>(
   request: (payload: Record<string, unknown>) => Promise<T>,
   payload: Record<string, unknown>,
@@ -351,13 +421,30 @@ const withEventPayloadFallbacks = async <T>(
   request: (payload: Record<string, unknown>) => Promise<T>,
   payload: Record<string, unknown>,
 ): Promise<T> => {
+  const attemptWithValidationPrune = async (
+    candidatePayload: Record<string, unknown>,
+  ): Promise<T> => {
+    try {
+      return await withEventLabelFieldFallback(request, candidatePayload);
+    } catch (error) {
+      const prunedPayload = prunePayloadFromValidationErrors(
+        candidatePayload,
+        error,
+      );
+      if (!prunedPayload) {
+        throw error;
+      }
+      return withEventLabelFieldFallback(request, prunedPayload);
+    }
+  };
+
   try {
-    return await withEventLabelFieldFallback(request, payload);
+    return await attemptWithValidationPrune(payload);
   } catch (error) {
     if (!shouldRetryWithoutIconField(error, payload)) {
       throw error;
     }
-    return withEventLabelFieldFallback(request, stripEventIconField(payload));
+    return attemptWithValidationPrune(stripEventIconField(payload));
   }
 };
 
