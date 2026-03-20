@@ -126,6 +126,17 @@ export const PersonalLogsPanel: React.FC<PersonalLogsPanelProps> = ({
 
   const data = feedQuery.data;
   const summary = data?.summary;
+  const isInitialLoadActive =
+    feedQuery.isLoading
+    || privacyReportQuery.isLoading
+    || consentQuery.isLoading
+    || dsrQuery.isLoading;
+  const isBackgroundActivityActive =
+    (feedQuery.isFetching && !feedQuery.isLoading)
+    || (privacyReportQuery.isFetching && !privacyReportQuery.isLoading)
+    || (consentQuery.isFetching && !consentQuery.isLoading)
+    || (dsrQuery.isFetching && !dsrQuery.isLoading)
+    || privacyBusy;
 
   const withPrivacyAction = async (fn: () => Promise<void>) => {
     setPrivacyBusy(true);
@@ -193,6 +204,32 @@ export const PersonalLogsPanel: React.FC<PersonalLogsPanelProps> = ({
         <p className="mt-1 text-sm text-slate-600">
           {tStatic('common:auto.frontend.k26dcf854a8cb')}</p>
       </div>
+
+      {isInitialLoadActive && (
+        <div
+          className="inline-flex items-center gap-2 rounded-xl border border-blue-200 bg-blue-50 px-4 py-2.5 text-sm text-blue-700"
+          role="status"
+          aria-live="polite"
+        >
+          <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M21 12a9 9 0 1 1-9-9" />
+          </svg>
+          {tStatic('common:auto.frontend.k50c6253d51b7')}
+        </div>
+      )}
+
+      {isBackgroundActivityActive && !isInitialLoadActive && (
+        <div
+          className="inline-flex items-center gap-2 rounded-xl border border-blue-200 bg-blue-50 px-4 py-2.5 text-sm text-blue-700"
+          role="status"
+          aria-live="polite"
+        >
+          <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M21 12a9 9 0 1 1-9-9" />
+          </svg>
+          {tStatic('common:auto.frontend.k50c6253d51b7')}
+        </div>
+      )}
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <div className="rounded-xl border border-slate-200 bg-white p-4">

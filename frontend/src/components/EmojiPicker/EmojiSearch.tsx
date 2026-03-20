@@ -38,7 +38,10 @@ export const EmojiSearch: React.FC<EmojiSearchProps> = ({
         aria-controls="emoji-search-suggestions"
       />
       <span className="pointer-events-none absolute left-3 top-2.5 text-slate-400" aria-hidden="true">
-        ??
+        <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
+          <circle cx="11" cy="11" r="7" />
+          <path d="m20 20-3.5-3.5" />
+        </svg>
       </span>
       {query.length > 0 && (
         <button
@@ -47,7 +50,9 @@ export const EmojiSearch: React.FC<EmojiSearchProps> = ({
           className="absolute right-2.5 top-2 rounded p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
           aria-label={t('emojiPicker.clearSearch', { defaultValue: 'Clear emoji search' })}
         >
-          ?
+          <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M18 6 6 18M6 6l12 12" />
+          </svg>
         </button>
       )}
 

@@ -47,10 +47,11 @@ interface SettingsDraft {
 }
 
 const LEVEL_OPTIONS: LogLevel[] = ['trace', 'debug', 'info', 'warn', 'error'];
+const DEFAULT_VISIBLE_LEVELS: LogLevel[] = ['trace', 'debug', 'warn', 'error'];
 const METHOD_OPTIONS = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS', 'HEAD'];
 
 const DEFAULT_SERVER_FILTERS: ServerFilterState = {
-  levels: [],
+  levels: DEFAULT_VISIBLE_LEVELS,
   contexts: [],
   search: '',
   from: '',
@@ -140,6 +141,7 @@ const downloadTextFile = (filename: string, content: string, mimeType: string): 
 
 export const AdminLogsPanel: React.FC<AdminLogsPanelProps> = ({ isActive = false }) => {
   const [loading, setLoading] = useState(false);
+  const [backgroundRefreshing, setBackgroundRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
 
@@ -187,7 +189,10 @@ export const AdminLogsPanel: React.FC<AdminLogsPanelProps> = ({ isActive = false
 
   const loadLogs = useCallback(
     async (silent = false) => {
-      if (!silent) {
+      if (silent) {
+        setBackgroundRefreshing(true);
+      } else {
+        setBackgroundRefreshing(false);
         setLoading(true);
       }
       setError(null);
@@ -213,6 +218,7 @@ export const AdminLogsPanel: React.FC<AdminLogsPanelProps> = ({ isActive = false
         if (!silent) {
           setLoading(false);
         }
+        setBackgroundRefreshing(false);
       }
     },
     [serverFilters],
@@ -300,6 +306,8 @@ export const AdminLogsPanel: React.FC<AdminLogsPanelProps> = ({ isActive = false
   const hasNextPage = serverFilters.offset + serverFilters.limit < totalCount;
   const currentFrom = totalCount === 0 ? 0 : serverFilters.offset + 1;
   const currentTo = Math.min(serverFilters.offset + serverFilters.limit, totalCount);
+  const hasBackgroundActivity =
+    !loading && (backgroundRefreshing || savingSettings || maintenanceBusy);
 
   const queryDirty =
     JSON.stringify({ ...serverDraft, offset: 0 }) !==
@@ -488,6 +496,14 @@ export const AdminLogsPanel: React.FC<AdminLogsPanelProps> = ({ isActive = false
         {error && <p className="mt-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
         {message && !error && (
           <p className="mt-3 rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-700">{message}</p>
+        )}
+        {hasBackgroundActivity && (
+          <p className="mt-3 inline-flex items-center gap-2 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-sm text-blue-700">
+            <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M21 12a9 9 0 1 1-9-9" />
+            </svg>
+            {tStatic('common:auto.frontend.k9375a3fcc24d')}
+          </p>
         )}
       </header>
 
@@ -929,7 +945,16 @@ export const AdminLogsPanel: React.FC<AdminLogsPanelProps> = ({ isActive = false
 
       <div className="grid gap-4 px-6 py-5 xl:grid-cols-[3fr_1fr]">
         <section className="min-h-[420px] rounded-2xl border border-slate-200 bg-white p-4">
-          {loading && <p className="text-sm text-slate-500">{tStatic('common:auto.frontend.k9375a3fcc24d')}</p>}
+          {loading && (
+            <div className="rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-700">
+              <div className="inline-flex items-center gap-2">
+                <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M21 12a9 9 0 1 1-9-9" />
+                </svg>
+                <span>{tStatic('common:auto.frontend.k9375a3fcc24d')}</span>
+              </div>
+            </div>
+          )}
           {!loading && filteredLogs.length === 0 && (
             <p className="text-sm text-slate-500">{tStatic('common:auto.frontend.k475092992217')}</p>
           )}

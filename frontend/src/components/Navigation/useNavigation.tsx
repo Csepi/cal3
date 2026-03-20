@@ -42,9 +42,8 @@ const TasksIcon = (
   </svg>
 );
 const BellIcon = (
-  <svg viewBox="0 0 24 24" className={iconClassName} fill="none" stroke="currentColor" strokeWidth="1.8">
-    <path d="M15 17h5l-1.4-1.4A2 2 0 0 1 18 13.8V11a6 6 0 0 0-12 0v2.8a2 2 0 0 1-.6 1.4L4 17h5" />
-    <path d="M9 21a3 3 0 0 0 6 0" />
+  <svg viewBox="0 0 24 24" className={iconClassName} fill="currentColor" aria-hidden="true">
+    <path d="M12 2a7 7 0 0 0-7 7v4.3l-1.8 2.7a1.2 1.2 0 0 0 1 1.9h15.6a1.2 1.2 0 0 0 1-1.9L19 13.3V9a7 7 0 0 0-7-7Zm0 20a3 3 0 0 0 2.82-2h-5.64A3 3 0 0 0 12 22Z" />
   </svg>
 );
 const ProfileIcon = (
