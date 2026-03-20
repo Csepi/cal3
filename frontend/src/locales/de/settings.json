@@ -215,8 +215,8 @@
     "dateFormat": "Datumsformat",
     "hideReservationsTab": "Reservierungen-Tab ausblenden",
     "hideReservationsTabHelp": "Wenn aktiviert, wird der Reservierungen-Tab im Haupt-Dashboard ausgeblendet.",
-    "hiddenLiveFocusTags": "Tags in LIVE-Fokus ausblenden",
-    "hiddenLiveFocusTagsHelp": "Ereignisse mit einem dieser Tags werden in der LIVE-Fokus- und Timeline-Vorschau ausgeblendet. Tags mit Kommas trennen.",
+    "hiddenLiveFocusTags": "Labels im LIVE-Fokus ausblenden",
+    "hiddenLiveFocusTagsHelp": "Ereignisse mit einem dieser Labels werden im LIVE-Fokus und in der Timeline ausgeblendet. Trenne Labels mit Kommas.",
     "hiddenLiveFocusTagsPlaceholder": "no_focus, private",
     "language": "Sprache",
     "theme": "Design",
@@ -245,5 +245,14 @@
     "copyWidgetLog": "Widget-Protokoll kopieren",
     "widgetDiagnostics": "Widget-Diagnose",
     "widgetDiagnosticsHelp": "Kopieren Sie Android-Widget-Protokolle f?r eine schnellere Fehleranalyse."
+  },
+  "labels": {
+    "title": "Ereignis-Labels",
+    "help": "Verwalte gespeicherte Labels fur das Erstellen und Bearbeiten von Ereignissen.",
+    "empty": "Noch keine gespeicherten Labels.",
+    "confirmDelete": "Label \"{{label}}\" loschen? Es wird aus deinen Ereignissen entfernt.",
+    "deleteSuccess": "Label \"{{label}}\" geloscht.",
+    "deleteError": "Label konnte nicht geloscht werden.",
+    "deleteAria": "Label {{label}} loschen"
   }
 }

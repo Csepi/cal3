@@ -215,8 +215,8 @@
     "dateFormat": "Format de date",
     "hideReservationsTab": "Masquer l?onglet R?servations",
     "hideReservationsTabHelp": "Lorsque cette option est activ?e, l?onglet R?servations est masqu? du tableau de bord principal.",
-    "hiddenLiveFocusTags": "Masquer les tags dans LIVE focus",
-    "hiddenLiveFocusTagsHelp": "Les événements avec l’un de ces tags sont masqués de l’aperçu LIVE focus et timeline. Séparez les tags par des virgules.",
+    "hiddenLiveFocusTags": "Masquer les etiquettes du focus LIVE",
+    "hiddenLiveFocusTagsHelp": "Les evenements ayant l'une de ces etiquettes sont masques du focus LIVE et de l'apercu chronologique. Separez les etiquettes par des virgules.",
     "hiddenLiveFocusTagsPlaceholder": "no_focus, private",
     "language": "Langue",
     "theme": "Th?me",
@@ -245,5 +245,14 @@
     "copyWidgetLog": "Copier le journal du widget",
     "widgetDiagnostics": "Diagnostics du widget",
     "widgetDiagnosticsHelp": "Copiez les journaux du widget Android pour diagnostiquer rapidement les probl?mes de chargement."
+  },
+  "labels": {
+    "title": "Etiquettes d'evenement",
+    "help": "Gerez les etiquettes enregistrees utilisees lors de la creation et de la modification d'evenements.",
+    "empty": "Aucune etiquette enregistree pour le moment.",
+    "confirmDelete": "Supprimer l'etiquette \"{{label}}\" ? Elle sera retiree de vos evenements.",
+    "deleteSuccess": "Etiquette \"{{label}}\" supprimee.",
+    "deleteError": "Echec de la suppression de l'etiquette.",
+    "deleteAria": "Supprimer l'etiquette {{label}}"
   }
 }

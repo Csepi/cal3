@@ -12,6 +12,11 @@ import type {
   PrivacyConsentRecord,
 } from '../types/PrivacyCompliance';
 
+const AUDIT_REQUEST_OPTIONS = {
+  timeoutMs: 90_000,
+  networkRetries: 1,
+} as const;
+
 const toQueryString = (query: PersonalAuditQuery = {}): string => {
   const params = new URLSearchParams();
   query.categories?.forEach((value) => params.append('categories', value));
@@ -44,6 +49,7 @@ export async function getPersonalAuditFeed(
 ): Promise<PersonalAuditFeedResponse> {
   const response = await secureFetch(
     `${BASE_URL}/api/users/me/audit${toQueryString(query)}`,
+    AUDIT_REQUEST_OPTIONS,
   );
   return handle<PersonalAuditFeedResponse>(response);
 }
@@ -53,6 +59,7 @@ export async function getPersonalAuditSummary(
 ): Promise<PersonalAuditSummary> {
   const response = await secureFetch(
     `${BASE_URL}/api/users/me/audit/summary${toQueryString(query)}`,
+    AUDIT_REQUEST_OPTIONS,
   );
   const payload = await handle<{ summary: PersonalAuditSummary }>(response);
   return payload.summary;

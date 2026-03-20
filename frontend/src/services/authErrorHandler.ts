@@ -118,6 +118,7 @@ export interface SecureFetchOptions extends RequestInit {
   autoRefresh?: boolean;
   csrf?: boolean;
   timeoutMs?: number;
+  networkRetries?: number;
 }
 
 /**
@@ -321,6 +322,7 @@ export async function secureFetch(
     autoRefresh = true,
     csrf,
     timeoutMs,
+    networkRetries,
     ...rest
   } = options;
 
@@ -450,7 +452,12 @@ export async function secureFetch(
   };
 
   const executeWithNetworkRetry = async (): Promise<Response> => {
-    const maxAttempts = IDEMPOTENT_METHODS.has(method) ? 3 : 1;
+    const normalizedRetryAttempts =
+      typeof networkRetries === 'number' && Number.isFinite(networkRetries)
+        ? Math.max(1, Math.floor(networkRetries))
+        : null;
+    const maxAttempts =
+      normalizedRetryAttempts ?? (IDEMPOTENT_METHODS.has(method) ? 3 : 1);
     let attempt = 0;
     let lastError: unknown;
 

@@ -3,6 +3,7 @@ import { apiService } from './api';
 export const profileApi = {
   getUserProfile: () => apiService.getUserProfile(),
   updateUserProfile: (payload: Record<string, unknown>) => apiService.updateUserProfile(payload),
+  deleteUserEventLabel: (label: string) => apiService.deleteUserEventLabel(label),
   uploadProfilePicture: (file: File) => apiService.uploadProfilePicture(file),
   updateLanguagePreference: (language: 'en' | 'hu' | 'de' | 'fr') =>
     apiService.updateLanguagePreference(language),

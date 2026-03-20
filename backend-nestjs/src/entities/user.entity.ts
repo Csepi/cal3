@@ -152,6 +152,9 @@ export class User {
   @Column({ type: 'json', nullable: true }) // Array of event tags to hide from LIVE focus preview
   hiddenFromLiveFocusTags!: string[] | null;
 
+  @Column({ type: 'json', nullable: true }) // Reusable event labels saved by the user
+  eventLabels!: string[] | null;
+
   @CreateDateColumn()
   createdAt!: Date;
 

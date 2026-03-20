@@ -220,8 +220,8 @@
     "timeFormat": "Időformátum",
     "timezone": "Időzóna",
     "weekStart": "A hét kezdete",
-    "hiddenLiveFocusTags": "Tag-ek elrejtese LIVE fokuszban",
-    "hiddenLiveFocusTagsHelp": "Az ezen tagek valamelyiket tartalmazo esemenyek nem jelennek meg a LIVE fokusz es timeline elonezetben. A tageket vesszovel valaszd el.",
+    "hiddenLiveFocusTags": "Cimkek elrejtese LIVE fokuszban",
+    "hiddenLiveFocusTagsHelp": "Az ilyen cimkeju esemenyek rejtve lesznek a LIVE fokuszban es az idovonal elonezetben. A cimkeket vesszovel valaszd el.",
     "hiddenLiveFocusTagsPlaceholder": "no_focus, private"
   },
   "profile": {
@@ -245,5 +245,14 @@
     "copyWidgetLog": "Widgetnapló másolása",
     "widgetDiagnostics": "Widget diagnosztika",
     "widgetDiagnosticsHelp": "Másolja az Android widget naplókat a gyors hibakereséshez."
+  },
+  "labels": {
+    "title": "Esemenycimkek",
+    "help": "Kezeld az esemeny letrehozasanal es szerkesztesenel hasznalt mentett cimkeket.",
+    "empty": "Meg nincsenek mentett cimkek.",
+    "confirmDelete": "Torlod a(z) \"{{label}}\" cimket? Ez eltavolitja a cimket az esemenyeidbol.",
+    "deleteSuccess": "A(z) \"{{label}}\" cimke torolve.",
+    "deleteError": "A cimke torlese sikertelen.",
+    "deleteAria": "{{label}} cimke torlese"
   }
 }

@@ -15,6 +15,7 @@ export interface Event {
   recurrenceRule?: RecurrencePattern | Record<string, unknown>;
   notes?: string;
   tags?: string[];
+  labels?: string[];
   createdAt: string;
   updatedAt: string;
   // Recurring event properties
@@ -94,6 +95,8 @@ export interface CreateEventRequest {
   calendarId?: number;
   recurrenceType?: RecurrenceType;
   recurrenceRule?: RecurrencePattern | Record<string, unknown>;
+  tags?: string[];
+  labels?: string[];
 }
 
 export interface UpdateEventRequest extends CreateEventRequest {

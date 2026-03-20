@@ -22,6 +22,7 @@ export interface CalendarEventModalProps {
   timeFormat?: string;
   error?: string | null;
   loading?: boolean;
+  availableLabels?: string[];
 }
 
 const formatDateInputValue = (date: Date): string => {
@@ -67,11 +68,41 @@ const alpha = (color: string, opacity: number): string => {
   return `rgba(${r}, ${g}, ${b}, ${opacity})`;
 };
 
+const normalizeEventLabels = (value: unknown): string[] => {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  const normalized: string[] = [];
+  const seen = new Set<string>();
+  for (const rawLabel of value) {
+    if (typeof rawLabel !== 'string') {
+      continue;
+    }
+    const label = rawLabel.trim();
+    if (!label) {
+      continue;
+    }
+    const key = label.toLowerCase();
+    if (seen.has(key)) {
+      continue;
+    }
+    seen.add(key);
+    normalized.push(label.slice(0, 64));
+    if (normalized.length >= 50) {
+      break;
+    }
+  }
+
+  return normalized;
+};
+
 const sanitizeEventForm = (
   form: Partial<CreateEventRequest>,
 ): Partial<CreateEventRequest> => ({
   ...form,
   icon: form.icon || undefined,
+  labels: normalizeEventLabels(form.labels),
 });
 
 export const CalendarEventModal: React.FC<CalendarEventModalProps> = ({
@@ -86,6 +117,7 @@ export const CalendarEventModal: React.FC<CalendarEventModalProps> = ({
   themeColor,
   error,
   loading = false,
+  availableLabels = [],
 }) => {
   const { t } = useAppTranslation('calendar');
   const [eventForm, setEventForm] = useState<Partial<CreateEventRequest>>({
@@ -100,7 +132,9 @@ export const CalendarEventModal: React.FC<CalendarEventModalProps> = ({
     color: themeColor,
     icon: undefined,
     calendarId: undefined,
+    labels: [],
   });
+  const [labelInput, setLabelInput] = useState('');
   const [recurrencePattern, setRecurrencePattern] = useState<RecurrencePattern | null>(null);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [initialSnapshot, setInitialSnapshot] = useState('');
@@ -124,6 +158,7 @@ export const CalendarEventModal: React.FC<CalendarEventModalProps> = ({
         color: editingEvent.color,
         icon: editingEvent.icon,
         calendarId: editingEvent.calendar?.id,
+        labels: normalizeEventLabels(editingEvent.labels ?? editingEvent.tags),
       });
 
       const initialRecurrence = editingEvent.recurrenceRule
@@ -181,6 +216,7 @@ export const CalendarEventModal: React.FC<CalendarEventModalProps> = ({
         color: themeColor,
         icon: undefined,
         calendarId: defaultCalendar?.id,
+        labels: [],
       });
 
       setEventForm(initialForm);
@@ -190,6 +226,7 @@ export const CalendarEventModal: React.FC<CalendarEventModalProps> = ({
     }
 
     setFormErrors({});
+    setLabelInput('');
   }, [isOpen, editingEvent, calendars, selectedDate, selectedEndDate, themeColor]);
 
   const hasUnsavedChanges = useMemo(() => {
@@ -203,6 +240,20 @@ export const CalendarEventModal: React.FC<CalendarEventModalProps> = ({
 
   const calendarRequired = !eventForm.calendarId;
   const detailsLocked = calendarRequired;
+  const selectedLabelSet = useMemo(
+    () =>
+      new Set(
+        normalizeEventLabels(eventForm.labels).map((label) => label.toLowerCase()),
+      ),
+    [eventForm.labels],
+  );
+  const selectableLabels = useMemo(() => {
+    const query = labelInput.trim().toLowerCase();
+    return normalizeEventLabels(availableLabels)
+      .filter((label) => !selectedLabelSet.has(label.toLowerCase()))
+      .filter((label) => (query ? label.toLowerCase().includes(query) : true))
+      .slice(0, 12);
+  }, [availableLabels, labelInput, selectedLabelSet]);
 
   const handleFormChange = (field: keyof CreateEventRequest, value: unknown) => {
     setEventForm((previous) => ({
@@ -223,6 +274,38 @@ export const CalendarEventModal: React.FC<CalendarEventModalProps> = ({
         endDate: String(value),
       }));
     }
+  };
+
+  const addLabelToEvent = (value: string) => {
+    const normalized = value.trim().slice(0, 64);
+    if (!normalized) {
+      return;
+    }
+
+    setEventForm((previous) => {
+      const existing = normalizeEventLabels(previous.labels);
+      if (
+        existing.some(
+          (label) => label.toLowerCase() === normalized.toLowerCase(),
+        )
+      ) {
+        return previous;
+      }
+      return {
+        ...previous,
+        labels: [...existing, normalized],
+      };
+    });
+    setLabelInput('');
+  };
+
+  const removeLabelFromEvent = (labelToRemove: string) => {
+    setEventForm((previous) => ({
+      ...previous,
+      labels: normalizeEventLabels(previous.labels).filter(
+        (label) => label.toLowerCase() !== labelToRemove.toLowerCase(),
+      ),
+    }));
   };
 
   const validateForm = (): boolean => {
@@ -294,6 +377,7 @@ export const CalendarEventModal: React.FC<CalendarEventModalProps> = ({
     const eventData = {
       ...sanitizeEventForm(eventForm),
       ...recurrenceData,
+      labels: normalizeEventLabels(eventForm.labels),
     } as CreateEventRequest | UpdateEventRequest;
 
     await onSave(eventData);
@@ -450,6 +534,87 @@ export const CalendarEventModal: React.FC<CalendarEventModalProps> = ({
                     placeholder={t('events.enterDescription')}
                     rows={4}
                   />
+                </div>
+
+                <div className="md:col-span-2">
+                  <label className="mb-2 block text-sm font-medium text-gray-700">
+                    {t('events.labels', { defaultValue: 'Labels' })}
+                  </label>
+                  <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                    <div className="mb-3 flex flex-wrap gap-2">
+                      {normalizeEventLabels(eventForm.labels).length > 0 ? (
+                        normalizeEventLabels(eventForm.labels).map((label) => (
+                          <span
+                            key={label.toLowerCase()}
+                            className="inline-flex items-center gap-2 rounded-full border border-slate-300 bg-white px-2.5 py-1 text-xs font-medium text-slate-700"
+                          >
+                            <span>{label}</span>
+                            <button
+                              type="button"
+                              onClick={() => removeLabelFromEvent(label)}
+                              className="rounded-full p-0.5 text-slate-500 hover:bg-slate-200 hover:text-slate-700"
+                              aria-label={t('events.removeLabelAria', {
+                                defaultValue: 'Remove label {{label}}',
+                                label,
+                              })}
+                            >
+                              x
+                            </button>
+                          </span>
+                        ))
+                      ) : (
+                        <p className="text-xs text-slate-500">
+                          {t('events.noLabelsSelected', {
+                            defaultValue: 'No labels selected.',
+                          })}
+                        </p>
+                      )}
+                    </div>
+
+                    <input
+                      type="text"
+                      value={labelInput}
+                      onChange={(event) => setLabelInput(event.target.value)}
+                      onKeyDown={(event) => {
+                        if (event.key === 'Enter' || event.key === ',') {
+                          event.preventDefault();
+                          addLabelToEvent(labelInput);
+                        }
+                        if (event.key === 'Backspace' && !labelInput.trim()) {
+                          const currentLabels = normalizeEventLabels(eventForm.labels);
+                          if (currentLabels.length > 0) {
+                            removeLabelFromEvent(currentLabels[currentLabels.length - 1]);
+                          }
+                        }
+                      }}
+                      onBlur={() => addLabelToEvent(labelInput)}
+                      placeholder={t('events.labelsPlaceholder', {
+                        defaultValue: 'Type a label and press Enter',
+                      })}
+                      className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 shadow-sm outline-none transition focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+                    />
+                    <p className="mt-2 text-xs text-slate-500">
+                      {t('events.labelsHelper', {
+                        defaultValue:
+                          'Use commas or Enter to add labels. New labels will be saved for quick reuse.',
+                      })}
+                    </p>
+
+                    {selectableLabels.length > 0 && (
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        {selectableLabels.map((label) => (
+                          <button
+                            key={label.toLowerCase()}
+                            type="button"
+                            onClick={() => addLabelToEvent(label)}
+                            className="rounded-full border border-slate-300 bg-white px-2.5 py-1 text-xs font-medium text-slate-700 hover:border-slate-400 hover:bg-slate-100"
+                          >
+                            {label}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </section>

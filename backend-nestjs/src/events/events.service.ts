@@ -355,33 +355,10 @@ export class EventsService {
       }
     }
 
-    // Update date fields if provided
-    if (updateEventDto.startDate) {
-      updateEventDto.startDate = new Date(
-        updateEventDto.startDate,
-      ) as unknown as string;
-    }
-    if (updateEventDto.endDate) {
-      updateEventDto.endDate = new Date(
-        updateEventDto.endDate,
-      ) as unknown as string;
-    }
-
-    // Handle time fields - convert empty strings to undefined
-    if ('startTime' in updateEventDto) {
-      (updateEventDto as EventMutationInput).startTime =
-        updateEventDto.startTime && updateEventDto.startTime !== ''
-          ? updateEventDto.startTime
-          : undefined;
-    }
-    if ('endTime' in updateEventDto) {
-      (updateEventDto as EventMutationInput).endTime =
-        updateEventDto.endTime && updateEventDto.endTime !== ''
-          ? updateEventDto.endTime
-          : undefined;
-    }
-
-    Object.assign(event, updateEventDto);
+    this.eventValidationService.sanitizeAndAssignUpdateData(
+      event,
+      updateEventDto as EventMutationInput,
+    );
     const updatedEvent = await this.eventRepository.save(event);
 
     // Trigger automation rules for event.updated

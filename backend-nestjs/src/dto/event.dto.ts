@@ -1,10 +1,12 @@
 import {
+  IsArray,
   IsString,
   IsOptional,
   IsEnum,
   IsNumber,
   IsBoolean,
   IsDateString,
+  MaxLength,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { EventStatus, RecurrenceType } from '../entities/event.entity';
@@ -120,6 +122,26 @@ export class CreateEventDto {
   @IsOptional()
   @IsString()
   notes?: string;
+
+  @ApiPropertyOptional({
+    example: ['important', 'work'],
+    description: 'Event labels',
+  })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  @MaxLength(64, { each: true })
+  tags?: string[];
+
+  @ApiPropertyOptional({
+    example: ['important', 'work'],
+    description: 'Event labels alias for tags',
+  })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  @MaxLength(64, { each: true })
+  labels?: string[];
 
   @ApiPropertyOptional({
     example: 1,
@@ -238,6 +260,26 @@ export class UpdateEventDto {
   @IsOptional()
   @IsString()
   notes?: string;
+
+  @ApiPropertyOptional({
+    example: ['important', 'work'],
+    description: 'Event labels',
+  })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  @MaxLength(64, { each: true })
+  tags?: string[];
+
+  @ApiPropertyOptional({
+    example: ['important', 'work'],
+    description: 'Event labels alias for tags',
+  })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  @MaxLength(64, { each: true })
+  labels?: string[];
 
   @ApiPropertyOptional({
     example: 1,

@@ -215,8 +215,8 @@
     "dateFormat": "Date format",
     "hideReservationsTab": "Hide Reservations tab",
     "hideReservationsTabHelp": "When enabled, the Reservations tab will be hidden from the main dashboard.",
-    "hiddenLiveFocusTags": "Hide tags from LIVE focus",
-    "hiddenLiveFocusTagsHelp": "Events with any of these tags are hidden from LIVE focus and timeline preview. Separate tags with commas.",
+    "hiddenLiveFocusTags": "Hide labels from LIVE focus",
+    "hiddenLiveFocusTagsHelp": "Events with any of these labels are hidden from LIVE focus and timeline preview. Separate labels with commas.",
     "hiddenLiveFocusTagsPlaceholder": "no_focus, private",
     "language": "Language",
     "theme": "Theme",
@@ -245,5 +245,14 @@
     "copyWidgetLog": "Copy Widget Log",
     "widgetDiagnostics": "Widget Diagnostics",
     "widgetDiagnosticsHelp": "Copy Android widget logs to troubleshoot loading issues quickly."
+  },
+  "labels": {
+    "title": "Event labels",
+    "help": "Manage saved labels used in event creation and editing.",
+    "empty": "No saved labels yet.",
+    "confirmDelete": "Delete label \"{{label}}\"? This will remove it from your events.",
+    "deleteSuccess": "Label \"{{label}}\" deleted.",
+    "deleteError": "Failed to delete label.",
+    "deleteAria": "Delete label {{label}}"
   }
 }

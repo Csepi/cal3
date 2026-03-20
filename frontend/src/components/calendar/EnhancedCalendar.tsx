@@ -61,6 +61,9 @@ interface CalendarState {
   organizations: Organization[];
   selectedResourceTypes: number[]; // Array of selected resource type IDs
   hiddenFromLiveFocusTags: string[];
+  savedEventLabels: string[];
+  availableEventLabels: string[];
+  selectedEventLabels: string[];
 }
 
 interface CalendarActions {
@@ -71,6 +74,9 @@ interface CalendarActions {
   toggleCalendar: (calendarId: number) => void;
   toggleResourceType: (resourceTypeId: number) => void;
   toggleOrganization: (org: Organization) => void;
+  toggleEventLabel: (label: string) => void;
+  selectAllEventLabels: () => void;
+  mergeSavedEventLabels: (labels: string[]) => Promise<void>;
   updateOrganizationColor: (orgId: number, color: string, cascadeToResourceTypes: boolean) => Promise<void>;
   updateResourceTypeColor: (resourceTypeId: number, color: string) => Promise<void>;
   createEvent: (date?: Date, endDate?: Date) => void;
@@ -101,14 +107,14 @@ const sortCalendarsByRank = (calendars: CalendarType[]): CalendarType[] =>
     return a.id - b.id;
   });
 
-const normalizeTagList = (tags: unknown): string[] => {
-  if (!Array.isArray(tags)) {
+const normalizeTagList = (labels: unknown): string[] => {
+  if (!Array.isArray(labels)) {
     return [];
   }
 
   const normalized: string[] = [];
   const seen = new Set<string>();
-  for (const rawTag of tags) {
+  for (const rawTag of labels) {
     if (typeof rawTag !== 'string') {
       continue;
     }
@@ -126,6 +132,9 @@ const normalizeTagList = (tags: unknown): string[] => {
 
   return normalized;
 };
+
+const resolveEventLabels = (event: Partial<Event>): string[] =>
+  normalizeTagList(event.labels ?? event.tags);
 
 // Calendar hook for state management
 function useCalendarState(
@@ -161,8 +170,11 @@ function useCalendarState(
   const [selectedCalendars, setSelectedCalendars] = useState<number[]>([]);
   const [storedVisibleCalendarIds, setStoredVisibleCalendarIds] = useState<number[] | null>(null);
   const [hiddenFromLiveFocusTags, setHiddenFromLiveFocusTags] = useState<string[]>([]);
+  const [savedEventLabels, setSavedEventLabels] = useState<string[]>([]);
+  const [selectedEventLabels, setSelectedEventLabels] = useState<string[]>([]);
   const [calendarPreferenceLoaded, setCalendarPreferenceLoaded] = useState(false);
   const [selectedResourceTypes, setSelectedResourceTypes] = useState<number[]>([]);
+  const eventLabelFilterTouchedRef = useRef(false);
 
   const previousCalendarIdsRef = useRef<number[]>([]);
   const hasInitializedSelectionRef = useRef(false);
@@ -172,6 +184,8 @@ function useCalendarState(
     if (offlineMode) {
       setStoredVisibleCalendarIds(null);
       setHiddenFromLiveFocusTags([]);
+      setSavedEventLabels([]);
+      setSelectedEventLabels([]);
       setCalendarPreferenceLoaded(true);
       return;
     }
@@ -183,6 +197,7 @@ function useCalendarState(
         const profile = (await profileApi.getUserProfile()) as {
           visibleCalendarIds?: number[] | null;
           hiddenFromLiveFocusTags?: string[] | null;
+          eventLabels?: string[] | null;
         };
 
         if (!isActive) return;
@@ -207,11 +222,13 @@ function useCalendarState(
         setHiddenFromLiveFocusTags(
           normalizeTagList(profile.hiddenFromLiveFocusTags),
         );
+        setSavedEventLabels(normalizeTagList(profile.eventLabels));
       } catch (error) {
         if (isActive) {
           console.warn('Failed to load visible calendar preference:', error);
           setStoredVisibleCalendarIds(null);
           setHiddenFromLiveFocusTags([]);
+          setSavedEventLabels([]);
         }
       } finally {
         if (isActive) {
@@ -303,6 +320,32 @@ function useCalendarState(
     void persistSelection();
   }, [selectedCalendars, calendarPreferenceLoaded, calendars.length, offlineMode]);
 
+  const availableEventLabels = useMemo(() => {
+    const merged = [
+      ...savedEventLabels,
+      ...events.flatMap((event) => resolveEventLabels(event)),
+    ];
+    return normalizeTagList(merged);
+  }, [events, savedEventLabels]);
+
+  useEffect(() => {
+    setSelectedEventLabels((previous) => {
+      if (!eventLabelFilterTouchedRef.current) {
+        return availableEventLabels;
+      }
+
+      const previousSet = new Set(previous.map((label) => label.toLowerCase()));
+      const retained = availableEventLabels.filter((label) =>
+        previousSet.has(label.toLowerCase()),
+      );
+      const retainedSet = new Set(retained.map((label) => label.toLowerCase()));
+      const additions = availableEventLabels.filter(
+        (label) => !retainedSet.has(label.toLowerCase()),
+      );
+      return [...retained, ...additions];
+    });
+  }, [availableEventLabels]);
+
   // Modal states
   const [modals, setModals] = useState({
     eventModal: false,
@@ -392,6 +435,55 @@ function useCalendarState(
       });
     },
 
+    toggleEventLabel: (label: string) => {
+      eventLabelFilterTouchedRef.current = true;
+      setSelectedEventLabels((previous) => {
+        const lowerLabel = label.toLowerCase();
+        const exists = previous.some(
+          (entry) => entry.toLowerCase() === lowerLabel,
+        );
+        if (exists) {
+          return previous.filter((entry) => entry.toLowerCase() !== lowerLabel);
+        }
+        return [...previous, label];
+      });
+    },
+
+    selectAllEventLabels: () => {
+      eventLabelFilterTouchedRef.current = true;
+      setSelectedEventLabels(availableEventLabels);
+    },
+
+    mergeSavedEventLabels: async (labels: string[]) => {
+      if (offlineMode) {
+        return;
+      }
+
+      const normalizedIncoming = normalizeTagList(labels);
+      if (normalizedIncoming.length === 0) {
+        return;
+      }
+
+      const mergedLabels = normalizeTagList([
+        ...savedEventLabels,
+        ...normalizedIncoming,
+      ]);
+      const unchanged = mergedLabels.length === savedEventLabels.length
+        && mergedLabels.every(
+          (label, index) => label.toLowerCase() === savedEventLabels[index]?.toLowerCase(),
+        );
+      if (unchanged) {
+        return;
+      }
+
+      setSavedEventLabels(mergedLabels);
+      try {
+        await profileApi.updateUserProfile({ eventLabels: mergedLabels });
+      } catch (error) {
+        console.warn('Failed to persist saved event labels:', error);
+      }
+    },
+
     updateOrganizationColor: async (
       orgId: number,
       color: string,
@@ -459,7 +551,14 @@ function useCalendarState(
     },
 
     refreshData,
-  }), [currentView, queryClient, refreshData, offlineMode]);
+  }), [
+    availableEventLabels,
+    currentView,
+    offlineMode,
+    queryClient,
+    refreshData,
+    savedEventLabels,
+  ]);
 
   const state = useMemo<CalendarState>(
     () => ({
@@ -475,6 +574,9 @@ function useCalendarState(
       organizations,
       selectedResourceTypes,
       hiddenFromLiveFocusTags,
+      savedEventLabels,
+      availableEventLabels,
+      selectedEventLabels,
     }),
     [
       currentDate,
@@ -489,6 +591,9 @@ function useCalendarState(
       organizations,
       selectedResourceTypes,
       hiddenFromLiveFocusTags,
+      savedEventLabels,
+      availableEventLabels,
+      selectedEventLabels,
     ],
   );
 
@@ -740,6 +845,8 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
     selectedResourceTypes,
     organizations,
     hiddenFromLiveFocusTags,
+    selectedEventLabels,
+    availableEventLabels,
   } = state;
 
   // Filter reservations based on selected resource types
@@ -751,10 +858,30 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
   }, [reservations, selectedResourceTypes]);
 
   // Filter events based on selected calendars
+  const selectedLabelSet = useMemo(
+    () => new Set(selectedEventLabels.map((label) => label.toLowerCase())),
+    [selectedEventLabels],
+  );
+
   const filteredEvents = useMemo(() => {
     const calendarEvents = events.filter((event) => {
       const calendarId = event.calendar?.id ?? event.calendarId;
-      return calendarId ? selectedCalendars.includes(calendarId) : false;
+      if (!calendarId || !selectedCalendars.includes(calendarId)) {
+        return false;
+      }
+
+      if (availableEventLabels.length === 0) {
+        return true;
+      }
+
+      const eventLabels = resolveEventLabels(event);
+      if (eventLabels.length === 0) {
+        return true;
+      }
+
+      return eventLabels.every((label) =>
+        selectedLabelSet.has(label.toLowerCase()),
+      );
     });
 
     // Convert filtered reservations to event format
@@ -796,6 +923,7 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
           isAllDay: false,
           notes: r.description || r.notes || `${r.status} - ${r.customerName || 'No customer'}`,
           tags: [] as string[],
+          labels: [] as string[],
           createdAt: r.startTime || fallbackTimestamp,
           updatedAt: r.endTime || r.startTime || fallbackTimestamp,
           calendar: {
@@ -815,7 +943,14 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
 
     // Combine calendar events and reservation events
     return [...calendarEvents, ...reservationEvents];
-  }, [events, selectedCalendars, filteredReservations, organizations]);
+  }, [
+    availableEventLabels.length,
+    events,
+    filteredReservations,
+    organizations,
+    selectedCalendars,
+    selectedLabelSet,
+  ]);
 
   const hiddenLiveFocusTagSet = useMemo(
     () => new Set(hiddenFromLiveFocusTags.map((tag) => tag.toLowerCase())),
@@ -828,10 +963,11 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
     }
 
     return filteredEvents.filter((event) => {
-      if (!Array.isArray(event.tags) || event.tags.length === 0) {
+      const eventLabels = resolveEventLabels(event);
+      if (eventLabels.length === 0) {
         return true;
       }
-      return !event.tags.some((tag) =>
+      return !eventLabels.some((tag) =>
         hiddenLiveFocusTagSet.has(tag.trim().toLowerCase()),
       );
     });
@@ -1880,6 +2016,60 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
                 {tStatic('common:auto.frontend.k83dff77c0c5b')}</div>
             )}
           </div>
+
+          <div className="mt-6 border-t border-gray-200 pt-4">
+            <div className="mb-2 flex items-center justify-between gap-2">
+              <h4 className={`text-sm font-semibold text-${themeConfig.text}`}>
+                {t('events.labelFilters', { defaultValue: 'Label filters' })}
+              </h4>
+              {state.availableEventLabels.length > 0 && (
+                <button
+                  type="button"
+                  onClick={actions.selectAllEventLabels}
+                  className="text-xs font-medium text-slate-600 underline decoration-slate-300 underline-offset-2 hover:text-slate-800"
+                >
+                  {t('events.showAllLabels', { defaultValue: 'Show all' })}
+                </button>
+              )}
+            </div>
+            <p className="mb-3 text-xs text-slate-500">
+              {t('events.labelFiltersHelp', {
+                defaultValue:
+                  'Uncheck labels to hide matching events from calendar views.',
+              })}
+            </p>
+
+            {state.availableEventLabels.length > 0 ? (
+              <div className="flex flex-wrap gap-2">
+                {state.availableEventLabels.map((label) => {
+                  const isSelected = state.selectedEventLabels.some(
+                    (entry) => entry.toLowerCase() === label.toLowerCase(),
+                  );
+                  return (
+                    <button
+                      key={label.toLowerCase()}
+                      type="button"
+                      onClick={() => actions.toggleEventLabel(label)}
+                      className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${
+                        isSelected
+                          ? 'border-slate-300 bg-slate-100 text-slate-700'
+                          : 'border-rose-200 bg-rose-50 text-rose-700'
+                      }`}
+                      aria-pressed={isSelected}
+                    >
+                      {label}
+                    </button>
+                  );
+                })}
+              </div>
+            ) : (
+              <p className="text-xs text-slate-500">
+                {t('events.noLabelsAvailable', {
+                  defaultValue: 'No labels available yet.',
+                })}
+              </p>
+            )}
+          </div>
         </div>
       </div>
 
@@ -2113,6 +2303,14 @@ export const EnhancedCalendar: React.FC<EnhancedCalendarProps> = ({
           await createEventMutation.mutateAsync(eventData as CreateEventRequest);
         }
 
+        const labelsToPersist = normalizeTagList(
+          (eventData as { labels?: unknown; tags?: unknown }).labels ??
+          (eventData as { labels?: unknown; tags?: unknown }).tags,
+        );
+        if (labelsToPersist.length > 0) {
+          await actions.mergeSavedEventLabels(labelsToPersist);
+        }
+
         setModals((prev) => ({ ...prev, eventModal: false }));
       } catch (error) {
         console.error('Error saving event:', error);
@@ -2125,6 +2323,7 @@ export const EnhancedCalendar: React.FC<EnhancedCalendarProps> = ({
     },
     [
       modalData.editingEvent,
+      actions,
       createEventMutation,
       updateEventMutation,
       setErrors,
@@ -2359,6 +2558,26 @@ export const EnhancedCalendar: React.FC<EnhancedCalendarProps> = ({
           onClose={() => setModals(prev => ({ ...prev, mobileBottomSheet: false }))}
           date={state.selectedDate}
           events={state.events.filter(event => {
+            const calendarId = event.calendar?.id ?? event.calendarId;
+            if (!calendarId || !state.selectedCalendars.includes(calendarId)) {
+              return false;
+            }
+
+            if (state.availableEventLabels.length > 0) {
+              const visibleLabelSet = new Set(
+                state.selectedEventLabels.map((label) => label.toLowerCase()),
+              );
+              const eventLabels = resolveEventLabels(event);
+              if (
+                eventLabels.length > 0 &&
+                !eventLabels.every((label) =>
+                  visibleLabelSet.has(label.toLowerCase()),
+                )
+              ) {
+                return false;
+              }
+            }
+
             const eventDate = new Date(event.startDate);
             eventDate.setHours(0, 0, 0, 0);
             const selectedDate = new Date(state.selectedDate!);
@@ -2398,6 +2617,7 @@ export const EnhancedCalendar: React.FC<EnhancedCalendarProps> = ({
             themeColor={themeColor}
             timeFormat={timeFormat}
             error={errors.event}
+            availableLabels={state.availableEventLabels}
             loading={
               createEventMutation.isPending ||
               updateEventMutation.isPending ||

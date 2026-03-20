@@ -162,6 +162,16 @@ export class UpdateProfileDto {
   hiddenFromLiveFocusTags?: string[] | null;
 
   @ApiPropertyOptional({
+    example: ['important', 'work', 'personal'],
+    description: 'Reusable labels available in event create/edit forms',
+  })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  @MaxLength(64, { each: true })
+  eventLabels?: string[] | null;
+
+  @ApiPropertyOptional({
     example: 42,
     description:
       'Default calendar ID for mirrored Tasks events (must own a Tasks calendar)',

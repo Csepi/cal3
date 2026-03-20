@@ -280,7 +280,16 @@
     "iconRequired": "Ein Terminsymbol ist erforderlich.",
     "calendarStepTitle": "Kalender und Symbol",
     "calendarStepDescription": "Wählen Sie zuerst einen Kalender. Danach werden die restlichen Felder freigeschaltet und das Symbol bleibt optional.",
-    "calendarRequiredToContinue": "Wählen Sie einen Kalender aus, um die übrigen Felder freizuschalten."
+    "calendarRequiredToContinue": "Wählen Sie einen Kalender aus, um die übrigen Felder freizuschalten.",
+    "labels": "Labels",
+    "labelsPlaceholder": "Label eingeben und Enter druecken",
+    "labelsHelper": "Verwende Kommas oder Enter, um Labels hinzuzufugen. Neue Labels werden fur die Wiederverwendung gespeichert.",
+    "noLabelsSelected": "Keine Labels ausgewahlt.",
+    "removeLabelAria": "Label {{label}} entfernen",
+    "labelFilters": "Label-Filter",
+    "showAllLabels": "Alle anzeigen",
+    "labelFiltersHelp": "Deaktiviere Labels, um passende Ereignisse in den Kalenderansichten auszublenden.",
+    "noLabelsAvailable": "Noch keine Labels verfugbar."
   },
   "info": {
     "arrowKeys": "Nutzen Sie ← → Pfeiltasten zur Navigation",

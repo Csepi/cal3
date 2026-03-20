@@ -280,7 +280,16 @@
     "iconRequired": "L’icône de l’événement est requise.",
     "calendarStepTitle": "Calendrier et icône",
     "calendarStepDescription": "Sélectionnez d’abord un calendrier. Le reste du formulaire se déverrouille ensuite, et l’icône reste optionnelle.",
-    "calendarRequiredToContinue": "Sélectionnez un calendrier pour déverrouiller les autres champs."
+    "calendarRequiredToContinue": "Sélectionnez un calendrier pour déverrouiller les autres champs.",
+    "labels": "Etiquettes",
+    "labelsPlaceholder": "Saisissez une etiquette puis appuyez sur Entree",
+    "labelsHelper": "Utilisez une virgule ou Entree pour ajouter des etiquettes. Les nouvelles etiquettes seront enregistrees pour une reutilisation rapide.",
+    "noLabelsSelected": "Aucune etiquette selectionnee.",
+    "removeLabelAria": "Supprimer l'etiquette {{label}}",
+    "labelFilters": "Filtres d'etiquettes",
+    "showAllLabels": "Tout afficher",
+    "labelFiltersHelp": "Decochez des etiquettes pour masquer les evenements correspondants dans le calendrier.",
+    "noLabelsAvailable": "Aucune etiquette disponible pour le moment."
   },
   "info": {
     "arrowKeys": "Utilisez les touches ← → pour naviguer",

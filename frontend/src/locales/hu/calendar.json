@@ -280,7 +280,16 @@
     "iconRequired": "Eseményikon megadása kötelező.",
     "calendarStepTitle": "Naptár és ikon",
     "calendarStepDescription": "Először válasszon naptárt. Ezután oldódik fel a többi mező, az ikon pedig opcionális marad.",
-    "calendarRequiredToContinue": "A többi mező feloldásához válasszon naptárt."
+    "calendarRequiredToContinue": "A többi mező feloldásához válasszon naptárt.",
+    "labels": "Cimkek",
+    "labelsPlaceholder": "Irj be egy cimket, majd nyomj Entert",
+    "labelsHelper": "Cimke hozzaadasahoz hasznalj vesszot vagy Entert. Az uj cimkek mentesre kerulnek kesobbi ujrafelhasznalashoz.",
+    "noLabelsSelected": "Nincs kivalasztott cimke.",
+    "removeLabelAria": "{{label}} cimke eltavolitasa",
+    "labelFilters": "Cimkeszurok",
+    "showAllLabels": "Osszes megjelenitese",
+    "labelFiltersHelp": "A cimkek kikapcsolasaval a hozzajuk tartozo esemenyek eltunnek a naptar nezetekbol.",
+    "noLabelsAvailable": "Meg nincsenek elerheto cimkek."
   },
   "info": {
     "arrowKeys": "Használja a ← → nyílbillentyűket a navigáláshoz",

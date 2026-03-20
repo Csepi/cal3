@@ -58,6 +58,7 @@ interface UserProfileData {
   themeColor?: string;
   hideReservationsTab?: boolean;
   hiddenFromLiveFocusTags?: string[] | null;
+  eventLabels?: string[] | null;
   usagePlans?: string[];
   defaultTasksCalendarId?: number | null;
   onboardingCompleted?: boolean;
@@ -138,6 +139,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ onThemeChange, currentTheme }
   const [tasksCalendarsLoading, setTasksCalendarsLoading] = useState(false);
   const [widgetLogBusy, setWidgetLogBusy] = useState(false);
   const [widgetLogStatus, setWidgetLogStatus] = useState<string | null>(null);
+  const [deletingEventLabel, setDeletingEventLabel] = useState<string | null>(null);
 
   const formatDateValue = (value?: string | null): string => {
     if (!value) {
@@ -470,6 +472,57 @@ const UserProfile: React.FC<UserProfileProps> = ({ onThemeChange, currentTheme }
     }
   };
 
+  const handleDeleteEventLabel = async (label: string) => {
+    if (!label.trim() || deletingEventLabel) {
+      return;
+    }
+
+    const confirmed = window.confirm(
+      t('settings:labels.confirmDelete', {
+        defaultValue:
+          'Delete label "{{label}}"? This will remove it from your events.',
+        label,
+      }),
+    );
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      setDeletingEventLabel(label);
+      setError(null);
+      setSuccess(null);
+
+      const response = await profileApi.deleteUserEventLabel(label);
+      setUser((previous) =>
+        previous
+          ? {
+              ...previous,
+              eventLabels: response.remainingLabels,
+            }
+          : previous,
+      );
+      setSuccess(
+        t('settings:labels.deleteSuccess', {
+          defaultValue: 'Label "{{label}}" deleted.',
+          label,
+        }),
+      );
+      setTimeout(() => setSuccess(null), 3000);
+    } catch (err) {
+      console.error('Error deleting event label:', err);
+      setError(
+        err instanceof Error
+          ? err.message
+          : t('settings:labels.deleteError', {
+              defaultValue: 'Failed to delete label.',
+            }),
+      );
+    } finally {
+      setDeletingEventLabel(null);
+    }
+  };
+
   const handleClearWidgetDiagnostics = async () => {
     setWidgetLogBusy(true);
     setWidgetLogStatus(null);
@@ -660,6 +713,53 @@ const UserProfile: React.FC<UserProfileProps> = ({ onThemeChange, currentTheme }
               onThemeChange={handleThemeChange}
               isSaving={isThemeSaving}
             />
+
+            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+              <div className="flex flex-col gap-3">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-800">
+                    {t('settings:labels.title', { defaultValue: 'Event labels' })}
+                  </h3>
+                  <p className="text-sm text-gray-600 mt-1">
+                    {t('settings:labels.help', {
+                      defaultValue:
+                        'Manage saved labels used in event creation and editing.',
+                    })}
+                  </p>
+                </div>
+
+                {Array.isArray(user?.eventLabels) && user.eventLabels.length > 0 ? (
+                  <div className="flex flex-wrap gap-2">
+                    {user.eventLabels.map((label) => (
+                      <span
+                        key={label.toLowerCase()}
+                        className="inline-flex items-center gap-2 rounded-full border border-slate-300 bg-slate-50 px-3 py-1 text-xs font-medium text-slate-700"
+                      >
+                        <span>{label}</span>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteEventLabel(label)}
+                          disabled={deletingEventLabel === label}
+                          className="rounded-full p-0.5 text-slate-500 hover:bg-slate-200 hover:text-slate-700 disabled:opacity-50"
+                          aria-label={t('settings:labels.deleteAria', {
+                            defaultValue: 'Delete label {{label}}',
+                            label,
+                          })}
+                        >
+                          x
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-gray-500">
+                    {t('settings:labels.empty', {
+                      defaultValue: 'No saved labels yet.',
+                    })}
+                  </p>
+                )}
+              </div>
+            </div>
 
             <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
               <div className="flex flex-col gap-3">

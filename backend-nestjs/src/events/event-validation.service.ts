@@ -11,6 +11,8 @@ export type EventMutationInput = {
   endDate?: string | number | Date;
   startTime?: string | null;
   endTime?: string | null;
+  tags?: string[] | null;
+  labels?: string[] | null;
   [key: string]: unknown;
 };
 
@@ -35,6 +37,33 @@ const toRecurrenceRule = (value: unknown): RecurrenceRule => {
 
 @Injectable()
 export class EventValidationService {
+  private normalizeEventLabels(
+    value: unknown,
+  ): string[] | null {
+    if (!Array.isArray(value)) {
+      return null;
+    }
+
+    const normalized: string[] = [];
+    const seen = new Set<string>();
+    for (const raw of value) {
+      const label = typeof raw === 'string' ? raw.trim() : '';
+      if (!label) {
+        continue;
+      }
+      const key = label.toLowerCase();
+      if (seen.has(key)) {
+        continue;
+      }
+      seen.add(key);
+      normalized.push(label);
+      if (normalized.length >= 50) {
+        break;
+      }
+    }
+    return normalized.length > 0 ? normalized : null;
+  }
+
   sanitizeAndAssignUpdateData(
     event: Event,
     updateData: EventMutationInput,
@@ -59,7 +88,15 @@ export class EventValidationService {
           : undefined;
     }
 
-    Object.assign(event, updateData as Partial<Event>);
+    const payload = { ...updateData } as Record<string, unknown>;
+    const hasLabelsField = 'labels' in payload || 'tags' in payload;
+    if (hasLabelsField) {
+      const labels = this.normalizeEventLabels(payload.labels ?? payload.tags);
+      payload.tags = labels;
+    }
+    delete payload.labels;
+
+    Object.assign(event, payload as Partial<Event>);
   }
 
   createEventEntity(
@@ -67,20 +104,33 @@ export class EventValidationService {
     calendarId: number,
     createdById: number,
   ): Event {
+    const payload = { ...eventData } as Record<string, unknown>;
+    const labels = this.normalizeEventLabels(payload.labels ?? payload.tags);
+    payload.tags = labels;
+    delete payload.labels;
+
     const event = new Event();
-    Object.assign(event, eventData);
+    Object.assign(event, payload);
     event.calendarId = calendarId;
     event.createdById = createdById;
-    event.startDate = new Date(eventData.startDate as string | number | Date);
-    if (eventData.endDate) {
-      event.endDate = new Date(eventData.endDate);
+    event.startDate = new Date(payload.startDate as string | number | Date);
+    if (payload.endDate) {
+      event.endDate = new Date(payload.endDate as string | number | Date);
     }
+    const startTimeValue =
+      typeof payload.startTime === 'string' || payload.startTime === null
+        ? payload.startTime
+        : undefined;
+    const endTimeValue =
+      typeof payload.endTime === 'string' || payload.endTime === null
+        ? payload.endTime
+        : undefined;
     event.startTime =
-      eventData.startTime && eventData.startTime !== ''
-        ? eventData.startTime
+      startTimeValue && startTimeValue !== ''
+        ? startTimeValue
         : null;
     event.endTime =
-      eventData.endTime && eventData.endTime !== '' ? eventData.endTime : null;
+      endTimeValue && endTimeValue !== '' ? endTimeValue : null;
     return event;
   }
 

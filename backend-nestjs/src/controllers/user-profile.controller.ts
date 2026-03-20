@@ -3,6 +3,8 @@ import {
   Get,
   Post,
   Patch,
+  Delete,
+  Param,
   Body,
   UseGuards,
   Request,
@@ -33,6 +35,7 @@ import {
   CalendarShare,
   SharePermission,
 } from '../entities/calendar.entity';
+import { Event } from '../entities/event.entity';
 import {
   UpdateProfileDto,
   UpdateThemeDto,
@@ -74,6 +77,8 @@ export class UserProfileController {
     private readonly calendarShareRepository: Repository<CalendarShare>,
     @InjectRepository(Task)
     private readonly taskRepository: Repository<Task>,
+    @InjectRepository(Event)
+    private readonly eventRepository: Repository<Event>,
     private readonly taskCalendarBridgeService: TaskCalendarBridgeService,
     private readonly i18nService: I18nService,
     private readonly configurationService: ConfigurationService,
@@ -107,6 +112,7 @@ export class UserProfileController {
         'visibleCalendarIds',
         'visibleResourceTypeIds',
         'hiddenFromLiveFocusTags',
+        'eventLabels',
         'defaultTasksCalendarId',
         'onboardingCompleted',
         'onboardingCompletedAt',
@@ -244,6 +250,7 @@ export class UserProfileController {
       language,
       preferredLanguage,
       hiddenFromLiveFocusTags,
+      eventLabels,
       ...rest
     } = updateProfileDto;
     const updatePayload: QueryDeepPartialEntity<User> = { ...rest };
@@ -255,6 +262,9 @@ export class UserProfileController {
     if (hiddenFromLiveFocusTags !== undefined) {
       updatePayload.hiddenFromLiveFocusTags =
         this.normalizeHiddenFromLiveFocusTags(hiddenFromLiveFocusTags);
+    }
+    if (eventLabels !== undefined) {
+      updatePayload.eventLabels = this.normalizeEventLabels(eventLabels);
     }
 
     const defaultCalendarProvided = defaultTasksCalendarId !== undefined;
@@ -374,6 +384,7 @@ export class UserProfileController {
         'visibleCalendarIds',
         'visibleResourceTypeIds',
         'hiddenFromLiveFocusTags',
+        'eventLabels',
         'defaultTasksCalendarId',
         'onboardingCompleted',
         'onboardingCompletedAt',
@@ -388,6 +399,69 @@ export class UserProfileController {
     });
 
     return updatedUser;
+  }
+
+  @Delete('event-labels/:label')
+  @ApiOperation({
+    summary: 'Delete a saved event label and remove it from owned events',
+  })
+  @ApiResponse({ status: 200, description: 'Event label deleted successfully' })
+  async deleteEventLabel(
+    @Request() req: RequestWithUser,
+    @Param('label') rawLabel: string,
+  ) {
+    const label = this.normalizeSingleEventLabel(rawLabel);
+    if (!label) {
+      throw new BadRequestException('Label is required.');
+    }
+
+    const user = await this.userRepository.findOne({
+      where: { id: req.user.id },
+      select: ['id', 'eventLabels'],
+    });
+    if (!user) {
+      throw new BadRequestException('User not found.');
+    }
+
+    const currentLabels = this.normalizeEventLabels(user.eventLabels) ?? [];
+    const lowerLabel = label.toLowerCase();
+    const remainingLabels = currentLabels.filter(
+      (entry) => entry.toLowerCase() !== lowerLabel,
+    );
+
+    await this.userRepository.update(req.user.id, {
+      eventLabels: remainingLabels.length ? remainingLabels : null,
+    });
+
+    const ownedEvents = await this.eventRepository.find({
+      where: { createdById: req.user.id },
+      select: ['id', 'tags'],
+    });
+
+    let removedFromEvents = 0;
+    for (const event of ownedEvents) {
+      const currentEventLabels = this.normalizeEventLabels(event.tags) ?? [];
+      const nextLabels = currentEventLabels.filter(
+        (entry) => entry.toLowerCase() !== lowerLabel,
+      );
+      if (nextLabels.length === currentEventLabels.length) {
+        continue;
+      }
+
+      removedFromEvents += 1;
+      await this.eventRepository.update(
+        event.id,
+        {
+          tags: nextLabels.length ? nextLabels : null,
+        } as QueryDeepPartialEntity<Event>,
+      );
+    }
+
+    return {
+      label,
+      remainingLabels,
+      removedFromEvents,
+    };
   }
 
   @Patch('theme')
@@ -427,6 +501,7 @@ export class UserProfileController {
         'visibleCalendarIds',
         'visibleResourceTypeIds',
         'hiddenFromLiveFocusTags',
+        'eventLabels',
         'defaultTasksCalendarId',
         'onboardingCompleted',
         'onboardingCompletedAt',
@@ -531,6 +606,48 @@ export class UserProfileController {
     }
 
     return normalized.length > 0 ? normalized : null;
+  }
+
+  private normalizeEventLabels(labels: unknown): string[] | null {
+    if (!Array.isArray(labels)) {
+      return null;
+    }
+
+    const normalized: string[] = [];
+    const seen = new Set<string>();
+    for (const rawLabel of labels) {
+      const label =
+        typeof rawLabel === 'string' ? this.normalizeSingleEventLabel(rawLabel) : null;
+      if (!label) {
+        continue;
+      }
+
+      const key = label.toLowerCase();
+      if (seen.has(key)) {
+        continue;
+      }
+
+      seen.add(key);
+      normalized.push(label);
+      if (normalized.length >= 100) {
+        break;
+      }
+    }
+
+    return normalized.length > 0 ? normalized : null;
+  }
+
+  private normalizeSingleEventLabel(label: unknown): string | null {
+    if (typeof label !== 'string') {
+      return null;
+    }
+
+    const normalized = label.trim();
+    if (!normalized) {
+      return null;
+    }
+
+    return normalized.slice(0, 64);
   }
 
   private getUploadsRootDir(): string {

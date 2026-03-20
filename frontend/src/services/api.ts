@@ -56,6 +56,7 @@ interface UserProfile {
   privacyPolicyAcceptedAt?: string | null;
   privacyPolicyVersion?: string | null;
   hiddenFromLiveFocusTags?: string[] | null;
+  eventLabels?: string[] | null;
   [key: string]: unknown;
 }
 
@@ -1126,6 +1127,42 @@ class ApiService {
     }
 
     return await response.json();
+  }
+
+  async deleteUserEventLabel(label: string): Promise<{
+    label: string;
+    remainingLabels: string[];
+    removedFromEvents: number;
+  }> {
+    const normalized = label.trim();
+    if (!normalized) {
+      throw new Error('Label is required');
+    }
+
+    const response = await this.secureApiFetch(
+      `${BASE_URL}/api/user/event-labels/${encodeURIComponent(normalized)}`,
+      {
+        method: 'DELETE',
+      },
+    );
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        throw new Error(
+          'Authentication required. Please log in to update labels.',
+        );
+      }
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(
+        extractApiErrorMessage(errorData, 'Failed to delete label'),
+      );
+    }
+
+    return (await response.json()) as {
+      label: string;
+      remainingLabels: string[];
+      removedFromEvents: number;
+    };
   }
 
   async updateLanguagePreference(
