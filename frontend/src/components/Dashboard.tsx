@@ -100,7 +100,7 @@ const Dashboard: React.FC<DashboardProps> = ({ initialView = 'calendar' }) => {
   // UI state management
   const [currentView, setCurrentView] = useState<DashboardView>(initialView);
   const [userProfile, setUserProfile] = useState<DashboardUserProfile | null>(null);
-  const [isScreenVisible, setIsScreenVisible] = useState(false);
+  const [isScreenVisible] = useState(true);
   const [isOfflineReadOnlyMode, setIsOfflineReadOnlyMode] = useState(false);
   const [globalErrorMessage, setGlobalErrorMessage] = useState<string | null>(null);
   const [isCalendarTimelineFocusMode, setIsCalendarTimelineFocusMode] = useState(false);
@@ -218,11 +218,6 @@ const Dashboard: React.FC<DashboardProps> = ({ initialView = 'calendar' }) => {
       sessionManager.refreshAccessToken().catch(() => null);
     }
   }, [isOfflineReadOnlyMode]);
-
-  useEffect(() => {
-    const timer = window.setTimeout(() => setIsScreenVisible(true), 10);
-    return () => window.clearTimeout(timer);
-  }, []);
 
   // Load user profile and permissions on component mount if logged in
   useEffect(() => {

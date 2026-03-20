@@ -39,6 +39,7 @@ export interface PersonalInfoFormProps {
     ownerId?: number;
   }>;
   tasksCalendarsLoading?: boolean;
+  availableEventLabels?: string[];
 }
 
 export const PersonalInfoForm: React.FC<PersonalInfoFormProps> = ({
@@ -51,8 +52,98 @@ export const PersonalInfoForm: React.FC<PersonalInfoFormProps> = ({
   className = '',
   tasksCalendars = [],
   tasksCalendarsLoading = false,
+  availableEventLabels = [],
 }) => {
-  const { t } = useAppTranslation(['settings', 'auth', 'validation', 'common']);
+  const { t } = useAppTranslation([
+    'settings',
+    'auth',
+    'validation',
+    'common',
+    'calendar',
+  ]);
+  const [hiddenLabelInput, setHiddenLabelInput] = React.useState('');
+
+  const normalizeLabels = React.useCallback((value: unknown): string[] => {
+    const source =
+      Array.isArray(value)
+        ? value.filter((entry): entry is string => typeof entry === 'string')
+        : typeof value === 'string'
+          ? value.split(',')
+          : [];
+
+    const normalized: string[] = [];
+    const seen = new Set<string>();
+    for (const entry of source) {
+      const label = entry.trim();
+      if (!label) {
+        continue;
+      }
+      const key = label.toLowerCase();
+      if (seen.has(key)) {
+        continue;
+      }
+      seen.add(key);
+      normalized.push(label.slice(0, 64));
+      if (normalized.length >= 50) {
+        break;
+      }
+    }
+    return normalized;
+  }, []);
+
+  const selectedHiddenLabels = React.useMemo(
+    () => normalizeLabels(formData.hiddenLiveFocusTags ?? ''),
+    [formData.hiddenLiveFocusTags, normalizeLabels],
+  );
+  const selectedHiddenLabelSet = React.useMemo(
+    () => new Set(selectedHiddenLabels.map((label) => label.toLowerCase())),
+    [selectedHiddenLabels],
+  );
+  const selectableHiddenLabels = React.useMemo(() => {
+    const query = hiddenLabelInput.trim().toLowerCase();
+    return normalizeLabels(availableEventLabels)
+      .filter((label) => !selectedHiddenLabelSet.has(label.toLowerCase()))
+      .filter((label) => (query ? label.toLowerCase().includes(query) : true))
+      .slice(0, 12);
+  }, [
+    availableEventLabels,
+    hiddenLabelInput,
+    normalizeLabels,
+    selectedHiddenLabelSet,
+  ]);
+
+  const persistHiddenLabels = React.useCallback(
+    (labels: string[]) => {
+      onFormDataChange('hiddenLiveFocusTags', labels.join(', '));
+    },
+    [onFormDataChange],
+  );
+
+  const addHiddenLabel = React.useCallback(
+    (rawLabel: string) => {
+      const next = rawLabel.trim().slice(0, 64);
+      if (!next) {
+        return;
+      }
+      if (selectedHiddenLabelSet.has(next.toLowerCase())) {
+        setHiddenLabelInput('');
+        return;
+      }
+      persistHiddenLabels([...selectedHiddenLabels, next]);
+      setHiddenLabelInput('');
+    },
+    [persistHiddenLabels, selectedHiddenLabels, selectedHiddenLabelSet],
+  );
+
+  const removeHiddenLabel = React.useCallback(
+    (labelToRemove: string) => {
+      const next = selectedHiddenLabels.filter(
+        (label) => label.toLowerCase() !== labelToRemove.toLowerCase(),
+      );
+      persistHiddenLabels(next);
+    },
+    [persistHiddenLabels, selectedHiddenLabels],
+  );
 
   return (
     <Card
@@ -261,17 +352,84 @@ export const PersonalInfoForm: React.FC<PersonalInfoFormProps> = ({
           </div>
 
           <div>
-            <Input
-              label={t('settings:preferences.hiddenLiveFocusTags')}
-              type="text"
-              value={formData.hiddenLiveFocusTags || ''}
-              onChange={(event) =>
-                onFormDataChange('hiddenLiveFocusTags', event.target.value)
-              }
-              error={errors.hiddenLiveFocusTags}
-              themeColor={themeColor}
-              placeholder={t('settings:preferences.hiddenLiveFocusTagsPlaceholder')}
-            />
+            <label className="mb-2 block text-sm font-medium text-gray-700">
+              {t('settings:preferences.hiddenLiveFocusTags')}
+            </label>
+            <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+              <div className="mb-3 flex flex-wrap gap-2">
+                {selectedHiddenLabels.length > 0 ? (
+                  selectedHiddenLabels.map((label) => (
+                    <span
+                      key={label.toLowerCase()}
+                      className="inline-flex items-center gap-2 rounded-full border border-slate-300 bg-white px-2.5 py-1 text-xs font-medium text-slate-700"
+                    >
+                      <span>{label}</span>
+                      <button
+                        type="button"
+                        onClick={() => removeHiddenLabel(label)}
+                        className="rounded-full p-0.5 text-slate-500 hover:bg-slate-200 hover:text-slate-700"
+                        aria-label={t('calendar:events.removeLabelAria', {
+                          defaultValue: 'Remove label {{label}}',
+                          label,
+                        })}
+                      >
+                        x
+                      </button>
+                    </span>
+                  ))
+                ) : (
+                  <p className="text-xs text-slate-500">
+                    {t('calendar:events.noLabelsSelected', {
+                      defaultValue: 'No labels selected.',
+                    })}
+                  </p>
+                )}
+              </div>
+
+              <input
+                type="text"
+                value={hiddenLabelInput}
+                onChange={(event) => setHiddenLabelInput(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' || event.key === ',') {
+                    event.preventDefault();
+                    addHiddenLabel(hiddenLabelInput);
+                  }
+                  if (event.key === 'Backspace' && !hiddenLabelInput.trim()) {
+                    if (selectedHiddenLabels.length > 0) {
+                      removeHiddenLabel(
+                        selectedHiddenLabels[selectedHiddenLabels.length - 1],
+                      );
+                    }
+                  }
+                }}
+                onBlur={() => addHiddenLabel(hiddenLabelInput)}
+                placeholder={t('calendar:events.labelsPlaceholder', {
+                  defaultValue: 'Type a label and press Enter',
+                })}
+                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 shadow-sm outline-none transition focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+              />
+
+              {selectableHiddenLabels.length > 0 && (
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {selectableHiddenLabels.map((label) => (
+                    <button
+                      key={label.toLowerCase()}
+                      type="button"
+                      onClick={() => addHiddenLabel(label)}
+                      className="rounded-full border border-slate-300 bg-white px-2.5 py-1 text-xs font-medium text-slate-700 hover:border-slate-400 hover:bg-slate-100"
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            {errors.hiddenLiveFocusTags && (
+              <p className="mt-1 text-sm text-red-600" role="alert">
+                {errors.hiddenLiveFocusTags}
+              </p>
+            )}
             <p className="mt-1 text-xs text-gray-500">
               {t('settings:preferences.hiddenLiveFocusTagsHelp')}
             </p>

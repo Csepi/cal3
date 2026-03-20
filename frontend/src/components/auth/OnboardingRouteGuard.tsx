@@ -27,6 +27,7 @@ const OnboardingRouteGuard: React.FC<OnboardingRouteGuardProps> = ({
   const { isAuthenticated, currentUser } = useAuth();
   const { t } = useAppTranslation('auth');
   const [isResolving, setIsResolving] = useState(false);
+  const [showResolvingLoader, setShowResolvingLoader] = useState(false);
   const profileLookupAttemptedRef = useRef(false);
 
   useEffect(() => {
@@ -66,10 +67,26 @@ const OnboardingRouteGuard: React.FC<OnboardingRouteGuardProps> = ({
     };
   }, [isAuthenticated, currentUser?.onboardingCompleted]);
 
+  useEffect(() => {
+    if (!isResolving) {
+      setShowResolvingLoader(false);
+      return;
+    }
+
+    // Avoid quick loading-screen flashes during short profile lookups.
+    const timer = window.setTimeout(() => {
+      setShowResolvingLoader(true);
+    }, 180);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [isResolving]);
+
   if (
     isAuthenticated &&
     typeof currentUser?.onboardingCompleted !== 'boolean' &&
-    isResolving
+    showResolvingLoader
   ) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gray-50">

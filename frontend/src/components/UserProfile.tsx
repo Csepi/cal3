@@ -617,6 +617,9 @@ const UserProfile: React.FC<UserProfileProps> = ({ onThemeChange, currentTheme }
               errors={profileErrors}
               tasksCalendars={tasksCalendars}
               tasksCalendarsLoading={tasksCalendarsLoading}
+              availableEventLabels={
+                Array.isArray(user?.eventLabels) ? user.eventLabels : []
+              }
             />
 
             {/* Password Management */}

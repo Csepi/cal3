@@ -56,9 +56,9 @@ interface AuthContextValue {
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [currentUser, setCurrentUser] = useState<AuthUser | null>(null);
-  const [token, setToken] = useState<string | null>(null);
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [currentUser, setCurrentUser] = useState<AuthUser | null>(() => sessionManager.getCurrentUser());
+  const [token, setToken] = useState<string | null>(() => sessionManager.peekAccessToken());
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => sessionManager.hasActiveSession());
 
   useEffect(() => {
     const unsubscribe = sessionManager.subscribe((snapshot) => {
