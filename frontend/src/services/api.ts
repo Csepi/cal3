@@ -189,6 +189,7 @@ type HiddenLiveFocusTagsSupport = 'unknown' | 'supported' | 'unsupported';
 let hiddenLiveFocusTagsSupport: HiddenLiveFocusTagsSupport = 'unknown';
 type EventLabelsSupport = 'unknown' | 'supported' | 'unsupported';
 let eventLabelsSupport: EventLabelsSupport = 'unknown';
+let profileFieldSupportProbe: Promise<void> | null = null;
 
 const buildAvailabilityRateLimitError = (
   retryAfterHeader: string | null,
@@ -268,6 +269,67 @@ class ApiService {
     options: SecureFetchOptions = {},
   ): Promise<Response> {
     return secureFetch(url, options);
+  }
+
+  private updateProfileFieldSupportHints(
+    profile: unknown,
+    mode: 'hint' | 'strict',
+  ): void {
+    if (!profile || typeof profile !== 'object') {
+      return;
+    }
+    const profileRecord = profile as Record<string, unknown>;
+    const hasHiddenTagField = Object.prototype.hasOwnProperty.call(
+      profileRecord,
+      'hiddenFromLiveFocusTags',
+    );
+    const hasEventLabelsField = Object.prototype.hasOwnProperty.call(
+      profileRecord,
+      'eventLabels',
+    );
+
+    if (hasHiddenTagField) {
+      hiddenLiveFocusTagsSupport = 'supported';
+    } else if (mode === 'strict') {
+      hiddenLiveFocusTagsSupport = 'unsupported';
+    }
+
+    if (hasEventLabelsField) {
+      eventLabelsSupport = 'supported';
+    } else if (mode === 'strict') {
+      eventLabelsSupport = 'unsupported';
+    }
+  }
+
+  private async ensureOptionalProfileFieldSupport(
+    requiresHiddenTags: boolean,
+    requiresEventLabels: boolean,
+  ): Promise<void> {
+    const needsHiddenTagsProbe =
+      requiresHiddenTags && hiddenLiveFocusTagsSupport === 'unknown';
+    const needsEventLabelsProbe =
+      requiresEventLabels && eventLabelsSupport === 'unknown';
+
+    if (!needsHiddenTagsProbe && !needsEventLabelsProbe) {
+      return;
+    }
+
+    if (!profileFieldSupportProbe) {
+      profileFieldSupportProbe = (async () => {
+        const response = await this.secureApiFetch(`${BASE_URL}/api/user/profile`);
+        if (!response.ok) {
+          return;
+        }
+        const profile = (await response.json()) as UserProfile;
+        this.updateProfileFieldSupportHints(profile, 'strict');
+      })()
+        .catch(() => undefined)
+        .finally(() => {
+          profileFieldSupportProbe = null;
+        });
+    }
+
+    await profileFieldSupportProbe;
   }
 
   private buildTaskQuery(params: TaskQueryParams = {}): string {
@@ -1074,7 +1136,9 @@ class ApiService {
       throw new Error('Failed to fetch profile');
     }
 
-    return await response.json();
+    const profile = (await response.json()) as UserProfile;
+    this.updateProfileFieldSupportHints(profile, 'strict');
+    return profile;
   }
 
   async uploadProfilePicture(file: File): Promise<UploadProfilePictureResponse> {
@@ -1122,6 +1186,17 @@ class ApiService {
       profileData,
       'eventLabels',
     );
+    if (
+      (hasHiddenTagField && hiddenLiveFocusTagsSupport === 'unknown') ||
+      (hasEventLabelsField && eventLabelsSupport === 'unknown')
+    ) {
+      this.updateProfileFieldSupportHints(sessionManager.getCurrentUser(), 'hint');
+      await this.ensureOptionalProfileFieldSupport(
+        hasHiddenTagField,
+        hasEventLabelsField,
+      );
+    }
+
     const initialPayload: Partial<UserProfile> = { ...profileData };
     if (hasHiddenTagField && hiddenLiveFocusTagsSupport === 'unsupported') {
       delete initialPayload.hiddenFromLiveFocusTags;

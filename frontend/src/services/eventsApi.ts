@@ -41,6 +41,7 @@ const DATE_ONLY_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 const TIME_ONLY_PATTERN = /^([01]\d|2[0-3]):([0-5]\d)(?::([0-5]\d))?$/;
 const RECURRENCE_TYPES = new Set(['none', 'daily', 'weekly', 'monthly', 'yearly']);
 const RECURRENCE_UPDATE_MODES = new Set(['single', 'future', 'all']);
+const VALIDATION_FIELD_PATTERN = /(?:property\s+([a-zA-Z0-9_]+)\s+should\s+not\s+exist)|(?:^([a-zA-Z0-9_]+)\s+must\s+)/g;
 const ALLOWED_EVENT_FIELDS = new Set([
   'title',
   'description',
@@ -344,25 +345,55 @@ const extractValidationFieldNames = (error: unknown): string[] => {
   if (!(error instanceof HttpError) || error.status !== 400) {
     return [];
   }
+  const parsedFields = new Set<string>();
 
-  if (!error.details || typeof error.details !== 'object') {
-    return [];
-  }
-
-  const fields = (error.details as { fields?: unknown }).fields;
-  if (!Array.isArray(fields)) {
-    return [];
-  }
-
-  return fields
-    .map((entry) => {
-      if (!entry || typeof entry !== 'object') {
-        return '';
+  if (typeof error.message === 'string' && error.message.length > 0) {
+    let match = VALIDATION_FIELD_PATTERN.exec(error.message);
+    while (match) {
+      const direct = match[1] ?? match[2] ?? '';
+      if (direct) {
+        parsedFields.add(direct.trim());
       }
-      const field = (entry as { field?: unknown }).field;
-      return typeof field === 'string' ? field.trim() : '';
-    })
-    .filter((field) => field.length > 0);
+      match = VALIDATION_FIELD_PATTERN.exec(error.message);
+    }
+    VALIDATION_FIELD_PATTERN.lastIndex = 0;
+  }
+
+  if (error.details && typeof error.details === 'object') {
+    const detailsRecord = error.details as Record<string, unknown>;
+    const fields = detailsRecord.fields;
+    if (Array.isArray(fields)) {
+      for (const entry of fields) {
+        if (!entry || typeof entry !== 'object') {
+          continue;
+        }
+        const field = (entry as { field?: unknown }).field;
+        if (typeof field === 'string' && field.trim().length > 0) {
+          parsedFields.add(field.trim());
+        }
+      }
+    }
+
+    const messages = detailsRecord.message;
+    if (Array.isArray(messages)) {
+      for (const message of messages) {
+        if (typeof message !== 'string') {
+          continue;
+        }
+        let match = VALIDATION_FIELD_PATTERN.exec(message);
+        while (match) {
+          const direct = match[1] ?? match[2] ?? '';
+          if (direct) {
+            parsedFields.add(direct.trim());
+          }
+          match = VALIDATION_FIELD_PATTERN.exec(message);
+        }
+        VALIDATION_FIELD_PATTERN.lastIndex = 0;
+      }
+    }
+  }
+
+  return Array.from(parsedFields);
 };
 
 const prunePayloadFromValidationErrors = (
@@ -390,6 +421,58 @@ const prunePayloadFromValidationErrors = (
   }
 
   return changed ? nextPayload : null;
+};
+
+const buildCompatibilityEventPayload = (
+  payload: Record<string, unknown>,
+): Record<string, unknown> | null => {
+  const safeFields = [
+    'title',
+    'startDate',
+    'startTime',
+    'endDate',
+    'endTime',
+    'isAllDay',
+    'calendarId',
+  ] as const;
+  const nextPayload: Record<string, unknown> = {};
+  for (const field of safeFields) {
+    if (hasOwn(payload, field)) {
+      nextPayload[field] = payload[field];
+    }
+  }
+
+  if (Object.keys(nextPayload).length === 0) {
+    return null;
+  }
+
+  const normalized = sanitizeEventPayload(nextPayload);
+  const unchanged =
+    JSON.stringify(normalized) === JSON.stringify(sanitizeEventPayload(payload));
+  return unchanged ? null : normalized;
+};
+
+const buildLegacyCompatibleUpdatePayload = (
+  currentEvent: Event,
+  payload: Record<string, unknown>,
+): Record<string, unknown> | null => {
+  const normalizedCurrentEvent = sanitizeEventPayload({
+    title: currentEvent.title,
+    startDate: currentEvent.startDate,
+    startTime: currentEvent.startTime ?? undefined,
+    endDate: currentEvent.endDate ?? currentEvent.startDate,
+    endTime: currentEvent.endTime ?? undefined,
+    isAllDay: currentEvent.isAllDay,
+    calendarId: currentEvent.calendarId ?? currentEvent.calendar?.id,
+  });
+
+  const mergedPayload = sanitizeEventPayload({
+    ...normalizedCurrentEvent,
+    ...payload,
+  });
+  const unchanged =
+    JSON.stringify(mergedPayload) === JSON.stringify(sanitizeEventPayload(payload));
+  return unchanged ? null : mergedPayload;
 };
 
 const withEventLabelFieldFallback = async <T>(
@@ -421,31 +504,49 @@ const withEventPayloadFallbacks = async <T>(
   request: (payload: Record<string, unknown>) => Promise<T>,
   payload: Record<string, unknown>,
 ): Promise<T> => {
-  const attemptWithValidationPrune = async (
-    candidatePayload: Record<string, unknown>,
-  ): Promise<T> => {
+  let candidatePayload = payload;
+  let lastError: unknown = null;
+  const triedPayloads = new Set<string>();
+
+  for (let attempt = 0; attempt < 6; attempt += 1) {
+    const attemptKey = JSON.stringify(candidatePayload);
+    if (triedPayloads.has(attemptKey)) {
+      break;
+    }
+    triedPayloads.add(attemptKey);
+
     try {
       return await withEventLabelFieldFallback(request, candidatePayload);
     } catch (error) {
+      lastError = error;
+
       const prunedPayload = prunePayloadFromValidationErrors(
         candidatePayload,
         error,
       );
-      if (!prunedPayload) {
-        throw error;
+      if (prunedPayload) {
+        candidatePayload = prunedPayload;
+        continue;
       }
-      return withEventLabelFieldFallback(request, prunedPayload);
-    }
-  };
 
-  try {
-    return await attemptWithValidationPrune(payload);
-  } catch (error) {
-    if (!shouldRetryWithoutIconField(error, payload)) {
+      if (shouldRetryWithoutIconField(error, candidatePayload)) {
+        candidatePayload = stripEventIconField(candidatePayload);
+        continue;
+      }
+
+      const compatibilityPayload = buildCompatibilityEventPayload(
+        candidatePayload,
+      );
+      if (compatibilityPayload) {
+        candidatePayload = compatibilityPayload;
+        continue;
+      }
+
       throw error;
     }
-    return attemptWithValidationPrune(stripEventIconField(payload));
   }
+
+  throw lastError;
 };
 
 export const eventsApi = {
@@ -465,10 +566,32 @@ export const eventsApi = {
   /** Update an existing event by id. */
   updateEvent: (eventId: number, payload: UpdateEventRequest) => {
     const sanitizedPayload = sanitizeEventPayload(asRecord(payload));
-    return withEventPayloadFallbacks(
-      (nextPayload) =>
-        http.patch<Event>(`/api/events/${eventId}`, nextPayload),
-      sanitizedPayload,
+    const sendPatch = (nextPayload: Record<string, unknown>) =>
+      http.patch<Event>(`/api/events/${eventId}`, nextPayload);
+
+    return withEventPayloadFallbacks(sendPatch, sanitizedPayload).catch(
+      async (error) => {
+        if (!(error instanceof HttpError) || error.status !== 400) {
+          throw error;
+        }
+
+        let currentEvent: Event;
+        try {
+          currentEvent = await http.get<Event>(`/api/events/${eventId}`);
+        } catch {
+          throw error;
+        }
+
+        const legacyPayload = buildLegacyCompatibleUpdatePayload(
+          currentEvent,
+          sanitizedPayload,
+        );
+        if (!legacyPayload) {
+          throw error;
+        }
+
+        return withEventPayloadFallbacks(sendPatch, legacyPayload);
+      },
     );
   },
   /** Update one/future/all instances for a recurring event. */
