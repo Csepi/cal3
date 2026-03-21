@@ -166,6 +166,14 @@ class TimelineWidgetDataProvider(private val context: Context) {
             )
             return null
         }
+        if (extractCookieValue(cookies, "cal3_refresh_token").isNullOrBlank()) {
+            TimelineWidgetDebugLogger.log(
+                context,
+                stage = "provider.auth.cookies",
+                message = "Refresh-token cookie missing; skipping refresh-token exchange",
+            )
+            return null
+        }
 
         val csrf = extractCookieValue(cookies, "cal3_csrf_token")
         val refreshResponse = executeRequest(
@@ -244,8 +252,36 @@ class TimelineWidgetDataProvider(private val context: Context) {
             cookieManager.getCookie(APP_BASE_URL),
             cookieManager.getCookie(API_BASE_URL),
             cookieManager.getCookie("$API_BASE_URL/api/auth"),
-        )
-        return cookieCandidates.firstOrNull { !it.isNullOrBlank() }
+        ).filterNotNull().filter { it.isNotBlank() }
+        if (cookieCandidates.isEmpty()) {
+            return null
+        }
+
+        val mergedCookies = linkedMapOf<String, String>()
+        cookieCandidates.forEach { cookieHeader ->
+            cookieHeader.split(';')
+                .map { it.trim() }
+                .filter { it.isNotBlank() && it.contains("=") }
+                .forEach { entry ->
+                    val separatorIndex = entry.indexOf('=')
+                    if (separatorIndex <= 0 || separatorIndex >= entry.length - 1) {
+                        return@forEach
+                    }
+                    val name = entry.substring(0, separatorIndex).trim()
+                    val value = entry.substring(separatorIndex + 1).trim()
+                    if (name.isNotBlank() && value.isNotBlank()) {
+                        mergedCookies[name] = value
+                    }
+                }
+        }
+
+        if (mergedCookies.isEmpty()) {
+            return null
+        }
+
+        return mergedCookies.entries.joinToString("; ") { (name, value) ->
+            "$name=$value"
+        }
     }
 
     private fun parseAccessToken(rawBody: String): String? {
