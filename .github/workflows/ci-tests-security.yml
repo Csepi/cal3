@@ -205,7 +205,12 @@ jobs:
           }
 
       - name: Run Newman collection
-        run: npm run test:api
+        run: |
+          SUFFIX="$(date +%s)"
+          npm run test:api -- \
+            --env-var "username=newman_${SUFFIX}" \
+            --env-var "registerEmail=newman_${SUFFIX}@example.com" \
+            --env-var "password=AdminPass#123"
 
       - name: Stop backend test server
         if: always()

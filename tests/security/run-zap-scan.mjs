@@ -50,16 +50,13 @@ if (!existsSync(reportJson)) {
 }
 
 const raw = readFileSync(reportJson, 'utf8');
-const parsed = JSON.parse(raw) as {
-  site?: Array<{
-    alerts?: Array<{ riskcode?: string }>;
-  }>;
-};
+const parsed = JSON.parse(raw);
 
 let high = 0;
 let medium = 0;
-for (const site of parsed.site ?? []) {
-  for (const alert of site.alerts ?? []) {
+for (const site of Array.isArray(parsed.site) ? parsed.site : []) {
+  const alerts = Array.isArray(site?.alerts) ? site.alerts : [];
+  for (const alert of alerts) {
     if (alert.riskcode === '3') {
       high += 1;
     } else if (alert.riskcode === '2') {

@@ -7,6 +7,14 @@ import {
 } from 'nestjs-i18n';
 import * as path from 'path';
 
+const resolveBackendRoot = (): string => {
+  const cwd = process.cwd();
+  if (path.basename(cwd) === 'backend-nestjs') {
+    return cwd;
+  }
+  return path.join(cwd, 'backend-nestjs');
+};
+
 @Global()
 @Module({
   imports: [
@@ -22,8 +30,7 @@ import * as path from 'path';
         AcceptLanguageResolver,
       ],
       typesOutputPath: path.join(
-        process.cwd(),
-        'backend-nestjs',
+        resolveBackendRoot(),
         'src',
         'generated',
         'i18n.generated.ts',
@@ -34,4 +41,3 @@ import * as path from 'path';
   exports: [I18nModule],
 })
 export class AppI18nModule {}
-

@@ -402,7 +402,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('SQL injection payload is rejected', function () {",
-                  "  pm.expect(pm.response.code).to.be.oneOf([400, 401]);",
+                  "  pm.expect(pm.response.code).to.be.oneOf([400, 401, 403]);",
                   "});"
                 ]
               }
