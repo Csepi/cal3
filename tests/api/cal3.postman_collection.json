@@ -154,6 +154,14 @@
               {
                 "key": "Authorization",
                 "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "X-PrimeCal-Client",
+                "value": "mobile-native"
+              },
+              {
+                "key": "x-device-fingerprint",
+                "value": "postman-device"
               }
             ],
             "url": {
@@ -252,6 +260,14 @@
               {
                 "key": "Authorization",
                 "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "X-PrimeCal-Client",
+                "value": "mobile-native"
+              },
+              {
+                "key": "x-device-fingerprint",
+                "value": "postman-device"
               }
             ],
             "url": {
@@ -288,6 +304,14 @@
               {
                 "key": "Authorization",
                 "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "X-PrimeCal-Client",
+                "value": "mobile-native"
+              },
+              {
+                "key": "x-device-fingerprint",
+                "value": "postman-device"
               }
             ],
             "url": {

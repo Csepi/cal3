@@ -24,7 +24,7 @@ describeDockerBacked('Concurrent token rotation integration', ({
     const suffix = `${Date.now()}_${Math.floor(Math.random() * 10000)}`;
     const username = `concurrent_user_${suffix}`;
     const email = `concurrent_user_${suffix}@example.com`;
-    const password = 'ConcurrentPass123';
+    const password = 'ConcurrentPass#123';
     const fingerprint = `concurrent-fp-${suffix}`;
 
     const server = harness.app.getHttpServer() as Parameters<typeof request>[0];

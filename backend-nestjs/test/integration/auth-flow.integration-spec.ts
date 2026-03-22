@@ -51,6 +51,7 @@ describeDockerBacked('Auth flow integration (postgres testcontainer)', ({
     await request(server)
       .get('/auth/profile')
       .set('Authorization', `Bearer ${accessToken}`)
+      .set(DEVICE_FINGERPRINT_HEADER, fingerprint)
       .expect(200)
       .expect((response) => {
         expect(response.body.username).toBe(username);
@@ -85,6 +86,7 @@ describeDockerBacked('Auth flow integration (postgres testcontainer)', ({
     await request(server)
       .get('/auth/profile')
       .set('Authorization', `Bearer ${rotatedAccessToken}`)
+      .set(DEVICE_FINGERPRINT_HEADER, fingerprint)
       .expect(401);
   });
 
@@ -186,11 +188,13 @@ describeDockerBacked('Auth flow integration (postgres testcontainer)', ({
     await request(server)
       .get('/user/profile')
       .set('Authorization', `Bearer ${accessToken}`)
+      .set(DEVICE_FINGERPRINT_HEADER, 'integration-device-onboarding-register')
       .expect(403);
 
     await request(server)
       .post('/auth/complete-onboarding')
       .set('Authorization', `Bearer ${accessToken}`)
+      .set(DEVICE_FINGERPRINT_HEADER, 'integration-device-onboarding-register')
       .send({
         username: onboardingUsername,
         language: 'en',
@@ -217,6 +221,7 @@ describeDockerBacked('Auth flow integration (postgres testcontainer)', ({
     await request(server)
       .get('/user/profile')
       .set('Authorization', `Bearer ${accessToken}`)
+      .set(DEVICE_FINGERPRINT_HEADER, 'integration-device-onboarding-register')
       .expect(200);
 
     const loginResponse = await request(server)

@@ -116,6 +116,7 @@ describeDockerBacked('Multi-tenant isolation integration', ({
     const listResponse = await request(server)
       .get('/organisations')
       .set('Authorization', `Bearer ${accessTokenA}`)
+      .set(DEVICE_FINGERPRINT_HEADER, `tenant-a-${suffix}`)
       .expect(200);
 
     const listedIds = (listResponse.body as Array<{ id: number }>).map((org) => org.id);
@@ -125,11 +126,13 @@ describeDockerBacked('Multi-tenant isolation integration', ({
     await request(server)
       .get(`/organisations/${organisationA.id}`)
       .set('Authorization', `Bearer ${accessTokenA}`)
+      .set(DEVICE_FINGERPRINT_HEADER, `tenant-a-${suffix}`)
       .expect(200);
 
     await request(server)
       .get(`/organisations/${organisationB.id}`)
       .set('Authorization', `Bearer ${accessTokenA}`)
+      .set(DEVICE_FINGERPRINT_HEADER, `tenant-a-${suffix}`)
       .expect((response) => {
         expect([403, 404]).toContain(response.status);
       });
@@ -149,6 +152,7 @@ describeDockerBacked('Multi-tenant isolation integration', ({
     await request(server)
       .patch(`/organisations/${organisationA.id}/color`)
       .set('Authorization', `Bearer ${accessTokenB}`)
+      .set(DEVICE_FINGERPRINT_HEADER, `tenant-b-${suffix}`)
       .send({ color: '#22c55e' })
       .expect((response) => {
         expect([403, 404]).toContain(response.status);
