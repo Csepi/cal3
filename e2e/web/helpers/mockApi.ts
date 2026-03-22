@@ -13,6 +13,7 @@ export interface E2eUser {
 export interface MockApiOptions {
   user?: E2eUser;
   loginFailuresBeforeSuccess?: number;
+  startAuthenticated?: boolean;
 }
 
 const defaultUser: E2eUser = {
@@ -60,6 +61,7 @@ export async function installDefaultApiMocks(
 ): Promise<void> {
   const user = options.user ?? defaultUser;
   let loginFailures = options.loginFailuresBeforeSuccess ?? 0;
+  let isAuthenticated = options.startAuthenticated ?? false;
 
   await page.route('**/api/**', async (route) => {
     const request = route.request();
@@ -88,6 +90,8 @@ export async function installDefaultApiMocks(
         return;
       }
 
+      isAuthenticated = true;
+
       await route.fulfill({
         status: 201,
         contentType: 'application/json',
@@ -105,6 +109,15 @@ export async function installDefaultApiMocks(
     }
 
     if (path.endsWith('/api/auth/refresh') && method === 'POST') {
+      if (!isAuthenticated) {
+        await route.fulfill({
+          status: 401,
+          contentType: 'application/json',
+          body: JSON.stringify({ message: 'Not authenticated' }),
+        });
+        return;
+      }
+
       await route.fulfill({
         status: 201,
         contentType: 'application/json',
@@ -122,11 +135,21 @@ export async function installDefaultApiMocks(
     }
 
     if (path.endsWith('/api/auth/logout') && method === 'POST') {
+      isAuthenticated = false;
       await route.fulfill(asJson({ success: true }));
       return;
     }
 
     if (path.endsWith('/api/auth/profile') && method === 'GET') {
+      if (!isAuthenticated) {
+        await route.fulfill({
+          status: 401,
+          contentType: 'application/json',
+          body: JSON.stringify({ message: 'Not authenticated' }),
+        });
+        return;
+      }
+
       await route.fulfill(asJson(user));
       return;
     }
@@ -171,6 +194,29 @@ export async function installDefaultApiMocks(
         asJson([
           { id: 1, name: 'E2E Org', role: 'ADMIN', color: '#0ea5e9' },
         ]),
+      );
+      return;
+    }
+
+    if (path.endsWith('/api/user-permissions') && method === 'GET') {
+      if (!isAuthenticated) {
+        await route.fulfill({
+          status: 401,
+          contentType: 'application/json',
+          body: JSON.stringify({ message: 'Not authenticated' }),
+        });
+        return;
+      }
+
+      await route.fulfill(
+        asJson({
+          canAccessReservations: true,
+          accessibleOrganizationIds: [1],
+          adminOrganizationIds: [1],
+          editableReservationCalendarIds: [12],
+          viewableReservationCalendarIds: [12],
+          isSuperAdmin: false,
+        }),
       );
       return;
     }

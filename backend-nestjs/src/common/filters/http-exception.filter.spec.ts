@@ -58,7 +58,7 @@ describe('AllExceptionsFilter', () => {
         success: false,
         error: expect.objectContaining({
           code: ERROR_CODES.VALIDATION_FAILED,
-          message: bStatic('errors.auto.backend.k4c7949072460'),
+          message: 'The request contains invalid data.',
         }),
       }),
     );

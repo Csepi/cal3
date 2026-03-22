@@ -64,6 +64,9 @@ const OnboardingRouteGuard: React.FC<OnboardingRouteGuardProps> = ({
 
     return () => {
       cancelled = true;
+      // In React StrictMode (dev), effects can mount/unmount once before the real mount.
+      // Reset the probe flag so the active mount can perform the profile lookup and clear loading.
+      profileLookupAttemptedRef.current = false;
     };
   }, [isAuthenticated, currentUser?.onboardingCompleted]);
 

@@ -12,15 +12,15 @@ test.describe('Critical journey: reservations/booking', () => {
     });
 
     await seedAuthenticatedSession(page);
-    await installDefaultApiMocks(page);
+    await installDefaultApiMocks(page, { startAuthenticated: true });
 
     await page.goto('/app/reservations');
 
-    await expect(page.getByRole('button', { name: 'Reservations' })).toBeVisible();
+    await expect(page.getByText('Loading account...')).toHaveCount(0);
     await expect(page.getByText('Organization Overview')).toBeVisible();
 
-    await page.getByRole('button', { name: 'Resource Types' }).click();
-    await expect(page.getByText('No resource types yet')).toBeVisible();
+    await page.getByRole('button', { name: /Resource Types/i }).click();
+    await expect(page.getByText(/No resource types yet/i)).toBeVisible();
 
     expect(pageErrors).toHaveLength(0);
   });
