@@ -55,6 +55,7 @@ jobs:
   backend_integration:
     name: Backend integration tests (testcontainers)
     runs-on: ubuntu-latest
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
 
@@ -72,7 +73,7 @@ jobs:
           ENABLE_TESTCONTAINERS: "true"
           TESTCONTAINERS_RYUK_DISABLED: "false"
           TESTCONTAINERS_START_TIMEOUT_MS: "180000"
-        run: npm --prefix backend-nestjs run test:integration
+        run: npm --prefix backend-nestjs run test:integration -- --detectOpenHandles --forceExit
 
   frontend_unit:
     name: Frontend unit tests
@@ -140,6 +141,7 @@ jobs:
     name: API collection tests (Newman)
     runs-on: ubuntu-latest
     needs: [backend_unit_security]
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
 
@@ -158,19 +160,37 @@ jobs:
         run: npm --prefix backend-nestjs ci
 
       - name: Start backend for API tests
+        working-directory: backend-nestjs
+        env:
+          DB_TYPE: sqlite
+          DB_DATABASE: ":memory:"
+          DB_SYNCHRONIZE: "true"
+          JWT_SECRET: test-jwt-secret
+          SECURITY_ALLOWED_ORIGINS: http://localhost:3000
+          BACKEND_PORT: "8081"
+          PORT: "8081"
+          BIND_ADDRESS: "127.0.0.1"
+          HOST: "127.0.0.1"
         run: |
-          DB_TYPE=sqlite \
-          DB_DATABASE=:memory: \
-          DB_SYNCHRONIZE=true \
-          JWT_SECRET=test-jwt-secret \
-          SECURITY_ALLOWED_ORIGINS=http://localhost:3000 \
-          npm --prefix backend-nestjs run start:dev > backend-test.log 2>&1 &
+          npm run start > ../backend-test.log 2>&1 &
+          echo $! > ../backend-test.pid
 
       - name: Wait for backend
-        run: npx wait-on http://127.0.0.1:8081/api/health
+        run: |
+          npx wait-on --timeout 120000 --interval 1000 --httpTimeout 5000 http-get://127.0.0.1:8081/api/health || {
+            echo "Backend did not become healthy in time";
+            test -f backend-test.log && tail -n 200 backend-test.log;
+            test -f backend-test.pid && kill "$(cat backend-test.pid)" || true;
+            exit 1;
+          }
 
       - name: Run Newman collection
         run: npm run test:api
+
+      - name: Stop backend test server
+        if: always()
+        run: |
+          test -f backend-test.pid && kill "$(cat backend-test.pid)" || true
 
       - name: Upload Newman report
         if: always()
@@ -192,6 +212,7 @@ jobs:
     name: Load smoke tests (Artillery)
     runs-on: ubuntu-latest
     needs: [backend_unit_security]
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
 
@@ -210,21 +231,39 @@ jobs:
         run: npm --prefix backend-nestjs ci
 
       - name: Start backend for load smoke
+        working-directory: backend-nestjs
+        env:
+          DB_TYPE: sqlite
+          DB_DATABASE: ":memory:"
+          DB_SYNCHRONIZE: "true"
+          JWT_SECRET: test-jwt-secret
+          SECURITY_ALLOWED_ORIGINS: http://localhost:3000
+          BACKEND_PORT: "8081"
+          PORT: "8081"
+          BIND_ADDRESS: "127.0.0.1"
+          HOST: "127.0.0.1"
         run: |
-          DB_TYPE=sqlite \
-          DB_DATABASE=:memory: \
-          DB_SYNCHRONIZE=true \
-          JWT_SECRET=test-jwt-secret \
-          SECURITY_ALLOWED_ORIGINS=http://localhost:3000 \
-          npm --prefix backend-nestjs run start:dev > backend-load.log 2>&1 &
+          npm run start > ../backend-load.log 2>&1 &
+          echo $! > ../backend-load.pid
 
       - name: Wait for backend
-        run: npx wait-on http://127.0.0.1:8081/api/health
+        run: |
+          npx wait-on --timeout 120000 --interval 1000 --httpTimeout 5000 http-get://127.0.0.1:8081/api/health || {
+            echo "Backend did not become healthy in time";
+            test -f backend-load.log && tail -n 200 backend-load.log;
+            test -f backend-load.pid && kill "$(cat backend-load.pid)" || true;
+            exit 1;
+          }
 
       - name: Run Artillery smoke
         env:
           LOAD_BASE_URL: http://127.0.0.1:8081
         run: npm run test:load
+
+      - name: Stop backend load server
+        if: always()
+        run: |
+          test -f backend-load.pid && kill "$(cat backend-load.pid)" || true
 
       - name: Upload load log
         if: always()
@@ -238,6 +277,7 @@ jobs:
     name: OWASP ZAP baseline scan
     runs-on: ubuntu-latest
     needs: [backend_unit_security]
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
 
@@ -256,22 +296,40 @@ jobs:
         run: npm --prefix backend-nestjs ci
 
       - name: Start backend for ZAP
+        working-directory: backend-nestjs
+        env:
+          DB_TYPE: sqlite
+          DB_DATABASE: ":memory:"
+          DB_SYNCHRONIZE: "true"
+          JWT_SECRET: test-jwt-secret
+          SECURITY_ALLOWED_ORIGINS: http://localhost:3000
+          BACKEND_PORT: "8081"
+          PORT: "8081"
+          BIND_ADDRESS: "127.0.0.1"
+          HOST: "127.0.0.1"
         run: |
-          DB_TYPE=sqlite \
-          DB_DATABASE=:memory: \
-          DB_SYNCHRONIZE=true \
-          JWT_SECRET=test-jwt-secret \
-          SECURITY_ALLOWED_ORIGINS=http://localhost:3000 \
-          npm --prefix backend-nestjs run start:dev > backend-zap.log 2>&1 &
+          npm run start > ../backend-zap.log 2>&1 &
+          echo $! > ../backend-zap.pid
 
       - name: Wait for backend
-        run: npx wait-on http://127.0.0.1:8081/api/health
+        run: |
+          npx wait-on --timeout 120000 --interval 1000 --httpTimeout 5000 http-get://127.0.0.1:8081/api/health || {
+            echo "Backend did not become healthy in time";
+            test -f backend-zap.log && tail -n 200 backend-zap.log;
+            test -f backend-zap.pid && kill "$(cat backend-zap.pid)" || true;
+            exit 1;
+          }
 
       - name: Run ZAP scan
         env:
           ZAP_TARGET_URL: http://127.0.0.1:8081
           ZAP_FAIL_ON_RISK: high
         run: npm run test:security:web
+
+      - name: Stop backend ZAP server
+        if: always()
+        run: |
+          test -f backend-zap.pid && kill "$(cat backend-zap.pid)" || true
 
       - name: Upload ZAP reports
         if: always()
