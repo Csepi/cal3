@@ -156,31 +156,31 @@
     }
   },
   "generic": {
-    "tryAgain": "Veuillez r?essayer.",
+    "tryAgain": "Veuillez réessayer.",
     "unexpected": "Une erreur inattendue est survenue."
   },
   "http": {
-    "badRequest": "Requ?te invalide.",
-    "conflict": "Conflit d?tect?. Veuillez actualiser puis r?essayer.",
-    "forbidden": "Vous n?avez pas l?autorisation d?effectuer cette action.",
+    "badRequest": "Mauvaise demande.",
+    "conflict": "Conflit détecté. Veuillez actualiser et réessayer.",
+    "forbidden": "Vous n'êtes pas autorisé à effectuer cette action.",
     "internal": "Erreur interne du serveur.",
-    "notFound": "La ressource demand?e est introuvable.",
+    "notFound": "La ressource demandée n'a pas été trouvée.",
     "serviceUnavailable": "Service temporairement indisponible.",
-    "tooManyRequests": "Trop de requ?tes. Veuillez r?essayer plus tard.",
+    "tooManyRequests": "Trop de demandes. Veuillez réessayer plus tard.",
     "unauthorized": "Non autoris?. Veuillez vous reconnecter."
   },
   "network": {
-    "connectionFailed": "?chec de connexion. V?rifiez votre connexion internet.",
+    "connectionFailed": "La connexion a échoué. Vérifiez votre connexion Internet.",
     "offline": "Vous ?tes actuellement hors ligne.",
-    "timeout": "D?lai de la requ?te d?pass?."
+    "timeout": "La demande a expiré."
   },
   "permissions": {
-    "insufficientPrivileges": "Privil?ges insuffisants.",
-    "noAccess": "Acc?s refus?."
+    "insufficientPrivileges": "Privilèges insuffisants.",
+    "noAccess": "Accès refusé."
   },
   "sync": {
-    "conflict": "Conflit de synchronisation d?tect?.",
+    "conflict": "Conflit de synchronisation détecté.",
     "failed": "?chec de la synchronisation.",
-    "retry": "Synchronisation impossible pour le moment. Veuillez r?essayer."
+    "retry": "Impossible de synchroniser pour le moment. Veuillez réessayer."
   }
 }

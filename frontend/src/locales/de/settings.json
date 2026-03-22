@@ -1,6 +1,6 @@
 {
   "a11y": {
-    "languageChanged": "Sprache ge?ndert zu {{language}}.",
+    "languageChanged": "Die Sprache wurde in {{language}} geändert.",
     "languageSwitcherLabel": "Anwendungssprache"
   },
   "catalog": {
@@ -189,7 +189,7 @@
   "languageNames": {
     "de": "Deutsch",
     "en": "Englisch",
-    "fr": "Franz?sisch",
+    "fr": "Französisch",
     "hu": "Ungarisch"
   },
   "messages": {
@@ -198,7 +198,7 @@
     "syncing": "Einstellungen werden synchronisiert..."
   },
   "notifications": {
-    "digest": "Digest-H?ufigkeit",
+    "digest": "Verdauungshäufigkeit",
     "email": "E-Mail-Benachrichtigungen",
     "push": "Push-Benachrichtigungen",
     "reminders": "Erinnerungseinstellungen"
@@ -208,8 +208,8 @@
     "members": "Mitglieder",
     "permissions": "Berechtigungen",
     "roles": "Rollen",
-    "usagePlans": "Nutzungspl?ne",
-    "usagePlansHelp": "Nutzungspl?ne werden von Administratoren verwaltet und steuern den Zugriff auf Funktionen."
+    "usagePlans": "Nutzungspläne",
+    "usagePlansHelp": "Nutzungspläne werden von Administratoren verwaltet und steuern Ihren Zugriff auf Funktionen."
   },
   "preferences": {
     "dateFormat": "Datumsformat",
@@ -227,8 +227,8 @@
   "profile": {
     "changePassword": "Passwort ?ndern",
     "defaultTasksCalendar": "Standard-Aufgabenkalender",
-    "defaultTasksCalendarHelp": "W?hlen Sie, welcher berechtigte Kalender gespiegelte Aufgabenf?lligkeiten aufnehmen soll. Wenn leer, erstellt PrimeCal automatisch einen privaten Aufgabenkalender.",
-    "personalInformation": "Pers?nliche Informationen",
+    "defaultTasksCalendarHelp": "Wählen Sie aus, welcher geeignete Kalender gespiegelte Fälligkeitstermine für Aufgaben enthalten soll. Deaktivieren Sie diese Option, damit PrimeCal automatisch einen privaten Aufgabenkalender erstellt.",
+    "personalInformation": "Persönliche Informationen",
     "profilePhoto": "Profilbild",
     "updateProfile": "Profil aktualisieren"
   },
@@ -241,10 +241,10 @@
     "security": "Sicherheit"
   },
   "security": {
-    "clearWidgetLog": "Widget-Protokoll l?schen",
+    "clearWidgetLog": "Widget-Protokoll löschen",
     "copyWidgetLog": "Widget-Protokoll kopieren",
     "widgetDiagnostics": "Widget-Diagnose",
-    "widgetDiagnosticsHelp": "Kopieren Sie Android-Widget-Protokolle f?r eine schnellere Fehleranalyse."
+    "widgetDiagnosticsHelp": "Kopieren Sie Android-Widget-Protokolle, um Ladeprobleme schnell zu beheben."
   },
   "labels": {
     "title": "Ereignis-Labels",

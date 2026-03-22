@@ -31,7 +31,7 @@
   },
   "modal": {
     "editRule": "Automatizálási szabály szerkesztése",
-    "createRule": "Automatizálási szabály létrehozása",
+    "createRule": "Szabály létrehozása",
     "basicInfo": "Alapvető információk",
     "ruleName": "Szabály neve *",
     "ruleNamePlaceholder": "pl.: Munkaértekezletek kékre színezése",
@@ -42,7 +42,6 @@
     "created": "Létrehozva: {{date}}",
     "requiredFields": "* Kötelező mezők",
     "cancel": "Mégse",
-    "createRule": "Szabály létrehozása",
     "updateRule": "Szabály frissítése",
     "saving": "Mentés..."
   },

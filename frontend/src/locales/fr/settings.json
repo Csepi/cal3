@@ -1,7 +1,7 @@
 {
   "a11y": {
-    "languageChanged": "Langue chang?e en {{language}}.",
-    "languageSwitcherLabel": "Langue de l?application"
+    "languageChanged": "La langue a été modifiée en {{language}}.",
+    "languageSwitcherLabel": "Langue de candidature"
   },
   "catalog": {
     "generated": {
@@ -181,7 +181,7 @@
   },
   "integrations": {
     "connect": "Connecter",
-    "disconnect": "D?connecter",
+    "disconnect": "Déconnecter",
     "google": "Google Agenda",
     "microsoft": "Microsoft Calendar",
     "syncNow": "Synchroniser maintenant"
@@ -189,62 +189,62 @@
   "languageNames": {
     "de": "Allemand",
     "en": "Anglais",
-    "fr": "Fran?ais",
+    "fr": "Français",
     "hu": "Hongrois"
   },
   "messages": {
-    "saved": "Param?tres mis ? jour avec succ?s.",
-    "saveFailed": "?chec de la mise ? jour des param?tres.",
-    "syncing": "Synchronisation des param?tres..."
+    "saved": "Paramètres mis à jour avec succès.",
+    "saveFailed": "Échec de la mise à jour des paramètres.",
+    "syncing": "Synchronisation des paramètres..."
   },
   "notifications": {
-    "digest": "Fr?quence du r?capitulatif",
+    "digest": "Fréquence de résumé",
     "email": "Notifications e-mail",
     "push": "Notifications push",
-    "reminders": "Param?tres de rappel"
+    "reminders": "Paramètres de rappel"
   },
   "organization": {
     "billing": "Facturation",
     "members": "Membres",
     "permissions": "Autorisations",
-    "roles": "R?les",
-    "usagePlans": "Plans d?utilisation",
-    "usagePlansHelp": "Les plans d?utilisation sont g?r?s par les administrateurs et contr?lent votre acc?s aux fonctionnalit?s."
+    "roles": "Rôles",
+    "usagePlans": "Forfaits d'utilisation",
+    "usagePlansHelp": "Les plans d'utilisation sont gérés par les administrateurs et contrôlent votre accès aux fonctionnalités."
   },
   "preferences": {
     "dateFormat": "Format de date",
-    "hideReservationsTab": "Masquer l?onglet R?servations",
-    "hideReservationsTabHelp": "Lorsque cette option est activ?e, l?onglet R?servations est masqu? du tableau de bord principal.",
+    "hideReservationsTab": "Masquer l'onglet Réservations",
+    "hideReservationsTabHelp": "Lorsqu'il est activé, l'onglet Réservations sera masqué du tableau de bord principal.",
     "hiddenLiveFocusTags": "Masquer les etiquettes du focus LIVE",
     "hiddenLiveFocusTagsHelp": "Les evenements ayant l'une de ces etiquettes sont masques du focus LIVE et de l'apercu chronologique. Separez les etiquettes par des virgules.",
     "hiddenLiveFocusTagsPlaceholder": "no_focus, private",
     "language": "Langue",
-    "theme": "Th?me",
-    "timeFormat": "Format de l?heure",
+    "theme": "Thème",
+    "timeFormat": "Format de l'heure",
     "timezone": "Fuseau horaire",
-    "weekStart": "D?but de semaine"
+    "weekStart": "La semaine commence le"
   },
   "profile": {
     "changePassword": "Modifier le mot de passe",
-    "defaultTasksCalendar": "Calendrier de t?ches par d?faut",
-    "defaultTasksCalendarHelp": "Choisissez le calendrier ?ligible qui doit recevoir les ?ch?ances des t?ches synchronis?es. En le laissant vide, PrimeCal cr?era automatiquement un calendrier priv? de t?ches.",
+    "defaultTasksCalendar": "Calendrier des tâches par défaut",
+    "defaultTasksCalendarHelp": "Choisissez quel calendrier éligible doit héberger les dates d'échéance des tâches en miroir. Décochez cette option pour permettre à PrimeCal de créer automatiquement un calendrier de tâches privé.",
     "personalInformation": "Informations personnelles",
     "profilePhoto": "Photo de profil",
     "updateProfile": "Mettre ? jour le profil"
   },
   "sections": {
-    "integrations": "Int?grations",
+    "integrations": "Intégrations",
     "notifications": "Notifications",
-    "organization": "Param?tres de l?organisation",
-    "preferences": "Pr?f?rences",
-    "profile": "Param?tres du profil",
-    "security": "S?curit?"
+    "organization": "Paramètres de l'organisation",
+    "preferences": "Préférences",
+    "profile": "Paramètres du profil",
+    "security": "Sécurité"
   },
   "security": {
     "clearWidgetLog": "Effacer le journal du widget",
     "copyWidgetLog": "Copier le journal du widget",
     "widgetDiagnostics": "Diagnostics du widget",
-    "widgetDiagnosticsHelp": "Copiez les journaux du widget Android pour diagnostiquer rapidement les probl?mes de chargement."
+    "widgetDiagnosticsHelp": "Copiez les journaux des widgets Android pour résoudre rapidement les problèmes de chargement."
   },
   "labels": {
     "title": "Etiquettes d'evenement",

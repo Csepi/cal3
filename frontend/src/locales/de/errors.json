@@ -160,19 +160,19 @@
     "unexpected": "Ein unerwarteter Fehler ist aufgetreten."
   },
   "http": {
-    "badRequest": "Ung?ltige Anfrage.",
+    "badRequest": "Ungültige Anforderung.",
     "conflict": "Konflikt erkannt. Bitte aktualisieren und erneut versuchen.",
-    "forbidden": "Sie haben keine Berechtigung f?r diese Aktion.",
+    "forbidden": "Sie haben keine Berechtigung, diese Aktion auszuführen.",
     "internal": "Interner Serverfehler.",
     "notFound": "Die angeforderte Ressource wurde nicht gefunden.",
-    "serviceUnavailable": "Dienst ist vor?bergehend nicht verf?gbar.",
-    "tooManyRequests": "Zu viele Anfragen. Bitte sp?ter erneut versuchen.",
+    "serviceUnavailable": "Der Dienst ist vorübergehend nicht verfügbar.",
+    "tooManyRequests": "Zu viele Anfragen. Bitte versuchen Sie es später noch einmal.",
     "unauthorized": "Nicht autorisiert. Bitte melden Sie sich erneut an."
   },
   "network": {
-    "connectionFailed": "Verbindung fehlgeschlagen. Pr?fen Sie Ihre Internetverbindung.",
+    "connectionFailed": "Verbindung fehlgeschlagen. Überprüfen Sie Ihre Internetverbindung.",
     "offline": "Sie sind derzeit offline.",
-    "timeout": "Zeit?berschreitung bei der Anfrage."
+    "timeout": "Zeitüberschreitung bei der Anfrage."
   },
   "permissions": {
     "insufficientPrivileges": "Unzureichende Berechtigungen.",
@@ -181,6 +181,6 @@
   "sync": {
     "conflict": "Synchronisierungskonflikt erkannt.",
     "failed": "Synchronisierung fehlgeschlagen.",
-    "retry": "Synchronisierung aktuell nicht m?glich. Bitte erneut versuchen."
+    "retry": "Die Synchronisierung ist momentan nicht möglich. Bitte versuchen Sie es erneut."
   }
 }

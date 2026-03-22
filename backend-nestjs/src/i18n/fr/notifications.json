@@ -1,5 +1,5 @@
 {
-  "newBooking": "Nouvelle r?servation de {{clientName}}",
-  "eventStartingSoon": "L??v?nement commence dans {{minutes}} minutes.",
+  "newBooking": "Nouvelle réservation à partir du {{clientName}}",
+  "eventStartingSoon": "L'événement commence dans {{minutes}} minutes.",
   "calendarShared": "Un calendrier a ?t? partag? avec vous."
 }

@@ -1,12 +1,12 @@
 {
   "body": {
-    "bookingIntro": "Ihre Buchung wurde mit folgenden Angaben best?tigt.",
+    "bookingIntro": "Ihre Buchung wurde mit den folgenden Angaben bestätigt.",
     "closing": "Mit freundlichen Gr??en",
     "greeting": "Guten Tag {{name}},",
     "reminderIntro": "Dies ist eine Erinnerung an Ihren bevorstehenden Termin.",
-    "resetIntro": "Verwenden Sie den folgenden Link, um Ihr Passwort zur?ckzusetzen.",
+    "resetIntro": "Verwenden Sie den untenstehenden Link, um Ihr Passwort zurückzusetzen.",
     "signature": "PrimeCalendar-Team",
-    "unsubscribe": "Sie k?nnen Benachrichtigungen in Ihren Kontoeinstellungen verwalten."
+    "unsubscribe": "Sie können Benachrichtigungen in Ihren Kontoeinstellungen verwalten."
   },
   "catalog": {
     "generated": {
@@ -114,21 +114,21 @@
     }
   },
   "cta": {
-    "confirmBooking": "Buchung best?tigen",
+    "confirmBooking": "Buchung bestätigen",
     "manageBooking": "Buchung verwalten",
-    "resetPassword": "Passwort zur?cksetzen",
+    "resetPassword": "Passwort zurücksetzen",
     "viewEvent": "Termin anzeigen"
   },
   "legal": {
-    "privacy": "Datenschutzerkl?rung",
+    "privacy": "Datenschutzrichtlinie",
     "terms": "Nutzungsbedingungen",
-    "unsubscribeInfo": "Wenn Sie diese E-Mails nicht mehr erhalten m?chten, passen Sie Ihre Einstellungen an."
+    "unsubscribeInfo": "Wenn Sie diese E-Mails nicht mehr möchten, aktualisieren Sie Ihre Einstellungen."
   },
   "subjects": {
     "bookingCancelled": "Buchung storniert",
-    "bookingConfirmation": "Buchung best?tigt f?r {{date}}",
-    "emailVerification": "PrimeCalendar-E-Mail best?tigen",
+    "bookingConfirmation": "Buchung bestätigt für {{date}}",
+    "emailVerification": "Überprüfen Sie Ihre PrimeCalendar-E-Mail",
     "eventReminder": "Terminerinnerung: {{title}}",
-    "passwordReset": "PrimeCalendar-Passwort zur?cksetzen"
+    "passwordReset": "Setzen Sie Ihr PrimeCalendar-Passwort zurück"
   }
 }

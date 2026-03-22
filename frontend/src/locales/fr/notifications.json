@@ -6,10 +6,10 @@
     "markUnread": "Marquer comme non lu"
   },
   "booking": {
-    "cancelled": "R?servation annul?e",
-    "confirmed": "R?servation confirm?e",
-    "new": "Nouvelle r?servation re?ue",
-    "rescheduled": "R?servation replanifi?e"
+    "cancelled": "Réservation annulée",
+    "confirmed": "Réservation confirmée",
+    "new": "Nouvelle réservation reçue",
+    "rescheduled": "Réservation reportée"
   },
   "catalog": {
     "generated": {
@@ -119,10 +119,10 @@
     }
   },
   "event": {
-    "cancelled": "?v?nement annul?",
+    "cancelled": "Événement annulé",
     "reminder": "Rappel",
-    "startingSoon": "L??v?nement commence bient?t",
-    "updated": "?v?nement mis ? jour"
+    "startingSoon": "L'événement commence bientôt",
+    "updated": "Événement mis à jour"
   },
   "sharing": {
     "calendarShared": "Un calendrier a ?t? partag? avec vous",
@@ -130,7 +130,7 @@
   },
   "system": {
     "featureAnnouncement": "Nouvelle fonctionnalit? disponible",
-    "maintenance": "Maintenance planifi?e",
+    "maintenance": "Avis de maintenance programmée",
     "updateAvailable": "Une nouvelle mise ? jour est disponible"
   }
 }

@@ -1,7 +1,7 @@
 {
   "actions": {
     "cancel": "Buchung stornieren",
-    "confirm": "Buchung best?tigen",
+    "confirm": "Buchung bestätigen",
     "copyLink": "Buchungslink kopieren",
     "reschedule": "Umbuchen"
   },
@@ -148,27 +148,27 @@
     "duration": "Dauer",
     "email": "E-Mail",
     "message": "Nachricht",
-    "name": "Vollst?ndiger Name",
+    "name": "Vollständiger Name",
     "phone": "Telefon",
     "time": "Uhrzeit",
     "timezone": "Zeitzone"
   },
   "notifications": {
     "cancelled": "Ihre Buchung wurde storniert.",
-    "confirmed": "Ihre Buchung wurde best?tigt.",
+    "confirmed": "Ihre Buchung ist bestätigt.",
     "reminder": "Buchungserinnerung",
     "rescheduled": "Ihre Buchung wurde umgebucht."
   },
   "page": {
-    "availability": "Verf?gbarkeit",
-    "subtitle": "W?hlen Sie ein Datum und eine Uhrzeit.",
+    "availability": "Verfügbarkeit",
+    "subtitle": "Wählen Sie ein Datum und eine Uhrzeit, die für Sie geeignet sind.",
     "title": "Zeit buchen",
-    "unavailable": "F?r das gew?hlte Datum sind keine Zeiten verf?gbar."
+    "unavailable": "Für das ausgewählte Datum sind keine Zeiten verfügbar."
   },
   "placeholders": {
     "email": "sie@example.com",
-    "message": "Hinweise f?r die organisierende Person",
-    "name": "Vollst?ndigen Namen eingeben",
+    "message": "Fügen Sie Notizen für den Organisator hinzu",
+    "name": "Geben Sie Ihren vollständigen Namen ein",
     "phone": "Optionale Telefonnummer"
   },
   "publicLink": {
@@ -178,15 +178,15 @@
   },
   "status": {
     "cancelled": "Storniert",
-    "confirmed": "Best?tigt",
+    "confirmed": "Bestätigt",
     "pending": "Ausstehend",
     "rescheduled": "Umgebucht"
   },
   "validation": {
-    "dateRequired": "Bitte w?hlen Sie ein Datum.",
+    "dateRequired": "Bitte wählen Sie ein Datum aus.",
     "emailRequired": "Bitte geben Sie Ihre E-Mail-Adresse ein.",
-    "invalidEmail": "Bitte geben Sie eine g?ltige E-Mail-Adresse ein.",
+    "invalidEmail": "Bitte geben Sie eine gültige E-Mail-Adresse ein.",
     "nameRequired": "Bitte geben Sie Ihren Namen ein.",
-    "timeRequired": "Bitte w?hlen Sie eine Uhrzeit."
+    "timeRequired": "Bitte wählen Sie eine Uhrzeit aus."
   }
 }

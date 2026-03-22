@@ -1,6 +1,6 @@
 {
-  "bookingConfirmed": "A foglal?s meger?s?tve.",
-  "bookingCancelled": "A foglal?s lemondva.",
-  "bookingRescheduled": "A foglal?s ?tfoglalva.",
-  "slotUnavailable": "A kiv?lasztott id?s?v nem el?rhet?."
+  "bookingConfirmed": "A foglalás megerősítve.",
+  "bookingCancelled": "A foglalás törölve.",
+  "bookingRescheduled": "A foglalás átütemezve.",
+  "slotUnavailable": "A kiválasztott időrés nem érhető el."
 }

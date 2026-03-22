@@ -1,12 +1,12 @@
 {
   "body": {
-    "bookingIntro": "Votre r?servation a ?t? confirm?e avec les informations suivantes.",
+    "bookingIntro": "Votre réservation a été confirmée avec les détails suivants.",
     "closing": "Cordialement,",
     "greeting": "Bonjour {{name}},",
-    "reminderIntro": "Ceci est un rappel pour votre ?v?nement ? venir.",
-    "resetIntro": "Utilisez le lien ci-dessous pour r?initialiser votre mot de passe.",
+    "reminderIntro": "Ceci est un rappel pour votre prochain événement.",
+    "resetIntro": "Utilisez le lien ci-dessous pour réinitialiser votre mot de passe.",
     "signature": "?quipe PrimeCalendar",
-    "unsubscribe": "Vous pouvez g?rer les notifications dans les param?tres de votre compte."
+    "unsubscribe": "Vous pouvez gérer les notifications dans les paramètres de votre compte."
   },
   "catalog": {
     "generated": {
@@ -114,21 +114,21 @@
     }
   },
   "cta": {
-    "confirmBooking": "Confirmer la r?servation",
-    "manageBooking": "G?rer la r?servation",
-    "resetPassword": "R?initialiser le mot de passe",
-    "viewEvent": "Voir l??v?nement"
+    "confirmBooking": "Confirmer la réservation",
+    "manageBooking": "Gérer la réservation",
+    "resetPassword": "Réinitialiser le mot de passe",
+    "viewEvent": "Voir l'événement"
   },
   "legal": {
     "privacy": "Politique de confidentialit?",
-    "terms": "Conditions d?utilisation",
-    "unsubscribeInfo": "Si vous ne souhaitez plus recevoir ces e-mails, mettez ? jour vos pr?f?rences."
+    "terms": "Conditions d'utilisation",
+    "unsubscribeInfo": "Si vous ne souhaitez plus recevoir ces e-mails, mettez à jour vos préférences."
   },
   "subjects": {
-    "bookingCancelled": "R?servation annul?e",
-    "bookingConfirmation": "R?servation confirm?e pour le {{date}}",
-    "emailVerification": "V?rifiez votre e-mail PrimeCalendar",
-    "eventReminder": "Rappel d??v?nement : {{title}}",
-    "passwordReset": "R?initialisez votre mot de passe PrimeCalendar"
+    "bookingCancelled": "Réservation annulée",
+    "bookingConfirmation": "Réservation confirmée pour {{date}}",
+    "emailVerification": "Vérifiez votre adresse e-mail PrimeCalendar",
+    "eventReminder": "Rappel d'événement : {{title}}",
+    "passwordReset": "Réinitialisez votre mot de passe PrimeCalendar"
   }
 }

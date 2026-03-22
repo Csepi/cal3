@@ -1,10 +1,10 @@
 {
-  "badRequest": "Hib?s k?r?s.",
-  "unauthorized": "Nincs jogosults?ga.",
-  "forbidden": "Hozz?f?r?s megtagadva.",
-  "notFound": "Az er?forr?s nem tal?lhat?.",
+  "badRequest": "Rossz kérés.",
+  "unauthorized": "Jogosulatlan.",
+  "forbidden": "Tiltott.",
+  "notFound": "Az erőforrás nem található.",
   "internalServerError": "Bels? szerverhiba.",
-  "rateLimited": "T?l sok k?r?s.",
+  "rateLimited": "Túl sok kérés.",
   "auto": {
     "backend": {
       "kdc8648114cf5": "A felhasználó nincs hitelesítve",

@@ -346,6 +346,24 @@ const TimelineView: React.FC<TimelineViewProps> = ({
   const nextEventLeadMs = nextEvent
     ? Math.max(0, nextEvent.start.getTime() - now.getTime())
     : 0;
+  const showIdlePrompt = !focusEvent && !nextEvent;
+  const idlePromptSelection = useMemo(() => {
+    if (!showIdlePrompt) {
+      return null;
+    }
+
+    // Daily idle message is deterministic by local date + user + device.
+    // Update `idle_prompts.txt` and locale `idlePrompts` files to change catalog content.
+    const selection = getDailyIdlePromptSelection({
+      date: now,
+      timeZone: resolvedTimezone,
+      user: sessionManager.getCurrentUser(),
+      translate: (key, fallbackValue) =>
+        i18n.t(`idlePrompts:${key}`, { defaultValue: fallbackValue }),
+    });
+
+    return selection;
+  }, [now, resolvedTimezone, showIdlePrompt]);
   const focusSummary = useMemo(() => {
     if (focusEvent) {
       const base = `${formatTimeRange(
@@ -361,29 +379,20 @@ const TimelineView: React.FC<TimelineViewProps> = ({
     if (nextEvent) {
       return `Next meeting starts at ${formatTime(nextEvent.start, timeFormat, resolvedTimezone)}.`;
     }
-    return DEFAULT_IDLE_MEETING_FALLBACK;
-  }, [focusEvent, nextEvent, resolvedTimezone, timeFormat]);
-  const showIdlePrompt = !focusEvent && !nextEvent;
+    if (idlePromptSelection?.hasError) {
+      return DEFAULT_IDLE_MEETING_FALLBACK;
+    }
+    return null;
+  }, [focusEvent, idlePromptSelection, nextEvent, resolvedTimezone, timeFormat]);
   const idlePromptLine = useMemo(() => {
-    if (!showIdlePrompt) {
+    if (!showIdlePrompt || !idlePromptSelection) {
       return null;
     }
-
-    // Daily idle message is deterministic by local date + user + device.
-    // Update `idle_prompts.txt` and locale `idlePrompts` files to change catalog content.
-    const selection = getDailyIdlePromptSelection({
-      date: now,
-      timeZone: resolvedTimezone,
-      user: sessionManager.getCurrentUser(),
-      translate: (key, fallbackValue) =>
-        i18n.t(`idlePrompts:${key}`, { defaultValue: fallbackValue }),
-    });
-
-    if (selection.hasError) {
+    if (idlePromptSelection.hasError) {
       return DEFAULT_IDLE_PROMPT_FALLBACK;
     }
-    return selection.text || DEFAULT_IDLE_PROMPT_FALLBACK;
-  }, [now, resolvedTimezone, showIdlePrompt]);
+    return idlePromptSelection.text || DEFAULT_IDLE_PROMPT_FALLBACK;
+  }, [idlePromptSelection, showIdlePrompt]);
   const currentProgress = focusEvent
     ? currentDuration > 0
       ? clamp(
@@ -952,9 +961,11 @@ const TimelineView: React.FC<TimelineViewProps> = ({
               <h3 className="text-lg md:text-2xl font-semibold leading-tight drop-shadow-sm line-clamp-2">
                 {focusEvent ? focusEvent.title : 'No event right now'}
               </h3>
-              <p className="text-xs md:text-sm opacity-90 line-clamp-2">
-                {focusSummary}
-              </p>
+              {focusSummary && (
+                <p className="text-xs md:text-sm opacity-90 line-clamp-2">
+                  {focusSummary}
+                </p>
+              )}
               {showIdlePrompt && (
                 <p className="text-xs md:text-sm font-medium italic text-white/95">
                   {idlePromptLine}

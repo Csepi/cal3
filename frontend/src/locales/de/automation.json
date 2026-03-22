@@ -31,7 +31,7 @@
   },
   "modal": {
     "editRule": "Automatisierungsregel bearbeiten",
-    "createRule": "Automatisierungsregel erstellen",
+    "createRule": "Regel erstellen",
     "basicInfo": "Grundlegende Informationen",
     "ruleName": "Regelname *",
     "ruleNamePlaceholder": "z.B., Arbeitsmeeting blau färben",
@@ -42,7 +42,6 @@
     "created": "Erstellt: {{date}}",
     "requiredFields": "* Erforderliche Felder",
     "cancel": "Abbrechen",
-    "createRule": "Regel erstellen",
     "updateRule": "Regel aktualisieren",
     "saving": "Speichert..."
   },

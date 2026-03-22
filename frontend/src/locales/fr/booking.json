@@ -1,8 +1,8 @@
 {
   "actions": {
-    "cancel": "Annuler la r?servation",
-    "confirm": "Confirmer la r?servation",
-    "copyLink": "Copier le lien de r?servation",
+    "cancel": "Annuler la réservation",
+    "confirm": "Confirmer la réservation",
+    "copyLink": "Copier le lien de réservation",
     "reschedule": "Replanifier"
   },
   "catalog": {
@@ -145,48 +145,48 @@
   },
   "fields": {
     "date": "Date",
-    "duration": "Dur?e",
+    "duration": "Durée",
     "email": "E-mail",
     "message": "Message",
     "name": "Nom complet",
-    "phone": "T?l?phone",
+    "phone": "Téléphone",
     "time": "Heure",
     "timezone": "Fuseau horaire"
   },
   "notifications": {
-    "cancelled": "Votre r?servation a ?t? annul?e.",
-    "confirmed": "Votre r?servation est confirm?e.",
-    "reminder": "Rappel de r?servation",
-    "rescheduled": "Votre r?servation a ?t? replanifi?e."
+    "cancelled": "Votre réservation a été annulée.",
+    "confirmed": "Votre réservation est confirmée.",
+    "reminder": "Rappel de réservation",
+    "rescheduled": "Votre réservation a été reportée."
   },
   "page": {
     "availability": "Disponibilit?",
     "subtitle": "Choisissez une date et une heure qui vous conviennent.",
-    "title": "R?server un cr?neau",
-    "unavailable": "Aucun cr?neau disponible pour la date s?lectionn?e."
+    "title": "Réservez une heure",
+    "unavailable": "Aucune heure disponible pour la date sélectionnée."
   },
   "placeholders": {
     "email": "vous@example.com",
-    "message": "Ajoutez une note pour l?organisateur",
+    "message": "Ajouter des notes pour l'organisateur",
     "name": "Saisissez votre nom complet",
-    "phone": "Num?ro de t?l?phone facultatif"
+    "phone": "Numéro de téléphone facultatif"
   },
   "publicLink": {
-    "disabled": "La r?servation publique est d?sactiv?e",
-    "enabled": "La r?servation publique est activ?e",
-    "title": "Lien public de r?servation"
+    "disabled": "La réservation publique est désactivée",
+    "enabled": "La réservation publique est activée",
+    "title": "Lien de réservation publique"
   },
   "status": {
-    "cancelled": "Annul?e",
-    "confirmed": "Confirm?e",
+    "cancelled": "Annulé",
+    "confirmed": "Confirmé",
     "pending": "En attente",
-    "rescheduled": "Replanifi?e"
+    "rescheduled": "Reprogrammé"
   },
   "validation": {
-    "dateRequired": "Veuillez s?lectionner une date.",
+    "dateRequired": "Veuillez sélectionner une date.",
     "emailRequired": "Veuillez saisir votre adresse e-mail.",
     "invalidEmail": "Veuillez saisir une adresse e-mail valide.",
     "nameRequired": "Veuillez saisir votre nom.",
-    "timeRequired": "Veuillez s?lectionner une heure."
+    "timeRequired": "Veuillez sélectionner une heure."
   }
 }

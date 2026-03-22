@@ -1,6 +1,6 @@
 {
-  "bookingConfirmed": "R?servation confirm?e.",
-  "bookingCancelled": "R?servation annul?e.",
-  "bookingRescheduled": "R?servation replanifi?e.",
-  "slotUnavailable": "Le cr?neau s?lectionn? n?est pas disponible."
+  "bookingConfirmed": "Réservation confirmée.",
+  "bookingCancelled": "Réservation annulée.",
+  "bookingRescheduled": "Réservation reportée.",
+  "slotUnavailable": "Le créneau horaire sélectionné n'est pas disponible."
 }

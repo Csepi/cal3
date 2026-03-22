@@ -1,5 +1,5 @@
 {
-  "badRequest": "Ung?ltige Anfrage.",
+  "badRequest": "Ungültige Anforderung.",
   "unauthorized": "Nicht autorisiert.",
   "forbidden": "Zugriff verweigert.",
   "notFound": "Ressource nicht gefunden.",

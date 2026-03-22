@@ -1,10 +1,10 @@
 {
-  "badRequest": "Requ?te invalide.",
+  "badRequest": "Mauvaise demande.",
   "unauthorized": "Non autoris?.",
-  "forbidden": "Acc?s refus?.",
+  "forbidden": "Interdit.",
   "notFound": "Ressource introuvable.",
   "internalServerError": "Erreur interne du serveur.",
-  "rateLimited": "Trop de requ?tes.",
+  "rateLimited": "Trop de demandes.",
   "auto": {
     "backend": {
       "kdc8648114cf5": "Utilisateur non authentifié",

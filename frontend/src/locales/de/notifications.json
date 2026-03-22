@@ -1,13 +1,13 @@
 {
   "actions": {
-    "clear": "Benachrichtigung l?schen",
+    "clear": "Klare Benachrichtigung",
     "markAllRead": "Alle als gelesen markieren",
     "markRead": "Als gelesen markieren",
     "markUnread": "Als ungelesen markieren"
   },
   "booking": {
     "cancelled": "Buchung storniert",
-    "confirmed": "Buchung best?tigt",
+    "confirmed": "Buchung bestätigt",
     "new": "Neue Buchung eingegangen",
     "rescheduled": "Buchung umgeplant"
   },
@@ -126,11 +126,11 @@
   },
   "sharing": {
     "calendarShared": "Ein Kalender wurde mit Ihnen geteilt",
-    "permissionsChanged": "Ihre Kalenderberechtigungen wurden ge?ndert"
+    "permissionsChanged": "Ihre Kalenderberechtigungen haben sich geändert"
   },
   "system": {
-    "featureAnnouncement": "Neue Funktion verf?gbar",
+    "featureAnnouncement": "Neue Funktion verfügbar",
     "maintenance": "Geplante Wartung",
-    "updateAvailable": "Ein neues Update ist verf?gbar"
+    "updateAvailable": "Ein neues Update ist verfügbar"
   }
 }

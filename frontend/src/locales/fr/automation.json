@@ -31,7 +31,7 @@
   },
   "modal": {
     "editRule": "Modifier la règle d'automatisation",
-    "createRule": "Créer une règle d'automatisation",
+    "createRule": "Créer la règle",
     "basicInfo": "Informations de base",
     "ruleName": "Nom de la règle *",
     "ruleNamePlaceholder": "ex : Colorer les réunions de travail en bleu",
@@ -42,7 +42,6 @@
     "created": "Créée : {{date}}",
     "requiredFields": "* Champs requis",
     "cancel": "Annuler",
-    "createRule": "Créer la règle",
     "updateRule": "Mettre à jour la règle",
     "saving": "Enregistrement..."
   },
