@@ -22,6 +22,7 @@ import {
   startOfMonth,
   startOfWeek,
 } from '../../utils/calendar';
+import { useAppTranslation } from '../../i18n/useAppTranslation';
 
 import { tStatic } from '../../i18n';
 
@@ -41,6 +42,7 @@ interface TasksWorkspaceProps {
 
 export const TasksWorkspace = forwardRef<TasksWorkspaceHandle, TasksWorkspaceProps>(
   ({ themeColor, timeFormat, timezone, locale }, ref) => {
+    const { t } = useAppTranslation('common');
     const { isMobile } = useScreenSize();
     const {
       tasks,
@@ -246,24 +248,45 @@ export const TasksWorkspace = forwardRef<TasksWorkspaceHandle, TasksWorkspacePro
 
     const describeDueRange = (): string => {
       if (dueScope === 'all') {
-        return 'Any due date';
+        return t('tasksWorkspace.anyDueDate', { defaultValue: 'Any due date' });
       }
 
       if (dueScope === 'week') {
-        if (duePreset === 'this') return 'This week';
-        if (duePreset === 'next') return 'Next week';
-        return customWeekDate ? 'Selected week' : 'Pick a week';
+        if (duePreset === 'this') {
+          return t('dates.thisWeek', { defaultValue: 'This week' });
+        }
+        if (duePreset === 'next') {
+          return t('dates.nextWeek', { defaultValue: 'Next week' });
+        }
+        return customWeekDate
+          ? t('tasksWorkspace.selectedWeek', { defaultValue: 'Selected week' })
+          : t('tasksWorkspace.pickWeek', { defaultValue: 'Pick a week' });
       }
 
       if (dueScope === 'month') {
-        if (duePreset === 'this') return 'This month';
-        if (duePreset === 'next') return 'Next month';
-        return customMonth ? 'Selected month' : 'Pick a month';
+        if (duePreset === 'this') {
+          return t('dates.thisMonth', { defaultValue: 'This month' });
+        }
+        if (duePreset === 'next') {
+          return t('dates.nextMonth', { defaultValue: 'Next month' });
+        }
+        return customMonth
+          ? t('tasksWorkspace.selectedMonth', { defaultValue: 'Selected month' })
+          : t('tasksWorkspace.pickMonth', { defaultValue: 'Pick a month' });
       }
 
-      if (duePreset === 'this') return 'This year';
-      if (duePreset === 'next') return 'Next year';
-      return customYear ? `Year ${customYear}` : 'Pick a year';
+      if (duePreset === 'this') {
+        return t('dates.thisYear', { defaultValue: 'This year' });
+      }
+      if (duePreset === 'next') {
+        return t('dates.nextYear', { defaultValue: 'Next year' });
+      }
+      return customYear
+        ? t('tasksWorkspace.yearWithValue', {
+            defaultValue: 'Year {{year}}',
+            year: customYear,
+          })
+        : t('tasksWorkspace.pickYear', { defaultValue: 'Pick a year' });
     };
 
     const toggleFilterLabel = (labelId: number) => {
@@ -290,10 +313,10 @@ export const TasksWorkspace = forwardRef<TasksWorkspaceHandle, TasksWorkspacePro
     };
 
     const statusOptions: Array<{ label: string; value?: TaskStatus }> = [
-      { label: 'All', value: undefined },
-      { label: 'To Do', value: TaskStatus.TODO },
-      { label: 'In Progress', value: TaskStatus.IN_PROGRESS },
-      { label: 'Done', value: TaskStatus.DONE },
+      { label: t('common.all', { defaultValue: 'All' }), value: undefined },
+      { label: tStatic('common:auto.frontend.k353a23d95e3c'), value: TaskStatus.TODO },
+      { label: tStatic('common:auto.frontend.kf61eadaf153a'), value: TaskStatus.IN_PROGRESS },
+      { label: tStatic('common:auto.frontend.ke9b450d14bc2'), value: TaskStatus.DONE },
     ];
 
     return (
@@ -388,10 +411,10 @@ export const TasksWorkspace = forwardRef<TasksWorkspaceHandle, TasksWorkspacePro
               <div className="flex flex-wrap gap-2">
                 {(
                   [
-                    { label: 'All', value: 'all' },
-                    { label: 'Week', value: 'week' },
-                    { label: 'Month', value: 'month' },
-                    { label: 'Year', value: 'year' },
+                    { label: t('common.all', { defaultValue: 'All' }), value: 'all' },
+                    { label: t('time.week', { defaultValue: 'Week' }), value: 'week' },
+                    { label: t('time.month', { defaultValue: 'Month' }), value: 'month' },
+                    { label: t('time.year', { defaultValue: 'Year' }), value: 'year' },
                   ] as Array<{ label: string; value: DueDateScope }>
                 ).map((scope) => {
                   const active = dueScope === scope.value;
@@ -418,28 +441,34 @@ export const TasksWorkspace = forwardRef<TasksWorkspaceHandle, TasksWorkspacePro
                       {
                         label:
                           dueScope === 'year'
-                            ? 'This year'
+                            ? t('dates.thisYear', { defaultValue: 'This year' })
                             : dueScope === 'month'
-                              ? 'This month'
-                              : 'This week',
+                              ? t('dates.thisMonth', { defaultValue: 'This month' })
+                              : t('dates.thisWeek', { defaultValue: 'This week' }),
                         value: 'this',
                       },
                       {
                         label:
                           dueScope === 'year'
-                            ? 'Next year'
+                            ? t('dates.nextYear', { defaultValue: 'Next year' })
                             : dueScope === 'month'
-                              ? 'Next month'
-                              : 'Next week',
+                              ? t('dates.nextMonth', { defaultValue: 'Next month' })
+                              : t('dates.nextWeek', { defaultValue: 'Next week' }),
                         value: 'next',
                       },
                       {
                         label:
                           dueScope === 'year'
-                            ? 'Select year'
+                            ? t('tasksWorkspace.selectYear', {
+                                defaultValue: 'Select year',
+                              })
                             : dueScope === 'month'
-                              ? 'Select month'
-                              : 'Select week',
+                              ? t('tasksWorkspace.selectMonth', {
+                                  defaultValue: 'Select month',
+                                })
+                              : t('tasksWorkspace.selectWeek', {
+                                  defaultValue: 'Select week',
+                                }),
                         value: 'custom',
                       },
                     ] as Array<{ label: string; value: DueDatePreset }>
@@ -506,7 +535,12 @@ export const TasksWorkspace = forwardRef<TasksWorkspaceHandle, TasksWorkspacePro
               <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase text-emerald-800">
                 <span>{tStatic('common:auto.frontend.k2228985493d9')}</span>
                 <span className="rounded-full bg-white/60 px-2 py-0.5 text-[11px] text-emerald-800">
-                  {filters.labelIds?.length ? `${filters.labelIds.length} selected` : 'None'}
+                  {filters.labelIds?.length
+                    ? t('tasksWorkspace.selectedCount', {
+                        defaultValue: '{{count}} selected',
+                        count: filters.labelIds.length,
+                      })
+                    : t('common.none', { defaultValue: 'None' })}
                 </span>
               </div>
               <div className="flex flex-wrap gap-2">

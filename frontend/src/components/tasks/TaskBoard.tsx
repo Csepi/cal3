@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import type { Task, TaskStatus } from '../../types/Task';
+import { useAppTranslation } from '../../i18n/useAppTranslation';
 
 import { tStatic } from '../../i18n';
 
@@ -13,27 +14,6 @@ interface TaskBoardProps {
   locale?: string;
 }
 
-const statusConfig: Record<
-  TaskStatus,
-  { title: string; accent: string; border: string }
-> = {
-  todo: {
-    title: 'To Do',
-    accent: 'bg-blue-100 text-blue-700',
-    border: 'border-blue-100',
-  },
-  in_progress: {
-    title: 'In Progress',
-    accent: 'bg-amber-100 text-amber-700',
-    border: 'border-amber-100',
-  },
-  done: {
-    title: 'Done',
-    accent: 'bg-emerald-100 text-emerald-700',
-    border: 'border-emerald-100',
-  },
-};
-
 export const TaskBoard: React.FC<TaskBoardProps> = ({
   tasks,
   onSelect,
@@ -43,6 +23,31 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
   timezone,
   locale,
 }) => {
+  const { i18n } = useAppTranslation('common');
+  const resolvedLocale =
+    (locale && locale.trim()) || i18n.resolvedLanguage || i18n.language || 'en';
+
+  const statusConfig: Record<
+    TaskStatus,
+    { title: string; accent: string; border: string }
+  > = {
+    todo: {
+      title: tStatic('common:auto.frontend.k353a23d95e3c'),
+      accent: 'bg-blue-100 text-blue-700',
+      border: 'border-blue-100',
+    },
+    in_progress: {
+      title: tStatic('common:auto.frontend.kf61eadaf153a'),
+      accent: 'bg-amber-100 text-amber-700',
+      border: 'border-amber-100',
+    },
+    done: {
+      title: tStatic('common:auto.frontend.ke9b450d14bc2'),
+      accent: 'bg-emerald-100 text-emerald-700',
+      border: 'border-emerald-100',
+    },
+  };
+
   const grouped: Record<TaskStatus, Task[]> = {
     todo: [],
     in_progress: [],
@@ -91,7 +96,6 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
       return value;
     }
 
-    const formatLocale = locale && locale.trim() ? locale : 'en-US';
     const formatterOptions: Intl.DateTimeFormatOptions = {
       year: 'numeric',
       month: 'short',
@@ -103,10 +107,10 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
     };
 
     try {
-      return new Intl.DateTimeFormat(formatLocale, formatterOptions).format(date);
+      return new Intl.DateTimeFormat(resolvedLocale, formatterOptions).format(date);
     } catch {
       const { timeZone, ...fallbackOptions } = formatterOptions;
-      return date.toLocaleString(formatLocale, fallbackOptions);
+      return date.toLocaleString(resolvedLocale, fallbackOptions);
     }
   };
 

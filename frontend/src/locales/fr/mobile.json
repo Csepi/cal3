@@ -29,14 +29,19 @@
     "emptyDay": "Vous n'avez aucun événement planifié pour ce jour",
     "createEvent": "Créer un événement",
     "allDay": "Toute la journée",
-    "tapToCreate": "Appuyer pour créer un événement"
+    "tapToCreate": "Appuyer pour créer un événement",
+    "timeline": "Chronologie",
+    "todayTimeline": "Chronologie du jour",
+    "thisWeek": "Cette semaine",
+    "thisMonth": "Ce mois-ci"
   },
   "actions": {
     "newEvent": "Nouvel événement",
     "close": "Fermer",
     "closeDrawer": "Fermer le tiroir",
     "previous": "Précédent",
-    "next": "Suivant"
+    "next": "Suivant",
+    "switchToView": "Passer ? la vue {{view}}"
   },
   "table": {
     "noData": "Aucune donnée disponible",
@@ -49,6 +54,7 @@
   "general": {
     "loading": "Chargement...",
     "error": "Erreur",
-    "success": "Succès"
+    "success": "Succès",
+    "mobileTitle": "PrimeCal mobile"
   }
 }

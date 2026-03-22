@@ -8,7 +8,7 @@ import React, { memo, useCallback, useMemo } from 'react';
 import type { CalendarDayCellProps } from '../types';
 import { formatDate } from '../../../utils/calendar';
 
-import { tStatic } from '../../../i18n';
+import { i18n, tStatic } from '../../../i18n';
 
 export const CalendarDayCell = memo<CalendarDayCellProps>(({
   date,
@@ -24,6 +24,7 @@ export const CalendarDayCell = memo<CalendarDayCellProps>(({
   style,
   'data-testid': testId
 }) => {
+  const locale = i18n.resolvedLanguage || i18n.language || undefined;
   // Event handlers
   const handleClick = useCallback((e: React.SyntheticEvent) => {
     if (isDisabled) return;
@@ -132,20 +133,23 @@ export const CalendarDayCell = memo<CalendarDayCellProps>(({
       year: 'numeric',
       month: 'long',
       day: 'numeric'
-    });
+    }, locale);
 
     let label = dateStr;
 
     if (date.isToday) {
-      label += ', today';
+      label += `, ${i18n.t('common:dates.today', { defaultValue: 'Today' })}`;
     }
 
     if (events.length > 0) {
-      label += `, ${events.length} event${events.length === 1 ? '' : 's'}`;
+      label += `, ${i18n.t('calendar:events.eventCount', {
+        count: events.length,
+        defaultValue: '{{count}} event(s)',
+      })}`;
     }
 
     if (isSelected) {
-      label += ', selected';
+      label += `, ${i18n.t('common:a11y.selected', { defaultValue: 'selected' })}`;
     }
 
     return label;

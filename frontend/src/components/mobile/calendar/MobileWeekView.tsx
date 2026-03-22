@@ -14,6 +14,7 @@ import React, { useRef, useEffect } from 'react';
 import type { Event } from '../../../types/Event';
 import { getMeetingLinkFromEvent } from '../../../utils/meetingLinks';
 import { TouchableArea } from '../atoms/TouchableArea';
+import { useAppTranslation } from '../../../i18n/useAppTranslation';
 
 import { tStatic } from '../../../i18n';
 
@@ -38,6 +39,8 @@ export const MobileWeekView: React.FC<MobileWeekViewProps> = ({
   themeColor,
   timeFormat,
 }) => {
+  const { t, i18n } = useAppTranslation(['common', 'mobile']);
+  const locale = i18n.resolvedLanguage || i18n.language || undefined;
   const scrollRef = useRef<HTMLDivElement>(null);
   const hasScrolledToCurrentTime = useRef(false);
 
@@ -72,7 +75,9 @@ export const MobileWeekView: React.FC<MobileWeekViewProps> = ({
   // Format time for display
   const formatTime = (hour: number): string => {
     if (timeFormat === '12') {
-      const period = hour >= 12 ? 'PM' : 'AM';
+      const period = hour >= 12
+        ? t('time.pm', { ns: 'common', defaultValue: 'PM' })
+        : t('time.am', { ns: 'common', defaultValue: 'AM' });
       const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
       return `${displayHour} ${period}`;
     }
@@ -134,9 +139,9 @@ export const MobileWeekView: React.FC<MobileWeekViewProps> = ({
               `}
               minSize="sm"
             >
-              <div className="text-center">
+                <div className="text-center">
                 <div className="text-xs text-gray-500 uppercase">
-                  {day.toLocaleDateString('en-US', { weekday: 'short' })}
+                  {day.toLocaleDateString(locale, { weekday: 'short' })}
                 </div>
                 <div
                   className={`

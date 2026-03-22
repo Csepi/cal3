@@ -29,14 +29,19 @@
     "emptyDay": "Sie haben keine Termine für diesen Tag geplant",
     "createEvent": "Termin erstellen",
     "allDay": "Ganztägig",
-    "tapToCreate": "Tippen, um Termin zu erstellen"
+    "tapToCreate": "Tippen, um Termin zu erstellen",
+    "timeline": "Zeitleiste",
+    "todayTimeline": "Heutige Zeitleiste",
+    "thisWeek": "Diese Woche",
+    "thisMonth": "Dieser Monat"
   },
   "actions": {
     "newEvent": "Neuer Termin",
     "close": "Schließen",
     "closeDrawer": "Schublade schließen",
     "previous": "Zurück",
-    "next": "Weiter"
+    "next": "Weiter",
+    "switchToView": "Zur Ansicht {{view}} wechseln"
   },
   "table": {
     "noData": "Keine Daten verfügbar",
@@ -49,6 +54,7 @@
   "general": {
     "loading": "Lädt...",
     "error": "Fehler",
-    "success": "Erfolgreich"
+    "success": "Erfolgreich",
+    "mobileTitle": "PrimeCal mobil"
   }
 }

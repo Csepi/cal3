@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import type { Event } from '../../types/Event';
 import { getMeetingLinkFromEvent } from '../../utils/meetingLinks';
+import { useAppTranslation } from '../../i18n/useAppTranslation';
 
 import { tStatic } from '../../i18n';
 
@@ -21,6 +22,8 @@ export const MobileDayView: React.FC<MobileDayViewProps> = ({
   themeColor,
   timeFormat = '12',
 }) => {
+  const { t, i18n } = useAppTranslation(['common', 'mobile']);
+  const locale = i18n.resolvedLanguage || i18n.language || undefined;
   const [currentTime, setCurrentTime] = useState(new Date());
 
   // Update current time every minute
@@ -39,7 +42,9 @@ export const MobileDayView: React.FC<MobileDayViewProps> = ({
       return `${hour.toString().padStart(2, '0')}:00`;
     }
     const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
-    const period = hour < 12 ? 'AM' : 'PM';
+    const period = hour < 12
+      ? t('time.am', { ns: 'common', defaultValue: 'AM' })
+      : t('time.pm', { ns: 'common', defaultValue: 'PM' });
     return `${displayHour}:00 ${period}`;
   };
 
@@ -82,10 +87,10 @@ export const MobileDayView: React.FC<MobileDayViewProps> = ({
       >
         <div className="text-center">
           <div className="text-sm font-medium text-gray-600">
-            {date.toLocaleDateString('en-US', { weekday: 'long' })}
+            {date.toLocaleDateString(locale, { weekday: 'long' })}
           </div>
           <div className="text-2xl font-bold" style={{ color: themeColor }}>
-            {date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+            {date.toLocaleDateString(locale, { month: 'short', day: 'numeric' })}
           </div>
         </div>
       </div>

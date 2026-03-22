@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import type { Event } from '../../types/Event';
 import type {
   ReservationOrganization,
@@ -6,6 +6,7 @@ import type {
   ReservationResourceType,
 } from '../../types/reservation';
 import { getMeetingLinkFromEvent } from '../../utils/meetingLinks';
+import { useAppTranslation } from '../../i18n/useAppTranslation';
 
 import { tStatic } from '../../i18n';
 
@@ -36,6 +37,8 @@ const MonthView: React.FC<MonthViewProps> = ({
   reservations = [],
   organizations = []
 }) => {
+  const { i18n } = useAppTranslation(['common', 'calendar']);
+  const locale = i18n.resolvedLanguage || i18n.language || undefined;
   // Helper function to get background style based on theme color
   const getBackgroundStyle = () => {
     return {
@@ -86,7 +89,14 @@ const MonthView: React.FC<MonthViewProps> = ({
   };
 
   const monthDays = getMonthDays();
-  const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const dayNames = useMemo(() => {
+    const baseSunday = new Date(Date.UTC(2024, 0, 7));
+    return Array.from({ length: 7 }, (_, index) => {
+      const day = new Date(baseSunday);
+      day.setUTCDate(baseSunday.getUTCDate() + index);
+      return new Intl.DateTimeFormat(locale, { weekday: 'short' }).format(day);
+    });
+  }, [locale]);
   const reorderedDayNames = weekStartDay === 0
     ? dayNames
     : [
@@ -301,7 +311,7 @@ const MonthView: React.FC<MonthViewProps> = ({
           {/* Panel Header */}
           <div className="p-4 border-b border-gray-200 bg-white">
             <h3 className="text-lg font-semibold text-gray-800">
-              {selectedDate.toLocaleDateString('en-US', {
+              {selectedDate.toLocaleDateString(locale, {
                 weekday: 'long',
                 year: 'numeric',
                 month: 'long',
@@ -310,7 +320,7 @@ const MonthView: React.FC<MonthViewProps> = ({
             </h3>
             <p className="text-sm text-gray-600 mt-1">
               {selectedDateEvents.length} {tStatic('common:auto.frontend.k5006ed0248a0')}{selectedDateEvents.length !== 1 ? 's' : ''}
-              {selectedDateReservations.length > 0 && ` • ${selectedDateReservations.length} reservation${selectedDateReservations.length !== 1 ? 's' : ''}`}
+              {selectedDateReservations.length > 0 && ` â€˘ ${selectedDateReservations.length} reservation${selectedDateReservations.length !== 1 ? 's' : ''}`}
             </p>
           </div>
 
@@ -363,7 +373,7 @@ const MonthView: React.FC<MonthViewProps> = ({
 
                     {!event.isAllDay && (event.startTime || event.endTime) && (
                       <div className="flex items-center text-sm text-gray-600 mb-2">
-                        <span className="mr-2">🕒</span>
+                        <span className="mr-2">đź•’</span>
                         <span>
                           {event.startTime || '00:00'}
                           {event.endTime && ` - ${event.endTime}`}
@@ -373,7 +383,7 @@ const MonthView: React.FC<MonthViewProps> = ({
 
                     {event.location && (
                       <div className="flex items-center text-sm text-gray-600 mb-2">
-                        <span className="mr-2">📍</span>
+                        <span className="mr-2">đź“Ť</span>
                         <span className="truncate">{event.location}</span>
                       </div>
                     )}
@@ -412,7 +422,7 @@ const MonthView: React.FC<MonthViewProps> = ({
                     >
                       <div className="flex items-start justify-between mb-2">
                         <h4 className="font-medium text-gray-900 flex-1 pr-2 flex items-center">
-                          📅 {reservation.resource?.name || 'Reservation'}
+                          đź“… {reservation.resource?.name || 'Reservation'}
                         </h4>
                         <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">
                           {reservation.status}
@@ -420,7 +430,7 @@ const MonthView: React.FC<MonthViewProps> = ({
                       </div>
 
                       <div className="flex items-center text-sm text-gray-600 mb-2">
-                        <span className="mr-2">🕒</span>
+                        <span className="mr-2">đź•’</span>
                         <span>
                           {new Date(reservation.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                           {' - '}
@@ -430,7 +440,7 @@ const MonthView: React.FC<MonthViewProps> = ({
 
                       {reservation.customerName && (
                         <div className="flex items-center text-sm text-gray-600 mb-2">
-                          <span className="mr-2">👤</span>
+                          <span className="mr-2">đź‘¤</span>
                           <span className="truncate">{reservation.customerName}</span>
                         </div>
                       )}
@@ -457,7 +467,7 @@ const MonthView: React.FC<MonthViewProps> = ({
               </div>
             ) : (
               <div className="flex flex-col items-center justify-center h-40 text-gray-400">
-                <div className="text-4xl mb-3">📅</div>
+                <div className="text-4xl mb-3">đź“…</div>
                 <p className="text-sm">{tStatic('common:auto.frontend.k0542b5d6024f')}</p>
                 <p className="text-xs mt-1">{tStatic('common:auto.frontend.k423620015297')}</p>
               </div>
@@ -470,4 +480,3 @@ const MonthView: React.FC<MonthViewProps> = ({
 };
 
 export default MonthView;
-

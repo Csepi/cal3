@@ -1574,7 +1574,8 @@
     "currentTime": "Aktuelle Uhrzeit",
     "remainingLabel": "Übrig",
     "endsLabel": "Endet",
-    "newMeetingLabel": "Neues Treffen"
+    "newMeetingLabel": "Neues Treffen",
+    "focusTimelineDate": "Fokus-Zeitleiste - {{date}}"
   },
   "calendarSync": {
     "longRunningSyncNotice": "Die Kalendersynchronisierung dauert länger als erwartet. Der Vorgang wird möglicherweise weiterhin im Hintergrund ausgeführt. Bitte aktualisieren Sie es gleich.",
@@ -1582,5 +1583,29 @@
     "syncCalendarsFailed": "Kalender konnten nicht synchronisiert werden",
     "disconnectFailed": "Die Verbindung konnte nicht getrennt werden",
     "syncFailed": "Synchronisierung fehlgeschlagen"
+  },
+  "tasksWorkspace": {
+    "anyDueDate": "Beliebiges F?lligkeitsdatum",
+    "selectedWeek": "Ausgew?hlte Woche",
+    "pickWeek": "Woche ausw?hlen",
+    "selectedMonth": "Ausgew?hlter Monat",
+    "pickMonth": "Monat ausw?hlen",
+    "pickYear": "Jahr ausw?hlen",
+    "yearWithValue": "Jahr {{year}}",
+    "selectWeek": "Woche w?hlen",
+    "selectMonth": "Monat w?hlen",
+    "selectYear": "Jahr w?hlen",
+    "selectedCount": "{{count}} ausgew?hlt"
+  },
+  "agentActions": {
+    "calendarEventsRead": {
+      "label": "Kalenderereignisse lesen",
+      "description": "Erlaubt dem Agenten, Ereignisse (Titel, Zeiten, Details) aus ausgew?hlten Kalendern zu lesen.",
+      "scopeLabel": "Kalender zum Lesen von Ereignissen",
+      "scopeEmptyHint": "W?hlen Sie Kalender aus, deren Ereignisse der Agent einsehen darf."
+    }
+  },
+  "a11y": {
+    "selected": "ausgew?hlt"
   }
 }

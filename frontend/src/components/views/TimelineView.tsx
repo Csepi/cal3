@@ -66,7 +66,7 @@ const withAlpha = (color: string, alpha: number) => {
 const getZonedDate = (date: Date, timeZone?: string): Date => {
   if (!timeZone) return date;
   try {
-    const formatter = new Intl.DateTimeFormat('en-US', {
+    const formatter = new Intl.DateTimeFormat(undefined, {
       timeZone,
       year: 'numeric',
       month: '2-digit',
@@ -195,6 +195,7 @@ const TimelineView: React.FC<TimelineViewProps> = ({
     () => timezone || Intl.DateTimeFormat().resolvedOptions().timeZone,
     [timezone],
   );
+  const locale = i18n.resolvedLanguage || i18n.language || undefined;
   const [now, setNow] = useState(() => getZonedDate(new Date(), resolvedTimezone));
   const [focusEventId, setFocusEventId] = useState<number | null>(null);
   const [showCalendarFilters, setShowCalendarFilters] = useState(false);
@@ -1066,7 +1067,7 @@ const TimelineView: React.FC<TimelineViewProps> = ({
                 </div>
               </div>
               <p className="mt-2 text-[11px] opacity-80">
-                {new Intl.DateTimeFormat('en-US', {
+                {new Intl.DateTimeFormat(locale, {
                   weekday: 'short',
                   month: 'short',
                   day: 'numeric',

@@ -305,7 +305,8 @@ export const generateWeek = (
  */
 export const generateMonth = (
   date: Date,
-  weekStartDay: WeekStartDay = WeekStartDay.MONDAY
+  weekStartDay: WeekStartDay = WeekStartDay.MONDAY,
+  locale?: string,
 ): CalendarMonth => {
   if (!isValidDate(date)) {
     throw new Error('Invalid date provided to generateMonth');
@@ -331,21 +332,25 @@ export const generateMonth = (
     weeks: Object.freeze(weeks),
     firstDay: monthStart,
     lastDay: monthEnd,
-    name: date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+    name: date.toLocaleDateString(locale, { month: 'long', year: 'numeric' })
   };
 };
 
 /**
  * Formats time with proper locale support
  */
-export const formatTime = (date: Date, format: TimeFormat = TimeFormat.TWELVE_HOUR): string => {
+export const formatTime = (
+  date: Date,
+  format: TimeFormat = TimeFormat.TWELVE_HOUR,
+  locale?: string,
+): string => {
   if (!isValidDate(date)) {
     return '';
   }
 
   const is24Hour = format === TimeFormat.TWENTY_FOUR_HOUR;
 
-  return date.toLocaleTimeString('en-US', {
+  return date.toLocaleTimeString(locale, {
     hour: '2-digit',
     minute: '2-digit',
     hour12: !is24Hour
@@ -355,19 +360,38 @@ export const formatTime = (date: Date, format: TimeFormat = TimeFormat.TWELVE_HO
 /**
  * Formats date for display
  */
-export const formatDate = (date: Date, options?: Intl.DateTimeFormatOptions): string => {
+export const formatDate = (
+  date: Date,
+  options?: Intl.DateTimeFormatOptions,
+  locale?: string,
+): string => {
   if (!isValidDate(date)) {
     return '';
   }
 
-  return date.toLocaleDateString('en-US', options);
+  return date.toLocaleDateString(locale, options);
 };
 
 /**
  * Day names ordered by week start day
  */
-export const getDayNames = (weekStartDay: WeekStartDay = WeekStartDay.MONDAY): string[] => {
-  const allDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const getLocalizedWeekdayNames = (
+  locale: string | undefined,
+  style: 'short' | 'long',
+): string[] => {
+  const baseSunday = new Date(Date.UTC(2024, 0, 7));
+  return Array.from({ length: 7 }, (_, index) => {
+    const day = new Date(baseSunday);
+    day.setUTCDate(baseSunday.getUTCDate() + index);
+    return new Intl.DateTimeFormat(locale, { weekday: style }).format(day);
+  });
+};
+
+export const getDayNames = (
+  weekStartDay: WeekStartDay = WeekStartDay.MONDAY,
+  locale?: string,
+): string[] => {
+  const allDays = getLocalizedWeekdayNames(locale, 'short');
   return [
     ...allDays.slice(weekStartDay),
     ...allDays.slice(0, weekStartDay)
@@ -377,8 +401,11 @@ export const getDayNames = (weekStartDay: WeekStartDay = WeekStartDay.MONDAY): s
 /**
  * Full day names ordered by week start day
  */
-export const getFullDayNames = (weekStartDay: WeekStartDay = WeekStartDay.MONDAY): string[] => {
-  const allDays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+export const getFullDayNames = (
+  weekStartDay: WeekStartDay = WeekStartDay.MONDAY,
+  locale?: string,
+): string[] => {
+  const allDays = getLocalizedWeekdayNames(locale, 'long');
   return [
     ...allDays.slice(weekStartDay),
     ...allDays.slice(0, weekStartDay)

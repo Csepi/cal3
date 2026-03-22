@@ -1567,6 +1567,7 @@
     }
   },
   "liveFocus": {
+    "focusTimelineDate": "Focus timeline - {{date}}",
     "exitFocusMode": "Exit focus mode",
     "switchFocus": "Switch focus",
     "nextLabel": "Next",
@@ -1576,11 +1577,35 @@
     "endsLabel": "Ends",
     "newMeetingLabel": "New meeting"
   },
+  "tasksWorkspace": {
+    "anyDueDate": "Any due date",
+    "selectedWeek": "Selected week",
+    "pickWeek": "Pick a week",
+    "selectedMonth": "Selected month",
+    "pickMonth": "Pick a month",
+    "pickYear": "Pick a year",
+    "yearWithValue": "Year {{year}}",
+    "selectWeek": "Select week",
+    "selectMonth": "Select month",
+    "selectYear": "Select year",
+    "selectedCount": "{{count}} selected"
+  },
   "calendarSync": {
     "longRunningSyncNotice": "Calendar sync is taking longer than expected. It may still complete in the background. Please refresh in a moment.",
     "longRunningForceSyncNotice": "Force sync is taking longer than expected. It may still complete in the background. Please refresh in a moment.",
     "syncCalendarsFailed": "Failed to sync calendars",
     "disconnectFailed": "Failed to disconnect",
     "syncFailed": "Failed to sync"
+  },
+  "agentActions": {
+    "calendarEventsRead": {
+      "label": "Read Calendar Events",
+      "description": "Allow the agent to read events (titles, times, details) from specified calendars.",
+      "scopeLabel": "Calendars available for reading events",
+      "scopeEmptyHint": "Choose calendars whose events the agent may inspect."
+    }
+  },
+  "a11y": {
+    "selected": "selected"
   }
 }

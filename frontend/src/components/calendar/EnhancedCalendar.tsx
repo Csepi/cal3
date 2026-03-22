@@ -648,19 +648,26 @@ const CalendarHeader: React.FC<CalendarHeaderProps> = ({
   isMobile = false,
   readOnly = false,
 }) => {
+  const { t, i18n } = useAppTranslation(['common', 'calendar']);
+  const locale = i18n.resolvedLanguage || i18n.language || undefined;
   const formatTitle = useMemo(() => {
     const { currentDate, currentView } = state;
 
     if (currentView === 'timeline') {
-      return `Focus timeline - ${currentDate.toLocaleDateString('en-US', {
+      const dateLabel = currentDate.toLocaleDateString(locale, {
         weekday: 'long',
         month: 'short',
-        day: 'numeric'
-      })}`;
+        day: 'numeric',
+      });
+      return t('liveFocus.focusTimelineDate', {
+        ns: 'common',
+        defaultValue: 'Focus timeline - {{date}}',
+        date: dateLabel,
+      });
     }
 
     if (currentView === 'month') {
-      return currentDate.toLocaleDateString('en-US', {
+      return currentDate.toLocaleDateString(locale, {
         month: 'long',
         year: 'numeric'
       });
@@ -670,16 +677,16 @@ const CalendarHeader: React.FC<CalendarHeaderProps> = ({
       const endOfWeek = new Date(startOfWeek);
       endOfWeek.setDate(startOfWeek.getDate() + 6);
 
-      return `${startOfWeek.toLocaleDateString('en-US', {
+      return `${startOfWeek.toLocaleDateString(locale, {
         month: 'short',
         day: 'numeric'
-      })} - ${endOfWeek.toLocaleDateString('en-US', {
+      })} - ${endOfWeek.toLocaleDateString(locale, {
         month: 'short',
         day: 'numeric',
         year: 'numeric'
       })}`;
     }
-  }, [state.currentDate, state.currentView]);
+  }, [locale, state.currentDate, state.currentView, t]);
 
   return (
     <header className={`bg-gradient-to-r ${themeConfig.gradient.header} text-white shadow-lg rounded-t-3xl`}>
@@ -1137,6 +1144,8 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
   readOnly = false,
 }) => {
   const { t } = useAppTranslation('calendar');
+  const { i18n } = useAppTranslation('common');
+  const locale = i18n.resolvedLanguage || i18n.language || undefined;
   const [groupModalState, setGroupModalState] = React.useState<{
     mode: 'create' | 'edit';
     group?: CalendarGroupView;
@@ -1714,7 +1723,10 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
         {/* Collapse button at top */}
         <div className="flex items-center justify-between border-b border-gray-200 pb-4">
           <h3 className={`text-lg font-semibold text-${themeConfig.text}`}>
-            {state.currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+            {state.currentDate.toLocaleDateString(locale, {
+              month: 'long',
+              year: 'numeric',
+            })}
           </h3>
           <button
             onClick={toggleCollapse}

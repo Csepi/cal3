@@ -9,6 +9,7 @@
 import React from 'react';
 import { Button } from '../ui';
 import { getThemeConfig } from '../../constants';
+import { useAppTranslation } from '../../i18n/useAppTranslation';
 
 import { tStatic } from '../../i18n';
 
@@ -50,6 +51,8 @@ export const CalendarHeader: React.FC<CalendarHeaderProps> = ({
   themeColor,
   loading = false
 }) => {
+  const { t, i18n } = useAppTranslation(['calendar', 'common']);
+  const locale = i18n.resolvedLanguage || i18n.language || undefined;
   const themeConfig = getThemeConfig(themeColor);
 
   /**
@@ -57,7 +60,7 @@ export const CalendarHeader: React.FC<CalendarHeaderProps> = ({
    */
   const formatDateDisplay = (): string => {
     if (currentView === 'month') {
-      return currentDate.toLocaleDateString('en-US', {
+      return currentDate.toLocaleDateString(locale, {
         month: 'long',
         year: 'numeric'
       });
@@ -71,17 +74,17 @@ export const CalendarHeader: React.FC<CalendarHeaderProps> = ({
 
       // If week spans across months/years
       if (startOfWeek.getMonth() !== endOfWeek.getMonth()) {
-        return `${startOfWeek.toLocaleDateString('en-US', {
+        return `${startOfWeek.toLocaleDateString(locale, {
           month: 'short',
           day: 'numeric',
           year: startOfWeek.getFullYear() !== endOfWeek.getFullYear() ? 'numeric' : undefined
-        })} - ${endOfWeek.toLocaleDateString('en-US', {
+        })} - ${endOfWeek.toLocaleDateString(locale, {
           month: 'short',
           day: 'numeric',
           year: 'numeric'
         })}`;
       } else {
-        return `${startOfWeek.toLocaleDateString('en-US', {
+        return `${startOfWeek.toLocaleDateString(locale, {
           month: 'long',
           year: 'numeric'
         })} (Week ${getWeekNumber(currentDate)})`;
@@ -102,8 +105,27 @@ export const CalendarHeader: React.FC<CalendarHeaderProps> = ({
    * Get navigation period description
    */
   const getNavigationHint = (direction: 'prev' | 'next'): string => {
-    const unit = currentView === 'month' ? 'month' : 'week';
-    return `Go to ${direction === 'prev' ? 'previous' : 'next'} ${unit}`;
+    if (currentView === 'month') {
+      return direction === 'prev'
+        ? t('navigation.goToPrevMonth', {
+            ns: 'calendar',
+            defaultValue: 'Go to previous month',
+          })
+        : t('navigation.goToNextMonth', {
+            ns: 'calendar',
+            defaultValue: 'Go to next month',
+          });
+    }
+
+    return direction === 'prev'
+      ? t('navigation.goToPrevWeek', {
+          ns: 'calendar',
+          defaultValue: 'Go to previous week',
+        })
+      : t('navigation.goToNextWeek', {
+          ns: 'calendar',
+          defaultValue: 'Go to next week',
+        });
   };
 
   return (
@@ -126,7 +148,15 @@ export const CalendarHeader: React.FC<CalendarHeaderProps> = ({
                 {formatDateDisplay()}
               </h1>
               <p className="text-sm text-gray-500">
-                {currentView === 'month' ? 'Monthly Calendar View' : 'Weekly Calendar View'}
+                {currentView === 'month'
+                  ? t('views.monthlyView', {
+                      ns: 'calendar',
+                      defaultValue: 'Monthly Calendar View',
+                    })
+                  : t('views.weeklyView', {
+                      ns: 'calendar',
+                      defaultValue: 'Weekly Calendar View',
+                    })}
               </p>
             </div>
           </div>

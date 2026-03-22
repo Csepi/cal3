@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { BASE_URL } from '../config/apiConfig';
 
-import { tStatic } from '../i18n';
+import { i18n, tStatic } from '../i18n';
 
 const getErrorMessage = (error: unknown, fallback: string) =>
   error instanceof Error ? error.message : fallback;
@@ -40,6 +40,7 @@ interface CustomerInfo {
 
 const PublicBookingPage: React.FC = () => {
   const { token } = useParams<{ token: string }>();
+  const locale = i18n.resolvedLanguage || i18n.language || undefined;
 
   const [resource, setResource] = useState<ResourceInfo | null>(null);
   const [loading, setLoading] = useState(true);
@@ -201,25 +202,27 @@ const PublicBookingPage: React.FC = () => {
 
   const formatTime = (time: string) => {
     // Handle ISO timestamps like "2025-10-01T13:00:00.000Z" and simple time formats like "HH:mm:ss"
-    let timeStr = time;
-
-    // If it's an ISO timestamp, extract just the time portion
     if (time.includes('T')) {
-      const date = new Date(time);
-      timeStr = date.toTimeString().split(' ')[0]; // Gets "HH:mm:ss"
+      const isoDate = new Date(time);
+      return isoDate.toLocaleTimeString(locale, {
+        hour: '2-digit',
+        minute: '2-digit',
+      });
     }
 
-    const parts = timeStr.split(':');
-    const hour = parseInt(parts[0], 10);
-    const minutes = parts[1] || '00';
-    const ampm = hour >= 12 ? 'PM' : 'AM';
-    const displayHour = hour > 12 ? hour - 12 : hour === 0 ? 12 : hour;
-    return `${displayHour}:${minutes} ${ampm}`;
+    const [hoursPart = '0', minutesPart = '0'] = time.split(':');
+    const sample = new Date();
+    sample.setHours(Number.parseInt(hoursPart, 10) || 0, Number.parseInt(minutesPart, 10) || 0, 0, 0);
+    return sample.toLocaleTimeString(locale, {
+      hour: '2-digit',
+      minute: '2-digit',
+    });
   };
 
   const getDayOfWeekName = (dayNum: number) => {
-    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-    return days[dayNum];
+    const sunday = new Date(Date.UTC(2024, 0, 7));
+    sunday.setUTCDate(sunday.getUTCDate() + dayNum);
+    return new Intl.DateTimeFormat(locale, { weekday: 'long' }).format(sunday);
   };
 
   const maxQuantityForSlot = selectedSlot
@@ -430,7 +433,7 @@ const PublicBookingPage: React.FC = () => {
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
                   <p className="text-sm text-blue-700 font-medium mb-1">{tStatic('common:auto.frontend.ke2901d00eb0c')}</p>
                   <p className="text-lg font-bold text-blue-900">
-                    {new Date(selectedDate).toLocaleDateString('en-US', {
+                    {new Date(selectedDate).toLocaleDateString(locale, {
                       weekday: 'long',
                       year: 'numeric',
                       month: 'long',

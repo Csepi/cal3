@@ -29,14 +29,19 @@
     "emptyDay": "You don't have events scheduled for this day",
     "createEvent": "Create Event",
     "allDay": "All day",
-    "tapToCreate": "Tap to create event"
+    "tapToCreate": "Tap to create event",
+    "timeline": "Timeline",
+    "todayTimeline": "Today timeline",
+    "thisWeek": "This week",
+    "thisMonth": "This month"
   },
   "actions": {
     "newEvent": "New Event",
     "close": "Close",
     "closeDrawer": "Close drawer",
     "previous": "Previous",
-    "next": "Next"
+    "next": "Next",
+    "switchToView": "Switch to {{view}} view"
   },
   "table": {
     "noData": "No data available",
@@ -49,6 +54,7 @@
   "general": {
     "loading": "Loading...",
     "error": "Error",
-    "success": "Success"
+    "success": "Success",
+    "mobileTitle": "PrimeCal mobile"
   }
 }

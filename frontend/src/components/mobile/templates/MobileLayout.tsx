@@ -14,6 +14,7 @@
 import React, { useRef } from 'react';
 import { useScreenSize } from '../../../hooks/useScreenSize';
 import { UserMenu } from '../../Navigation/UserMenu';
+import { useAppTranslation } from '../../../i18n/useAppTranslation';
 
 interface MobileLayoutProps {
   children: React.ReactNode;
@@ -42,6 +43,8 @@ export const MobileLayout: React.FC<MobileLayoutProps> = ({
   onOpenProfileSettings,
   onOpenAdmin,
 }) => {
+  const { t, i18n } = useAppTranslation(['mobile', 'common']);
+  const locale = i18n.resolvedLanguage || i18n.language || undefined;
   const { isMobile } = useScreenSize();
   const [isRefreshing, setIsRefreshing] = React.useState(false);
   const [pullDistance, setPullDistance] = React.useState(0);
@@ -70,7 +73,7 @@ export const MobileLayout: React.FC<MobileLayoutProps> = ({
         .join('')
     : '';
 
-  const todayLabel = new Intl.DateTimeFormat('en-US', {
+  const todayLabel = new Intl.DateTimeFormat(locale, {
     weekday: 'short',
     month: 'short',
     day: 'numeric',
@@ -125,7 +128,11 @@ export const MobileLayout: React.FC<MobileLayoutProps> = ({
                 className="text-base font-semibold leading-tight"
                 style={{ color: themeColor }}
               >
-                {surfaceLabel || 'PrimeCal mobile'}
+                {surfaceLabel
+                  || t('general.mobileTitle', {
+                    ns: 'mobile',
+                    defaultValue: 'PrimeCal mobile',
+                  })}
               </p>
             </div>
             <div className="flex items-center gap-3">

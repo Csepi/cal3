@@ -1,7 +1,8 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import type { Event } from '../../types/Event';
 import type { ReservationRecord } from '../../types/reservation';
 import { getMeetingLinkFromEvent } from '../../utils/meetingLinks';
+import { useAppTranslation } from '../../i18n/useAppTranslation';
 
 import { tStatic } from '../../i18n';
 
@@ -30,6 +31,8 @@ const WeekView: React.FC<WeekViewProps> = ({
   userTimezone,
   timeFormat = '12' // Default to 12-hour format
 }) => {
+  const { t, i18n } = useAppTranslation(['common', 'calendar']);
+  const locale = i18n.resolvedLanguage || i18n.language || undefined;
   // Helper function to get background style based on theme color
   const getBackgroundStyle = () => {
     return {
@@ -77,7 +80,14 @@ const WeekView: React.FC<WeekViewProps> = ({
     return day;
   });
 
-  const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const dayNames = useMemo(() => {
+    const baseSunday = new Date(Date.UTC(2024, 0, 7));
+    return Array.from({ length: 7 }, (_, index) => {
+      const day = new Date(baseSunday);
+      day.setUTCDate(baseSunday.getUTCDate() + index);
+      return new Intl.DateTimeFormat(locale, { weekday: 'short' }).format(day);
+    });
+  }, [locale]);
   const reorderedDayNames = [
     ...dayNames.slice(weekStartDay),
     ...dayNames.slice(0, weekStartDay)
@@ -181,7 +191,7 @@ const WeekView: React.FC<WeekViewProps> = ({
           hour12: timeFormat === '12',
           timeZone: userTimezone
         };
-        return new Intl.DateTimeFormat('en-US', options).format(date);
+        return new Intl.DateTimeFormat(locale, options).format(date);
       } catch (error) {
         console.warn('Invalid timezone:', userTimezone, error);
         // Fallback to default formatting
@@ -194,10 +204,12 @@ const WeekView: React.FC<WeekViewProps> = ({
     }
 
     // Default 12-hour format
-    if (hour === 0) return '12 AM';
-    if (hour === 12) return '12 PM';
-    if (hour < 12) return `${hour} AM`;
-    return `${hour - 12} PM`;
+    const am = t('time.am', { ns: 'common', defaultValue: 'AM' });
+    const pm = t('time.pm', { ns: 'common', defaultValue: 'PM' });
+    if (hour === 0) return `12 ${am}`;
+    if (hour === 12) return `12 ${pm}`;
+    if (hour < 12) return `${hour} ${am}`;
+    return `${hour - 12} ${pm}`;
   };
 
   const formatTime = (date: Date): string => {
@@ -209,7 +221,7 @@ const WeekView: React.FC<WeekViewProps> = ({
           hour12: timeFormat === '12',
           timeZone: userTimezone
         };
-        return new Intl.DateTimeFormat('en-US', options).format(date);
+        return new Intl.DateTimeFormat(locale, options).format(date);
       } catch (error) {
         console.warn('Invalid timezone:', userTimezone, error);
         // Fallback to default formatting
@@ -218,11 +230,11 @@ const WeekView: React.FC<WeekViewProps> = ({
 
     // Default fallback formatting based on timeFormat preference
     if (timeFormat === '24') {
-      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+      return date.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit', hour12: false });
     }
 
     // Default 12-hour format
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
+    return date.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit', hour12: true });
   };
 
   const formatDate = (date: Date): string => {
@@ -378,7 +390,7 @@ const WeekView: React.FC<WeekViewProps> = ({
               {formatDate(day)}
             </div>
             <div className="text-xs text-gray-400 mt-1">
-              {day.toLocaleDateString('en-US', { month: 'short' })}
+              {day.toLocaleDateString(locale, { month: 'short' })}
             </div>
           </div>
         ))}

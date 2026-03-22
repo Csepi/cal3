@@ -29,14 +29,19 @@
     "emptyDay": "Erre a napra nincs ütemezett eseménye",
     "createEvent": "Esemény létrehozása",
     "allDay": "Egész nap",
-    "tapToCreate": "Érintse meg esemény létrehozásához"
+    "tapToCreate": "Érintse meg esemény létrehozásához",
+    "timeline": "Id?vonal",
+    "todayTimeline": "Mai id?vonal",
+    "thisWeek": "Ez a h?t",
+    "thisMonth": "Ez a h?nap"
   },
   "actions": {
     "newEvent": "Új esemény",
     "close": "Bezárás",
     "closeDrawer": "Fiók bezárása",
     "previous": "Előző",
-    "next": "Következő"
+    "next": "Következő",
+    "switchToView": "{{view}} n?zetre v?lt?s"
   },
   "table": {
     "noData": "Nincs elérhető adat",
@@ -49,6 +54,7 @@
   "general": {
     "loading": "Betöltés...",
     "error": "Hiba",
-    "success": "Sikeres"
+    "success": "Sikeres",
+    "mobileTitle": "PrimeCal mobil"
   }
 }

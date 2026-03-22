@@ -10,7 +10,7 @@ import { Card, CardHeader, Button } from '../ui';
 import { loadAdminData, formatAdminError, adminApiCall } from './adminApiService';
 import type { CalendarShare } from './types';
 
-import { tStatic } from '../../i18n';
+import { i18n, tStatic } from '../../i18n';
 
 export interface AdminSharePanelProps {
   /** Current theme color for styling */
@@ -26,6 +26,7 @@ export const AdminSharePanel: React.FC<AdminSharePanelProps> = ({
   themeColor,
   isActive = false
 }) => {
+  const locale = i18n.resolvedLanguage || i18n.language || undefined;
   const [shares, setShares] = useState<CalendarShare[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>('');
@@ -78,7 +79,7 @@ export const AdminSharePanel: React.FC<AdminSharePanelProps> = ({
    * Format date for display
    */
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
+    return new Date(dateString).toLocaleDateString(locale, {
       year: 'numeric',
       month: 'short',
       day: 'numeric'

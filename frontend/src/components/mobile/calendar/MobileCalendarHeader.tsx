@@ -12,6 +12,7 @@
 import React from 'react';
 import { TouchableArea } from '../atoms/TouchableArea';
 import { Icon } from '../atoms/Icon';
+import { useAppTranslation } from '../../../i18n/useAppTranslation';
 
 import { tStatic } from '../../../i18n';
 
@@ -45,8 +46,11 @@ export const MobileCalendarHeader: React.FC<MobileCalendarHeaderProps> = ({
   onOpenCalendarSelector,
   themeColor,
 }) => {
+  const { t, i18n } = useAppTranslation(['mobile', 'common']);
+  const locale = i18n.resolvedLanguage || i18n.language || undefined;
+
   const formatMonthYear = (): string => {
-    return currentDate.toLocaleDateString('en-US', {
+    return currentDate.toLocaleDateString(locale, {
       month: 'long',
       year: 'numeric',
     });
@@ -61,8 +65,8 @@ export const MobileCalendarHeader: React.FC<MobileCalendarHeaderProps> = ({
     const end = new Date(start);
     end.setDate(start.getDate() + 6);
 
-    const startMonth = start.toLocaleDateString('en-US', { month: 'short' });
-    const endMonth = end.toLocaleDateString('en-US', { month: 'short' });
+    const startMonth = start.toLocaleDateString(locale, { month: 'short' });
+    const endMonth = end.toLocaleDateString(locale, { month: 'short' });
 
     if (startMonth === endMonth) {
       return `${startMonth} ${start.getDate()}-${end.getDate()}, ${start.getFullYear()}`;
@@ -72,7 +76,7 @@ export const MobileCalendarHeader: React.FC<MobileCalendarHeaderProps> = ({
   };
 
   const formatFocusDay = (): string => {
-    return currentDate.toLocaleDateString('en-US', {
+    return currentDate.toLocaleDateString(locale, {
       weekday: 'long',
       month: 'short',
       day: 'numeric',
@@ -87,9 +91,18 @@ export const MobileCalendarHeader: React.FC<MobileCalendarHeaderProps> = ({
         : formatFocusDay();
 
   const viewOptions: Array<{ id: 'month' | 'week' | 'timeline'; label: string }> = [
-    { id: 'timeline', label: 'Timeline' },
-    { id: 'week', label: 'Week' },
-    { id: 'month', label: 'Month' },
+    {
+      id: 'timeline',
+      label: t('calendar.timeline', { ns: 'mobile', defaultValue: 'Timeline' }),
+    },
+    {
+      id: 'week',
+      label: t('calendar.week', { ns: 'mobile', defaultValue: 'Week' }),
+    },
+    {
+      id: 'month',
+      label: t('calendar.month', { ns: 'mobile', defaultValue: 'Month' }),
+    },
   ];
 
   return (
@@ -125,7 +138,20 @@ export const MobileCalendarHeader: React.FC<MobileCalendarHeaderProps> = ({
 
         <div className="flex-1 text-center px-3">
           <p className="text-[11px] uppercase tracking-[0.16em] text-gray-500 font-semibold">
-            {currentView === 'timeline' ? 'Today timeline' : currentView === 'week' ? 'This week' : 'This month'}
+            {currentView === 'timeline'
+              ? t('calendar.todayTimeline', {
+                  ns: 'mobile',
+                  defaultValue: 'Today timeline',
+                })
+              : currentView === 'week'
+                ? t('calendar.thisWeek', {
+                    ns: 'mobile',
+                    defaultValue: 'This week',
+                  })
+                : t('calendar.thisMonth', {
+                    ns: 'mobile',
+                    defaultValue: 'This month',
+                  })}
           </p>
           <h2
             className="text-lg font-bold leading-tight"
@@ -155,7 +181,11 @@ export const MobileCalendarHeader: React.FC<MobileCalendarHeaderProps> = ({
                   isActive ? 'shadow-sm' : 'text-gray-600'
                 }`}
                 minSize="sm"
-                ariaLabel={`Switch to ${option.label} view`}
+                ariaLabel={t('actions.switchToView', {
+                  ns: 'mobile',
+                  defaultValue: 'Switch to {{view}} view',
+                  view: option.label,
+                })}
                 style={{
                   backgroundColor: isActive ? withAlpha(themeColor, 0.12) : 'transparent',
                   color: isActive ? themeColor : undefined,
@@ -173,7 +203,10 @@ export const MobileCalendarHeader: React.FC<MobileCalendarHeaderProps> = ({
             onClick={() => onNavigate('prev')}
             className="p-2 rounded-xl bg-white shadow-sm border border-gray-200"
             minSize="lg"
-            ariaLabel="Previous"
+            ariaLabel={t('actions.previous', {
+              ns: 'mobile',
+              defaultValue: 'Previous',
+            })}
           >
             <svg
               className="w-5 h-5 text-gray-700"
@@ -194,7 +227,7 @@ export const MobileCalendarHeader: React.FC<MobileCalendarHeaderProps> = ({
             onClick={() => onNavigate('next')}
             className="p-2 rounded-xl bg-white shadow-sm border border-gray-200"
             minSize="lg"
-            ariaLabel="Next"
+            ariaLabel={t('actions.next', { ns: 'mobile', defaultValue: 'Next' })}
           >
             <svg
               className="w-5 h-5 text-gray-700"

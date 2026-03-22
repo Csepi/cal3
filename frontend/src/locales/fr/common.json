@@ -1581,6 +1581,31 @@
     "currentTime": "Heure actuelle",
     "remainingLabel": "Restant",
     "endsLabel": "Se termine",
-    "newMeetingLabel": "Nouvelle réunion"
+    "newMeetingLabel": "Nouvelle réunion",
+    "focusTimelineDate": "Chronologie de focus - {{date}}"
+  },
+  "tasksWorkspace": {
+    "anyDueDate": "N'importe quelle ?ch?ance",
+    "selectedWeek": "Semaine s?lectionn?e",
+    "pickWeek": "Choisir une semaine",
+    "selectedMonth": "Mois s?lectionn?",
+    "pickMonth": "Choisir un mois",
+    "pickYear": "Choisir une ann?e",
+    "yearWithValue": "Ann?e {{year}}",
+    "selectWeek": "S?lectionner une semaine",
+    "selectMonth": "S?lectionner un mois",
+    "selectYear": "S?lectionner une ann?e",
+    "selectedCount": "{{count}} s?lectionn?(s)"
+  },
+  "agentActions": {
+    "calendarEventsRead": {
+      "label": "Lire les ?v?nements du calendrier",
+      "description": "Autorise l?agent ? lire les ?v?nements (titres, heures, d?tails) des calendriers s?lectionn?s.",
+      "scopeLabel": "Calendriers autoris?s en lecture",
+      "scopeEmptyHint": "Choisissez les calendriers dont l?agent peut consulter les ?v?nements."
+    }
+  },
+  "a11y": {
+    "selected": "s?lectionn?"
   }
 }

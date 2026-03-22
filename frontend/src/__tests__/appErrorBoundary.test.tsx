@@ -2,6 +2,10 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import AppErrorBoundary from '../components/common/AppErrorBoundary';
 
+jest.mock('../i18n', () => ({
+  tStatic: (key: string) => key,
+}));
+
 const Boom: React.FC = () => {
   throw new Error('boom');
 };

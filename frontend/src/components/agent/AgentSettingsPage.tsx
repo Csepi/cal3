@@ -57,6 +57,36 @@ const STATUS_BADGE: Record<AgentStatus, string> = {
 
 const LEGACY_CALENDAR_MANAGE_KEY = 'calendar.events.manage';
 
+const getLocalizedActionLabel = (action: AgentActionDefinition): string => {
+  if (action.key === AgentActionKey.CALENDAR_EVENTS_READ) {
+    return tStatic('common:agentActions.calendarEventsRead.label');
+  }
+  return action.label;
+};
+
+const getLocalizedActionDescription = (
+  action: AgentActionDefinition,
+): string => {
+  if (action.key === AgentActionKey.CALENDAR_EVENTS_READ) {
+    return tStatic('common:agentActions.calendarEventsRead.description');
+  }
+  return action.description;
+};
+
+const getLocalizedScopeLabel = (action: AgentActionDefinition): string => {
+  if (action.key === AgentActionKey.CALENDAR_EVENTS_READ) {
+    return tStatic('common:agentActions.calendarEventsRead.scopeLabel');
+  }
+  return action.scopeConfig?.label ?? '';
+};
+
+const getLocalizedScopeEmptyHint = (action: AgentActionDefinition): string => {
+  if (action.key === AgentActionKey.CALENDAR_EVENTS_READ) {
+    return tStatic('common:agentActions.calendarEventsRead.scopeEmptyHint');
+  }
+  return action.scopeConfig?.emptyHint ?? '';
+};
+
 function normalizeActionKeys(keys: (AgentActionKey | string)[] | undefined | null): AgentActionKey[] {
   if (!Array.isArray(keys)) {
     return [];
@@ -480,8 +510,10 @@ const AgentSettingsPage: React.FC<AgentSettingsPageProps> = ({ themeColor = "#3b
 
       if (definition.scopeConfig) {
         if (definition.scopeConfig.required && draft.scope.length === 0) {
+          const actionLabel = getLocalizedActionLabel(definition);
+          const scopeLabel = getLocalizedScopeLabel(definition);
           setErrorMessage(
-            `${definition.label}: please select at least one option for "${definition.scopeConfig.label}".`,
+            `${actionLabel}: please select at least one option for "${scopeLabel}".`,
           );
           return;
         }
@@ -655,7 +687,7 @@ const AgentSettingsPage: React.FC<AgentSettingsPageProps> = ({ themeColor = "#3b
     if (options.length === 0) {
       return (
         <p className="text-sm text-slate-500">
-          {scopeConfig.emptyHint ||
+          {getLocalizedScopeEmptyHint(action) ||
             'No resources available. Configure the feature before granting agent access.'}
         </p>
       );
@@ -663,7 +695,9 @@ const AgentSettingsPage: React.FC<AgentSettingsPageProps> = ({ themeColor = "#3b
 
     return (
       <div className="mt-3 space-y-2">
-        <p className="text-sm font-medium text-slate-600">{scopeConfig.label}</p>
+        <p className="text-sm font-medium text-slate-600">
+          {getLocalizedScopeLabel(action)}
+        </p>
         <div className="flex flex-wrap gap-2">
           {options.map((option) => {
             const isSelected = draft.scope.includes(option.id);
@@ -983,7 +1017,7 @@ const AgentSettingsPage: React.FC<AgentSettingsPageProps> = ({ themeColor = "#3b
                                               disabled={isAgentDisabled}
                                               onChange={() => handleTogglePermission(action.key)}
                                             />
-                                            {action.label}
+                                            {getLocalizedActionLabel(action)}
                                           </label>
                                           <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${RISK_BADGE[action.risk]}`}>
                                             {action.risk === 'read'
@@ -993,7 +1027,9 @@ const AgentSettingsPage: React.FC<AgentSettingsPageProps> = ({ themeColor = "#3b
                                               : 'Execute'}
                                           </span>
                                         </div>
-                                        <p className="mt-1 text-sm text-slate-600">{action.description}</p>
+                                        <p className="mt-1 text-sm text-slate-600">
+                                          {getLocalizedActionDescription(action)}
+                                        </p>
                                       </div>
                                       {!draft.enabled && (
                                         <span className="rounded-full bg-slate-200 px-2 py-0.5 text-xs text-slate-600">

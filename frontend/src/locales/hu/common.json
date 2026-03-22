@@ -316,7 +316,7 @@
       "k349f0e5ffd4c": "Visszatérő",
       "k34a5adb1782c": "Minden terv",
       "k3505a7841f01": "Hozzon létre egy dedikált ügynökprofilt minden eszközhöz vagy együttműködőhöz.",
-      "k353a23d95e3c": "To Do",
+      "k353a23d95e3c": "Teend?",
       "k357c84df0905": "10-es évek",
       "k3677bc8315fc": "Szervezeti felhasználók és beállítások kezelése",
       "k37282b63dd84": "Felhasználók betöltése...",
@@ -1250,7 +1250,7 @@
       "kf3d7eb2b15aa": "Környezet:",
       "kf40f3fcd07be": "Váltás heti nézetre",
       "kf462e889fd88": "Az oldalsáv kibontása",
-      "kf4ebd3fd97f5": "🔄 Force Sync",
+      "kf4ebd3fd97f5": "?? Szinkron k?nyszer?t?se",
       "kf4f2c9bf780e": "Kritikus hibák",
       "kf4f4473df8cb": "Letiltva",
       "kf5455820508c": "⊗ Inaktív",
@@ -1581,6 +1581,31 @@
     "currentTime": "Jelenlegi idő",
     "remainingLabel": "Többi",
     "endsLabel": "Véget ér",
-    "newMeetingLabel": "Új találkozó"
+    "newMeetingLabel": "Új találkozó",
+    "focusTimelineDate": "F?kusz id?vonal - {{date}}"
+  },
+  "tasksWorkspace": {
+    "anyDueDate": "B?rmilyen hat?rid?",
+    "selectedWeek": "Kiv?lasztott h?t",
+    "pickWeek": "V?lasszon hetet",
+    "selectedMonth": "Kiv?lasztott h?nap",
+    "pickMonth": "V?lasszon h?napot",
+    "pickYear": "V?lasszon ?vet",
+    "yearWithValue": "{{year}}. ?v",
+    "selectWeek": "H?t kiv?laszt?sa",
+    "selectMonth": "H?nap kiv?laszt?sa",
+    "selectYear": "?v kiv?laszt?sa",
+    "selectedCount": "{{count}} kiv?lasztva"
+  },
+  "agentActions": {
+    "calendarEventsRead": {
+      "label": "Napt?resem?nyek olvas?sa",
+      "description": "Enged?lyezi az ?gyn?knek az esem?nyek (c?mek, id?pontok, r?szletek) olvas?s?t a megadott napt?rakb?l.",
+      "scopeLabel": "Olvas?sra enged?lyezett napt?rak",
+      "scopeEmptyHint": "V?lassza ki azokat a napt?rakat, amelyek esem?nyeit az ?gyn?k megtekintheti."
+    }
+  },
+  "a11y": {
+    "selected": "kiv?lasztva"
   }
 }

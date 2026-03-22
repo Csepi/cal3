@@ -5,7 +5,7 @@ import { useAuditLogs } from '../../hooks/useAuditLogs';
 import { formatRelativeTime, getStatusColor } from '../../services/automationService';
 import { AuditLogDetailModal } from './AuditLogDetailModal';
 
-import { tStatic } from '../../i18n';
+import { i18n, tStatic } from '../../i18n';
 
 interface AuditLogViewerProps {
   ruleId?: number;
@@ -18,6 +18,7 @@ export const AuditLogViewer: React.FC<AuditLogViewerProps> = ({
   ruleId,
   themeColor = '#3b82f6',
 }) => {
+  const locale = i18n.resolvedLanguage || i18n.language || undefined;
   const [statusFilter, setStatusFilter] = useState<AuditLogStatus | 'all'>('all');
   const [dateRange, setDateRange] = useState<DateRangeOption>('last_30_days');
   const [selectedLogId, setSelectedLogId] = useState<number | null>(null);
@@ -74,7 +75,7 @@ export const AuditLogViewer: React.FC<AuditLogViewerProps> = ({
   // Format date/time
   const formatDateTime = (date: Date | string): string => {
     const d = new Date(date);
-    return d.toLocaleString('en-US', {
+    return d.toLocaleString(locale, {
       month: 'short',
       day: 'numeric',
       hour: '2-digit',

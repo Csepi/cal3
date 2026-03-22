@@ -15,6 +15,7 @@ import { BottomSheet } from '../BottomSheet';
 import { EventListItem } from './EventListItem';
 import { TouchableArea } from '../atoms/TouchableArea';
 import { Icon } from '../atoms/Icon';
+import { useAppTranslation } from '../../../i18n/useAppTranslation';
 
 import { tStatic } from '../../../i18n';
 
@@ -37,6 +38,9 @@ export const DayDetailSheet: React.FC<DayDetailSheetProps> = ({
   onCreateEvent,
   themeColor,
 }) => {
+  const { t, i18n } = useAppTranslation(['mobile', 'common']);
+  const locale = i18n.resolvedLanguage || i18n.language || undefined;
+
   // Group events by all-day vs timed
   const groupedEvents = useMemo(() => {
     const allDay = events.filter(e => e.isAllDay);
@@ -57,15 +61,19 @@ export const DayDetailSheet: React.FC<DayDetailSheetProps> = ({
     tomorrow.setDate(tomorrow.getDate() + 1);
     const isTomorrow = date.toDateString() === tomorrow.toDateString();
 
-    if (isToday) return 'Today';
-    if (isTomorrow) return 'Tomorrow';
+    if (isToday) {
+      return t('calendar.today', { ns: 'mobile', defaultValue: 'Today' });
+    }
+    if (isTomorrow) {
+      return t('calendar.tomorrow', { ns: 'mobile', defaultValue: 'Tomorrow' });
+    }
 
-    return date.toLocaleDateString('en-US', {
+    return date.toLocaleDateString(locale, {
       weekday: 'long',
       month: 'long',
       day: 'numeric',
     });
-  }, [date]);
+  }, [date, locale, t]);
 
   return (
     <BottomSheet
@@ -79,7 +87,13 @@ export const DayDetailSheet: React.FC<DayDetailSheetProps> = ({
           <div>
             <h2 className="text-xl font-bold text-gray-900">{formattedDate}</h2>
             <p className="text-sm text-gray-600 mt-1">
-              {totalEvents === 0 ? 'No events' : `${totalEvents} event${totalEvents !== 1 ? 's' : ''}`}
+              {totalEvents === 0
+                ? t('calendar.noEvents', { ns: 'mobile', defaultValue: 'No events' })
+                : t('calendar.eventCount', {
+                    ns: 'mobile',
+                    defaultValue: '{{count}} event(s)',
+                    count: totalEvents,
+                  })}
             </p>
           </div>
 

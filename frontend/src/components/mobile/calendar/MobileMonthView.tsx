@@ -14,6 +14,7 @@ import React, { useMemo } from 'react';
 import type { Event } from '../../../types/Event';
 import { TouchableArea } from '../atoms/TouchableArea';
 import { Badge } from '../atoms/Badge';
+import { useAppTranslation } from '../../../i18n/useAppTranslation';
 
 interface MobileMonthViewProps {
   currentDate: Date;
@@ -32,6 +33,8 @@ export const MobileMonthView: React.FC<MobileMonthViewProps> = ({
   weekStartDay = 1,
   themeColor,
 }) => {
+  const { i18n } = useAppTranslation(['mobile', 'common']);
+  const locale = i18n.resolvedLanguage || i18n.language || undefined;
   const today = useMemo(() => {
     const d = new Date();
     d.setHours(0, 0, 0, 0);
@@ -56,7 +59,14 @@ export const MobileMonthView: React.FC<MobileMonthViewProps> = ({
     return days;
   }, [currentDate, weekStartDay]);
 
-  const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const dayNames = useMemo(() => {
+    const baseSunday = new Date(Date.UTC(2024, 0, 7));
+    return Array.from({ length: 7 }, (_, index) => {
+      const day = new Date(baseSunday);
+      day.setUTCDate(baseSunday.getUTCDate() + index);
+      return new Intl.DateTimeFormat(locale, { weekday: 'short' }).format(day);
+    });
+  }, [locale]);
   const reorderedDayNames = weekStartDay === 0
     ? dayNames
     : [...dayNames.slice(weekStartDay), ...dayNames.slice(0, weekStartDay)];
@@ -92,7 +102,7 @@ export const MobileMonthView: React.FC<MobileMonthViewProps> = ({
       {/* Month Header */}
       <div className="px-4 py-3 border-b border-gray-200">
         <h2 className="text-xl font-bold text-gray-900">
-          {currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+          {currentDate.toLocaleDateString(locale, { month: 'long', year: 'numeric' })}
         </h2>
       </div>
 
