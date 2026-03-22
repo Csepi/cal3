@@ -1,13 +1,10 @@
-import { INestApplication } from '@nestjs/common';
-import { Test, TestingModule } from '@nestjs/testing';
-import { DataSource, Repository } from 'typeorm';
-import { PostgreSqlContainer, StartedPostgreSqlContainer } from '@testcontainers/postgresql';
+import type { INestApplication } from '@nestjs/common';
+import type { TestingModule } from '@nestjs/testing';
+import type { DataSource, Repository } from 'typeorm';
+import { PostgreSqlContainer, type StartedPostgreSqlContainer } from '@testcontainers/postgresql';
 import * as bcrypt from 'bcryptjs';
 import request from 'supertest';
-import { User, UserRole } from '../../src/entities/user.entity';
-import {
-  DEVICE_FINGERPRINT_HEADER,
-} from '../../src/auth/services/token-fingerprint.service';
+import type { User, UserRole } from '../../src/entities/user.entity';
 
 const MANAGED_ENV_KEYS = [
   'DB_TYPE',
@@ -71,6 +68,24 @@ const restoreEnv = (snapshot: EnvSnapshot): void => {
       process.env[key] = value;
     }
   }
+};
+
+const loadNestTesting = (): typeof import('@nestjs/testing') =>
+  require('@nestjs/testing');
+
+const loadTypeOrm = (): typeof import('typeorm') => require('typeorm');
+
+const loadAppModule = (): { AppModule: new (...args: never[]) => unknown } =>
+  require('../../src/app.module');
+
+const loadEntities = (): typeof import('../../src/entities/user.entity') =>
+  require('../../src/entities/user.entity');
+
+const loadDeviceFingerprintHeader = (): string => {
+  const { DEVICE_FINGERPRINT_HEADER } = require('../../src/auth/services/token-fingerprint.service') as {
+    DEVICE_FINGERPRINT_HEADER: string;
+  };
+  return DEVICE_FINGERPRINT_HEADER;
 };
 
 const applyTestEnv = (container: StartedPostgreSqlContainer): void => {
@@ -142,9 +157,10 @@ export async function startPostgresNestHarness(): Promise<PostgresNestHarness> {
     jest.resetModules();
 
     // AppModule must be loaded only after test DB env is set.
-    const { AppModule } = require('../../src/app.module') as {
-      AppModule: new (...args: never[]) => unknown;
-    };
+    const { Test } = loadNestTesting();
+    const { DataSource } = loadTypeOrm();
+    const { AppModule } = loadAppModule();
+    const { User } = loadEntities();
 
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
@@ -188,6 +204,7 @@ export async function seedUser(
   userRepository: Repository<User>,
   input: SeedUserInput,
 ): Promise<User> {
+  const { UserRole } = loadEntities();
   const passwordHash = await bcrypt.hash(input.password, 10);
   const entity = userRepository.create({
     username: input.username,
@@ -205,6 +222,7 @@ export async function loginNative(
   password: string,
   fingerprint: string,
 ): Promise<request.Response> {
+  const DEVICE_FINGERPRINT_HEADER = loadDeviceFingerprintHeader();
   const server = app.getHttpServer() as Parameters<typeof request>[0];
   return request(server)
     .post('/auth/login')
