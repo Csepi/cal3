@@ -5,5 +5,17 @@
   "invalidTime": "Heure invalide.",
   "passwordWeak": "Mot de passe trop faible.",
   "startBeforeEnd": "L?heure de d?but doit ?tre avant l?heure de fin.",
-  "invalidCalendar": "Calendrier de t?ches invalide. S?lectionnez un calendrier que vous poss?dez ou que vous pouvez modifier."
+  "invalidCalendar": "Calendrier de t?ches invalide. S?lectionnez un calendrier que vous poss?dez ou que vous pouvez modifier.",
+  "usernameLengthRange": "le nom d'utilisateur doit contenir entre 3 et 64 caractères.",
+  "usernameAllowedCharacters": "Le nom d'utilisateur ne peut contenir que des lettres, des chiffres, des points et des traits de soulignement.",
+  "emailRequired": "un e-mail est requis.",
+  "emailMaxLength": "l'e-mail doit comporter au maximum 254 caractères.",
+  "emailMustBeValid": "l'e-mail doit être une adresse e-mail valide.",
+  "profilePictureFileRequired": "Le fichier de photo de profil est requis.",
+  "profilePictureMimeTypes": "Seules les images JPG, PNG, GIF et WEBP sont autorisées.",
+  "profilePictureFileSize": "La photo de profil doit faire 2 Mo ou moins.",
+  "labelRequired": "Une étiquette est requise.",
+  "themeColorAllowedValues": "themeColor doit être l’une des couleurs de thème prises en charge.",
+  "privacyPolicyAcceptedMustBeTrue": "PrivacyPolicyAccepted doit être vrai.",
+  "termsOfServiceAcceptedMustBeTrue": "TermsOfServiceAccepted doit être vrai."
 }

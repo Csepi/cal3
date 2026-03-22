@@ -1565,5 +1565,22 @@
       "maxUploadSize": "A maxim?lis felt?lt?si m?ret 1 MB.",
       "loadCustomEmojiFile": "Az egy?ni emoji f?jl bet?lt?se sikertelen."
     }
+  },
+  "calendarSync": {
+    "longRunningSyncNotice": "A naptár szinkronizálása a vártnál tovább tart. A háttérben még befejeződhet. Kérjük, frissítsen egy pillanat múlva.",
+    "longRunningForceSyncNotice": "A kényszerített szinkronizálás a vártnál tovább tart. A háttérben még befejeződhet. Kérjük, frissítsen egy pillanat múlva.",
+    "syncCalendarsFailed": "Nem sikerült szinkronizálni a naptárakat",
+    "disconnectFailed": "Nem sikerült leválasztani",
+    "syncFailed": "Nem sikerült a szinkronizálás"
+  },
+  "liveFocus": {
+    "exitFocusMode": "Lépjen ki a fókusz módból",
+    "switchFocus": "Fókusz váltása",
+    "nextLabel": "Következő",
+    "startsInPrefix": "be",
+    "currentTime": "Jelenlegi idő",
+    "remainingLabel": "Többi",
+    "endsLabel": "Véget ér",
+    "newMeetingLabel": "Új találkozó"
   }
 }

@@ -233,7 +233,7 @@ const OnboardingWizard: React.FC = () => {
         <div className="w-full max-w-md rounded-2xl border border-green-200 bg-white p-6 text-center shadow-sm">
           <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-green-100">
             <span className="text-xs font-semibold text-green-700" aria-hidden="true">
-              OK
+              {t('onboarding.completeBadge', { defaultValue: 'OK' })}
             </span>
           </div>
           <h2 className="text-xl font-semibold text-gray-900">

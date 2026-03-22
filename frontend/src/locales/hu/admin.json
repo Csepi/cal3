@@ -267,5 +267,41 @@
     "fr": "Français (Francia)",
     "es": "Español (Spanyol)",
     "hu": "Magyar"
+  },
+  "runtimeConfig": {
+    "enabled": "Engedélyezve",
+    "disabled": "Letiltva",
+    "saveAction": "Megtakarítás",
+    "revertDraftAction": "Piszkozat visszaállítása",
+    "restoreDefaultAction": "Alapértelmezés visszaállítása",
+    "sensitiveTag": "Érzékeny",
+    "restartRequiredTag": "Újraindítás szükséges",
+    "readOnlyTag": "Csak olvasható",
+    "savingTag": "Megtakarítás...",
+    "currentValueLabel": "Jelenlegi érték:",
+    "defaultValueLabel": "Alapértelmezett érték:",
+    "updatedLabel": "Frissítve:",
+    "loadingMessage": "Futóidejű konfiguráció betöltése...",
+    "errorTitle": "Konfigurációs hiba",
+    "title": "Futásidejű konfiguráció",
+    "descriptionPrefix": "Kezelheti az OAuth, a környezet, a funkciójelzők és az értesítések futásidejű felülírásait. Használat",
+    "descriptionSuffix": "bármely beállításnál, hogy visszatérjen a számított tartalék viselkedéshez.",
+    "backendUrlLabel": "Megoldott háttér-URL:",
+    "frontendUrlLabel": "Megoldott frontend URL:",
+    "searchPlaceholder": "Keresés kulcs, címke vagy leírás alapján",
+    "noMatchesMessage": "Egyetlen beállítás sem felel meg az aktuális szűrőnek.",
+    "oauthPreviewTitle": "Számított OAuth visszahívási előnézet",
+    "oauthPreviewDescription": "Ezek azok a visszahívási URL-ek, amelyeket jelenleg a futásidejű konfigurációja oldott meg.",
+    "authCallbackLabel": "Visszahívás hitelesítése",
+    "calendarSyncCallbackLabel": "A naptár szinkronizálásának visszahívása",
+    "notSetValue": "Nincs beállítva",
+    "source": {
+      "database": "Adatbázis felülbírálása",
+      "environment": "Környezeti változó",
+      "default": "Alapértelmezett tartalék"
+    },
+    "secretConfiguredPlaceholder": "Titok konfigurálva. Adjon meg egy új értéket a cseréhez.",
+    "secretEnterPlaceholder": "Adja meg a titkos értéket",
+    "configuredValuePlaceholder": "Konfigurált érték"
   }
 }

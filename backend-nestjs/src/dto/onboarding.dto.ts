@@ -19,6 +19,7 @@ import {
 } from 'class-validator';
 import { SanitizeText } from '../common/validation/sanitize.decorator';
 import { IsSafeText } from '../common/validation/security.validators';
+import { bStatic } from '../i18n/runtime';
 
 export enum OnboardingLanguage {
   EN = 'en',
@@ -98,8 +99,7 @@ export class CompleteOnboardingDto {
   @MinLength(3)
   @MaxLength(64)
   @Matches(/^[a-zA-Z0-9_.]+$/, {
-    message:
-      'username can only contain letters, numbers, dots, and underscores.',
+    message: () => bStatic('validation.usernameAllowedCharacters'),
   })
   @IsSafeText()
   username?: string;
@@ -161,7 +161,7 @@ export class CompleteOnboardingDto {
     enum: ONBOARDING_THEME_COLORS,
   })
   @IsIn(ONBOARDING_THEME_COLORS, {
-    message: 'themeColor must be one of the supported theme colors.',
+    message: () => bStatic('validation.themeColorAllowedValues'),
   })
   themeColor!: string;
 
@@ -170,7 +170,7 @@ export class CompleteOnboardingDto {
     description: 'Must be true to complete onboarding.',
   })
   @IsBoolean()
-  @Equals(true, { message: 'privacyPolicyAccepted must be true.' })
+  @Equals(true, { message: () => bStatic('validation.privacyPolicyAcceptedMustBeTrue') })
   privacyPolicyAccepted!: boolean;
 
   @ApiProperty({
@@ -178,7 +178,7 @@ export class CompleteOnboardingDto {
     description: 'Must be true to complete onboarding.',
   })
   @IsBoolean()
-  @Equals(true, { message: 'termsOfServiceAccepted must be true.' })
+  @Equals(true, { message: () => bStatic('validation.termsOfServiceAcceptedMustBeTrue') })
   termsOfServiceAccepted!: boolean;
 
   @ApiPropertyOptional({ example: true })

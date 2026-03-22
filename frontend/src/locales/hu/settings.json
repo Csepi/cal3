@@ -254,5 +254,18 @@
     "deleteSuccess": "A(z) \"{{label}}\" cimke torolve.",
     "deleteError": "A cimke torlese sikertelen.",
     "deleteAria": "{{label}} cimke torlese"
+  },
+  "onboardingCompliance": {
+    "title": "Bevezetés és megfelelés",
+    "description": "A fiókjához mentett adatvédelmi és belépési adatok.",
+    "statusLabel": "Felvételi állapot",
+    "statusCompleted": "Befejezve",
+    "statusPending": "Függőben levő",
+    "completedAtLabel": "Elkészült:",
+    "privacyAcceptedLabel": "Adatvédelem elfogadva",
+    "privacyPolicyVersionLabel": "Adatvédelmi szabályzat verziója",
+    "calendarUseCaseLabel": "Naptár használati eset",
+    "privacyPolicyLink": "Adatvédelmi szabályzat",
+    "termsOfServiceLink": "Szolgáltatási feltételek"
   }
 }

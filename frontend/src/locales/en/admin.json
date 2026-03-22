@@ -267,5 +267,41 @@
     "selectedUsers": "{{count}} user(s) selected",
     "title": "👥 User Management",
     "user": "User"
+  },
+  "runtimeConfig": {
+    "title": "Runtime Configuration",
+    "descriptionPrefix": "Manage runtime overrides for OAuth, environment, feature flags, and notifications. Use",
+    "descriptionSuffix": "on any setting to return to calculated fallback behavior.",
+    "source": {
+      "database": "Database override",
+      "environment": "Environment variable",
+      "default": "Default fallback"
+    },
+    "notSetValue": "Not set",
+    "enabled": "Enabled",
+    "disabled": "Disabled",
+    "secretConfiguredPlaceholder": "Secret configured. Enter a new value to replace it.",
+    "secretEnterPlaceholder": "Enter secret value",
+    "configuredValuePlaceholder": "Configured value",
+    "saveAction": "Save",
+    "revertDraftAction": "Revert draft",
+    "restoreDefaultAction": "Restore default",
+    "sensitiveTag": "Sensitive",
+    "restartRequiredTag": "Restart required",
+    "readOnlyTag": "Read only",
+    "savingTag": "Saving...",
+    "currentValueLabel": "Current value:",
+    "defaultValueLabel": "Default value:",
+    "updatedLabel": "Updated:",
+    "loadingMessage": "Loading runtime configuration...",
+    "errorTitle": "Configuration error",
+    "backendUrlLabel": "Resolved backend URL:",
+    "frontendUrlLabel": "Resolved frontend URL:",
+    "searchPlaceholder": "Search by key, label, or description",
+    "noMatchesMessage": "No settings match your current filter.",
+    "oauthPreviewTitle": "Computed OAuth Callback Preview",
+    "oauthPreviewDescription": "These are the callback URLs currently resolved from your runtime configuration.",
+    "authCallbackLabel": "Auth callback",
+    "calendarSyncCallbackLabel": "Calendar sync callback"
   }
 }

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+ï»¿import React, { useEffect, useMemo, useRef, useState } from 'react';
 import type { Event } from '../../types/Event';
 import type { Calendar } from '../../types/Calendar';
 import { getMeetingLinkFromEvent } from '../../utils/meetingLinks';
@@ -354,9 +354,9 @@ const TimelineView: React.FC<TimelineViewProps> = ({
         timeFormat,
         resolvedTimezone,
         focusEvent.isAllDay,
-      )}${focusEvent.calendarName ? ` • ${focusEvent.calendarName}` : ''}${focusEvent.location ? ` • ${focusEvent.location}` : ''}`;
+      )}${focusEvent.calendarName ? ` â€¢ ${focusEvent.calendarName}` : ''}${focusEvent.location ? ` â€¢ ${focusEvent.location}` : ''}`;
       const normalizedNotes = focusEvent.notes?.replace(/\s+/g, ' ').trim();
-      return normalizedNotes ? `${base} • ${normalizedNotes}` : base;
+      return normalizedNotes ? `${base} â€¢ ${normalizedNotes}` : base;
     }
     if (nextEvent) {
       return `Next meeting starts at ${formatTime(nextEvent.start, timeFormat, resolvedTimezone)}.`;
@@ -941,7 +941,7 @@ const TimelineView: React.FC<TimelineViewProps> = ({
                     color: focusColor,
                   }}
                 >
-                  Exit focus mode
+                  {tStatic('common:liveFocus.exitFocusMode')}
                 </button>
               )}
             </div>
@@ -983,7 +983,7 @@ const TimelineView: React.FC<TimelineViewProps> = ({
               {sortedCurrentEvents.length > 1 && (
                 <div className="space-y-1">
                   <p className="text-[10px] uppercase tracking-[0.18em] opacity-75">
-                    Switch focus
+                    {tStatic('common:liveFocus.switchFocus')}
                   </p>
                   <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5">
                     {sortedCurrentEvents.map((event) => {
@@ -1018,31 +1018,39 @@ const TimelineView: React.FC<TimelineViewProps> = ({
                   onClick={() => onEventClick(nextEvent)}
                   className="inline-flex w-full items-center justify-between gap-2 rounded-xl border border-white/30 bg-black/15 px-2.5 py-1.5 text-left text-[11px] hover:bg-black/20"
                 >
-                  <span className="font-semibold uppercase tracking-[0.14em] opacity-80">Next</span>
+                  <span className="font-semibold uppercase tracking-[0.14em] opacity-80">
+                    {tStatic('common:liveFocus.nextLabel')}
+                  </span>
                   <span className="truncate font-semibold">
                     {formatTime(nextEvent.start, timeFormat, resolvedTimezone)} {nextEvent.title}
                   </span>
-                  <span className="opacity-85 whitespace-nowrap">in {formatDuration(nextEventLeadMs)}</span>
+                  <span className="opacity-85 whitespace-nowrap">
+                    {tStatic('common:liveFocus.startsInPrefix')} {formatDuration(nextEventLeadMs)}
+                  </span>
                 </button>
               )}
             </div>
 
             <div className="min-w-[176px] rounded-2xl border border-white/25 bg-black/15 px-3 py-2.5 text-white">
               <p className="text-[10px] uppercase tracking-[0.18em] opacity-85">
-                Current time
+                {tStatic('common:liveFocus.currentTime')}
               </p>
               <div className="text-2xl md:text-3xl font-bold tracking-tight leading-none mt-0.5">
                 {formatTime(now, timeFormat, resolvedTimezone)}
               </div>
               <div className="mt-2 grid grid-cols-2 gap-2 text-[11px]">
                 <div className="rounded-lg bg-white/15 px-2 py-1.5">
-                  <p className="uppercase tracking-[0.14em] opacity-75 text-[10px]">Remaining</p>
+                  <p className="uppercase tracking-[0.14em] opacity-75 text-[10px]">
+                    {tStatic('common:liveFocus.remainingLabel')}
+                  </p>
                   <p className="font-semibold mt-0.5">
                     {focusEvent ? `${remainingMinutes} min` : '--'}
                   </p>
                 </div>
                 <div className="rounded-lg bg-white/15 px-2 py-1.5">
-                  <p className="uppercase tracking-[0.14em] opacity-75 text-[10px]">Ends</p>
+                  <p className="uppercase tracking-[0.14em] opacity-75 text-[10px]">
+                    {tStatic('common:liveFocus.endsLabel')}
+                  </p>
                   <p className="font-semibold mt-0.5">{focusMeetingEndLabel}</p>
                 </div>
               </div>
@@ -1361,7 +1369,9 @@ const TimelineView: React.FC<TimelineViewProps> = ({
                         {formatTime(draftSelectionStart, timeFormat, resolvedTimezone)} -{' '}
                         {formatTime(draftSelectionEnd, timeFormat, resolvedTimezone)}
                       </p>
-                      <p className="text-[10px] text-slate-700">New meeting</p>
+                      <p className="text-[10px] text-slate-700">
+                        {tStatic('common:liveFocus.newMeetingLabel')}
+                      </p>
                     </div>
                   )}
                 </div>
@@ -1422,3 +1432,4 @@ const TimelineView: React.FC<TimelineViewProps> = ({
 };
 
 export default TimelineView;
+

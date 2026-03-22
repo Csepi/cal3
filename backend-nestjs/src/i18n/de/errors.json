@@ -287,5 +287,10 @@
       "kdb97389aba96": "Die Farbe muss ein gültiger 6-stelliger Hexadezimalwert sein.",
       "k1c67b13212cf": "Der Markdown-Text ist auf 8.000 Zeichen begrenzt, um die Synchronisierungsnutzlast klein zu halten."
     }
-  }
+  },
+  "uniqueUsernameAllocationFailed": "Für dieses Konto kann kein eindeutiger Benutzername zugewiesen werden.",
+  "googleProfileMissingFromOAuthCallback": "Das Google-Profil fehlt im OAuth-Rückruf.",
+  "microsoftProfileMissingFromOAuthCallback": "Das Microsoft-Profil fehlt im OAuth-Rückruf.",
+  "onboardingMustBeCompleted": "Das Onboarding muss abgeschlossen sein, bevor auf diese Ressource zugegriffen werden kann.",
+  "userNotFound": "Benutzer nicht gefunden."
 }

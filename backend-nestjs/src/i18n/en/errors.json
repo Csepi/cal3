@@ -287,5 +287,10 @@
       "kdb97389aba96": "Color must be a valid 6-digit hex value.",
       "k1c67b13212cf": "Markdown body is limited to 8k characters to keep sync payloads small."
     }
-  }
+  },
+  "uniqueUsernameAllocationFailed": "Unable to allocate a unique username for this account.",
+  "googleProfileMissingFromOAuthCallback": "Google profile is missing from OAuth callback.",
+  "microsoftProfileMissingFromOAuthCallback": "Microsoft profile is missing from OAuth callback.",
+  "onboardingMustBeCompleted": "Onboarding must be completed before accessing this resource.",
+  "userNotFound": "User not found."
 }

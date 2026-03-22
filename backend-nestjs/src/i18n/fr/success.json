@@ -1,5 +1,6 @@
 {
   "updated": "Mise ? jour r?ussie.",
   "deleted": "Suppression r?ussie.",
-  "saved": "Enregistrement r?ussi."
+  "saved": "Enregistrement r?ussi.",
+  "ruleExecutionCompleted": "L'exécution de la règle s'est terminée avec succès"
 }

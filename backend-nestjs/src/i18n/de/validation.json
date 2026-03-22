@@ -5,5 +5,17 @@
   "invalidTime": "Ung?ltige Uhrzeit.",
   "passwordWeak": "Passwort ist zu schwach.",
   "startBeforeEnd": "Die Startzeit muss vor der Endzeit liegen.",
-  "invalidCalendar": "Ung?ltiger Aufgabenkalender. W?hlen Sie einen Kalender, den Sie besitzen oder bearbeiten d?rfen."
+  "invalidCalendar": "Ung?ltiger Aufgabenkalender. W?hlen Sie einen Kalender, den Sie besitzen oder bearbeiten d?rfen.",
+  "usernameLengthRange": "Der Benutzername muss zwischen 3 und 64 Zeichen lang sein.",
+  "usernameAllowedCharacters": "Der Benutzername darf nur Buchstaben, Zahlen, Punkte und Unterstriche enthalten.",
+  "emailRequired": "E-Mail ist erforderlich.",
+  "emailMaxLength": "E-Mail darf höchstens 254 Zeichen lang sein.",
+  "emailMustBeValid": "E-Mail muss eine gültige E-Mail-Adresse sein.",
+  "profilePictureFileRequired": "Profilbilddatei ist erforderlich.",
+  "profilePictureMimeTypes": "Es sind nur JPG-, PNG-, GIF- und WEBP-Bilder zulässig.",
+  "profilePictureFileSize": "Das Profilbild darf maximal 2 MB groß sein.",
+  "labelRequired": "Etikett ist erforderlich.",
+  "themeColorAllowedValues": "themeColor muss eine der unterstützten Designfarben sein.",
+  "privacyPolicyAcceptedMustBeTrue": "PrivacyPolicyAccepted muss wahr sein.",
+  "termsOfServiceAcceptedMustBeTrue": "termsOfServiceAccepted muss wahr sein."
 }

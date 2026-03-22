@@ -254,5 +254,18 @@
     "deleteSuccess": "Etiquette \"{{label}}\" supprimee.",
     "deleteError": "Echec de la suppression de l'etiquette.",
     "deleteAria": "Supprimer l'etiquette {{label}}"
+  },
+  "onboardingCompliance": {
+    "title": "Intégration et conformité",
+    "description": "Détails de confidentialité et d'intégration enregistrés pour votre compte.",
+    "statusLabel": "Statut d'intégration",
+    "statusCompleted": "Complété",
+    "statusPending": "En attente",
+    "completedAtLabel": "Terminé à",
+    "privacyAcceptedLabel": "Confidentialité acceptée",
+    "privacyPolicyVersionLabel": "Version de la politique de confidentialité",
+    "calendarUseCaseLabel": "Cas d'utilisation du calendrier",
+    "privacyPolicyLink": "Politique de confidentialité",
+    "termsOfServiceLink": "Conditions d'utilisation"
   }
 }

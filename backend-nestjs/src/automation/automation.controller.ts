@@ -47,6 +47,7 @@ import {
   ListAutomationRulesQueryDto,
   ApproveAutomationRuleDto,
 } from './dto/automation-requests.dto';
+import { bStatic } from '../i18n/runtime';
 
 @ApiTags('automation')
 @Controller('automation')
@@ -184,7 +185,7 @@ export class AutomationController {
       id,
     );
     return {
-      message: 'Rule execution completed successfully',
+      message: bStatic('success.ruleExecutionCompleted'),
       executionCount,
     };
   }

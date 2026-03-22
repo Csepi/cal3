@@ -8,6 +8,7 @@ import {
   formatAdminError,
   updateConfigurationSetting,
 } from './adminApiService';
+import { useAppTranslation } from '../../i18n/useAppTranslation';
 
 interface AdminConfigurationPanelProps {
   themeColor?: string;
@@ -17,7 +18,13 @@ type DraftValue = string | boolean;
 
 type SettingSource = ConfigurationSettingSummary['source'];
 
-const SOURCE_LABELS: Record<SettingSource, string> = {
+const SOURCE_LABEL_KEYS: Record<SettingSource, string> = {
+  database: 'admin:runtimeConfig.source.database',
+  environment: 'admin:runtimeConfig.source.environment',
+  default: 'admin:runtimeConfig.source.default',
+};
+
+const SOURCE_LABEL_DEFAULTS: Record<SettingSource, string> = {
   database: 'Database override',
   environment: 'Environment variable',
   default: 'Default fallback',
@@ -42,24 +49,10 @@ const asString = (value: string | boolean | null | undefined): string =>
 const asBoolean = (value: string | boolean | null | undefined): boolean =>
   value === true || value === 'true';
 
-const displayValue = (
-  setting: ConfigurationSettingSummary,
-  value: string | boolean | null,
-): string => {
-  if (value === null || value === undefined || value === '') {
-    return 'Not set';
-  }
-
-  if (setting.valueType === 'boolean') {
-    return value === true || value === 'true' ? 'Enabled' : 'Disabled';
-  }
-
-  return String(value);
-};
-
 const AdminConfigurationPanel: React.FC<AdminConfigurationPanelProps> = ({
   themeColor = '#3b82f6',
 }) => {
+  const { t } = useAppTranslation(['admin', 'common']);
   const [overview, setOverview] = useState<ConfigurationOverview | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -69,6 +62,23 @@ const AdminConfigurationPanel: React.FC<AdminConfigurationPanelProps> = ({
   const [activeCategory, setActiveCategory] =
     useState<ConfigurationOverview['categories'][number]['key']>('oauth');
   const [searchTerm, setSearchTerm] = useState('');
+
+  const displayValue = useCallback(
+    (setting: ConfigurationSettingSummary, value: string | boolean | null): string => {
+      if (value === null || value === undefined || value === '') {
+        return t('admin:runtimeConfig.notSetValue', { defaultValue: 'Not set' });
+      }
+
+      if (setting.valueType === 'boolean') {
+        return value === true || value === 'true'
+          ? t('admin:runtimeConfig.enabled', { defaultValue: 'Enabled' })
+          : t('admin:runtimeConfig.disabled', { defaultValue: 'Disabled' });
+      }
+
+      return String(value);
+    },
+    [t],
+  );
 
   const themeGradient = useMemo(
     () =>
@@ -289,7 +299,7 @@ const AdminConfigurationPanel: React.FC<AdminConfigurationPanelProps> = ({
                 : 'text-gray-600 hover:bg-gray-100'
             } disabled:cursor-not-allowed disabled:opacity-60`}
           >
-            Enabled
+            {t('admin:runtimeConfig.enabled', { defaultValue: 'Enabled' })}
           </button>
           <button
             type="button"
@@ -306,7 +316,7 @@ const AdminConfigurationPanel: React.FC<AdminConfigurationPanelProps> = ({
                 : 'text-gray-600 hover:bg-gray-100'
             } disabled:cursor-not-allowed disabled:opacity-60`}
           >
-            Disabled
+            {t('admin:runtimeConfig.disabled', { defaultValue: 'Disabled' })}
           </button>
         </div>
       );
@@ -349,8 +359,12 @@ const AdminConfigurationPanel: React.FC<AdminConfigurationPanelProps> = ({
           disabled={disabled}
           placeholder={
             setting.hasValue
-              ? 'Secret configured. Enter a new value to replace it.'
-              : 'Enter secret value'
+              ? t('admin:runtimeConfig.secretConfiguredPlaceholder', {
+                  defaultValue: 'Secret configured. Enter a new value to replace it.',
+                })
+              : t('admin:runtimeConfig.secretEnterPlaceholder', {
+                  defaultValue: 'Enter secret value',
+                })
           }
           autoComplete="off"
         />
@@ -369,7 +383,13 @@ const AdminConfigurationPanel: React.FC<AdminConfigurationPanelProps> = ({
           }))
         }
         disabled={disabled}
-        placeholder={setting.hasValue ? 'Configured value' : 'Not set'}
+        placeholder={
+          setting.hasValue
+            ? t('admin:runtimeConfig.configuredValuePlaceholder', {
+                defaultValue: 'Configured value',
+              })
+            : t('admin:runtimeConfig.notSetValue', { defaultValue: 'Not set' })
+        }
       />
     );
   };
@@ -391,7 +411,7 @@ const AdminConfigurationPanel: React.FC<AdminConfigurationPanelProps> = ({
           }
           className="rounded-lg bg-blue-600 px-3 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-300"
         >
-          Save
+          {t('admin:runtimeConfig.saveAction', { defaultValue: 'Save' })}
         </button>
 
         <button
@@ -400,7 +420,9 @@ const AdminConfigurationPanel: React.FC<AdminConfigurationPanelProps> = ({
           disabled={disabled || !dirty}
           className="rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 disabled:cursor-not-allowed disabled:text-gray-400"
         >
-          Revert draft
+          {t('admin:runtimeConfig.revertDraftAction', {
+            defaultValue: 'Revert draft',
+          })}
         </button>
 
         <button
@@ -409,7 +431,9 @@ const AdminConfigurationPanel: React.FC<AdminConfigurationPanelProps> = ({
           disabled={disabled}
           className="rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-sm font-medium text-amber-700 shadow-sm hover:bg-amber-100 disabled:cursor-not-allowed disabled:opacity-50"
         >
-          Restore default
+          {t('admin:runtimeConfig.restoreDefaultAction', {
+            defaultValue: 'Restore default',
+          })}
         </button>
       </div>
     );
@@ -438,26 +462,32 @@ const AdminConfigurationPanel: React.FC<AdminConfigurationPanelProps> = ({
               <span
                 className={`rounded-full border px-2 py-1 font-medium ${SOURCE_STYLES[setting.source]}`}
               >
-                {SOURCE_LABELS[setting.source]}
+                {t(SOURCE_LABEL_KEYS[setting.source], {
+                  defaultValue: SOURCE_LABEL_DEFAULTS[setting.source],
+                })}
               </span>
               {setting.isSensitive && (
                 <span className="rounded-full border border-rose-200 bg-rose-50 px-2 py-1 font-medium text-rose-700">
-                  Sensitive
+                  {t('admin:runtimeConfig.sensitiveTag', {
+                    defaultValue: 'Sensitive',
+                  })}
                 </span>
               )}
               {requiresRestart && (
                 <span className="rounded-full border border-purple-200 bg-purple-50 px-2 py-1 font-medium text-purple-700">
-                  Restart required
+                  {t('admin:runtimeConfig.restartRequiredTag', {
+                    defaultValue: 'Restart required',
+                  })}
                 </span>
               )}
               {setting.isReadOnly && (
                 <span className="rounded-full border border-gray-300 bg-gray-100 px-2 py-1 font-medium text-gray-600">
-                  Read only
+                  {t('admin:runtimeConfig.readOnlyTag', { defaultValue: 'Read only' })}
                 </span>
               )}
               {isUpdating && (
                 <span className="rounded-full border border-blue-200 bg-blue-50 px-2 py-1 font-medium text-blue-700">
-                  Saving...
+                  {t('admin:runtimeConfig.savingTag', { defaultValue: 'Saving...' })}
                 </span>
               )}
             </div>
@@ -465,14 +495,27 @@ const AdminConfigurationPanel: React.FC<AdminConfigurationPanelProps> = ({
 
           <div className="min-w-[220px] space-y-1 rounded-lg border border-gray-200 bg-gray-50 p-3 text-xs text-gray-600">
             <div>
-              Current value: <span className="font-medium text-gray-800">{displayValue(setting, setting.value)}</span>
+              {t('admin:runtimeConfig.currentValueLabel', {
+                defaultValue: 'Current value:',
+              })}{' '}
+              <span className="font-medium text-gray-800">
+                {displayValue(setting, setting.value)}
+              </span>
             </div>
             <div>
-              Default value: <span className="font-medium text-gray-800">{displayValue(setting, setting.defaultValue)}</span>
+              {t('admin:runtimeConfig.defaultValueLabel', {
+                defaultValue: 'Default value:',
+              })}{' '}
+              <span className="font-medium text-gray-800">
+                {displayValue(setting, setting.defaultValue)}
+              </span>
             </div>
             {setting.updatedAt && (
               <div>
-                Updated: {new Date(setting.updatedAt).toLocaleString(undefined, {
+                {t('admin:runtimeConfig.updatedLabel', {
+                  defaultValue: 'Updated:',
+                })}{' '}
+                {new Date(setting.updatedAt).toLocaleString(undefined, {
                   dateStyle: 'medium',
                   timeStyle: 'short',
                 })}
@@ -494,7 +537,11 @@ const AdminConfigurationPanel: React.FC<AdminConfigurationPanelProps> = ({
       <div className="flex h-64 items-center justify-center">
         <div className="text-center">
           <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-b-2 border-blue-500" />
-          <p className="text-gray-600">Loading runtime configuration...</p>
+          <p className="text-gray-600">
+            {t('admin:runtimeConfig.loadingMessage', {
+              defaultValue: 'Loading runtime configuration...',
+            })}
+          </p>
         </div>
       </div>
     );
@@ -503,7 +550,11 @@ const AdminConfigurationPanel: React.FC<AdminConfigurationPanelProps> = ({
   if (error) {
     return (
       <div className="rounded-2xl border border-red-200 bg-red-50 p-5 text-red-700">
-        <h2 className="text-lg font-semibold">Configuration error</h2>
+        <h2 className="text-lg font-semibold">
+          {t('admin:runtimeConfig.errorTitle', {
+            defaultValue: 'Configuration error',
+          })}
+        </h2>
         <p className="mt-2 text-sm">{error}</p>
       </div>
     );
@@ -520,19 +571,42 @@ const AdminConfigurationPanel: React.FC<AdminConfigurationPanelProps> = ({
         style={{ backgroundImage: themeGradient }}
       >
         <div className="rounded-2xl border border-white/40 bg-white/90 p-5 backdrop-blur">
-          <h1 className="text-2xl font-semibold text-gray-900">Runtime Configuration</h1>
+          <h1 className="text-2xl font-semibold text-gray-900">
+            {t('admin:runtimeConfig.title', {
+              defaultValue: 'Runtime Configuration',
+            })}
+          </h1>
           <p className="mt-2 text-sm text-gray-700">
-            Manage runtime overrides for OAuth, environment, feature flags, and notifications.
-            Use <strong>Restore default</strong> on any setting to return to calculated fallback behavior.
+            {t('admin:runtimeConfig.descriptionPrefix', {
+              defaultValue:
+                'Manage runtime overrides for OAuth, environment, feature flags, and notifications. Use',
+            })}{' '}
+            <strong>
+              {t('admin:runtimeConfig.restoreDefaultAction', {
+                defaultValue: 'Restore default',
+              })}
+            </strong>{' '}
+            {t('admin:runtimeConfig.descriptionSuffix', {
+              defaultValue:
+                'on any setting to return to calculated fallback behavior.',
+            })}
           </p>
 
           <div className="mt-4 grid gap-3 md:grid-cols-2">
             <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm">
-              <span className="font-medium text-slate-700">Resolved backend URL:</span>{' '}
+              <span className="font-medium text-slate-700">
+                {t('admin:runtimeConfig.backendUrlLabel', {
+                  defaultValue: 'Resolved backend URL:',
+                })}
+              </span>{' '}
               <code className="font-mono text-slate-900">{overview.derived.backendBaseUrl}</code>
             </div>
             <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm">
-              <span className="font-medium text-slate-700">Resolved frontend URL:</span>{' '}
+              <span className="font-medium text-slate-700">
+                {t('admin:runtimeConfig.frontendUrlLabel', {
+                  defaultValue: 'Resolved frontend URL:',
+                })}
+              </span>{' '}
               <code className="font-mono text-slate-900">{overview.derived.frontendBaseUrl}</code>
             </div>
           </div>
@@ -572,7 +646,9 @@ const AdminConfigurationPanel: React.FC<AdminConfigurationPanelProps> = ({
               type="search"
               value={searchTerm}
               onChange={(event) => setSearchTerm(event.target.value)}
-              placeholder="Search by key, label, or description"
+              placeholder={t('admin:runtimeConfig.searchPlaceholder', {
+                defaultValue: 'Search by key, label, or description',
+              })}
               className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
             />
           </div>
@@ -586,7 +662,9 @@ const AdminConfigurationPanel: React.FC<AdminConfigurationPanelProps> = ({
       <section className="space-y-3">
         {activeCategorySettings.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-gray-300 bg-white p-8 text-center text-sm text-gray-600">
-            No settings match your current filter.
+            {t('admin:runtimeConfig.noMatchesMessage', {
+              defaultValue: 'No settings match your current filter.',
+            })}
           </div>
         ) : (
           activeCategorySettings.map((setting) => renderSetting(setting))
@@ -594,9 +672,16 @@ const AdminConfigurationPanel: React.FC<AdminConfigurationPanelProps> = ({
       </section>
 
       <section className="rounded-2xl border border-indigo-200 bg-indigo-50/70 p-5 shadow-sm">
-        <h2 className="text-lg font-semibold text-indigo-900">Computed OAuth Callback Preview</h2>
+        <h2 className="text-lg font-semibold text-indigo-900">
+          {t('admin:runtimeConfig.oauthPreviewTitle', {
+            defaultValue: 'Computed OAuth Callback Preview',
+          })}
+        </h2>
         <p className="mt-1 text-sm text-indigo-800">
-          These are the callback URLs currently resolved from your runtime configuration.
+          {t('admin:runtimeConfig.oauthPreviewDescription', {
+            defaultValue:
+              'These are the callback URLs currently resolved from your runtime configuration.',
+          })}
         </p>
 
         <div className="mt-4 grid gap-3 md:grid-cols-2">
@@ -610,13 +695,21 @@ const AdminConfigurationPanel: React.FC<AdminConfigurationPanelProps> = ({
               </h3>
               <div className="mt-3 space-y-2 text-xs text-indigo-900">
                 <div>
-                  <p className="font-medium">Auth callback</p>
+                  <p className="font-medium">
+                    {t('admin:runtimeConfig.authCallbackLabel', {
+                      defaultValue: 'Auth callback',
+                    })}
+                  </p>
                   <code className="mt-1 block break-all rounded bg-indigo-100 px-2 py-1 font-mono">
                     {callback.authCallback}
                   </code>
                 </div>
                 <div>
-                  <p className="font-medium">Calendar sync callback</p>
+                  <p className="font-medium">
+                    {t('admin:runtimeConfig.calendarSyncCallbackLabel', {
+                      defaultValue: 'Calendar sync callback',
+                    })}
+                  </p>
                   <code className="mt-1 block break-all rounded bg-indigo-100 px-2 py-1 font-mono">
                     {callback.calendarSyncCallback}
                   </code>

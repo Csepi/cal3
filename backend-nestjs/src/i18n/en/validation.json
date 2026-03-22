@@ -5,5 +5,17 @@
   "invalidTime": "Invalid time.",
   "passwordWeak": "Password is too weak.",
   "startBeforeEnd": "Start time must be before end time.",
-  "invalidCalendar": "Invalid Tasks calendar. Select one you own or can edit."
+  "invalidCalendar": "Invalid Tasks calendar. Select one you own or can edit.",
+  "usernameLengthRange": "username must be between 3 and 64 characters.",
+  "usernameAllowedCharacters": "username can only contain letters, numbers, dots, and underscores.",
+  "emailRequired": "email is required.",
+  "emailMaxLength": "email must be at most 254 characters.",
+  "emailMustBeValid": "email must be a valid email address.",
+  "profilePictureFileRequired": "Profile picture file is required.",
+  "profilePictureMimeTypes": "Only JPG, PNG, GIF, and WEBP images are allowed.",
+  "profilePictureFileSize": "Profile picture must be 2MB or smaller.",
+  "labelRequired": "Label is required.",
+  "themeColorAllowedValues": "themeColor must be one of the supported theme colors.",
+  "privacyPolicyAcceptedMustBeTrue": "privacyPolicyAccepted must be true.",
+  "termsOfServiceAcceptedMustBeTrue": "termsOfServiceAccepted must be true."
 }

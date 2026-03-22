@@ -735,11 +735,15 @@ const CalendarSync: React.FC<CalendarSyncProps> = ({ themeColor }) => {
         });
         await loadSyncStatus().catch(() => undefined);
         alert(
-          'Calendar sync is taking longer than expected. It may still complete in the background. Please refresh in a moment.',
+          tStatic('common:calendarSync.longRunningSyncNotice'),
         );
         return;
       }
-      alert(err instanceof Error ? err.message : 'Failed to sync calendars');
+      alert(
+        err instanceof Error
+          ? err.message
+          : tStatic('common:calendarSync.syncCalendarsFailed'),
+      );
     }
   };
 
@@ -753,7 +757,11 @@ const CalendarSync: React.FC<CalendarSyncProps> = ({ themeColor }) => {
         await loadSyncStatus();
       }, `Disconnecting ${provider}...`);
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to disconnect');
+      alert(
+        err instanceof Error
+          ? err.message
+          : tStatic('common:calendarSync.disconnectFailed'),
+      );
     }
   };
 
@@ -771,11 +779,15 @@ const CalendarSync: React.FC<CalendarSyncProps> = ({ themeColor }) => {
         clientLogger.warn('calendar-sync', 'force sync request timed out; refreshing status');
         await loadSyncStatus().catch(() => undefined);
         alert(
-          'Force sync is taking longer than expected. It may still complete in the background. Please refresh in a moment.',
+          tStatic('common:calendarSync.longRunningForceSyncNotice'),
         );
         return;
       }
-      alert(err instanceof Error ? err.message : 'Failed to sync');
+      alert(
+        err instanceof Error
+          ? err.message
+          : tStatic('common:calendarSync.syncFailed'),
+      );
     }
   };
 

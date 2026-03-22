@@ -254,5 +254,18 @@
     "deleteSuccess": "Label \"{{label}}\" geloscht.",
     "deleteError": "Label konnte nicht geloscht werden.",
     "deleteAria": "Label {{label}} loschen"
+  },
+  "onboardingCompliance": {
+    "title": "Onboarding und Compliance",
+    "description": "Datenschutz- und Onboarding-Details, die für Ihr Konto gespeichert sind.",
+    "statusLabel": "Onboarding-Status",
+    "statusCompleted": "Vollendet",
+    "statusPending": "Ausstehend",
+    "completedAtLabel": "Abgeschlossen um",
+    "privacyAcceptedLabel": "Datenschutz akzeptiert",
+    "privacyPolicyVersionLabel": "Version der Datenschutzrichtlinie",
+    "calendarUseCaseLabel": "Anwendungsfall Kalender",
+    "privacyPolicyLink": "Datenschutzrichtlinie",
+    "termsOfServiceLink": "Nutzungsbedingungen"
   }
 }

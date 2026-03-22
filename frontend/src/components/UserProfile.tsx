@@ -662,30 +662,65 @@ const UserProfile: React.FC<UserProfileProps> = ({ onThemeChange, currentTheme }
             <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
               <div className="flex flex-col gap-3">
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-800">Onboarding & compliance</h3>
+                  <h3 className="text-lg font-semibold text-gray-800">
+                    {t('settings:onboardingCompliance.title', {
+                      defaultValue: 'Onboarding & compliance',
+                    })}
+                  </h3>
                   <p className="text-sm text-gray-600 mt-1">
-                    Privacy and onboarding details saved for your account.
+                    {t('settings:onboardingCompliance.description', {
+                      defaultValue:
+                        'Privacy and onboarding details saved for your account.',
+                    })}
                   </p>
                 </div>
                 <dl className="grid grid-cols-1 gap-2 text-sm text-gray-700">
                   <div>
-                    <dt className="font-medium text-gray-900">Onboarding status</dt>
-                    <dd>{user?.onboardingCompleted ? 'Completed' : 'Pending'}</dd>
+                    <dt className="font-medium text-gray-900">
+                      {t('settings:onboardingCompliance.statusLabel', {
+                        defaultValue: 'Onboarding status',
+                      })}
+                    </dt>
+                    <dd>
+                      {user?.onboardingCompleted
+                        ? t('settings:onboardingCompliance.statusCompleted', {
+                            defaultValue: 'Completed',
+                          })
+                        : t('settings:onboardingCompliance.statusPending', {
+                            defaultValue: 'Pending',
+                          })}
+                    </dd>
                   </div>
                   <div>
-                    <dt className="font-medium text-gray-900">Completed at</dt>
+                    <dt className="font-medium text-gray-900">
+                      {t('settings:onboardingCompliance.completedAtLabel', {
+                        defaultValue: 'Completed at',
+                      })}
+                    </dt>
                     <dd>{formatDateValue(user?.onboardingCompletedAt)}</dd>
                   </div>
                   <div>
-                    <dt className="font-medium text-gray-900">Privacy accepted</dt>
+                    <dt className="font-medium text-gray-900">
+                      {t('settings:onboardingCompliance.privacyAcceptedLabel', {
+                        defaultValue: 'Privacy accepted',
+                      })}
+                    </dt>
                     <dd>{formatDateValue(user?.privacyPolicyAcceptedAt)}</dd>
                   </div>
                   <div>
-                    <dt className="font-medium text-gray-900">Privacy policy version</dt>
+                    <dt className="font-medium text-gray-900">
+                      {t('settings:onboardingCompliance.privacyPolicyVersionLabel', {
+                        defaultValue: 'Privacy policy version',
+                      })}
+                    </dt>
                     <dd>{user?.privacyPolicyVersion ?? onboardingConfig.privacyPolicyVersion}</dd>
                   </div>
                   <div>
-                    <dt className="font-medium text-gray-900">Calendar use case</dt>
+                    <dt className="font-medium text-gray-900">
+                      {t('settings:onboardingCompliance.calendarUseCaseLabel', {
+                        defaultValue: 'Calendar use case',
+                      })}
+                    </dt>
                     <dd>{user?.onboardingUseCase ?? t('common:app.notAvailable', { defaultValue: 'Not available' })}</dd>
                   </div>
                 </dl>
@@ -696,7 +731,9 @@ const UserProfile: React.FC<UserProfileProps> = ({ onThemeChange, currentTheme }
                     rel="noreferrer"
                     className="font-medium text-blue-700 underline"
                   >
-                    Privacy policy
+                    {t('settings:onboardingCompliance.privacyPolicyLink', {
+                      defaultValue: 'Privacy policy',
+                    })}
                   </a>
                   <a
                     href={onboardingConfig.termsOfServiceUrl}
@@ -704,7 +741,9 @@ const UserProfile: React.FC<UserProfileProps> = ({ onThemeChange, currentTheme }
                     rel="noreferrer"
                     className="font-medium text-blue-700 underline"
                   >
-                    Terms of service
+                    {t('settings:onboardingCompliance.termsOfServiceLink', {
+                      defaultValue: 'Terms of service',
+                    })}
                   </a>
                 </div>
               </div>

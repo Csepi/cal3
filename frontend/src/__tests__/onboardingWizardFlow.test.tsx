@@ -113,7 +113,7 @@ describe('OnboardingWizard flow', () => {
       <MemoryRouter initialEntries={['/onboarding']}>
         <Routes>
           <Route path="/onboarding" element={<OnboardingWizard />} />
-          <Route path="/app" element={<div>App Home</div>} />
+          <Route path="/app" element={<div data-testid="app-home" />} />
         </Routes>
       </MemoryRouter>,
     );
@@ -134,6 +134,6 @@ describe('OnboardingWizard flow', () => {
       jest.advanceTimersByTime(2000);
     });
 
-    expect(screen.getByText('App Home')).toBeInTheDocument();
+    expect(screen.getByTestId('app-home')).toBeInTheDocument();
   });
 });

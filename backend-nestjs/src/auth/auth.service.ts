@@ -122,12 +122,12 @@ export class AuthService {
       normalizedUsername.length > AuthService.USERNAME_MAX_LENGTH
     ) {
       throw new BadRequestException(
-        'username must be between 3 and 64 characters.',
+        bStatic('validation.usernameLengthRange'),
       );
     }
     if (!AuthService.USERNAME_ALLOWED_PATTERN.test(normalizedUsername)) {
       throw new BadRequestException(
-        'username can only contain letters, numbers, dots, and underscores.',
+        bStatic('validation.usernameAllowedCharacters'),
       );
     }
 
@@ -141,13 +141,13 @@ export class AuthService {
   async isEmailAvailable(email: string): Promise<boolean> {
     const normalizedEmail = email.trim().toLowerCase();
     if (normalizedEmail.length === 0) {
-      throw new BadRequestException('email is required.');
+      throw new BadRequestException(bStatic('validation.emailRequired'));
     }
     if (normalizedEmail.length > 254) {
-      throw new BadRequestException('email must be at most 254 characters.');
+      throw new BadRequestException(bStatic('validation.emailMaxLength'));
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
-      throw new BadRequestException('email must be a valid email address.');
+      throw new BadRequestException(bStatic('validation.emailMustBeValid'));
     }
 
     const existingUser = await this.userRepository.findOne({
@@ -709,7 +709,7 @@ export class AuthService {
     }
 
     throw new ConflictException(
-      'Unable to allocate a unique username for this account.',
+      bStatic('errors.uniqueUsernameAllocationFailed'),
     );
   }
 

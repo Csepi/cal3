@@ -1565,5 +1565,22 @@
       "maxUploadSize": "Die maximale Upload-Gr??e betr?gt 1 MB.",
       "loadCustomEmojiFile": "Die benutzerdefinierte Emoji-Datei konnte nicht geladen werden."
     }
+  },
+  "liveFocus": {
+    "exitFocusMode": "Verlassen Sie den Fokusmodus",
+    "switchFocus": "Fokus wechseln",
+    "nextLabel": "Nächste",
+    "startsInPrefix": "In",
+    "currentTime": "Aktuelle Uhrzeit",
+    "remainingLabel": "Übrig",
+    "endsLabel": "Endet",
+    "newMeetingLabel": "Neues Treffen"
+  },
+  "calendarSync": {
+    "longRunningSyncNotice": "Die Kalendersynchronisierung dauert länger als erwartet. Der Vorgang wird möglicherweise weiterhin im Hintergrund ausgeführt. Bitte aktualisieren Sie es gleich.",
+    "longRunningForceSyncNotice": "Die erzwungene Synchronisierung dauert länger als erwartet. Der Vorgang wird möglicherweise weiterhin im Hintergrund ausgeführt. Bitte aktualisieren Sie es gleich.",
+    "syncCalendarsFailed": "Kalender konnten nicht synchronisiert werden",
+    "disconnectFailed": "Die Verbindung konnte nicht getrennt werden",
+    "syncFailed": "Synchronisierung fehlgeschlagen"
   }
 }

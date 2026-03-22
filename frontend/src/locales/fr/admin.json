@@ -267,5 +267,41 @@
     "fr": "Français",
     "es": "Español (Espagnol)",
     "hu": "Magyar (Hongrois)"
+  },
+  "runtimeConfig": {
+    "enabled": "Activé",
+    "disabled": "Désactivé",
+    "saveAction": "Sauvegarder",
+    "revertDraftAction": "Rétablir le brouillon",
+    "restoreDefaultAction": "Restaurer les valeurs par défaut",
+    "sensitiveTag": "Sensible",
+    "restartRequiredTag": "Redémarrage requis",
+    "readOnlyTag": "Lecture seule",
+    "savingTag": "Économie...",
+    "currentValueLabel": "Valeur actuelle :",
+    "defaultValueLabel": "Valeur par défaut :",
+    "updatedLabel": "Mis à jour:",
+    "loadingMessage": "Chargement de la configuration d'exécution...",
+    "errorTitle": "Erreur de configuration",
+    "title": "Configuration d'exécution",
+    "descriptionPrefix": "Gérez les remplacements d'exécution pour OAuth, l'environnement, les indicateurs de fonctionnalités et les notifications. Utiliser",
+    "descriptionSuffix": "sur n’importe quel paramètre pour revenir au comportement de repli calculé.",
+    "backendUrlLabel": "URL backend résolue :",
+    "frontendUrlLabel": "URL d'interface résolue :",
+    "searchPlaceholder": "Rechercher par clé, étiquette ou description",
+    "noMatchesMessage": "Aucun paramètre ne correspond à votre filtre actuel.",
+    "oauthPreviewTitle": "Aperçu du rappel OAuth calculé",
+    "oauthPreviewDescription": "Il s'agit des URL de rappel actuellement résolues à partir de votre configuration d'exécution.",
+    "authCallbackLabel": "Rappel d'authentification",
+    "calendarSyncCallbackLabel": "Rappel de synchronisation du calendrier",
+    "notSetValue": "Non défini",
+    "source": {
+      "database": "Remplacement de la base de données",
+      "environment": "Variable d'environnement",
+      "default": "Solution de secours par défaut"
+    },
+    "secretConfiguredPlaceholder": "Secret configuré. Entrez une nouvelle valeur pour la remplacer.",
+    "secretEnterPlaceholder": "Entrez la valeur secrète",
+    "configuredValuePlaceholder": "Valeur configurée"
   }
 }

@@ -254,5 +254,18 @@
     "deleteSuccess": "Label \"{{label}}\" deleted.",
     "deleteError": "Failed to delete label.",
     "deleteAria": "Delete label {{label}}"
+  },
+  "onboardingCompliance": {
+    "title": "Onboarding & compliance",
+    "description": "Privacy and onboarding details saved for your account.",
+    "statusLabel": "Onboarding status",
+    "statusCompleted": "Completed",
+    "statusPending": "Pending",
+    "completedAtLabel": "Completed at",
+    "privacyAcceptedLabel": "Privacy accepted",
+    "privacyPolicyVersionLabel": "Privacy policy version",
+    "calendarUseCaseLabel": "Calendar use case",
+    "privacyPolicyLink": "Privacy policy",
+    "termsOfServiceLink": "Terms of service"
   }
 }

@@ -3,6 +3,7 @@ import { PassportStrategy } from '@nestjs/passport';
 import { Strategy } from 'passport-microsoft';
 import { AuthService } from './auth.service';
 import { ConfigurationService } from '../configuration/configuration.service';
+import { bStatic } from '../i18n/runtime';
 
 interface MicrosoftProfile {
   id: string;
@@ -50,7 +51,7 @@ export class MicrosoftStrategy extends PassportStrategy(Strategy, 'microsoft') {
   ): Promise<unknown> {
     if (!profile) {
       throw new UnauthorizedException(
-        'Microsoft profile is missing from OAuth callback.',
+        bStatic('errors.microsoftProfileMissingFromOAuthCallback'),
       );
     }
 

@@ -3,6 +3,7 @@ import { PassportStrategy } from '@nestjs/passport';
 import { Strategy } from 'passport-google-oauth20';
 import { AuthService } from './auth.service';
 import { ConfigurationService } from '../configuration/configuration.service';
+import { bStatic } from '../i18n/runtime';
 
 interface GoogleProfile {
   id: string;
@@ -44,7 +45,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
   ): Promise<unknown> {
     if (!profile) {
       throw new UnauthorizedException(
-        'Google profile is missing from OAuth callback.',
+        bStatic('errors.googleProfileMissingFromOAuthCallback'),
       );
     }
 

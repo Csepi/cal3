@@ -5,5 +5,17 @@
   "invalidTime": "?rv?nytelen id?pont.",
   "passwordWeak": "A jelsz? t?l gyenge.",
   "startBeforeEnd": "A kezd?si id?pontnak kor?bbinak kell lennie.",
-  "invalidCalendar": "?rv?nytelen Feladatok napt?r. V?lasszon olyat, amelyhez tulajdonosi vagy szerkeszt?si joga van."
+  "invalidCalendar": "?rv?nytelen Feladatok napt?r. V?lasszon olyat, amelyhez tulajdonosi vagy szerkeszt?si joga van.",
+  "usernameLengthRange": "a felhasználónévnek 3 és 64 karakter között kell lennie.",
+  "usernameAllowedCharacters": "A felhasználónév csak betűket, számokat, pontokat és aláhúzásjeleket tartalmazhat.",
+  "emailRequired": "email szükséges.",
+  "emailMaxLength": "az e-mail legfeljebb 254 karakterből állhat.",
+  "emailMustBeValid": "e-mail címnek érvényes e-mail címnek kell lennie.",
+  "profilePictureFileRequired": "Profilkép fájl szükséges.",
+  "profilePictureMimeTypes": "Csak JPG, PNG, GIF és WEBP képek engedélyezettek.",
+  "profilePictureFileSize": "A profilképnek 2 MB vagy kisebbnek kell lennie.",
+  "labelRequired": "A címke kötelező.",
+  "themeColorAllowedValues": "A themeColor a támogatott témaszínek egyikének kell lennie.",
+  "privacyPolicyAcceptedMustBeTrue": "privacyPolicyAccepted igaznak kell lennie.",
+  "termsOfServiceAcceptedMustBeTrue": "A termsOfServiceAcceptednek igaznak kell lennie."
 }

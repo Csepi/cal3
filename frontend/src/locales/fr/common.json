@@ -1565,5 +1565,22 @@
       "maxUploadSize": "La taille maximale est de 1 Mo.",
       "loadCustomEmojiFile": "Impossible de charger le fichier d?emoji personnalis?."
     }
+  },
+  "calendarSync": {
+    "longRunningSyncNotice": "La synchronisation du calendrier prend plus de temps que prévu. Il se peut que l'opération se déroule toujours en arrière-plan. Veuillez actualiser dans un instant.",
+    "longRunningForceSyncNotice": "La synchronisation forcée prend plus de temps que prévu. Il se peut que l'opération se déroule toujours en arrière-plan. Veuillez actualiser dans un instant.",
+    "syncCalendarsFailed": "Échec de la synchronisation des calendriers",
+    "disconnectFailed": "Échec de la déconnexion",
+    "syncFailed": "Échec de la synchronisation"
+  },
+  "liveFocus": {
+    "exitFocusMode": "Quitter le mode de mise au point",
+    "switchFocus": "Changer de focus",
+    "nextLabel": "Suivant",
+    "startsInPrefix": "dans",
+    "currentTime": "Heure actuelle",
+    "remainingLabel": "Restant",
+    "endsLabel": "Se termine",
+    "newMeetingLabel": "Nouvelle réunion"
   }
 }

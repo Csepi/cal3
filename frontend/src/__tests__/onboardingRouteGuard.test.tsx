@@ -58,14 +58,14 @@ describe('OnboardingRouteGuard component', () => {
       <MemoryRouter initialEntries={['/app']}>
         <Routes>
           <Route element={<OnboardingRouteGuard mode="require-complete" />}>
-            <Route path="/app" element={<div>App Content</div>} />
+            <Route path="/app" element={<div data-testid="app-content" />} />
           </Route>
-          <Route path="/onboarding" element={<div>Onboarding Content</div>} />
+          <Route path="/onboarding" element={<div data-testid="onboarding-content" />} />
         </Routes>
       </MemoryRouter>,
     );
 
-    expect(screen.getByText('App Content')).toBeInTheDocument();
+    expect(screen.getByTestId('app-content')).toBeInTheDocument();
   });
 
   it('redirects new users without completed onboarding to onboarding', () => {
@@ -81,14 +81,14 @@ describe('OnboardingRouteGuard component', () => {
       <MemoryRouter initialEntries={['/app']}>
         <Routes>
           <Route element={<OnboardingRouteGuard mode="require-complete" />}>
-            <Route path="/app" element={<div>App Content</div>} />
+            <Route path="/app" element={<div data-testid="app-content" />} />
           </Route>
-          <Route path="/onboarding" element={<div>Onboarding Content</div>} />
+          <Route path="/onboarding" element={<div data-testid="onboarding-content" />} />
         </Routes>
       </MemoryRouter>,
     );
 
-    expect(screen.getByText('Onboarding Content')).toBeInTheDocument();
+    expect(screen.getByTestId('onboarding-content')).toBeInTheDocument();
   });
 
   it('resolves unknown onboarding state by fetching auth profile', async () => {
@@ -104,16 +104,16 @@ describe('OnboardingRouteGuard component', () => {
       <MemoryRouter initialEntries={['/app']}>
         <Routes>
           <Route element={<OnboardingRouteGuard mode="require-complete" />}>
-            <Route path="/app" element={<div>App Content</div>} />
+            <Route path="/app" element={<div data-testid="app-content" />} />
           </Route>
-          <Route path="/onboarding" element={<div>Onboarding Content</div>} />
+          <Route path="/onboarding" element={<div data-testid="onboarding-content" />} />
         </Routes>
       </MemoryRouter>,
     );
 
     await waitFor(() => {
       expect(mockedApiService.getAuthProfile).toHaveBeenCalledTimes(1);
-      expect(screen.getByText('App Content')).toBeInTheDocument();
+      expect(screen.getByTestId('app-content')).toBeInTheDocument();
     });
   });
 });

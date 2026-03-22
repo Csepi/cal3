@@ -11,6 +11,7 @@ import { firstValueFrom, isObservable } from 'rxjs';
 import type { ApiKeyAuthContext } from '../../api-security/types';
 import { ApiKeyService } from '../../api-security/services/api-key.service';
 import { ALLOW_INCOMPLETE_ONBOARDING_KEY } from '../decorators/allow-incomplete-onboarding.decorator';
+import { bStatic } from '../../i18n/runtime';
 
 type AuthRequest = Request & {
   apiKey?: ApiKeyAuthContext;
@@ -111,7 +112,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
 
     if (user.onboardingCompleted === false) {
       throw new ForbiddenException(
-        'Onboarding must be completed before accessing this resource.',
+        bStatic('errors.onboardingMustBeCompleted'),
       );
     }
   }

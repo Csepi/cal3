@@ -1,5 +1,6 @@
 {
   "updated": "Erfolgreich aktualisiert.",
   "deleted": "Erfolgreich gel?scht.",
-  "saved": "Erfolgreich gespeichert."
+  "saved": "Erfolgreich gespeichert.",
+  "ruleExecutionCompleted": "Regelausführung erfolgreich abgeschlossen"
 }

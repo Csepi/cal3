@@ -151,16 +151,29 @@ export class UserProfileController {
     @UploadedFile() file?: UploadedImageFile,
   ) {
     if (!file) {
-      throw new BadRequestException('Profile picture file is required.');
+      throw new BadRequestException(
+        this.i18nService.t('validation.profilePictureFileRequired', {
+          lang: this.resolveLanguage(req),
+          defaultValue: 'Profile picture file is required.',
+        }),
+      );
     }
     if (!file.mimetype || !ALLOWED_PROFILE_PICTURE_MIME_TYPES.has(file.mimetype)) {
       throw new BadRequestException(
-        'Only JPG, PNG, GIF, and WEBP images are allowed.',
+        this.i18nService.t('validation.profilePictureMimeTypes', {
+          lang: this.resolveLanguage(req),
+          defaultValue: 'Only JPG, PNG, GIF, and WEBP images are allowed.',
+        }),
       );
     }
     const maxBytes = 2 * 1024 * 1024;
     if (file.size > maxBytes) {
-      throw new BadRequestException('Profile picture must be 2MB or smaller.');
+      throw new BadRequestException(
+        this.i18nService.t('validation.profilePictureFileSize', {
+          lang: this.resolveLanguage(req),
+          defaultValue: 'Profile picture must be 2MB or smaller.',
+        }),
+      );
     }
 
     const extension = this.resolveExtension(file.originalname, file.mimetype);
@@ -412,7 +425,12 @@ export class UserProfileController {
   ) {
     const label = this.normalizeSingleEventLabel(rawLabel);
     if (!label) {
-      throw new BadRequestException('Label is required.');
+      throw new BadRequestException(
+        this.i18nService.t('validation.labelRequired', {
+          lang: this.resolveLanguage(req),
+          defaultValue: 'Label is required.',
+        }),
+      );
     }
 
     const user = await this.userRepository.findOne({
@@ -420,7 +438,12 @@ export class UserProfileController {
       select: ['id', 'eventLabels'],
     });
     if (!user) {
-      throw new BadRequestException('User not found.');
+      throw new BadRequestException(
+        this.i18nService.t('errors.userNotFound', {
+          lang: this.resolveLanguage(req),
+          defaultValue: 'User not found.',
+        }),
+      );
     }
 
     const currentLabels = this.normalizeEventLabels(user.eventLabels) ?? [];

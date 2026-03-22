@@ -287,5 +287,10 @@
       "kdb97389aba96": "La couleur doit être une valeur hexadécimale valide à 6 chiffres.",
       "k1c67b13212cf": "Le corps du Markdown est limité à 8 000 caractères pour limiter les charges utiles de synchronisation."
     }
-  }
+  },
+  "uniqueUsernameAllocationFailed": "Impossible d'attribuer un nom d'utilisateur unique pour ce compte.",
+  "googleProfileMissingFromOAuthCallback": "Le profil Google est absent du rappel OAuth.",
+  "microsoftProfileMissingFromOAuthCallback": "Le profil Microsoft est absent du rappel OAuth.",
+  "onboardingMustBeCompleted": "L'intégration doit être terminée avant d'accéder à cette ressource.",
+  "userNotFound": "Utilisateur introuvable."
 }

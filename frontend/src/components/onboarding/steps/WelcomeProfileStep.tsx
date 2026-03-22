@@ -48,7 +48,7 @@ const WelcomeProfileStep: React.FC<WelcomeProfileStepProps> = ({
   onLastNameChange,
   onUseGravatar,
 }) => {
-  const { t } = useAppTranslation('auth');
+  const { t } = useAppTranslation(['auth', 'common']);
   const [gravatarUrl, setGravatarUrl] = useState<string | null>(null);
 
   useEffect(() => {
@@ -137,7 +137,7 @@ const WelcomeProfileStep: React.FC<WelcomeProfileStepProps> = ({
             />
           ) : (
             <div className="flex h-16 w-16 items-center justify-center rounded-full border border-gray-200 bg-gray-100 text-xs text-gray-500">
-              N/A
+              {t('common:app.notAvailable', { defaultValue: 'Not available' })}
             </div>
           )}
           <button
@@ -179,7 +179,7 @@ const WelcomeProfileStep: React.FC<WelcomeProfileStepProps> = ({
             />
           ) : (
             <div className="flex h-16 w-16 items-center justify-center rounded-full border border-gray-200 bg-gray-100 text-xs text-gray-500">
-              N/A
+              {t('common:app.notAvailable', { defaultValue: 'Not available' })}
             </div>
           )}
         </div>

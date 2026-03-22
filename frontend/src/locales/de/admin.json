@@ -267,5 +267,41 @@
     "fr": "Français (Französisch)",
     "es": "Español (Spanisch)",
     "hu": "Magyar (Ungarisch)"
+  },
+  "runtimeConfig": {
+    "title": "Laufzeitkonfiguration",
+    "descriptionPrefix": "Verwalten Sie Laufzeitüberschreibungen für OAuth, Umgebung, Feature-Flags und Benachrichtigungen. Verwenden",
+    "descriptionSuffix": "bei jeder Einstellung, um zum berechneten Fallback-Verhalten zurückzukehren.",
+    "source": {
+      "database": "Datenbanküberschreibung",
+      "environment": "Umgebungsvariable",
+      "default": "Standard-Fallback"
+    },
+    "notSetValue": "Nicht festgelegt",
+    "enabled": "Ermöglicht",
+    "disabled": "Deaktiviert",
+    "secretConfiguredPlaceholder": "Geheimnis konfiguriert. Geben Sie einen neuen Wert ein, um ihn zu ersetzen.",
+    "secretEnterPlaceholder": "Geben Sie den geheimen Wert ein",
+    "configuredValuePlaceholder": "Konfigurierter Wert",
+    "saveAction": "Speichern",
+    "revertDraftAction": "Entwurf zurücksetzen",
+    "restoreDefaultAction": "Standard wiederherstellen",
+    "sensitiveTag": "Empfindlich",
+    "restartRequiredTag": "Neustart erforderlich",
+    "readOnlyTag": "Nur lesen",
+    "savingTag": "Sparen...",
+    "currentValueLabel": "Aktueller Wert:",
+    "defaultValueLabel": "Standardwert:",
+    "updatedLabel": "Aktualisiert:",
+    "loadingMessage": "Laufzeitkonfiguration wird geladen...",
+    "errorTitle": "Konfigurationsfehler",
+    "backendUrlLabel": "Aufgelöste Backend-URL:",
+    "frontendUrlLabel": "Aufgelöste Frontend-URL:",
+    "searchPlaceholder": "Suchen Sie nach Schlüssel, Beschriftung oder Beschreibung",
+    "noMatchesMessage": "Keine Einstellungen passen zu Ihrem aktuellen Filter.",
+    "oauthPreviewTitle": "Berechnete OAuth-Callback-Vorschau",
+    "oauthPreviewDescription": "Dies sind die Rückruf-URLs, die derzeit aus Ihrer Laufzeitkonfiguration aufgelöst werden.",
+    "authCallbackLabel": "Auth-Rückruf",
+    "calendarSyncCallbackLabel": "Rückruf zur Kalendersynchronisierung"
   }
 }

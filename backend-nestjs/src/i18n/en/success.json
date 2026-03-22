@@ -1,5 +1,6 @@
 {
   "updated": "Updated successfully.",
   "deleted": "Deleted successfully.",
-  "saved": "Saved successfully."
+  "saved": "Saved successfully.",
+  "ruleExecutionCompleted": "Rule execution completed successfully"
 }

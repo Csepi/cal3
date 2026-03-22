@@ -287,5 +287,10 @@
       "kdb97389aba96": "A színnek érvényes 6 számjegyű hexadecimális értéknek kell lennie.",
       "k1c67b13212cf": "A Markdown törzse 8 000 karakterre korlátozódik, hogy a szinkronizálási terhelés kicsi legyen."
     }
-  }
+  },
+  "uniqueUsernameAllocationFailed": "Nem lehet egyedi felhasználónevet hozzárendelni ehhez a fiókhoz.",
+  "googleProfileMissingFromOAuthCallback": "A Google-profil hiányzik az OAuth-visszahívásból.",
+  "microsoftProfileMissingFromOAuthCallback": "A Microsoft-profil hiányzik az OAuth-visszahívásból.",
+  "onboardingMustBeCompleted": "Az erőforrás elérése előtt be kell fejezni a belépést.",
+  "userNotFound": "Felhasználó nem található."
 }

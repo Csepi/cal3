@@ -1565,5 +1565,22 @@
       "maxUploadSize": "Max upload size is 1MB.",
       "loadCustomEmojiFile": "Failed to load custom emoji file."
     }
+  },
+  "liveFocus": {
+    "exitFocusMode": "Exit focus mode",
+    "switchFocus": "Switch focus",
+    "nextLabel": "Next",
+    "startsInPrefix": "in",
+    "currentTime": "Current time",
+    "remainingLabel": "Remaining",
+    "endsLabel": "Ends",
+    "newMeetingLabel": "New meeting"
+  },
+  "calendarSync": {
+    "longRunningSyncNotice": "Calendar sync is taking longer than expected. It may still complete in the background. Please refresh in a moment.",
+    "longRunningForceSyncNotice": "Force sync is taking longer than expected. It may still complete in the background. Please refresh in a moment.",
+    "syncCalendarsFailed": "Failed to sync calendars",
+    "disconnectFailed": "Failed to disconnect",
+    "syncFailed": "Failed to sync"
   }
 }
