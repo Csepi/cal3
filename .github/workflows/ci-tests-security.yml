@@ -288,14 +288,26 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Resolve Azure smoke prerequisites
+        id: azure_smoke_prereqs
+        shell: bash
+        env:
+          AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+        run: |
+          if [[ -n "${AZURE_CREDENTIALS}" ]]; then
+            echo "has_azure_credentials=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_azure_credentials=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Azure login
-        if: ${{ secrets.AZURE_CREDENTIALS != '' }}
+        if: ${{ steps.azure_smoke_prereqs.outputs.has_azure_credentials == 'true' }}
         uses: azure/login@v2
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
       - name: Set Azure subscription
-        if: ${{ vars.AZ_SUBSCRIPTION_ID != '' && secrets.AZURE_CREDENTIALS != '' }}
+        if: ${{ vars.AZ_SUBSCRIPTION_ID != '' && steps.azure_smoke_prereqs.outputs.has_azure_credentials == 'true' }}
         run: az account set --subscription "${{ vars.AZ_SUBSCRIPTION_ID }}"
 
       - name: Backend health check
