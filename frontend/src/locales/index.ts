@@ -13,5 +13,5 @@ export const supportedLocaleNamespaces = [
   'emails',
   'notifications',
   'mobile',
+  'idlePrompts',
 ] as const;
-

@@ -2,8 +2,14 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import type { Event } from '../../types/Event';
 import type { Calendar } from '../../types/Calendar';
 import { getMeetingLinkFromEvent } from '../../utils/meetingLinks';
+import { i18n, tStatic } from '../../i18n';
+import { sessionManager } from '../../services/sessionManager';
 
-import { tStatic } from '../../i18n';
+import {
+  DEFAULT_IDLE_MEETING_FALLBACK,
+  DEFAULT_IDLE_PROMPT_FALLBACK,
+} from '../../utils/liveFocusIdlePromptSelector';
+import { getDailyIdlePromptSelection } from '../../utils/liveFocusIdlePrompts';
 
 interface TimelineViewProps {
   currentDate: Date;
@@ -348,15 +354,36 @@ const TimelineView: React.FC<TimelineViewProps> = ({
         timeFormat,
         resolvedTimezone,
         focusEvent.isAllDay,
-      )}${focusEvent.calendarName ? ` â€¢ ${focusEvent.calendarName}` : ''}${focusEvent.location ? ` â€¢ ${focusEvent.location}` : ''}`;
+      )}${focusEvent.calendarName ? ` • ${focusEvent.calendarName}` : ''}${focusEvent.location ? ` • ${focusEvent.location}` : ''}`;
       const normalizedNotes = focusEvent.notes?.replace(/\s+/g, ' ').trim();
-      return normalizedNotes ? `${base} â€¢ ${normalizedNotes}` : base;
+      return normalizedNotes ? `${base} • ${normalizedNotes}` : base;
     }
     if (nextEvent) {
       return `Next meeting starts at ${formatTime(nextEvent.start, timeFormat, resolvedTimezone)}.`;
     }
-    return 'No active meeting. Use this block for focused work.';
+    return DEFAULT_IDLE_MEETING_FALLBACK;
   }, [focusEvent, nextEvent, resolvedTimezone, timeFormat]);
+  const showIdlePrompt = !focusEvent && !nextEvent;
+  const idlePromptLine = useMemo(() => {
+    if (!showIdlePrompt) {
+      return null;
+    }
+
+    // Daily idle message is deterministic by local date + user + device.
+    // Update `idle_prompts.txt` and locale `idlePrompts` files to change catalog content.
+    const selection = getDailyIdlePromptSelection({
+      date: now,
+      timeZone: resolvedTimezone,
+      user: sessionManager.getCurrentUser(),
+      translate: (key, fallbackValue) =>
+        i18n.t(`idlePrompts:${key}`, { defaultValue: fallbackValue }),
+    });
+
+    if (selection.hasError) {
+      return DEFAULT_IDLE_PROMPT_FALLBACK;
+    }
+    return selection.text || DEFAULT_IDLE_PROMPT_FALLBACK;
+  }, [now, resolvedTimezone, showIdlePrompt]);
   const currentProgress = focusEvent
     ? currentDuration > 0
       ? clamp(
@@ -928,6 +955,11 @@ const TimelineView: React.FC<TimelineViewProps> = ({
               <p className="text-xs md:text-sm opacity-90 line-clamp-2">
                 {focusSummary}
               </p>
+              {showIdlePrompt && (
+                <p className="text-xs md:text-sm font-medium italic text-white/95">
+                  {idlePromptLine}
+                </p>
+              )}
               <div className="flex flex-wrap items-center gap-1.5">
                 <span className="inline-flex items-center rounded-full bg-white/20 px-2 py-0.5 text-[11px] font-semibold">
                   {focusEvent

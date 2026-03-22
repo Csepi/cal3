@@ -20,6 +20,7 @@ export const I18N_NAMESPACES = [
   'emails',
   'notifications',
   'mobile',
+  'idlePrompts',
 ] as const;
 
 export type I18nNamespace = (typeof I18N_NAMESPACES)[number];
@@ -41,4 +42,3 @@ export const normalizeLanguage = (
 
   return isSupportedLanguage(base) ? base : FALLBACK_LANGUAGE;
 };
-
