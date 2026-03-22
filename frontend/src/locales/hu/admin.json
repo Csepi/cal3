@@ -259,6 +259,15 @@
     "initBookingConfirm": "Ez nyilvános foglalási tokeneket generál az összes erőforráshoz és alapértelmezett működési időket az összes erőforrás típushoz. Folytatja?",
     "initBookingSuccess": "Nyilvános foglalás sikeresen inicializálva!\n\nFrissített erőforrások: {{resourcesUpdated}}\nErőforrás típusok órákkal: {{resourceTypesWithHours}}{{errors}}",
     "initBookingError": "Nyilvános foglalás inicializálása sikertelen: {{error}}",
+    "initBookingErrors": "\n\nHibák: {{errors}}",
+    "unknownError": "Ismeretlen hiba",
+    "unknownItem": "Ismeretlen",
+    "reservationNumber": "Foglalás #{{id}}",
+    "createResourceTypeError": "Nem sikerült létrehozni az erőforrás típust: {{error}}",
+    "updateResourceTypeError": "Nem sikerült frissíteni az erőforrás típust: {{error}}",
+    "createResourceError": "Nem sikerült létrehozni az erőforrást: {{error}}",
+    "updateResourceError": "Nem sikerült frissíteni az erőforrást: {{error}}",
+    "createReservationError": "Nem sikerült létrehozni a foglalást: {{error}}",
     "error": "Hiba:"
   },
   "languages": {

@@ -1568,6 +1568,7 @@
   },
   "liveFocus": {
     "exitFocusMode": "Verlassen Sie den Fokusmodus",
+    "cleanFocusMode": "Klarer Fokusmodus",
     "switchFocus": "Fokus wechseln",
     "nextLabel": "Nächste",
     "startsInPrefix": "In",
@@ -1575,7 +1576,21 @@
     "remainingLabel": "Übrig",
     "endsLabel": "Endet",
     "newMeetingLabel": "Neues Treffen",
-    "focusTimelineDate": "Fokus-Zeitleiste - {{date}}"
+    "focusTimelineDate": "Fokus-Zeitleiste - {{date}}",
+    "noEventRightNow": "Derzeit kein Ereignis",
+    "noActiveMeeting": "Kein aktives Meeting. Nutzen Sie diesen Block für konzentrierte Arbeit.",
+    "nextMeetingStartsAt": "Nächstes Meeting startet um {{time}}.",
+    "inUntil": "In {{title}} bis {{time}}",
+    "freeUntil": "{{duration}} frei bis {{time}}",
+    "noMeetingsScheduledInHours": "In den nächsten {{hours}} Stunden sind keine Meetings geplant.",
+    "statusRemaining": "{{duration}} verbleibend",
+    "statusNextStartsIn": "Nächster Start in {{duration}}",
+    "statusFreeForNow": "Derzeit frei",
+    "statusLive": "Live",
+    "statusPast": "Vergangen",
+    "statusUpcoming": "Bevorstehend",
+    "locationPrefix": "Ort: ",
+    "joinMeetingAria": "{{title}}-Meeting beitreten"
   },
   "calendarSync": {
     "longRunningSyncNotice": "Die Kalendersynchronisierung dauert länger als erwartet. Der Vorgang wird möglicherweise weiterhin im Hintergrund ausgeführt. Bitte aktualisieren Sie es gleich.",
@@ -1585,27 +1600,67 @@
     "syncFailed": "Synchronisierung fehlgeschlagen"
   },
   "tasksWorkspace": {
-    "anyDueDate": "Beliebiges F?lligkeitsdatum",
-    "selectedWeek": "Ausgew?hlte Woche",
-    "pickWeek": "Woche ausw?hlen",
-    "selectedMonth": "Ausgew?hlter Monat",
-    "pickMonth": "Monat ausw?hlen",
-    "pickYear": "Jahr ausw?hlen",
+    "anyDueDate": "Beliebiges Fälligkeitsdatum",
+    "selectedWeek": "Ausgewählte Woche",
+    "pickWeek": "Woche auswählen",
+    "selectedMonth": "Ausgewählter Monat",
+    "pickMonth": "Monat auswählen",
+    "pickYear": "Jahr auswählen",
     "yearWithValue": "Jahr {{year}}",
-    "selectWeek": "Woche w?hlen",
-    "selectMonth": "Monat w?hlen",
-    "selectYear": "Jahr w?hlen",
-    "selectedCount": "{{count}} ausgew?hlt"
+    "selectWeek": "Woche wählen",
+    "selectMonth": "Monat wählen",
+    "selectYear": "Jahr wählen",
+    "selectedCount": "{{count}} ausgewählt"
   },
   "agentActions": {
     "calendarEventsRead": {
       "label": "Kalenderereignisse lesen",
-      "description": "Erlaubt dem Agenten, Ereignisse (Titel, Zeiten, Details) aus ausgew?hlten Kalendern zu lesen.",
+      "description": "Erlaubt dem Agenten, Ereignisse (Titel, Zeiten, Details) aus ausgewählten Kalendern zu lesen.",
       "scopeLabel": "Kalender zum Lesen von Ereignissen",
-      "scopeEmptyHint": "W?hlen Sie Kalender aus, deren Ereignisse der Agent einsehen darf."
+      "scopeEmptyHint": "Wählen Sie Kalender aus, deren Ereignisse der Agent einsehen darf."
+    }
+  },
+  "notificationCenter": {
+    "threadNumber": "Thread #{{id}}",
+    "muteThread": "Thread stummschalten",
+    "unmuteThread": "Thread-Stummschaltung aufheben",
+    "archiveThread": "Thread archivieren",
+    "restoreThread": "Thread wiederherstellen",
+    "muteScope": "{{label}} stummschalten",
+    "unmuteScope": "Stummschaltung für {{label}} aufheben",
+    "mute": "Stummschalten",
+    "unmute": "Stummschaltung aufheben",
+    "archive": "Archivieren",
+    "restore": "Wiederherstellen",
+    "noNotificationsForConversation": "Für diese Unterhaltung wurden keine Benachrichtigungen gefunden.",
+    "noNotificationsToDisplay": "Keine Benachrichtigungen zum Anzeigen.",
+    "notification": "Benachrichtigung"
+  },
+  "personalLogs": {
+    "noExtraDetails": "Keine zusätzlichen Details",
+    "privacyActionFailed": "Datenschutzaktion fehlgeschlagen.",
+    "personalDataExportReady": "Export persönlicher Daten wurde erstellt und heruntergeladen.",
+    "deleteRequestSubmitted": "Löschantrag eingereicht. Sie können den Status in der Tabelle unten verfolgen.",
+    "privacyPolicyAccepted": "Annahme der Datenschutzerklärung erfasst.",
+    "decisionAccepted": "akzeptiert",
+    "decisionRevoked": "widerrufen",
+    "consentMarked": "{{label}} als {{decision}} markiert.",
+    "decisionOnDate": "{{decision}} am {{date}}",
+    "noDecisionYet": "Noch keine Entscheidung",
+    "accept": "Akzeptieren",
+    "revoke": "Widerrufen",
+    "notAccepted": "nicht akzeptiert",
+    "notAvailable": "k. A.",
+    "failedToLoad": "Persönliche Protokolle konnten nicht geladen werden.",
+    "consentTypes": {
+      "privacyPolicy": "Datenschutzerklärung",
+      "termsOfService": "Nutzungsbedingungen",
+      "marketingEmail": "Marketing-E-Mail",
+      "dataProcessing": "Datenverarbeitung",
+      "cookieAnalytics": "Cookie-Analyse"
     }
   },
   "a11y": {
-    "selected": "ausgew?hlt"
+    "selected": "ausgewählt"
   }
 }

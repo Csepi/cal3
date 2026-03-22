@@ -259,6 +259,15 @@
     "initBookingConfirm": "Cela générera des jetons de réservation publique pour toutes les ressources et des heures d'ouverture par défaut pour tous les types de ressources. Continuer ?",
     "initBookingSuccess": "Réservation publique initialisée avec succès !\n\nRessources mises à jour : {{resourcesUpdated}}\nTypes de ressources avec heures : {{resourceTypesWithHours}}{{errors}}",
     "initBookingError": "Échec de l'initialisation de la réservation publique : {{error}}",
+    "initBookingErrors": "\n\nErreurs : {{errors}}",
+    "unknownError": "Erreur inconnue",
+    "unknownItem": "Inconnu",
+    "reservationNumber": "Réservation #{{id}}",
+    "createResourceTypeError": "Échec de la création du type de ressource : {{error}}",
+    "updateResourceTypeError": "Échec de la mise à jour du type de ressource : {{error}}",
+    "createResourceError": "Échec de la création de la ressource : {{error}}",
+    "updateResourceError": "Échec de la mise à jour de la ressource : {{error}}",
+    "createReservationError": "Échec de la création de la réservation : {{error}}",
     "error": "Erreur :"
   },
   "languages": {

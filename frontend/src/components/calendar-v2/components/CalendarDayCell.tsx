@@ -191,7 +191,7 @@ export const CalendarDayCell = memo<CalendarDayCellProps>(({
               color: event.color || theme.primary
             }}
             onClick={(e) => handleEventClick(e, event)}
-            title={`${event.title}${event.startTime ? ` at ${event.startTime}` : ''}`}
+            title={`${event.title}${event.startTime ? ` • ${event.startTime}` : ''}`}
           >
             {event.title}
           </div>

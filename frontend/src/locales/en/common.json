@@ -1569,13 +1569,28 @@
   "liveFocus": {
     "focusTimelineDate": "Focus timeline - {{date}}",
     "exitFocusMode": "Exit focus mode",
+    "cleanFocusMode": "Clean focus mode",
     "switchFocus": "Switch focus",
     "nextLabel": "Next",
     "startsInPrefix": "in",
     "currentTime": "Current time",
     "remainingLabel": "Remaining",
     "endsLabel": "Ends",
-    "newMeetingLabel": "New meeting"
+    "newMeetingLabel": "New meeting",
+    "noEventRightNow": "No event right now",
+    "noActiveMeeting": "No active meeting. Use this block for focused work.",
+    "nextMeetingStartsAt": "Next meeting starts at {{time}}.",
+    "inUntil": "In {{title}} until {{time}}",
+    "freeUntil": "{{duration}} free until {{time}}",
+    "noMeetingsScheduledInHours": "No meetings scheduled in the next {{hours}} hours.",
+    "statusRemaining": "{{duration}} remaining",
+    "statusNextStartsIn": "Next starts in {{duration}}",
+    "statusFreeForNow": "Free for now",
+    "statusLive": "Live",
+    "statusPast": "Past",
+    "statusUpcoming": "Upcoming",
+    "locationPrefix": "Location: ",
+    "joinMeetingAria": "Join {{title}} meeting"
   },
   "tasksWorkspace": {
     "anyDueDate": "Any due date",
@@ -1603,6 +1618,46 @@
       "description": "Allow the agent to read events (titles, times, details) from specified calendars.",
       "scopeLabel": "Calendars available for reading events",
       "scopeEmptyHint": "Choose calendars whose events the agent may inspect."
+    }
+  },
+  "notificationCenter": {
+    "threadNumber": "Thread #{{id}}",
+    "muteThread": "Mute thread",
+    "unmuteThread": "Unmute thread",
+    "archiveThread": "Archive thread",
+    "restoreThread": "Restore thread",
+    "muteScope": "Mute {{label}}",
+    "unmuteScope": "Unmute {{label}}",
+    "mute": "Mute",
+    "unmute": "Unmute",
+    "archive": "Archive",
+    "restore": "Restore",
+    "noNotificationsForConversation": "No notifications found for this conversation.",
+    "noNotificationsToDisplay": "No notifications to display.",
+    "notification": "Notification"
+  },
+  "personalLogs": {
+    "noExtraDetails": "No extra details",
+    "privacyActionFailed": "Privacy action failed.",
+    "personalDataExportReady": "Personal data export generated and downloaded.",
+    "deleteRequestSubmitted": "Delete request submitted. You can follow status in the request table below.",
+    "privacyPolicyAccepted": "Privacy policy acceptance recorded.",
+    "decisionAccepted": "accepted",
+    "decisionRevoked": "revoked",
+    "consentMarked": "{{label}} marked as {{decision}}.",
+    "decisionOnDate": "{{decision}} on {{date}}",
+    "noDecisionYet": "No decision yet",
+    "accept": "Accept",
+    "revoke": "Revoke",
+    "notAccepted": "not accepted",
+    "notAvailable": "n/a",
+    "failedToLoad": "Failed to load personal logs.",
+    "consentTypes": {
+      "privacyPolicy": "Privacy Policy",
+      "termsOfService": "Terms of Service",
+      "marketingEmail": "Marketing Email",
+      "dataProcessing": "Data Processing",
+      "cookieAnalytics": "Cookie Analytics"
     }
   },
   "a11y": {

@@ -259,6 +259,15 @@
     "initBookingConfirm": "Dies generiert öffentliche Buchungs-Tokens für alle Ressourcen und Standard-Betriebszeiten für alle Ressourcentypen. Fortfahren?",
     "initBookingSuccess": "Öffentliche Buchung erfolgreich initialisiert!\n\nRessourcen aktualisiert: {{resourcesUpdated}}\nRessourcentypen mit Zeiten: {{resourceTypesWithHours}}{{errors}}",
     "initBookingError": "Fehler beim Initialisieren der öffentlichen Buchung: {{error}}",
+    "initBookingErrors": "\n\nFehler: {{errors}}",
+    "unknownError": "Unbekannter Fehler",
+    "unknownItem": "Unbekannt",
+    "reservationNumber": "Reservierung #{{id}}",
+    "createResourceTypeError": "Fehler beim Erstellen des Ressourcentyps: {{error}}",
+    "updateResourceTypeError": "Fehler beim Aktualisieren des Ressourcentyps: {{error}}",
+    "createResourceError": "Fehler beim Erstellen der Ressource: {{error}}",
+    "updateResourceError": "Fehler beim Aktualisieren der Ressource: {{error}}",
+    "createReservationError": "Fehler beim Erstellen der Reservierung: {{error}}",
     "error": "Fehler:"
   },
   "languages": {

@@ -14,6 +14,7 @@ import type { Event } from '../../../types/Event';
 import { getMeetingLinkFromEvent } from '../../../utils/meetingLinks';
 import { TouchableArea } from '../atoms/TouchableArea';
 import { Icon } from '../atoms/Icon';
+import { useAppTranslation } from '../../../i18n/useAppTranslation';
 
 import { tStatic } from '../../../i18n';
 
@@ -30,6 +31,7 @@ export const EventListItem: React.FC<EventListItemProps> = ({
   themeColor,
   compact = false,
 }) => {
+  const { t } = useAppTranslation(['common']);
   const eventColor = event.color || event.calendar?.color || themeColor;
   const meetingLink = getMeetingLinkFromEvent(event);
 
@@ -37,7 +39,9 @@ export const EventListItem: React.FC<EventListItemProps> = ({
     if (!time) return '';
     const [hours, minutes] = time.split(':');
     const hour = parseInt(hours);
-    const period = hour >= 12 ? 'PM' : 'AM';
+    const period = hour >= 12
+      ? t('time.pm', { ns: 'common', defaultValue: 'PM' })
+      : t('time.am', { ns: 'common', defaultValue: 'AM' });
     const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
     return `${displayHour}:${minutes} ${period}`;
   };
@@ -103,7 +107,11 @@ export const EventListItem: React.FC<EventListItemProps> = ({
                 e.stopPropagation();
                 window.open(meetingLink, '_blank', 'noopener,noreferrer');
               }}
-              aria-label={`Join ${event.title} meeting`}
+              aria-label={t('liveFocus.joinMeetingAria', {
+                ns: 'common',
+                title: event.title,
+                defaultValue: 'Join {{title}} meeting',
+              })}
             >
               {tStatic('common:auto.frontend.ke0d73143de80')}</button>
           )}
@@ -115,7 +123,7 @@ export const EventListItem: React.FC<EventListItemProps> = ({
                 className="w-2 h-2 rounded-full"
                 style={{ backgroundColor: eventColor }}
               />
-              <span>{event.calendar?.name || 'Calendar'}</span>
+              <span>{event.calendar?.name || t('navigation.calendar', { ns: 'common', defaultValue: 'Calendar' })}</span>
             </div>
           )}
         </div>

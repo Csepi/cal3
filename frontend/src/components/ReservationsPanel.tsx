@@ -392,7 +392,7 @@ const ReservationsPanel: React.FC<ReservationsPanelProps> = ({ themeColor = '#3b
   };
 
   const getDeleteItemName = (item: DeletableItem | null): string => {
-    if (!item) return 'Unknown';
+    if (!item) return tStatic('admin:reservations.unknownItem');
     if ('name' in item && typeof item.name === 'string') {
       return item.name;
     }
@@ -403,7 +403,7 @@ const ReservationsPanel: React.FC<ReservationsPanelProps> = ({ themeColor = '#3b
     if (reservationCustomerName) {
       return reservationCustomerName;
     }
-    return `Reservation #${item.id}`;
+    return tStatic('admin:reservations.reservationNumber', { id: item.id });
   };
 
   const handleDeleteCancel = () => {
@@ -430,13 +430,29 @@ const ReservationsPanel: React.FC<ReservationsPanelProps> = ({ themeColor = '#3b
         errors: string[];
       };
 
-      alert(`Public booking initialized successfully!\n\nResources updated: ${result.resourcesUpdated}\nResource types with hours: ${result.resourceTypesWithHours}${result.errors.length > 0 ? '\n\nErrors: ' + result.errors.join('\n') : ''}`);
+      const errors =
+        result.errors.length > 0
+          ? tStatic('admin:reservations.initBookingErrors', {
+            errors: result.errors.join('\n'),
+          })
+          : '';
+      alert(
+        tStatic('admin:reservations.initBookingSuccess', {
+          resourcesUpdated: result.resourcesUpdated,
+          resourceTypesWithHours: result.resourceTypesWithHours,
+          errors,
+        }),
+      );
 
       // Reload data to show updated tokens
       await loadOrganizationData();
     } catch (err: unknown) {
       console.error('Failed to initialize public booking:', err);
-      alert(`Failed to initialize public booking: ${getErrorMessage(err, 'Unknown error')}`);
+      alert(
+        tStatic('admin:reservations.initBookingError', {
+          error: getErrorMessage(err, tStatic('admin:reservations.unknownError')),
+        }),
+      );
     } finally {
       setLoading(false);
     }
@@ -531,7 +547,15 @@ const ReservationsPanel: React.FC<ReservationsPanelProps> = ({ themeColor = '#3b
       });
     } catch (err: unknown) {
       console.error(`Failed to ${resourceTypeModal.editMode ? 'update' : 'create'} resource type:`, err);
-      alert(`Failed to ${resourceTypeModal.editMode ? 'update' : 'create'} resource type: ${getErrorMessage(err, 'Unknown error')}`);
+      alert(
+        resourceTypeModal.editMode
+          ? tStatic('admin:reservations.updateResourceTypeError', {
+            error: getErrorMessage(err, tStatic('admin:reservations.unknownError')),
+          })
+          : tStatic('admin:reservations.createResourceTypeError', {
+            error: getErrorMessage(err, tStatic('admin:reservations.unknownError')),
+          }),
+      );
       setResourceTypeModal(prev => ({ ...prev, loading: false }));
     }
   };
@@ -634,7 +658,15 @@ const ReservationsPanel: React.FC<ReservationsPanelProps> = ({ themeColor = '#3b
       });
     } catch (err: unknown) {
       console.error(`Failed to ${resourceModal.editMode ? 'update' : 'create'} resource:`, err);
-      alert(`Failed to ${resourceModal.editMode ? 'update' : 'create'} resource: ${getErrorMessage(err, 'Unknown error')}`);
+      alert(
+        resourceModal.editMode
+          ? tStatic('admin:reservations.updateResourceError', {
+            error: getErrorMessage(err, tStatic('admin:reservations.unknownError')),
+          })
+          : tStatic('admin:reservations.createResourceError', {
+            error: getErrorMessage(err, tStatic('admin:reservations.unknownError')),
+          }),
+      );
       setResourceModal(prev => ({ ...prev, loading: false }));
     }
   };
@@ -719,7 +751,11 @@ const ReservationsPanel: React.FC<ReservationsPanelProps> = ({ themeColor = '#3b
       });
     } catch (err: unknown) {
       console.error('Failed to create reservation:', err);
-      alert(`Failed to create reservation: ${getErrorMessage(err, 'Unknown error')}`);
+      alert(
+        tStatic('admin:reservations.createReservationError', {
+          error: getErrorMessage(err, tStatic('admin:reservations.unknownError')),
+        }),
+      );
       setReservationModal(prev => ({ ...prev, loading: false }));
     }
   };
@@ -832,10 +868,10 @@ const ReservationsPanel: React.FC<ReservationsPanelProps> = ({ themeColor = '#3b
             <div className="mb-6">
               <nav className="flex flex-wrap gap-2 p-2 bg-white/70 border border-blue-200 rounded-3xl backdrop-blur-md">
                 {[
-                  { key: 'overview', label: 'Overview', icon: '📊' },
-                  { key: 'types', label: 'Resource Types', icon: '📋' },
-                  { key: 'resources', label: 'Resources', icon: '🪑' },
-                  { key: 'reservations', label: 'Reservations', icon: '📆' }
+                  { key: 'overview', label: tStatic('admin:reservations.overviewTab'), icon: '📊' },
+                  { key: 'types', label: tStatic('admin:reservations.resourceTypesTab'), icon: '📋' },
+                  { key: 'resources', label: tStatic('admin:reservations.resourcesTab'), icon: '🪑' },
+                  { key: 'reservations', label: tStatic('admin:reservations.reservationsTab'), icon: '📆' }
                 ].map((tab) => (
                   <button
                     key={tab.key}

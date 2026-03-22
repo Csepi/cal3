@@ -52,15 +52,24 @@ const eventDescription = (event: PersonalAuditEvent): string => {
   }
   return event.resourceType
     ? `${event.resourceType}:${event.resourceId ?? '-'}`
-    : 'No extra details';
+    : tStatic('common:personalLogs.noExtraDetails');
 };
 
-const consentLabel: Record<ConsentType, string> = {
-  privacy_policy: 'Privacy Policy',
-  terms_of_service: 'Terms of Service',
-  marketing_email: 'Marketing Email',
-  data_processing: 'Data Processing',
-  cookie_analytics: 'Cookie Analytics',
+const consentLabel = (type: ConsentType): string => {
+  switch (type) {
+    case 'privacy_policy':
+      return tStatic('common:personalLogs.consentTypes.privacyPolicy');
+    case 'terms_of_service':
+      return tStatic('common:personalLogs.consentTypes.termsOfService');
+    case 'marketing_email':
+      return tStatic('common:personalLogs.consentTypes.marketingEmail');
+    case 'data_processing':
+      return tStatic('common:personalLogs.consentTypes.dataProcessing');
+    case 'cookie_analytics':
+      return tStatic('common:personalLogs.consentTypes.cookieAnalytics');
+    default:
+      return type;
+  }
 };
 
 const downloadJson = (filename: string, payload: unknown): void => {
@@ -146,7 +155,9 @@ export const PersonalLogsPanel: React.FC<PersonalLogsPanelProps> = ({
       await fn();
     } catch (error) {
       const message =
-        error instanceof Error ? error.message : 'Privacy action failed.';
+        error instanceof Error
+          ? error.message
+          : tStatic('common:personalLogs.privacyActionFailed');
       setPrivacyError(message);
     } finally {
       setPrivacyBusy(false);
@@ -158,7 +169,7 @@ export const PersonalLogsPanel: React.FC<PersonalLogsPanelProps> = ({
       const payload = await exportPersonalData();
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
       downloadJson(`personal-data-export-${timestamp}.json`, payload);
-      setPrivacyMessage('Personal data export generated and downloaded.');
+      setPrivacyMessage(tStatic('common:personalLogs.personalDataExportReady'));
       await dsrQuery.refetch();
     });
 
@@ -172,7 +183,7 @@ export const PersonalLogsPanel: React.FC<PersonalLogsPanelProps> = ({
       setDeleteReason('');
       setConfirmEmail('');
       setPrivacyMessage(
-        'Delete request submitted. You can follow status in the request table below.',
+        tStatic('common:personalLogs.deleteRequestSubmitted'),
       );
       await dsrQuery.refetch();
     });
@@ -185,7 +196,12 @@ export const PersonalLogsPanel: React.FC<PersonalLogsPanelProps> = ({
         source: 'personal-privacy-center',
       });
       setPrivacyMessage(
-        `${consentLabel[type]} marked as ${accepted ? 'accepted' : 'revoked'}.`,
+        tStatic('common:personalLogs.consentMarked', {
+          label: consentLabel(type),
+          decision: accepted
+            ? tStatic('common:personalLogs.decisionAccepted')
+            : tStatic('common:personalLogs.decisionRevoked'),
+        }),
       );
       await consentQuery.refetch();
     });
@@ -193,7 +209,7 @@ export const PersonalLogsPanel: React.FC<PersonalLogsPanelProps> = ({
   const handlePrivacyPolicyAccept = () =>
     withPrivacyAction(async () => {
       await acceptPrivacyPolicy('2026-03');
-      setPrivacyMessage('Privacy policy acceptance recorded.');
+      setPrivacyMessage(tStatic('common:personalLogs.privacyPolicyAccepted'));
       await Promise.all([consentQuery.refetch(), privacyReportQuery.refetch()]);
     });
 
@@ -285,13 +301,14 @@ export const PersonalLogsPanel: React.FC<PersonalLogsPanelProps> = ({
             <p className="text-xs uppercase tracking-wide text-slate-500">
               {tStatic('common:auto.frontend.k9db108ba6b7f')}</p>
             <p className="mt-1 text-sm font-semibold text-slate-900">
-              {privacyReportQuery.data?.profile.privacyPolicyVersion ?? 'not accepted'}
+              {privacyReportQuery.data?.profile.privacyPolicyVersion
+                ?? tStatic('common:personalLogs.notAccepted')}
             </p>
             <p className="text-xs text-slate-500">
               {tStatic('common:auto.frontend.kadc7aca56eca')}{' '}
               {privacyReportQuery.data?.profile.privacyPolicyAcceptedAt
                 ? formatDateTime(privacyReportQuery.data.profile.privacyPolicyAcceptedAt)
-                : 'n/a'}
+                : tStatic('common:personalLogs.notAvailable')}
             </p>
             <button
               type="button"
@@ -305,13 +322,13 @@ export const PersonalLogsPanel: React.FC<PersonalLogsPanelProps> = ({
             <p className="text-xs uppercase tracking-wide text-slate-500">
               {tStatic('common:auto.frontend.kca5abc1d090f')}</p>
             <p className="mt-1 text-sm text-slate-700">
-              {tStatic('common:auto.frontend.kf5e92392fe00')}{privacyReportQuery.data?.footprint.ownedCalendars ?? 'n/a'}
+              {tStatic('common:auto.frontend.kf5e92392fe00')}{privacyReportQuery.data?.footprint.ownedCalendars ?? tStatic('common:personalLogs.notAvailable')}
             </p>
             <p className="text-sm text-slate-700">
-              {tStatic('common:auto.frontend.kf82d30abe9f0')}{privacyReportQuery.data?.footprint.createdEvents ?? 'n/a'}
+              {tStatic('common:auto.frontend.kf82d30abe9f0')}{privacyReportQuery.data?.footprint.createdEvents ?? tStatic('common:personalLogs.notAvailable')}
             </p>
             <p className="text-sm text-slate-700">
-              {tStatic('common:auto.frontend.k7f0bc90f4685')}{privacyReportQuery.data?.footprint.ownedTasks ?? 'n/a'}
+              {tStatic('common:auto.frontend.k7f0bc90f4685')}{privacyReportQuery.data?.footprint.ownedTasks ?? tStatic('common:personalLogs.notAvailable')}
             </p>
           </article>
           <article className="rounded-xl border border-slate-200 bg-slate-50 p-3">
@@ -353,12 +370,20 @@ export const PersonalLogsPanel: React.FC<PersonalLogsPanelProps> = ({
                 >
                   <div>
                     <p className="text-sm font-medium text-slate-800">
-                      {consentLabel[type]}
+                      {consentLabel(type)}
                     </p>
                     <p className="text-xs text-slate-500">
                       {latest
-                        ? `${latest.decision} on ${formatDateTime(latest.createdAt)}`
-                        : 'No decision yet'}
+                        ? tStatic('common:personalLogs.decisionOnDate', {
+                          decision:
+                            latest.decision === 'accepted'
+                              ? tStatic('common:personalLogs.decisionAccepted')
+                              : latest.decision === 'revoked'
+                                ? tStatic('common:personalLogs.decisionRevoked')
+                                : latest.decision,
+                          date: formatDateTime(latest.createdAt),
+                        })
+                        : tStatic('common:personalLogs.noDecisionYet')}
                     </p>
                   </div>
                   <button
@@ -367,7 +392,9 @@ export const PersonalLogsPanel: React.FC<PersonalLogsPanelProps> = ({
                     onClick={() => handleConsentToggle(type, !accepted)}
                     className="rounded border border-slate-300 px-2 py-1 text-xs text-slate-700 hover:bg-slate-50 disabled:opacity-60"
                   >
-                    {accepted ? 'Revoke' : 'Accept'}
+                    {accepted
+                      ? tStatic('common:personalLogs.revoke')
+                      : tStatic('common:personalLogs.accept')}
                   </button>
                 </div>
               );
@@ -410,7 +437,9 @@ export const PersonalLogsPanel: React.FC<PersonalLogsPanelProps> = ({
                     {formatDateTime(item.createdAt)}
                   </td>
                   <td className="px-3 py-2 text-slate-600">
-                    {item.completedAt ? formatDateTime(item.completedAt) : 'n/a'}
+                    {item.completedAt
+                      ? formatDateTime(item.completedAt)
+                      : tStatic('common:personalLogs.notAvailable')}
                   </td>
                 </tr>
               ))}
@@ -475,7 +504,7 @@ export const PersonalLogsPanel: React.FC<PersonalLogsPanelProps> = ({
         )}
         {feedQuery.isError && (
           <div className="px-4 py-6 text-sm text-red-600">
-            {(feedQuery.error as Error).message || 'Failed to load personal logs.'}
+            {(feedQuery.error as Error).message || tStatic('common:personalLogs.failedToLoad')}
           </div>
         )}
         {!feedQuery.isLoading && !feedQuery.isError && (

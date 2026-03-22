@@ -37,7 +37,7 @@ const MonthView: React.FC<MonthViewProps> = ({
   reservations = [],
   organizations = []
 }) => {
-  const { i18n } = useAppTranslation(['common', 'calendar']);
+  const { t, i18n } = useAppTranslation(['common', 'calendar']);
   const locale = i18n.resolvedLanguage || i18n.language || undefined;
   // Helper function to get background style based on theme color
   const getBackgroundStyle = () => {
@@ -239,7 +239,7 @@ const MonthView: React.FC<MonthViewProps> = ({
                           e.stopPropagation();
                           onEventClick(event);
                         }}
-                        title={`${event.title}\n${event.startTime || 'All day'} - ${event.endTime || ''}\n${event.location || ''}`}
+                        title={`${event.title}\n${event.startTime || t('events.allDay', { ns: 'calendar', defaultValue: 'All day' })} - ${event.endTime || ''}\n${event.location || ''}`}
                       >
                         <div className="font-medium truncate flex items-center">
                           {event.title}
@@ -260,7 +260,11 @@ const MonthView: React.FC<MonthViewProps> = ({
                               e.stopPropagation();
                               window.open(meetingLink, '_blank', 'noopener,noreferrer');
                             }}
-                            aria-label={`Join ${event.title} meeting`}
+                            aria-label={t('liveFocus.joinMeetingAria', {
+                              ns: 'common',
+                              title: event.title,
+                              defaultValue: 'Join {{title}} meeting',
+                            })}
                           >
                             {tStatic('common:auto.frontend.ke0d73143de80')}</button>
                         )}
@@ -359,7 +363,11 @@ const MonthView: React.FC<MonthViewProps> = ({
                                 e.stopPropagation();
                                 window.open(meetingLink, '_blank', 'noopener,noreferrer');
                               }}
-                              aria-label={`Join ${event.title} meeting`}
+                              aria-label={t('liveFocus.joinMeetingAria', {
+                                ns: 'common',
+                                title: event.title,
+                                defaultValue: 'Join {{title}} meeting',
+                              })}
                             >
                               {tStatic('common:auto.frontend.ke0d73143de80')}</button>
                           )}

@@ -5,10 +5,6 @@ import { getMeetingLinkFromEvent } from '../../utils/meetingLinks';
 import { i18n, tStatic } from '../../i18n';
 import { sessionManager } from '../../services/sessionManager';
 
-import {
-  DEFAULT_IDLE_MEETING_FALLBACK,
-  DEFAULT_IDLE_PROMPT_FALLBACK,
-} from '../../utils/liveFocusIdlePromptSelector';
 import { getDailyIdlePromptSelection } from '../../utils/liveFocusIdlePrompts';
 
 interface TimelineViewProps {
@@ -145,7 +141,7 @@ const formatTimeRange = (
   timeZone?: string,
   isAllDay?: boolean,
 ) => {
-  if (isAllDay) return 'All day';
+  if (isAllDay) return tStatic('calendar:events.allDay');
   return `${formatTime(start, timeFormat, timeZone)} - ${formatTime(end, timeFormat, timeZone)}`;
 };
 
@@ -348,6 +344,8 @@ const TimelineView: React.FC<TimelineViewProps> = ({
     ? Math.max(0, nextEvent.start.getTime() - now.getTime())
     : 0;
   const showIdlePrompt = !focusEvent && !nextEvent;
+  const idleMeetingFallback = tStatic('common:liveFocus.noActiveMeeting');
+  const idlePromptFallback = tStatic('common:liveFocus.noEventRightNow');
   const idlePromptSelection = useMemo(() => {
     if (!showIdlePrompt) {
       return null;
@@ -378,22 +376,31 @@ const TimelineView: React.FC<TimelineViewProps> = ({
       return normalizedNotes ? `${base} • ${normalizedNotes}` : base;
     }
     if (nextEvent) {
-      return `Next meeting starts at ${formatTime(nextEvent.start, timeFormat, resolvedTimezone)}.`;
+      return tStatic('common:liveFocus.nextMeetingStartsAt', {
+        time: formatTime(nextEvent.start, timeFormat, resolvedTimezone),
+      });
     }
     if (idlePromptSelection?.hasError) {
-      return DEFAULT_IDLE_MEETING_FALLBACK;
+      return idleMeetingFallback;
     }
     return null;
-  }, [focusEvent, idlePromptSelection, nextEvent, resolvedTimezone, timeFormat]);
+  }, [
+    focusEvent,
+    idleMeetingFallback,
+    idlePromptSelection,
+    nextEvent,
+    resolvedTimezone,
+    timeFormat,
+  ]);
   const idlePromptLine = useMemo(() => {
     if (!showIdlePrompt || !idlePromptSelection) {
       return null;
     }
     if (idlePromptSelection.hasError) {
-      return DEFAULT_IDLE_PROMPT_FALLBACK;
+      return idlePromptFallback;
     }
-    return idlePromptSelection.text || DEFAULT_IDLE_PROMPT_FALLBACK;
-  }, [idlePromptSelection, showIdlePrompt]);
+    return idlePromptSelection.text || idlePromptFallback;
+  }, [idlePromptFallback, idlePromptSelection, showIdlePrompt]);
   const currentProgress = focusEvent
     ? currentDuration > 0
       ? clamp(
@@ -525,11 +532,10 @@ const TimelineView: React.FC<TimelineViewProps> = ({
 
   const freeTimeSummary = useMemo(() => {
     if (activeTimelineEvent) {
-      return `In ${activeTimelineEvent.title} until ${formatTime(
-        activeTimelineEvent.end,
-        timeFormat,
-        resolvedTimezone,
-      )}`;
+      return tStatic('common:liveFocus.inUntil', {
+        title: activeTimelineEvent.title,
+        time: formatTime(activeTimelineEvent.end, timeFormat, resolvedTimezone),
+      });
     }
     if (nextTimelineEvent) {
       const gapMs = Math.max(
@@ -537,14 +543,15 @@ const TimelineView: React.FC<TimelineViewProps> = ({
         nextTimelineEvent.start.getTime() - statusTime.getTime(),
       );
       if (gapMs <= windowFutureMinutes * 60000) {
-        return `${formatDuration(gapMs)} free until ${formatTime(
-          nextTimelineEvent.start,
-          timeFormat,
-          resolvedTimezone,
-        )}`;
+        return tStatic('common:liveFocus.freeUntil', {
+          duration: formatDuration(gapMs),
+          time: formatTime(nextTimelineEvent.start, timeFormat, resolvedTimezone),
+        });
       }
     }
-    return `No meetings scheduled in the next ${Math.round(windowFutureMinutes / 60)} hours.`;
+    return tStatic('common:liveFocus.noMeetingsScheduledInHours', {
+      hours: Math.round(windowFutureMinutes / 60),
+    });
   }, [
     activeTimelineEvent,
     nextTimelineEvent,
@@ -861,7 +868,9 @@ const TimelineView: React.FC<TimelineViewProps> = ({
                   color: focusColor,
                 }}
               >
-                {focusMode ? 'Exit focus mode' : 'Clean focus mode'}
+                {focusMode
+                  ? tStatic('common:liveFocus.exitFocusMode')
+                  : tStatic('common:liveFocus.cleanFocusMode')}
               </button>
             )}
           </div>
@@ -960,7 +969,7 @@ const TimelineView: React.FC<TimelineViewProps> = ({
           <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_auto] md:items-start">
             <div className="min-w-0 space-y-2">
               <h3 className="text-lg md:text-2xl font-semibold leading-tight drop-shadow-sm line-clamp-2">
-                {focusEvent ? focusEvent.title : 'No event right now'}
+                {focusEvent ? focusEvent.title : tStatic('common:liveFocus.noEventRightNow')}
               </h3>
               {focusSummary && (
                 <p className="text-xs md:text-sm opacity-90 line-clamp-2">
@@ -975,10 +984,14 @@ const TimelineView: React.FC<TimelineViewProps> = ({
               <div className="flex flex-wrap items-center gap-1.5">
                 <span className="inline-flex items-center rounded-full bg-white/20 px-2 py-0.5 text-[11px] font-semibold">
                   {focusEvent
-                    ? `${formatDuration(remainingMs)} remaining`
+                    ? tStatic('common:liveFocus.statusRemaining', {
+                      duration: formatDuration(remainingMs),
+                    })
                     : nextEvent
-                      ? `Next starts in ${formatDuration(nextEventLeadMs)}`
-                      : 'Free for now'}
+                      ? tStatic('common:liveFocus.statusNextStartsIn', {
+                        duration: formatDuration(nextEventLeadMs),
+                      })
+                      : tStatic('common:liveFocus.statusFreeForNow')}
                 </span>
                 {focusEvent?.calendarName && (
                   <span className="inline-flex items-center rounded-full bg-black/20 px-2 py-0.5 text-[11px]">
@@ -1127,7 +1140,7 @@ const TimelineView: React.FC<TimelineViewProps> = ({
           {allDayEvents.length > 0 && (
             <div className="mt-3 flex flex-wrap gap-2">
               <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold uppercase tracking-wide bg-slate-100 text-slate-600">
-                All-day
+                {tStatic('calendar:events.allDay')}
               </span>
               {allDayEvents.map((event) => {
                 const calendarColor =
@@ -1254,10 +1267,10 @@ const TimelineView: React.FC<TimelineViewProps> = ({
                       statusTime >= item.start && statusTime <= item.end;
                     const isPast = item.end < statusTime;
                     const statusLabel = isLive
-                      ? 'Live'
+                      ? tStatic('common:liveFocus.statusLive')
                       : isPast
-                        ? 'Past'
-                        : 'Upcoming';
+                        ? tStatic('common:liveFocus.statusPast')
+                        : tStatic('common:liveFocus.statusUpcoming');
                     const calendarColor =
                       item.calendarColor ||
                       item.eventColor ||
@@ -1330,7 +1343,7 @@ const TimelineView: React.FC<TimelineViewProps> = ({
                             {!isCompact && (
                               <p className="text-[11px] text-gray-600 line-clamp-2">
                                 {item.location
-                                  ? `Location: ${item.location}`
+                                  ? `${tStatic('common:liveFocus.locationPrefix')}${item.location}`
                                   : item.calendarName}
                               </p>
                             )}
@@ -1353,7 +1366,9 @@ const TimelineView: React.FC<TimelineViewProps> = ({
                                   event.stopPropagation();
                                   window.open(meetingLink, '_blank', 'noopener,noreferrer');
                                 }}
-                                aria-label={`Join ${item.title} meeting`}
+                                aria-label={tStatic('common:liveFocus.joinMeetingAria', {
+                                  title: item.title,
+                                })}
                               >
                                 {tStatic('common:auto.frontend.ke0d73143de80')}</button>
                             )}

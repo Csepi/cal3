@@ -12,7 +12,10 @@ export * from './types';
 export * from './formatters';
 export { default as i18n, i18nReady } from './config';
 
-export const tStatic = (key: string): string => i18n.t(key);
+export const tStatic = (
+  key: string,
+  options?: Record<string, unknown>,
+): string => i18n.t(key, options);
 
 interface ApplyLanguageOptions {
   persistRemote?: boolean;

@@ -10,7 +10,7 @@
     "calendarSync": "Naptár szinkronizálás",
     "reservations": "Foglalások",
     "automation": "Automatizálás",
-    "adminPanel": "Admin panel",
+    "adminPanel": "Adminisztrációs panel",
     "features": "Funkciók",
     "signOut": "Kijelentkezés",
     "exit": "Kilépés",
@@ -30,10 +30,10 @@
     "createEvent": "Esemény létrehozása",
     "allDay": "Egész nap",
     "tapToCreate": "Érintse meg esemény létrehozásához",
-    "timeline": "Id?vonal",
-    "todayTimeline": "Mai id?vonal",
-    "thisWeek": "Ez a h?t",
-    "thisMonth": "Ez a h?nap"
+    "timeline": "Idővonal",
+    "todayTimeline": "Mai idővonal",
+    "thisWeek": "Ez a hét",
+    "thisMonth": "Ez a hónap"
   },
   "actions": {
     "newEvent": "Új esemény",
@@ -41,7 +41,7 @@
     "closeDrawer": "Fiók bezárása",
     "previous": "Előző",
     "next": "Következő",
-    "switchToView": "{{view}} n?zetre v?lt?s"
+    "switchToView": "{{view}} nézetre váltás"
   },
   "table": {
     "noData": "Nincs elérhető adat",

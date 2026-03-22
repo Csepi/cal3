@@ -45,7 +45,7 @@ const buildThreadLabel = (thread: NotificationThreadSummary): string => {
   if (thread.threadKey) {
     return thread.threadKey;
   }
-  return `Thread #${thread.id}`;
+  return tStatic('common:notificationCenter.threadNumber', { id: thread.id });
 };
 
 interface NotificationCenterProps {
@@ -199,22 +199,26 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ onOpenSe
 
         {thread && (
           <>
-            <button
-              type="button"
-              onClick={() => toggleThreadMute(thread.id, !threadMuted)}
-              className="px-3 py-1.5 text-sm rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100"
-            >
-              {threadMuted ? 'Unmute thread' : 'Mute thread'}
-            </button>
-            <button
-              type="button"
-              onClick={() => toggleThreadArchive(thread.id, !threadArchived)}
-              className="px-3 py-1.5 text-sm rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100"
-            >
-              {threadArchived ? 'Restore thread' : 'Archive thread'}
-            </button>
-          </>
-        )}
+              <button
+                type="button"
+                onClick={() => toggleThreadMute(thread.id, !threadMuted)}
+                className="px-3 py-1.5 text-sm rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100"
+              >
+                {threadMuted
+                  ? tStatic('common:notificationCenter.unmuteThread')
+                  : tStatic('common:notificationCenter.muteThread')}
+              </button>
+              <button
+                type="button"
+                onClick={() => toggleThreadArchive(thread.id, !threadArchived)}
+                className="px-3 py-1.5 text-sm rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100"
+              >
+                {threadArchived
+                  ? tStatic('common:notificationCenter.restoreThread')
+                  : tStatic('common:notificationCenter.archiveThread')}
+              </button>
+            </>
+          )}
 
         {scopeOptions.map((option) => {
           const muted = isScopeMuted(option.type, option.id);
@@ -229,7 +233,9 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ onOpenSe
                   : 'border-gray-300 text-gray-600 hover:bg-gray-100'
               }`}
             >
-              {muted ? `Unmute ${option.label}` : `Mute ${option.label}`}
+              {muted
+                ? tStatic('common:notificationCenter.unmuteScope', { label: option.label })
+                : tStatic('common:notificationCenter.muteScope', { label: option.label })}
             </button>
           );
         })}
@@ -397,7 +403,9 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ onOpenSe
                         }}
                         className="rounded-lg border border-gray-300 px-3 py-1 text-xs text-gray-600 hover:bg-gray-100"
                       >
-                        {thread.isMuted ? 'Unmute' : 'Mute'}
+                        {thread.isMuted
+                          ? tStatic('common:notificationCenter.unmute')
+                          : tStatic('common:notificationCenter.mute')}
                       </button>
                       <button
                         type="button"
@@ -407,7 +415,9 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ onOpenSe
                         }}
                         className="rounded-lg border border-gray-300 px-3 py-1 text-xs text-gray-600 hover:bg-gray-100"
                       >
-                        {thread.isArchived ? 'Restore' : 'Archive'}
+                        {thread.isArchived
+                          ? tStatic('common:notificationCenter.restore')
+                          : tStatic('common:notificationCenter.archive')}
                       </button>
                     </div>
                   </div>
@@ -423,8 +433,8 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ onOpenSe
           ) : filteredNotifications.length === 0 ? (
             <div className="py-24 text-center text-gray-500">
               {selectedThreadId
-                ? 'No notifications found for this conversation.'
-                : 'No notifications to display.'}
+                ? tStatic('common:notificationCenter.noNotificationsForConversation')
+                : tStatic('common:notificationCenter.noNotificationsToDisplay')}
             </div>
           ) : (
             <div className="space-y-6">
@@ -462,7 +472,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ onOpenSe
                                 )}
                               </div>
                               <h3 className="mt-1 text-lg font-medium text-gray-900">
-                                {notification.title ?? 'Notification'}
+                                {notification.title ?? tStatic('common:notificationCenter.notification')}
                               </h3>
                             </div>
                             <span className="text-xs text-gray-500 whitespace-nowrap">

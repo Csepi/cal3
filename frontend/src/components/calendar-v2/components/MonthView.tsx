@@ -120,7 +120,7 @@ export const MonthView = memo<CalendarMonthProps>(({
       data-testid={testId}
       onKeyDown={handleKeyDown}
       role="grid"
-      aria-label={`Calendar for ${monthData.name}`}
+      aria-label={monthData.name}
     >
       {/* Month header with day names */}
       <div className="grid grid-cols-7 border-b border-gray-200">

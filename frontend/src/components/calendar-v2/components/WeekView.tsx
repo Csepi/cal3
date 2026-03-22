@@ -296,7 +296,7 @@ export const WeekView = memo<CalendarWeekProps>(({
                           right: slotEvents.length > 1 ? `${(slotEvents.length - index - 1) * 25 + 4}px` : '4px'
                         }}
                         onClick={(e) => handleEventClick(event, e)}
-                        title={`${event.title}${event.startTime ? ` at ${event.startTime}` : ''}`}
+                        title={`${event.title}${event.startTime ? ` • ${event.startTime}` : ''}`}
                       >
                         <div className="p-1 h-full overflow-hidden">
                           <div

@@ -459,7 +459,7 @@ const WeekView: React.FC<WeekViewProps> = ({
                             boxShadow: `0 4px 12px ${(calendarColor || eventColor)}40`
                           }}
                           onClick={() => onEventClick(event)}
-                          title={`${event.title}\n${event.startTime || 'All day'} - ${event.endTime || ''}\n${event.location || ''}`}
+                          title={`${event.title}\n${event.startTime || t('events.allDay', { ns: 'calendar', defaultValue: 'All day' })} - ${event.endTime || ''}\n${event.location || ''}`}
                         >
                           <div className="p-1 h-full overflow-hidden">
                             {/* Event title */}
@@ -489,7 +489,11 @@ const WeekView: React.FC<WeekViewProps> = ({
                                   e.stopPropagation();
                                   window.open(meetingLink, '_blank', 'noopener,noreferrer');
                                 }}
-                                aria-label={`Join ${event.title} meeting`}
+                                aria-label={t('liveFocus.joinMeetingAria', {
+                                  ns: 'common',
+                                  title: event.title,
+                                  defaultValue: 'Join {{title}} meeting',
+                                })}
                               >
                                 {tStatic('common:auto.frontend.ke0d73143de80')}</button>
                             )}

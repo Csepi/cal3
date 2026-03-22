@@ -1575,6 +1575,7 @@
   },
   "liveFocus": {
     "exitFocusMode": "Quitter le mode de mise au point",
+    "cleanFocusMode": "Mode focus épuré",
     "switchFocus": "Changer de focus",
     "nextLabel": "Suivant",
     "startsInPrefix": "dans",
@@ -1582,30 +1583,84 @@
     "remainingLabel": "Restant",
     "endsLabel": "Se termine",
     "newMeetingLabel": "Nouvelle réunion",
-    "focusTimelineDate": "Chronologie de focus - {{date}}"
+    "focusTimelineDate": "Chronologie de focus - {{date}}",
+    "noEventRightNow": "Aucun événement en cours",
+    "noActiveMeeting": "Aucune réunion en cours. Utilisez ce créneau pour du travail concentré.",
+    "nextMeetingStartsAt": "La prochaine réunion commence à {{time}}.",
+    "inUntil": "Dans {{title}} jusqu'à {{time}}",
+    "freeUntil": "{{duration}} de libre jusqu'à {{time}}",
+    "noMeetingsScheduledInHours": "Aucune réunion prévue dans les {{hours}} prochaines heures.",
+    "statusRemaining": "{{duration}} restant",
+    "statusNextStartsIn": "Prochaine dans {{duration}}",
+    "statusFreeForNow": "Libre pour le moment",
+    "statusLive": "En direct",
+    "statusPast": "Passé",
+    "statusUpcoming": "À venir",
+    "locationPrefix": "Lieu : ",
+    "joinMeetingAria": "Rejoindre la réunion {{title}}"
   },
   "tasksWorkspace": {
-    "anyDueDate": "N'importe quelle ?ch?ance",
-    "selectedWeek": "Semaine s?lectionn?e",
+    "anyDueDate": "N'importe quelle échéance",
+    "selectedWeek": "Semaine sélectionnée",
     "pickWeek": "Choisir une semaine",
-    "selectedMonth": "Mois s?lectionn?",
+    "selectedMonth": "Mois sélectionné",
     "pickMonth": "Choisir un mois",
-    "pickYear": "Choisir une ann?e",
-    "yearWithValue": "Ann?e {{year}}",
-    "selectWeek": "S?lectionner une semaine",
-    "selectMonth": "S?lectionner un mois",
-    "selectYear": "S?lectionner une ann?e",
-    "selectedCount": "{{count}} s?lectionn?(s)"
+    "pickYear": "Choisir une année",
+    "yearWithValue": "Année {{year}}",
+    "selectWeek": "Sélectionner une semaine",
+    "selectMonth": "Sélectionner un mois",
+    "selectYear": "Sélectionner une année",
+    "selectedCount": "{{count}} sélectionné(s)"
   },
   "agentActions": {
     "calendarEventsRead": {
-      "label": "Lire les ?v?nements du calendrier",
-      "description": "Autorise l?agent ? lire les ?v?nements (titres, heures, d?tails) des calendriers s?lectionn?s.",
-      "scopeLabel": "Calendriers autoris?s en lecture",
-      "scopeEmptyHint": "Choisissez les calendriers dont l?agent peut consulter les ?v?nements."
+      "label": "Lire les événements du calendrier",
+      "description": "Autorise l’agent à lire les événements (titres, heures, détails) des calendriers sélectionnés.",
+      "scopeLabel": "Calendriers autorisés en lecture",
+      "scopeEmptyHint": "Choisissez les calendriers dont l’agent peut consulter les événements."
+    }
+  },
+  "notificationCenter": {
+    "threadNumber": "Fil #{{id}}",
+    "muteThread": "Mettre le fil en sourdine",
+    "unmuteThread": "Réactiver le fil",
+    "archiveThread": "Archiver le fil",
+    "restoreThread": "Restaurer le fil",
+    "muteScope": "Mettre {{label}} en sourdine",
+    "unmuteScope": "Réactiver {{label}}",
+    "mute": "Mettre en sourdine",
+    "unmute": "Réactiver",
+    "archive": "Archiver",
+    "restore": "Restaurer",
+    "noNotificationsForConversation": "Aucune notification trouvée pour cette conversation.",
+    "noNotificationsToDisplay": "Aucune notification à afficher.",
+    "notification": "Notification"
+  },
+  "personalLogs": {
+    "noExtraDetails": "Aucun détail supplémentaire",
+    "privacyActionFailed": "Échec de l’action de confidentialité.",
+    "personalDataExportReady": "L’export des données personnelles a été généré et téléchargé.",
+    "deleteRequestSubmitted": "La demande de suppression a été envoyée. Vous pouvez suivre son statut dans le tableau ci-dessous.",
+    "privacyPolicyAccepted": "L’acceptation de la politique de confidentialité a été enregistrée.",
+    "decisionAccepted": "accepté",
+    "decisionRevoked": "révoqué",
+    "consentMarked": "{{label}} marqué comme {{decision}}.",
+    "decisionOnDate": "{{decision}} le {{date}}",
+    "noDecisionYet": "Aucune décision pour le moment",
+    "accept": "Accepter",
+    "revoke": "Révoquer",
+    "notAccepted": "non accepté",
+    "notAvailable": "n/d",
+    "failedToLoad": "Impossible de charger les journaux personnels.",
+    "consentTypes": {
+      "privacyPolicy": "Politique de confidentialité",
+      "termsOfService": "Conditions d’utilisation",
+      "marketingEmail": "E-mail marketing",
+      "dataProcessing": "Traitement des données",
+      "cookieAnalytics": "Analyse des cookies"
     }
   },
   "a11y": {
-    "selected": "s?lectionn?"
+    "selected": "sélectionné"
   }
 }

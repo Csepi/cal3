@@ -177,7 +177,11 @@ export const MobileDayView: React.FC<MobileDayViewProps> = ({
                             e.stopPropagation();
                             window.open(meetingLink, '_blank', 'noopener,noreferrer');
                           }}
-                          aria-label={`Join ${event.title} meeting`}
+                          aria-label={t('liveFocus.joinMeetingAria', {
+                            ns: 'common',
+                            title: event.title,
+                            defaultValue: 'Join {{title}} meeting',
+                          })}
                         >
                           {tStatic('common:auto.frontend.ke0d73143de80')}</button>
                       )}

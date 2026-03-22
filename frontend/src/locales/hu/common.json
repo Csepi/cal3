@@ -163,7 +163,7 @@
       "k142e017bb44a": "Egyetlen felhasználó sem felel meg a szűrőknek.",
       "k1458ffedd0eb": "Szervezet neve",
       "k145caf292855": "esedékes",
-      "k1497f8c9a0f1": "Admin Control Center",
+      "k1497f8c9a0f1": "Admin vezérlőközpont",
       "k14fea7745534": "Automatikus frissítés",
       "k1502da18cfab": "A műveletek egymás után futnak. Ha egy művelet frissíti az eseményt, a későbbi műveletek a frissített értékeket fogják használni.",
       "k154854eeb738": "Szűrő neve",
@@ -316,7 +316,7 @@
       "k349f0e5ffd4c": "Visszatérő",
       "k34a5adb1782c": "Minden terv",
       "k3505a7841f01": "Hozzon létre egy dedikált ügynökprofilt minden eszközhöz vagy együttműködőhöz.",
-      "k353a23d95e3c": "Teend?",
+      "k353a23d95e3c": "Teendő",
       "k357c84df0905": "10-es évek",
       "k3677bc8315fc": "Szervezeti felhasználók és beállítások kezelése",
       "k37282b63dd84": "Felhasználók betöltése...",
@@ -483,7 +483,7 @@
       "k5755f9ac0aa1": "CSV exportálása",
       "k578aad03c7e3": "Heti naptár nézet",
       "k5799a2fa1bcf": "Új megjegyzés hozzáadása",
-      "k579efc8a8e78": "Control Matrix",
+      "k579efc8a8e78": "Kontrollmátrix",
       "k57f2b181d0a5": "Felhasználók",
       "k58114711fad3": "Hozzárendelés csoporthoz (opcionális)",
       "k5844a708e900": "A naptár szinkronizálásának visszahívási URL-je",
@@ -1250,7 +1250,7 @@
       "kf3d7eb2b15aa": "Környezet:",
       "kf40f3fcd07be": "Váltás heti nézetre",
       "kf462e889fd88": "Az oldalsáv kibontása",
-      "kf4ebd3fd97f5": "?? Szinkron k?nyszer?t?se",
+      "kf4ebd3fd97f5": "🔄 Szinkron kényszerítése",
       "kf4f2c9bf780e": "Kritikus hibák",
       "kf4f4473df8cb": "Letiltva",
       "kf5455820508c": "⊗ Inaktív",
@@ -1452,7 +1452,7 @@
     "unsavedChanges": "Mentetlen módosításai vannak"
   },
   "navigation": {
-    "admin": "Admin Panel",
+    "admin": "Adminisztrációs panel",
     "adminShort": "Admin",
     "agentSettings": "AI ügynökök (MCP)",
     "agentsShort": "AI ügynökök (MCP)",
@@ -1575,6 +1575,7 @@
   },
   "liveFocus": {
     "exitFocusMode": "Lépjen ki a fókusz módból",
+    "cleanFocusMode": "Tiszta fókusz mód",
     "switchFocus": "Fókusz váltása",
     "nextLabel": "Következő",
     "startsInPrefix": "be",
@@ -1582,30 +1583,84 @@
     "remainingLabel": "Többi",
     "endsLabel": "Véget ér",
     "newMeetingLabel": "Új találkozó",
-    "focusTimelineDate": "F?kusz id?vonal - {{date}}"
+    "focusTimelineDate": "Fókusz idővonal - {{date}}",
+    "noEventRightNow": "Jelenleg nincs esemény",
+    "noActiveMeeting": "Nincs aktív megbeszélés. Használd ezt az idősávot fókuszált munkára.",
+    "nextMeetingStartsAt": "A következő megbeszélés ekkor kezdődik: {{time}}.",
+    "inUntil": "{{title}} ekkorig: {{time}}",
+    "freeUntil": "{{duration}} szabad idő {{time}}-ig",
+    "noMeetingsScheduledInHours": "A következő {{hours}} órában nincs tervezett megbeszélés.",
+    "statusRemaining": "{{duration}} hátra",
+    "statusNextStartsIn": "Következő kezdés {{duration}} múlva",
+    "statusFreeForNow": "Most szabad",
+    "statusLive": "Élő",
+    "statusPast": "Múlt",
+    "statusUpcoming": "Közelgő",
+    "locationPrefix": "Helyszín: ",
+    "joinMeetingAria": "{{title}} megbeszélés megnyitása"
   },
   "tasksWorkspace": {
-    "anyDueDate": "B?rmilyen hat?rid?",
-    "selectedWeek": "Kiv?lasztott h?t",
-    "pickWeek": "V?lasszon hetet",
-    "selectedMonth": "Kiv?lasztott h?nap",
-    "pickMonth": "V?lasszon h?napot",
-    "pickYear": "V?lasszon ?vet",
-    "yearWithValue": "{{year}}. ?v",
-    "selectWeek": "H?t kiv?laszt?sa",
-    "selectMonth": "H?nap kiv?laszt?sa",
-    "selectYear": "?v kiv?laszt?sa",
-    "selectedCount": "{{count}} kiv?lasztva"
+    "anyDueDate": "Bármilyen határidő",
+    "selectedWeek": "Kiválasztott hét",
+    "pickWeek": "Válasszon hetet",
+    "selectedMonth": "Kiválasztott hónap",
+    "pickMonth": "Válasszon hónapot",
+    "pickYear": "Válasszon évet",
+    "yearWithValue": "{{year}}. év",
+    "selectWeek": "Hét kiválasztása",
+    "selectMonth": "Hónap kiválasztása",
+    "selectYear": "Év kiválasztása",
+    "selectedCount": "{{count}} kiválasztva"
   },
   "agentActions": {
     "calendarEventsRead": {
-      "label": "Napt?resem?nyek olvas?sa",
-      "description": "Enged?lyezi az ?gyn?knek az esem?nyek (c?mek, id?pontok, r?szletek) olvas?s?t a megadott napt?rakb?l.",
-      "scopeLabel": "Olvas?sra enged?lyezett napt?rak",
-      "scopeEmptyHint": "V?lassza ki azokat a napt?rakat, amelyek esem?nyeit az ?gyn?k megtekintheti."
+      "label": "Naptáresemények olvasása",
+      "description": "Engedélyezi az ügynököknek az események (címek, időpontok, részletek) olvasását a megadott naptárakból.",
+      "scopeLabel": "Olvasásra engedélyezett naptárak",
+      "scopeEmptyHint": "Válassza ki azokat a naptárakat, amelyek eseményeit az ügynök megtekintheti."
+    }
+  },
+  "notificationCenter": {
+    "threadNumber": "Szál #{{id}}",
+    "muteThread": "Szál némítása",
+    "unmuteThread": "Szál némításának feloldása",
+    "archiveThread": "Szál archiválása",
+    "restoreThread": "Szál visszaállítása",
+    "muteScope": "{{label}} némítása",
+    "unmuteScope": "{{label}} némításának feloldása",
+    "mute": "Némítás",
+    "unmute": "Némítás feloldása",
+    "archive": "Archiválás",
+    "restore": "Visszaállítás",
+    "noNotificationsForConversation": "Ehhez a beszélgetéshez nem található értesítés.",
+    "noNotificationsToDisplay": "Nincs megjeleníthető értesítés.",
+    "notification": "Értesítés"
+  },
+  "personalLogs": {
+    "noExtraDetails": "Nincs további részlet",
+    "privacyActionFailed": "Adatvédelmi művelet sikertelen.",
+    "personalDataExportReady": "A személyes adatexport elkészült és letöltődött.",
+    "deleteRequestSubmitted": "Törlési kérelem beküldve. Az állapotot az alábbi táblázatban követheti.",
+    "privacyPolicyAccepted": "Az adatvédelmi szabályzat elfogadása rögzítve.",
+    "decisionAccepted": "elfogadva",
+    "decisionRevoked": "visszavonva",
+    "consentMarked": "{{label}} állapota: {{decision}}.",
+    "decisionOnDate": "{{decision}} ekkor: {{date}}",
+    "noDecisionYet": "Még nincs döntés",
+    "accept": "Elfogadás",
+    "revoke": "Visszavonás",
+    "notAccepted": "nincs elfogadva",
+    "notAvailable": "n/a",
+    "failedToLoad": "Nem sikerült betölteni a személyes naplókat.",
+    "consentTypes": {
+      "privacyPolicy": "Adatvédelmi szabályzat",
+      "termsOfService": "Felhasználási feltételek",
+      "marketingEmail": "Marketing e-mail",
+      "dataProcessing": "Adatkezelés",
+      "cookieAnalytics": "Cookie-analitika"
     }
   },
   "a11y": {
-    "selected": "kiv?lasztva"
+    "selected": "kiválasztva"
   }
 }

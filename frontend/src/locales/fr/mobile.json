@@ -41,7 +41,7 @@
     "closeDrawer": "Fermer le tiroir",
     "previous": "Précédent",
     "next": "Suivant",
-    "switchToView": "Passer ? la vue {{view}}"
+    "switchToView": "Passer à la vue {{view}}"
   },
   "table": {
     "noData": "Aucune donnée disponible",

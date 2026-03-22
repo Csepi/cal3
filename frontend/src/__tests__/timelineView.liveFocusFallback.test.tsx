@@ -4,7 +4,6 @@ import TimelineView from '../components/views/TimelineView';
 import type { Event } from '../types/Event';
 import { getDailyIdlePromptSelection } from '../utils/liveFocusIdlePrompts';
 import {
-  DEFAULT_IDLE_MEETING_FALLBACK,
   DEFAULT_IDLE_PROMPT_FALLBACK,
 } from '../utils/liveFocusIdlePromptSelector';
 
@@ -60,7 +59,7 @@ describe('TimelineView idle prompt fallback rendering', () => {
       screen.getByText('Quiet calendar. Perfect focus block.'),
     ).toBeInTheDocument();
     expect(
-      screen.queryByText(DEFAULT_IDLE_MEETING_FALLBACK),
+      screen.queryByText('common:liveFocus.noActiveMeeting'),
     ).not.toBeInTheDocument();
   });
 
@@ -74,7 +73,9 @@ describe('TimelineView idle prompt fallback rendering', () => {
 
     renderTimeline();
 
-    expect(screen.getByText(DEFAULT_IDLE_MEETING_FALLBACK)).toBeInTheDocument();
-    expect(screen.getByText(DEFAULT_IDLE_PROMPT_FALLBACK)).toBeInTheDocument();
+    expect(screen.getByText('common:liveFocus.noActiveMeeting')).toBeInTheDocument();
+    expect(
+      screen.getAllByText('common:liveFocus.noEventRightNow').length,
+    ).toBeGreaterThan(0);
   });
 });
