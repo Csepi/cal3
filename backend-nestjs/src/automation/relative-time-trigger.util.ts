@@ -286,6 +286,32 @@ const parseDateToUtcParts = (date: Date): LocalDateTimeParts => ({
   minute: 0,
 });
 
+const coerceDate = (value: unknown): Date | null => {
+  if (value instanceof Date) {
+    return Number.isNaN(value.getTime()) ? null : value;
+  }
+
+  if (typeof value === 'string') {
+    const trimmed = value.trim();
+    if (!trimmed) {
+      return null;
+    }
+
+    const normalized = /^\d{4}-\d{2}-\d{2}$/.test(trimmed)
+      ? `${trimmed}T00:00:00.000Z`
+      : trimmed;
+    const parsed = new Date(normalized);
+    return Number.isNaN(parsed.getTime()) ? null : parsed;
+  }
+
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    const parsed = new Date(value);
+    return Number.isNaN(parsed.getTime()) ? null : parsed;
+  }
+
+  return null;
+};
+
 const parseTimeToParts = (
   timeValue: string | null | undefined,
 ): { hour: number; minute: number } => {
@@ -542,7 +568,7 @@ const resolveReferenceLocalDateTime = (
   event: Event,
   base: RelativeTimeReferenceBase,
 ): LocalDateTimeParts | null => {
-  const startDate = event.startDate instanceof Date ? event.startDate : null;
+  const startDate = coerceDate(event.startDate);
   if (!startDate) {
     return null;
   }
@@ -553,11 +579,9 @@ const resolveReferenceLocalDateTime = (
     }
 
     const endSource =
-      event.endDate instanceof Date
-        ? event.endDate
-        : event.startDate instanceof Date
-          ? event.startDate
-          : null;
+      coerceDate(event.endDate) ??
+      coerceDate(event.startDate) ??
+      null;
     if (!endSource) {
       return null;
     }
@@ -567,11 +591,9 @@ const resolveReferenceLocalDateTime = (
 
   const referenceDate =
     base === 'end'
-      ? event.endDate instanceof Date
-        ? event.endDate
-        : event.startDate
-      : event.startDate;
-  if (!(referenceDate instanceof Date)) {
+      ? coerceDate(event.endDate) ?? coerceDate(event.startDate)
+      : coerceDate(event.startDate);
+  if (!referenceDate) {
     return null;
   }
 

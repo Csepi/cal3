@@ -75,6 +75,25 @@ describe('relative-time-trigger.util', () => {
     expect(scheduledAt?.toISOString()).toBe('2026-03-25T09:55:00.000Z');
   });
 
+  it('computes schedule when date fields are persisted as date-only strings', () => {
+    const event = buildEvent({
+      startDate: '2026-03-25' as unknown as Date,
+      endDate: '2026-03-25' as unknown as Date,
+    });
+    const config = normalizeRelativeTimeToEventTriggerConfig({
+      referenceTime: { base: 'start' },
+      offset: { direction: 'before', value: 5, unit: 'minutes' },
+    });
+
+    const scheduledAt = computeRelativeTimeToEventScheduleAt(
+      event,
+      config,
+      'UTC',
+    );
+
+    expect(scheduledAt?.toISOString()).toBe('2026-03-25T09:55:00.000Z');
+  });
+
   it('computes all-day reference at local midnight', () => {
     const event = buildEvent({
       isAllDay: true,
