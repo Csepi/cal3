@@ -34,9 +34,9 @@ describeDockerBacked('Multi-tenant isolation integration', ({
     organisationRepository = harness.dataSource.getRepository(Organisation);
     organisationUserRepository = harness.dataSource.getRepository(OrganisationUser);
 
-    await organisationUserRepository.delete({});
-    await organisationRepository.delete({});
-    await harness.userRepository.delete({});
+    await organisationUserRepository.createQueryBuilder().delete().execute();
+    await organisationRepository.createQueryBuilder().delete().execute();
+    await harness.userRepository.createQueryBuilder().delete().execute();
   });
 
   it('blocks cross-organisation reads and writes while allowing scoped access', async () => {
