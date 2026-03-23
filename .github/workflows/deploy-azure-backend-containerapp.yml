@@ -15,16 +15,63 @@ permissions:
 jobs:
   deploy_backend:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     name: Build and Deploy Backend to Container Apps
     steps:
       - uses: actions/checkout@v4
 
+      - name: Resolve deployment prerequisites
+        id: prereqs
+        shell: bash
+        env:
+          AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+          CAL3_DB_PASSWORD: ${{ secrets.CAL3_DB_PASSWORD }}
+          CAL3_JWT_SECRET: ${{ secrets.CAL3_JWT_SECRET }}
+          AZ_RESOURCE_GROUP: ${{ vars.AZ_RESOURCE_GROUP }}
+          AZ_CONTAINERAPP_NAME: ${{ vars.AZ_CONTAINERAPP_NAME }}
+          AZ_ACR_NAME: ${{ vars.AZ_ACR_NAME }}
+          CAL3_BACKEND_URL: ${{ vars.CAL3_BACKEND_URL }}
+          CAL3_FRONTEND_URL: ${{ vars.CAL3_FRONTEND_URL }}
+          CAL3_DB_HOST: ${{ vars.CAL3_DB_HOST }}
+          CAL3_DB_PORT: ${{ vars.CAL3_DB_PORT }}
+          CAL3_DB_USERNAME: ${{ vars.CAL3_DB_USERNAME }}
+          CAL3_DB_NAME: ${{ vars.CAL3_DB_NAME }}
+        run: |
+          missing=()
+          for key in \
+            AZURE_CREDENTIALS \
+            CAL3_DB_PASSWORD \
+            CAL3_JWT_SECRET \
+            AZ_RESOURCE_GROUP \
+            AZ_CONTAINERAPP_NAME \
+            AZ_ACR_NAME \
+            CAL3_BACKEND_URL \
+            CAL3_FRONTEND_URL \
+            CAL3_DB_HOST \
+            CAL3_DB_PORT \
+            CAL3_DB_USERNAME \
+            CAL3_DB_NAME; do
+            if [[ -z "${!key:-}" ]]; then
+              missing+=("$key")
+            fi
+          done
+
+          if (( ${#missing[@]} > 0 )); then
+            echo "deploy_ready=false" >> "$GITHUB_OUTPUT"
+            echo "Deployment skipped: missing required secrets/variables: ${missing[*]}" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "deploy_ready=true" >> "$GITHUB_OUTPUT"
+            echo "All required backend deployment secrets/variables are configured." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
       - name: Azure login
+        if: ${{ steps.prereqs.outputs.deploy_ready == 'true' }}
         uses: azure/login@v2
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
       - name: Resolve image tag
+        if: ${{ steps.prereqs.outputs.deploy_ready == 'true' }}
         id: image_tag
         shell: bash
         run: |
@@ -35,6 +82,7 @@ jobs:
           fi
 
       - name: Deploy backend container app
+        if: ${{ steps.prereqs.outputs.deploy_ready == 'true' }}
         shell: bash
         env:
           IMAGE_TAG: ${{ steps.image_tag.outputs.tag }}
@@ -70,3 +118,7 @@ jobs:
         run: |
           chmod +x scripts/azure/update-backend-containerapp.sh
           scripts/azure/update-backend-containerapp.sh
+
+      - name: Deployment skipped
+        if: ${{ steps.prereqs.outputs.deploy_ready != 'true' }}
+        run: echo "Backend deployment was skipped because prerequisites are not configured."

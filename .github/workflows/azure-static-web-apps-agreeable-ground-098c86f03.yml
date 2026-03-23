@@ -19,7 +19,24 @@ jobs:
         with:
           submodules: true
           lfs: false
+      - name: Resolve deployment mode
+        id: deploy_mode
+        shell: bash
+        env:
+          SWA_TOKEN: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_AGREEABLE_GROUND_098C86F03 }}
+        run: |
+          if [[ -n "${SWA_TOKEN}" ]]; then
+            echo "deploy_ready=true" >> "$GITHUB_OUTPUT"
+            echo "SWA deployment token is available." >> "$GITHUB_STEP_SUMMARY"
+          elif [[ "${GITHUB_EVENT_NAME}" == "push" ]]; then
+            echo "SWA deployment token missing for push event." >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          else
+            echo "deploy_ready=false" >> "$GITHUB_OUTPUT"
+            echo "SWA deployment token unavailable on this PR context. Deployment is skipped." >> "$GITHUB_STEP_SUMMARY"
+          fi
       - name: Build And Deploy
+        if: ${{ steps.deploy_mode.outputs.deploy_ready == 'true' }}
         id: builddeploy
         uses: Azure/static-web-apps-deploy@v1
         env:
@@ -38,16 +55,40 @@ jobs:
           app_location: "frontend" # App source code path
           api_location: "" # Api source code path - optional
           output_location: "dist" # Built app content directory - optional
+          skip_deploy_on_missing_secrets: true
           ###### End of Repository/Build Configurations ######
+
+      - name: Deployment skipped
+        if: ${{ steps.deploy_mode.outputs.deploy_ready != 'true' }}
+        run: echo "Deployment was skipped because no SWA token was available for this event."
 
   close_pull_request_job:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
     runs-on: ubuntu-latest
     name: Close Pull Request Job
     steps:
+      - name: Resolve close mode
+        id: close_mode
+        shell: bash
+        env:
+          SWA_TOKEN: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_AGREEABLE_GROUND_098C86F03 }}
+        run: |
+          if [[ -n "${SWA_TOKEN}" ]]; then
+            echo "close_ready=true" >> "$GITHUB_OUTPUT"
+            echo "SWA token available for PR close action." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "close_ready=false" >> "$GITHUB_OUTPUT"
+            echo "SWA token unavailable; PR close action is skipped." >> "$GITHUB_STEP_SUMMARY"
+          fi
       - name: Close Pull Request
+        if: ${{ steps.close_mode.outputs.close_ready == 'true' }}
         id: closepullrequest
         uses: Azure/static-web-apps-deploy@v1
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_AGREEABLE_GROUND_098C86F03 }}
           action: "close"
+          skip_deploy_on_missing_secrets: true
+
+      - name: Close action skipped
+        if: ${{ steps.close_mode.outputs.close_ready != 'true' }}
+        run: echo "Close action skipped because SWA token is not configured."

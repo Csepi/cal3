@@ -2,9 +2,47 @@ name: Azure Static Web Apps CI/CD (Legacy - Manual)
 
 on:
   workflow_dispatch:
+    inputs:
+      run_legacy_deploy:
+        description: "Set to true to execute this deprecated legacy deployment workflow"
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
 
 jobs:
+  resolve_legacy_mode:
+    runs-on: ubuntu-latest
+    outputs:
+      deploy_ready: ${{ steps.mode.outputs.deploy_ready }}
+      reason: ${{ steps.mode.outputs.reason }}
+    steps:
+      - name: Resolve legacy deploy mode
+        id: mode
+        shell: bash
+        env:
+          RUN_LEGACY_DEPLOY: ${{ inputs.run_legacy_deploy }}
+          LEGACY_SWA_TOKEN: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_VICTORIOUS_MOSS_0C301AA03 }}
+        run: |
+          if [[ "${RUN_LEGACY_DEPLOY}" != "true" ]]; then
+            echo "deploy_ready=false" >> "$GITHUB_OUTPUT"
+            echo "reason=manual_opt_in_not_enabled" >> "$GITHUB_OUTPUT"
+            echo "Legacy deploy skipped. Set run_legacy_deploy=true to execute it." >> "$GITHUB_STEP_SUMMARY"
+          elif [[ -z "${LEGACY_SWA_TOKEN}" ]]; then
+            echo "deploy_ready=false" >> "$GITHUB_OUTPUT"
+            echo "reason=missing_legacy_token_secret" >> "$GITHUB_OUTPUT"
+            echo "Legacy deploy skipped because the legacy SWA token secret is not configured." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "deploy_ready=true" >> "$GITHUB_OUTPUT"
+            echo "reason=ready" >> "$GITHUB_OUTPUT"
+            echo "Legacy deploy is enabled for this run." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
   build_and_deploy_job:
+    needs: resolve_legacy_mode
+    if: ${{ needs.resolve_legacy_mode.outputs.deploy_ready == 'true' }}
     runs-on: ubuntu-latest
     name: Build and Deploy Job
     steps:
@@ -25,4 +63,13 @@ jobs:
           api_location: "" # Api source code path - optional
           output_location: "" # Built app content directory - optional
           skip_app_build: true
+          skip_deploy_on_missing_secrets: true
           ###### End of Repository/Build Configurations ######
+
+  legacy_skip_notice:
+    needs: resolve_legacy_mode
+    if: ${{ needs.resolve_legacy_mode.outputs.deploy_ready != 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Legacy deploy skipped
+        run: echo "Legacy workflow skipped (${{ needs.resolve_legacy_mode.outputs.reason }})."

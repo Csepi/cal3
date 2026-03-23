@@ -3,9 +3,13 @@ name: Deploy Azure Frontend (Static Web App)
 on:
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   deploy_frontend:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     name: Build and Deploy Frontend to SWA
     steps:
       - uses: actions/checkout@v4
@@ -13,7 +17,22 @@ jobs:
           submodules: false
           lfs: false
 
+      - name: Resolve deployment prerequisites
+        id: prereqs
+        shell: bash
+        env:
+          SWA_TOKEN: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_PRIMECAL_FRONTEND }}
+        run: |
+          if [[ -n "${SWA_TOKEN}" ]]; then
+            echo "deploy_ready=true" >> "$GITHUB_OUTPUT"
+            echo "Frontend SWA deployment token is configured." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "deploy_ready=false" >> "$GITHUB_OUTPUT"
+            echo "Frontend deployment skipped: missing AZURE_STATIC_WEB_APPS_API_TOKEN_PRIMECAL_FRONTEND." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
       - name: Build and deploy frontend
+        if: ${{ steps.prereqs.outputs.deploy_ready == 'true' }}
         uses: Azure/static-web-apps-deploy@v1
         env:
           BASE_URL: https://api.primecal.eu
@@ -29,3 +48,8 @@ jobs:
           app_location: frontend
           api_location: ""
           output_location: dist
+          skip_deploy_on_missing_secrets: true
+
+      - name: Deployment skipped
+        if: ${{ steps.prereqs.outputs.deploy_ready != 'true' }}
+        run: echo "Frontend deployment was skipped because prerequisites are not configured."
