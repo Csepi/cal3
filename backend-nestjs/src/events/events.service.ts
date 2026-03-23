@@ -24,6 +24,7 @@ import {
   EventValidationService,
   EventMutationInput,
 } from './event-validation.service';
+import { AutomationService } from '../automation/automation.service';
 
 import { logError } from '../common/errors/error-logger';
 import { buildErrorContext } from '../common/errors/error-context';
@@ -31,19 +32,7 @@ import { bStatic } from '../i18n/runtime';
 
 @Injectable()
 export class EventsService {
-  private automationService?: {
-    findRulesByTrigger?: (
-      triggerType: string,
-      userId: number,
-    ) => Promise<Array<{ id: number; triggerType?: string }>>;
-    syncRelativeSchedulesForEvent?: (eventId: number) => Promise<void>;
-    cancelRelativeSchedulesForEvent?: (eventId: number) => Promise<void>;
-    resyncRelativeSchedulesForOwner?: (ownerId: number) => Promise<void>;
-    executeRuleOnEvent: (
-      rule: { id: number; triggerType?: string },
-      event: Event,
-    ) => Promise<void>;
-  };
+  private automationService?: AutomationService;
   constructor(
     @InjectRepository(Event)
     private eventRepository: Repository<Event>,
@@ -57,25 +46,9 @@ export class EventsService {
     private readonly moduleRef: ModuleRef,
   ) {}
 
-  private resolveAutomationService():
-    | {
-        findRulesByTrigger?: (
-          triggerType: string,
-          userId: number,
-        ) => Promise<Array<{ id: number; triggerType?: string }>>;
-        syncRelativeSchedulesForEvent?: (eventId: number) => Promise<void>;
-        cancelRelativeSchedulesForEvent?: (eventId: number) => Promise<void>;
-        resyncRelativeSchedulesForOwner?: (ownerId: number) => Promise<void>;
-        executeRuleOnEvent: (
-          rule: { id: number; triggerType?: string },
-          event: Event,
-        ) => Promise<void>;
-      }
-    | undefined {
+  private resolveAutomationService(): AutomationService | undefined {
     try {
-      const token =
-        require('../automation/automation.service').AutomationService;
-      return this.moduleRef.get(token as string | symbol | Function, {
+      return this.moduleRef.get(AutomationService, {
         strict: false,
       });
     } catch {
@@ -973,21 +946,7 @@ export class EventsService {
     return [savedEvent];
   }
 
-  private getAutomationService():
-    | {
-        findRulesByTrigger?: (
-          triggerType: string,
-          userId: number,
-        ) => Promise<Array<{ id: number; triggerType?: string }>>;
-        syncRelativeSchedulesForEvent?: (eventId: number) => Promise<void>;
-        cancelRelativeSchedulesForEvent?: (eventId: number) => Promise<void>;
-        resyncRelativeSchedulesForOwner?: (ownerId: number) => Promise<void>;
-        executeRuleOnEvent: (
-          rule: { id: number; triggerType?: string },
-          event: Event,
-        ) => Promise<void>;
-      }
-    | undefined {
+  private getAutomationService(): AutomationService | undefined {
     if (!this.automationService) {
       this.automationService = this.resolveAutomationService();
     }
