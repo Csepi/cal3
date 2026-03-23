@@ -110,6 +110,11 @@ describeDockerBacked(
         password: 'ValidPass#123',
         role: UserRole.USER,
       });
+      user.onboardingCompleted = true;
+      user.onboardingCompletedAt = new Date();
+      user.privacyPolicyAcceptedAt = new Date();
+      user.privacyPolicyVersion = 'integration-test';
+      await userRepository.save(user);
 
       const loginResponse = await loginNative(
         harness.app,
