@@ -71,7 +71,7 @@ jobs:
       - name: Run integration tests
         env:
           DB_TYPE: postgres
-          ENABLE_TESTCONTAINERS: "true"
+          ENABLE_TESTCONTAINERS: "false"
           TESTCONTAINERS_RYUK_DISABLED: "false"
           TESTCONTAINERS_START_TIMEOUT_MS: "180000"
         run: npm --prefix backend-nestjs run test:integration

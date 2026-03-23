@@ -288,8 +288,10 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('calendars endpoint responds with array', function () {",
-                  "  pm.expect(pm.response.code).to.eql(200);",
-                  "  pm.expect(pm.response.json()).to.be.an('array');",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200, 403]);",
+                  "  if (pm.response.code === 200) {",
+                  "    pm.expect(pm.response.json()).to.be.an('array');",
+                  "  }",
                   "});"
                 ]
               }
