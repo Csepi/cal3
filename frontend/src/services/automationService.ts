@@ -54,6 +54,41 @@ const apiFetch = async (url: string, init: ApiFetchOptions = {}): Promise<Respon
   });
 };
 
+const extractFieldValidationMessage = (details: unknown): string | null => {
+  if (!details || typeof details !== 'object') {
+    return null;
+  }
+
+  const fields = (details as Record<string, unknown>).fields;
+  if (!Array.isArray(fields)) {
+    return null;
+  }
+
+  for (const fieldEntry of fields) {
+    if (!fieldEntry || typeof fieldEntry !== 'object') {
+      continue;
+    }
+    const fieldRecord = fieldEntry as Record<string, unknown>;
+    const reasons = fieldRecord.reasons;
+    if (!Array.isArray(reasons)) {
+      continue;
+    }
+    const reason = reasons.find(
+      (entry): entry is string =>
+        typeof entry === 'string' && entry.trim().length > 0,
+    );
+    if (!reason) {
+      continue;
+    }
+
+    const fieldName =
+      typeof fieldRecord.field === 'string' ? fieldRecord.field.trim() : '';
+    return fieldName.length > 0 ? `${fieldName}: ${reason}` : reason;
+  }
+
+  return null;
+};
+
 const extractApiErrorMessage = (payload: unknown, fallback: string): string => {
   if (typeof payload === 'string' && payload.trim().length > 0) {
     return payload;
@@ -64,25 +99,18 @@ const extractApiErrorMessage = (payload: unknown, fallback: string): string => {
   }
 
   const body = payload as Record<string, unknown>;
-  const details = body.details;
-  if (details && typeof details === 'object') {
-    const fields = (details as Record<string, unknown>).fields;
-    if (Array.isArray(fields) && fields.length > 0) {
-      const firstField = fields[0];
-      if (firstField && typeof firstField === 'object') {
-        const fieldRecord = firstField as Record<string, unknown>;
-        const fieldName =
-          typeof fieldRecord.field === 'string' ? fieldRecord.field : '';
-        const reasons = fieldRecord.reasons;
-        if (Array.isArray(reasons) && reasons.length > 0) {
-          const firstReason = reasons.find(
-            (reason): reason is string => typeof reason === 'string' && reason.length > 0,
-          );
-          if (firstReason) {
-            return fieldName ? `${fieldName}: ${firstReason}` : firstReason;
-          }
-        }
-      }
+  const topLevelValidationMessage = extractFieldValidationMessage(body.details);
+  if (topLevelValidationMessage) {
+    return topLevelValidationMessage;
+  }
+
+  const nestedError = body.error;
+  if (nestedError && typeof nestedError === 'object') {
+    const nestedValidationMessage = extractFieldValidationMessage(
+      (nestedError as Record<string, unknown>).details,
+    );
+    if (nestedValidationMessage) {
+      return nestedValidationMessage;
     }
   }
 
@@ -97,6 +125,13 @@ const extractApiErrorMessage = (payload: unknown, fallback: string): string => {
   }
   if (typeof message === 'string' && message.length > 0) {
     return message;
+  }
+
+  if (nestedError && typeof nestedError === 'object') {
+    const nestedMessage = (nestedError as Record<string, unknown>).message;
+    if (typeof nestedMessage === 'string' && nestedMessage.length > 0) {
+      return nestedMessage;
+    }
   }
 
   if (typeof body.error === 'string' && body.error.length > 0) {
