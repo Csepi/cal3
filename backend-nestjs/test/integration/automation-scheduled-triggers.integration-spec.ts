@@ -5,6 +5,9 @@ import {
   loginNative,
   seedUser,
 } from '../support/postgres-nest.harness';
+import {
+  DEVICE_FINGERPRINT_HEADER,
+} from '../../src/auth/services/token-fingerprint.service';
 import { User, UserRole } from '../../src/entities/user.entity';
 import { Calendar } from '../../src/entities/calendar.entity';
 import { Event } from '../../src/entities/event.entity';
@@ -92,6 +95,7 @@ describeDockerBacked(
       server: Parameters<typeof request>[0];
       accessToken: string;
       calendarId: number;
+      fingerprint: string;
     }> => {
       const harness = getHarness();
       if (!harness) {
@@ -99,6 +103,7 @@ describeDockerBacked(
       }
 
       const suffix = uniqueSuffix();
+      const fingerprint = `automation-scheduled-${suffix}`;
       const user = await seedUser(userRepository, {
         username: `automation_sched_${suffix}`,
         email: `automation_sched_${suffix}@example.com`,
@@ -110,7 +115,7 @@ describeDockerBacked(
         harness.app,
         user.username,
         'ValidPass#123',
-        `automation-scheduled-${suffix}`,
+        fingerprint,
       );
       expect([200, 201]).toContain(loginResponse.status);
 
@@ -128,17 +133,20 @@ describeDockerBacked(
         server: harness.app.getHttpServer() as Parameters<typeof request>[0],
         accessToken,
         calendarId: calendar.id,
+        fingerprint,
       };
     };
 
     const createRule = async (
       server: Parameters<typeof request>[0],
       accessToken: string,
+      fingerprint: string,
       payload: Record<string, unknown>,
     ): Promise<{ id: number }> => {
       const response = await request(server)
         .post('/automation/rules')
         .set('Authorization', `Bearer ${accessToken}`)
+        .set(DEVICE_FINGERPRINT_HEADER, fingerprint)
         .send(payload)
         .expect(201);
 
@@ -149,11 +157,13 @@ describeDockerBacked(
     const createEvent = async (
       server: Parameters<typeof request>[0],
       accessToken: string,
+      fingerprint: string,
       payload: Record<string, unknown>,
     ): Promise<{ id: number }> => {
       const response = await request(server)
         .post('/events')
         .set('Authorization', `Bearer ${accessToken}`)
+        .set(DEVICE_FINGERPRINT_HEADER, fingerprint)
         .send(payload)
         .expect(201);
 
@@ -167,37 +177,47 @@ describeDockerBacked(
         return;
       }
 
-      const { server, accessToken, calendarId } =
+      const { server, accessToken, calendarId, fingerprint } =
         await bootstrapAuthenticatedContext();
 
-      const { id: ruleId } = await createRule(server, accessToken, {
-        name: `Relative schedule rule ${uniqueSuffix()}`,
-        triggerType: TriggerType.RELATIVE_TIME_TO_EVENT,
-        triggerConfig: {
-          referenceTime: { base: 'start' },
-          offset: { direction: 'before', value: 30, unit: 'minutes' },
-          execution: { runOncePerEvent: true },
-        },
-        actions: [
-          {
-            actionType: ActionType.UPDATE_EVENT_TITLE,
-            actionConfig: { newTitle: 'Auto title' },
+      const { id: ruleId } = await createRule(
+        server,
+        accessToken,
+        fingerprint,
+        {
+          name: `Relative schedule rule ${uniqueSuffix()}`,
+          triggerType: TriggerType.RELATIVE_TIME_TO_EVENT,
+          triggerConfig: {
+            referenceTime: { base: 'start' },
+            offset: { direction: 'before', value: 30, unit: 'minutes' },
+            execution: { runOncePerEvent: true },
           },
-        ],
-      });
+          actions: [
+            {
+              actionType: ActionType.UPDATE_EVENT_TITLE,
+              actionConfig: { newTitle: 'Auto title' },
+            },
+          ],
+        },
+      );
 
       const eventDate = dayOffsetIso(2);
       const initialStartTime = '10:00';
 
-      const { id: eventId } = await createEvent(server, accessToken, {
-        calendarId,
-        title: 'Lifecycle Event',
-        startDate: eventDate,
-        startTime: initialStartTime,
-        endDate: eventDate,
-        endTime: '11:00',
-        isAllDay: false,
-      });
+      const { id: eventId } = await createEvent(
+        server,
+        accessToken,
+        fingerprint,
+        {
+          calendarId,
+          title: 'Lifecycle Event',
+          startDate: eventDate,
+          startTime: initialStartTime,
+          endDate: eventDate,
+          endTime: '11:00',
+          isAllDay: false,
+        },
+      );
 
       const scheduledAfterCreate = await scheduledTriggerRepository.find({
         where: { ruleId, eventId },
@@ -224,6 +244,7 @@ describeDockerBacked(
       await request(server)
         .patch(`/events/${eventId}`)
         .set('Authorization', `Bearer ${accessToken}`)
+        .set(DEVICE_FINGERPRINT_HEADER, fingerprint)
         .send({ startTime: '16:45' })
         .expect(200);
 
@@ -253,6 +274,7 @@ describeDockerBacked(
       await request(server)
         .delete(`/events/${eventId}`)
         .set('Authorization', `Bearer ${accessToken}`)
+        .set(DEVICE_FINGERPRINT_HEADER, fingerprint)
         .expect(200);
 
       const scheduledAfterDelete = await scheduledTriggerRepository.find({
@@ -295,10 +317,10 @@ describeDockerBacked(
           return;
         }
 
-        const { server, accessToken, calendarId } =
+        const { server, accessToken, calendarId, fingerprint } =
           await bootstrapAuthenticatedContext();
 
-        await createRule(server, accessToken, {
+        await createRule(server, accessToken, fingerprint, {
           name: `Non-relative rule ${triggerType} ${uniqueSuffix()}`,
           triggerType,
           triggerConfig,
@@ -311,20 +333,26 @@ describeDockerBacked(
         });
 
         const eventDate = dayOffsetIso(3);
-        const { id: eventId } = await createEvent(server, accessToken, {
-          calendarId,
-          title: 'No scheduled row event',
-          startDate: eventDate,
-          startTime: '09:00',
-          endDate: eventDate,
-          endTime: '10:00',
-        });
+        const { id: eventId } = await createEvent(
+          server,
+          accessToken,
+          fingerprint,
+          {
+            calendarId,
+            title: 'No scheduled row event',
+            startDate: eventDate,
+            startTime: '09:00',
+            endDate: eventDate,
+            endTime: '10:00',
+          },
+        );
 
         expect(await scheduledTriggerRepository.count()).toBe(0);
 
         await request(server)
           .patch(`/events/${eventId}`)
           .set('Authorization', `Bearer ${accessToken}`)
+          .set(DEVICE_FINGERPRINT_HEADER, fingerprint)
           .send({ title: 'Updated once' })
           .expect(200);
 
@@ -333,6 +361,7 @@ describeDockerBacked(
         await request(server)
           .delete(`/events/${eventId}`)
           .set('Authorization', `Bearer ${accessToken}`)
+          .set(DEVICE_FINGERPRINT_HEADER, fingerprint)
           .expect(200);
 
         expect(await scheduledTriggerRepository.count()).toBe(0);

@@ -5,14 +5,16 @@ import {
   normalizeRelativeTimeToEventTriggerConfig,
 } from './relative-time-trigger.util';
 
+const utcDate = (date: string): Date => new Date(`${date}T00:00:00.000Z`);
+
 const buildEvent = (overrides: Partial<Event> = {}): Event =>
   ({
     id: 1,
     title: 'Planning Meeting',
     description: 'Discuss roadmap',
-    startDate: new Date('2026-03-25'),
+    startDate: utcDate('2026-03-25'),
     startTime: '10:00',
-    endDate: new Date('2026-03-25'),
+    endDate: utcDate('2026-03-25'),
     endTime: '11:00',
     isAllDay: false,
     location: null,
@@ -78,8 +80,8 @@ describe('relative-time-trigger.util', () => {
       isAllDay: true,
       startTime: null,
       endTime: null,
-      startDate: new Date('2026-03-10'),
-      endDate: new Date('2026-03-12'),
+      startDate: utcDate('2026-03-10'),
+      endDate: utcDate('2026-03-12'),
     });
     const config = normalizeRelativeTimeToEventTriggerConfig({
       referenceTime: { base: 'end' },
@@ -120,7 +122,7 @@ describe('relative-time-trigger.util', () => {
 
   it('keeps local wall-clock semantics across DST when offset is in weeks', () => {
     const event = buildEvent({
-      startDate: new Date('2026-03-29'),
+      startDate: utcDate('2026-03-29'),
       startTime: '09:00',
       recurrenceRule: { timezone: 'Europe/Budapest' },
     });

@@ -117,6 +117,7 @@ const getFormatter = (timeZone: string): Intl.DateTimeFormat => {
   const formatter = new Intl.DateTimeFormat('en-US', {
     timeZone,
     hour12: false,
+    hourCycle: 'h23',
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',
@@ -329,6 +330,9 @@ const getTimeZoneOffsetMillis = (utcDate: Date, timeZone: string): number => {
     ) {
       values[part.type] = Number.parseInt(part.value, 10);
     }
+  }
+  if (values.hour === 24) {
+    values.hour = 0;
   }
 
   const asUtc = Date.UTC(
