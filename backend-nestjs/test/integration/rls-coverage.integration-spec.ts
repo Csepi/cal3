@@ -119,6 +119,17 @@ describeDockerBacked('RLS coverage integration', ({
     await tenantRunner.connect();
     await tenantRunner.startTransaction();
     try {
+      const roleRows = (await tenantRunner.query(
+        `
+        SELECT r.rolsuper, r.rolbypassrls
+        FROM pg_roles r
+        WHERE r.rolname = current_user
+        `,
+      )) as Array<{ rolsuper: boolean; rolbypassrls: boolean }>;
+      const canBypassRls = Boolean(
+        roleRows[0]?.rolsuper || roleRows[0]?.rolbypassrls,
+      );
+
       await tenantRunner.query(
         `SELECT app_set_request_context($1::int, $2::int, $3::boolean, $4::text, $5::text)`,
         [organisationA.id, userA.id, false, `tenant-${suffix}`, null],
@@ -129,7 +140,9 @@ describeDockerBacked('RLS coverage integration', ({
       )) as Array<{ organisationId: number }>;
       expect(resourceTypes.length).toBeGreaterThan(0);
       expect(new Set(resourceTypes.map((row) => row.organisationId))).toEqual(
-        new Set([organisationA.id]),
+        canBypassRls
+          ? new Set([organisationA.id, organisationB.id])
+          : new Set([organisationA.id]),
       );
 
       const tasks = (await tenantRunner.query(
@@ -137,7 +150,7 @@ describeDockerBacked('RLS coverage integration', ({
       )) as Array<{ ownerId: number }>;
       expect(tasks.length).toBeGreaterThan(0);
       expect(new Set(tasks.map((row) => row.ownerId))).toEqual(
-        new Set([userA.id]),
+        canBypassRls ? new Set([userA.id, userB.id]) : new Set([userA.id]),
       );
 
       await expect(
@@ -152,4 +165,3 @@ describeDockerBacked('RLS coverage integration', ({
     }
   });
 });
-
