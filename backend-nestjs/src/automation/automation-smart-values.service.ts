@@ -463,6 +463,7 @@ export class AutomationSmartValuesService {
       TriggerType.EVENT_DELETED,
       TriggerType.EVENT_STARTS_IN,
       TriggerType.EVENT_ENDS_IN,
+      TriggerType.RELATIVE_TIME_TO_EVENT,
       TriggerType.CALENDAR_IMPORTED,
     ].includes(triggerType);
   }

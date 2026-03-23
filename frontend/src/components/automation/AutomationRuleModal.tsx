@@ -111,6 +111,22 @@ export function AutomationRuleModal({
       return 'Please select a trigger type';
     }
 
+    if (triggerType === TriggerType.RELATIVE_TIME_TO_EVENT) {
+      const offsetValue = Number(
+        (
+          triggerConfig as {
+            offset?: {
+              value?: number;
+            };
+          }
+        )?.offset?.value ?? 0,
+      );
+
+      if (!Number.isInteger(offsetValue) || offsetValue < 0) {
+        return 'Relative trigger offset must be a non-negative integer';
+      }
+    }
+
     if (conditions.length > 10) {
       return 'Maximum of 10 conditions allowed';
     }

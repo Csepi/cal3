@@ -83,6 +83,14 @@ export function useAutomationMetadata(): UseAutomationMetadataReturn {
         },
       },
       {
+        value: TriggerType.RELATIVE_TIME_TO_EVENT,
+        label: 'Relative Time To Event',
+        description:
+          'Before or after event start/end with custom offsets and filters',
+        icon: 'RT',
+        requiresConfig: true,
+      },
+      {
         value: TriggerType.CALENDAR_IMPORTED,
         label: 'Calendar Imported',
         description: 'When an event is synced from external calendar',

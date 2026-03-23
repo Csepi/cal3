@@ -37,11 +37,13 @@ export class AutomationSchedulerService implements OnModuleInit {
 
   /**
    * Check for time-based triggers every minute
-   * Handles: event.starts_in, event.ends_in, scheduled.time
+   * Handles due relative-time jobs and legacy minute-based triggers.
    */
   @Cron(CronExpression.EVERY_MINUTE)
   async checkTimeBasedTriggers() {
     try {
+      await this.automationService.processDueRelativeTimeJobs();
+
       // Get all enabled time-based rules with retry logic for connection errors
       let rules;
       let retryCount = 0;

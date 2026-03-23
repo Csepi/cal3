@@ -36,6 +36,9 @@ export class EventsService {
       triggerType: string,
       userId: number,
     ) => Promise<Array<{ id: number; triggerType?: string }>>;
+    syncRelativeSchedulesForEvent?: (eventId: number) => Promise<void>;
+    cancelRelativeSchedulesForEvent?: (eventId: number) => Promise<void>;
+    resyncRelativeSchedulesForOwner?: (ownerId: number) => Promise<void>;
     executeRuleOnEvent: (
       rule: { id: number; triggerType?: string },
       event: Event,
@@ -60,6 +63,9 @@ export class EventsService {
           triggerType: string,
           userId: number,
         ) => Promise<Array<{ id: number; triggerType?: string }>>;
+        syncRelativeSchedulesForEvent?: (eventId: number) => Promise<void>;
+        cancelRelativeSchedulesForEvent?: (eventId: number) => Promise<void>;
+        resyncRelativeSchedulesForOwner?: (ownerId: number) => Promise<void>;
         executeRuleOnEvent: (
           rule: { id: number; triggerType?: string },
           event: Event,
@@ -148,6 +154,11 @@ export class EventsService {
         // Continue without instances if there's an error
       }
     }
+
+    await this.syncRelativeAutomationSchedulesForEvents([
+      savedEvent.id,
+      ...savedInstances.map((instance) => instance.id),
+    ]);
 
     await this.eventNotificationService.notifyEventChange(
       savedEvent,
@@ -311,7 +322,9 @@ export class EventsService {
       userId,
     );
     if (!hasAccess) {
-      throw new ForbiddenException(bStatic('errors.auto.backend.kf5de6f833b10'));
+      throw new ForbiddenException(
+        bStatic('errors.auto.backend.kf5de6f833b10'),
+      );
     }
 
     return event;
@@ -366,6 +379,8 @@ export class EventsService {
       console.error('Automation trigger error:', err),
     );
 
+    await this.syncRelativeAutomationSchedulesForEvents([updatedEvent.id]);
+
     if (updatedEvent.taskId && this.taskCalendarBridgeService) {
       await this.taskCalendarBridgeService.handleEventMutation(updatedEvent);
     }
@@ -417,6 +432,8 @@ export class EventsService {
       console.error('Automation trigger error:', err),
     );
 
+    await this.cancelRelativeAutomationSchedulesForEvent(event.id);
+
     await this.eventNotificationService.notifyEventChange(
       event,
       'deleted',
@@ -431,6 +448,13 @@ export class EventsService {
       await this.removeRecurringEvent(event, scope);
     } else {
       await this.eventRepository.remove(event);
+    }
+
+    if (
+      event.recurrenceType !== RecurrenceType.NONE &&
+      (scope !== 'this' || !event.parentEventId)
+    ) {
+      await this.resyncRelativeSchedulesForCalendarOwner(event.calendarId);
     }
 
     if (event.recurrenceType === RecurrenceType.NONE || event.parentEventId) {
@@ -467,7 +491,9 @@ export class EventsService {
       userId,
     );
     if (!hasAccess) {
-      throw new ForbiddenException(bStatic('errors.auto.backend.kd445628ea741'));
+      throw new ForbiddenException(
+        bStatic('errors.auto.backend.kd445628ea741'),
+      );
     }
 
     return this.eventRepository.find({
@@ -520,6 +546,11 @@ export class EventsService {
       recurrence,
     );
     const savedInstances = await this.eventRepository.save(instances);
+
+    await this.syncRelativeAutomationSchedulesForEvents([
+      savedParentEvent.id,
+      ...savedInstances.map((instance) => instance.id),
+    ]);
 
     await this.eventNotificationService.notifyEventChange(
       savedParentEvent,
@@ -575,18 +606,24 @@ export class EventsService {
     if (event.recurrenceType === RecurrenceType.NONE) {
       if (recurrence && recurrence.type !== RecurrenceType.NONE) {
         // Convert event to recurring
-        return await this.convertToRecurringEvent(
+        const convertedEvents = await this.convertToRecurringEvent(
           event,
           updateData,
           recurrence,
         );
+        await this.resyncRelativeSchedulesForCalendarOwner(event.calendarId);
+        return convertedEvents;
       } else {
         // Not converting to recurring, use regular update
         this.eventValidationService.sanitizeAndAssignUpdateData(
           event,
           updateData,
         );
-        return [await this.eventRepository.save(event)];
+        const updatedStandaloneEvent = await this.eventRepository.save(event);
+        await this.syncRelativeAutomationSchedulesForEvents([
+          updatedStandaloneEvent.id,
+        ]);
+        return [updatedStandaloneEvent];
       }
     }
 
@@ -607,8 +644,12 @@ export class EventsService {
         );
         break;
       default:
-        throw new BadRequestException(bStatic('errors.auto.backend.k0d8f56fb7f16'));
+        throw new BadRequestException(
+          bStatic('errors.auto.backend.k0d8f56fb7f16'),
+        );
     }
+
+    await this.resyncRelativeSchedulesForCalendarOwner(event.calendarId);
 
     if (updatedEvents.length > 0) {
       await this.eventNotificationService.notifyEventChange(
@@ -932,6 +973,96 @@ export class EventsService {
     return [savedEvent];
   }
 
+  private getAutomationService():
+    | {
+        findRulesByTrigger?: (
+          triggerType: string,
+          userId: number,
+        ) => Promise<Array<{ id: number; triggerType?: string }>>;
+        syncRelativeSchedulesForEvent?: (eventId: number) => Promise<void>;
+        cancelRelativeSchedulesForEvent?: (eventId: number) => Promise<void>;
+        resyncRelativeSchedulesForOwner?: (ownerId: number) => Promise<void>;
+        executeRuleOnEvent: (
+          rule: { id: number; triggerType?: string },
+          event: Event,
+        ) => Promise<void>;
+      }
+    | undefined {
+    if (!this.automationService) {
+      this.automationService = this.resolveAutomationService();
+    }
+    return this.automationService;
+  }
+
+  private async syncRelativeAutomationSchedulesForEvents(
+    eventIds: number[],
+  ): Promise<void> {
+    const automationService = this.getAutomationService();
+    if (!automationService?.syncRelativeSchedulesForEvent) {
+      return;
+    }
+
+    const uniqueEventIds = [...new Set(eventIds)].filter(
+      (eventId) => Number.isInteger(eventId) && eventId > 0,
+    );
+    for (const eventId of uniqueEventIds) {
+      try {
+        await automationService.syncRelativeSchedulesForEvent(eventId);
+      } catch (error: unknown) {
+        logError(error, buildErrorContext({ action: 'events.service' }));
+        console.error(
+          `Failed syncing relative schedules for event ${eventId}:`,
+          error,
+        );
+      }
+    }
+  }
+
+  private async cancelRelativeAutomationSchedulesForEvent(
+    eventId: number,
+  ): Promise<void> {
+    const automationService = this.getAutomationService();
+    if (!automationService?.cancelRelativeSchedulesForEvent) {
+      return;
+    }
+
+    try {
+      await automationService.cancelRelativeSchedulesForEvent(eventId);
+    } catch (error: unknown) {
+      logError(error, buildErrorContext({ action: 'events.service' }));
+      console.error(
+        `Failed cancelling relative schedules for event ${eventId}:`,
+        error,
+      );
+    }
+  }
+
+  private async resyncRelativeSchedulesForCalendarOwner(
+    calendarId: number,
+  ): Promise<void> {
+    const automationService = this.getAutomationService();
+    if (!automationService?.resyncRelativeSchedulesForOwner) {
+      return;
+    }
+
+    const calendar = await this.calendarRepository.findOne({
+      where: { id: calendarId },
+    });
+    if (!calendar?.ownerId) {
+      return;
+    }
+
+    try {
+      await automationService.resyncRelativeSchedulesForOwner(calendar.ownerId);
+    } catch (error: unknown) {
+      logError(error, buildErrorContext({ action: 'events.service' }));
+      console.error(
+        `Failed resyncing relative schedules for owner ${calendar.ownerId}:`,
+        error,
+      );
+    }
+  }
+
   /**
    * Trigger automation rules for event lifecycle hooks
    * Executes asynchronously without blocking the main flow
@@ -940,10 +1071,8 @@ export class EventsService {
     triggerType: string,
     event: Event,
   ): Promise<void> {
-    if (!this.automationService) {
-      this.automationService = this.resolveAutomationService();
-    }
-    if (!this.automationService) {
+    const automationService = this.getAutomationService();
+    if (!automationService) {
       return; // Automation service not available (optional dependency)
     }
 
@@ -969,7 +1098,7 @@ export class EventsService {
       if (!calendarWithOwner?.owner) return;
 
       // Get automation rules (using dynamic import to avoid circular dependency)
-      const rules = await this.automationService.findRulesByTrigger?.(
+      const rules = await automationService.findRulesByTrigger?.(
         triggerType,
         calendarWithOwner.owner.id,
       );
@@ -978,7 +1107,7 @@ export class EventsService {
 
       // Execute each rule asynchronously
       for (const rule of rules) {
-        this.automationService
+        automationService
           .executeRuleOnEvent(rule, fullEvent)
           .catch((error: Error) => {
             console.error(

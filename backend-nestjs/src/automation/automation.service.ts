@@ -6,7 +6,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DeepPartial } from 'typeorm';
+import { Repository, DeepPartial, LessThanOrEqual } from 'typeorm';
 import * as crypto from 'crypto';
 import {
   AutomationRule,
@@ -15,10 +15,14 @@ import {
 import { AutomationCondition } from '../entities/automation-condition.entity';
 import { AutomationAction } from '../entities/automation-action.entity';
 import {
+  AutomationScheduledTrigger,
+  AutomationScheduledTriggerStatus,
+} from '../entities/automation-scheduled-trigger.entity';
+import {
   AutomationAuditLog,
   AuditLogStatus,
 } from '../entities/automation-audit-log.entity';
-import { Event } from '../entities/event.entity';
+import { Event, EventStatus } from '../entities/event.entity';
 import { AutomationEvaluatorService } from './automation-evaluator.service';
 import { ActionExecutorRegistry } from './executors/action-executor-registry';
 import {
@@ -49,6 +53,15 @@ import {
 
 import { logError } from '../common/errors/error-logger';
 import { buildErrorContext } from '../common/errors/error-context';
+import {
+  RELATIVE_TIME_TO_EVENT_TRIGGER_TYPE,
+  computeRelativeTimeToEventScheduleAt,
+  isRecurringEvent,
+  isRelativeTimeToEventTrigger,
+  matchesRelativeTimeToEventFilter,
+  normalizeRelativeTimeToEventTriggerConfig,
+  RelativeTimeToEventTriggerConfig,
+} from './relative-time-trigger.util';
 
 import { bStatic } from '../i18n/runtime';
 
@@ -61,6 +74,8 @@ export interface WebhookExecutionRequestMetadata {
 @Injectable()
 export class AutomationService {
   private readonly logger = new Logger(AutomationService.name);
+  private readonly relativeJobBatchSize = 200;
+  private readonly relativeJobMaxRetries = 3;
 
   constructor(
     @InjectRepository(AutomationRule)
@@ -71,6 +86,8 @@ export class AutomationService {
     private readonly actionRepository: Repository<AutomationAction>,
     @InjectRepository(AutomationAuditLog)
     private readonly auditLogRepository: Repository<AutomationAuditLog>,
+    @InjectRepository(AutomationScheduledTrigger)
+    private readonly scheduledTriggerRepository: Repository<AutomationScheduledTrigger>,
     @InjectRepository(Event)
     private readonly eventRepository: Repository<Event>,
     private readonly evaluatorService: AutomationEvaluatorService,
@@ -99,13 +116,18 @@ export class AutomationService {
       );
     }
 
+    const normalizedTriggerConfig = this.normalizeTriggerConfig(
+      createRuleDto.triggerType,
+      createRuleDto.triggerConfig,
+    );
+
     // Create rule entity
     const rule = this.ruleRepository.create({
       createdById: userId,
       name: createRuleDto.name,
       description: createRuleDto.description,
       triggerType: createRuleDto.triggerType,
-      triggerConfig: createRuleDto.triggerConfig,
+      triggerConfig: normalizedTriggerConfig,
       isEnabled: createRuleDto.isEnabled ?? true,
       conditionLogic: createRuleDto.conditionLogic,
     });
@@ -158,6 +180,8 @@ export class AutomationService {
         },
       );
     }
+
+    await this.syncRelativeSchedulesForRule(savedRule.id);
 
     // Load complete rule with relations
     return this.getRule(userId, savedRule.id);
@@ -213,7 +237,9 @@ export class AutomationService {
     }
 
     if (rule.createdById !== userId) {
-      throw new ForbiddenException(bStatic('errors.auto.backend.k136a28392f60'));
+      throw new ForbiddenException(
+        bStatic('errors.auto.backend.k136a28392f60'),
+      );
     }
 
     return this.mapToRuleDetailDto(rule);
@@ -234,7 +260,9 @@ export class AutomationService {
     }
 
     if (rule.createdById !== userId) {
-      throw new ForbiddenException(bStatic('errors.auto.backend.k136a28392f60'));
+      throw new ForbiddenException(
+        bStatic('errors.auto.backend.k136a28392f60'),
+      );
     }
 
     // Check for duplicate name if name is being changed
@@ -256,7 +284,10 @@ export class AutomationService {
     if (updateRuleDto.isEnabled !== undefined)
       rule.isEnabled = updateRuleDto.isEnabled;
     if (updateRuleDto.triggerConfig !== undefined)
-      rule.triggerConfig = updateRuleDto.triggerConfig;
+      rule.triggerConfig = this.normalizeTriggerConfig(
+        rule.triggerType,
+        updateRuleDto.triggerConfig,
+      );
     if (updateRuleDto.conditionLogic !== undefined)
       rule.conditionLogic = updateRuleDto.conditionLogic;
 
@@ -320,6 +351,7 @@ export class AutomationService {
       rule.approvedByUserId = null;
     }
     await this.ruleRepository.save(rule);
+    await this.syncRelativeSchedulesForRule(rule.id);
 
     // Return updated rule with relations
     return this.getRule(userId, ruleId);
@@ -333,7 +365,9 @@ export class AutomationService {
     }
 
     if (rule.createdById !== userId) {
-      throw new ForbiddenException(bStatic('errors.auto.backend.k136a28392f60'));
+      throw new ForbiddenException(
+        bStatic('errors.auto.backend.k136a28392f60'),
+      );
     }
 
     // Cascade delete will handle conditions, actions, and audit logs
@@ -356,7 +390,9 @@ export class AutomationService {
     }
 
     if (rule.createdById !== userId) {
-      throw new ForbiddenException(bStatic('errors.auto.backend.k136a28392f60'));
+      throw new ForbiddenException(
+        bStatic('errors.auto.backend.k136a28392f60'),
+      );
     }
 
     this.automationSecurity.assertKillSwitchDisabled();
@@ -418,6 +454,7 @@ export class AutomationService {
     event: Event | null = null,
     executedByUserId?: number,
     webhookData: Record<string, unknown> | null = null,
+    throwOnFailure = false,
   ): Promise<void> {
     this.automationSecurity.assertKillSwitchDisabled();
     this.automationSecurity.assertApprovalSatisfied(rule);
@@ -532,6 +569,13 @@ export class AutomationService {
 
       // Update rule metadata even on failure
       await this.updateRuleExecutionMetadata(rule.id);
+
+      if (throwOnFailure) {
+        if (error instanceof Error) {
+          throw error;
+        }
+        throw new Error(String(error));
+      }
     }
   }
 
@@ -597,6 +641,134 @@ export class AutomationService {
   // TRIGGER SYSTEM OPERATIONS
   // ========================================
 
+  async processDueRelativeTimeJobs(now: Date = new Date()): Promise<number> {
+    const dueJobs = await this.scheduledTriggerRepository.find({
+      where: {
+        status: AutomationScheduledTriggerStatus.SCHEDULED,
+        scheduledAt: LessThanOrEqual(now),
+      },
+      order: {
+        scheduledAt: 'ASC',
+      },
+      take: this.relativeJobBatchSize,
+    });
+
+    for (const dueJob of dueJobs) {
+      try {
+        await this.processDueRelativeJob(dueJob.id, now);
+      } catch (error: unknown) {
+        logError(
+          error,
+          buildErrorContext({
+            action: 'automation.service.processDueRelative',
+          }),
+        );
+      }
+    }
+
+    return dueJobs.length;
+  }
+
+  async syncRelativeSchedulesForEvent(eventId: number): Promise<void> {
+    await this.cancelRelativeSchedulesForEvent(eventId);
+
+    const event = await this.eventRepository.findOne({
+      where: { id: eventId },
+      relations: ['calendar'],
+    });
+    if (!event?.calendar?.ownerId) {
+      return;
+    }
+
+    const rules = await this.listRelativeRulesForOwner(
+      event.calendar.ownerId,
+      true,
+    );
+    if (rules.length === 0) {
+      return;
+    }
+
+    const now = new Date();
+    for (const rule of rules) {
+      try {
+        await this.scheduleRelativeRuleForEvent(rule, event, now);
+      } catch (error: unknown) {
+        logError(
+          error,
+          buildErrorContext({ action: 'automation.service.syncEventSchedule' }),
+        );
+      }
+    }
+  }
+
+  async cancelRelativeSchedulesForEvent(eventId: number): Promise<void> {
+    const activeStatuses = [
+      AutomationScheduledTriggerStatus.SCHEDULED,
+      AutomationScheduledTriggerStatus.RUNNING,
+      AutomationScheduledTriggerStatus.FAILED,
+    ];
+    await this.scheduledTriggerRepository
+      .createQueryBuilder()
+      .update(AutomationScheduledTrigger)
+      .set({
+        status: AutomationScheduledTriggerStatus.CANCELLED,
+        cancelledAt: new Date(),
+      })
+      .where('eventId = :eventId', { eventId })
+      .andWhere('status IN (:...activeStatuses)', { activeStatuses })
+      .execute();
+  }
+
+  async resyncRelativeSchedulesForOwner(ownerId: number): Promise<void> {
+    const allRules = await this.listRelativeRulesForOwner(ownerId, false);
+    if (allRules.length === 0) {
+      return;
+    }
+
+    const allRuleIds = allRules.map((rule) => rule.id);
+    const activeStatuses = [
+      AutomationScheduledTriggerStatus.SCHEDULED,
+      AutomationScheduledTriggerStatus.RUNNING,
+      AutomationScheduledTriggerStatus.FAILED,
+    ];
+    await this.scheduledTriggerRepository
+      .createQueryBuilder()
+      .update(AutomationScheduledTrigger)
+      .set({
+        status: AutomationScheduledTriggerStatus.CANCELLED,
+        cancelledAt: new Date(),
+      })
+      .where('ruleId IN (:...allRuleIds)', { allRuleIds })
+      .andWhere('status IN (:...activeStatuses)', { activeStatuses })
+      .execute();
+
+    const enabledRules = allRules.filter((rule) => rule.isEnabled);
+    if (enabledRules.length === 0) {
+      return;
+    }
+
+    const events = await this.listEventsForOwner(ownerId);
+    if (events.length === 0) {
+      return;
+    }
+
+    const now = new Date();
+    for (const rule of enabledRules) {
+      for (const event of events) {
+        try {
+          await this.scheduleRelativeRuleForEvent(rule, event, now);
+        } catch (error: unknown) {
+          logError(
+            error,
+            buildErrorContext({
+              action: 'automation.service.resyncOwnerSchedule',
+            }),
+          );
+        }
+      }
+    }
+  }
+
   /**
    * Find all enabled rules for a specific trigger type and user
    * Used by event lifecycle hooks and other trigger sources
@@ -615,6 +787,374 @@ export class AutomationService {
     });
   }
 
+  private async syncRelativeSchedulesForRule(ruleId: number): Promise<void> {
+    const rule = await this.ruleRepository.findOne({
+      where: { id: ruleId },
+      relations: ['createdBy'],
+    });
+
+    if (!rule || !isRelativeTimeToEventTrigger(rule.triggerType)) {
+      return;
+    }
+
+    const activeStatuses = [
+      AutomationScheduledTriggerStatus.SCHEDULED,
+      AutomationScheduledTriggerStatus.RUNNING,
+      AutomationScheduledTriggerStatus.FAILED,
+    ];
+    await this.scheduledTriggerRepository
+      .createQueryBuilder()
+      .update(AutomationScheduledTrigger)
+      .set({
+        status: AutomationScheduledTriggerStatus.CANCELLED,
+        cancelledAt: new Date(),
+      })
+      .where('ruleId = :ruleId', { ruleId: rule.id })
+      .andWhere('status IN (:...activeStatuses)', { activeStatuses })
+      .execute();
+
+    if (!rule.isEnabled) {
+      return;
+    }
+
+    const ownerId = rule.createdById;
+    const events = await this.listEventsForOwner(ownerId);
+    if (events.length === 0) {
+      return;
+    }
+
+    const now = new Date();
+    for (const event of events) {
+      try {
+        await this.scheduleRelativeRuleForEvent(rule, event, now);
+      } catch (error: unknown) {
+        logError(
+          error,
+          buildErrorContext({ action: 'automation.service.syncRuleSchedule' }),
+        );
+      }
+    }
+  }
+
+  private async listRelativeRulesForOwner(
+    ownerId: number,
+    enabledOnly: boolean,
+  ): Promise<AutomationRule[]> {
+    const query = this.ruleRepository
+      .createQueryBuilder('rule')
+      .leftJoinAndSelect('rule.createdBy', 'createdBy')
+      .where('rule.createdById = :ownerId', { ownerId })
+      .andWhere('rule.triggerType = :triggerType', {
+        triggerType: RELATIVE_TIME_TO_EVENT_TRIGGER_TYPE,
+      });
+
+    if (enabledOnly) {
+      query.andWhere('rule.isEnabled = :isEnabled', { isEnabled: true });
+    }
+
+    return query.getMany();
+  }
+
+  private async listEventsForOwner(ownerId: number): Promise<Event[]> {
+    return this.eventRepository
+      .createQueryBuilder('event')
+      .innerJoinAndSelect('event.calendar', 'calendar')
+      .where('calendar.ownerId = :ownerId', { ownerId })
+      .andWhere('event.status != :cancelledStatus', {
+        cancelledStatus: EventStatus.CANCELLED,
+      })
+      .getMany();
+  }
+
+  private async scheduleRelativeRuleForEvent(
+    rule: AutomationRule,
+    event: Event,
+    now: Date,
+  ): Promise<void> {
+    if (!isRelativeTimeToEventTrigger(rule.triggerType)) {
+      return;
+    }
+
+    const normalizedConfig = this.normalizeRelativeTriggerConfig(
+      rule.triggerConfig,
+    );
+
+    if (
+      !normalizedConfig.execution.fireForEveryOccurrenceOfRecurringEvent &&
+      isRecurringEvent(event) &&
+      event.parentEventId !== null
+    ) {
+      return;
+    }
+
+    if (
+      !matchesRelativeTimeToEventFilter(event, normalizedConfig.eventFilter)
+    ) {
+      return;
+    }
+
+    const scheduledAt = computeRelativeTimeToEventScheduleAt(
+      event,
+      normalizedConfig,
+      rule.createdBy?.timezone ?? 'UTC',
+    );
+    if (!scheduledAt) {
+      return;
+    }
+
+    const scheduleWindowEnd = new Date(now.getTime());
+    scheduleWindowEnd.setUTCDate(
+      scheduleWindowEnd.getUTCDate() +
+        normalizedConfig.execution.schedulingWindowDays,
+    );
+    if (scheduledAt > scheduleWindowEnd) {
+      return;
+    }
+
+    let effectiveScheduledAt = scheduledAt;
+    if (scheduledAt < now) {
+      const driftMs = now.getTime() - scheduledAt.getTime();
+      const graceMs =
+        normalizedConfig.execution.pastDueGraceMinutes * 60 * 1000;
+      if (normalizedConfig.execution.skipPast || driftMs > graceMs) {
+        return;
+      }
+      effectiveScheduledAt = now;
+    }
+
+    const occurrenceId = event.recurrenceId ?? '';
+    let existingJob = await this.scheduledTriggerRepository.findOne({
+      where: {
+        ruleId: rule.id,
+        eventId: event.id,
+        occurrenceId,
+      },
+    });
+
+    if (
+      existingJob &&
+      existingJob.status === AutomationScheduledTriggerStatus.FIRED &&
+      normalizedConfig.execution.runOncePerEvent
+    ) {
+      return;
+    }
+
+    if (!existingJob) {
+      existingJob = this.scheduledTriggerRepository.create({
+        ruleId: rule.id,
+        eventId: event.id,
+        occurrenceId,
+      });
+    }
+
+    existingJob.status = AutomationScheduledTriggerStatus.SCHEDULED;
+    existingJob.scheduledAt = effectiveScheduledAt;
+    existingJob.attempts = 0;
+    existingJob.firedAt = null;
+    existingJob.cancelledAt = null;
+    existingJob.lastError = null;
+
+    await this.scheduledTriggerRepository.save(existingJob);
+  }
+
+  private async processDueRelativeJob(jobId: number, now: Date): Promise<void> {
+    const claimResult = await this.scheduledTriggerRepository.update(
+      {
+        id: jobId,
+        status: AutomationScheduledTriggerStatus.SCHEDULED,
+      },
+      {
+        status: AutomationScheduledTriggerStatus.RUNNING,
+        cancelledAt: null,
+      },
+    );
+
+    if (!claimResult.affected) {
+      return;
+    }
+
+    const job = await this.scheduledTriggerRepository.findOne({
+      where: { id: jobId },
+      relations: [
+        'rule',
+        'rule.conditions',
+        'rule.actions',
+        'rule.createdBy',
+        'event',
+        'event.calendar',
+      ],
+    });
+
+    if (!job?.rule || !job.event) {
+      await this.scheduledTriggerRepository.update(
+        { id: jobId },
+        {
+          status: AutomationScheduledTriggerStatus.CANCELLED,
+          cancelledAt: now,
+          lastError: 'Missing rule or event',
+        },
+      );
+      return;
+    }
+
+    const rule = job.rule;
+    const event = job.event;
+    if (!rule.isEnabled || !isRelativeTimeToEventTrigger(rule.triggerType)) {
+      await this.scheduledTriggerRepository.update(
+        { id: jobId },
+        {
+          status: AutomationScheduledTriggerStatus.CANCELLED,
+          cancelledAt: now,
+          lastError: 'Rule disabled or trigger type changed',
+        },
+      );
+      return;
+    }
+
+    const config = this.normalizeRelativeTriggerConfig(rule.triggerConfig);
+
+    if (
+      !config.execution.fireForEveryOccurrenceOfRecurringEvent &&
+      isRecurringEvent(event) &&
+      event.parentEventId !== null
+    ) {
+      await this.scheduledTriggerRepository.update(
+        { id: jobId },
+        {
+          status: AutomationScheduledTriggerStatus.CANCELLED,
+          cancelledAt: now,
+          lastError: 'Recurring occurrence execution disabled',
+        },
+      );
+      return;
+    }
+
+    if (!matchesRelativeTimeToEventFilter(event, config.eventFilter)) {
+      await this.scheduledTriggerRepository.update(
+        { id: jobId },
+        {
+          status: AutomationScheduledTriggerStatus.CANCELLED,
+          cancelledAt: now,
+          lastError: 'Event no longer matches trigger filter',
+        },
+      );
+      return;
+    }
+
+    const expectedScheduleAt = computeRelativeTimeToEventScheduleAt(
+      event,
+      config,
+      rule.createdBy?.timezone ?? 'UTC',
+    );
+    if (!expectedScheduleAt) {
+      await this.scheduledTriggerRepository.update(
+        { id: jobId },
+        {
+          status: AutomationScheduledTriggerStatus.CANCELLED,
+          cancelledAt: now,
+          lastError: 'Failed to compute schedule',
+        },
+      );
+      return;
+    }
+
+    if (expectedScheduleAt > now) {
+      await this.scheduledTriggerRepository.update(
+        { id: jobId },
+        {
+          status: AutomationScheduledTriggerStatus.SCHEDULED,
+          scheduledAt: expectedScheduleAt,
+          lastError: null,
+        },
+      );
+      return;
+    }
+
+    if (expectedScheduleAt < now) {
+      const pastDueMs = now.getTime() - expectedScheduleAt.getTime();
+      const graceMs = config.execution.pastDueGraceMinutes * 60 * 1000;
+      if (config.execution.skipPast || pastDueMs > graceMs) {
+        await this.scheduledTriggerRepository.update(
+          { id: jobId },
+          {
+            status: AutomationScheduledTriggerStatus.CANCELLED,
+            cancelledAt: now,
+            lastError: 'Past due beyond grace window',
+          },
+        );
+        return;
+      }
+    }
+
+    try {
+      await this.executeRuleOnEvent(rule, event, undefined, null, true);
+
+      await this.scheduledTriggerRepository.update(
+        { id: jobId },
+        {
+          status: AutomationScheduledTriggerStatus.FIRED,
+          firedAt: now,
+          cancelledAt: null,
+          lastError: null,
+        },
+      );
+    } catch (error: unknown) {
+      const nextAttempt = job.attempts + 1;
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+
+      if (nextAttempt < this.relativeJobMaxRetries) {
+        const retryDelayMinutes = Math.min(15, 2 ** nextAttempt);
+        const retryAt = new Date(now.getTime() + retryDelayMinutes * 60 * 1000);
+        await this.scheduledTriggerRepository.update(
+          { id: jobId },
+          {
+            status: AutomationScheduledTriggerStatus.SCHEDULED,
+            scheduledAt: retryAt,
+            attempts: nextAttempt,
+            lastError: errorMessage,
+          },
+        );
+        return;
+      }
+
+      await this.scheduledTriggerRepository.update(
+        { id: jobId },
+        {
+          status: AutomationScheduledTriggerStatus.FAILED,
+          attempts: nextAttempt,
+          lastError: errorMessage,
+        },
+      );
+    }
+  }
+
+  private normalizeTriggerConfig(
+    triggerType: TriggerType,
+    triggerConfig: Record<string, unknown> | null | undefined,
+  ): Record<string, unknown> {
+    if (!isRelativeTimeToEventTrigger(triggerType)) {
+      return triggerConfig ?? {};
+    }
+
+    try {
+      const normalized =
+        normalizeRelativeTimeToEventTriggerConfig(triggerConfig);
+      return normalized as unknown as Record<string, unknown>;
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      throw new BadRequestException(
+        `Invalid relative trigger config: ${message}`,
+      );
+    }
+  }
+
+  private normalizeRelativeTriggerConfig(
+    triggerConfig: Record<string, unknown> | null | undefined,
+  ): RelativeTimeToEventTriggerConfig {
+    return normalizeRelativeTimeToEventTriggerConfig(triggerConfig);
+  }
+
   // ========================================
   // AUDIT LOG OPERATIONS
   // ========================================
@@ -630,7 +1170,9 @@ export class AutomationService {
       throw new NotFoundException(`Rule with ID ${ruleId} not found`);
     }
     if (rule.createdById !== userId) {
-      throw new ForbiddenException(bStatic('errors.auto.backend.k136a28392f60'));
+      throw new ForbiddenException(
+        bStatic('errors.auto.backend.k136a28392f60'),
+      );
     }
 
     const page = query.page || 1;
@@ -691,7 +1233,9 @@ export class AutomationService {
 
     // Verify ownership through rule
     if (log.rule.createdById !== userId) {
-      throw new ForbiddenException(bStatic('errors.auto.backend.k2d772da12d7d'));
+      throw new ForbiddenException(
+        bStatic('errors.auto.backend.k2d772da12d7d'),
+      );
     }
 
     return this.mapToAuditLogDetailDto(log);
@@ -707,7 +1251,9 @@ export class AutomationService {
       throw new NotFoundException(`Rule with ID ${ruleId} not found`);
     }
     if (rule.createdById !== userId) {
-      throw new ForbiddenException(bStatic('errors.auto.backend.k136a28392f60'));
+      throw new ForbiddenException(
+        bStatic('errors.auto.backend.k136a28392f60'),
+      );
     }
 
     const stats = (await this.auditLogRepository
@@ -902,7 +1448,9 @@ export class AutomationService {
 
     if (!rule.isEnabled) {
       this.logger.warn(`Webhook rule ${rule.id} is disabled`);
-      throw new BadRequestException(bStatic('errors.auto.backend.k2a027758911e'));
+      throw new BadRequestException(
+        bStatic('errors.auto.backend.k2a027758911e'),
+      );
     }
 
     if (rule.triggerType !== TriggerType.WEBHOOK_INCOMING) {
@@ -981,11 +1529,15 @@ export class AutomationService {
     }
 
     if (rule.createdById !== userId) {
-      throw new ForbiddenException(bStatic('errors.auto.backend.k136a28392f60'));
+      throw new ForbiddenException(
+        bStatic('errors.auto.backend.k136a28392f60'),
+      );
     }
 
     if (rule.triggerType !== TriggerType.WEBHOOK_INCOMING) {
-      throw new BadRequestException(bStatic('errors.auto.backend.k014ee6f5062b'));
+      throw new BadRequestException(
+        bStatic('errors.auto.backend.k014ee6f5062b'),
+      );
     }
 
     // Generate new token + secret pair and clear rotated-secret metadata
@@ -1011,10 +1563,14 @@ export class AutomationService {
       throw new NotFoundException(`Rule with ID ${ruleId} not found`);
     }
     if (rule.createdById !== userId) {
-      throw new ForbiddenException(bStatic('errors.auto.backend.k136a28392f60'));
+      throw new ForbiddenException(
+        bStatic('errors.auto.backend.k136a28392f60'),
+      );
     }
     if (rule.triggerType !== TriggerType.WEBHOOK_INCOMING) {
-      throw new BadRequestException(bStatic('errors.auto.backend.k014ee6f5062b'));
+      throw new BadRequestException(
+        bStatic('errors.auto.backend.k014ee6f5062b'),
+      );
     }
 
     const rotated = this.webhookSecurity.computeRotatedSecretState(rule);
@@ -1036,13 +1592,19 @@ export class AutomationService {
     };
   }
 
-  async approveRule(userId: number, ruleId: number, note?: string): Promise<Date> {
+  async approveRule(
+    userId: number,
+    ruleId: number,
+    note?: string,
+  ): Promise<Date> {
     const rule = await this.ruleRepository.findOne({ where: { id: ruleId } });
     if (!rule) {
       throw new NotFoundException(`Rule with ID ${ruleId} not found`);
     }
     if (rule.createdById !== userId) {
-      throw new ForbiddenException(bStatic('errors.auto.backend.k136a28392f60'));
+      throw new ForbiddenException(
+        bStatic('errors.auto.backend.k136a28392f60'),
+      );
     }
 
     if (!rule.isApprovalRequired) {

@@ -20,6 +20,7 @@ export enum TriggerType {
   EVENT_DELETED = 'event.deleted',
   EVENT_STARTS_IN = 'event.starts_in',
   EVENT_ENDS_IN = 'event.ends_in',
+  RELATIVE_TIME_TO_EVENT = 'relative_time_to_event',
   CALENDAR_IMPORTED = 'calendar.imported',
   SCHEDULED_TIME = 'scheduled.time',
   WEBHOOK_INCOMING = 'webhook.incoming',

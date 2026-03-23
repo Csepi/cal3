@@ -27,6 +27,7 @@ import { AutomationRule } from '../../entities/automation-rule.entity';
 import { AutomationCondition } from '../../entities/automation-condition.entity';
 import { AutomationAction } from '../../entities/automation-action.entity';
 import { AutomationAuditLog } from '../../entities/automation-audit-log.entity';
+import { AutomationScheduledTrigger } from '../../entities/automation-scheduled-trigger.entity';
 import { LogEntry } from '../../entities/log-entry.entity';
 import { LogSettings } from '../../entities/log-settings.entity';
 import { AgentProfile } from '../../entities/agent-profile.entity';
@@ -120,6 +121,7 @@ export const getDatabaseEntities = (): DataSourceOptions['entities'] => [
   AutomationCondition,
   AutomationAction,
   AutomationAuditLog,
+  AutomationScheduledTrigger,
   LogEntry,
   LogSettings,
   AgentProfile,

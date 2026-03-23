@@ -1,15 +1,21 @@
-﻿import {
+import {
   IsString,
   IsEnum,
   IsOptional,
   IsBoolean,
   IsArray,
   ValidateNested,
+  ValidateIf,
   MaxLength,
   MinLength,
   ArrayMinSize,
   ArrayMaxSize,
   IsNumber,
+  IsIn,
+  IsInt,
+  IsObject,
+  Min,
+  Max,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import {
@@ -23,6 +29,242 @@ import {
 } from '../../entities/automation-condition.entity';
 import { ActionType } from '../../entities/automation-action.entity';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+
+const RELATIVE_REFERENCE_BASES = ['start', 'end'] as const;
+const RELATIVE_OFFSET_DIRECTIONS = ['before', 'after'] as const;
+const RELATIVE_OFFSET_UNITS = ['minutes', 'hours', 'days', 'weeks'] as const;
+const RELATIVE_TRIGGER_CONFIG_KEYS = [
+  'configVersion',
+  'eventFilter',
+  'referenceTime',
+  'offset',
+  'execution',
+] as const;
+
+const isRelativeShapeCandidate = (value: unknown): boolean => {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return false;
+  }
+
+  const record = value as Record<string, unknown>;
+  return RELATIVE_TRIGGER_CONFIG_KEYS.some((key) => record[key] !== undefined);
+};
+
+const shouldValidateRelativeTriggerConfig = (
+  triggerType: TriggerType | undefined,
+  triggerConfig: unknown,
+): boolean =>
+  triggerType === TriggerType.RELATIVE_TIME_TO_EVENT ||
+  isRelativeShapeCandidate(triggerConfig);
+
+export class RelativeTimeToEventFilterDto {
+  @ApiPropertyOptional({
+    type: [Number],
+    description: 'Filter events by calendar IDs',
+  })
+  @IsOptional()
+  @IsArray()
+  @Type(() => Number)
+  @IsInt({ each: true })
+  @Min(1, { each: true })
+  calendarIds?: number[];
+
+  @ApiPropertyOptional({
+    type: [Number],
+    description: 'Alias for calendarIds',
+  })
+  @IsOptional()
+  @IsArray()
+  @Type(() => Number)
+  @IsInt({ each: true })
+  @Min(1, { each: true })
+  calendars?: number[];
+
+  @ApiPropertyOptional({
+    description: 'Event title contains substring',
+    maxLength: 255,
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(255)
+  titleContains?: string;
+
+  @ApiPropertyOptional({
+    description: 'Event description contains substring',
+    maxLength: 1000,
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(1000)
+  descriptionContains?: string;
+
+  @ApiPropertyOptional({
+    type: [String],
+    description: 'Event tag filters',
+  })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  @MaxLength(64, { each: true })
+  tags?: string[];
+
+  @ApiPropertyOptional({
+    type: [String],
+    description: 'Alias for tags',
+  })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  @MaxLength(64, { each: true })
+  labels?: string[];
+
+  @ApiPropertyOptional({ description: 'Match only all-day events' })
+  @IsOptional()
+  @IsBoolean()
+  isAllDayOnly?: boolean;
+
+  @ApiPropertyOptional({ description: 'Match only recurring events' })
+  @IsOptional()
+  @IsBoolean()
+  isRecurringOnly?: boolean;
+}
+
+export class RelativeTimeToEventReferenceTimeDto {
+  @ApiPropertyOptional({
+    enum: RELATIVE_REFERENCE_BASES,
+    description: 'Reference base timestamp',
+  })
+  @IsOptional()
+  @IsIn(RELATIVE_REFERENCE_BASES)
+  base?: (typeof RELATIVE_REFERENCE_BASES)[number];
+}
+
+export class RelativeTimeToEventOffsetDto {
+  @ApiPropertyOptional({
+    enum: RELATIVE_OFFSET_DIRECTIONS,
+    description: 'Offset direction relative to reference time',
+  })
+  @IsOptional()
+  @IsIn(RELATIVE_OFFSET_DIRECTIONS)
+  direction?: (typeof RELATIVE_OFFSET_DIRECTIONS)[number];
+
+  @ApiPropertyOptional({
+    description: 'Offset amount (must be >= 0)',
+    minimum: 0,
+  })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  value?: number;
+
+  @ApiPropertyOptional({
+    enum: RELATIVE_OFFSET_UNITS,
+    description: 'Offset unit',
+  })
+  @IsOptional()
+  @IsIn(RELATIVE_OFFSET_UNITS)
+  unit?: (typeof RELATIVE_OFFSET_UNITS)[number];
+}
+
+export class RelativeTimeToEventExecutionDto {
+  @ApiPropertyOptional({
+    description: 'Only execute once for the same event occurrence',
+  })
+  @IsOptional()
+  @IsBoolean()
+  runOncePerEvent?: boolean;
+
+  @ApiPropertyOptional({
+    description: 'Execute for each recurring occurrence',
+  })
+  @IsOptional()
+  @IsBoolean()
+  fireForEveryOccurrenceOfRecurringEvent?: boolean;
+
+  @ApiPropertyOptional({
+    description: 'Skip firing for past-due schedules',
+  })
+  @IsOptional()
+  @IsBoolean()
+  skipPast?: boolean;
+
+  @ApiPropertyOptional({
+    description: 'Allowed grace period for past-due jobs in minutes',
+    minimum: 0,
+    maximum: 60,
+  })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  @Max(60)
+  pastDueGraceMinutes?: number;
+
+  @ApiPropertyOptional({
+    description: 'Forward scheduling window in days',
+    minimum: 1,
+    maximum: 730,
+  })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(730)
+  schedulingWindowDays?: number;
+}
+
+export class RelativeTimeToEventTriggerConfigDto {
+  @ApiPropertyOptional({
+    description: 'Relative trigger config schema version',
+    minimum: 1,
+  })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  configVersion?: number;
+
+  @ApiPropertyOptional({
+    type: RelativeTimeToEventFilterDto,
+    description: 'Event filter for relative trigger matching',
+  })
+  @IsOptional()
+  @IsObject()
+  @ValidateNested()
+  @Type(() => RelativeTimeToEventFilterDto)
+  eventFilter?: RelativeTimeToEventFilterDto;
+
+  @ApiPropertyOptional({
+    type: RelativeTimeToEventReferenceTimeDto,
+    description: 'Reference timestamp selector',
+  })
+  @IsOptional()
+  @IsObject()
+  @ValidateNested()
+  @Type(() => RelativeTimeToEventReferenceTimeDto)
+  referenceTime?: RelativeTimeToEventReferenceTimeDto;
+
+  @ApiPropertyOptional({
+    type: RelativeTimeToEventOffsetDto,
+    description: 'Relative offset definition',
+  })
+  @IsOptional()
+  @IsObject()
+  @ValidateNested()
+  @Type(() => RelativeTimeToEventOffsetDto)
+  offset?: RelativeTimeToEventOffsetDto;
+
+  @ApiPropertyOptional({
+    type: RelativeTimeToEventExecutionDto,
+    description: 'Execution settings',
+  })
+  @IsOptional()
+  @IsObject()
+  @ValidateNested()
+  @Type(() => RelativeTimeToEventExecutionDto)
+  execution?: RelativeTimeToEventExecutionDto;
+}
 
 // DTO for creating a condition
 export class CreateConditionDto {
@@ -110,6 +352,12 @@ export class CreateAutomationRuleDto {
     example: { minutes: 30 },
   })
   @IsOptional()
+  @ValidateIf((dto: CreateAutomationRuleDto) =>
+    shouldValidateRelativeTriggerConfig(dto.triggerType, dto.triggerConfig),
+  )
+  @IsObject()
+  @ValidateNested()
+  @Type(() => RelativeTimeToEventTriggerConfigDto)
   triggerConfig?: Record<string, unknown>;
 
   @ApiPropertyOptional({ description: 'Whether rule is active', default: true })
@@ -175,6 +423,12 @@ export class UpdateAutomationRuleDto {
 
   @ApiPropertyOptional({ description: 'Trigger-specific configuration' })
   @IsOptional()
+  @ValidateIf((dto: UpdateAutomationRuleDto) =>
+    shouldValidateRelativeTriggerConfig(undefined, dto.triggerConfig),
+  )
+  @IsObject()
+  @ValidateNested()
+  @Type(() => RelativeTimeToEventTriggerConfigDto)
   triggerConfig?: Record<string, unknown>;
 
   @ApiPropertyOptional({
