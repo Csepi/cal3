@@ -153,12 +153,16 @@ describeDockerBacked('RLS coverage integration', ({
         canBypassRls ? new Set([userA.id, userB.id]) : new Set([userA.id]),
       );
 
-      await expect(
-        tenantRunner.query(
-          `INSERT INTO "resource_types" ("name", "organisationId") VALUES ($1, $2)`,
-          [`Blocked Insert ${suffix}`, organisationB.id],
-        ),
-      ).rejects.toThrow();
+      const blockedInsertPromise = tenantRunner.query(
+        `INSERT INTO "resource_types" ("name", "organisationId") VALUES ($1, $2)`,
+        [`Blocked Insert ${suffix}`, organisationB.id],
+      );
+
+      if (canBypassRls) {
+        await expect(blockedInsertPromise).resolves.toBeTruthy();
+      } else {
+        await expect(blockedInsertPromise).rejects.toThrow();
+      }
     } finally {
       await tenantRunner.rollbackTransaction();
       await tenantRunner.release();
