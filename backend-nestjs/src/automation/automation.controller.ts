@@ -14,6 +14,7 @@
   HttpStatus,
   SetMetadata,
   BadRequestException,
+  UsePipes,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -48,6 +49,7 @@ import {
   ApproveAutomationRuleDto,
 } from './dto/automation-requests.dto';
 import { bStatic } from '../i18n/runtime';
+import { createApiValidationPipe } from '../common/pipes/validation.pipe';
 
 @ApiTags('automation')
 @Controller('automation')
@@ -64,6 +66,7 @@ export class AutomationController {
   // ========================================
 
   @Post('rules')
+  @UsePipes(createApiValidationPipe())
   @ApiOperation({ summary: 'Create a new automation rule' })
   @ApiResponse({
     status: 201,
@@ -121,6 +124,7 @@ export class AutomationController {
   }
 
   @Put('rules/:id')
+  @UsePipes(createApiValidationPipe())
   @ApiOperation({ summary: 'Update an existing automation rule' })
   @ApiParam({ name: 'id', description: 'Rule ID' })
   @ApiResponse({

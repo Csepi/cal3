@@ -88,6 +88,22 @@ describeDockerBacked(
       };
     };
 
+    const extractErrorEnvelope = (
+      body: unknown,
+    ): {
+      code?: string;
+      details?: { fields?: Array<{ field?: string }> };
+    } => {
+      if (body && typeof body === 'object' && 'error' in body) {
+        return (body as { error?: { code?: string; details?: { fields?: Array<{ field?: string }> } } })
+          .error ?? {};
+      }
+      return (body as {
+        code?: string;
+        details?: { fields?: Array<{ field?: string }> };
+      }) ?? {};
+    };
+
     it('rejects invalid nested relative trigger config with field-level errors before persistence', async () => {
       if (isUnavailable()) {
         expect(unavailabilityReason()).toBeTruthy();
@@ -118,11 +134,10 @@ describeDockerBacked(
         })
         .expect(400);
 
-      expect(response.body?.error?.code).toBe(ERROR_CODES.VALIDATION_FAILED);
+      const errorEnvelope = extractErrorEnvelope(response.body);
+      expect(errorEnvelope.code).toBe(ERROR_CODES.VALIDATION_FAILED);
 
-      const fields = response.body?.error?.details?.fields as
-        | Array<{ field?: string }>
-        | undefined;
+      const fields = errorEnvelope.details?.fields;
       const fieldNames = (fields ?? [])
         .map((entry) => entry.field)
         .filter((field): field is string => Boolean(field));
@@ -170,11 +185,10 @@ describeDockerBacked(
         })
         .expect(400);
 
-      expect(response.body?.error?.code).toBe(ERROR_CODES.VALIDATION_FAILED);
+      const errorEnvelope = extractErrorEnvelope(response.body);
+      expect(errorEnvelope.code).toBe(ERROR_CODES.VALIDATION_FAILED);
 
-      const fields = response.body?.error?.details?.fields as
-        | Array<{ field?: string }>
-        | undefined;
+      const fields = errorEnvelope.details?.fields;
       const fieldNames = (fields ?? [])
         .map((entry) => entry.field)
         .filter((field): field is string => Boolean(field));
