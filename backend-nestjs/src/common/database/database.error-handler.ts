@@ -62,6 +62,33 @@ export const getDatabaseErrorDetails = (
     };
   }
 
+  if (code === '23514') {
+    return {
+      type: 'check-violation',
+      message: 'Database check constraint was violated.',
+      code,
+      originalError: error,
+    };
+  }
+
+  if (code === '22P02' || code === '22007' || code === '22001') {
+    return {
+      type: 'invalid-input',
+      message: 'Database rejected an invalid input value.',
+      code,
+      originalError: error,
+    };
+  }
+
+  if (code === '42P01' || code === '42703' || code === '42883') {
+    return {
+      type: 'schema-mismatch',
+      message: 'Database schema does not match backend expectations.',
+      code,
+      originalError: error,
+    };
+  }
+
   if (lower.includes('timeout') || lower.includes('timed out')) {
     return {
       type: 'timeout',

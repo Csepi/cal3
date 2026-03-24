@@ -114,6 +114,7 @@ jobs:
           WAIT_FOR_DB: "true"
           WAIT_FOR_DB_MAX_ATTEMPTS: "60"
           WAIT_FOR_DB_INTERVAL: "2"
+          RUN_DB_MIGRATIONS: "true"
           JWT_SECRET: ${{ secrets.CAL3_JWT_SECRET }}
         run: |
           chmod +x scripts/azure/update-backend-containerapp.sh

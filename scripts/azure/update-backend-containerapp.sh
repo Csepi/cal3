@@ -43,6 +43,7 @@ Optional environment variables:
   WAIT_FOR_DB                      (default: true)
   WAIT_FOR_DB_MAX_ATTEMPTS         (default: 60)
   WAIT_FOR_DB_INTERVAL             (default: 2)
+  RUN_DB_MIGRATIONS                (default: true)
 
 Examples:
   ./scripts/azure/update-backend-containerapp.sh --env-file docker/.env.azure.backend
@@ -129,6 +130,7 @@ DB_IDLE_TIMEOUT="${DB_IDLE_TIMEOUT:-60000}"
 WAIT_FOR_DB="${WAIT_FOR_DB:-true}"
 WAIT_FOR_DB_MAX_ATTEMPTS="${WAIT_FOR_DB_MAX_ATTEMPTS:-60}"
 WAIT_FOR_DB_INTERVAL="${WAIT_FOR_DB_INTERVAL:-2}"
+RUN_DB_MIGRATIONS="${RUN_DB_MIGRATIONS:-true}"
 
 echo "[azure-deploy] Checking Azure CLI login..."
 az account show >/dev/null
@@ -188,6 +190,7 @@ az containerapp update \
     WAIT_FOR_DB="$WAIT_FOR_DB" \
     WAIT_FOR_DB_MAX_ATTEMPTS="$WAIT_FOR_DB_MAX_ATTEMPTS" \
     WAIT_FOR_DB_INTERVAL="$WAIT_FOR_DB_INTERVAL" \
+    RUN_DB_MIGRATIONS="$RUN_DB_MIGRATIONS" \
     JWT_SECRET="secretref:jwt-secret" \
   --only-show-errors >/dev/null
 

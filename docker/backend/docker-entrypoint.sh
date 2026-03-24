@@ -6,6 +6,7 @@ DB_WAIT_PORT="${DB_PORT:-5432}"
 WAIT="${WAIT_FOR_DB:-true}"
 MAX_ATTEMPTS="${WAIT_FOR_DB_MAX_ATTEMPTS:-30}"
 SLEEP_SECONDS="${WAIT_FOR_DB_INTERVAL:-2}"
+RUN_DB_MIGRATIONS="${RUN_DB_MIGRATIONS:-false}"
 
 log() {
   echo "[backend-entrypoint] $*"
@@ -29,6 +30,19 @@ if [ "$WAIT" = "true" ]; then
   fi
 else
   log "Skipping database wait as WAIT_FOR_DB=${WAIT}"
+fi
+
+if [ "$RUN_DB_MIGRATIONS" = "true" ]; then
+  if [ -f "/app/dist/src/database/run-migrations.js" ]; then
+    log "Running database migrations before app start"
+    node /app/dist/src/database/run-migrations.js
+    log "Database migrations completed"
+  else
+    log "Migration runner not found at /app/dist/src/database/run-migrations.js"
+    exit 1
+  fi
+else
+  log "Skipping migrations as RUN_DB_MIGRATIONS=${RUN_DB_MIGRATIONS}"
 fi
 
 exec "$@"

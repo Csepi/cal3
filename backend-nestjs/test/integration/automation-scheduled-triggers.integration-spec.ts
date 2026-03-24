@@ -314,6 +314,14 @@ describeDockerBacked(
         triggerType: TriggerType.SCHEDULED_TIME,
         triggerConfig: { cronExpression: '0 9 * * *' },
       },
+      {
+        triggerType: TriggerType.CALENDAR_IMPORTED,
+        triggerConfig: {},
+      },
+      {
+        triggerType: TriggerType.WEBHOOK_INCOMING,
+        triggerConfig: {},
+      },
     ])(
       'keeps automation_scheduled_triggers empty for $triggerType during event create/update/delete lifecycle',
       async ({ triggerType, triggerConfig }) => {
@@ -372,5 +380,51 @@ describeDockerBacked(
         expect(await scheduledTriggerRepository.count()).toBe(0);
       },
     );
+
+    it('returns 503 when relative scheduling table is missing (schema mismatch)', async () => {
+      if (isUnavailable()) {
+        expect(unavailabilityReason()).toBeTruthy();
+        return;
+      }
+
+      const harness = getHarness();
+      if (!harness) {
+        throw new Error('Harness unavailable');
+      }
+
+      const { server, accessToken, fingerprint } =
+        await bootstrapAuthenticatedContext();
+
+      await harness.dataSource.query(
+        'DROP TABLE IF EXISTS automation_scheduled_triggers',
+      );
+
+      try {
+        const response = await request(server)
+          .post('/automation/rules')
+          .set('Authorization', `Bearer ${accessToken}`)
+          .set(DEVICE_FINGERPRINT_HEADER, fingerprint)
+          .send({
+            name: `Relative schema mismatch ${uniqueSuffix()}`,
+            triggerType: TriggerType.RELATIVE_TIME_TO_EVENT,
+            triggerConfig: {
+              referenceTime: { base: 'start' },
+              offset: { direction: 'before', value: 10, unit: 'minutes' },
+            },
+            actions: [
+              {
+                actionType: ActionType.UPDATE_EVENT_TITLE,
+                actionConfig: { newTitle: 'Auto title' },
+              },
+            ],
+          })
+          .expect(503);
+
+        expect(response.body?.error?.code).toBe('SERVICE_UNAVAILABLE');
+        expect(response.body?.error?.details?.type).toBe('schema-mismatch');
+      } finally {
+        await harness.dataSource.synchronize();
+      }
+    });
   },
 );

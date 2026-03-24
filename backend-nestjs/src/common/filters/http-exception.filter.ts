@@ -186,6 +186,30 @@ export class AllExceptionsFilter implements ExceptionFilter {
           recoverable: true,
         };
       }
+      if (
+        dbError.type === 'check-violation' ||
+        dbError.type === 'invalid-input'
+      ) {
+        return {
+          status: HttpStatus.BAD_REQUEST,
+          code: ERROR_CODES.BAD_REQUEST,
+          message: dbError.message,
+          userMessage: 'Provided data violates a database constraint.',
+          details: dbError,
+          recoverable: true,
+        };
+      }
+      if (dbError.type === 'schema-mismatch') {
+        return {
+          status: HttpStatus.SERVICE_UNAVAILABLE,
+          code: ERROR_CODES.SERVICE_UNAVAILABLE,
+          message: dbError.message,
+          userMessage:
+            'Service is temporarily unavailable due to maintenance. Please try again shortly.',
+          details: dbError,
+          recoverable: true,
+        };
+      }
       if (dbError.type === 'connection' || dbError.type === 'timeout') {
         return {
           status: HttpStatus.SERVICE_UNAVAILABLE,

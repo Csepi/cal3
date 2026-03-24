@@ -1,4 +1,5 @@
 import { ArgumentsHost, HttpException, HttpStatus } from '@nestjs/common';
+import { QueryFailedError } from 'typeorm';
 import { AllExceptionsFilter } from './http-exception.filter';
 import { DomainValidationException } from '../exceptions/domain.exception';
 import { ERROR_CODES } from '../responses/error.catalog';
@@ -110,4 +111,77 @@ describe('AllExceptionsFilter', () => {
 
     process.env.NODE_ENV = originalEnv;
   });
+
+  it.each([
+    {
+      driverError: { code: '23505', message: 'duplicate key value' },
+      statusCode: HttpStatus.CONFLICT,
+      errorCode: ERROR_CODES.CONFLICT,
+      detailsType: 'unique-violation',
+    },
+    {
+      driverError: { code: '23503', message: 'insert or update violates fk' },
+      statusCode: HttpStatus.BAD_REQUEST,
+      errorCode: ERROR_CODES.BAD_REQUEST,
+      detailsType: 'foreign-key-violation',
+    },
+    {
+      driverError: { code: '23502', message: 'null value in column' },
+      statusCode: HttpStatus.BAD_REQUEST,
+      errorCode: ERROR_CODES.BAD_REQUEST,
+      detailsType: 'not-null-violation',
+    },
+    {
+      driverError: { code: '23514', message: 'check constraint failed' },
+      statusCode: HttpStatus.BAD_REQUEST,
+      errorCode: ERROR_CODES.BAD_REQUEST,
+      detailsType: 'check-violation',
+    },
+    {
+      driverError: { code: '22P02', message: 'invalid input syntax' },
+      statusCode: HttpStatus.BAD_REQUEST,
+      errorCode: ERROR_CODES.BAD_REQUEST,
+      detailsType: 'invalid-input',
+    },
+    {
+      driverError: { code: '42P01', message: 'relation does not exist' },
+      statusCode: HttpStatus.SERVICE_UNAVAILABLE,
+      errorCode: ERROR_CODES.SERVICE_UNAVAILABLE,
+      detailsType: 'schema-mismatch',
+    },
+    {
+      driverError: { code: '42703', message: 'column does not exist' },
+      statusCode: HttpStatus.SERVICE_UNAVAILABLE,
+      errorCode: ERROR_CODES.SERVICE_UNAVAILABLE,
+      detailsType: 'schema-mismatch',
+    },
+    {
+      driverError: { code: '99999', message: 'unknown db error' },
+      statusCode: HttpStatus.BAD_REQUEST,
+      errorCode: ERROR_CODES.DATABASE_ERROR,
+      detailsType: 'unknown',
+    },
+  ])(
+    'maps QueryFailedError code $driverError.code to $statusCode/$errorCode',
+    ({ driverError, statusCode, errorCode, detailsType }) => {
+      const filter = new AllExceptionsFilter(
+        requestContext as never,
+        logger as never,
+        auditTrail as never,
+      );
+      const exception = new QueryFailedError('SELECT 1', [], driverError);
+
+      filter.catch(exception, host);
+
+      const responsePayload = json.mock.calls[0]?.[0] as {
+        error?: {
+          code?: string;
+          details?: { type?: string };
+        };
+      };
+      expect(status).toHaveBeenCalledWith(statusCode);
+      expect(responsePayload.error?.code).toBe(errorCode);
+      expect(responsePayload.error?.details?.type).toBe(detailsType);
+    },
+  );
 });
