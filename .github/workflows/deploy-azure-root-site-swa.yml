@@ -56,7 +56,6 @@ jobs:
           app_location: frontend
           api_location: ""
           output_location: dist
-          skip_deploy_on_missing_secrets: true
 
       - name: Deployment skipped
         if: ${{ steps.prereqs.outputs.deploy_ready != 'true' }}
