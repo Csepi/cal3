@@ -29,22 +29,22 @@ tags: [primecalendar, getting-started, onboarding, calendars, events]
 <div class="pc-guide-grid">
   <article class="pc-guide-card pc-guide-card--accent">
     <p class="pc-guide-card__eyebrow">Overview</p>
-    <h3><a href="./quick-start-guide.md">Quick Start Guide</a></h3>
+    <h3><a href="/GETTING-STARTED/quick-start-guide">Quick Start Guide</a></h3>
     <p>Read the full first-run sequence in one page, including the key API endpoints behind each step.</p>
   </article>
   <article class="pc-guide-card">
     <p class="pc-guide-card__eyebrow">Account</p>
-    <h3><a href="./first-steps/creating-your-account.md">Creating Your Account</a></h3>
+    <h3><a href="/GETTING-STARTED/first-steps/creating-your-account">Creating Your Account</a></h3>
     <p>Register, pass live validation, and complete the 5-step onboarding wizard with all current field rules.</p>
   </article>
   <article class="pc-guide-card">
     <p class="pc-guide-card__eyebrow">Setup</p>
-    <h3><a href="./first-steps/initial-setup.md">Initial Setup</a></h3>
+    <h3><a href="/GETTING-STARTED/first-steps/initial-setup">Initial Setup</a></h3>
     <p>Create a regular calendar, create or rename groups, assign calendars, and understand ownership limits.</p>
   </article>
   <article class="pc-guide-card">
     <p class="pc-guide-card__eyebrow">Events</p>
-    <h3><a href="./first-steps/creating-your-first-event.md">Creating Your First Event</a></h3>
+    <h3><a href="/GETTING-STARTED/first-steps/creating-your-first-event">Creating Your First Event</a></h3>
     <p>Open the event modal from the current UI, fill the form correctly, and review recurrence and save behavior.</p>
   </article>
 </div>

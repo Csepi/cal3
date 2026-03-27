@@ -65,17 +65,17 @@ New accounts are bootstrapped with a private `Tasks` calendar so the Tasks works
 <div class="pc-guide-grid">
   <article class="pc-guide-card pc-guide-card--accent">
     <p class="pc-guide-card__eyebrow">Step 1</p>
-    <h3><a href="./first-steps/creating-your-account.md">Creating Your Account</a></h3>
+    <h3><a href="/GETTING-STARTED/first-steps/creating-your-account">Creating Your Account</a></h3>
     <p>Registration, onboarding, consent capture, timezone, language, default view, and theme settings.</p>
   </article>
   <article class="pc-guide-card">
     <p class="pc-guide-card__eyebrow">Step 2</p>
-    <h3><a href="./first-steps/initial-setup.md">Initial Setup</a></h3>
+    <h3><a href="/GETTING-STARTED/first-steps/initial-setup">Initial Setup</a></h3>
     <p>Normal calendar creation, group creation, assignment, rename, delete, and permission boundaries.</p>
   </article>
   <article class="pc-guide-card">
     <p class="pc-guide-card__eyebrow">Step 3</p>
-    <h3><a href="./first-steps/creating-your-first-event.md">Creating Your First Event</a></h3>
+    <h3><a href="/GETTING-STARTED/first-steps/creating-your-first-event">Creating Your First Event</a></h3>
     <p>Event entry points, modal fields, labels, recurrence, all-day rules, and save behavior.</p>
   </article>
 </div>
@@ -189,5 +189,5 @@ New accounts are bootstrapped with a private `Tasks` calendar so the Tasks works
 </div>
 
 <div class="pc-guide-next">
-  <p>Start with <a href="./first-steps/creating-your-account.md">Creating Your Account</a>. When that is complete, continue to <a href="./first-steps/initial-setup.md">Initial Setup</a>.</p>
+  <p>Start with <a href="/GETTING-STARTED/first-steps/creating-your-account">Creating Your Account</a>. When that is complete, continue to <a href="/GETTING-STARTED/first-steps/initial-setup">Initial Setup</a>.</p>
 </div>
