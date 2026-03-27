@@ -1,0 +1,63 @@
+name: Deploy Azure Root Site (Static Web App)
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - "frontend/**"
+      - "config/app-env.js"
+      - "scripts/sync-app-config.cjs"
+      - ".github/workflows/deploy-azure-root-site-swa.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  deploy_root_site:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    name: Build and Deploy Root Site to SWA
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: false
+          lfs: false
+
+      - name: Resolve deployment prerequisites
+        id: prereqs
+        shell: bash
+        env:
+          SWA_TOKEN: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_PRIMECAL_SITE }}
+        run: |
+          if [[ -n "${SWA_TOKEN}" ]]; then
+            echo "deploy_ready=true" >> "$GITHUB_OUTPUT"
+            echo "Root-site SWA deployment token is configured." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "deploy_ready=false" >> "$GITHUB_OUTPUT"
+            echo "Root-site deployment skipped: missing AZURE_STATIC_WEB_APPS_API_TOKEN_PRIMECAL_SITE." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Build and deploy root site
+        if: ${{ steps.prereqs.outputs.deploy_ready == 'true' }}
+        uses: Azure/static-web-apps-deploy@v1
+        env:
+          BASE_URL: https://api.primecal.eu
+          FRONTEND_URL: https://primecal.eu
+          BACKEND_URL: https://api.primecal.eu
+          API_URL: https://api.primecal.eu
+          FRONTEND_PORT: 443
+          BACKEND_PORT: 443
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_PRIMECAL_SITE }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          action: upload
+          app_location: frontend
+          api_location: ""
+          output_location: dist
+          skip_deploy_on_missing_secrets: true
+
+      - name: Deployment skipped
+        if: ${{ steps.prereqs.outputs.deploy_ready != 'true' }}
+        run: echo "Root-site deployment was skipped because prerequisites are not configured."
