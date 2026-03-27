@@ -1,125 +1,96 @@
 ---
 title: Actions Overview
-description: Step-by-step guidance for actions overview in PrimeCalendar.
+description: Understand the action types PrimeCal automations can run after a trigger matches.
 category: User Guide
 audience: End User
 difficulty: Intermediate
-last_updated: 2026-03-10
+last_updated: 2026-03-27
 version: 1.3.0
 related:
-  - ../index.md
-  - ../../index.md
-tags: [user, automation, actions, overview, primecalendar]
+  - ./introduction-to-automation.md
+  - ./creating-automation-rules.md
+  - ./triggers-and-conditions.md
+tags: [primecal, automation, actions, webhooks, tasks]
 ---
 
 # Actions Overview
 
-> **Quick Summary**: This page explains actions overview in PrimeCalendar using practical steps and troubleshooting guidance.
+<div class="pc-guide-hero">
+  <p class="pc-guide-hero__eyebrow">Action Layer</p>
+  <h1 class="pc-guide-hero__title">What a Rule Can Do</h1>
+  <p class="pc-guide-hero__lead">Actions are the result of a matched trigger. PrimeCal lets you update event content, move events, create tasks, send notifications, and call external webhooks from the same rule.</p>
+  <div class="pc-guide-chip-row">
+    <span class="pc-guide-chip">Edit events</span>
+    <span class="pc-guide-chip">Create tasks</span>
+    <span class="pc-guide-chip">Call webhooks</span>
+    <span class="pc-guide-chip">Up to 5 actions</span>
+  </div>
+</div>
 
-## Table of Contents
+## Supported Actions
 
-- [Prerequisites](#prerequisites)
-- [Overview](#overview)
-- [Step-by-Step Instructions](#step-by-step-instructions)
-- [Examples](#examples)
-- [Troubleshooting](#troubleshooting)
-- [Related Resources](#related-resources)
+<div class="pc-guide-grid">
+  <article class="pc-guide-card">
+    <p class="pc-guide-card__eyebrow">Content</p>
+    <h3>Update event title</h3>
+    <p>Rewrite the event title after a trigger matches.</p>
+  </article>
+  <article class="pc-guide-card">
+    <p class="pc-guide-card__eyebrow">Content</p>
+    <h3>Update event description</h3>
+    <p>Replace or enrich the description field for the event.</p>
+  </article>
+  <article class="pc-guide-card">
+    <p class="pc-guide-card__eyebrow">Calendar</p>
+    <h3>Move to calendar</h3>
+    <p>Shift the event into another calendar you can access.</p>
+  </article>
+  <article class="pc-guide-card">
+    <p class="pc-guide-card__eyebrow">Visual</p>
+    <h3>Set event color</h3>
+    <p>Recolor the event to make downstream rules easier to read.</p>
+  </article>
+  <article class="pc-guide-card">
+    <p class="pc-guide-card__eyebrow">Labels</p>
+    <h3>Add event tag</h3>
+    <p>Add a reusable label to the event for filtering and follow-up rules.</p>
+  </article>
+  <article class="pc-guide-card">
+    <p class="pc-guide-card__eyebrow">Automation</p>
+    <h3>Send notification</h3>
+    <p>Notify users after the rule executes.</p>
+  </article>
+  <article class="pc-guide-card">
+    <p class="pc-guide-card__eyebrow">Tasks</p>
+    <h3>Create task</h3>
+    <p>Generate a follow-up task from the matched event.</p>
+  </article>
+  <article class="pc-guide-card">
+    <p class="pc-guide-card__eyebrow">Integration</p>
+    <h3>Call webhook</h3>
+    <p>Send the rule outcome to an external service.</p>
+  </article>
+  <article class="pc-guide-card">
+    <p class="pc-guide-card__eyebrow">Guardrail</p>
+    <h3>Cancel event</h3>
+    <p>Mark the event as cancelled when the rule needs to stop it.</p>
+  </article>
+</div>
 
----
+## Action Limits
 
-## Prerequisites
+- You can save up to 5 actions in a single rule.
+- At least one action is required.
+- The editor rejects unsupported actions that are still marked as coming soon.
 
-- Access to PrimeCalendar.
-- Appropriate role permissions for this workflow.
+## When To Use Which Action
 
-**Time to Complete**: 10-20 minutes  
-**Difficulty**: Intermediate
+- Use `Set Event Color` when you want a rule to visually mark an event.
+- Use `Move to Calendar` when an event should land in a different calendar.
+- Use `Create Task` when the rule should create a follow-up item for the user.
+- Use `Call Webhook` when the rule must notify an external system.
 
----
+## See Also
 
-## Overview
-
-Use this guide to complete actions overview reliably. Confirm expected results after each step before moving to optional advanced settings.
-
-> Add screenshots from `docs/assets/` with descriptive alt text for each UI interaction.
-
----
-
-## Step-by-Step Instructions
-
-### Step 1: Open the Correct Area
-
-- Sign in to PrimeCalendar.
-- Navigate to the feature area for this workflow.
-- Confirm required controls are visible.
-
-### Step 2: Configure Required Settings
-
-- Enter required values.
-- Save changes.
-- Verify expected behavior.
-
-### Step 3: Validate Outcome
-
-- Test one realistic scenario.
-- Confirm notifications, permissions, and expected outputs.
-
-<details>
-<summary>Advanced Options</summary>
-
-- Add optional policies and automation hooks.
-- Document team defaults for repeatability.
-
-</details>
-
----
-
-## Examples
-
-### Example 1: Team Rollout
-
-**Scenario**: Your team needs consistent behavior for actions overview.
-
-**Steps**:
-1. Configure in a test workspace.
-2. Validate with pilot users.
-3. Roll out to production.
-
-### Consolidated Legacy Sources
-
-No direct legacy source was mapped for this page.
-
-
----
-
-## Troubleshooting
-
-### Issue: Configuration Does Not Apply
-
-**Symptoms**: Settings appear saved but behavior remains unchanged.
-
-**Solution**:
-1. Verify workspace and organization context.
-2. Re-check required fields and permissions.
-3. Review logs and API responses.
-
-**Prevention**: Use a pre-deployment checklist.
-
----
-
-## Related Resources
-
-- [Index](../index.md)
-- [Index](../../index.md)
-- [Documentation Home](../../index.md)
-
----
-
-## Feedback
-
-Was this helpful? [Yes] [No]  
-Open an issue or pull request to improve this page.
-
----
-
-*Last updated: 2026-03-10 | PrimeCalendar v1.3.0*
+- [Creating Automation Rules](./creating-automation-rules.md)
+- [Triggers And Conditions](./triggers-and-conditions.md)

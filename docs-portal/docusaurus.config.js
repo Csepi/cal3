@@ -8,8 +8,8 @@ const hasAlgolia =
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
-  title: 'PrimeCalendar Docs',
-  tagline: 'Consolidated documentation for users, admins, developers, and operators.',
+  title: 'PrimeCal Docs',
+  tagline: 'Guided setup, daily workflows, automation, MCP, and API reference for PrimeCal.',
   url: process.env.DOCS_SITE_URL || 'https://docs.primecalendar.local',
   baseUrl: '/',
   onBrokenLinks: 'warn',
@@ -112,21 +112,31 @@ const config = {
       respectPrefersColorScheme: true,
     },
     navbar: {
-      title: 'PrimeCalendar Docs',
+      title: 'PrimeCal Docs',
       items: [
         {
           to: '/',
-          label: 'Documentation Home',
+          label: 'Home',
           position: 'left',
         },
         {
-          to: '/FAQ',
-          label: 'FAQ',
+          to: '/GETTING-STARTED',
+          label: 'Getting Started',
           position: 'left',
         },
         {
-          to: '/REFERENCE',
-          label: 'Reference',
+          to: '/USER-GUIDE',
+          label: 'User Docs',
+          position: 'left',
+        },
+        {
+          to: '/USER-GUIDE/automation/introduction-to-automation',
+          label: 'Automation',
+          position: 'left',
+        },
+        {
+          to: '/DEVELOPER-GUIDE/api-reference/api-overview',
+          label: 'API',
           position: 'left',
         },
         {
@@ -144,7 +154,9 @@ const config = {
           items: [
             { label: 'Home', to: '/' },
             { label: 'Getting Started', to: '/GETTING-STARTED' },
-            { label: 'User Guide', to: '/USER-GUIDE' },
+            { label: 'User Docs', to: '/USER-GUIDE' },
+            { label: 'Developer Docs', to: '/DEVELOPER-GUIDE' },
+            { label: 'API Reference', to: '/DEVELOPER-GUIDE/api-reference/api-overview' },
           ],
         },
         {
@@ -160,13 +172,13 @@ const config = {
           items: [
             { label: 'Repository', href: 'https://github.com/Csepi/cal3' },
             {
-              label: 'Improve this page',
-              href: 'https://github.com/Csepi/cal3/edit/main/docs/index.md',
+              label: 'Docs source',
+              href: 'https://github.com/Csepi/cal3/tree/main/docs',
             },
           ],
         },
       ],
-      copyright: `Copyright © ${new Date().getFullYear()} PrimeCalendar`,
+      copyright: `Copyright (c) ${new Date().getFullYear()} PrimeCal`,
     },
     prism: {
       theme: lightCodeTheme,

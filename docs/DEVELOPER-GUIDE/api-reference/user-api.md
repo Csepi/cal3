@@ -1,125 +1,128 @@
 ---
 title: User API
-description: Step-by-step guidance for user api in PrimeCalendar.
+description: Swagger-style reference for profile and personal preference endpoints.
 category: Developer
 audience: Developer
 difficulty: Advanced
-last_updated: 2026-03-10
+last_updated: 2026-03-27
 version: 1.3.0
 related:
-  - ../index.md
-  - ../../index.md
-tags: [developer, api, reference, user, primecalendar]
+  - ./api-overview.md
+  - ./authentication-api.md
+tags: [primecal, api, user-profile, preferences, developer]
 ---
 
 # User API
 
-> **Quick Summary**: This page explains user api in PrimeCalendar using practical steps and troubleshooting guidance.
+<div class="pc-guide-hero">
+  <p class="pc-guide-hero__eyebrow">User Profile Controller</p>
+  <h1 class="pc-guide-hero__title">Profile, theme, password, labels</h1>
+  <p class="pc-guide-hero__lead">
+    These endpoints live under `/api/user` and manage the signed-in user's profile data, theme color,
+    password, event labels, and profile picture upload.
+  </p>
+</div>
 
-## Table of Contents
+## Endpoint Summary
 
-- [Prerequisites](#prerequisites)
-- [Overview](#overview)
-- [Step-by-Step Instructions](#step-by-step-instructions)
-- [Examples](#examples)
-- [Troubleshooting](#troubleshooting)
-- [Related Resources](#related-resources)
+| Method | Path | Auth | Notes |
+| --- | --- | --- | --- |
+| `GET` | `/api/user/profile` | JWT | Returns the signed-in user's full profile |
+| `POST` | `/api/user/profile-picture` | JWT | Uploads a profile picture file |
+| `PATCH` | `/api/user/profile` | JWT | Updates personal and preference fields |
+| `PATCH` | `/api/user/theme` | JWT | Updates the theme color only |
+| `PATCH` | `/api/user/password` | JWT | Changes the password |
+| `DELETE` | `/api/user/event-labels/:label` | JWT | Deletes a saved event label and removes it from owned events |
 
----
+## `GET /api/user/profile`
 
-## Prerequisites
+Returns the user's current profile, including:
 
-- Access to PrimeCalendar.
-- Appropriate role permissions for this workflow.
+- `username`
+- `email`
+- `firstName`
+- `lastName`
+- `profilePictureUrl`
+- `role`
+- `themeColor`
+- `weekStartDay`
+- `defaultCalendarView`
+- `timezone`
+- `timeFormat`
+- `language`
+- `preferredLanguage`
+- `usagePlans`
+- `hideReservationsTab`
+- `hiddenFromLiveFocusTags`
+- `eventLabels`
+- `defaultTasksCalendarId`
+- onboarding and compliance flags
 
-**Time to Complete**: 10-20 minutes  
-**Difficulty**: Advanced
+## `PATCH /api/user/profile`
 
----
+`UpdateProfileDto` supports the following fields:
 
-## Overview
+- `username`: min 3 chars
+- `email`: valid email
+- `firstName`: text
+- `lastName`: text
+- `profilePictureUrl`: URL, max 2048 chars
+- `weekStartDay`: integer from `0` to `6`
+- `defaultCalendarView`: `month` or `week`
+- `timezone`: text, should be a valid IANA timezone
+- `timeFormat`: `12h` or `24h`
+- `language`: `en`, `hu`, `de`, or `fr`
+- `preferredLanguage`: same enum as `language`
+- `hideReservationsTab`: boolean
+- `hiddenResourceIds`: number[]
+- `visibleCalendarIds`: number[]
+- `visibleResourceTypeIds`: number[]
+- `hiddenFromLiveFocusTags`: string[]
+- `eventLabels`: string[]
+- `defaultTasksCalendarId`: number or null
 
-Use this guide to complete user api reliably. Confirm expected results after each step before moving to optional advanced settings.
+Important behavior:
 
-> Add screenshots from `docs/assets/` with descriptive alt text for each UI interaction.
+- If `username` or `email` changes, the backend re-checks uniqueness before saving.
+- Setting `defaultTasksCalendarId` updates the Tasks calendar linkage.
+- Clearing the default Tasks calendar is allowed with `null`.
+- Event label changes are normalized and then persisted.
 
----
+## `POST /api/user/profile-picture`
 
-## Step-by-Step Instructions
+Upload rules from the controller:
 
-### Step 1: Open the Correct Area
+- Supported MIME types are JPEG, PNG, GIF, and WebP
+- The file is stored server-side and the returned URL points at `/uploads/...`
 
-- Sign in to PrimeCalendar.
-- Navigate to the feature area for this workflow.
-- Confirm required controls are visible.
+## `PATCH /api/user/theme`
 
-### Step 2: Configure Required Settings
+`UpdateThemeDto` requires:
 
-- Enter required values.
-- Save changes.
-- Verify expected behavior.
+- `themeColor`: hex string such as `#3b82f6`
 
-### Step 3: Validate Outcome
+## `PATCH /api/user/password`
 
-- Test one realistic scenario.
-- Confirm notifications, permissions, and expected outputs.
+`ChangePasswordDto` requires:
 
-<details>
-<summary>Advanced Options</summary>
+- `currentPassword`
+- `newPassword`: minimum 6 chars
 
-- Add optional policies and automation hooks.
-- Document team defaults for repeatability.
+The endpoint validates the current password before hashing and saving the new one.
 
-</details>
+## `DELETE /api/user/event-labels/:label`
 
----
+Behavior:
 
-## Examples
+- Deletes one saved label from the user's reusable event-label catalog
+- Removes the same label from events created by that user
+- Returns the remaining labels and the number of affected events
 
-### Example 1: Team Rollout
+## Navigation Hint
 
-**Scenario**: Your team needs consistent behavior for user api.
+If you came here from the onboarding docs, the usual first settings after registration are:
 
-**Steps**:
-1. Configure in a test workspace.
-2. Validate with pilot users.
-3. Roll out to production.
-
-### Consolidated Legacy Sources
-
-No direct legacy source was mapped for this page.
-
-
----
-
-## Troubleshooting
-
-### Issue: Configuration Does Not Apply
-
-**Symptoms**: Settings appear saved but behavior remains unchanged.
-
-**Solution**:
-1. Verify workspace and organization context.
-2. Re-check required fields and permissions.
-3. Review logs and API responses.
-
-**Prevention**: Use a pre-deployment checklist.
-
----
-
-## Related Resources
-
-- [Index](../index.md)
-- [Index](../../index.md)
-- [Documentation Home](../../index.md)
-
----
-
-## Feedback
-
-Was this helpful? [Yes] [No]  
-Open an issue or pull request to improve this page.
-
----
-
-*Last updated: 2026-03-10 | PrimeCalendar v1.3.0*
+1. `PATCH /api/user/profile`
+2. `PATCH /api/user/theme`
+3. `PATCH /api/user/password`
+4. `DELETE /api/user/event-labels/:label` for cleanup

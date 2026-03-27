@@ -1,125 +1,65 @@
 ---
 title: Calendar Views
-description: Step-by-step guidance for calendar views in PrimeCalendar.
+description: Understand how Focus, Month, and Week views render PrimeCal calendars, events, labels, and colors.
 category: User Guide
 audience: End User
 difficulty: Beginner
-last_updated: 2026-03-10
+last_updated: 2026-03-27
 version: 1.3.0
 related:
   - ../index.md
-  - ../../index.md
-tags: [user, basics, calendar, views, primecalendar]
+  - ./creating-events.md
+  - ../calendars/calendar-workspace.md
+tags: [primecal, focus-view, month-view, week-view, colors, visibility]
 ---
 
 # Calendar Views
 
-> **Quick Summary**: This page explains calendar views in PrimeCalendar using practical steps and troubleshooting guidance.
+PrimeCal shows the same event data in three primary scheduling views: Focus, Month, and Week. Each view emphasizes different decisions.
 
-## Table of Contents
+## Quick Comparison
 
-- [Prerequisites](#prerequisites)
-- [Overview](#overview)
-- [Step-by-Step Instructions](#step-by-step-instructions)
-- [Examples](#examples)
-- [Troubleshooting](#troubleshooting)
-- [Related Resources](#related-resources)
+| View | Best for | Key behavior |
+| --- | --- | --- |
+| Focus view | Current work and the next event | Shows the current timeline state, next item, remaining time, and quick meeting actions. |
+| Month view | Planning across many days | Shows a six-week grid, compact event cards, and a selected-day detail panel. |
+| Week view | Detailed scheduling | Shows a 24-hour grid, overlap layout, drag-to-create, and precise time placement. |
 
----
+## Focus View
 
-## Prerequisites
+- Shows the current and next event prominently.
+- Includes a live clock and remaining time indicator.
+- Supports drag-to-create in the timeline.
+- Shows meeting links when the event contains them.
+- Respects hidden live Focus labels from the profile page.
 
-- Access to PrimeCalendar.
-- Appropriate role permissions for this workflow.
+## Month View
 
-**Time to Complete**: 10-20 minutes  
-**Difficulty**: Beginner
+- Shows a six-week grid layout.
+- Uses calendar and event colors in compact cards.
+- Surfaces per-day event counts when space is limited.
+- Shows a selected-day detail panel on desktop.
+- Can show reservation-related items where those features are enabled.
 
----
+## Week View
 
-## Overview
+- Uses a 24-hour vertical time grid.
+- Supports drag selection to create a pre-filled event.
+- Sorts overlapping events by calendar rank, then calendar ID, then event ID.
+- Shows a current-time indicator during the day.
+- Can turn real locations into map links.
 
-Use this guide to complete calendar views reliably. Confirm expected results after each step before moving to optional advanced settings.
+## Visibility And Color Rules
 
-> Add screenshots from `docs/assets/` with descriptive alt text for each UI interaction.
+- Hiding a calendar from the sidebar removes it from Focus, Month, and Week views.
+- Hiding labels in the profile page only affects Focus view.
+- Calendar colors are the default visual source across all views.
+- Event-level colors override the calendar color for that specific event.
 
----
+## Screenshot Placeholder
 
-## Step-by-Step Instructions
+Good screenshots for this page:
 
-### Step 1: Open the Correct Area
-
-- Sign in to PrimeCalendar.
-- Navigate to the feature area for this workflow.
-- Confirm required controls are visible.
-
-### Step 2: Configure Required Settings
-
-- Enter required values.
-- Save changes.
-- Verify expected behavior.
-
-### Step 3: Validate Outcome
-
-- Test one realistic scenario.
-- Confirm notifications, permissions, and expected outputs.
-
-<details>
-<summary>Advanced Options</summary>
-
-- Add optional policies and automation hooks.
-- Document team defaults for repeatability.
-
-</details>
-
----
-
-## Examples
-
-### Example 1: Team Rollout
-
-**Scenario**: Your team needs consistent behavior for calendar views.
-
-**Steps**:
-1. Configure in a test workspace.
-2. Validate with pilot users.
-3. Roll out to production.
-
-### Consolidated Legacy Sources
-
-No direct legacy source was mapped for this page.
-
-
----
-
-## Troubleshooting
-
-### Issue: Configuration Does Not Apply
-
-**Symptoms**: Settings appear saved but behavior remains unchanged.
-
-**Solution**:
-1. Verify workspace and organization context.
-2. Re-check required fields and permissions.
-3. Review logs and API responses.
-
-**Prevention**: Use a pre-deployment checklist.
-
----
-
-## Related Resources
-
-- [Index](../index.md)
-- [Index](../../index.md)
-- [Documentation Home](../../index.md)
-
----
-
-## Feedback
-
-Was this helpful? [Yes] [No]  
-Open an issue or pull request to improve this page.
-
----
-
-*Last updated: 2026-03-10 | PrimeCalendar v1.3.0*
+- Focus view with the current and next event cards.
+- Month view with multiple colored calendars.
+- Week view with overlapping events and the current-time marker.

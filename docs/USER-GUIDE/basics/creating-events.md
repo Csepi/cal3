@@ -1,125 +1,93 @@
 ---
 title: Creating Events
-description: Step-by-step guidance for creating events in PrimeCalendar.
+description: Create one-off and recurring events from the real PrimeCal event modal and its supported entry points.
 category: User Guide
 audience: End User
 difficulty: Beginner
-last_updated: 2026-03-10
+last_updated: 2026-03-27
 version: 1.3.0
 related:
   - ../index.md
-  - ../../index.md
-tags: [user, basics, creating, events, primecalendar]
+  - ../calendars/calendar-workspace.md
+  - ./calendar-views.md
+tags: [primecal, events, recurrence, labels, calendar]
 ---
 
 # Creating Events
 
-> **Quick Summary**: This page explains creating events in PrimeCalendar using practical steps and troubleshooting guidance.
+PrimeCal uses a shared event modal across the app. The same form is opened from the header action, from drag selections in views, and from mobile day workflows.
 
-## Table of Contents
+## Ways To Start A New Event
 
-- [Prerequisites](#prerequisites)
-- [Overview](#overview)
-- [Step-by-Step Instructions](#step-by-step-instructions)
-- [Examples](#examples)
-- [Troubleshooting](#troubleshooting)
-- [Related Resources](#related-resources)
+- Header action: use `New Event`.
+- Week view: drag across a time range.
+- Focus view: drag in the timeline area.
+- Mobile: open a day, then start a new event from the day sheet or action button.
 
----
+## Event Form Fields
 
-## Prerequisites
+The event form stays partially locked until a calendar is selected.
 
-- Access to PrimeCalendar.
-- Appropriate role permissions for this workflow.
+| Field | Type | Required | Constraints and behavior |
+| --- | --- | --- | --- |
+| Calendar | select | Yes | Must be chosen before the rest of the form is fully enabled. |
+| Icon | icon picker | No | Optional event-level visual marker. |
+| Title | text | Yes | Required event name. |
+| Location | text | No | Optional location. Real addresses can later feed map links in Week view. |
+| Description | textarea | No | Optional event notes. |
+| Labels | tag list | No | Normalized, trimmed, deduplicated case-insensitively, capped at 50 items, 64 characters per label. |
+| All-day | toggle | No | Removes the time pickers and stores the event as date-based. |
+| Start date | date | Yes | Required for all events. |
+| Start time | time | Yes unless all-day | Required for timed events. |
+| End date | date | Yes | Required for all events. |
+| End time | time | Yes unless all-day | Must not be earlier than the start value. |
+| Event color | color picker | No | Overrides the default calendar color for that event only. |
+| Recurrence | recurrence builder | No | Used for repeating events and recurring edits. |
 
-**Time to Complete**: 10-20 minutes  
-**Difficulty**: Beginner
+## Save Behavior
 
----
+- The form rejects an end time earlier than the start time.
+- Dragging in a view pre-fills the selected date and time range.
+- Opening a blank event defaults to the personal calendar or the first available calendar when possible.
+- Saved labels are merged into the reusable label list for future events.
 
-## Overview
+## Editing Existing Events
 
-Use this guide to complete creating events reliably. Confirm expected results after each step before moving to optional advanced settings.
+- The delete action appears only when editing an existing event.
+- The comments panel is available on edit, not on first create.
+- Recurring updates can target the current occurrence or a wider series, depending on the chosen edit mode.
 
-> Add screenshots from `docs/assets/` with descriptive alt text for each UI interaction.
+## API Notes
 
----
+<div class="pc-guide-api-grid">
+  <article class="pc-guide-api">
+    <p class="pc-guide-api__eyebrow">Create</p>
+    <div class="pc-guide-pill-row">
+      <span class="pc-guide-pill pc-guide-pill--post">POST</span>
+      <span class="pc-guide-pill pc-guide-pill--post">POST</span>
+    </div>
+    <h3><code>/api/events</code> and <code>/api/events/recurring</code></h3>
+    <p>Create one-off events or create recurring series with recurrence data.</p>
+  </article>
+  <article class="pc-guide-api">
+    <p class="pc-guide-api__eyebrow">Update</p>
+    <div class="pc-guide-pill-row">
+      <span class="pc-guide-pill pc-guide-pill--patch">PATCH</span>
+      <span class="pc-guide-pill pc-guide-pill--patch">PATCH</span>
+    </div>
+    <h3><code>/api/events/:id</code> and <code>/api/events/:id/recurring</code></h3>
+    <p>Update a single event or apply recurring updates with series-aware behavior.</p>
+  </article>
+  <article class="pc-guide-api">
+    <p class="pc-guide-api__eyebrow">Delete</p>
+    <div class="pc-guide-pill-row">
+      <span class="pc-guide-pill pc-guide-pill--delete">DELETE</span>
+    </div>
+    <h3><code>/api/events/:id</code></h3>
+    <p>Delete a single event or use the recurring deletion flow where applicable.</p>
+  </article>
+</div>
 
-## Step-by-Step Instructions
+## Screenshot Placeholder
 
-### Step 1: Open the Correct Area
-
-- Sign in to PrimeCalendar.
-- Navigate to the feature area for this workflow.
-- Confirm required controls are visible.
-
-### Step 2: Configure Required Settings
-
-- Enter required values.
-- Save changes.
-- Verify expected behavior.
-
-### Step 3: Validate Outcome
-
-- Test one realistic scenario.
-- Confirm notifications, permissions, and expected outputs.
-
-<details>
-<summary>Advanced Options</summary>
-
-- Add optional policies and automation hooks.
-- Document team defaults for repeatability.
-
-</details>
-
----
-
-## Examples
-
-### Example 1: Team Rollout
-
-**Scenario**: Your team needs consistent behavior for creating events.
-
-**Steps**:
-1. Configure in a test workspace.
-2. Validate with pilot users.
-3. Roll out to production.
-
-### Consolidated Legacy Sources
-
-No direct legacy source was mapped for this page.
-
-
----
-
-## Troubleshooting
-
-### Issue: Configuration Does Not Apply
-
-**Symptoms**: Settings appear saved but behavior remains unchanged.
-
-**Solution**:
-1. Verify workspace and organization context.
-2. Re-check required fields and permissions.
-3. Review logs and API responses.
-
-**Prevention**: Use a pre-deployment checklist.
-
----
-
-## Related Resources
-
-- [Index](../index.md)
-- [Index](../../index.md)
-- [Documentation Home](../../index.md)
-
----
-
-## Feedback
-
-Was this helpful? [Yes] [No]  
-Open an issue or pull request to improve this page.
-
----
-
-*Last updated: 2026-03-10 | PrimeCalendar v1.3.0*
+Add a screenshot of the event modal after a calendar is selected and the recurrence section is open.

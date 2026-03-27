@@ -1,125 +1,188 @@
 ---
 title: Automation API
-description: Step-by-step guidance for automation api in PrimeCalendar.
+description: Swagger-style reference for automation rules, webhooks, and smart values.
 category: Developer
 audience: Developer
 difficulty: Advanced
-last_updated: 2026-03-10
+last_updated: 2026-03-27
 version: 1.3.0
 related:
-  - ../index.md
-  - ../../index.md
-tags: [developer, api, reference, automation, primecalendar]
+  - ./api-overview.md
+  - ./event-api.md
+  - ./agent-api.md
+tags: [primecal, api, automation, webhooks, smart-values]
 ---
 
 # Automation API
 
-> **Quick Summary**: This page explains automation api in PrimeCalendar using practical steps and troubleshooting guidance.
+<div class="pc-guide-hero">
+  <p class="pc-guide-hero__eyebrow">Automation Controller</p>
+  <h1 class="pc-guide-hero__title">Rules, triggers, conditions, actions</h1>
+  <p class="pc-guide-hero__lead">
+    PrimeCal automation is rule-based. Rules can be created, updated, executed now, inspected through
+    audit logs, triggered by public webhooks, and governed with smart values and approvals.
+  </p>
+</div>
 
-## Table of Contents
+## Endpoint Summary
 
-- [Prerequisites](#prerequisites)
-- [Overview](#overview)
-- [Step-by-Step Instructions](#step-by-step-instructions)
-- [Examples](#examples)
-- [Troubleshooting](#troubleshooting)
-- [Related Resources](#related-resources)
+| Method | Path | Auth | Notes |
+| --- | --- | --- | --- |
+| `POST` | `/api/automation/rules` | JWT | Create a rule |
+| `GET` | `/api/automation/rules` | JWT | List rules with pagination/filtering |
+| `GET` | `/api/automation/rules/:id` | JWT | Fetch one rule |
+| `PUT` | `/api/automation/rules/:id` | JWT | Update a rule |
+| `DELETE` | `/api/automation/rules/:id` | JWT | Delete a rule |
+| `POST` | `/api/automation/rules/:id/execute` | JWT | Run a rule now |
+| `GET` | `/api/automation/rules/:id/audit-logs` | JWT | Rule audit log list |
+| `GET` | `/api/automation/audit-logs/:logId` | JWT | Audit log detail |
+| `GET` | `/api/automation/rules/:id/stats` | JWT | Execution stats |
+| `POST` | `/api/automation/webhook/:token` | Public | Incoming webhook trigger |
+| `POST` | `/api/automation/rules/:id/webhook/regenerate` | JWT | Regenerate webhook token |
+| `POST` | `/api/automation/rules/:id/webhook/rotate-secret` | JWT | Rotate webhook signing secret |
+| `POST` | `/api/automation/rules/:id/approve` | JWT | Approve sensitive rule actions |
+| `GET` | `/api/automation/smart-values/:triggerType` | JWT | List trigger-specific smart values |
 
----
+## Rule DTO Constraints
 
-## Prerequisites
+### `CreateAutomationRuleDto`
 
-- Access to PrimeCalendar.
-- Appropriate role permissions for this workflow.
+- `name`: required, 1 to 200 chars
+- `description`: optional, max 1000 chars
+- `triggerType`: required enum
+- `triggerConfig`: optional JSON object
+- `isEnabled`: optional boolean, defaults to `true`
+- `conditionLogic`: `AND` or `OR`
+- `conditions`: optional array, max 10
+- `actions`: required array, min 1, max 5
 
-**Time to Complete**: 10-20 minutes  
-**Difficulty**: Advanced
+### `UpdateAutomationRuleDto`
 
----
+Same shape, but all fields are optional except the validation still applies if provided.
 
-## Overview
+## Trigger Types
 
-Use this guide to complete automation api reliably. Confirm expected results after each step before moving to optional advanced settings.
+From the backend enum:
 
-> Add screenshots from `docs/assets/` with descriptive alt text for each UI interaction.
+- `event.created`
+- `event.updated`
+- `event.deleted`
+- `event.starts_in`
+- `event.ends_in`
+- `relative_time_to_event`
+- `calendar.imported`
+- `scheduled.time`
+- `webhook.incoming`
 
----
+The UI also exposes event-filtered relative trigger configuration with:
 
-## Step-by-Step Instructions
+- `calendarIds`
+- `titleContains`
+- `descriptionContains`
+- `tags`
+- `isAllDayOnly`
+- `isRecurringOnly`
 
-### Step 1: Open the Correct Area
+## Condition Model
 
-- Sign in to PrimeCalendar.
-- Navigate to the feature area for this workflow.
-- Confirm required controls are visible.
+### `CreateConditionDto`
 
-### Step 2: Configure Required Settings
+- `field`: event, calendar, or webhook field
+- `operator`: comparison operator
+- `value`: string, max 1000 chars
+- `groupId`: optional string
+- `logicOperator`: `AND`, `OR`, or `NOT`
+- `order`: optional numeric sort order
 
-- Enter required values.
-- Save changes.
-- Verify expected behavior.
+Useful fields from the backend enum:
 
-### Step 3: Validate Outcome
+- `event.title`
+- `event.description`
+- `event.location`
+- `event.notes`
+- `event.duration`
+- `event.is_all_day`
+- `event.color`
+- `event.status`
+- `event.calendar.id`
+- `event.calendar.name`
+- `webhook.data`
 
-- Test one realistic scenario.
-- Confirm notifications, permissions, and expected outputs.
+Useful operators:
 
-<details>
-<summary>Advanced Options</summary>
+- `contains`
+- `not_contains`
+- `matches`
+- `not_matches`
+- `equals`
+- `not_equals`
+- `starts_with`
+- `ends_with`
+- `is_empty`
+- `is_not_empty`
+- `greater_than`
+- `less_than`
+- `greater_than_or_equal`
+- `less_than_or_equal`
+- `is_true`
+- `is_false`
+- `in`
+- `not_in`
+- `in_list`
+- `not_in_list`
 
-- Add optional policies and automation hooks.
-- Document team defaults for repeatability.
+## Actions
 
-</details>
+### `CreateActionDto`
 
----
+- `actionType`: required enum
+- `actionConfig`: JSON object
+- `order`: optional numeric sort order
 
-## Examples
+Action types from the backend:
 
-### Example 1: Team Rollout
+- `set_event_color`
+- `add_event_tag`
+- `send_notification`
+- `update_event_title`
+- `update_event_description`
+- `cancel_event`
+- `move_to_calendar`
+- `create_task`
+- `webhook`
 
-**Scenario**: Your team needs consistent behavior for automation api.
+## Webhook Flow
 
-**Steps**:
-1. Configure in a test workspace.
-2. Validate with pilot users.
-3. Roll out to production.
+- `POST /api/automation/webhook/:token` is public and used by external systems.
+- `POST /api/automation/rules/:id/webhook/regenerate` issues a new token.
+- `POST /api/automation/rules/:id/webhook/rotate-secret` rotates the signing secret.
+- The UI webhook URL is derived from the rule token and should be copied into the external system.
 
-### Consolidated Legacy Sources
+## Filtering And Execution
 
-No direct legacy source was mapped for this page.
+The list endpoint supports pagination and filtering.
 
+Common client-side filters in the UI:
 
----
+- search by name or description
+- enabled/disabled status
+- trigger type filtering
 
-## Troubleshooting
+The detail view also supports:
 
-### Issue: Configuration Does Not Apply
+- `Run now`
+- execution count
+- last run time
+- audit log browsing
 
-**Symptoms**: Settings appear saved but behavior remains unchanged.
+## Smart Values
 
-**Solution**:
-1. Verify workspace and organization context.
-2. Re-check required fields and permissions.
-3. Review logs and API responses.
+`GET /api/automation/smart-values/:triggerType` returns the smart-value catalog for the current trigger type.
 
-**Prevention**: Use a pre-deployment checklist.
+This is what powers token-aware action config and webhook path expressions.
 
----
+## Approval
 
-## Related Resources
+Some rules may require approval before sensitive actions are executed.
 
-- [Index](../index.md)
-- [Index](../../index.md)
-- [Documentation Home](../../index.md)
-
----
-
-## Feedback
-
-Was this helpful? [Yes] [No]  
-Open an issue or pull request to improve this page.
-
----
-
-*Last updated: 2026-03-10 | PrimeCalendar v1.3.0*
+`POST /api/automation/rules/:id/approve` marks the rule approved and returns the approval timestamp.

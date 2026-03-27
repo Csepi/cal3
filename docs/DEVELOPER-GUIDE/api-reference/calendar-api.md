@@ -1,125 +1,110 @@
 ---
 title: Calendar API
-description: Step-by-step guidance for calendar api in PrimeCalendar.
+description: Swagger-style reference for calendars and calendar groups.
 category: Developer
 audience: Developer
 difficulty: Advanced
-last_updated: 2026-03-10
+last_updated: 2026-03-27
 version: 1.3.0
 related:
-  - ../index.md
-  - ../../index.md
-tags: [developer, api, reference, calendar, primecalendar]
+  - ./api-overview.md
+  - ./event-api.md
+tags: [primecal, api, calendar, calendar-groups, developer]
 ---
 
 # Calendar API
 
-> **Quick Summary**: This page explains calendar api in PrimeCalendar using practical steps and troubleshooting guidance.
+<div class="pc-guide-hero">
+  <p class="pc-guide-hero__eyebrow">Calendars Controller</p>
+  <h1 class="pc-guide-hero__title">Create calendars, groups, sharing, and visibility</h1>
+  <p class="pc-guide-hero__lead">
+    PrimeCal splits calendar management across `/api/calendars` and `/api/calendar-groups`.
+    This page documents both route families so the group and calendar flows stay in one place.
+  </p>
+</div>
 
-## Table of Contents
+## Endpoint Summary
 
-- [Prerequisites](#prerequisites)
-- [Overview](#overview)
-- [Step-by-Step Instructions](#step-by-step-instructions)
-- [Examples](#examples)
-- [Troubleshooting](#troubleshooting)
-- [Related Resources](#related-resources)
+### Calendars
 
----
+| Method | Path | Auth | Notes |
+| --- | --- | --- | --- |
+| `POST` | `/api/calendars` | JWT | Create a new calendar |
+| `GET` | `/api/calendars` | JWT | List owned and shared calendars |
+| `GET` | `/api/calendars/:id` | JWT | Fetch one calendar |
+| `PATCH` | `/api/calendars/:id` | JWT | Update a calendar |
+| `DELETE` | `/api/calendars/:id` | JWT | Soft delete a calendar |
+| `POST` | `/api/calendars/:id/share` | JWT | Share a calendar with users |
+| `DELETE` | `/api/calendars/:id/share` | JWT | Unshare a calendar from users |
+| `GET` | `/api/calendars/:id/shared-users` | JWT | List shared users |
+| `GET` | `/api/calendars/groups` | JWT | Alias for group listing |
+| `POST` | `/api/calendars/groups` | JWT | Alias for group creation |
 
-## Prerequisites
+### Calendar Groups
 
-- Access to PrimeCalendar.
-- Appropriate role permissions for this workflow.
+| Method | Path | Auth | Notes |
+| --- | --- | --- | --- |
+| `POST` | `/api/calendar-groups` | JWT | Create a group |
+| `GET` | `/api/calendar-groups` | JWT | List groups with calendars |
+| `PATCH` | `/api/calendar-groups/:id` | JWT | Rename or toggle visibility |
+| `DELETE` | `/api/calendar-groups/:id` | JWT | Delete a group without deleting calendars |
+| `POST` | `/api/calendar-groups/:id/calendars` | JWT | Assign calendars to a group |
+| `POST` | `/api/calendar-groups/:id/calendars/unassign` | JWT | Remove calendars from a group |
+| `POST` | `/api/calendar-groups/:id/share` | JWT | Share all calendars in the group |
+| `DELETE` | `/api/calendar-groups/:id/share` | JWT | Unshare the group from users |
 
-**Time to Complete**: 10-20 minutes  
-**Difficulty**: Advanced
+## Calendar DTO Constraints
 
----
+### `CreateCalendarDto`
 
-## Overview
+- `name`: required string
+- `description`: optional string, max 500 chars
+- `color`: optional hex color string, default app blue is `#3b82f6`
+- `icon`: optional emoji/icon string
+- `visibility`: `private`, `shared`, or `public`
+- `groupId`: number or null
+- `rank`: optional number used for ordering and view priority
 
-Use this guide to complete calendar api reliably. Confirm expected results after each step before moving to optional advanced settings.
+### `UpdateCalendarDto`
 
-> Add screenshots from `docs/assets/` with descriptive alt text for each UI interaction.
+Same fields as create, but all optional.
 
----
+### `ShareCalendarDto`
 
-## Step-by-Step Instructions
+- `userIds`: number[]
+- `permission`: `read`, `write`, or `admin`
 
-### Step 1: Open the Correct Area
+### `CreateCalendarGroupDto`
 
-- Sign in to PrimeCalendar.
-- Navigate to the feature area for this workflow.
-- Confirm required controls are visible.
+- `name`: required, minimum 2 chars
+- `isVisible`: optional boolean, defaults to `true`
 
-### Step 2: Configure Required Settings
+### `UpdateCalendarGroupDto`
 
-- Enter required values.
-- Save changes.
-- Verify expected behavior.
+- `name`: optional, minimum 2 chars
+- `isVisible`: optional boolean
 
-### Step 3: Validate Outcome
+### `AssignCalendarsToGroupDto`
 
-- Test one realistic scenario.
-- Confirm notifications, permissions, and expected outputs.
+- `calendarIds`: number[]
 
-<details>
-<summary>Advanced Options</summary>
+### `ShareCalendarGroupDto`
 
-- Add optional policies and automation hooks.
-- Document team defaults for repeatability.
+- `userIds`: number[]
+- `permission`: `read`, `write`, or `admin`
 
-</details>
+## Behavior Notes
 
----
+- The UI can create a group inline while creating a calendar.
+- The backend treats group deletion as an unlink operation, not a calendar delete.
+- Shared calendars and group-shared calendars both rely on the same permission model.
+- Calendar rank affects ordering in the UI and in the timeline views.
+- Calendar visibility and selection state influence what shows in focus, month, and week views.
 
-## Examples
+## Typical First Calls
 
-### Example 1: Team Rollout
-
-**Scenario**: Your team needs consistent behavior for calendar api.
-
-**Steps**:
-1. Configure in a test workspace.
-2. Validate with pilot users.
-3. Roll out to production.
-
-### Consolidated Legacy Sources
-
-- `04-API-REFERENCE/calendars.md`: This page has moved to the consolidated structure. - Canonical page: DEVELOPER-GUIDE/api-reference/calendar-api.md - Archived snapshot: archives/pre-consolidation/04-API-REFERENCE/calendars.md
-
-
----
-
-## Troubleshooting
-
-### Issue: Configuration Does Not Apply
-
-**Symptoms**: Settings appear saved but behavior remains unchanged.
-
-**Solution**:
-1. Verify workspace and organization context.
-2. Re-check required fields and permissions.
-3. Review logs and API responses.
-
-**Prevention**: Use a pre-deployment checklist.
-
----
-
-## Related Resources
-
-- [Index](../index.md)
-- [Index](../../index.md)
-- [Documentation Home](../../index.md)
-
----
-
-## Feedback
-
-Was this helpful? [Yes] [No]  
-Open an issue or pull request to improve this page.
-
----
-
-*Last updated: 2026-03-10 | PrimeCalendar v1.3.0*
+1. `GET /api/calendars`
+2. `GET /api/calendar-groups`
+3. `POST /api/calendars`
+4. `POST /api/calendar-groups`
+5. `POST /api/calendar-groups/:id/calendars`

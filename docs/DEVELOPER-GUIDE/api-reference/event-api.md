@@ -1,125 +1,119 @@
 ---
 title: Event API
-description: Step-by-step guidance for event api in PrimeCalendar.
+description: Swagger-style reference for event creation, updates, and recurrence.
 category: Developer
 audience: Developer
 difficulty: Advanced
-last_updated: 2026-03-10
+last_updated: 2026-03-27
 version: 1.3.0
 related:
-  - ../index.md
-  - ../../index.md
-tags: [developer, api, reference, event, primecalendar]
+  - ./api-overview.md
+  - ./calendar-api.md
+  - ./automation-api.md
+tags: [primecal, api, events, recurrence, developer]
 ---
 
 # Event API
 
-> **Quick Summary**: This page explains event api in PrimeCalendar using practical steps and troubleshooting guidance.
+<div class="pc-guide-hero">
+  <p class="pc-guide-hero__eyebrow">Events Controller</p>
+  <h1 class="pc-guide-hero__title">Create, update, repeat, and query events</h1>
+  <p class="pc-guide-hero__lead">
+    The event controller exposes standard CRUD, recurring series handling, and calendar-scoped queries.
+    The DTOs below reflect the actual validation rules in the backend.
+  </p>
+</div>
 
-## Table of Contents
+## Endpoint Summary
 
-- [Prerequisites](#prerequisites)
-- [Overview](#overview)
-- [Step-by-Step Instructions](#step-by-step-instructions)
-- [Examples](#examples)
-- [Troubleshooting](#troubleshooting)
-- [Related Resources](#related-resources)
+| Method | Path | Auth | Notes |
+| --- | --- | --- | --- |
+| `POST` | `/api/events` | JWT | Create a new event |
+| `POST` | `/api/events/recurring` | JWT | Create a recurring series |
+| `GET` | `/api/events` | JWT | List accessible events |
+| `GET` | `/api/events/:id` | JWT | Fetch one event |
+| `PATCH` | `/api/events/:id` | JWT | Update one event |
+| `DELETE` | `/api/events/:id` | JWT | Delete one event |
+| `PATCH` | `/api/events/:id/recurring` | JWT | Update a recurring event series |
+| `GET` | `/api/events/calendar/:calendarId` | JWT | List events from one calendar |
 
----
+## `CreateEventDto`
 
-## Prerequisites
+Required:
 
-- Access to PrimeCalendar.
-- Appropriate role permissions for this workflow.
+- `title`: string
+- `startDate`: `YYYY-MM-DD`
 
-**Time to Complete**: 10-20 minutes  
-**Difficulty**: Advanced
+Optional:
 
----
+- `description`
+- `startTime`: `HH:MM`
+- `endDate`: `YYYY-MM-DD`
+- `endTime`: `HH:MM`
+- `isAllDay`: boolean
+- `location`
+- `status`: `confirmed`, `tentative`, or `cancelled`
+- `recurrenceType`: `none`, `daily`, `weekly`, `monthly`, or `yearly`
+- `recurrenceRule`: JSON payload
+- `color`: hex color string
+- `icon`: emoji/icon string
+- `notes`
+- `tags`: string[]
+- `labels`: string[] alias for `tags`
+- `calendarId`: number
 
-## Overview
+Constraints worth calling out:
 
-Use this guide to complete event api reliably. Confirm expected results after each step before moving to optional advanced settings.
+- `tags` and `labels` are capped at 64 chars per entry.
+- `title` is required and is stored as the event title.
+- `calendarId` decides where the event is created.
+- When `isAllDay` is false, start and end times should both be present.
 
-> Add screenshots from `docs/assets/` with descriptive alt text for each UI interaction.
+## `UpdateEventDto`
 
----
+Same fields as create, plus:
 
-## Step-by-Step Instructions
+- `updateMode`: `single`, `all`, or `future`
 
-### Step 1: Open the Correct Area
+This is the control for recurring-event edits:
 
-- Sign in to PrimeCalendar.
-- Navigate to the feature area for this workflow.
-- Confirm required controls are visible.
+- `single` updates only one occurrence
+- `all` updates the whole series
+- `future` updates the selected occurrence and future items in the series
 
-### Step 2: Configure Required Settings
+## `GET /api/events`
 
-- Enter required values.
-- Save changes.
-- Verify expected behavior.
+Query parameters:
 
-### Step 3: Validate Outcome
+- `startDate`: optional `YYYY-MM-DD`
+- `endDate`: optional `YYYY-MM-DD`
 
-- Test one realistic scenario.
-- Confirm notifications, permissions, and expected outputs.
+Use this endpoint to build month and week views or to export a date range.
 
-<details>
-<summary>Advanced Options</summary>
+## `Recurring Events`
 
-- Add optional policies and automation hooks.
-- Document team defaults for repeatability.
+The recurring create and update endpoints work with recurrence DTOs and the `RecurrenceType` enum.
 
-</details>
+Supported recurrence types from the entity:
 
----
+- `none`
+- `daily`
+- `weekly`
+- `monthly`
+- `yearly`
 
-## Examples
+## Response Shape
 
-### Example 1: Team Rollout
+The event response includes:
 
-**Scenario**: Your team needs consistent behavior for event api.
+- event metadata
+- calendar summary (`id`, `name`, `color`)
+- creator summary (`id`, `username`)
+- timestamps
 
-**Steps**:
-1. Configure in a test workspace.
-2. Validate with pilot users.
-3. Roll out to production.
+## Practical Notes
 
-### Consolidated Legacy Sources
-
-- `04-API-REFERENCE/events.md`: This page has moved to the consolidated structure. - Canonical page: DEVELOPER-GUIDE/api-reference/event-api.md - Archived snapshot: archives/pre-consolidation/04-API-REFERENCE/events.md
-
-
----
-
-## Troubleshooting
-
-### Issue: Configuration Does Not Apply
-
-**Symptoms**: Settings appear saved but behavior remains unchanged.
-
-**Solution**:
-1. Verify workspace and organization context.
-2. Re-check required fields and permissions.
-3. Review logs and API responses.
-
-**Prevention**: Use a pre-deployment checklist.
-
----
-
-## Related Resources
-
-- [Index](../index.md)
-- [Index](../../index.md)
-- [Documentation Home](../../index.md)
-
----
-
-## Feedback
-
-Was this helpful? [Yes] [No]  
-Open an issue or pull request to improve this page.
-
----
-
-*Last updated: 2026-03-10 | PrimeCalendar v1.3.0*
+- The month and week views both rely on `calendar.color` and `event.color` for rendering.
+- The timeline view uses calendar rank to sort overlapping items.
+- Event labels saved during create/edit also feed the profile label catalog.
+- If you are building a client, keep the date format and the time format separate. The backend stores date and time fields independently.

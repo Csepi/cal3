@@ -1,90 +1,80 @@
 ---
-title: User Guide
-description: Browse User Guide documentation pages.
+title: User Documentation
+description: Daily PrimeCal workflows for profile settings, calendars, events, views, automation, and agent configuration.
 category: User Guide
 audience: End User
 difficulty: Beginner
-last_updated: 2026-03-10
+last_updated: 2026-03-27
 version: 1.3.0
+hide_title: true
 related:
   - ../index.md
-tags: [primecalendar, user-guide, index, navigation]
+  - ../GETTING-STARTED/index.md
+tags: [primecal, user-guide, calendars, automation, agents]
 ---
 
-# User Guide
+<div class="pc-guide-hero">
+  <p class="pc-guide-hero__eyebrow">PrimeCal User Docs</p>
+  <h1 class="pc-guide-hero__title">Everything After Registration</h1>
+  <p class="pc-guide-hero__lead">This section follows the real user journey inside PrimeCal: profile setup, calendar management, event creation, view behavior, automation, and MCP-capable agent configuration.</p>
+  <div class="pc-guide-chip-row">
+    <span class="pc-guide-chip">Daily workflows</span>
+    <span class="pc-guide-chip">Current UI labels</span>
+    <span class="pc-guide-chip">User-facing constraints</span>
+    <span class="pc-guide-chip">API notes included</span>
+  </div>
+</div>
 
-> **Quick Summary**: This section contains all User Guide documentation pages.
+## Start With These Pages
 
-## Table of Contents
+<div class="pc-guide-grid">
+  <article class="pc-guide-card pc-guide-card--accent">
+    <p class="pc-guide-card__eyebrow">Profile</p>
+    <h3><a href="/USER-GUIDE/profile/profile-page">Profile Page</a></h3>
+    <p>Update identity, timezone, time format, language, labels, password, theme, and Focus-view preferences.</p>
+  </article>
+  <article class="pc-guide-card">
+    <p class="pc-guide-card__eyebrow">Calendars</p>
+    <h3><a href="/USER-GUIDE/calendars/calendar-workspace">Calendar Workspace</a></h3>
+    <p>Create calendars, create groups, rename or hide them, adjust colors, and understand what changes each view.</p>
+  </article>
+  <article class="pc-guide-card">
+    <p class="pc-guide-card__eyebrow">Events</p>
+    <h3><a href="/USER-GUIDE/basics/creating-events">Creating Events</a></h3>
+    <p>Use the shared event modal correctly, including labels, recurrence, all-day rules, and edit behavior.</p>
+  </article>
+  <article class="pc-guide-card">
+    <p class="pc-guide-card__eyebrow">Views</p>
+    <h3><a href="/USER-GUIDE/basics/calendar-views">Calendar Views</a></h3>
+    <p>Learn how Focus, Month, and Week views differ and how visibility and color choices affect each one.</p>
+  </article>
+  <article class="pc-guide-card">
+    <p class="pc-guide-card__eyebrow">Automation</p>
+    <h3><a href="/USER-GUIDE/automation/introduction-to-automation">Automation</a></h3>
+    <p>Create automation rules with triggers, conditions, actions, filters, execution history, and Run Now.</p>
+  </article>
+  <article class="pc-guide-card">
+    <p class="pc-guide-card__eyebrow">AI agents</p>
+    <h3><a href="/USER-GUIDE/agents/agent-configuration">Agent Configuration</a></h3>
+    <p>Create agents, issue keys, assign scopes, and copy the generated MCP configuration.</p>
+  </article>
+</div>
 
-- [Navigating The Calendar](./basics/navigating-the-calendar.md)
-- [Calendar Views](./basics/calendar-views.md)
-- [Creating Events](./basics/creating-events.md)
-- [Editing And Deleting Events](./basics/editing-and-deleting-events.md)
-- [Recurring Events](./basics/recurring-events.md)
-- [All Day Events](./basics/all-day-events.md)
-- [Searching Events](./basics/searching-events.md)
-- [Creating Calendars](./calendars/creating-calendars.md)
-- [Managing Multiple Calendars](./calendars/managing-multiple-calendars.md)
-- [Calendar Colors And Visibility](./calendars/calendar-colors-and-visibility.md)
-- [Calendar Settings](./calendars/calendar-settings.md)
-- [Deleting Calendars](./calendars/deleting-calendars.md)
-- [Sharing Calendars](./sharing-and-collaboration/sharing-calendars.md)
-- [Permission Levels](./sharing-and-collaboration/permission-levels.md)
-- [Accepting Shared Calendars](./sharing-and-collaboration/accepting-shared-calendars.md)
-- [Team Calendars](./sharing-and-collaboration/team-calendars.md)
-- [Calendar Subscriptions](./sharing-and-collaboration/calendar-subscriptions.md)
-- [Public Calendar Publishing](./sharing-and-collaboration/public-calendar-publishing.md)
-- [Inviting Attendees](./invitations-and-attendees/inviting-attendees.md)
-- [Responding To Invitations](./invitations-and-attendees/responding-to-invitations.md)
-- [Viewing Attendee Status](./invitations-and-attendees/viewing-attendee-status.md)
-- [Managing External Attendees](./invitations-and-attendees/managing-external-attendees.md)
-- [Finding Meeting Times](./scheduling/finding-meeting-times.md)
-- [Availability Checker](./scheduling/availability-checker.md)
-- [Time Zone Handling](./scheduling/time-zone-handling.md)
-- [Buffer Time](./scheduling/buffer-time.md)
-- [Working Hours Configuration](./scheduling/working-hours-configuration.md)
-- [Setting Up Booking Links](./public-booking/setting-up-booking-links.md)
-- [Customizing Booking Pages](./public-booking/customizing-booking-pages.md)
-- [Booking Questions And Forms](./public-booking/booking-questions-and-forms.md)
-- [Managing Bookings](./public-booking/managing-bookings.md)
-- [Booking Notifications](./public-booking/booking-notifications.md)
-- [What Are Resources](./resources/what-are-resources.md)
-- [Creating Resources](./resources/creating-resources.md)
-- [Booking Resources](./resources/booking-resources.md)
-- [Resource Availability](./resources/resource-availability.md)
-- [Resource Management](./resources/resource-management.md)
-- [Introduction To Automation](./automation/introduction-to-automation.md)
-- [Creating Automation Rules](./automation/creating-automation-rules.md)
-- [Triggers And Conditions](./automation/triggers-and-conditions.md)
-- [Actions Overview](./automation/actions-overview.md)
-- [Smart Values](./automation/smart-values.md)
-- [Webhooks](./automation/webhooks.md)
-- [Automation Templates](./automation/automation-templates.md)
-- [Troubleshooting Automations](./automation/troubleshooting-automations.md)
-- [Notification Settings](./notifications/notification-settings.md)
-- [Email Notifications](./notifications/email-notifications.md)
-- [Push Notifications](./notifications/push-notifications.md)
-- [SMS Notifications](./notifications/sms-notifications.md)
-- [Notification Preferences](./notifications/notification-preferences.md)
-- [Google Calendar Sync](./integrations/google-calendar-sync.md)
-- [Microsoft 365 Sync](./integrations/microsoft-365-sync.md)
-- [Apple Calendar Caldav](./integrations/apple-calendar-caldav.md)
-- [Slack Integration](./integrations/slack-integration.md)
-- [Zoom Integration](./integrations/zoom-integration.md)
-- [Teams Integration](./integrations/teams-integration.md)
-- [Custom Integrations](./integrations/custom-integrations.md)
-- [Downloading Mobile App](./mobile-app/downloading-mobile-app.md)
-- [Mobile App Overview](./mobile-app/mobile-app-overview.md)
-- [Mobile Vs Web Features](./mobile-app/mobile-vs-web-features.md)
-- [Offline Mode](./mobile-app/offline-mode.md)
-- [Mobile Widgets](./mobile-app/mobile-widgets.md)
-- [Appearance Settings](./personalization/appearance-settings.md)
-- [Language And Locale](./personalization/language-and-locale.md)
-- [Date Time Formats](./personalization/date-time-formats.md)
-- [Keyboard Shortcuts](./personalization/keyboard-shortcuts.md)
-- [Time Tracking](./advanced-features/time-tracking.md)
-- [Meeting Analytics](./advanced-features/meeting-analytics.md)
-- [Calendar Embedding](./advanced-features/calendar-embedding.md)
-- [iCalendar Export Import](./advanced-features/icalendar-export-import.md)
-- [Delegation And Proxies](./advanced-features/delegation-and-proxies.md)
+## Suggested Reading Order
+
+1. If you still need sign-up help, read [Getting Started](../GETTING-STARTED/index.md).
+2. Read [Profile Page](./profile/profile-page.md).
+3. Read [Calendar Workspace](./calendars/calendar-workspace.md).
+4. Read [Creating Events](./basics/creating-events.md).
+5. Read [Calendar Views](./basics/calendar-views.md).
+6. Continue into [Automation](./automation/introduction-to-automation.md).
+7. Finish with [Agent Configuration](./agents/agent-configuration.md) if you want MCP or external agent access.
+
+## What This Section Covers
+
+- where to change personal preferences and calendar defaults
+- how to create, edit, hide, rename, recolor, and delete calendars and groups
+- how event forms behave before and after a calendar is selected
+- how Focus, Month, and Week views render the same data differently
+- how automation rules are filtered, executed, and audited
+- how PrimeCal exposes agent configuration and MCP-ready credentials

@@ -1,125 +1,92 @@
 ---
 title: Creating Automation Rules
-description: Step-by-step guidance for creating automation rules in PrimeCalendar.
+description: Walk through the exact PrimeCal automation modal, field constraints, and save flow.
 category: User Guide
 audience: End User
 difficulty: Intermediate
-last_updated: 2026-03-10
+last_updated: 2026-03-27
 version: 1.3.0
 related:
-  - ../index.md
-  - ../../index.md
-tags: [user, automation, creating, rules, primecalendar]
+  - ./introduction-to-automation.md
+  - ./triggers-and-conditions.md
+  - ./actions-overview.md
+tags: [primecal, automation, rules, modal, conditions]
 ---
 
 # Creating Automation Rules
 
-> **Quick Summary**: This page explains creating automation rules in PrimeCalendar using practical steps and troubleshooting guidance.
+<div class="pc-guide-hero">
+  <p class="pc-guide-hero__eyebrow">Rule Builder</p>
+  <h1 class="pc-guide-hero__title">Create a Rule in the Current UI</h1>
+  <p class="pc-guide-hero__lead">The automation screen uses a dedicated modal to build one rule at a time. It supports creation and editing, keeps validation client-side, and exposes webhook tools when the selected trigger needs them.</p>
+  <div class="pc-guide-chip-row">
+    <span class="pc-guide-chip">Name and description</span>
+    <span class="pc-guide-chip">Enabled toggle</span>
+    <span class="pc-guide-chip">Trigger selector</span>
+    <span class="pc-guide-chip">Conditions and actions</span>
+  </div>
+</div>
 
-## Table of Contents
+## Open The Builder
 
-- [Prerequisites](#prerequisites)
-- [Overview](#overview)
-- [Step-by-Step Instructions](#step-by-step-instructions)
-- [Examples](#examples)
-- [Troubleshooting](#troubleshooting)
-- [Related Resources](#related-resources)
+1. Open the automation page.
+2. Click `Create Automation Rule`.
+3. Fill in the modal from top to bottom.
 
----
+The same modal is used for editing an existing rule. The button label changes to `Update Rule` when you edit.
 
-## Prerequisites
+## Fields In The Modal
 
-- Access to PrimeCalendar.
-- Appropriate role permissions for this workflow.
+<div class="pc-guide-api-grid">
+  <article class="pc-guide-api">
+    <p class="pc-guide-api__eyebrow">Required</p>
+    <h3>Name</h3>
+    <p>Required, 1 to 200 characters. This is the human-readable rule name shown in the list and detail page.</p>
+  </article>
+  <article class="pc-guide-api">
+    <p class="pc-guide-api__eyebrow">Optional</p>
+    <h3>Description</h3>
+    <p>Optional text area, up to 1000 characters, used only for your own context.</p>
+  </article>
+  <article class="pc-guide-api">
+    <p class="pc-guide-api__eyebrow">State</p>
+    <h3>Enabled</h3>
+    <p>Defaults to on. Clear it if you want to save the rule but keep it inactive.</p>
+  </article>
+  <article class="pc-guide-api">
+    <p class="pc-guide-api__eyebrow">Required</p>
+    <h3>Trigger</h3>
+    <p>Must be chosen before save. The trigger controls which configuration panel appears below it.</p>
+  </article>
+</div>
 
-**Time to Complete**: 10-20 minutes  
-**Difficulty**: Intermediate
+## Validation Rules
 
----
+- Name is required.
+- Trigger is required.
+- Relative time triggers require a valid non-negative offset.
+- You can keep conditions empty, but the editor allows a maximum of 10.
+- You must define at least one action.
+- You can add up to 5 actions.
+- Unsupported or coming soon actions cannot be saved.
 
-## Overview
+## Save Behavior
 
-Use this guide to complete creating automation rules reliably. Confirm expected results after each step before moving to optional advanced settings.
+- `Create Rule` stores the new rule.
+- `Update Rule` replaces the existing rule.
+- The rule list refreshes after save.
+- If you want a rule to execute immediately after creating it, use the rule detail page and `Run Now`, or create it and then run it from the detail screen.
 
-> Add screenshots from `docs/assets/` with descriptive alt text for each UI interaction.
+## Webhook Rules
 
----
+If you choose the `Incoming Webhook` trigger:
 
-## Step-by-Step Instructions
+- The rule exposes a generated webhook token.
+- The modal shows the webhook configuration after the trigger is selected.
+- The generated endpoint can be copied for external systems.
 
-### Step 1: Open the Correct Area
+## See Also
 
-- Sign in to PrimeCalendar.
-- Navigate to the feature area for this workflow.
-- Confirm required controls are visible.
-
-### Step 2: Configure Required Settings
-
-- Enter required values.
-- Save changes.
-- Verify expected behavior.
-
-### Step 3: Validate Outcome
-
-- Test one realistic scenario.
-- Confirm notifications, permissions, and expected outputs.
-
-<details>
-<summary>Advanced Options</summary>
-
-- Add optional policies and automation hooks.
-- Document team defaults for repeatability.
-
-</details>
-
----
-
-## Examples
-
-### Example 1: Team Rollout
-
-**Scenario**: Your team needs consistent behavior for creating automation rules.
-
-**Steps**:
-1. Configure in a test workspace.
-2. Validate with pilot users.
-3. Roll out to production.
-
-### Consolidated Legacy Sources
-
-- `05-USER-GUIDES/automation-guide.md`: This page has moved to the consolidated structure. - Canonical page: USER-GUIDE/automation/creating-automation-rules.md - Archived snapshot: archives/pre-consolidation/05-USER-GUIDES/automation-guide.md
-
-
----
-
-## Troubleshooting
-
-### Issue: Configuration Does Not Apply
-
-**Symptoms**: Settings appear saved but behavior remains unchanged.
-
-**Solution**:
-1. Verify workspace and organization context.
-2. Re-check required fields and permissions.
-3. Review logs and API responses.
-
-**Prevention**: Use a pre-deployment checklist.
-
----
-
-## Related Resources
-
-- [Index](../index.md)
-- [Index](../../index.md)
-- [Documentation Home](../../index.md)
-
----
-
-## Feedback
-
-Was this helpful? [Yes] [No]  
-Open an issue or pull request to improve this page.
-
----
-
-*Last updated: 2026-03-10 | PrimeCalendar v1.3.0*
+- [Triggers And Conditions](./triggers-and-conditions.md)
+- [Actions Overview](./actions-overview.md)
+- [Agent Configuration](../agents/agent-configuration.md)

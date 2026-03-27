@@ -1,125 +1,97 @@
 ---
 title: Triggers And Conditions
-description: Step-by-step guidance for triggers and conditions in PrimeCalendar.
+description: Learn the trigger types, condition fields, and operators supported by PrimeCal automation rules.
 category: User Guide
 audience: End User
 difficulty: Intermediate
-last_updated: 2026-03-10
+last_updated: 2026-03-27
 version: 1.3.0
 related:
-  - ../index.md
-  - ../../index.md
-tags: [user, automation, triggers, and, conditions, primecalendar]
+  - ./introduction-to-automation.md
+  - ./creating-automation-rules.md
+  - ./actions-overview.md
+tags: [primecal, automation, triggers, conditions, webhook]
 ---
 
 # Triggers And Conditions
 
-> **Quick Summary**: This page explains triggers and conditions in PrimeCalendar using practical steps and troubleshooting guidance.
+<div class="pc-guide-hero">
+  <p class="pc-guide-hero__eyebrow">Logic Layer</p>
+  <h1 class="pc-guide-hero__title">Choose the Right Trigger and Filter</h1>
+  <p class="pc-guide-hero__lead">PrimeCal automation rules start with a trigger, then optionally narrow the event with conditions. The trigger list includes event lifecycle, calendar import, scheduled, webhook, and relative-time options.</p>
+  <div class="pc-guide-chip-row">
+    <span class="pc-guide-chip">Event triggers</span>
+    <span class="pc-guide-chip">Relative-time triggers</span>
+    <span class="pc-guide-chip">Webhook incoming</span>
+    <span class="pc-guide-chip">Smart values</span>
+  </div>
+</div>
 
-## Table of Contents
+## Supported Triggers
 
-- [Prerequisites](#prerequisites)
-- [Overview](#overview)
-- [Step-by-Step Instructions](#step-by-step-instructions)
-- [Examples](#examples)
-- [Troubleshooting](#troubleshooting)
-- [Related Resources](#related-resources)
+- `Event Created`
+- `Event Updated`
+- `Event Deleted`
+- `Event Starts In`
+- `Event Ends In`
+- `Relative Time To Event`
+- `Calendar Imported`
+- `Scheduled Time`
+- `Incoming Webhook`
 
----
+## Relative Time To Event
 
-## Prerequisites
+This trigger is the most structured option in the editor. It supports:
 
-- Access to PrimeCalendar.
-- Appropriate role permissions for this workflow.
+- Event filters by calendar, title, description, tags, all-day flag, and recurring flag.
+- A reference time based on the event start or end.
+- A relative offset with direction, numeric value, and unit.
+- Execution controls such as run once per event and past-due handling.
 
-**Time to Complete**: 10-20 minutes  
-**Difficulty**: Intermediate
+## Condition Fields
 
----
+The condition builder can inspect these values:
 
-## Overview
+- Event title
+- Event description
+- Event location
+- Event notes
+- Event duration
+- Event status
+- Event all-day flag
+- Event color
+- Event calendar ID
+- Event calendar name
+- Webhook data
 
-Use this guide to complete triggers and conditions reliably. Confirm expected results after each step before moving to optional advanced settings.
+## Operators
 
-> Add screenshots from `docs/assets/` with descriptive alt text for each UI interaction.
+Supported comparison logic includes:
 
----
+- equals and does not equal
+- contains and does not contain
+- starts with and ends with
+- greater than and less than
+- greater than or equal and less than or equal
+- is empty and is not empty
+- is true and is false
+- is in list
+- matches and does not match
 
-## Step-by-Step Instructions
+## Condition Logic
 
-### Step 1: Open the Correct Area
+- The root logic can be `AND` or `OR`.
+- Each condition row can also carry its own logic operator.
+- The editor allows up to 10 conditions.
 
-- Sign in to PrimeCalendar.
-- Navigate to the feature area for this workflow.
-- Confirm required controls are visible.
+## Filtering Tips
 
-### Step 2: Configure Required Settings
+- Use `contains` for titles and descriptions that can vary slightly.
+- Use `is empty` and `is not empty` for presence checks.
+- Use `in list` when you want a rule to match any value in a set.
+- Use `webhook.data` when the rule is driven by an external JSON payload.
 
-- Enter required values.
-- Save changes.
-- Verify expected behavior.
+## See Also
 
-### Step 3: Validate Outcome
-
-- Test one realistic scenario.
-- Confirm notifications, permissions, and expected outputs.
-
-<details>
-<summary>Advanced Options</summary>
-
-- Add optional policies and automation hooks.
-- Document team defaults for repeatability.
-
-</details>
-
----
-
-## Examples
-
-### Example 1: Team Rollout
-
-**Scenario**: Your team needs consistent behavior for triggers and conditions.
-
-**Steps**:
-1. Configure in a test workspace.
-2. Validate with pilot users.
-3. Roll out to production.
-
-### Consolidated Legacy Sources
-
-No direct legacy source was mapped for this page.
-
-
----
-
-## Troubleshooting
-
-### Issue: Configuration Does Not Apply
-
-**Symptoms**: Settings appear saved but behavior remains unchanged.
-
-**Solution**:
-1. Verify workspace and organization context.
-2. Re-check required fields and permissions.
-3. Review logs and API responses.
-
-**Prevention**: Use a pre-deployment checklist.
-
----
-
-## Related Resources
-
-- [Index](../index.md)
-- [Index](../../index.md)
-- [Documentation Home](../../index.md)
-
----
-
-## Feedback
-
-Was this helpful? [Yes] [No]  
-Open an issue or pull request to improve this page.
-
----
-
-*Last updated: 2026-03-10 | PrimeCalendar v1.3.0*
+- [Creating Automation Rules](./creating-automation-rules.md)
+- [Actions Overview](./actions-overview.md)

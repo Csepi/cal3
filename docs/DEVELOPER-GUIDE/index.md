@@ -1,78 +1,72 @@
 ---
-title: Developer Guide
-description: Browse Developer Guide documentation pages.
+title: Developer Documentation
+description: PrimeCal developer entry point for the backend API, authentication, automation, agents, and MCP integration.
 category: Developer
 audience: Developer
-difficulty: Beginner
-last_updated: 2026-03-10
+difficulty: Intermediate
+last_updated: 2026-03-27
 version: 1.3.0
+hide_title: true
 related:
   - ../index.md
-tags: [primecalendar, developer-guide, index, navigation]
+  - ./api-reference/api-overview.md
+tags: [primecal, developer-guide, api, swagger, mcp]
 ---
 
-# Developer Guide
+<div class="pc-guide-hero">
+  <p class="pc-guide-hero__eyebrow">PrimeCal Developer Docs</p>
+  <h1 class="pc-guide-hero__title">Backend Contracts and Integration Paths</h1>
+  <p class="pc-guide-hero__lead">This section is organized like a compact Swagger portal. Start with the API overview, then move into endpoint groups for authentication, user profile, calendars, events, automation, and agents.</p>
+  <div class="pc-guide-chip-row">
+    <span class="pc-guide-chip">Swagger-style</span>
+    <span class="pc-guide-chip">Controller-backed</span>
+    <span class="pc-guide-chip">JWT and agent auth</span>
+    <span class="pc-guide-chip">MCP included</span>
+  </div>
+</div>
 
-> **Quick Summary**: This section contains all Developer Guide documentation pages.
+## API Entry Points
 
-## Table of Contents
+<div class="pc-guide-grid">
+  <article class="pc-guide-card pc-guide-card--accent">
+    <p class="pc-guide-card__eyebrow">Overview</p>
+    <h3><a href="/DEVELOPER-GUIDE/api-reference/api-overview">API Overview</a></h3>
+    <p>Base URL, Swagger availability, auth modes, and the API map for the rest of the reference.</p>
+  </article>
+  <article class="pc-guide-card">
+    <p class="pc-guide-card__eyebrow">Auth</p>
+    <h3><a href="/DEVELOPER-GUIDE/api-reference/authentication-api">Authentication API</a></h3>
+    <p>Register, login, refresh, logout, MFA, onboarding, widget tokens, and social login endpoints.</p>
+  </article>
+  <article class="pc-guide-card">
+    <p class="pc-guide-card__eyebrow">Users</p>
+    <h3><a href="/DEVELOPER-GUIDE/api-reference/user-api">User API</a></h3>
+    <p>Profile settings, theme, password changes, labels, profile picture upload, and default tasks calendar.</p>
+  </article>
+  <article class="pc-guide-card">
+    <p class="pc-guide-card__eyebrow">Calendars</p>
+    <h3><a href="/DEVELOPER-GUIDE/api-reference/calendar-api">Calendar API</a></h3>
+    <p>Calendar CRUD, sharing, calendar groups, group assignment, visibility, and sorting behavior.</p>
+  </article>
+  <article class="pc-guide-card">
+    <p class="pc-guide-card__eyebrow">Events</p>
+    <h3><a href="/DEVELOPER-GUIDE/api-reference/event-api">Event API</a></h3>
+    <p>Single and recurring events, query endpoints, validation rules, and update or delete behavior.</p>
+  </article>
+  <article class="pc-guide-card">
+    <p class="pc-guide-card__eyebrow">Automation and Agents</p>
+    <h3><a href="/DEVELOPER-GUIDE/api-reference/automation-api">Automation API</a> and <a href="/DEVELOPER-GUIDE/api-reference/agent-api">Agent API</a></h3>
+    <p>Rule execution, webhook endpoints, smart values, agent permissions, keys, and the MCP runtime.</p>
+  </article>
+</div>
 
-- [Development Environment Setup](./getting-started/development-environment-setup.md)
-- [Running Locally](./getting-started/running-locally.md)
-- [Project Structure](./getting-started/project-structure.md)
-- [Coding Standards](./getting-started/coding-standards.md)
-- [System Overview](./architecture/system-overview.md)
-- [Backend Architecture](./architecture/backend-architecture.md)
-- [Frontend Architecture](./architecture/frontend-architecture.md)
-- [Mobile Architecture](./architecture/mobile-architecture.md)
-- [Database Schema](./architecture/database-schema.md)
-- [Authentication Flow](./architecture/authentication-flow.md)
-- [API Overview](./api-reference/api-overview.md)
-- [Authentication API](./api-reference/authentication-api.md)
-- [Calendar API](./api-reference/calendar-api.md)
-- [Event API](./api-reference/event-api.md)
-- [Booking API](./api-reference/booking-api.md)
-- [Resource API](./api-reference/resource-api.md)
-- [Automation API](./api-reference/automation-api.md)
-- [Webhook API](./api-reference/webhook-api.md)
-- [User API](./api-reference/user-api.md)
-- [Organization API](./api-reference/organization-api.md)
-- [API Rate Limits](./api-reference/api-rate-limits.md)
-- [Component Library](./frontend-development/component-library.md)
-- [State Management](./frontend-development/state-management.md)
-- [Routing](./frontend-development/routing.md)
-- [Styling](./frontend-development/styling.md)
-- [Internationalization](./frontend-development/internationalization.md)
-- [Frontend Testing](./frontend-development/frontend-testing.md)
-- [Nestjs Modules](./backend-development/nestjs-modules.md)
-- [Service Layer](./backend-development/service-layer.md)
-- [Database Access](./backend-development/database-access.md)
-- [Authentication Guards](./backend-development/authentication-guards.md)
-- [Authorization Decorators](./backend-development/authorization-decorators.md)
-- [Validation Pipes](./backend-development/validation-pipes.md)
-- [Backend Testing](./backend-development/backend-testing.md)
-- [Capacitor Setup](./mobile-development/capacitor-setup.md)
-- [Native Plugins](./mobile-development/native-plugins.md)
-- [Mobile Specific Features](./mobile-development/mobile-specific-features.md)
-- [Mobile Testing](./mobile-development/mobile-testing.md)
-- [Database Setup](./database/database-setup.md)
-- [Migrations](./database/migrations.md)
-- [Seeding Data](./database/seeding-data.md)
-- [Database Backups](./database/database-backups.md)
-- [Row Level Security](./database/row-level-security.md)
-- [Testing Strategy](./testing/testing-strategy.md)
-- [Unit Testing](./testing/unit-testing.md)
-- [Integration Testing](./testing/integration-testing.md)
-- [E2e Testing](./testing/e2e-testing.md)
-- [Test Coverage](./testing/test-coverage.md)
-- [Ci Cd Testing](./testing/ci-cd-testing.md)
-- [Creating Plugins](./extending-primecalendar/creating-plugins.md)
-- [Custom Integrations](./extending-primecalendar/custom-integrations.md)
-- [Webhook Consumers](./extending-primecalendar/webhook-consumers.md)
-- [Custom Automation Actions](./extending-primecalendar/custom-automation-actions.md)
-- [Theming And Branding](./extending-primecalendar/theming-and-branding.md)
-- [Contributing Guidelines](./contributing/contributing-guidelines.md)
-- [Code Review Process](./contributing/code-review-process.md)
-- [Pull Request Template](./contributing/pull-request-template.md)
-- [Issue Reporting](./contributing/issue-reporting.md)
-- [Development Workflow](./contributing/development-workflow.md)
+## Developer Path
+
+1. Read [API Overview](./api-reference/api-overview.md).
+2. Read [Authentication API](./api-reference/authentication-api.md) before calling protected endpoints.
+3. Continue into the specific endpoint group you need.
+4. Use [Agent API](./api-reference/agent-api.md) if you are integrating an MCP client or a scoped external agent.
+
+## Swagger UI
+
+PrimeCal serves generated Swagger UI at `/api/docs` when the backend enables it. In production, the route can be protected by HTTP Basic auth if `SWAGGER_USER` and `SWAGGER_PASSWORD` are configured.
