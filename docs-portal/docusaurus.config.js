@@ -10,7 +10,7 @@ const hasAlgolia =
 const config = {
   title: 'PrimeCal Docs',
   tagline: 'Guided setup, daily workflows, automation, MCP, and API reference for PrimeCal.',
-  url: process.env.DOCS_SITE_URL || 'https://docs.primecalendar.local',
+  url: process.env.DOCS_SITE_URL || 'https://docs.primecal.local',
   baseUrl: '/',
   onBrokenLinks: 'warn',
   markdown: {
@@ -103,7 +103,7 @@ const config = {
       {
         name: 'keywords',
         content:
-          'primecalendar, calendar documentation, scheduling docs, api reference, deployment guide',
+          'primecal, calendar documentation, scheduling docs, api reference, deployment guide',
       },
     ],
     colorMode: {

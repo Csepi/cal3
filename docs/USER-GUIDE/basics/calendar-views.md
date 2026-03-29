@@ -10,6 +10,7 @@ related:
   - ../index.md
   - ./creating-events.md
   - ../calendars/calendar-workspace.md
+  - ./focus-mode-and-live-focus.md
 tags: [primecal, focus-view, month-view, week-view, colors, visibility]
 ---
 
@@ -56,10 +57,12 @@ PrimeCal shows the same event data in three primary scheduling views: Focus, Mon
 - Calendar colors are the default visual source across all views.
 - Event-level colors override the calendar color for that specific event.
 
-## Screenshot Placeholder
+## Live View Examples
 
-Good screenshots for this page:
+![Live Focus timeline with current and next family events](../../assets/user-guide/views/focus-view-live-family-calendar.png)
 
-- Focus view with the current and next event cards.
-- Month view with multiple colored calendars.
-- Week view with overlapping events and the current-time marker.
+![Month view with multiple family calendars and color cues](../../assets/user-guide/views/month-view-family-calendar.png)
+
+![Week view with overlapping family events and precise placement](../../assets/user-guide/views/week-view-busy-family-calendar.png)
+
+![Clean focus mode with filtered no-focus labels removed from the live view](../../assets/user-guide/views/focus-mode-clean-filtered.png)

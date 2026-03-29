@@ -1,119 +1,223 @@
 ---
 title: Event API
-description: Swagger-style reference for event creation, updates, and recurrence.
+description: Code-backed reference for event CRUD, recurrence, calendar-scoped queries, and event comments.
 category: Developer
 audience: Developer
 difficulty: Advanced
-last_updated: 2026-03-27
+last_updated: 2026-03-29
 version: 1.3.0
 related:
   - ./api-overview.md
   - ./calendar-api.md
   - ./automation-api.md
-tags: [primecal, api, events, recurrence, developer]
+tags: [primecal, api, events, recurrence, comments]
 ---
 
 # Event API
 
 <div class="pc-guide-hero">
-  <p class="pc-guide-hero__eyebrow">Events Controller</p>
-  <h1 class="pc-guide-hero__title">Create, update, repeat, and query events</h1>
+  <p class="pc-guide-hero__eyebrow">Events and Event Comments</p>
+  <h1 class="pc-guide-hero__title">Create events, manage recurring series, and collaborate through comments</h1>
   <p class="pc-guide-hero__lead">
-    The event controller exposes standard CRUD, recurring series handling, and calendar-scoped queries.
-    The DTOs below reflect the actual validation rules in the backend.
+    This page documents the event CRUD surface, recurring-event handling, calendar-scoped event
+    reads, and the comment thread endpoints attached to events.
   </p>
+  <div class="pc-guide-chip-row">
+    <span class="pc-guide-chip">JWT or user API key</span>
+    <span class="pc-guide-chip">Recurring updates</span>
+    <span class="pc-guide-chip">Calendar range queries</span>
+    <span class="pc-guide-chip">Comment threads</span>
+  </div>
 </div>
 
-## Endpoint Summary
+## Source
 
-| Method | Path | Auth | Notes |
-| --- | --- | --- | --- |
-| `POST` | `/api/events` | JWT | Create a new event |
-| `POST` | `/api/events/recurring` | JWT | Create a recurring series |
-| `GET` | `/api/events` | JWT | List accessible events |
-| `GET` | `/api/events/:id` | JWT | Fetch one event |
-| `PATCH` | `/api/events/:id` | JWT | Update one event |
-| `DELETE` | `/api/events/:id` | JWT | Delete one event |
-| `PATCH` | `/api/events/:id/recurring` | JWT | Update a recurring event series |
-| `GET` | `/api/events/calendar/:calendarId` | JWT | List events from one calendar |
+- Events controller: `backend-nestjs/src/events/events.controller.ts`
+- Event comments controller: `backend-nestjs/src/events/event-comments.controller.ts`
+- DTOs: `backend-nestjs/src/dto/event.dto.ts`, `backend-nestjs/src/dto/recurrence.dto.ts`, `backend-nestjs/src/dto/event-comment.dto.ts`, `backend-nestjs/src/events/dto/list-events.query.dto.ts`
+- Event entity enums: `backend-nestjs/src/entities/event.entity.ts`
 
-## `CreateEventDto`
+## Authentication and Permissions
 
-Required:
+- All routes on this page are intended to be authenticated.
+- Event comments use `JwtAuthGuard` at the controller level.
+- Event CRUD routes explicitly use `JwtAuthGuard` on each method except `GET /api/events/calendar/:calendarId`.
+- Source note: `GET /api/events/calendar/:calendarId` still reads `req.user.id`, so treat it as an authenticated route even though the decorator is missing in the controller source.
+- Access to events and comments is enforced by event and calendar ownership or share permissions in the service layer.
 
-- `title`: string
-- `startDate`: `YYYY-MM-DD`
+## Endpoint Reference
 
-Optional:
+### Events
 
-- `description`
-- `startTime`: `HH:MM`
-- `endDate`: `YYYY-MM-DD`
-- `endTime`: `HH:MM`
-- `isAllDay`: boolean
-- `location`
-- `status`: `confirmed`, `tentative`, or `cancelled`
-- `recurrenceType`: `none`, `daily`, `weekly`, `monthly`, or `yearly`
-- `recurrenceRule`: JSON payload
-- `color`: hex color string
-- `icon`: emoji/icon string
-- `notes`
-- `tags`: string[]
-- `labels`: string[] alias for `tags`
-- `calendarId`: number
+| Method | Path | Purpose | Request or query | Auth | Source |
+| --- | --- | --- | --- | --- | --- |
+| `POST` | `/api/events` | Create one event. | Body: event fields | JWT or user API key | `events/events.controller.ts` |
+| `POST` | `/api/events/recurring` | Create a recurring event series. | Body: recurring event fields | JWT or user API key | `events/events.controller.ts` |
+| `GET` | `/api/events` | List accessible events in an optional date range. | Query: `startDate,endDate` | JWT or user API key | `events/events.controller.ts` |
+| `GET` | `/api/events/:id` | Get one event. | Path: `id` | JWT or user API key | `events/events.controller.ts` |
+| `PATCH` | `/api/events/:id` | Update one event or one recurring occurrence. | Path: `id`, body: partial event fields plus `updateMode` | JWT or user API key | `events/events.controller.ts` |
+| `DELETE` | `/api/events/:id` | Delete one event. | Path: `id` | JWT or user API key | `events/events.controller.ts` |
+| `PATCH` | `/api/events/:id/recurring` | Update a recurring series with explicit scope. | Path: `id`, body: recurring update fields plus `updateScope` | JWT or user API key | `events/events.controller.ts` |
+| `GET` | `/api/events/calendar/:calendarId` | List events for one calendar. | Path: `calendarId` | Treat as authenticated | `events/events.controller.ts` |
 
-Constraints worth calling out:
+### Event Comments
 
-- `tags` and `labels` are capped at 64 chars per entry.
-- `title` is required and is stored as the event title.
-- `calendarId` decides where the event is created.
-- When `isAllDay` is false, start and end times should both be present.
+| Method | Path | Purpose | Request or query | Auth | Source |
+| --- | --- | --- | --- | --- | --- |
+| `GET` | `/api/events/:eventId/comments` | List comments for an event. | Path: `eventId` | JWT or user API key | `events/event-comments.controller.ts` |
+| `POST` | `/api/events/:eventId/comments` | Create a comment. | Path: `eventId`, body: `content,templateKey,parentCommentId,isFlagged` | JWT or user API key | `events/event-comments.controller.ts` |
+| `POST` | `/api/events/:eventId/comments/track-open` | Track that a user opened an event. | Path: `eventId`, body: `note` | JWT or user API key | `events/event-comments.controller.ts` |
+| `PATCH` | `/api/events/:eventId/comments/:commentId` | Update a comment. | Path: `eventId,commentId`, body: `content` | JWT or user API key | `events/event-comments.controller.ts` |
+| `PATCH` | `/api/events/:eventId/comments/:commentId/flag` | Flag or unflag a comment. | Path: `eventId,commentId`, body: `isFlagged` | JWT or user API key | `events/event-comments.controller.ts` |
+| `POST` | `/api/events/:eventId/comments/:commentId/replies` | Reply to a comment. | Path: `eventId,commentId`, body: comment create fields | JWT or user API key | `events/event-comments.controller.ts` |
 
-## `UpdateEventDto`
+## Request Shapes
 
-Same fields as create, plus:
+### Create and update event
 
-- `updateMode`: `single`, `all`, or `future`
+`CreateEventDto` and `UpdateEventDto` in `backend-nestjs/src/dto/event.dto.ts`
 
-This is the control for recurring-event edits:
+- `title`: required on create, string
+- `description`: optional string
+- `startDate`: required on create, ISO date
+- `startTime`: optional string
+- `endDate`: optional ISO date
+- `endTime`: optional string
+- `isAllDay`: optional boolean
+- `location`: optional string
+- `status`: optional enum `confirmed|tentative|cancelled`
+- `recurrenceType`: optional enum `none|daily|weekly|monthly|yearly`
+- `recurrenceRule`: optional JSON payload
+- `color`: optional string
+- `icon`: optional string
+- `notes`: optional string
+- `tags`: optional string array, max 64 chars each
+- `labels`: optional alias for `tags`
+- `calendarId`: optional number
+- `updateMode`: update-only enum `single|all|future`
 
-- `single` updates only one occurrence
-- `all` updates the whole series
-- `future` updates the selected occurrence and future items in the series
+Entity-level limits from `backend-nestjs/src/entities/event.entity.ts`
 
-## `GET /api/events`
+- `title` length: 300
+- `location` length: 200
+- `icon` length: 10
+- `color` length: 7
 
-Query parameters:
+### Recurring series
 
-- `startDate`: optional `YYYY-MM-DD`
-- `endDate`: optional `YYYY-MM-DD`
+`CreateRecurringEventDto` and `UpdateRecurringEventDto` in `backend-nestjs/src/dto/recurrence.dto.ts`
 
-Use this endpoint to build month and week views or to export a date range.
+- `calendarId`: required on create
+- `recurrence.type`: required enum `none|daily|weekly|monthly|yearly`
+- `recurrence.interval`: optional number, default `1`
+- `recurrence.daysOfWeek`: optional enum array `SU|MO|TU|WE|TH|FR|SA`
+- `recurrence.dayOfMonth`: optional number
+- `recurrence.monthOfYear`: optional number
+- `recurrence.endType`: optional `never|count|date`
+- `recurrence.count`: optional number
+- `recurrence.endDate`: optional ISO date
+- `recurrence.timezone`: optional string
+- `updateScope`: update-only enum `this|future|all`
 
-## `Recurring Events`
+### List query
 
-The recurring create and update endpoints work with recurrence DTOs and the `RecurrenceType` enum.
+- `ListEventsQueryDto.startDate`: optional ISO date
+- `ListEventsQueryDto.endDate`: optional ISO date
 
-Supported recurrence types from the entity:
+### Comments
 
-- `none`
-- `daily`
-- `weekly`
-- `monthly`
-- `yearly`
+`CreateEventCommentDto` in `backend-nestjs/src/dto/event-comment.dto.ts`
 
-## Response Shape
+- `content`: optional string
+- `templateKey`: optional enum `CommentTemplateKey`
+- `parentCommentId`: optional number
+- `isFlagged`: optional boolean
 
-The event response includes:
+Other comment DTOs:
 
-- event metadata
-- calendar summary (`id`, `name`, `color`)
-- creator summary (`id`, `username`)
-- timestamps
+- `UpdateEventCommentDto.content`: required string
+- `FlagCommentDto.isFlagged`: required boolean
+- `TrackEventOpenDto.note`: optional string
 
-## Practical Notes
+## Example Calls
 
-- The month and week views both rely on `calendar.color` and `event.color` for rendering.
-- The timeline view uses calendar rank to sort overlapping items.
-- Event labels saved during create/edit also feed the profile label catalog.
-- If you are building a client, keep the date format and the time format separate. The backend stores date and time fields independently.
+### Create a calendar event
+
+```bash
+curl -X POST "$PRIMECAL_API/api/events" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "School pickup",
+    "startDate": "2026-03-30",
+    "startTime": "15:30",
+    "endDate": "2026-03-30",
+    "endTime": "16:00",
+    "calendarId": 5,
+    "tags": ["family", "kids"]
+  }'
+```
+
+### Create a recurring event series
+
+```bash
+curl -X POST "$PRIMECAL_API/api/events/recurring" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "Soccer practice",
+    "startDate": "2026-04-01",
+    "startTime": "17:00",
+    "endDate": "2026-04-01",
+    "endTime": "18:30",
+    "calendarId": 5,
+    "recurrence": {
+      "type": "weekly",
+      "interval": 1,
+      "daysOfWeek": ["WE"],
+      "endType": "date",
+      "endDate": "2026-06-30"
+    }
+  }'
+```
+
+### Update a single occurrence in a recurring series
+
+```bash
+curl -X PATCH "$PRIMECAL_API/api/events/42" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "startTime": "17:30",
+    "endTime": "19:00",
+    "updateMode": "single"
+  }'
+```
+
+### Add a comment
+
+```bash
+curl -X POST "$PRIMECAL_API/api/events/42/comments" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "content": "Running 10 minutes late."
+  }'
+```
+
+## Response and Behavior Notes
+
+- Event responses include a `calendar` summary and a `createdBy` summary.
+- `tags` and `labels` are parallel inputs; clients should pick one convention and stay consistent.
+- Recurring-series updates have two distinct models:
+  - `PATCH /api/events/:id` uses `updateMode` with `single|all|future`
+  - `PATCH /api/events/:id/recurring` uses `updateScope` with `this|future|all`
+- Comment responses include nested replies, reporter metadata, visibility, and flag state.
+
+## Best Practices
+
+- Send date and time fields separately; the backend models them as separate properties.
+- Prefer `GET /api/events?startDate=...&endDate=...` for calendar views and exports.
+- Keep recurring edits explicit. Do not assume the client default matches the user's intent.
+- Normalize event labels on the client if you also expose reusable labels through the user settings flow.
+- Use comments for collaboration metadata and visible discussion, not as a hidden machine-state channel.

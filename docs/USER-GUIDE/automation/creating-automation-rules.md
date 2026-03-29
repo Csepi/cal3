@@ -35,6 +35,8 @@ tags: [primecal, automation, rules, modal, conditions]
 
 The same modal is used for editing an existing rule. The button label changes to `Update Rule` when you edit.
 
+![Automation rule builder with trigger, condition, and action configured](../../assets/user-guide/automation/create-automation-rule-modal.png)
+
 ## Fields In The Modal
 
 <div class="pc-guide-api-grid">
@@ -83,7 +85,7 @@ If you choose the `Incoming Webhook` trigger:
 
 - The rule exposes a generated webhook token.
 - The modal shows the webhook configuration after the trigger is selected.
-- The generated endpoint can be copied for external systems.
+- The generated webhook URL can be copied for external systems.
 
 ## See Also
 

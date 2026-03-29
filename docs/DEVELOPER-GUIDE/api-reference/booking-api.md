@@ -1,126 +1,192 @@
 ---
 title: Booking API
-description: Step-by-step guidance for booking api in PrimeCalendar.
+description: Code-backed reference for reservation calendars, reservations, public booking, and role-based reservation-calendar helpers.
 category: Developer
 audience: Developer
 difficulty: Advanced
-last_updated: 2026-03-10
+last_updated: 2026-03-29
 version: 1.3.0
 related:
-  - ../index.md
-  - ../../index.md
-tags: [developer, api, reference, booking, primecalendar]
+  - ./api-overview.md
+  - ./resource-api.md
+  - ./organization-api.md
+tags: [primecal, api, booking, reservations, public-booking]
 ---
 
 # Booking API
 
-> **Quick Summary**: This page explains booking api in PrimeCalendar using practical steps and troubleshooting guidance.
+<div class="pc-guide-hero">
+  <p class="pc-guide-hero__eyebrow">Reservations and Public Booking</p>
+  <h1 class="pc-guide-hero__title">Manage reservation calendars, create reservations, and expose public booking links</h1>
+  <p class="pc-guide-hero__lead">
+    This page groups the non-admin booking surface: reservation-calendar administration, internal
+    reservation CRUD, and the public booking endpoints that work with published resource tokens.
+  </p>
+  <div class="pc-guide-chip-row">
+    <span class="pc-guide-chip">JWT or user API key</span>
+    <span class="pc-guide-chip">Public booking is unauthenticated</span>
+    <span class="pc-guide-chip">Role-based reservation calendars</span>
+    <span class="pc-guide-chip">Reservation access guard</span>
+  </div>
+</div>
 
-## Table of Contents
+## Source
 
-- [Prerequisites](#prerequisites)
-- [Overview](#overview)
-- [Step-by-Step Instructions](#step-by-step-instructions)
-- [Examples](#examples)
-- [Troubleshooting](#troubleshooting)
-- [Related Resources](#related-resources)
+- Reservation calendars controller: `backend-nestjs/src/organisations/reservation-calendar.controller.ts`
+- Reservations controller: `backend-nestjs/src/reservations/reservations.controller.ts`
+- Public booking controller: `backend-nestjs/src/resources/public-booking.controller.ts`
+- DTOs: `backend-nestjs/src/organisations/dto/reservation-calendar.dto.ts`, `backend-nestjs/src/dto/reservation.dto.ts`, `backend-nestjs/src/dto/public-booking.dto.ts`, `backend-nestjs/src/reservations/dto/list-reservations.query.dto.ts`
 
----
+## Authentication and Permissions
 
-## Prerequisites
+- Reservation-calendar routes require authentication and role checks.
+- Internal reservation CRUD requires `JwtAuthGuard` plus `ReservationAccessGuard`.
+- Public booking routes are unauthenticated and use the token in the URL.
 
-- Access to PrimeCalendar.
-- Appropriate role permissions for this workflow.
+Important source note:
 
-**Time to Complete**: 10-20 minutes  
-**Difficulty**: Advanced
+- The bottom reservation routes in `reservation-calendar.controller.ts` are scaffold-style example role-guard endpoints with placeholder behavior. They are part of the route surface, but not a full reservation CRUD replacement.
 
----
+## Endpoint Reference
 
-## Overview
+### Reservation Calendar Administration
 
-Use this guide to complete booking api reliably. Confirm expected results after each step before moving to optional advanced settings.
+| Method | Path | Purpose | Request or query | Auth | Source |
+| --- | --- | --- | --- | --- | --- |
+| `POST` | `/api/organisations/:id/reservation-calendars` | Create a reservation calendar for an organization. | Path: `id`, body: calendar payload | JWT or user API key | `organisations/reservation-calendar.controller.ts` |
+| `GET` | `/api/organisations/:id/reservation-calendars` | List reservation calendars for an organization. | Path: `id` | JWT or user API key | `organisations/reservation-calendar.controller.ts` |
+| `POST` | `/api/reservation-calendars/:id/roles` | Assign a reservation-calendar role to a user. | Path: `id`, body: `userId,role` | JWT or user API key | `organisations/reservation-calendar.controller.ts` |
+| `DELETE` | `/api/reservation-calendars/:id/roles/:userId` | Remove a reservation-calendar role. | Path: `id,userId` | JWT or user API key | `organisations/reservation-calendar.controller.ts` |
+| `GET` | `/api/reservation-calendars/:id/roles` | List role assignments. | Path: `id` | JWT or user API key | `organisations/reservation-calendar.controller.ts` |
+| `GET` | `/api/users/reservation-calendars` | List reservation calendars accessible to the current user. | None | JWT or user API key | `organisations/reservation-calendar.controller.ts` |
+| `GET` | `/api/reservation-calendars/:id/my-role` | Get the current user's role. | Path: `id` | JWT or user API key | `organisations/reservation-calendar.controller.ts` |
+| `GET` | `/api/reservation-calendars/:id/has-role/:role` | Test whether the current user has a role. | Path: `id,role` | JWT or user API key | `organisations/reservation-calendar.controller.ts` |
+| `POST` | `/api/reservation-calendars/:id/reservations` | Example editor-only reservation action. | Path: `id` | JWT or user API key | `organisations/reservation-calendar.controller.ts` |
+| `GET` | `/api/reservation-calendars/:id/reservations` | Example editor or reviewer reservation list action. | Path: `id` | JWT or user API key | `organisations/reservation-calendar.controller.ts` |
+| `POST` | `/api/reservation-calendars/:id/reservations/:reservationId/approve` | Example approval action. | Path: `id,reservationId` | JWT or user API key | `organisations/reservation-calendar.controller.ts` |
 
-> Add screenshots from `docs/assets/` with descriptive alt text for each UI interaction.
+### Internal Reservations
 
----
+| Method | Path | Purpose | Request or query | Auth | Source |
+| --- | --- | --- | --- | --- | --- |
+| `POST` | `/api/reservations` | Create a reservation. | Body: reservation fields | JWT or user API key | `reservations/reservations.controller.ts` |
+| `GET` | `/api/reservations` | List reservations. | Query: `resourceId` | JWT or user API key | `reservations/reservations.controller.ts` |
+| `GET` | `/api/reservations/:id` | Get one reservation. | Path: `id` | JWT or user API key | `reservations/reservations.controller.ts` |
+| `PATCH` | `/api/reservations/:id` | Update one reservation. | Path: `id`, body: partial reservation fields | JWT or user API key | `reservations/reservations.controller.ts` |
+| `DELETE` | `/api/reservations/:id` | Delete one reservation. | Path: `id` | JWT or user API key | `reservations/reservations.controller.ts` |
 
-## Step-by-Step Instructions
+### Public Booking
 
-### Step 1: Open the Correct Area
+| Method | Path | Purpose | Request or query | Auth | Source |
+| --- | --- | --- | --- | --- | --- |
+| `GET` | `/api/public/booking/:token` | Resolve public booking metadata. | Path: `token` | Public | `resources/public-booking.controller.ts` |
+| `GET` | `/api/public/booking/:token/availability` | Read available slots for a day. | Path: `token`, query: `date` | Public | `resources/public-booking.controller.ts` |
+| `POST` | `/api/public/booking/:token/reserve` | Create a public reservation. | Path: `token`, body: booking fields | Public | `resources/public-booking.controller.ts` |
 
-- Sign in to PrimeCalendar.
-- Navigate to the feature area for this workflow.
-- Confirm required controls are visible.
+## Request Shapes
 
-### Step 2: Configure Required Settings
+### Reservation calendars
 
-- Enter required values.
-- Save changes.
-- Verify expected behavior.
+`CreateReservationCalendarDto`
 
-### Step 3: Validate Outcome
+- `name`: required, `1..100` chars
+- `description`: optional, max 500 chars
+- `color`: optional hex color
+- `reservationRules`: optional object
+- `editorUserIds`: optional unique positive integer array
+- `reviewerUserIds`: optional unique positive integer array
 
-- Test one realistic scenario.
-- Confirm notifications, permissions, and expected outputs.
+`AssignRoleDto`
 
-<details>
-<summary>Advanced Options</summary>
+- `userId`: required positive number
+- `role`: required enum `ReservationCalendarRoleType`
 
-- Add optional policies and automation hooks.
-- Document team defaults for repeatability.
+### Internal reservations
 
-</details>
+`CreateReservationDto` and `UpdateReservationDto`
 
----
+- `startTime`: required on create, ISO date-time
+- `endTime`: required on create, ISO date-time, must be after `startTime`
+- `quantity`: optional int, minimum `1`
+- `customerInfo`: optional object
+- `notes`: optional sanitized string, max 2048 chars
+- `resourceId`: required on create, minimum `1`
+- `status`: update-only enum `pending|confirmed|completed|cancelled|waitlist`
 
-## Examples
+Query:
 
-### Example 1: Team Rollout
+- `ListReservationsQueryDto.resourceId`: optional int `>= 1`
 
-**Scenario**: Your team needs consistent behavior for booking api.
+### Public booking
 
-**Steps**:
-1. Configure in a test workspace.
-2. Validate with pilot users.
-3. Roll out to production.
+`CreatePublicBookingDto`
 
-### Consolidated Legacy Sources
+- `startTime`: required ISO date-time
+- `endTime`: required ISO date-time
+- `quantity`: required int, minimum `1`
+- `customerName`: required string
+- `customerEmail`: required email
+- `customerPhone`: required string
+- `notes`: optional string
 
-- `04-API-REFERENCE/public-booking.md`: This page has moved to the consolidated structure. - Canonical page: DEVELOPER-GUIDE/api-reference/booking-api.md - Archived snapshot: archives/pre-consolidation/04-API-REFERENCE/public-booking.md
-- `04-API-REFERENCE/reservations.md`: This page has moved to the consolidated structure. - Canonical page: DEVELOPER-GUIDE/api-reference/booking-api.md - Archived snapshot: archives/pre-consolidation/04-API-REFERENCE/reservations.md
+Availability query:
 
+- `date`: required ISO date string
 
----
+## Example Calls
 
-## Troubleshooting
+### Create a reservation calendar
 
-### Issue: Configuration Does Not Apply
+```bash
+curl -X POST "$PRIMECAL_API/api/organisations/12/reservation-calendars" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Family bookings",
+    "color": "#14b8a6",
+    "editorUserIds": [18],
+    "reviewerUserIds": [19]
+  }'
+```
 
-**Symptoms**: Settings appear saved but behavior remains unchanged.
+### Create a reservation
 
-**Solution**:
-1. Verify workspace and organization context.
-2. Re-check required fields and permissions.
-3. Review logs and API responses.
+```bash
+curl -X POST "$PRIMECAL_API/api/reservations" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "startTime": "2026-04-01T08:00:00.000Z",
+    "endTime": "2026-04-01T09:00:00.000Z",
+    "resourceId": 21,
+    "quantity": 1
+  }'
+```
 
-**Prevention**: Use a pre-deployment checklist.
+### Create a public booking
 
----
+```bash
+curl -X POST "$PRIMECAL_API/api/public/booking/$PUBLIC_TOKEN/reserve" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "startTime": "2026-04-01T08:00:00.000Z",
+    "endTime": "2026-04-01T09:00:00.000Z",
+    "quantity": 1,
+    "customerName": "May B. Late",
+    "customerEmail": "may@example.com",
+    "customerPhone": "+36301112222"
+  }'
+```
 
-## Related Resources
+## Response and Behavior Notes
 
-- [Index](../index.md)
-- [Index](../../index.md)
-- [Documentation Home](../../index.md)
+- Internal reservations are protected by `ReservationAccessGuard`.
+- Reservation-calendar example endpoints are role-gated but currently scaffold-level in implementation.
+- Public booking endpoints use the published token only; they do not require authentication.
 
----
+## Best Practices
 
-## Feedback
-
-Was this helpful? [Yes] [No]  
-Open an issue or pull request to improve this page.
-
----
-
-*Last updated: 2026-03-10 | PrimeCalendar v1.3.0*
+- Use reservation calendars for role-aware workflows and `/api/reservations` for actual internal reservation CRUD.
+- Validate date ordering client-side before submitting reservation writes.
+- Treat public booking tokens as secrets. Regenerate them when links leak or staff changes occur.
+- Add rate limiting or anti-bot protection in front of public booking forms.

@@ -1,110 +1,180 @@
 ---
 title: Calendar API
-description: Swagger-style reference for calendars and calendar groups.
+description: Code-backed reference for calendars, calendar groups, and sharing flows.
 category: Developer
 audience: Developer
 difficulty: Advanced
-last_updated: 2026-03-27
+last_updated: 2026-03-29
 version: 1.3.0
 related:
   - ./api-overview.md
   - ./event-api.md
-tags: [primecal, api, calendar, calendar-groups, developer]
+  - ./user-api.md
+tags: [primecal, api, calendars, sharing, groups]
 ---
 
 # Calendar API
 
 <div class="pc-guide-hero">
-  <p class="pc-guide-hero__eyebrow">Calendars Controller</p>
-  <h1 class="pc-guide-hero__title">Create calendars, groups, sharing, and visibility</h1>
+  <p class="pc-guide-hero__eyebrow">Calendars and Calendar Groups</p>
+  <h1 class="pc-guide-hero__title">Create calendars, organize them into groups, and manage sharing</h1>
   <p class="pc-guide-hero__lead">
-    PrimeCal splits calendar management across `/api/calendars` and `/api/calendar-groups`.
-    This page documents both route families so the group and calendar flows stay in one place.
+    PrimeCal splits calendar management between <code>/api/calendars</code> and
+    <code>/api/calendar-groups</code>. This page keeps both route families together so the
+    full calendar-management workflow is documented in one place.
   </p>
+  <div class="pc-guide-chip-row">
+    <span class="pc-guide-chip">JWT or user API key</span>
+    <span class="pc-guide-chip">Owned and shared calendars</span>
+    <span class="pc-guide-chip">Group aliases under /calendars/groups</span>
+    <span class="pc-guide-chip">Share permissions</span>
+  </div>
 </div>
 
-## Endpoint Summary
+## Source
+
+- Calendar controller: `backend-nestjs/src/calendars/calendars.controller.ts`
+- Calendar groups controller: `backend-nestjs/src/calendars/calendar-groups.controller.ts`
+- DTOs: `backend-nestjs/src/dto/calendar.dto.ts`, `backend-nestjs/src/dto/calendar-group.dto.ts`, `backend-nestjs/src/calendars/dto/calendar-sharing.dto.ts`
+- Entity enums: `backend-nestjs/src/entities/calendar.entity.ts`
+
+## Authentication and Permissions
+
+- All endpoints on this page require authentication.
+- Ownership or share permissions are enforced in the service layer.
+- Share operations use `read`, `write`, and `admin` permission levels.
+- Calendar deletion is a soft delete.
+- Group deletion does not delete calendars inside the group.
+
+## Endpoint Reference
 
 ### Calendars
 
-| Method | Path | Auth | Notes |
-| --- | --- | --- | --- |
-| `POST` | `/api/calendars` | JWT | Create a new calendar |
-| `GET` | `/api/calendars` | JWT | List owned and shared calendars |
-| `GET` | `/api/calendars/:id` | JWT | Fetch one calendar |
-| `PATCH` | `/api/calendars/:id` | JWT | Update a calendar |
-| `DELETE` | `/api/calendars/:id` | JWT | Soft delete a calendar |
-| `POST` | `/api/calendars/:id/share` | JWT | Share a calendar with users |
-| `DELETE` | `/api/calendars/:id/share` | JWT | Unshare a calendar from users |
-| `GET` | `/api/calendars/:id/shared-users` | JWT | List shared users |
-| `GET` | `/api/calendars/groups` | JWT | Alias for group listing |
-| `POST` | `/api/calendars/groups` | JWT | Alias for group creation |
+| Method | Path | Purpose | Request or query | Auth | Source |
+| --- | --- | --- | --- | --- | --- |
+| `POST` | `/api/calendars` | Create a calendar. | Body: `name,description,color,icon,visibility,groupId,rank` | JWT or user API key | `calendars/calendars.controller.ts` |
+| `GET` | `/api/calendars` | List owned and shared calendars. | None | JWT or user API key | `calendars/calendars.controller.ts` |
+| `GET` | `/api/calendars/:id` | Get one calendar. | Path: `id` | JWT or user API key | `calendars/calendars.controller.ts` |
+| `PATCH` | `/api/calendars/:id` | Update a calendar. | Path: `id`, body: partial calendar fields | JWT or user API key | `calendars/calendars.controller.ts` |
+| `DELETE` | `/api/calendars/:id` | Soft-delete a calendar. | Path: `id` | JWT or user API key | `calendars/calendars.controller.ts` |
+| `POST` | `/api/calendars/:id/share` | Share a calendar with users. | Path: `id`, body: `userIds,permission` | JWT or user API key | `calendars/calendars.controller.ts` |
+| `DELETE` | `/api/calendars/:id/share` | Unshare a calendar from users. | Path: `id`, body: `userIds` | JWT or user API key | `calendars/calendars.controller.ts` |
+| `GET` | `/api/calendars/:id/shared-users` | List users the calendar is shared with. | Path: `id` | JWT or user API key | `calendars/calendars.controller.ts` |
+| `GET` | `/api/calendars/groups` | Alias for listing calendar groups. | None | JWT or user API key | `calendars/calendars.controller.ts` |
+| `POST` | `/api/calendars/groups` | Alias for creating a calendar group. | Body: `name,isVisible` | JWT or user API key | `calendars/calendars.controller.ts` |
 
 ### Calendar Groups
 
-| Method | Path | Auth | Notes |
-| --- | --- | --- | --- |
-| `POST` | `/api/calendar-groups` | JWT | Create a group |
-| `GET` | `/api/calendar-groups` | JWT | List groups with calendars |
-| `PATCH` | `/api/calendar-groups/:id` | JWT | Rename or toggle visibility |
-| `DELETE` | `/api/calendar-groups/:id` | JWT | Delete a group without deleting calendars |
-| `POST` | `/api/calendar-groups/:id/calendars` | JWT | Assign calendars to a group |
-| `POST` | `/api/calendar-groups/:id/calendars/unassign` | JWT | Remove calendars from a group |
-| `POST` | `/api/calendar-groups/:id/share` | JWT | Share all calendars in the group |
-| `DELETE` | `/api/calendar-groups/:id/share` | JWT | Unshare the group from users |
+| Method | Path | Purpose | Request or query | Auth | Source |
+| --- | --- | --- | --- | --- | --- |
+| `POST` | `/api/calendar-groups` | Create a group. | Body: `name,isVisible` | JWT or user API key | `calendars/calendar-groups.controller.ts` |
+| `GET` | `/api/calendar-groups` | List groups with accessible calendars. | None | JWT or user API key | `calendars/calendar-groups.controller.ts` |
+| `PATCH` | `/api/calendar-groups/:id` | Rename a group or toggle visibility. | Path: `id`, body: `name,isVisible` | JWT or user API key | `calendars/calendar-groups.controller.ts` |
+| `DELETE` | `/api/calendar-groups/:id` | Delete a group without deleting its calendars. | Path: `id` | JWT or user API key | `calendars/calendar-groups.controller.ts` |
+| `POST` | `/api/calendar-groups/:id/calendars` | Assign calendars to a group. | Path: `id`, body: `calendarIds` | JWT or user API key | `calendars/calendar-groups.controller.ts` |
+| `POST` | `/api/calendar-groups/:id/calendars/unassign` | Remove calendars from a group. | Path: `id`, body: `calendarIds` | JWT or user API key | `calendars/calendar-groups.controller.ts` |
+| `POST` | `/api/calendar-groups/:id/share` | Share all calendars in a group. | Path: `id`, body: `userIds,permission` | JWT or user API key | `calendars/calendar-groups.controller.ts` |
+| `DELETE` | `/api/calendar-groups/:id/share` | Unshare all calendars in a group from users. | Path: `id`, body: `userIds` | JWT or user API key | `calendars/calendar-groups.controller.ts` |
 
-## Calendar DTO Constraints
+## Request Shapes
 
-### `CreateCalendarDto`
+### Calendar DTOs
 
-- `name`: required string
-- `description`: optional string, max 500 chars
-- `color`: optional hex color string, default app blue is `#3b82f6`
-- `icon`: optional emoji/icon string
-- `visibility`: `private`, `shared`, or `public`
-- `groupId`: number or null
-- `rank`: optional number used for ordering and view priority
+`CreateCalendarDto` and `UpdateCalendarDto` in `backend-nestjs/src/dto/calendar.dto.ts`
 
-### `UpdateCalendarDto`
+- `name`: required on create, string
+- `description`: optional string
+- `color`: optional string, defaults at the entity level to `#3b82f6`
+- `icon`: optional string
+- `visibility`: optional enum `private|shared|public`
+- `groupId`: optional number or `null`
+- `rank`: optional number, defaults at the entity level to `0`
 
-Same fields as create, but all optional.
+Entity notes from `backend-nestjs/src/entities/calendar.entity.ts`
 
-### `ShareCalendarDto`
+- `name` length: 200
+- `description` length: 500
+- `color` length: 7
+- `icon` length: 10
 
-- `userIds`: number[]
-- `permission`: `read`, `write`, or `admin`
+### Sharing DTOs
 
-### `CreateCalendarGroupDto`
+- `ShareCalendarDto.userIds`: required number array
+- `ShareCalendarDto.permission`: required enum `read|write|admin`
+- `UnshareCalendarUsersDto.userIds`: required unique integer array, max 100 items, minimum `1`
 
-- `name`: required, minimum 2 chars
-- `isVisible`: optional boolean, defaults to `true`
+### Group DTOs
 
-### `UpdateCalendarGroupDto`
+`CreateCalendarGroupDto` and `UpdateCalendarGroupDto` in `backend-nestjs/src/dto/calendar-group.dto.ts`
 
-- `name`: optional, minimum 2 chars
+- `name`: required on create, minimum 2 chars
 - `isVisible`: optional boolean
+- `AssignCalendarsToGroupDto.calendarIds`: required number array
+- `ShareCalendarGroupDto.userIds`: required number array
+- `ShareCalendarGroupDto.permission`: required enum `read|write|admin`
 
-### `AssignCalendarsToGroupDto`
+## Example Calls
 
-- `calendarIds`: number[]
+### Create a calendar
 
-### `ShareCalendarGroupDto`
+```bash
+curl -X POST "$PRIMECAL_API/api/calendars" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Family",
+    "description": "Shared household planning",
+    "color": "#14b8a6",
+    "visibility": "private",
+    "rank": 10
+  }'
+```
 
-- `userIds`: number[]
-- `permission`: `read`, `write`, or `admin`
+### Create a group and assign calendars
 
-## Behavior Notes
+```bash
+curl -X POST "$PRIMECAL_API/api/calendar-groups" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Late Family",
+    "isVisible": true
+  }'
+```
 
-- The UI can create a group inline while creating a calendar.
-- The backend treats group deletion as an unlink operation, not a calendar delete.
-- Shared calendars and group-shared calendars both rely on the same permission model.
-- Calendar rank affects ordering in the UI and in the timeline views.
-- Calendar visibility and selection state influence what shows in focus, month, and week views.
+```bash
+curl -X POST "$PRIMECAL_API/api/calendar-groups/3/calendars" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "calendarIds": [5, 7]
+  }'
+```
 
-## Typical First Calls
+### Share a calendar
 
-1. `GET /api/calendars`
-2. `GET /api/calendar-groups`
-3. `POST /api/calendars`
-4. `POST /api/calendar-groups`
-5. `POST /api/calendar-groups/:id/calendars`
+```bash
+curl -X POST "$PRIMECAL_API/api/calendars/5/share" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "userIds": [42],
+    "permission": "write"
+  }'
+```
+
+## Response and Behavior Notes
+
+- Calendar responses can include group metadata and shared-user summaries.
+- `GET /api/calendars` is the main bootstrap route for the calendar workspace.
+- `/api/calendars/groups` exists as a compatibility alias; the canonical group controller lives at `/api/calendar-groups`.
+- `rank` affects ordering and priority behavior in calendar-oriented views.
+- `isTasksCalendar` and `isReservationCalendar` exist at the entity level but are not directly managed through the create/update DTOs documented here.
+
+## Best Practices
+
+- Use `GET /api/calendars` and `GET /api/calendar-groups` together when building the left-hand calendar tree.
+- Prefer group sharing only when the intent is to keep multiple calendars aligned under the same permission model.
+- Treat `DELETE /api/calendars/:id` as a soft delete and refresh local state after mutation.
+- Use [`User API`](./user-api.md) `GET /api/users?search=...` to power people pickers for share dialogs.
+- Keep `visibility` and share permissions conceptually separate in clients: visibility is the calendar's exposure model, while sharing grants concrete access to users.

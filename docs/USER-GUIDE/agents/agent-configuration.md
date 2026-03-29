@@ -1,129 +1,80 @@
 ---
 title: Agent Configuration
-description: Configure PrimeCal agents, issue API keys, and connect MCP clients to the live stream endpoint.
+description: Create PrimeCal AI agents, scope permissions, issue agent keys, and copy the generated MCP configuration.
 category: User Guide
 audience: End User
 difficulty: Intermediate
-last_updated: 2026-03-27
+last_updated: 2026-03-29
 version: 1.3.0
 related:
   - ../index.md
   - ../automation/introduction-to-automation.md
-  - ../automation/creating-automation-rules.md
-tags: [primecal, agents, mcp, api-keys, automation]
+tags: [primecal, agents, mcp, permissions]
 ---
 
 # Agent Configuration
 
-<div class="pc-guide-hero">
-  <p class="pc-guide-hero__eyebrow">AI Agents and MCP</p>
-  <h1 class="pc-guide-hero__title">Connect an Agent the Same Way the App Does</h1>
-  <p class="pc-guide-hero__lead">PrimeCal exposes a dedicated agent screen where you create an agent, assign permissions, issue API keys, and copy a generated MCP configuration snippet. The UI is already wired to the live `mcp/stream` endpoint.</p>
-  <div class="pc-guide-chip-row">
-    <span class="pc-guide-chip">Create agent</span>
-    <span class="pc-guide-chip">Grant permissions</span>
-    <span class="pc-guide-chip">Issue API key</span>
-    <span class="pc-guide-chip">Generate MCP config</span>
-  </div>
-</div>
+PrimeCal includes a dedicated `AI Agents (MCP)` screen for users who want to connect external tools without giving them unlimited access to the account.
 
-## Open The Page
+## How To Open It
 
-Go to the dashboard and open `AI Agents (MCP)`. The screen is only visible when the agents feature flag is enabled.
+1. Open `More`.
+2. Select `AI Agents (MCP)`.
+3. Create or select an agent.
 
 ## What You Can Configure
 
 <div class="pc-guide-grid">
   <article class="pc-guide-card">
-    <p class="pc-guide-card__eyebrow">Agent profile</p>
+    <p class="pc-guide-card__eyebrow">Identity</p>
     <h3>Name and description</h3>
-    <p>Create an agent record with a short name and optional description.</p>
+    <p>Create an agent record with a clear name so you know which tool it belongs to later.</p>
   </article>
   <article class="pc-guide-card">
     <p class="pc-guide-card__eyebrow">Permissions</p>
-    <h3>Scope by resource</h3>
-    <p>Enable specific actions and scope them to calendars or automation rules when required.</p>
+    <h3>Scope by feature</h3>
+    <p>Allow only the actions the agent needs, and scope those permissions to selected calendars or rules when required.</p>
   </article>
   <article class="pc-guide-card">
     <p class="pc-guide-card__eyebrow">Keys</p>
-    <h3>API key issuance</h3>
-    <p>Create a key, copy the plaintext token once, and revoke it later from the same table.</p>
+    <h3>Issue and revoke</h3>
+    <p>Create a key, copy it once, and revoke it later if the client should no longer connect.</p>
   </article>
   <article class="pc-guide-card">
     <p class="pc-guide-card__eyebrow">MCP</p>
-    <h3>Generated config</h3>
-    <p>The page renders a ready-to-use MCP client snippet after a key is created.</p>
+    <h3>Generated configuration</h3>
+    <p>PrimeCal generates the MCP configuration for you so you do not need to build it manually.</p>
   </article>
 </div>
 
-## API Key Flow
+## Recommended Setup Flow
 
-1. Choose an agent.
-2. Enter a label for the new API key.
-3. Create the key.
-4. Copy the plaintext token immediately.
+1. Create the agent.
+2. Add only the permissions it truly needs.
+3. Issue a new key.
+4. Copy the generated configuration from the screen.
+5. Paste that configuration into your MCP client.
+6. Test with a low-risk action first.
 
-The secret is shown once. If you lose it, revoke the key and create a new one.
+The secret is shown once when the key is created. If you lose it, revoke the key and create a new one.
 
-## Generated MCP Config
+## Screens You Will Use
 
-The UI builds an `mcp-remote` command that points to the live stream endpoint:
+![PrimeCal AI agent list and create form](../../assets/user-guide/agents/agent-list-and-create.png)
 
-```json
-{
-  "mcpServers": {
-    "primecal-agent": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "mcp-remote",
-        "https://your-primecal-base-url/api/mcp/stream",
-        "--header",
-        "Authorization:${PRIMECAL_MCP_AUTH_HEADER}"
-      ],
-      "env": {
-        "PRIMECAL_MCP_AUTH_HEADER": "Agent your-new-token-here"
-      }
-    }
-  }
-}
-```
+![PrimeCal scoped permissions editor for an AI agent](../../assets/user-guide/agents/agent-permissions-editor.png)
 
-The exact server name is derived from the agent name. On Windows, the page switches to a `cmd.exe /C` wrapper so the command launches correctly.
+![PrimeCal agent keys section after creating a key](../../assets/user-guide/agents/agent-api-keys.png)
 
-## Permissions Model
+![PrimeCal generated MCP configuration for the selected agent](../../assets/user-guide/agents/agent-mcp-config.png)
 
-- Calendar-related actions can be scoped to selected calendars.
-- Automation-related actions can be scoped to selected automation rules.
-- Profile-related actions are granted at the action level.
-- Task and label actions follow the same per-action permission model.
+## Best Practices
 
-## Endpoint Behavior
+- Create a separate agent for each external tool or workflow.
+- Keep permissions narrow instead of creating one universal agent.
+- Name keys so you can recognize them during review or cleanup.
+- Rotate or revoke keys whenever a tool is no longer in use.
 
-The agent backend expects one of these auth styles:
+## Developer Reference
 
-- `Authorization: Agent <token>`
-- `x-agent-key: <token>`
-- `x-agent-token: <token>`
-
-The MCP stream route is served at `/api/mcp/stream`, and the API endpoint group also exposes metadata, action listing, and direct execution APIs for agent-aware clients.
-
-## Screenshot Placeholder
-
-Good screenshot targets:
-
-- The agent list and create form.
-- The permissions editor with calendar and rule scopes.
-- The API key table with the copy button.
-- The generated MCP config block.
-
-Use normal markdown image syntax when you are ready:
-
-```md
-![Agent settings with MCP config](../assets/agents/agent-config.png)
-```
-
-## See Also
-
-- [Introduction To Automation](../automation/introduction-to-automation.md)
-- [Creating Automation Rules](../automation/creating-automation-rules.md)
+If you need the backend contracts behind this screen, use the [Agent API](../../DEVELOPER-GUIDE/api-reference/agent-api.md).

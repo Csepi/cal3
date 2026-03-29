@@ -1,13 +1,14 @@
 ---
 title: Calendar Workspace
-description: Create, edit, group, hide, rename, recolor, and delete calendars from the PrimeCal calendar workspace.
+description: Create, edit, group, hide, rename, recolor, and manage calendars from the PrimeCal workspace.
 category: User Guide
 audience: End User
 difficulty: Beginner
-last_updated: 2026-03-27
+last_updated: 2026-03-29
 version: 1.3.0
 related:
   - ../index.md
+  - ./calendar-groups.md
   - ../basics/creating-events.md
   - ../basics/calendar-views.md
 tags: [primecal, calendars, groups, visibility, colors]
@@ -15,92 +16,60 @@ tags: [primecal, calendars, groups, visibility, colors]
 
 # Calendar Workspace
 
-The Calendar workspace is where you create calendars, group them, change colors, reorder them, and control which calendars appear in each view.
+The Calendar workspace is where daily planning starts. This is where you create calendars, group them, choose colors, and decide what stays visible in each view.
 
 ## Where To Click
 
-- Desktop: open `Calendar`, then use `New Calendar` in the header or the add action in the sidebar.
-- Mobile: open `Calendar`, expand the drawer, then use the create action from the calendar list area.
+- Desktop: open `Calendar`, then use `New Calendar` in the header or the sidebar action.
+- Mobile or narrow layouts: open `Calendar`, expand the drawer, then use the create action from the calendar area.
 
 ## Create A New Calendar
 
-The `Create New Calendar` dialog exposes these fields:
+![PrimeCal create calendar dialog](../../assets/user-guide/calendars/create-calendar-modal.png)
 
-| Field | Type | Required | Constraints and behavior |
+### Calendar Fields
+
+| Field | Required | Purpose | Notes |
 | --- | --- | --- | --- |
-| Name | text | Yes | UI requires at least 2 characters and caps input at 100 characters. |
-| Description | textarea | No | Optional. UI caps input at 500 characters. |
-| Icon | icon picker | No | Optional visual marker shown with the calendar in the workspace and event surfaces. |
-| Color | color picker | Yes | Pick from the theme palette or enter a custom hex color. |
-| Group | select | No | Assign the calendar to an existing group or create a new group inline. |
+| Name | Yes | Main calendar label | Use a short name such as `Family`, `Work`, or `School`. |
+| Description | No | Extra context | Helpful when the calendar has a narrow purpose. |
+| Color | Yes | Visual identity | The calendar color becomes the default event color across the views. |
+| Icon | No | Sidebar cue | Optional. Useful when several calendars have similar names. |
+| Group | No | Organize the sidebar | Assign the calendar to an existing group if you already have one. |
 
-### Inline Group Creation
+## Day-To-Day Actions
 
-Use `+ Group` inside the calendar dialog to create a group without leaving the form.
+- Show or hide a calendar from the sidebar.
+- Rename a calendar when its purpose changes.
+- Change the calendar color if it is too close to another calendar.
+- Reassign the calendar to a different group.
+- Delete the calendar when you no longer need it.
 
-- Group name must be at least 2 characters.
-- Group names are capped at 120 characters in the group management UI.
-- New groups are created as visible by default.
+## Groups And Visibility
 
-## Edit, Hide, Delete, And Reorder
+Groups are explained in full on [Calendar Groups](./calendar-groups.md), but the workspace is where you feel their effect most clearly.
 
-- Click a calendar row to toggle whether it is visible in the views.
-- Use the edit action to rename the calendar, change description, icon, color, or group.
-- Use the drag handle to reorder calendars in the sidebar.
-- Delete removes the calendar and its events after confirmation.
+- Hiding a calendar removes it from Focus, Month, and Week view.
+- Hiding a whole group does the same for every calendar inside it.
+- Ungrouped calendars stay visible as individual rows.
 
-## Calendar Groups
+![PrimeCal calendar sidebar with family groups and multiple calendars](../../assets/user-guide/calendars/calendar-sidebar-and-group.png)
 
-Groups are organizational containers for calendars.
+## How Colors Affect The Views
 
-- Create: from `+ Group` in the calendar dialog or the dedicated group management UI.
-- Rename: edit the group name from group management.
-- Toggle visibility: hide or show the entire group in one action.
-- Assign calendars: move a calendar into a group from the calendar edit dialog or group tools.
-- Unassign calendars: remove the group assignment and keep the calendar.
-- Delete: deleting a group does not delete the calendars inside it. Calendars become ungrouped.
+- Month view uses the calendar color for compact event blocks.
+- Week view uses the calendar color unless the event has its own override.
+- Focus view uses the same color source when it surfaces the current and next event.
 
-## Colors And What They Affect
+This is why consistent colors matter more than decorative variety.
 
-- Sidebar: the calendar chip and row accents use the calendar color.
-- Month view: event cards and selected-day summaries use calendar and event colors.
-- Week view: the event blocks use the calendar or event color, including overlapping blocks.
-- Focus view: the current and next event cards use the same color source as the event.
+## Best Practices
 
-If an event has its own explicit color, that event color overrides the default calendar color for that event.
+- Keep each calendar tied to a real area of life, not a one-off project.
+- Use groups for stable areas like `Family`, `Work`, or `Shared`.
+- Avoid colors that look too similar when events overlap in Week view.
+- Review visibility before assuming an event is missing.
 
-## API Notes
+## Developer Reference
 
-Some fields exist in the API even when the create dialog does not expose them directly.
-
-- `visibility`: `private`, `shared`, or `public`
-- `rank`: numeric ordering used by the backend and overlap sorting
-
-<div class="pc-guide-api-grid">
-  <article class="pc-guide-api">
-    <p class="pc-guide-api__eyebrow">Calendars</p>
-    <div class="pc-guide-pill-row">
-      <span class="pc-guide-pill pc-guide-pill--get">GET</span>
-      <span class="pc-guide-pill pc-guide-pill--post">POST</span>
-      <span class="pc-guide-pill pc-guide-pill--patch">PATCH</span>
-      <span class="pc-guide-pill pc-guide-pill--delete">DELETE</span>
-    </div>
-    <h3><code>/api/calendars</code> and <code>/api/calendars/:id</code></h3>
-    <p>Create, fetch, edit, and delete calendars.</p>
-  </article>
-  <article class="pc-guide-api">
-    <p class="pc-guide-api__eyebrow">Groups</p>
-    <div class="pc-guide-pill-row">
-      <span class="pc-guide-pill pc-guide-pill--get">GET</span>
-      <span class="pc-guide-pill pc-guide-pill--post">POST</span>
-      <span class="pc-guide-pill pc-guide-pill--patch">PATCH</span>
-      <span class="pc-guide-pill pc-guide-pill--delete">DELETE</span>
-    </div>
-    <h3><code>/api/calendar-groups</code></h3>
-    <p>List, create, rename, toggle visibility, assign, unassign, and delete calendar groups.</p>
-  </article>
-</div>
-
-## Screenshot Placeholder
-
-Add a screenshot of the sidebar with at least one group expanded and one calendar edit menu visible.
+For the backend calendar and group contracts, use the [Calendar API](../../DEVELOPER-GUIDE/api-reference/calendar-api.md).

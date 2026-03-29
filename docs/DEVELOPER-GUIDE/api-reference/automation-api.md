@@ -1,68 +1,98 @@
 ---
 title: Automation API
-description: Swagger-style reference for automation rules, webhooks, and smart values.
+description: Code-backed reference for automation rules, audit logs, approvals, webhook triggers, and smart values.
 category: Developer
 audience: Developer
 difficulty: Advanced
-last_updated: 2026-03-27
+last_updated: 2026-03-29
 version: 1.3.0
 related:
   - ./api-overview.md
   - ./event-api.md
   - ./agent-api.md
+  - ./sync-api.md
 tags: [primecal, api, automation, webhooks, smart-values]
 ---
 
 # Automation API
 
 <div class="pc-guide-hero">
-  <p class="pc-guide-hero__eyebrow">Automation Controller</p>
-  <h1 class="pc-guide-hero__title">Rules, triggers, conditions, actions</h1>
+  <p class="pc-guide-hero__eyebrow">Rule-Based Automation</p>
+  <h1 class="pc-guide-hero__title">Create rules, inspect executions, trigger webhooks, and manage approvals</h1>
   <p class="pc-guide-hero__lead">
-    PrimeCal automation is rule-based. Rules can be created, updated, executed now, inspected through
-    audit logs, triggered by public webhooks, and governed with smart values and approvals.
+    PrimeCal automation is built around user-owned rules with triggers, conditions, and actions.
+    This page documents the full non-admin automation surface directly from the controller and DTOs.
   </p>
+  <div class="pc-guide-chip-row">
+    <span class="pc-guide-chip">JWT or user API key</span>
+    <span class="pc-guide-chip">Public webhook trigger</span>
+    <span class="pc-guide-chip">Audit logs and stats</span>
+    <span class="pc-guide-chip">Smart values</span>
+  </div>
 </div>
 
-## Endpoint Summary
+## Source
 
-| Method | Path | Auth | Notes |
-| --- | --- | --- | --- |
-| `POST` | `/api/automation/rules` | JWT | Create a rule |
-| `GET` | `/api/automation/rules` | JWT | List rules with pagination/filtering |
-| `GET` | `/api/automation/rules/:id` | JWT | Fetch one rule |
-| `PUT` | `/api/automation/rules/:id` | JWT | Update a rule |
-| `DELETE` | `/api/automation/rules/:id` | JWT | Delete a rule |
-| `POST` | `/api/automation/rules/:id/execute` | JWT | Run a rule now |
-| `GET` | `/api/automation/rules/:id/audit-logs` | JWT | Rule audit log list |
-| `GET` | `/api/automation/audit-logs/:logId` | JWT | Audit log detail |
-| `GET` | `/api/automation/rules/:id/stats` | JWT | Execution stats |
-| `POST` | `/api/automation/webhook/:token` | Public | Incoming webhook trigger |
-| `POST` | `/api/automation/rules/:id/webhook/regenerate` | JWT | Regenerate webhook token |
-| `POST` | `/api/automation/rules/:id/webhook/rotate-secret` | JWT | Rotate webhook signing secret |
-| `POST` | `/api/automation/rules/:id/approve` | JWT | Approve sensitive rule actions |
-| `GET` | `/api/automation/smart-values/:triggerType` | JWT | List trigger-specific smart values |
+- Controller: `backend-nestjs/src/automation/automation.controller.ts`
+- Rule DTOs: `backend-nestjs/src/automation/dto/automation-rule.dto.ts`
+- Request DTOs: `backend-nestjs/src/automation/dto/automation-requests.dto.ts`
+- Audit DTOs: `backend-nestjs/src/automation/dto/automation-audit-log.dto.ts`
+- Enums: `backend-nestjs/src/entities/automation-rule.entity.ts`, `backend-nestjs/src/entities/automation-condition.entity.ts`, `backend-nestjs/src/entities/automation-action.entity.ts`
 
-## Rule DTO Constraints
+## Authentication and Permissions
 
-### `CreateAutomationRuleDto`
+- All rule-management routes require authentication.
+- `POST /api/automation/webhook/:token` is explicitly public via `@Public()`.
+- Rules are scoped to the authenticated user.
+- Sensitive rules can require explicit approval before execution.
+- The controller uses the API validation pipe for create and update operations.
 
-- `name`: required, 1 to 200 chars
+## Endpoint Reference
+
+| Method | Path | Purpose | Request or query | Auth | Source |
+| --- | --- | --- | --- | --- | --- |
+| `POST` | `/api/automation/rules` | Create a rule. | Body: rule create payload | JWT or user API key | `automation/automation.controller.ts` |
+| `GET` | `/api/automation/rules` | List rules with pagination and optional enabled filter. | Query: `page,limit,enabled` | JWT or user API key | `automation/automation.controller.ts` |
+| `GET` | `/api/automation/rules/:id` | Get one rule. | Path: `id` | JWT or user API key | `automation/automation.controller.ts` |
+| `PUT` | `/api/automation/rules/:id` | Update a rule. | Path: `id`, body: partial rule payload | JWT or user API key | `automation/automation.controller.ts` |
+| `DELETE` | `/api/automation/rules/:id` | Delete a rule. | Path: `id` | JWT or user API key | `automation/automation.controller.ts` |
+| `POST` | `/api/automation/rules/:id/execute` | Run a rule immediately. | Path: `id` | JWT or user API key | `automation/automation.controller.ts` |
+| `GET` | `/api/automation/rules/:id/audit-logs` | List audit logs for one rule. | Path: `id`, query from `AuditLogQueryDto` | JWT or user API key | `automation/automation.controller.ts` |
+| `GET` | `/api/automation/audit-logs/:logId` | Get one audit log entry. | Path: `logId` | JWT or user API key | `automation/automation.controller.ts` |
+| `GET` | `/api/automation/rules/:id/stats` | Get execution statistics for a rule. | Path: `id` | JWT or user API key | `automation/automation.controller.ts` |
+| `POST` | `/api/automation/webhook/:token` | Trigger a webhook-backed rule. | Path: `token`, JSON payload | Public | `automation/automation.controller.ts` |
+| `POST` | `/api/automation/rules/:id/webhook/regenerate` | Regenerate the rule's webhook token. | Path: `id` | JWT or user API key | `automation/automation.controller.ts` |
+| `POST` | `/api/automation/rules/:id/webhook/rotate-secret` | Rotate the webhook signing secret. | Path: `id` | JWT or user API key | `automation/automation.controller.ts` |
+| `POST` | `/api/automation/rules/:id/approve` | Approve a sensitive rule. | Path: `id`, body: `note` | JWT or user API key | `automation/automation.controller.ts` |
+| `GET` | `/api/automation/smart-values/:triggerType` | List smart values for a trigger type. | Path: `triggerType` | JWT or user API key | `automation/automation.controller.ts` |
+
+## Request Shapes
+
+### List and approval queries
+
+- `ListAutomationRulesQueryDto.page`: optional int, minimum `1`, default `1`
+- `ListAutomationRulesQueryDto.limit`: optional int, `1..100`, default `20`
+- `ListAutomationRulesQueryDto.enabled`: optional boolean
+- `ApproveAutomationRuleDto.note`: optional string, max 500 chars
+
+### Rule definition
+
+`CreateAutomationRuleDto` in `backend-nestjs/src/automation/dto/automation-rule.dto.ts`
+
+- `name`: required, `1..200` chars
 - `description`: optional, max 1000 chars
 - `triggerType`: required enum
-- `triggerConfig`: optional JSON object
-- `isEnabled`: optional boolean, defaults to `true`
-- `conditionLogic`: `AND` or `OR`
-- `conditions`: optional array, max 10
-- `actions`: required array, min 1, max 5
+- `triggerConfig`: optional object
+- `isEnabled`: optional boolean
+- `conditionLogic`: optional enum `AND|OR`
+- `conditions`: optional array, max 10 items
+- `actions`: required array, `1..5` items
 
-### `UpdateAutomationRuleDto`
+`UpdateAutomationRuleDto` keeps the same structure but makes all fields optional.
 
-Same shape, but all fields are optional except the validation still applies if provided.
+### Trigger types
 
-## Trigger Types
-
-From the backend enum:
+From `backend-nestjs/src/entities/automation-rule.entity.ts`
 
 - `event.created`
 - `event.updated`
@@ -74,27 +104,39 @@ From the backend enum:
 - `scheduled.time`
 - `webhook.incoming`
 
-The UI also exposes event-filtered relative trigger configuration with:
+### Relative time trigger config
 
-- `calendarIds`
-- `titleContains`
-- `descriptionContains`
-- `tags`
-- `isAllDayOnly`
-- `isRecurringOnly`
+The relative-time trigger config has nested validation for:
 
-## Condition Model
+- `eventFilter.calendarIds`
+- `eventFilter.titleContains`
+- `eventFilter.descriptionContains`
+- `eventFilter.tags`
+- `eventFilter.labels`
+- `eventFilter.isAllDayOnly`
+- `eventFilter.isRecurringOnly`
+- `referenceTime.base`: `start|end`
+- `offset.direction`: `before|after`
+- `offset.value`: int `>= 0`
+- `offset.unit`: `minutes|hours|days|weeks`
+- `execution.runOncePerEvent`
+- `execution.fireForEveryOccurrenceOfRecurringEvent`
+- `execution.skipPast`
+- `execution.pastDueGraceMinutes`: `0..60`
+- `execution.schedulingWindowDays`: `1..730`
 
-### `CreateConditionDto`
+### Conditions
 
-- `field`: event, calendar, or webhook field
-- `operator`: comparison operator
-- `value`: string, max 1000 chars
+`CreateConditionDto`
+
+- `field`: required enum
+- `operator`: required enum
+- `value`: required string, max 1000 chars
 - `groupId`: optional string
-- `logicOperator`: `AND`, `OR`, or `NOT`
-- `order`: optional numeric sort order
+- `logicOperator`: required enum `AND|OR|NOT`
+- `order`: optional number
 
-Useful fields from the backend enum:
+Current condition fields:
 
 - `event.title`
 - `event.description`
@@ -108,38 +150,26 @@ Useful fields from the backend enum:
 - `event.calendar.name`
 - `webhook.data`
 
-Useful operators:
+Current operators include:
 
-- `contains`
-- `not_contains`
-- `matches`
-- `not_matches`
-- `equals`
-- `not_equals`
-- `starts_with`
-- `ends_with`
-- `is_empty`
-- `is_not_empty`
-- `greater_than`
-- `less_than`
-- `greater_than_or_equal`
-- `less_than_or_equal`
-- `is_true`
-- `is_false`
-- `in`
-- `not_in`
-- `in_list`
-- `not_in_list`
+- `contains`, `not_contains`, `matches`, `not_matches`
+- `equals`, `not_equals`
+- `starts_with`, `ends_with`
+- `is_empty`, `is_not_empty`
+- `greater_than`, `less_than`
+- `greater_than_or_equal`, `less_than_or_equal`
+- `is_true`, `is_false`
+- `in`, `not_in`, `in_list`, `not_in_list`
 
-## Actions
+### Actions
 
-### `CreateActionDto`
+`CreateActionDto`
 
 - `actionType`: required enum
-- `actionConfig`: JSON object
-- `order`: optional numeric sort order
+- `actionConfig`: optional object
+- `order`: optional number
 
-Action types from the backend:
+Current action types:
 
 - `set_event_color`
 - `add_event_tag`
@@ -151,38 +181,74 @@ Action types from the backend:
 - `create_task`
 - `webhook`
 
-## Webhook Flow
+## Example Calls
 
-- `POST /api/automation/webhook/:token` is public and used by external systems.
-- `POST /api/automation/rules/:id/webhook/regenerate` issues a new token.
-- `POST /api/automation/rules/:id/webhook/rotate-secret` rotates the signing secret.
-- The UI webhook URL is derived from the rule token and should be copied into the external system.
+### Create a rule
 
-## Filtering And Execution
+```bash
+curl -X POST "$PRIMECAL_API/api/automation/rules" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Highlight school pickups",
+    "triggerType": "event.created",
+    "conditionLogic": "AND",
+    "conditions": [
+      {
+        "field": "event.title",
+        "operator": "contains",
+        "value": "pickup",
+        "logicOperator": "AND"
+      }
+    ],
+    "actions": [
+      {
+        "actionType": "set_event_color",
+        "actionConfig": { "color": "#f59e0b" }
+      }
+    ]
+  }'
+```
 
-The list endpoint supports pagination and filtering.
+### Run a rule now
 
-Common client-side filters in the UI:
+```bash
+curl -X POST "$PRIMECAL_API/api/automation/rules/14/execute" \
+  -H "Authorization: Bearer $TOKEN"
+```
 
-- search by name or description
-- enabled/disabled status
-- trigger type filtering
+### Trigger a webhook rule
 
-The detail view also supports:
+```bash
+curl -X POST "$PRIMECAL_API/api/automation/webhook/$WEBHOOK_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "payload": {
+      "source": "school-system",
+      "message": "Late pickup today"
+    }
+  }'
+```
 
-- `Run now`
-- execution count
-- last run time
-- audit log browsing
+### Read smart values
 
-## Smart Values
+```bash
+curl "$PRIMECAL_API/api/automation/smart-values/event.created" \
+  -H "Authorization: Bearer $TOKEN"
+```
 
-`GET /api/automation/smart-values/:triggerType` returns the smart-value catalog for the current trigger type.
+## Response and Behavior Notes
 
-This is what powers token-aware action config and webhook path expressions.
+- `DELETE /api/automation/rules/:id` returns `204 No Content`.
+- `POST /api/automation/rules/:id/execute` returns a message and updated execution count.
+- `POST /api/automation/rules/:id/webhook/regenerate` returns the new `webhookToken`.
+- `POST /api/automation/rules/:id/webhook/rotate-secret` returns the new `webhookSecret` and `graceUntil`.
+- Public webhook execution uses the raw body and headers when evaluating the rule.
 
-## Approval
+## Best Practices
 
-Some rules may require approval before sensitive actions are executed.
-
-`POST /api/automation/rules/:id/approve` marks the rule approved and returns the approval timestamp.
+- Keep actions narrow and deterministic. Rules with too many side effects become hard to debug.
+- Use smart values and the catalog returned by `GET /api/automation/smart-values/:triggerType` instead of hard-coding tokens.
+- Prefer `GET /api/automation/rules/:id/audit-logs` and `/stats` when troubleshooting before editing the rule itself.
+- Regenerate webhook tokens if a URL leaks. Rotate webhook secrets if the signing secret leaks.
+- When building UI, treat relative-time triggers as a first-class subtype because their config is far richer than basic event triggers.

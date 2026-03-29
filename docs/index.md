@@ -1,103 +1,118 @@
 ---
 title: PrimeCal Documentation
-description: Start with registration, move into daily workflows, then continue into automation, MCP, and API reference.
+description: Start with registration, move into daily planning, then continue into automation, MCP, sync, and the full API reference.
 category: Documentation
 audience: End User
 difficulty: Beginner
-last_updated: 2026-03-27
+last_updated: 2026-03-29
 version: 1.3.0
 hide_title: true
 related:
   - ./GETTING-STARTED/index.md
   - ./USER-GUIDE/index.md
   - ./DEVELOPER-GUIDE/index.md
-tags: [primecal, documentation, navigation, onboarding, api]
+tags: [primecal, documentation, onboarding, automation, mcp]
 ---
 
 <div class="pc-guide-hero">
   <p class="pc-guide-hero__eyebrow">PrimeCal Docs</p>
-  <h1 class="pc-guide-hero__title">A Clean Path From Sign-Up To API Integration</h1>
-  <p class="pc-guide-hero__lead">This portal is organized around the actual PrimeCal product flow. Start with registration and setup, continue into daily calendar work, then move into automation, agent configuration, and the full API reference.</p>
+  <h1 class="pc-guide-hero__title">A Clear Path From First Login To Advanced Workflows</h1>
+  <p class="pc-guide-hero__lead">Start with registration and setup, continue into the everyday PrimeCal workspace, then move into automation, external sync, AI agents, and the full developer reference.</p>
   <div class="pc-guide-chip-row">
-    <span class="pc-guide-chip">Product-backed</span>
-    <span class="pc-guide-chip">PrimeCal colors</span>
-    <span class="pc-guide-chip">Screenshot-ready</span>
-    <span class="pc-guide-chip">Docusaurus portal</span>
+    <span class="pc-guide-chip">Real product screenshots</span>
+    <span class="pc-guide-chip">PrimeCal color system</span>
+    <span class="pc-guide-chip">User-first structure</span>
+    <span class="pc-guide-chip">Code-backed API docs</span>
   </div>
 </div>
 
-## Choose Your Path
+## Start Here
 
 <div class="pc-guide-grid">
   <article class="pc-guide-card pc-guide-card--accent">
-    <p class="pc-guide-card__eyebrow">Start here</p>
+    <p class="pc-guide-card__eyebrow">Start now</p>
     <h3><a href="/GETTING-STARTED">Getting Started</a></h3>
-    <p>Register, complete onboarding, create your first calendar, group calendars, and add your first event.</p>
+    <p>Register, complete onboarding, create your first real calendar, organize groups, and add your first event.</p>
   </article>
   <article class="pc-guide-card">
-    <p class="pc-guide-card__eyebrow">Daily use</p>
+    <p class="pc-guide-card__eyebrow">Daily work</p>
     <h3><a href="/USER-GUIDE">User Documentation</a></h3>
-    <p>Profile settings, calendar workspace, event creation, views, automation, and AI agent setup.</p>
+    <p>Profile settings, calendar views, tasks, automation, sync, AI agents, and personal logs.</p>
   </article>
-  <article class="pc-guide-card">
+  <article class="pc-guide-card pc-guide-card--indigo">
     <p class="pc-guide-card__eyebrow">Integrate</p>
     <h3><a href="/DEVELOPER-GUIDE">Developer Documentation</a></h3>
-    <p>Swagger-style API guidance for auth, users, calendars, events, automation, agents, and MCP.</p>
-  </article>
-  <article class="pc-guide-card">
-    <p class="pc-guide-card__eyebrow">Support</p>
-    <h3><a href="/FAQ">FAQ</a></h3>
-    <p>Quick answers for common setup and usage questions without leaving the documentation path.</p>
+    <p>Swagger-style documentation for every non-admin backend area, grouped by the same product features users see.</p>
   </article>
 </div>
 
-## Most Common Journeys
+## PrimeCal Features
+
+<div class="pc-guide-grid">
+  <article class="pc-guide-card">
+    <p class="pc-guide-card__eyebrow">Planning</p>
+    <h3><a href="/USER-GUIDE/calendars/calendar-workspace">Calendar</a></h3>
+    <p>Create calendars, group them, control colors and visibility, then switch between Focus, Month, and Week views.</p>
+  </article>
+  <article class="pc-guide-card">
+    <p class="pc-guide-card__eyebrow">Execution</p>
+    <h3><a href="/USER-GUIDE/tasks/tasks-workspace">Tasks</a></h3>
+    <p>Capture quick tasks, manage labels, and work through a live list that stays close to your calendar routine.</p>
+  </article>
+  <article class="pc-guide-card pc-guide-card--signal">
+    <p class="pc-guide-card__eyebrow">Highlighted</p>
+    <h3><a href="/USER-GUIDE/automation/introduction-to-automation">Automation</a></h3>
+    <p>Build rules with triggers, conditions, and actions so repetitive calendar work runs automatically.</p>
+  </article>
+  <article class="pc-guide-card">
+    <p class="pc-guide-card__eyebrow">Connections</p>
+    <h3><a href="/USER-GUIDE/integrations/external-sync">External Sync</a></h3>
+    <p>Connect Google or Microsoft calendars, choose what stays linked, and recover cleanly when a connection breaks.</p>
+  </article>
+  <article class="pc-guide-card pc-guide-card--indigo">
+    <p class="pc-guide-card__eyebrow">Highlighted</p>
+    <h3><a href="/USER-GUIDE/agents/agent-configuration">AI Agents (MCP)</a></h3>
+    <p>Create a PrimeCal agent, scope its permissions, issue a key, and copy the generated MCP configuration into your client.</p>
+  </article>
+  <article class="pc-guide-card">
+    <p class="pc-guide-card__eyebrow">Privacy</p>
+    <h3><a href="/USER-GUIDE/privacy/personal-logs">Personal Logs</a></h3>
+    <p>Review private activity, privacy actions, and account history from a user-owned log screen.</p>
+  </article>
+</div>
+
+## Recommended Journey
 
 <div class="pc-guide-flow">
   <article class="pc-guide-flow__item">
     <div class="pc-guide-flow__index">1</div>
     <h3>Register</h3>
-    <p>Go to <a href="/GETTING-STARTED/first-steps/creating-your-account">Creating Your Account</a> for field rules, live validation, and the onboarding wizard.</p>
+    <p>Start with <a href="/GETTING-STARTED/quick-start-guide">Quick Start Guide</a> and the detailed registration walkthrough.</p>
   </article>
   <article class="pc-guide-flow__item">
     <div class="pc-guide-flow__index">2</div>
-    <h3>Set up calendars</h3>
-    <p>Use <a href="/GETTING-STARTED/first-steps/initial-setup">Initial Setup</a> and <a href="/USER-GUIDE/calendars/calendar-workspace">Calendar Workspace</a> to create calendars and groups.</p>
+    <h3>Set Up Your Space</h3>
+    <p>Finish your profile, create real calendars, group them, and set up Focus mode for the way you plan.</p>
   </article>
   <article class="pc-guide-flow__item">
     <div class="pc-guide-flow__index">3</div>
-    <h3>Start planning</h3>
-    <p>Read <a href="/USER-GUIDE/basics/creating-events">Creating Events</a> and <a href="/USER-GUIDE/basics/calendar-views">Calendar Views</a> to understand how scheduling behaves in each view.</p>
+    <h3>Run Daily Work</h3>
+    <p>Use calendars, events, tasks, and personal logs as the normal working surface for a real user.</p>
   </article>
   <article class="pc-guide-flow__item">
     <div class="pc-guide-flow__index">4</div>
-    <h3>Automate or connect</h3>
-    <p>Continue into <a href="/USER-GUIDE/automation/introduction-to-automation">Automation</a>, <a href="/USER-GUIDE/agents/agent-configuration">Agent Configuration</a>, and <a href="/DEVELOPER-GUIDE/api-reference/api-overview">API Overview</a>.</p>
+    <h3>Add Power Features</h3>
+    <p>Move into automation, external sync, and AI agents when manual work starts repeating.</p>
+  </article>
+  <article class="pc-guide-flow__item">
+    <div class="pc-guide-flow__index">5</div>
+    <h3>Build Integrations</h3>
+    <p>Use the developer guide when you need the backend contracts, examples, restrictions, and non-admin API coverage.</p>
   </article>
 </div>
 
-## Recommended Reading Order
+## Feature Navigation
 
-1. [Quick Start Guide](./GETTING-STARTED/quick-start-guide.md)
-2. [User Documentation](./USER-GUIDE/index.md)
-3. [Developer Documentation](./DEVELOPER-GUIDE/index.md)
-4. [FAQ](./FAQ/index.md)
+Many advanced tools live under `More` in the app shell, so users can discover them from one place after they understand the calendar.
 
-## Screenshot Notes
-
-The new pages already include screenshot placeholders where the UI matters most. You can either:
-
-- put files under `docs/assets/...` and reference them with relative markdown paths
-- put files under `docs-portal/static/img/...` and reference them with `/img/...` paths
-
-Example:
-
-```md
-![Create event modal](./assets/user-guide/create-event-modal.png)
-```
-
-Or from `docs-portal/static/img`:
-
-```md
-![Create event modal](/img/create-event-modal.png)
-```
+![PrimeCal More menu showing Automation, External Sync, AI Agents, and Personal logs](./assets/user-guide/navigation/more-menu-feature-navigation.png)

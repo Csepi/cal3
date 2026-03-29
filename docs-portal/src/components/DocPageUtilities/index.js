@@ -38,7 +38,7 @@ export default function DocPageUtilities() {
   };
 
   const emailLink = () => {
-    const subject = encodeURIComponent('PrimeCalendar Documentation');
+    const subject = encodeURIComponent('PrimeCal Documentation');
     const body = encodeURIComponent(`Useful documentation link:\\n\\n${absoluteUrl}`);
     window.location.href = `mailto:?subject=${subject}&body=${body}`;
   };

@@ -1,173 +1,221 @@
 ---
 title: Authentication API
-description: Swagger-style authentication, onboarding, MFA, and OAuth reference.
+description: Code-backed reference for registration, login, onboarding, MFA, OAuth, refresh tokens, and user API key management.
 category: Developer
 audience: Developer
 difficulty: Advanced
-last_updated: 2026-03-27
+last_updated: 2026-03-29
 version: 1.3.0
 related:
   - ./api-overview.md
   - ./user-api.md
-tags: [primecal, api, authentication, onboarding, mfa]
+  - ./platform-api.md
+tags: [primecal, api, authentication, onboarding, oauth, mfa]
 ---
 
 # Authentication API
 
 <div class="pc-guide-hero">
-  <p class="pc-guide-hero__eyebrow">Auth Controller</p>
-  <h1 class="pc-guide-hero__title">Register, sign in, complete onboarding</h1>
+  <p class="pc-guide-hero__eyebrow">Identity and Session Management</p>
+  <h1 class="pc-guide-hero__title">Register users, issue sessions, complete onboarding, and manage API keys</h1>
   <p class="pc-guide-hero__lead">
-    These are the real `/api/auth` endpoints from the NestJS controller. They cover account creation,
-    login, refresh/logout, onboarding, MFA, widget tokens, and social sign-in redirects.
+    This page documents the non-admin authentication surface from the backend code. It covers the
+    real <code>/api/auth</code> routes plus user-owned <code>/api/api-keys</code> management.
   </p>
   <div class="pc-guide-chip-row">
     <span class="pc-guide-chip">JWT bearer</span>
-    <span class="pc-guide-chip">CSRF cookie</span>
-    <span class="pc-guide-chip">MFA</span>
-    <span class="pc-guide-chip">OAuth</span>
+    <span class="pc-guide-chip">Refresh cookies</span>
+    <span class="pc-guide-chip">CSRF for browser mutations</span>
+    <span class="pc-guide-chip">MFA and OAuth</span>
   </div>
 </div>
 
-## Endpoint Summary
+## Source
 
-| Method | Path | Auth | Notes |
-| --- | --- | --- | --- |
-| `GET` | `/api/auth/csrf` | Public | Returns or issues the active CSRF token |
-| `POST` | `/api/auth/register` | Public | Registers a new user and issues tokens |
-| `POST` | `/api/auth/login` | Public | Logs a user in |
-| `GET` | `/api/auth/username-availability` | Public | Checks username availability |
-| `GET` | `/api/auth/email-availability` | Public | Checks email availability |
-| `GET` | `/api/auth/profile` | JWT | Returns the current user profile |
-| `POST` | `/api/auth/complete-onboarding` | JWT | Completes the onboarding wizard |
-| `POST` | `/api/auth/refresh` | Public | Rotates the refresh token and returns a new access token |
-| `POST` | `/api/auth/logout` | JWT | Logs out and clears refresh cookies |
-| `POST` | `/api/auth/widget-token` | JWT | Issues the Android widget token |
-| `GET` | `/api/auth/mfa/status` | JWT | Reads MFA enrollment state |
-| `POST` | `/api/auth/mfa/setup` | JWT | Generates a TOTP challenge |
-| `POST` | `/api/auth/mfa/enable` | JWT | Verifies the code and enables MFA |
-| `POST` | `/api/auth/mfa/disable` | JWT | Disables MFA |
-| `GET` | `/api/auth/google` | OAuth | Starts Google sign-in |
-| `GET` | `/api/auth/google/callback` | OAuth | Google callback |
-| `GET` | `/api/auth/microsoft` | OAuth | Starts Microsoft sign-in |
-| `GET` | `/api/auth/microsoft/callback` | OAuth | Microsoft callback |
+- Controller: `backend-nestjs/src/auth/auth.controller.ts`
+- DTOs: `backend-nestjs/src/dto/auth.dto.ts`, `backend-nestjs/src/dto/onboarding.dto.ts`
+- User API keys controller: `backend-nestjs/src/api-security/controllers/api-key.controller.ts`
+- User API key DTOs: `backend-nestjs/src/api-security/dto/api-key.dto.ts`
+- JWT guard: `backend-nestjs/src/auth/guards/jwt-auth.guard.ts`
+- CSRF middleware: `backend-nestjs/src/common/middleware/csrf-protection.middleware.ts`
 
-## Register And Login
+## Authentication Model
 
-### `POST /api/auth/register`
+| Mode | Where it applies | Notes |
+| --- | --- | --- |
+| Public | registration, login, availability checks, refresh, OAuth callbacks | No bearer token required |
+| JWT bearer | most signed-in routes | `Authorization: Bearer <token>` |
+| Refresh cookie | browser refresh/logout flow | `POST` requests still need CSRF when cookie-authenticated |
+| User API key | selected routes protected by `JwtAuthGuard` | Send `x-api-key` or `Authorization: ApiKey <token>` |
+| JWT only | `/api/api-keys` management endpoints | These use `AuthGuard('jwt')`, not the broader `JwtAuthGuard` |
 
-Required fields from `RegisterDto`:
+Important implementation notes:
 
-- `username`: 3 to 64 chars, safe text, trimmed
-- `email`: valid email, max 254 chars, lowercased
-- `password`: 6 to 128 chars, must pass the strong-password validator
+- `JwtAuthGuard` also supports user API keys when `ApiKeyService` is wired in.
+- Incomplete-onboarding users are blocked from most non-`/auth` routes until onboarding is finished.
+- Browser-based mutating requests use CSRF protection and must include `x-csrf-token`.
 
-Optional fields:
+## Endpoint Reference
 
-- `firstName`: max 80 chars
-- `lastName`: max 80 chars
-- `role`: admin-only override, enum `UserRole`
+### Auth Controller
 
-### `POST /api/auth/login`
+| Method | Path | Purpose | Request or query | Auth | Source |
+| --- | --- | --- | --- | --- | --- |
+| `GET` | `/api/auth/csrf` | Issue or return the active CSRF token. | None | Public | `auth/auth.controller.ts` |
+| `POST` | `/api/auth/register` | Create a new user and issue session tokens. | Body: `username,email,password,firstName,lastName,role` | Public | `auth/auth.controller.ts` |
+| `POST` | `/api/auth/login` | Create a session for an existing user. | Body: `username,password,captchaToken,honeypot,mfaCode,mfaRecoveryCode` | Public | `auth/auth.controller.ts` |
+| `GET` | `/api/auth/username-availability` | Check whether a username is free. | Query: `username` | Public | `auth/auth.controller.ts` |
+| `GET` | `/api/auth/email-availability` | Check whether an email is free. | Query: `email` | Public | `auth/auth.controller.ts` |
+| `GET` | `/api/auth/profile` | Read the authenticated user profile snapshot. | None | JWT or user API key | `auth/auth.controller.ts` |
+| `POST` | `/api/auth/complete-onboarding` | Finish the onboarding wizard for the current user. | Body: onboarding fields | JWT or user API key | `auth/auth.controller.ts` |
+| `POST` | `/api/auth/refresh` | Rotate the refresh token and issue a new access token. | Body: `refreshToken` or refresh cookie | Public session flow | `auth/auth.controller.ts` |
+| `POST` | `/api/auth/logout` | Revoke the current refresh token family and clear browser cookies. | Body: optional `refreshToken` | JWT or user API key | `auth/auth.controller.ts` |
+| `POST` | `/api/auth/widget-token` | Issue the Android widget token. | None | JWT or user API key | `auth/auth.controller.ts` |
+| `GET` | `/api/auth/mfa/status` | Read MFA setup or enabled status. | None | JWT or user API key | `auth/auth.controller.ts` |
+| `POST` | `/api/auth/mfa/setup` | Start TOTP setup and return provisioning material. | None | JWT or user API key | `auth/auth.controller.ts` |
+| `POST` | `/api/auth/mfa/enable` | Verify a TOTP code and enable MFA. | Body: `code` | JWT or user API key | `auth/auth.controller.ts` |
+| `POST` | `/api/auth/mfa/disable` | Disable MFA with a current code or recovery code. | Body: `code,recoveryCode` | JWT or user API key | `auth/auth.controller.ts` |
+| `GET` | `/api/auth/google` | Start Google OAuth. | None | Public redirect | `auth/auth.controller.ts` |
+| `GET` | `/api/auth/google/callback` | Google OAuth callback. | Provider query params | Public callback | `auth/auth.controller.ts` |
+| `GET` | `/api/auth/microsoft` | Start Microsoft OAuth. | None | Public redirect | `auth/auth.controller.ts` |
+| `GET` | `/api/auth/microsoft/callback` | Microsoft OAuth callback. | Provider query params | Public callback | `auth/auth.controller.ts` |
 
-Required fields from `LoginDto`:
+### User API Keys
 
-- `username`: username or email, 1 to 254 chars
-- `password`: 1 to 128 chars
+| Method | Path | Purpose | Request or query | Auth | Source |
+| --- | --- | --- | --- | --- | --- |
+| `GET` | `/api/api-keys` | List the current user's API keys. | None | JWT bearer only | `api-security/controllers/api-key.controller.ts` |
+| `POST` | `/api/api-keys` | Create a new API key. | Body: `name,scopes,tier,expiresInDays,rotateInDays` | JWT bearer only | `api-security/controllers/api-key.controller.ts` |
+| `POST` | `/api/api-keys/:id/rotate` | Rotate an API key and return the new plaintext secret once. | Path: `id` | JWT bearer only | `api-security/controllers/api-key.controller.ts` |
+| `DELETE` | `/api/api-keys/:id` | Revoke an API key. | Path: `id` | JWT bearer only | `api-security/controllers/api-key.controller.ts` |
 
-Optional fields:
+## Request Shapes
 
-- `captchaToken`: used when suspicious activity is detected
-- `honeypot`: must remain empty
-- `mfaCode`: 6 digits
-- `mfaRecoveryCode`: max 32 chars
+### Register
 
-### Response Shape
+`RegisterDto` in `backend-nestjs/src/dto/auth.dto.ts`
 
-`AuthResponseDto` returns:
+- `username`: required, sanitized, safe text, 3 to 64 chars
+- `email`: required, lowercased, valid email, max 254 chars
+- `password`: required, 6 to 128 chars, strong-password validator
+- `firstName`: optional, safe text, max 80 chars
+- `lastName`: optional, safe text, max 80 chars
+- `role`: optional enum `UserRole`
 
-- `access_token`
-- `token_type`
-- `expires_in`
-- `refresh_expires_at`
-- `issued_at`
-- optional `refresh_token` for native clients
-- `user` metadata, including theme, onboarding state, and MFA flag
+### Login
 
-## Onboarding
+`LoginDto` in `backend-nestjs/src/dto/auth.dto.ts`
 
-### `POST /api/auth/complete-onboarding`
+- `username`: required, 1 to 254 chars, username or email
+- `password`: required, 1 to 128 chars
+- `captchaToken`: optional, max 2048 chars
+- `honeypot`: optional, max 120 chars, should stay empty
+- `mfaCode`: optional, must match `^\d{6}$`
+- `mfaRecoveryCode`: optional, max 32 chars
 
-This endpoint is part of the first-run flow after registration.
+### Complete onboarding
 
-Required fields from `CompleteOnboardingDto`:
+`CompleteOnboardingDto` in `backend-nestjs/src/dto/onboarding.dto.ts`
 
-- `language`: `en`, `de`, `fr`, or `hu`
-- `timezone`: valid IANA timezone, for example `Europe/Budapest`
-- `timeFormat`: `12h` or `24h`
-- `weekStartDay`: integer from `0` to `6`
-- `defaultCalendarView`: `month` or `week`
-- `themeColor`: one of the allowed app theme colors
-- `privacyPolicyAccepted`: must be `true`
-- `termsOfServiceAccepted`: must be `true`
+- `username`: optional, 3 to 64 chars, `[a-zA-Z0-9_.]+`
+- `firstName`: optional, max 80 chars
+- `lastName`: optional, max 80 chars
+- `profilePictureUrl`: optional URL, max 2048 chars
+- `language`: required enum `en|de|fr|hu`
+- `timezone`: required IANA timezone, max 100 chars
+- `timeFormat`: required `12h|24h`
+- `weekStartDay`: required integer `0..6`
+- `defaultCalendarView`: required `month|week`
+- `themeColor`: required, one of the allowed onboarding palette colors
+- `privacyPolicyAccepted`: required, must be `true`
+- `termsOfServiceAccepted`: required, must be `true`
+- `productUpdatesEmailConsent`: optional boolean
+- `privacyPolicyVersion`: optional, max 64 chars
+- `termsOfServiceVersion`: optional, max 64 chars
+- `calendarUseCase`: optional enum `personal|business|team|other`
+- `setupGoogleCalendarSync`: optional boolean
+- `setupMicrosoftCalendarSync`: optional boolean
 
-Optional onboarding fields:
+### MFA
 
-- `username`
-- `firstName`
-- `lastName`
-- `profilePictureUrl`
-- `productUpdatesEmailConsent`
-- `privacyPolicyVersion`
-- `termsOfServiceVersion`
-- `calendarUseCase`
-- `setupGoogleCalendarSync`
-- `setupMicrosoftCalendarSync`
+- `EnableMfaDto.code`: required 6-digit string
+- `DisableMfaDto.code`: optional 6-digit string
+- `DisableMfaDto.recoveryCode`: optional, max 32 chars
 
-## MFA
+### User API keys
 
-### `GET /api/auth/mfa/status`
+`CreateApiKeyDto` in `backend-nestjs/src/api-security/dto/api-key.dto.ts`
 
-Returns whether MFA is enabled and whether setup is in progress.
+- `name`: required, safe text, max 120 chars
+- `scopes`: optional enum array `read|write|admin`
+- `tier`: optional enum `guest|user|premium`
+- `expiresInDays`: optional integer, minimum `1`
+- `rotateInDays`: optional integer, minimum `1`
 
-### `POST /api/auth/mfa/setup`
+## Example Calls
 
-Creates a TOTP setup challenge and QR-compatible provisioning data.
+### Bootstrap a browser session
 
-### `POST /api/auth/mfa/enable`
+```bash
+curl "$PRIMECAL_API/api/auth/csrf" -c cookies.txt
+```
 
-Required body:
+```bash
+curl -X POST "$PRIMECAL_API/api/auth/login" \
+  -b cookies.txt \
+  -c cookies.txt \
+  -H "Content-Type: application/json" \
+  -H "x-csrf-token: $CSRF_TOKEN" \
+  -d '{
+    "username": "mayblate",
+    "password": "StrongPassword123!"
+  }'
+```
 
-- `code`: a 6-digit authenticator code
+### Complete onboarding
 
-### `POST /api/auth/mfa/disable`
+```bash
+curl -X POST "$PRIMECAL_API/api/auth/complete-onboarding" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "language": "en",
+    "timezone": "Europe/Budapest",
+    "timeFormat": "24h",
+    "weekStartDay": 1,
+    "defaultCalendarView": "week",
+    "themeColor": "#3b82f6",
+    "privacyPolicyAccepted": true,
+    "termsOfServiceAccepted": true,
+    "calendarUseCase": "personal"
+  }'
+```
 
-Accepts either:
+### Create a user API key
 
-- `code`: a 6-digit authenticator code
-- `recoveryCode`: a recovery code, max 32 chars
+```bash
+curl -X POST "$PRIMECAL_API/api/api-keys" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "calendar-sync-job",
+    "scopes": ["read", "write"],
+    "tier": "user",
+    "expiresInDays": 90,
+    "rotateInDays": 30
+  }'
+```
 
-## Availability Checks
+## Response Notes
 
-### `GET /api/auth/username-availability`
-Query:
-- `username`
+- `AuthResponseDto` returns `access_token`, `token_type`, `expires_in`, `refresh_expires_at`, `issued_at`, optional `refresh_token`, and a `user` block.
+- Native clients can receive a plaintext `refresh_token`; browser flows rely on the refresh cookie.
+- API key creation and rotation return the plaintext API key only once.
 
-### `GET /api/auth/email-availability`
-Query:
-- `email`
+## Best Practices
 
-Both return a simple `{ available: boolean }` payload.
-
-## OAuth And Token Handling
-
-- `GET /api/auth/google` and `GET /api/auth/microsoft` redirect into the provider login flow.
-- Their callback routes return the user to the frontend after the refresh cookie is set.
-- `POST /api/auth/refresh` accepts a refresh token in the body or from the HttpOnly cookie.
-- `POST /api/auth/logout` clears the refresh cookie and revokes the session.
-- `POST /api/auth/widget-token` issues a short-lived token for the mobile widget flow.
-
-## Docs Notes
-
-- In production, Swagger can require HTTP Basic credentials in addition to the normal API auth rules.
-- The backend also accepts the `x-primecal-client: mobile-native` hint to return a refresh token for native clients.
+- Use `GET /api/auth/csrf` before any cookie-backed `POST`, `PATCH`, `PUT`, or `DELETE` call from a browser client.
+- Treat `/api/auth/refresh` as a session-maintenance endpoint, not a primary login path.
+- Keep MFA prompts conditional. Only send `mfaCode` or `mfaRecoveryCode` when the login flow requires it.
+- Use user API keys for server-to-server user automation, but use JWT bearer auth for `/api/api-keys` management itself.
+- Prefer provider redirects from `/api/auth/google` and `/api/auth/microsoft` instead of building your own OAuth URLs.

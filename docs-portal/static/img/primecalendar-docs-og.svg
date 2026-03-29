@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" role="img" aria-label="PrimeCalendar Documentation">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" role="img" aria-label="PrimeCal Documentation">
   <defs>
     <linearGradient id="g" x1="0" x2="1" y1="0" y2="1">
       <stop offset="0%" stop-color="#0f172a" />
@@ -12,7 +12,7 @@
   <circle cx="200" cy="192" r="14" fill="#1f6feb" />
   <circle cx="255" cy="192" r="14" fill="#1f6feb" />
   <text x="360" y="220" fill="#ffffff" font-size="78" font-family="Segoe UI, Arial, sans-serif" font-weight="700">
-    PrimeCalendar Docs
+    PrimeCal Docs
   </text>
   <text x="360" y="290" fill="#dbeafe" font-size="34" font-family="Segoe UI, Arial, sans-serif">
     Consolidated guides, references, troubleshooting, and best practices

@@ -1,98 +1,105 @@
 ---
-title: "Getting Started"
-description: "Start here for the real first-run PrimeCalendar flow: account creation, onboarding, calendars, groups, and first events."
+title: Getting Started
+description: "Start here for the real PrimeCal first-run flow: registration, onboarding, calendar setup, groups, and the first event."
 category: Getting Started
 audience: End User
 difficulty: Beginner
-last_updated: 2026-03-27
+last_updated: 2026-03-29
 version: 1.3.0
 hide_title: true
 related:
   - ../index.md
-tags: [primecalendar, getting-started, onboarding, calendars, events]
+  - ./quick-start-guide.md
+tags: [primecal, getting-started, onboarding, calendars, events]
 ---
 
 <div class="pc-guide-hero">
-  <p class="pc-guide-hero__eyebrow">PrimeCalendar • First Run</p>
+  <p class="pc-guide-hero__eyebrow">PrimeCal First Run</p>
   <h1 class="pc-guide-hero__title">Get Set Up Without Guesswork</h1>
-  <p class="pc-guide-hero__lead">These guides document the real PrimeCalendar launch path from the current product and API: account creation, onboarding, calendar creation, calendar groups, and the first event flow.</p>
+  <p class="pc-guide-hero__lead">These guides follow the real first-run path in PrimeCal: create an account, complete the onboarding wizard, create a regular calendar, organize groups, and save the first event.</p>
   <div class="pc-guide-chip-row">
-    <span class="pc-guide-chip">Source-backed</span>
-    <span class="pc-guide-chip">Screenshot-ready</span>
-    <span class="pc-guide-chip">UI + API aligned</span>
-    <span class="pc-guide-chip">Built for docs-portal</span>
+    <span class="pc-guide-chip">Registration</span>
+    <span class="pc-guide-chip">Wizard steps</span>
+    <span class="pc-guide-chip">Calendar setup</span>
+    <span class="pc-guide-chip">Real screenshots</span>
   </div>
 </div>
 
-## Start Here
+## First-Run Path
 
 <div class="pc-guide-grid">
   <article class="pc-guide-card pc-guide-card--accent">
     <p class="pc-guide-card__eyebrow">Overview</p>
     <h3><a href="/GETTING-STARTED/quick-start-guide">Quick Start Guide</a></h3>
-    <p>Read the full first-run sequence in one page, including the key API endpoints behind each step.</p>
+    <p>Read the full setup path in one pass before you dive into the detailed pages.</p>
   </article>
   <article class="pc-guide-card">
     <p class="pc-guide-card__eyebrow">Account</p>
     <h3><a href="/GETTING-STARTED/first-steps/creating-your-account">Creating Your Account</a></h3>
-    <p>Register, pass live validation, and complete the 5-step onboarding wizard with all current field rules.</p>
+    <p>Register, pass live validation, and complete the five onboarding steps with the current field behavior.</p>
   </article>
   <article class="pc-guide-card">
     <p class="pc-guide-card__eyebrow">Setup</p>
     <h3><a href="/GETTING-STARTED/first-steps/initial-setup">Initial Setup</a></h3>
-    <p>Create a regular calendar, create or rename groups, assign calendars, and understand ownership limits.</p>
+    <p>Create a normal calendar, create groups, rename them, assign calendars, and keep the workspace tidy from day one.</p>
   </article>
   <article class="pc-guide-card">
     <p class="pc-guide-card__eyebrow">Events</p>
     <h3><a href="/GETTING-STARTED/first-steps/creating-your-first-event">Creating Your First Event</a></h3>
-    <p>Open the event modal from the current UI, fill the form correctly, and review recurrence and save behavior.</p>
+    <p>Use the shared event modal correctly, understand the visible fields, and save the first event with confidence.</p>
   </article>
 </div>
 
-## First-Run Sequence
+## What Happens First
 
 <div class="pc-guide-flow">
   <article class="pc-guide-flow__item">
     <div class="pc-guide-flow__index">1</div>
     <h3>Register</h3>
-    <p>Use <code>Sign up</code>, complete username, email, and password validation, then submit <code>Create account</code>.</p>
+    <p>Create the account with a username, email address, and password.</p>
   </article>
   <article class="pc-guide-flow__item">
     <div class="pc-guide-flow__index">2</div>
-    <h3>Finish Wizard</h3>
-    <p>Complete the onboarding steps for profile, personalization, compliance, calendar preferences, and review.</p>
+    <h3>Finish Onboarding</h3>
+    <p>Choose your language, timezone, week settings, and compliance choices in the guided wizard.</p>
   </article>
   <article class="pc-guide-flow__item">
     <div class="pc-guide-flow__index">3</div>
-    <h3>Create Calendar</h3>
-    <p>Add a normal calendar such as <code>Personal</code> or <code>Work</code>; the bootstrap <code>Tasks</code> calendar is not enough for most users.</p>
+    <h3>Create A Real Calendar</h3>
+    <p>The default `Tasks` calendar is useful for task capture, but most users should add a normal calendar right away.</p>
   </article>
   <article class="pc-guide-flow__item">
     <div class="pc-guide-flow__index">4</div>
-    <h3>Start Scheduling</h3>
-    <p>Create the first event, optionally add labels and recurrence, then confirm the saved result appears in the calendar.</p>
+    <h3>Start Planning</h3>
+    <p>Create the first event, then continue into Month, Week, and Focus view in the user guide.</p>
   </article>
 </div>
 
-:::warning Important First-Run Note
-PrimeCalendar creates a private `Tasks` calendar automatically for each new user. That bootstrap calendar exists so task features work immediately. It does not replace a normal personal, work, or team calendar, so most users should create a dedicated regular calendar during initial setup.
+## What The Setup Looks Like
+
+<div class="pc-guide-shot-grid">
+  <article class="pc-guide-shot">
+    <p class="pc-guide-shot__eyebrow">Registration</p>
+    <h3 class="pc-guide-shot__title">Sign-up form</h3>
+    <img src="../assets/getting-started/register-form.png" alt="PrimeCal registration form" />
+  </article>
+  <article class="pc-guide-shot">
+    <p class="pc-guide-shot__eyebrow">Onboarding</p>
+    <h3 class="pc-guide-shot__title">Personalization step</h3>
+    <img src="../assets/getting-started/onboarding-step-2-personalization.png" alt="PrimeCal onboarding personalization step" />
+  </article>
+  <article class="pc-guide-shot">
+    <p class="pc-guide-shot__eyebrow">Calendar setup</p>
+    <h3 class="pc-guide-shot__title">Create calendar dialog</h3>
+    <img src="../assets/user-guide/calendars/create-calendar-modal.png" alt="PrimeCal create calendar dialog" />
+  </article>
+  <article class="pc-guide-shot">
+    <p class="pc-guide-shot__eyebrow">First event</p>
+    <h3 class="pc-guide-shot__title">Event modal</h3>
+    <img src="../assets/user-guide/calendars/create-event-modal.png" alt="PrimeCal create event modal" />
+  </article>
+</div>
+
+:::warning Create a normal calendar early
+PrimeCal creates a private `Tasks` calendar automatically so the Tasks workspace works immediately. That does not replace a normal family, personal, or work calendar, so most users should create one during initial setup.
 :::
-
-## Recommended Reading Order
-
-1. [Quick Start Guide](./quick-start-guide.md)
-2. [Creating Your Account](./first-steps/creating-your-account.md)
-3. [Initial Setup](./first-steps/initial-setup.md)
-4. [Creating Your First Event](./first-steps/creating-your-first-event.md)
-
-## Additional Pages In This Section
-
-- [What Is PrimeCalendar](./what-is-primecalendar.md)
-- [System Requirements](./system-requirements.md)
-- [Cloud Setup](./installation/cloud-setup.md)
-- [Self Hosted Docker](./installation/self-hosted-docker.md)
-- [Self Hosted Kubernetes](./installation/self-hosted-kubernetes.md)
-- [Local Development](./installation/local-development.md)
-- [Inviting Team Members](./first-steps/inviting-team-members.md)
-- [Exploring The Interface](./first-steps/exploring-the-interface.md)
-- [Glossary](./glossary.md)

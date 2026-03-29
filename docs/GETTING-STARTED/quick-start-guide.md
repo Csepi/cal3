@@ -1,10 +1,10 @@
 ---
-title: "Quick Start Guide"
-description: "Source-backed quick start for account creation, onboarding, calendars, groups, and first events in PrimeCalendar."
+title: Quick Start Guide
+description: Fast path for registration, onboarding, calendar setup, groups, and the first event in PrimeCal.
 category: Getting Started
 audience: End User
 difficulty: Beginner
-last_updated: 2026-03-27
+last_updated: 2026-03-29
 version: 1.3.0
 hide_title: true
 related:
@@ -12,17 +12,18 @@ related:
   - ./first-steps/creating-your-account.md
   - ./first-steps/initial-setup.md
   - ./first-steps/creating-your-first-event.md
-tags: [getting-started, quick-start, onboarding, calendars, groups, events]
+tags: [getting-started, quick-start, onboarding, calendars, events]
 ---
 
 <div class="pc-guide-hero">
-  <p class="pc-guide-hero__eyebrow">Getting Started • Fast Path</p>
+  <p class="pc-guide-hero__eyebrow">Fast Path</p>
   <h1 class="pc-guide-hero__title">Quick Start Guide</h1>
-  <p class="pc-guide-hero__lead">Use this page when you want the full first-run journey in one pass before you dive into the detailed pages. Every step here matches the current UI and the active API surface.</p>
+  <p class="pc-guide-hero__lead">Use this page when you want the full first-run sequence in one place. It mirrors the same screens a new PrimeCal user sees in the live product.</p>
   <div class="pc-guide-chip-row">
-    <span class="pc-guide-chip">5 setup phases</span>
-    <span class="pc-guide-chip">7 key endpoints</span>
-    <span class="pc-guide-chip">Current UI labels</span>
+    <span class="pc-guide-chip">Account creation</span>
+    <span class="pc-guide-chip">Onboarding wizard</span>
+    <span class="pc-guide-chip">Calendar groups</span>
+    <span class="pc-guide-chip">First event</span>
   </div>
 </div>
 
@@ -31,163 +32,59 @@ tags: [getting-started, quick-start, onboarding, calendars, groups, events]
 <div class="pc-guide-flow">
   <article class="pc-guide-flow__item">
     <div class="pc-guide-flow__index">1</div>
-    <h3>Create Account</h3>
-    <p>Switch the auth screen into <code>Sign up</code> mode and submit <code>Username</code>, <code>Email address</code>, and <code>Password</code>.</p>
+    <h3>Create Your Account</h3>
+    <p>Open `Sign up`, enter your username, email address, and password, then submit `Create account`.</p>
   </article>
   <article class="pc-guide-flow__item">
     <div class="pc-guide-flow__index">2</div>
-    <h3>Complete Wizard</h3>
-    <p>Finish the 5-step onboarding flow and accept both required legal checkboxes before <code>Complete Setup</code>.</p>
+    <h3>Complete The Wizard</h3>
+    <p>Finish the five onboarding steps for profile, personalization, privacy, calendar preferences, and review.</p>
   </article>
   <article class="pc-guide-flow__item">
     <div class="pc-guide-flow__index">3</div>
-    <h3>Create Calendar</h3>
-    <p>Open the Calendar workspace and use <code>New Calendar</code> to create a regular calendar with name, color, icon, and optional group.</p>
+    <h3>Create Your Calendar</h3>
+    <p>Use `New Calendar` to create a normal calendar such as `Family`, `Personal`, or `Work`.</p>
   </article>
   <article class="pc-guide-flow__item">
     <div class="pc-guide-flow__index">4</div>
-    <h3>Group Calendars</h3>
-    <p>Use <code>+ Group</code> to organize multiple calendars, then rename, toggle visibility, assign calendars, or delete the group later.</p>
+    <h3>Organize Groups</h3>
+    <p>Create a group if you want to keep multiple calendars together in the sidebar.</p>
   </article>
   <article class="pc-guide-flow__item">
     <div class="pc-guide-flow__index">5</div>
-    <h3>Create Event</h3>
-    <p>Use <code>New Event</code> or any supported slot-selection shortcut, then save the event through the shared event modal.</p>
+    <h3>Create Your First Event</h3>
+    <p>Use `New Event` or click directly in a calendar view, then save the event through the shared modal.</p>
   </article>
 </div>
 
-:::warning Create a regular calendar early
-New accounts are bootstrapped with a private `Tasks` calendar so the Tasks workspace works immediately. That is not the same thing as a normal personal or work calendar. Create a dedicated calendar such as `Personal`, `Work`, or `Team` before you start adding regular events.
-:::
+## What You Will Configure
 
-## Recommended Path
+- account identity and secure sign-in
+- language, timezone, time format, week start, and default view
+- privacy acceptance and optional product-update consent
+- at least one regular calendar and optional calendar groups
+- the first real event in the month, week, or focus workflow
 
-<div class="pc-guide-grid">
-  <article class="pc-guide-card pc-guide-card--accent">
-    <p class="pc-guide-card__eyebrow">Step 1</p>
-    <h3><a href="/GETTING-STARTED/first-steps/creating-your-account">Creating Your Account</a></h3>
-    <p>Registration, onboarding, consent capture, timezone, language, default view, and theme settings.</p>
-  </article>
-  <article class="pc-guide-card">
-    <p class="pc-guide-card__eyebrow">Step 2</p>
-    <h3><a href="/GETTING-STARTED/first-steps/initial-setup">Initial Setup</a></h3>
-    <p>Normal calendar creation, group creation, assignment, rename, delete, and permission boundaries.</p>
-  </article>
-  <article class="pc-guide-card">
-    <p class="pc-guide-card__eyebrow">Step 3</p>
-    <h3><a href="/GETTING-STARTED/first-steps/creating-your-first-event">Creating Your First Event</a></h3>
-    <p>Event entry points, modal fields, labels, recurrence, all-day rules, and save behavior.</p>
-  </article>
-</div>
+## Screens You Will See
 
-## What PrimeCalendar Handles Automatically
+![PrimeCal filled registration form before submission](../assets/getting-started/sign-up-form-complete.png)
 
-<div class="pc-guide-grid">
-  <article class="pc-guide-card">
-    <p class="pc-guide-card__eyebrow">Auth</p>
-    <h3>Registration Signs You In</h3>
-    <p><code>POST /api/auth/register</code> creates the user and starts the authenticated browser flow immediately.</p>
-  </article>
-  <article class="pc-guide-card">
-    <p class="pc-guide-card__eyebrow">Guard</p>
-    <h3>Incomplete Onboarding Is Blocked</h3>
-    <p>Users with <code>onboardingCompleted = false</code> are redirected into <code>/onboarding</code> until setup is finished.</p>
-  </article>
-  <article class="pc-guide-card">
-    <p class="pc-guide-card__eyebrow">Bootstrap</p>
-    <h3>A Tasks Calendar Is Created</h3>
-    <p>The user bootstrap service creates a private <code>Tasks</code> calendar and stores it as the default tasks calendar.</p>
-  </article>
-  <article class="pc-guide-card">
-    <p class="pc-guide-card__eyebrow">Events</p>
-    <h3>Labels Are Normalized</h3>
-    <p>Labels are trimmed, deduplicated case-insensitively, capped at 50 items, and each label is capped at 64 characters.</p>
-  </article>
-</div>
+![PrimeCal onboarding review step before completing setup](../assets/getting-started/onboarding-step-5-review.png)
 
-## API Review
+![PrimeCal calendar sidebar with grouped family calendars](../assets/user-guide/calendars/calendar-sidebar-and-group.png)
 
-<div class="pc-guide-api-grid">
-  <article class="pc-guide-api">
-    <p class="pc-guide-api__eyebrow">Registration</p>
-    <div class="pc-guide-pill-row">
-      <span class="pc-guide-pill pc-guide-pill--post">POST</span>
-      <span class="pc-guide-pill pc-guide-pill--get">GET</span>
-      <span class="pc-guide-pill pc-guide-pill--get">GET</span>
-    </div>
-    <h3><code>/api/auth/register</code>, <code>/api/auth/username-availability</code>, <code>/api/auth/email-availability</code></h3>
-    <p>Create the account and drive the live uniqueness checks used on the registration form.</p>
-  </article>
-  <article class="pc-guide-api">
-    <p class="pc-guide-api__eyebrow">Onboarding</p>
-    <div class="pc-guide-pill-row">
-      <span class="pc-guide-pill pc-guide-pill--get">GET</span>
-      <span class="pc-guide-pill pc-guide-pill--post">POST</span>
-    </div>
-    <h3><code>/api/auth/profile</code>, <code>/api/auth/complete-onboarding</code></h3>
-    <p>Confirm onboarding state and save profile, personalization, consent, and calendar-preference data.</p>
-  </article>
-  <article class="pc-guide-api">
-    <p class="pc-guide-api__eyebrow">Calendars</p>
-    <div class="pc-guide-pill-row">
-      <span class="pc-guide-pill pc-guide-pill--post">POST</span>
-      <span class="pc-guide-pill pc-guide-pill--patch">PATCH</span>
-      <span class="pc-guide-pill pc-guide-pill--delete">DELETE</span>
-    </div>
-    <h3><code>/api/calendars</code>, <code>/api/calendars/:id</code></h3>
-    <p>Create, update, and remove calendars after onboarding is complete.</p>
-  </article>
-  <article class="pc-guide-api">
-    <p class="pc-guide-api__eyebrow">Groups</p>
-    <div class="pc-guide-pill-row">
-      <span class="pc-guide-pill pc-guide-pill--get">GET</span>
-      <span class="pc-guide-pill pc-guide-pill--post">POST</span>
-      <span class="pc-guide-pill pc-guide-pill--patch">PATCH</span>
-      <span class="pc-guide-pill pc-guide-pill--delete">DELETE</span>
-    </div>
-    <h3><code>/api/calendar-groups</code></h3>
-    <p>List, create, rename, toggle visibility, and delete groups, plus assign and unassign calendars.</p>
-  </article>
-  <article class="pc-guide-api">
-    <p class="pc-guide-api__eyebrow">Events</p>
-    <div class="pc-guide-pill-row">
-      <span class="pc-guide-pill pc-guide-pill--post">POST</span>
-    </div>
-    <h3><code>/api/events</code></h3>
-    <p>Create both one-off and recurring events from the same modal and request path.</p>
-  </article>
-</div>
+![PrimeCal create event modal ready for the first event](../assets/user-guide/calendars/create-event-modal.png)
 
-## Screenshot Plan
+## Best Practices For New Users
 
-<div class="pc-guide-shot-grid">
-  <article class="pc-guide-shot">
-    <p class="pc-guide-shot__eyebrow">Screenshot Placeholder</p>
-    <h3 class="pc-guide-shot__title">Sign-Up Screen</h3>
-    <p class="pc-guide-shot__note">Capture the auth page in <code>Sign up</code> mode with username, email, and password visible.</p>
-  </article>
-  <article class="pc-guide-shot">
-    <p class="pc-guide-shot__eyebrow">Screenshot Placeholder</p>
-    <h3 class="pc-guide-shot__title">Onboarding Progress</h3>
-    <p class="pc-guide-shot__note">Show the wizard header with the current step indicator and progress state.</p>
-  </article>
-  <article class="pc-guide-shot">
-    <p class="pc-guide-shot__eyebrow">Screenshot Placeholder</p>
-    <h3 class="pc-guide-shot__title">Create Calendar Dialog</h3>
-    <p class="pc-guide-shot__note">Include the name, description, icon, color, and group controls in one frame.</p>
-  </article>
-  <article class="pc-guide-shot">
-    <p class="pc-guide-shot__eyebrow">Screenshot Placeholder</p>
-    <h3 class="pc-guide-shot__title">Groups Sidebar</h3>
-    <p class="pc-guide-shot__note">Show the <code>Groups</code> section with assign, rename, visibility, and delete actions.</p>
-  </article>
-  <article class="pc-guide-shot">
-    <p class="pc-guide-shot__eyebrow">Screenshot Placeholder</p>
-    <h3 class="pc-guide-shot__title">Event Modal</h3>
-    <p class="pc-guide-shot__note">Capture the event modal with recurrence expanded and the calendar selector already chosen.</p>
-  </article>
-</div>
+- Finish the full onboarding flow before trying to configure advanced features like sync, automation, or AI agents.
+- Create a regular calendar before creating lots of events so your day-to-day schedule does not mix with the default tasks calendar.
+- Choose calendar colors early and keep them consistent across family, work, and personal spaces.
+- Add only the groups you need. Too many groups make the sidebar harder to scan.
 
-<div class="pc-guide-next">
-  <p>Start with <a href="/GETTING-STARTED/first-steps/creating-your-account">Creating Your Account</a>. When that is complete, continue to <a href="/GETTING-STARTED/first-steps/initial-setup">Initial Setup</a>.</p>
-</div>
+## Continue With The Detailed Pages
+
+1. [Creating Your Account](./first-steps/creating-your-account.md)
+2. [Initial Setup](./first-steps/initial-setup.md)
+3. [Creating Your First Event](./first-steps/creating-your-first-event.md)
+4. [User Documentation](../USER-GUIDE/index.md)

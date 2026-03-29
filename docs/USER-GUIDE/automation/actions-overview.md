@@ -83,6 +83,10 @@ tags: [primecal, automation, actions, webhooks, tasks]
 - At least one action is required.
 - The editor rejects unsupported actions that are still marked as coming soon.
 
+## Live Action Builder Example
+
+![Action builder stack in the PrimeCal automation modal](../../assets/user-guide/automation/action-builder-stack.png)
+
 ## When To Use Which Action
 
 - Use `Set Event Color` when you want a rule to visually mark an event.

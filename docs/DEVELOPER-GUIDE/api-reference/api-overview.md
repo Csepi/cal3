@@ -1,18 +1,15 @@
 ---
 title: API Overview
-description: Swagger-style reference for the PrimeCal backend API surface.
+description: Swagger-style overview of the PrimeCal non-admin backend API surface, grouped by real product areas.
 category: Developer
 audience: Developer
 difficulty: Advanced
-last_updated: 2026-03-27
+last_updated: 2026-03-29
 version: 1.3.0
 related:
   - ../index.md
   - ./authentication-api.md
-  - ./user-api.md
   - ./calendar-api.md
-  - ./event-api.md
-  - ./automation-api.md
   - ./agent-api.md
 tags: [primecal, api, swagger, reference, developer]
 ---
@@ -21,117 +18,84 @@ tags: [primecal, api, swagger, reference, developer]
 
 <div class="pc-guide-hero">
   <p class="pc-guide-hero__eyebrow">PrimeCal API Reference</p>
-  <h1 class="pc-guide-hero__title">Swagger-style docs for the real backend</h1>
+  <h1 class="pc-guide-hero__title">The Non-Admin API Map</h1>
   <p class="pc-guide-hero__lead">
-    The backend serves its generated Swagger document from the same NestJS controllers that power the app.
-    This section explains where to find it, how to authenticate, and where each endpoint group lives.
+    This reference is built directly from the backend controllers and DTOs. It documents the
+    user-facing and integration-facing API surface and intentionally excludes the admin controllers
+    and admin-only routes.
   </p>
   <div class="pc-guide-chip-row">
-    <span class="pc-guide-chip">JWT auth</span>
-    <span class="pc-guide-chip">Agent API keys</span>
-    <span class="pc-guide-chip">Swagger UI</span>
-    <span class="pc-guide-chip">Controller-backed</span>
+    <span class="pc-guide-chip">Base path: /api</span>
+    <span class="pc-guide-chip">JWT, cookie, API key, and agent auth</span>
+    <span class="pc-guide-chip">Code-backed DTO constraints</span>
+    <span class="pc-guide-chip">Admin surface excluded</span>
   </div>
 </div>
 
-## Where To Start
+## Scope
 
-<div class="pc-guide-grid">
-  <article class="pc-guide-card pc-guide-card--accent">
-    <p class="pc-guide-card__eyebrow">Authentication</p>
-    <h3><a href="/DEVELOPER-GUIDE/api-reference/authentication-api">Auth, onboarding, MFA, OAuth</a></h3>
-    <p>Registration, login, refresh, onboarding, widget tokens, MFA, and social login routes.</p>
-  </article>
-  <article class="pc-guide-card">
-    <p class="pc-guide-card__eyebrow">User Profile</p>
-    <h3><a href="/DEVELOPER-GUIDE/api-reference/user-api">Profile and preferences</a></h3>
-    <p>Profile, theme, password, labels, profile picture upload, and Tasks calendar defaults.</p>
-  </article>
-  <article class="pc-guide-card">
-    <p class="pc-guide-card__eyebrow">Calendars</p>
-    <h3><a href="/DEVELOPER-GUIDE/api-reference/calendar-api">Calendars and groups</a></h3>
-    <p>Create, edit, share, group, assign, unassign, and delete calendars and calendar groups.</p>
-  </article>
-  <article class="pc-guide-card">
-    <p class="pc-guide-card__eyebrow">Automation</p>
-    <h3><a href="/DEVELOPER-GUIDE/api-reference/automation-api">Rules, webhooks, and smart values</a></h3>
-    <p>Rule CRUD, run-now execution, audit logs, webhook endpoints, and trigger metadata.</p>
-  </article>
-  <article class="pc-guide-card">
-    <p class="pc-guide-card__eyebrow">Agents</p>
-    <h3><a href="/DEVELOPER-GUIDE/api-reference/agent-api">Agent and MCP setup</a></h3>
-    <p>Agent management, scoped permissions, API keys, and MCP runtime endpoints.</p>
-  </article>
-</div>
+- Included: non-admin controllers and non-admin product routes
+- Excluded: `/api/admin/*` controllers and non-`/admin` routes that are protected with `AdminGuard`
+- Source of truth: NestJS controllers, DTOs, and guard behavior in `backend-nestjs/src`
 
-## Runtime Basics
+## Base URL and Auth Model
 
-<div class="pc-guide-flow">
-  <article class="pc-guide-flow__item">
-    <div class="pc-guide-flow__index">1</div>
-    <h3>Base URL</h3>
-    <p>All backend routes are mounted under <code>/api</code>. For example, <code>/api/auth/login</code> and <code>/api/calendars</code>.</p>
-  </article>
-  <article class="pc-guide-flow__item">
-    <div class="pc-guide-flow__index">2</div>
-    <h3>Swagger UI</h3>
-    <p>Generated docs are exposed at <code>/api/docs</code> when Swagger is enabled by the backend bootstrap config.</p>
-  </article>
-  <article class="pc-guide-flow__item">
-    <div class="pc-guide-flow__index">3</div>
-    <h3>Auth Modes</h3>
-    <p>User endpoints use JWT bearer auth. Agent runtime endpoints use scoped agent keys or <code>Authorization: Agent ...</code>.</p>
-  </article>
-  <article class="pc-guide-flow__item">
-    <div class="pc-guide-flow__index">4</div>
-    <h3>Production Docs</h3>
-    <p>If <code>SWAGGER_USER</code> and <code>SWAGGER_PASSWORD</code> are configured, Swagger is protected with HTTP Basic auth in production.</p>
-  </article>
-</div>
-
-## Request Types
-
-<div class="pc-guide-api-grid">
-  <article class="pc-guide-api">
-    <p class="pc-guide-api__eyebrow">Public</p>
-    <h3>Anonymous entry points</h3>
-    <p>CSRF bootstrap, username/email availability checks, OAuth redirects, and the public automation webhook endpoint.</p>
-  </article>
-  <article class="pc-guide-api">
-    <p class="pc-guide-api__eyebrow">JWT</p>
-    <h3>Signed-in user endpoints</h3>
-    <p>Profile, calendars, events, automation rules, and most onboarding or preference actions require a bearer token.</p>
-  </article>
-  <article class="pc-guide-api">
-    <p class="pc-guide-api__eyebrow">Agent key</p>
-    <h3>Agent / MCP endpoints</h3>
-    <p>The MCP runtime is authenticated by a scoped agent key and never by a browser JWT.</p>
-  </article>
-</div>
-
-## Documentation Map
-
-| Page | Covers |
+| Topic | Notes |
 | --- | --- |
-| [Authentication API](./authentication-api.md) | register, login, refresh, onboarding, MFA, OAuth |
-| [User API](./user-api.md) | profile, theme, password, labels, profile picture |
-| [Calendar API](./calendar-api.md) | calendars, calendar groups, sharing, grouping |
-| [Event API](./event-api.md) | event CRUD, recurrence, calendar-specific queries |
-| [Automation API](./automation-api.md) | rule CRUD, triggers, conditions, actions, webhooks |
-| [Agent API](./agent-api.md) | agent CRUD, permissions, keys, MCP runtime |
+| Base path | All examples assume `/api` |
+| Swagger UI | Generated Swagger can be served at `/api/docs` when enabled |
+| Browser sessions | Use refresh cookies plus CSRF for mutating requests |
+| Bearer auth | `Authorization: Bearer <token>` |
+| User API keys | Supported on routes guarded by `JwtAuthGuard`; send `x-api-key` or `Authorization: ApiKey <token>` |
+| Agent keys | Required for MCP runtime; send `x-agent-key`, `x-agent-token`, or `Authorization: Agent <token>` |
 
-## Screenshot Placement
+## Product-Area Reference Map
 
-Use this pattern when you add screenshots later:
+| Page | Product area | Highlights |
+| --- | --- | --- |
+| [Authentication API](./authentication-api.md) | Authentication | register, login, onboarding, MFA, OAuth, user API keys |
+| [User API](./user-api.md) | User and profile | profile settings, language, permissions, user search |
+| [Personal Logs API](./personal-logs-api.md) | Personal logs | audit feed and summary |
+| [Compliance API](./compliance-api.md) | Privacy and compliance | exports, requests, consents, policy acceptance |
+| [Calendar API](./calendar-api.md) | Calendar | calendars, groups, sharing |
+| [Event API](./event-api.md) | Events | event CRUD, recurrence, comments |
+| [Tasks API](./tasks-api.md) | Tasks | tasks, labels, filtering |
+| [Automation API](./automation-api.md) | Automation | rules, audit logs, approvals, webhook trigger |
+| [External Sync API](./sync-api.md) | External sync | provider status, OAuth, mappings, force sync |
+| [Agent API](./agent-api.md) | AI agents and MCP | agents, scopes, keys, MCP runtime |
+| [Notifications API](./notifications-api.md) | Notifications | inbox, preferences, rules, mutes, threads |
+| [Organization API](./organization-api.md) | Organizations | membership, roles, color, deletion preview |
+| [Resource API](./resource-api.md) | Resources | resource types, resources, public tokens |
+| [Booking API](./booking-api.md) | Reservations and public booking | reservation calendars, reservations, public booking |
+| [Platform API](./platform-api.md) | Platform | health, flags, metrics, security reports |
 
-```md
-![Create calendar dialog](../../assets/api/calendar-create-dialog.png)
+## Quick Start Examples
+
+### Bearer auth
+
+```bash
+export PRIMECAL_API=https://api.primecal.eu
+curl "$PRIMECAL_API/api/calendars" \
+  -H "Authorization: Bearer $TOKEN"
 ```
 
-Place the files under a docs asset folder and keep the markdown path relative to the page. For the portal, `docs/assets/` or `docs-portal/static/` both work if the build can resolve the image path.
+### User API key
 
-## Notes
+```bash
+curl "$PRIMECAL_API/api/tasks" \
+  -H "Authorization: ApiKey $USER_API_KEY"
+```
 
-- The API pages below stay close to the controller and DTO contract rather than summarizing product behavior.
-- When a field is not marked optional in the DTO, treat it as required even if the UI fills a default.
-- The docs intentionally show the actual limits, enums, and route names from the backend source.
+### Agent key
+
+```bash
+curl "$PRIMECAL_API/api/mcp/actions" \
+  -H "Authorization: Agent $AGENT_KEY"
+```
+
+## Best Practices
+
+- Group client code by product area, not just by controller path.
+- Use the DTO constraints in these pages as your request-contract source of truth.
+- Treat admin-only routes as a separate documentation surface.
+- Build integration UIs from live catalog endpoints where they exist, such as automation smart values or the agent catalog.

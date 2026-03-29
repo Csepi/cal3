@@ -84,6 +84,10 @@ Supported comparison logic includes:
 - Each condition row can also carry its own logic operator.
 - The editor allows up to 10 conditions.
 
+## Live Builder Example
+
+![Trigger and condition builder in the PrimeCal automation modal](../../assets/user-guide/automation/trigger-and-condition-builder.png)
+
 ## Filtering Tips
 
 - Use `contains` for titles and descriptions that can vary slightly.
