@@ -44,6 +44,11 @@ tags: [primecal, documentation, onboarding, automation, mcp]
     <h3><a href="/DEVELOPER-GUIDE">Developer Documentation</a></h3>
     <p>Swagger-style documentation for every non-admin backend area, grouped by the same product features users see.</p>
   </article>
+  <article class="pc-guide-card">
+    <p class="pc-guide-card__eyebrow">Need answers fast</p>
+    <h3><a href="/FAQ">FAQ</a></h3>
+    <p>Short, real-world answers for setup, views, sync, automation, AI agents, privacy, and troubleshooting.</p>
+  </article>
 </div>
 
 ## PrimeCal Features

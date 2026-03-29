@@ -1,126 +1,100 @@
 ---
-title: Technical Faq
-description: Step-by-step guidance for technical faq in PrimeCalendar.
+title: Troubleshooting FAQ
+description: Practical checks for missing events, quiet Focus view, stale sync, task placement, automation misses, and AI agent permission issues in PrimeCal.
 category: FAQ
 audience: End User
 difficulty: Intermediate
-last_updated: 2026-03-10
+last_updated: 2026-03-29
 version: 1.3.0
 related:
-  - index.md
-  - ../index.md
-tags: [faq, technical, primecalendar]
+  - ./index.md
+  - ../USER-GUIDE/basics/calendar-views.md
+  - ../USER-GUIDE/automation/managing-and-running-automations.md
+  - ../USER-GUIDE/tasks/tasks-workspace.md
+tags: [faq, troubleshooting, focus, sync, automation, primecal]
 ---
 
-# Technical Faq
+# Troubleshooting FAQ
 
-> **Quick Summary**: This page explains technical faq in PrimeCalendar using practical steps and troubleshooting guidance.
+This page is for the moment when something exists in PrimeCal, but the screen is not behaving the way you expect.
 
-## Table of Contents
+## An event exists, but I cannot find it. What should I check first?
 
-- [Prerequisites](#prerequisites)
-- [Overview](#overview)
-- [Step-by-Step Instructions](#step-by-step-instructions)
-- [Examples](#examples)
-- [Troubleshooting](#troubleshooting)
-- [Related Resources](#related-resources)
+**Short answer:** check visibility before you check everything else.
 
----
+Work in this order:
 
-## Prerequisites
+1. confirm the calendar is visible in the sidebar
+2. confirm you are looking at the right date range
+3. confirm the event is not filtered out by Focus-only label rules
+4. confirm your timezone and event time are what you think they are
 
-- Access to PrimeCalendar.
-- Appropriate role permissions for this workflow.
+Month and Week are usually the fastest places to confirm whether the event is truly missing or just filtered.
 
-**Time to Complete**: 10-20 minutes  
-**Difficulty**: Intermediate
+## Why does an event appear in Month or Week but not in Focus?
 
----
+**Short answer:** Focus is filtered more aggressively by design.
 
-## Overview
+The usual reason is that the event carries a label hidden from live Focus, or the current live moment no longer matches the event you expected to see.
 
-Use this guide to complete technical faq reliably. Confirm expected results after each step before moving to optional advanced settings.
+![PrimeCal clean Focus mode with quiet filtered state](../assets/user-guide/views/focus-mode-clean-filtered.png)
 
-> Add screenshots from `docs/assets/` with descriptive alt text for each UI interaction.
+## A task due date is not where I expected. What controls that?
 
----
+**Short answer:** the default Tasks calendar controls where mirrored task timing appears.
 
-## Step-by-Step Instructions
+If task timing looks strange, re-check:
 
-### Step 1: Open the Correct Area
+- whether the task has a due date
+- whether the due time was intentionally left blank
+- which calendar is acting as the default Tasks calendar
 
-- Sign in to PrimeCalendar.
-- Navigate to the feature area for this workflow.
-- Confirm required controls are visible.
+For the full explanation, use [Tasks Workspace](../USER-GUIDE/tasks/tasks-workspace.md) and [Profile Page](../USER-GUIDE/profile/profile-page.md).
 
-### Step 2: Configure Required Settings
+![PrimeCal tasks workspace with family task board and labels](../assets/user-guide/tasks/tasks-workspace-family-board.png)
 
-- Enter required values.
-- Save changes.
-- Verify expected behavior.
+## Why did my automation not run?
 
-### Step 3: Validate Outcome
+**Short answer:** most misses come from the rule not being enabled, the trigger not matching, or a condition filtering the event out.
 
-- Test one realistic scenario.
-- Confirm notifications, permissions, and expected outputs.
+Check these in order:
 
-<details>
-<summary>Advanced Options</summary>
+1. the rule is enabled
+2. the trigger matches the actual event change
+3. the conditions are not too narrow
+4. the action is still valid for the data it receives
+5. the execution history shows what happened
 
-- Add optional policies and automation hooks.
-- Document team defaults for repeatability.
+![PrimeCal automation rule detail with execution history](../assets/user-guide/automation/automation-rule-detail-history.png)
 
-</details>
+## Why can’t my agent perform an action it used to perform?
 
----
+**Short answer:** the scope, key, or allowed actions probably changed.
 
-## Examples
+Re-check:
 
-### Example 1: Team Rollout
+- whether the agent still has the required action enabled
+- whether the specific calendar or rule is still in scope
+- whether the key was revoked or rotated
+- whether you are pointing the client at the latest generated MCP configuration
 
-**Scenario**: Your team needs consistent behavior for technical faq.
+## Why does external sync look stale after I changed provider settings?
 
-**Steps**:
-1. Configure in a test workspace.
-2. Validate with pilot users.
-3. Roll out to production.
+**Short answer:** sync connections are easiest to recover by simplifying them, not by layering more changes onto a broken mapping.
 
-### Consolidated Legacy Sources
+Reduce the setup to the smallest useful test case, then reconnect cleanly if the provider account or mapping changed. This is especially important after switching Google or Microsoft accounts.
 
-- `10-FAQ/deployment.md`: This page has moved to the consolidated structure. - Canonical page: FAQ/technical-faq.md - Archived snapshot: archives/pre-consolidation/10-FAQ/deployment.md
-- `10-FAQ/technical.md`: This page has moved to the consolidated structure. - Canonical page: FAQ/technical-faq.md - Archived snapshot: archives/pre-consolidation/10-FAQ/technical.md
+## When should I stop troubleshooting and open the deeper docs?
 
+Move from FAQ to the full docs when:
 
----
+- you need the exact click path, not just the quick answer
+- you are changing more than one feature at once
+- the problem spans sync, automation, and agents together
 
-## Troubleshooting
+Use these pages next:
 
-### Issue: Configuration Does Not Apply
-
-**Symptoms**: Settings appear saved but behavior remains unchanged.
-
-**Solution**:
-1. Verify workspace and organization context.
-2. Re-check required fields and permissions.
-3. Review logs and API responses.
-
-**Prevention**: Use a pre-deployment checklist.
-
----
-
-## Related Resources
-
-- [Index](index.md)
-- [Index](../index.md)
-- [Documentation Home](../index.md)
-
----
-
-## Feedback
-
-Was this helpful? [Yes] [No]  
-Open an issue or pull request to improve this page.
-
----
-
-*Last updated: 2026-03-10 | PrimeCalendar v1.3.0*
+- [Calendar Views](../USER-GUIDE/basics/calendar-views.md)
+- [Focus Mode And Live Focus](../USER-GUIDE/basics/focus-mode-and-live-focus.md)
+- [Managing And Running Automations](../USER-GUIDE/automation/managing-and-running-automations.md)
+- [External Sync](../USER-GUIDE/integrations/external-sync.md)

@@ -1,125 +1,126 @@
 ---
-title: Integration Faq
-description: Step-by-step guidance for integration faq in PrimeCalendar.
+title: Automation, Sync, And AI Agents FAQ
+description: Understand when to use automation, how external sync behaves, and how PrimeCal AI agents should be scoped and tested.
 category: FAQ
 audience: End User
 difficulty: Intermediate
-last_updated: 2026-03-10
+last_updated: 2026-03-29
 version: 1.3.0
 related:
-  - index.md
-  - ../index.md
-tags: [faq, integration, primecalendar]
+  - ./index.md
+  - ../USER-GUIDE/automation/introduction-to-automation.md
+  - ../USER-GUIDE/integrations/external-sync.md
+  - ../USER-GUIDE/agents/agent-configuration.md
+tags: [faq, automation, sync, agents, mcp, primecal]
 ---
 
-# Integration Faq
+# Automation, Sync, And AI Agents FAQ
 
-> **Quick Summary**: This page explains integration faq in PrimeCalendar using practical steps and troubleshooting guidance.
+These are the power-user questions. Use this page when you are deciding whether PrimeCal should do the work automatically, sync it from elsewhere, or let an AI agent act on your behalf.
 
-## Table of Contents
+## Should I solve this with Automation or with an AI agent?
 
-- [Prerequisites](#prerequisites)
-- [Overview](#overview)
-- [Step-by-Step Instructions](#step-by-step-instructions)
-- [Examples](#examples)
-- [Troubleshooting](#troubleshooting)
-- [Related Resources](#related-resources)
+**Short answer:** use Automation for repeatable in-product rules; use an AI agent when an external tool needs controlled access to PrimeCal.
 
----
+Choose `Automation` when:
 
-## Prerequisites
+- the trigger is predictable
+- the rule should run the same way every time
+- the logic lives naturally inside PrimeCal
 
-- Access to PrimeCalendar.
-- Appropriate role permissions for this workflow.
+Choose `AI Agents (MCP)` when:
 
-**Time to Complete**: 10-20 minutes  
-**Difficulty**: Intermediate
+- an external coding tool or assistant needs access
+- permissions must be scoped tightly by feature or calendar
+- a human or tool outside PrimeCal is initiating the work
 
----
+## Can imported events trigger automations?
 
-## Overview
+**Short answer:** yes, imported events can participate in automation when you set the rule up for that workflow.
 
-Use this guide to complete integration faq reliably. Confirm expected results after each step before moving to optional advanced settings.
+That makes a strong combination for cases like:
 
-> Add screenshots from `docs/assets/` with descriptive alt text for each UI interaction.
+- recoloring imported school calendars
+- creating follow-up tasks from imported events
+- normalizing titles or descriptions after sync
 
----
+Start small and verify one real example before building a larger rule set.
 
-## Step-by-Step Instructions
+![PrimeCal automation overview with realistic family rules](../assets/user-guide/automation/automation-overview.png)
 
-### Step 1: Open the Correct Area
+## I connected Google or Microsoft. What should I sync first?
 
-- Sign in to PrimeCalendar.
-- Navigate to the feature area for this workflow.
-- Confirm required controls are visible.
+**Short answer:** start with one or two calendars that you genuinely need, not your whole account.
 
-### Step 2: Configure Required Settings
+The safest first connection is a small, meaningful set such as:
 
-- Enter required values.
-- Save changes.
-- Verify expected behavior.
+- one shared family calendar
+- one school or work calendar
 
-### Step 3: Validate Outcome
+This makes it easier to catch naming, color, duplication, and recurrence issues before the setup gets wide.
 
-- Test one realistic scenario.
-- Confirm notifications, permissions, and expected outputs.
+![PrimeCal external sync overview page](../assets/user-guide/sync/external-sync-overview.png)
 
-<details>
-<summary>Advanced Options</summary>
+## A synced calendar looks duplicated or messy. What is the safest fix?
 
-- Add optional policies and automation hooks.
-- Document team defaults for repeatability.
+**Short answer:** simplify first, then reconnect cleanly if needed.
 
-</details>
+Work in this order:
 
----
+1. confirm which calendars are actually mapped
+2. reduce the connection to the smallest useful set
+3. re-check whether two-way behavior is appropriate
+4. if the mapping is wrong, disconnect and reconnect cleanly instead of stacking more changes on top
 
-## Examples
+## Can an AI agent read my whole account by default?
 
-### Example 1: Team Rollout
+**Short answer:** no. PrimeCal agents are meant to be permissioned and scoped.
 
-**Scenario**: Your team needs consistent behavior for integration faq.
+The safest approach is to grant:
 
-**Steps**:
-1. Configure in a test workspace.
-2. Validate with pilot users.
-3. Roll out to production.
+- only the actions the tool needs
+- only the calendars or automation rules it needs
+- only one key per tool or workflow
 
-### Consolidated Legacy Sources
+![PrimeCal AI agent permissions editor with scoped access](../assets/user-guide/agents/agent-permissions-editor.png)
 
-No direct legacy source was mapped for this page.
+## What is the safest first test after creating an agent?
 
+**Short answer:** test one low-risk read or one low-risk write against a non-critical calendar.
 
----
+Good examples:
 
-## Troubleshooting
+- list events from one test calendar
+- create one test task
+- trigger one non-destructive automation rule
 
-### Issue: Configuration Does Not Apply
+Do not start with a broad write scope or a production-critical calendar.
 
-**Symptoms**: Settings appear saved but behavior remains unchanged.
+## Do I need one agent per tool?
 
-**Solution**:
-1. Verify workspace and organization context.
-2. Re-check required fields and permissions.
-3. Review logs and API responses.
+**Short answer:** yes, in most cases that is the cleaner and safer pattern.
 
-**Prevention**: Use a pre-deployment checklist.
+Separate agents make it easier to:
 
----
+- understand who or what the key belongs to
+- revoke one client without affecting others
+- narrow permissions accurately
 
-## Related Resources
+![PrimeCal generated MCP configuration for a selected agent](../assets/user-guide/agents/agent-mcp-config.png)
 
-- [Index](index.md)
-- [Index](../index.md)
-- [Documentation Home](../index.md)
+## Can I combine sync, automation, and AI agents?
 
----
+**Short answer:** yes, but layer them in that order of stability.
 
-## Feedback
+Best-practice rollout:
 
-Was this helpful? [Yes] [No]  
-Open an issue or pull request to improve this page.
+1. get the external sync result correct
+2. add one automation rule
+3. add an AI agent only after you understand the stable data shape
 
----
+## Where should I go next?
 
-*Last updated: 2026-03-10 | PrimeCalendar v1.3.0*
+- [Introduction To Automation](../USER-GUIDE/automation/introduction-to-automation.md)
+- [Managing And Running Automations](../USER-GUIDE/automation/managing-and-running-automations.md)
+- [External Sync](../USER-GUIDE/integrations/external-sync.md)
+- [Agent Configuration](../USER-GUIDE/agents/agent-configuration.md)

@@ -68,6 +68,11 @@ tags: [primecal, user-guide, calendars, tasks, automation, mcp]
     <h3><a href="/USER-GUIDE/basics/calendar-views">Focus, Month, and Week</a></h3>
     <p>Understand how the same calendar data appears differently in each view.</p>
   </article>
+  <article class="pc-guide-card">
+    <p class="pc-guide-card__eyebrow">Fast answers</p>
+    <h3><a href="/FAQ">FAQ</a></h3>
+    <p>Jump to the short answers when you need a quick decision instead of the full walkthrough.</p>
+  </article>
 </div>
 
 ## Feature Navigation

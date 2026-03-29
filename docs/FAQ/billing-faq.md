@@ -1,125 +1,76 @@
 ---
-title: Billing Faq
-description: Step-by-step guidance for billing faq in PrimeCalendar.
+title: Plans And Access FAQ
+description: Understand why features may differ between users, how usage plans affect access, and what to do when a capability is missing.
 category: FAQ
 audience: End User
-difficulty: Intermediate
-last_updated: 2026-03-10
+difficulty: Beginner
+last_updated: 2026-03-29
 version: 1.3.0
 related:
-  - index.md
-  - ../index.md
-tags: [faq, billing, primecalendar]
+  - ./index.md
+  - ../USER-GUIDE/profile/profile-page.md
+  - ../USER-GUIDE/index.md
+tags: [faq, access, usage-plans, permissions, primecal]
 ---
 
-# Billing Faq
+# Plans And Access FAQ
 
-> **Quick Summary**: This page explains billing faq in PrimeCalendar using practical steps and troubleshooting guidance.
+This page answers the access questions that feel like billing questions to users, but in PrimeCal are often really plan, permission, or workspace-configuration questions.
 
-## Table of Contents
+## Another user can see a feature that I cannot. Why?
 
-- [Prerequisites](#prerequisites)
-- [Overview](#overview)
-- [Step-by-Step Instructions](#step-by-step-instructions)
-- [Examples](#examples)
-- [Troubleshooting](#troubleshooting)
-- [Related Resources](#related-resources)
+**Short answer:** the difference is usually access, not a bug.
 
----
+PrimeCal can expose features differently depending on:
 
-## Prerequisites
+- your usage plan
+- your role or workspace access
+- whether a feature is enabled in the current environment
+- whether the feature belongs to organization or reservation workflows instead of personal planning
 
-- Access to PrimeCalendar.
-- Appropriate role permissions for this workflow.
+If one user sees a feature and another does not, compare the account context first before assuming the UI is broken.
 
-**Time to Complete**: 10-20 minutes  
-**Difficulty**: Intermediate
+## What are usage plans in PrimeCal?
 
----
+**Short answer:** usage plans control which feature areas are available to your account.
 
-## Overview
+Most everyday user features, such as calendars, events, tasks, automation, sync, agents, and personal logs, are documented in the main user guide. Some broader capabilities, especially around organizations and reservations, can require higher access.
 
-Use this guide to complete billing faq reliably. Confirm expected results after each step before moving to optional advanced settings.
+## Can I change my own plan or unlock a feature myself?
 
-> Add screenshots from `docs/assets/` with descriptive alt text for each UI interaction.
+**Short answer:** usually no.
 
----
+PrimeCal is built so access changes are typically managed by an admin, workspace owner, or account owner. If a feature is missing, the safest path is to ask the person who manages your environment instead of trying to work around it.
 
-## Step-by-Step Instructions
+## Why can I use normal calendars but not organization or reservation features?
 
-### Step 1: Open the Correct Area
+**Short answer:** those features can require additional access beyond a normal personal account.
 
-- Sign in to PrimeCalendar.
-- Navigate to the feature area for this workflow.
-- Confirm required controls are visible.
+This is expected when PrimeCal is being used for both personal planning and larger operational workflows. Your personal calendars can still work normally even if organization-level tools are not available to your account.
 
-### Step 2: Configure Required Settings
+## What should I re-check after my access changes?
 
-- Enter required values.
-- Save changes.
-- Verify expected behavior.
+After a plan or permission change, re-check:
 
-### Step 3: Validate Outcome
+1. whether the feature now appears in the main navigation or under `More`
+2. whether a page loads but some actions are still unavailable
+3. whether related calendars, groups, or organization contexts are now visible
+4. whether your agent, sync, or automation setup still matches the permissions you now have
 
-- Test one realistic scenario.
-- Confirm notifications, permissions, and expected outputs.
+## Where do I see the account settings I can control myself?
 
-<details>
-<summary>Advanced Options</summary>
+Use [Profile Page](../USER-GUIDE/profile/profile-page.md) for the settings that belong to you directly, such as identity, language, timezone, appearance, Focus filters, and password-related changes.
 
-- Add optional policies and automation hooks.
-- Document team defaults for repeatability.
+![PrimeCal profile settings page with user-controlled account preferences](../assets/user-guide/profile/profile-settings-full.png)
 
-</details>
+## I expected a billing page. Why is this FAQ about access instead?
 
----
+**Short answer:** because the most common real user problem is feature access, not payment entry.
 
-## Examples
+In many PrimeCal setups, the person using the calendar is not the person managing the account plan. That makes a `Plans and Access` explanation more useful than a generic billing article.
 
-### Example 1: Team Rollout
+## Where should I go for the next step?
 
-**Scenario**: Your team needs consistent behavior for billing faq.
-
-**Steps**:
-1. Configure in a test workspace.
-2. Validate with pilot users.
-3. Roll out to production.
-
-### Consolidated Legacy Sources
-
-No direct legacy source was mapped for this page.
-
-
----
-
-## Troubleshooting
-
-### Issue: Configuration Does Not Apply
-
-**Symptoms**: Settings appear saved but behavior remains unchanged.
-
-**Solution**:
-1. Verify workspace and organization context.
-2. Re-check required fields and permissions.
-3. Review logs and API responses.
-
-**Prevention**: Use a pre-deployment checklist.
-
----
-
-## Related Resources
-
-- [Index](index.md)
-- [Index](../index.md)
-- [Documentation Home](../index.md)
-
----
-
-## Feedback
-
-Was this helpful? [Yes] [No]  
-Open an issue or pull request to improve this page.
-
----
-
-*Last updated: 2026-03-10 | PrimeCalendar v1.3.0*
+- If you are still setting up the product, use [Getting Started](../GETTING-STARTED/index.md).
+- If you need to learn the visible features you already have, use [User Documentation](../USER-GUIDE/index.md).
+- If you are implementing with the backend, use [Developer Documentation](../DEVELOPER-GUIDE/index.md).

@@ -84,7 +84,13 @@ module.exports = {
       type: 'category',
       label: 'FAQ',
       link: { type: 'doc', id: 'FAQ/index' },
-      items: ['FAQ/general-faq'],
+      items: [
+        'FAQ/general-faq',
+        'FAQ/integration-faq',
+        'FAQ/security-faq',
+        'FAQ/technical-faq',
+        'FAQ/billing-faq',
+      ],
     },
   ],
 };

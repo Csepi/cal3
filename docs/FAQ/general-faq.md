@@ -1,125 +1,122 @@
 ---
-title: General Faq
-description: Step-by-step guidance for general faq in PrimeCalendar.
+title: Everyday Planning FAQ
+description: Real-life answers about registration, calendars, groups, colors, visibility, Focus behavior, and feature navigation in PrimeCal.
 category: FAQ
 audience: End User
-difficulty: Intermediate
-last_updated: 2026-03-10
+difficulty: Beginner
+last_updated: 2026-03-29
 version: 1.3.0
 related:
-  - index.md
-  - ../index.md
-tags: [faq, general, primecalendar]
+  - ./index.md
+  - ../GETTING-STARTED/quick-start-guide.md
+  - ../USER-GUIDE/calendars/calendar-workspace.md
+  - ../USER-GUIDE/basics/calendar-views.md
+tags: [faq, planning, calendars, focus, primecal]
 ---
 
-# General Faq
+# Everyday Planning FAQ
 
-> **Quick Summary**: This page explains general faq in PrimeCalendar using practical steps and troubleshooting guidance.
+Use this page for the questions users usually ask after registration: how to get started fast, how to structure calendars, why views behave differently, and where the main product areas live.
 
-## Table of Contents
+## I just signed up. What should I do in the first 10 minutes?
 
-- [Prerequisites](#prerequisites)
-- [Overview](#overview)
-- [Step-by-Step Instructions](#step-by-step-instructions)
-- [Examples](#examples)
-- [Troubleshooting](#troubleshooting)
-- [Related Resources](#related-resources)
+**Short answer:** finish onboarding, create your first real calendar, create one group if you already know you need more than one calendar, then add a real event.
 
----
+Recommended order:
 
-## Prerequisites
+1. Complete the registration and onboarding flow.
+2. Create one calendar you will genuinely use right away.
+3. Add a second or third calendar only if you already know the separation matters.
+4. Create one event and verify it looks right in Month or Week view.
+5. Only then move into Tasks, Automation, or sync.
 
-- Access to PrimeCalendar.
-- Appropriate role permissions for this workflow.
+For the full walkthrough, use [Quick Start Guide](../GETTING-STARTED/quick-start-guide.md) and [Initial Setup](../GETTING-STARTED/first-steps/initial-setup.md).
 
-**Time to Complete**: 10-20 minutes  
-**Difficulty**: Intermediate
+![PrimeCal registration and onboarding review step](../assets/getting-started/registration-onboarding-step-5-review.png)
 
----
+## I am planning family life. Should I create one calendar or several?
 
-## Overview
+**Short answer:** create separate calendars when visibility, ownership, or color meaning matters.
 
-Use this guide to complete general faq reliably. Confirm expected results after each step before moving to optional advanced settings.
+A realistic family setup is usually clearer with several calendars, for example:
 
-> Add screenshots from `docs/assets/` with descriptive alt text for each UI interaction.
+- `Family` for shared appointments and logistics
+- `School` for pickup, activities, and parent deadlines
+- `Home` for chores, deliveries, and maintenance
+- `Personal` for one person's appointments and protected time
 
----
+Use one calendar when all events follow the same visibility and color logic. Split into several when you want cleaner filters, clearer colors, or easier hiding.
 
-## Step-by-Step Instructions
+## What is the difference between a calendar and a calendar group?
 
-### Step 1: Open the Correct Area
+**Short answer:** a calendar holds events; a calendar group only organizes calendars in the sidebar.
 
-- Sign in to PrimeCalendar.
-- Navigate to the feature area for this workflow.
-- Confirm required controls are visible.
+Use a calendar when the events themselves need their own color, sharing, or visibility. Use a group when the calendars already exist and you want a cleaner left-hand structure such as `Family`, `School`, or `Work`.
 
-### Step 2: Configure Required Settings
+![PrimeCal calendar sidebar with groups and grouped calendars](../assets/user-guide/calendars/calendar-sidebar-and-groups.png)
 
-- Enter required values.
-- Save changes.
-- Verify expected behavior.
+## I want to hide a calendar for now without deleting it. How?
 
-### Step 3: Validate Outcome
+**Short answer:** toggle its visibility in the sidebar instead of deleting it.
 
-- Test one realistic scenario.
-- Confirm notifications, permissions, and expected outputs.
+When you hide a calendar:
 
-<details>
-<summary>Advanced Options</summary>
+- its events disappear from Focus, Month, and Week
+- the calendar and its events are not deleted
+- you can show it again later without rebuilding anything
 
-- Add optional policies and automation hooks.
-- Document team defaults for repeatability.
+If you only want to simplify Focus view, do not hide the whole calendar first. Start with Focus-specific label filters instead.
 
-</details>
+## Why do colors matter so much in PrimeCal?
 
----
+**Short answer:** color is the fastest way to recognize ownership and context across crowded views.
 
-## Examples
+PrimeCal uses calendar color as the default visual signal in Month and Week. That is why it is worth choosing colors with real meaning, such as:
 
-### Example 1: Team Rollout
+- blue for family logistics
+- green for school or children
+- orange for home operations
+- red or coral for urgent personal appointments
 
-**Scenario**: Your team needs consistent behavior for general faq.
+If color has no meaning, Month and Week become harder to scan.
 
-**Steps**:
-1. Configure in a test workspace.
-2. Validate with pilot users.
-3. Roll out to production.
+## Why does Focus show less than Month or Week?
 
-### Consolidated Legacy Sources
+**Short answer:** Focus is intentionally selective, while Month and Week are broader planning views.
 
-- `10-FAQ/general.md`: This page has moved to the consolidated structure. - Canonical page: FAQ/general-faq.md - Archived snapshot: archives/pre-consolidation/10-FAQ/general.md
+Focus can hide items for two different reasons:
 
+- the calendar itself is hidden
+- the event uses a label that you configured as hidden from live Focus
 
----
+This is normal. Focus is supposed to reduce noise for the current moment, while Month and Week stay closer to the full schedule.
 
-## Troubleshooting
+![PrimeCal live Focus view with current family timeline](../assets/user-guide/views/focus-view-live-family-calendar.png)
 
-### Issue: Configuration Does Not Apply
+## I only want school pickups and appointments in Focus view. How do I hide chores without deleting them?
 
-**Symptoms**: Settings appear saved but behavior remains unchanged.
+**Short answer:** use `Profile` and configure `Hide labels from LIVE focus`.
 
-**Solution**:
-1. Verify workspace and organization context.
-2. Re-check required fields and permissions.
-3. Review logs and API responses.
+This is the right tool when you want chore-style items to stay visible in Month or Week, but not dominate the live Focus surface. A common pattern is to hide labels such as `routine`, `household`, or `no-focus`.
 
-**Prevention**: Use a pre-deployment checklist.
+For the full behavior, use [Focus Mode And Live Focus](../USER-GUIDE/basics/focus-mode-and-live-focus.md).
 
----
+## Where did Tasks, Automation, External Sync, AI Agents, and Personal Logs go?
 
-## Related Resources
+**Short answer:** the advanced features are collected under `More`.
 
-- [Index](index.md)
-- [Index](../index.md)
-- [Documentation Home](../index.md)
+PrimeCal keeps daily planning surfaces visible and groups the advanced tools in one predictable place so the workspace stays clean. Use `More` to find:
 
----
+- `Automation`
+- `External Sync`
+- `AI Agents (MCP)`
+- `Personal logs`
 
-## Feedback
+![PrimeCal More menu with advanced features](../assets/user-guide/navigation/more-menu-feature-navigation.png)
 
-Was this helpful? [Yes] [No]  
-Open an issue or pull request to improve this page.
+## What should I read next if I want the full explanation instead of the short answer?
 
----
-
-*Last updated: 2026-03-10 | PrimeCalendar v1.3.0*
+- [Creating Your Account](../GETTING-STARTED/first-steps/creating-your-account.md)
+- [Calendar Workspace](../USER-GUIDE/calendars/calendar-workspace.md)
+- [Calendar Views](../USER-GUIDE/basics/calendar-views.md)
+- [Focus Mode And Live Focus](../USER-GUIDE/basics/focus-mode-and-live-focus.md)

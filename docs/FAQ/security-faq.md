@@ -1,125 +1,98 @@
 ---
-title: Security Faq
-description: Step-by-step guidance for security faq in PrimeCalendar.
+title: Security And Privacy FAQ
+description: Practical answers about passwords, MFA, Personal Logs, privacy exports, deletion requests, and what user privacy controls actually mean in PrimeCal.
 category: FAQ
 audience: End User
-difficulty: Advanced
-last_updated: 2026-03-10
+difficulty: Intermediate
+last_updated: 2026-03-29
 version: 1.3.0
 related:
-  - index.md
-  - ../index.md
-tags: [faq, security, primecalendar]
+  - ./index.md
+  - ../USER-GUIDE/profile/profile-page.md
+  - ../USER-GUIDE/privacy/personal-logs.md
+tags: [faq, security, privacy, mfa, personal-logs, primecal]
 ---
 
-# Security Faq
+# Security And Privacy FAQ
 
-> **Quick Summary**: This page explains security faq in PrimeCalendar using practical steps and troubleshooting guidance.
+Use this page when the question is not “how do I plan my week?” but “how do I keep my account safe and understand what PrimeCal stores about me?”
 
-## Table of Contents
+## How do I protect my account day to day?
 
-- [Prerequisites](#prerequisites)
-- [Overview](#overview)
-- [Step-by-Step Instructions](#step-by-step-instructions)
-- [Examples](#examples)
-- [Troubleshooting](#troubleshooting)
-- [Related Resources](#related-resources)
+**Short answer:** keep your password healthy, keep your timezone and email current, and review Personal Logs when something looks unusual.
 
----
+Good habits:
 
-## Prerequisites
+- use a strong unique password
+- do not share the same account across family members or coworkers
+- review unusual sign-in or privacy activity in Personal Logs
+- revoke or rotate agent keys you no longer use
 
-- Access to PrimeCalendar.
-- Appropriate role permissions for this workflow.
+## Does PrimeCal support MFA?
 
-**Time to Complete**: 10-20 minutes  
-**Difficulty**: Advanced
+**Short answer:** yes. The sign-in flow supports authenticator-code and recovery-code prompts when MFA is enabled or required in your environment.
 
----
+Two practical notes matter:
 
-## Overview
+- you may not see MFA in every environment if it is not yet enforced there
+- if PrimeCal asks for a second factor during login, use the authenticator code first and recovery code only as fallback
 
-Use this guide to complete security faq reliably. Confirm expected results after each step before moving to optional advanced settings.
+If your workspace is rolling out stronger sign-in rules, expect MFA behavior to be part of that change.
 
-> Add screenshots from `docs/assets/` with descriptive alt text for each UI interaction.
+## What can I actually see in Personal Logs?
 
----
+**Short answer:** your own account activity, privacy actions, recent outcomes, and a user-visible audit history.
 
-## Step-by-Step Instructions
+This includes the kinds of questions users actually ask after something odd happens:
 
-### Step 1: Open the Correct Area
+- Did a login succeed or fail?
+- Was a privacy action requested?
+- Did an automation-related action touch my account?
+- When was a consent or policy action recorded?
 
-- Sign in to PrimeCalendar.
-- Navigate to the feature area for this workflow.
-- Confirm required controls are visible.
+![PrimeCal Personal Logs overview with privacy and activity summary](../assets/user-guide/personal-logs/personal-logs-overview.png)
 
-### Step 2: Configure Required Settings
+## Can I export my personal data or request deletion?
 
-- Enter required values.
-- Save changes.
-- Verify expected behavior.
+**Short answer:** yes, PrimeCal includes user-facing privacy actions for export and deletion requests.
 
-### Step 3: Validate Outcome
+Use Personal Logs when you need to:
 
-- Test one realistic scenario.
-- Confirm notifications, permissions, and expected outputs.
+- export your personal data
+- review your privacy-policy status
+- check data-footprint summary values
+- submit an account-deletion request
 
-<details>
-<summary>Advanced Options</summary>
+![PrimeCal Personal Logs activity and history table](../assets/user-guide/personal-logs/personal-logs-activity-table.png)
 
-- Add optional policies and automation hooks.
-- Document team defaults for repeatability.
+## What is Data Footprint?
 
-</details>
+**Short answer:** it is a quick summary of the personal data PrimeCal can count directly for your account.
 
----
+Examples include totals such as:
 
-## Examples
+- owned calendars
+- created events
+- owned tasks
 
-### Example 1: Team Rollout
+It is not meant to replace the detailed history table. It is the fast summary layer.
 
-**Scenario**: Your team needs consistent behavior for security faq.
+## Who can see my Personal Logs?
 
-**Steps**:
-1. Configure in a test workspace.
-2. Validate with pilot users.
-3. Roll out to production.
+**Short answer:** Personal Logs is a user-owned screen, not a shared admin dashboard.
 
-### Consolidated Legacy Sources
+That means it is designed around your own account context. If you need team-wide or org-wide audit views, that is a different documentation path and not part of the user FAQ.
 
-No direct legacy source was mapped for this page.
+## Do hidden Focus labels or hidden calendars improve privacy?
 
+**Short answer:** no. They are view controls, not security controls.
 
----
+Hiding a calendar or hiding labels from live Focus changes what you see on screen. It does not change the underlying existence of the event or the broader access model.
 
-## Troubleshooting
+Use these controls for clarity, not for access management.
 
-### Issue: Configuration Does Not Apply
+## Where should I go next?
 
-**Symptoms**: Settings appear saved but behavior remains unchanged.
-
-**Solution**:
-1. Verify workspace and organization context.
-2. Re-check required fields and permissions.
-3. Review logs and API responses.
-
-**Prevention**: Use a pre-deployment checklist.
-
----
-
-## Related Resources
-
-- [Index](index.md)
-- [Index](../index.md)
-- [Documentation Home](../index.md)
-
----
-
-## Feedback
-
-Was this helpful? [Yes] [No]  
-Open an issue or pull request to improve this page.
-
----
-
-*Last updated: 2026-03-10 | PrimeCalendar v1.3.0*
+- [Profile Page](../USER-GUIDE/profile/profile-page.md)
+- [Personal Logs](../USER-GUIDE/privacy/personal-logs.md)
+- [Troubleshooting FAQ](./technical-faq.md) if the issue is “something looks wrong right now”
