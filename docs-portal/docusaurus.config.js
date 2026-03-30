@@ -34,7 +34,6 @@ const config = {
           path: '../docs',
           routeBasePath: '/',
           sidebarPath: require.resolve('./sidebars.js'),
-          editUrl: 'https://github.com/Csepi/cal3/edit/main/docs/',
           showLastUpdateAuthor: false,
           showLastUpdateTime: true,
           breadcrumbs: true,
@@ -140,8 +139,15 @@ const config = {
           position: 'left',
         },
         {
-          href: 'https://github.com/Csepi/cal3',
-          label: 'GitHub',
+          href: 'https://primecal.eu',
+          label: 'Main Site',
+          className: 'pc-navbar-link--site',
+          position: 'right',
+        },
+        {
+          href: 'https://app.primecal.eu/',
+          label: 'Open App',
+          className: 'pc-navbar-link--app',
           position: 'right',
         },
       ],
@@ -168,13 +174,10 @@ const config = {
           ],
         },
         {
-          title: 'Community',
+          title: 'PrimeCal',
           items: [
-            { label: 'Repository', href: 'https://github.com/Csepi/cal3' },
-            {
-              label: 'Docs source',
-              href: 'https://github.com/Csepi/cal3/tree/main/docs',
-            },
+            { label: 'Main Site', href: 'https://primecal.eu' },
+            { label: 'Open App', href: 'https://app.primecal.eu/' },
           ],
         },
       ],
