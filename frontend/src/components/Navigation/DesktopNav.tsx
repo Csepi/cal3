@@ -135,6 +135,24 @@ export const DesktopNav: React.FC<DesktopNavProps> = ({
 
           <SearchNav className="hidden 2xl:block 2xl:w-[18rem]" />
 
+          <a
+            href="https://docs.primecal.eu/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-600 transition hover:border-slate-300"
+            aria-label={t('navigation.openDocumentation', {
+              defaultValue: 'Open documentation in a new tab',
+            })}
+          >
+            <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8">
+              <path d="M14 5h5v5" />
+              <path d="M10 14 19 5" />
+              <path d="M19 13v6h-14v-14h6" />
+            </svg>
+            <span className="hidden lg:inline">{t('navigation.documentation', { defaultValue: 'Documentation' })}</span>
+            <span className="lg:hidden">{t('navigation.docsShort', { defaultValue: 'Docs' })}</span>
+          </a>
+
           {notificationItem && (
             <button
               type="button"
