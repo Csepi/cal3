@@ -1,0 +1,34 @@
+{
+  "version.label": {
+    "message": "Nächste",
+    "description": "The label for version current"
+  },
+  "sidebar.docsSidebar.category.Getting Started": {
+    "message": "Erste Schritte",
+    "description": "The label for category 'Getting Started' in sidebar 'docsSidebar'"
+  },
+  "sidebar.docsSidebar.category.User Documentation": {
+    "message": "Benutzerdokumentation",
+    "description": "The label for category 'User Documentation' in sidebar 'docsSidebar'"
+  },
+  "sidebar.docsSidebar.category.Calendar": {
+    "message": "Kalender",
+    "description": "The label for category 'Calendar' in sidebar 'docsSidebar'"
+  },
+  "sidebar.docsSidebar.category.Automation": {
+    "message": "Automatisierung",
+    "description": "The label for category 'Automation' in sidebar 'docsSidebar'"
+  },
+  "sidebar.docsSidebar.category.Developer Documentation": {
+    "message": "Entwicklerdokumentation",
+    "description": "The label for category 'Developer Documentation' in sidebar 'docsSidebar'"
+  },
+  "sidebar.docsSidebar.category.API Reference": {
+    "message": "API Referenz",
+    "description": "The label for category 'API Reference' in sidebar 'docsSidebar'"
+  },
+  "sidebar.docsSidebar.category.FAQ": {
+    "message": "FAQ",
+    "description": "The label for category 'FAQ' in sidebar 'docsSidebar'"
+  }
+}

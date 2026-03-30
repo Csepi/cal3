@@ -1,0 +1,34 @@
+{
+  "title": {
+    "message": "PrimeCal dokumentáció",
+    "description": "The title in the navbar"
+  },
+  "item.label.Home": {
+    "message": "Kezdőlap",
+    "description": "Navbar item with label Home"
+  },
+  "item.label.Getting Started": {
+    "message": "Első lépések",
+    "description": "Navbar item with label Getting Started"
+  },
+  "item.label.User Docs": {
+    "message": "Felhasználói dokumentáció",
+    "description": "Navbar item with label User Docs"
+  },
+  "item.label.Automation": {
+    "message": "Automatizálás",
+    "description": "Navbar item with label Automation"
+  },
+  "item.label.API": {
+    "message": "API",
+    "description": "Navbar item with label API"
+  },
+  "item.label.Main Site": {
+    "message": "PrimeCal webhely",
+    "description": "Navbar item with label Main Site"
+  },
+  "item.label.Open App": {
+    "message": "Alkalmazás megnyitása",
+    "description": "Navbar item with label Open App"
+  }
+}

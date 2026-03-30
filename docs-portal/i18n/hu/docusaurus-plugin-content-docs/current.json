@@ -1,0 +1,34 @@
+{
+  "version.label": {
+    "message": "Következő",
+    "description": "The label for version current"
+  },
+  "sidebar.docsSidebar.category.Getting Started": {
+    "message": "Első lépések",
+    "description": "The label for category 'Getting Started' in sidebar 'docsSidebar'"
+  },
+  "sidebar.docsSidebar.category.User Documentation": {
+    "message": "Felhasználói dokumentáció",
+    "description": "The label for category 'User Documentation' in sidebar 'docsSidebar'"
+  },
+  "sidebar.docsSidebar.category.Calendar": {
+    "message": "Naptár",
+    "description": "The label for category 'Calendar' in sidebar 'docsSidebar'"
+  },
+  "sidebar.docsSidebar.category.Automation": {
+    "message": "Automatizálás",
+    "description": "The label for category 'Automation' in sidebar 'docsSidebar'"
+  },
+  "sidebar.docsSidebar.category.Developer Documentation": {
+    "message": "Fejlesztői dokumentáció",
+    "description": "The label for category 'Developer Documentation' in sidebar 'docsSidebar'"
+  },
+  "sidebar.docsSidebar.category.API Reference": {
+    "message": "API-referencia",
+    "description": "The label for category 'API Reference' in sidebar 'docsSidebar'"
+  },
+  "sidebar.docsSidebar.category.FAQ": {
+    "message": "GYIK",
+    "description": "The label for category 'FAQ' in sidebar 'docsSidebar'"
+  }
+}

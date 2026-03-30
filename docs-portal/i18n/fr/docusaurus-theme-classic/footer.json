@@ -1,0 +1,58 @@
+{
+  "link.title.Docs": {
+    "message": "Documents",
+    "description": "The title of the footer links column with title=Docs in the footer"
+  },
+  "link.title.Support": {
+    "message": "Assistance",
+    "description": "The title of the footer links column with title=Support in the footer"
+  },
+  "link.title.PrimeCal": {
+    "message": "PrimeCal",
+    "description": "The title of the footer links column with title=PrimeCal in the footer"
+  },
+  "link.item.label.Home": {
+    "message": "Accueil",
+    "description": "The label of footer link with label=Home linking to /"
+  },
+  "link.item.label.Getting Started": {
+    "message": "Premiers pas",
+    "description": "The label of footer link with label=Getting Started linking to /GETTING-STARTED"
+  },
+  "link.item.label.User Docs": {
+    "message": "Documents utilisateur",
+    "description": "The label of footer link with label=User Docs linking to /USER-GUIDE"
+  },
+  "link.item.label.Developer Docs": {
+    "message": "Documents du développeur",
+    "description": "The label of footer link with label=Developer Docs linking to /DEVELOPER-GUIDE"
+  },
+  "link.item.label.API Reference": {
+    "message": "Référence API",
+    "description": "The label of footer link with label=API Reference linking to /DEVELOPER-GUIDE/api-reference/api-overview"
+  },
+  "link.item.label.Troubleshooting": {
+    "message": "Dépannage",
+    "description": "The label of footer link with label=Troubleshooting linking to /TROUBLESHOOTING"
+  },
+  "link.item.label.FAQ": {
+    "message": "FAQ",
+    "description": "The label of footer link with label=FAQ linking to /FAQ"
+  },
+  "link.item.label.Support Contact": {
+    "message": "Contacter l'assistance",
+    "description": "The label of footer link with label=Support Contact linking to /RESOURCES/support-contact"
+  },
+  "link.item.label.Main Site": {
+    "message": "Site principal",
+    "description": "The label of footer link with label=Main Site linking to https://primecal.eu"
+  },
+  "link.item.label.Open App": {
+    "message": "Ouvrir l'application",
+    "description": "The label of footer link with label=Open App linking to https://app.primecal.eu/"
+  },
+  "copyright": {
+    "message": "Droit d'auteur (c) 2026 PrimeCal",
+    "description": "The footer copyright"
+  }
+}

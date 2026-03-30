@@ -24,7 +24,25 @@ const config = {
   projectName: 'cal3',
   i18n: {
     defaultLocale: 'en',
-    locales: ['en'],
+    locales: ['en', 'hu', 'de', 'fr'],
+    localeConfigs: {
+      en: {
+        label: 'English',
+        htmlLang: 'en-US',
+      },
+      hu: {
+        label: 'Magyar',
+        htmlLang: 'hu-HU',
+      },
+      de: {
+        label: 'Deutsch',
+        htmlLang: 'de-DE',
+      },
+      fr: {
+        label: 'Francais',
+        htmlLang: 'fr-FR',
+      },
+    },
   },
   presets: [
     [
@@ -85,7 +103,7 @@ const config = {
       require.resolve('@easyops-cn/docusaurus-search-local'),
       {
         hashed: true,
-        language: ['en'],
+        language: ['en', 'hu', 'de', 'fr'],
         docsDir: '../docs',
         docsRouteBasePath: '/',
         indexDocs: true,
@@ -148,6 +166,10 @@ const config = {
           href: 'https://app.primecal.eu/',
           label: 'Open App',
           className: 'pc-navbar-link--app',
+          position: 'right',
+        },
+        {
+          type: 'localeDropdown',
           position: 'right',
         },
       ],

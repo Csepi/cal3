@@ -1,0 +1,34 @@
+{
+  "title": {
+    "message": "PrimeCal Dokumentation",
+    "description": "The title in the navbar"
+  },
+  "item.label.Home": {
+    "message": "Startseite",
+    "description": "Navbar item with label Home"
+  },
+  "item.label.Getting Started": {
+    "message": "Erste Schritte",
+    "description": "Navbar item with label Getting Started"
+  },
+  "item.label.User Docs": {
+    "message": "Benutzerdokumente",
+    "description": "Navbar item with label User Docs"
+  },
+  "item.label.Automation": {
+    "message": "Automatisierung",
+    "description": "Navbar item with label Automation"
+  },
+  "item.label.API": {
+    "message": "API",
+    "description": "Navbar item with label API"
+  },
+  "item.label.Main Site": {
+    "message": "Hauptseite",
+    "description": "Navbar item with label Main Site"
+  },
+  "item.label.Open App": {
+    "message": "App öffnen",
+    "description": "Navbar item with label Open App"
+  }
+}
