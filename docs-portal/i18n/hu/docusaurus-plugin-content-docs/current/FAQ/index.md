@@ -14,6 +14,8 @@ related:
 tags: [primecal, faq, help, support, troubleshooting]
 ---
 
+import Link from '@docusaurus/Link';
+
 <div class="pc-guide-hero">
   <p class="pc-guide-hero__eyebrow">PrimeCal GYIK</p>
   <h1 class="pc-guide-hero__title">Gyors válaszok valódi PrimeCal Kérdések</h1>
@@ -31,27 +33,27 @@ tags: [primecal, faq, help, support, troubleshooting]
 <div class="pc-guide-grid">
   <article class="pc-guide-card pc-guide-card--accent">
     <p class="pc-guide-card__eyebrow">Napi használat</p>
-    <h3><a href="/FAQ/general-faq">Mindennapi tervezés GYIK</a></h3>
+    <h3><Link to="/FAQ/general-faq">Mindennapi tervezés GYIK</Link></h3>
     <p>Regisztráció, naptárak, csoportok, színek, rejtett naptárak, a Fókusz viselkedése és a főbb szolgáltatások helye.</p>
   </article>
   <article class="pc-guide-card">
     <p class="pc-guide-card__eyebrow">Energiafunkciók</p>
-    <h3><a href="/FAQ/integration-faq">Automatizálás, szinkronizálás és AI-ügynökök GYIK</a></h3>
+    <h3><Link to="/FAQ/integration-faq">Automatizálás, szinkronizálás és AI-ügynökök GYIK</Link></h3>
     <p>Válassza ki a megfelelő speciális funkciót, csatlakoztassa biztonságosan a szolgáltatókat, és ismerje meg, hogyan illeszkednek egymáshoz az automatizálás és a MCP ügynökök.</p>
   </article>
   <article class="pc-guide-card">
     <p class="pc-guide-card__eyebrow">Adatvédelem</p>
-    <h3><a href="/FAQ/security-faq">Biztonság és adatvédelem GYIK</a></h3>
+    <h3><Link to="/FAQ/security-faq">Biztonság és adatvédelem GYIK</Link></h3>
 <p>Jelszavak, MFA, személyes naplók, exportálások, törlési kérelmek és az adatvédelmi beállítások valójában.</p>
   </article>
   <article class="pc-guide-card">
     <p class="pc-guide-card__eyebrow">Hibaelhárítás</p>
-    <h3><a href="/FAQ/technical-faq">Hibaelhárítás GYIK</a></h3>
+    <h3><Link to="/FAQ/technical-faq">Hibaelhárítás GYIK</Link></h3>
     <p>Hiányzó események, elavult szinkronizálás, csendes fókusznézet, automatizálási hiányok és ügynökengedély-problémák.</p>
   </article>
   <article class="pc-guide-card">
     <p class="pc-guide-card__eyebrow">Hozzáférés</p>
-    <h3><a href="/FAQ/billing-faq">Tervek és hozzáférés GYIK</a></h3>
+    <h3><Link to="/FAQ/billing-faq">Tervek és hozzáférés GYIK</Link></h3>
     <p>A funkciók elérhetősége, a használati tervvel kapcsolatos kérdések, és mi a teendő, ha egy másik fiók többet lát, mint az Öné.</p>
   </article>
 </div>

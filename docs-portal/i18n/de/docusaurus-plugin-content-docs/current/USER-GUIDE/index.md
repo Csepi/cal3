@@ -13,6 +13,8 @@ related:
 tags: [primecal, user-guide, calendars, tasks, automation, mcp]
 ---
 
+import Link from '@docusaurus/Link';
+
 <div class="pc-guide-hero">
   <p class="pc-guide-hero__eyebrow">PrimeCal-Benutzerdokumente</p>
   <h1 class="pc-guide-hero__title">Lernen Sie PrimeCal auf denselben Bildschirmen, die Ihre Benutzer sehen</h1>
@@ -30,47 +32,47 @@ tags: [primecal, user-guide, calendars, tasks, automation, mcp]
 <div class="pc-guide-grid">
   <article class="pc-guide-card pc-guide-card--accent">
     <p class="pc-guide-card__eyebrow">Profile</p>
-    <h3><a href="/USER-GUIDE/profile/profile-page">Profilseite</a></h3>
+    <h3><Link to="/USER-GUIDE/profile/profile-page">Profilseite</Link></h3>
     <p>Aktualisieren Sie Identität, Sprache, Zeitzone, Thema, Beschriftungen, Passwörter und Focus-View-Einstellungen.</p>
   </article>
   <article class="pc-guide-card">
     <p class="pc-guide-card__eyebrow">Kalender</p>
-    <h3><a href="/USER-GUIDE/calendars/calendar-workspace">Kalenderarbeitsbereich</a></h3>
+    <h3><Link to="/USER-GUIDE/calendars/calendar-workspace">Kalenderarbeitsbereich</Link></h3>
     <p>Erstellen und verwalten Sie Kalender, Gruppen, Farben und Sichtbarkeit in den Ansichten.</p>
   </article>
   <article class="pc-guide-card">
     <p class="pc-guide-card__eyebrow">Aufgaben</p>
-    <h3><a href="/USER-GUIDE/tasks/tasks-workspace">Aufgabenarbeitsbereich</a></h3>
+    <h3><Link to="/USER-GUIDE/tasks/tasks-workspace">Aufgabenarbeitsbereich</Link></h3>
     <p>Erfassen Sie schnelle Aufgaben, bearbeiten Sie umfangreiche Aufgabendetails und organisieren Sie Beschriftungen, ohne PrimeCal.</p> zu verlassen.
   </article>
   <article class="pc-guide-card pc-guide-card--signal">
     <p class="pc-guide-card__eyebrow">Hervorgehoben</p>
-    <h3><a href="/USER-GUIDE/automation/introduction-to-automation">Automation</a></h3>
+    <h3><Link to="/USER-GUIDE/automation/introduction-to-automation">Automation</Link></h3>
     <p>Erstellen Sie Regeln mit Auslösern, Bedingungen, Aktionen, Filtern und Ausführungsverlauf.</p>
   </article>
   <article class="pc-guide-card">
     <p class="pc-guide-card__eyebrow">Verbindungen</p>
-    <h3><a href="/USER-GUIDE/integrations/external-sync">Externe Synchronisierung</a></h3>
+    <h3><Link to="/USER-GUIDE/integrations/external-sync">Externe Synchronisierung</Link></h3>
     <p>Verbinden Sie Google- oder Microsoft-Kalender und entscheiden Sie genau, welche Kalender verknüpft bleiben.</p>
   </article>
   <article class="pc-guide-card pc-guide-card--indigo">
     <p class="pc-guide-card__eyebrow">Hervorgehoben</p>
-    <h3><a href="/USER-GUIDE/agents/agent-configuration">KI-Agenten (MCP)</a></h3>
+    <h3><Link to="/USER-GUIDE/agents/agent-configuration">KI-Agenten (MCP)</Link></h3>
     <p>Erstellen Sie Agenten, legen Sie Berechtigungen fest, geben Sie Schlüssel aus und kopieren Sie die generierte Konfiguration für Ihren MCP-Client.</p>
   </article>
   <article class="pc-guide-card">
     <p class="pc-guide-card__eyebrow">Datenschutz</p>
-    <h3><a href="/USER-GUIDE/privacy/personal-logs">Persönliche Protokolle</a></h3>
+    <h3><Link to="/USER-GUIDE/privacy/personal-logs">Persönliche Protokolle</Link></h3>
 <p>Überprüfen Sie private Kontoaktivitäten, Datenschutzoptionen und Ihren eigenen aktuellen Protokollverlauf.</p>
   </article>
   <article class="pc-guide-card">
     <p class="pc-guide-card__eyebrow">Ansichten</p>
-    <h3><a href="/USER-GUIDE/basics/calendar-views">Fokus, Monat und Woche</a></h3>
+    <h3><Link to="/USER-GUIDE/basics/calendar-views">Fokus, Monat und Woche</Link></h3>
     <p>Verstehen Sie, wie dieselben Kalenderdaten in jeder Ansicht unterschiedlich angezeigt werden.</p>
   </article>
   <article class="pc-guide-card">
     <p class="pc-guide-card__eyebrow">Schnelle Antworten</p>
-    <h3><a href="/FAQ">FAQ</a></h3>
+    <h3><Link to="/FAQ">FAQ</Link></h3>
     <p>Springen Sie zu den kurzen Antworten, wenn Sie eine schnelle Entscheidung benötigen, anstatt zur vollständigen Komplettlösung.</p>
   </article>
 </div>

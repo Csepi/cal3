@@ -15,6 +15,9 @@ related:
 tags: [primecal, automation, rules, history, filters]
 ---
 
+import Link from '@docusaurus/Link';
+
+
 # Bevezetés az automatizálásba {#introduction-to-automation}
 
 A PrimeCal automatizálás egyetlen ötlet köré épül: ha ugyanaz a naptári munka megismétlődik, alakítsa át szabállyá.
@@ -24,7 +27,7 @@ A PrimeCal automatizálás egyetlen ötlet köré épül: ha ugyanaz a naptári 
 <div class="pc-guide-grid">
   <article class="pc-guide-card pc-guide-card--signal">
     <p class="pc-guide-card__eyebrow">1. Létrehoz</p>
-    <h3><a href="./creating-automation-rules">A szabály létrehozása</a></h3>
+    <h3><Link to="/USER-GUIDE/automation/creating-automation-rules">A szabály létrehozása</Link></h3>
     <p>Nevezze el a szabályt, válassza ki a triggert, ha szükséges, adjon hozzá feltételeket, és határozzon meg egy vagy több műveletet.</p>
   </article>
   <article class="pc-guide-card">

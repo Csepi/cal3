@@ -13,6 +13,8 @@ related:
 tags: [primecal, developer-guide, api, swagger, mcp]
 ---
 
+import Link from '@docusaurus/Link';
+
 <div class="pc-guide-hero">
   <p class="pc-guide-hero__eyebrow">PrimeCal-Entwicklerdokumente</p>
   <h1 class="pc-guide-hero__title">Code-Backed API Referenz nach Produktbereich</h1>
@@ -34,27 +36,27 @@ tags: [primecal, developer-guide, api, swagger, mcp]
 <div class="pc-guide-grid">
   <article class="pc-guide-card pc-guide-card--accent">
     <p class="pc-guide-card__eyebrow">Übersicht</p>
-    <h3><a href="/DEVELOPER-GUIDE/api-reference/api-overview">API-Übersicht</a></h3>
+    <h3><Link to="/DEVELOPER-GUIDE/api-reference/api-overview">API-Übersicht</Link></h3>
     <p>Basispfad, Authentifizierungsmodi, Bereichsregeln und die vollständige Produktbereichskarte.</p>
   </article>
   <article class="pc-guide-card">
     <p class="pc-guide-card__eyebrow">Authentifizierung</p>
-    <h3><a href="/DEVELOPER-GUIDE/api-reference/authentication-api">Authentifizierungs-API</a></h3>
+    <h3><Link to="/DEVELOPER-GUIDE/api-reference/authentication-api">Authentifizierungs-API</Link></h3>
     <p>Registrierung, Onboarding, Anmeldung, MFA, OAuth, Aktualisierungsablauf und Benutzerschlüssel API.</p>
   </article>
   <article class="pc-guide-card">
     <p class="pc-guide-card__eyebrow">Profile</p>
-    <h3><a href="/DEVELOPER-GUIDE/api-reference/user-api">Benutzer-API</a></h3>
+    <h3><Link to="/DEVELOPER-GUIDE/api-reference/user-api">Benutzer-API</Link></h3>
     <p>Profileinstellungen, Sprache, Berechtigungs-Bootstrap und Freigabehilfen.</p>
   </article>
   <article class="pc-guide-card pc-guide-card--signal">
     <p class="pc-guide-card__eyebrow">Automatisierung</p>
-    <h3><a href="/DEVELOPER-GUIDE/api-reference/automation-api">Automatisierungs-API</a></h3>
+    <h3><Link to="/DEVELOPER-GUIDE/api-reference/automation-api">Automatisierungs-API</Link></h3>
     <p>Regeln, Auslöser, Bedingungen, Aktionen, Prüfprotokolle, Genehmigungen und Webhooks.</p>
   </article>
   <article class="pc-guide-card pc-guide-card--indigo">
 <p class="pc-guide-card__eyebrow">KI-Agenten</p>
-    <h3><a href="/DEVELOPER-GUIDE/api-reference/agent-api">Agent-API</a></h3>
+    <h3><Link to="/DEVELOPER-GUIDE/api-reference/agent-api">Agent-API</Link></h3>
     <p>Agent CRUD, bereichsbezogene Berechtigungen, ausgegebene Schlüssel und die MCP Laufzeitendpunkte.</p>
   </article>
 </div>
@@ -64,27 +66,27 @@ tags: [primecal, developer-guide, api, swagger, mcp]
 <div class="pc-guide-grid">
   <article class="pc-guide-card">
     <p class="pc-guide-card__eyebrow">Planung</p>
-    <h3><a href="/DEVELOPER-GUIDE/api-reference/calendar-api">Kalender</a>, <a href="/DEVELOPER-GUIDE/api-reference/event-api">Ereignisse</a>, <a href="/DEVELOPER-GUIDE/api-reference/tasks-api">Aufgaben</a></h3>
+    <h3><Link to="/DEVELOPER-GUIDE/api-reference/calendar-api">Kalender</Link>, <Link to="/DEVELOPER-GUIDE/api-reference/event-api">Ereignisse</Link>, <Link to="/DEVELOPER-GUIDE/api-reference/tasks-api">Aufgaben</Link></h3>
     <p>Kalender, Gruppen, Freigabe, Ereignis-CRUD und Wiederholung, Kommentare, Aufgaben-CRUD und Beschriftungen.</p>
   </article>
   <article class="pc-guide-card">
     <p class="pc-guide-card__eyebrow">Integrationen</p>
-    <h3><a href="/DEVELOPER-GUIDE/api-reference/sync-api">Externe Synchronisierung</a></h3>
+    <h3><Link to="/DEVELOPER-GUIDE/api-reference/sync-api">Externe Synchronisierung</Link></h3>
     <p>Anbieterstatus, OAuth Übergabe, externe Kalenderzuordnung, Trennung und manuelle Synchronisierung.</p>
   </article>
   <article class="pc-guide-card">
     <p class="pc-guide-card__eyebrow">Benutzerkontrollen</p>
-    <h3><a href="/DEVELOPER-GUIDE/api-reference/notifications-api">Benachrichtigungen</a>, <a href="/DEVELOPER-GUIDE/api-reference/personal-logs-api">Persönliche Protokolle</a>, <a href="/DEVELOPER-GUIDE/api-reference/compliance-api">Compliance</a></h3>
+    <h3><Link to="/DEVELOPER-GUIDE/api-reference/notifications-api">Benachrichtigungen</Link>, <Link to="/DEVELOPER-GUIDE/api-reference/personal-logs-api">Persönliche Protokolle</Link>, <Link to="/DEVELOPER-GUIDE/api-reference/compliance-api">Compliance</Link></h3>
     <p>Posteingang und Einstellungen, Audit-Feed und Zusammenfassung, Datenschutzexporte, Anfragen und Einwilligungen.</p>
   </article>
   <article class="pc-guide-card">
     <p class="pc-guide-card__eyebrow">Planungsdomäne</p>
-    <h3><a href="/DEVELOPER-GUIDE/api-reference/organization-api">Organisationen</a>, <a href="/DEVELOPER-GUIDE/api-reference/resource-api">Ressourcen</a>, <a href="/DEVELOPER-GUIDE/api-reference/booking-api">Buchung</a></h3>
+    <h3><Link to="/DEVELOPER-GUIDE/api-reference/organization-api">Organisationen</Link>, <Link to="/DEVELOPER-GUIDE/api-reference/resource-api">Ressourcen</Link>, <Link to="/DEVELOPER-GUIDE/api-reference/booking-api">Buchung</Link></h3>
     <p>Organisationen, Rollen, Ressourcen, Reservierungskalender, Reservierungen und öffentliche Buchungen.</p>
   </article>
   <article class="pc-guide-card">
     <p class="pc-guide-card__eyebrow">Plattform</p>
-    <h3><a href="/DEVELOPER-GUIDE/api-reference/platform-api">Plattform-API</a></h3>
+    <h3><Link to="/DEVELOPER-GUIDE/api-reference/platform-api">Plattform-API</Link></h3>
     <p>Zustand, Bereitschaft, Funktionsflags, Überwachung, Frontend-Fehleraufnahme und Sicherheitsberichte.</p>
   </article>
 </div>

@@ -14,6 +14,8 @@ related:
 tags: [primecal, faq, help, support, troubleshooting]
 ---
 
+import Link from '@docusaurus/Link';
+
 <div class="pc-guide-hero">
   <p class="pc-guide-hero__eyebrow">PrimeCal-FAQ</p>
   <h1 class="pc-guide-hero__title">Schnelle Antworten auf echte PrimeCal Fragen</h1>
@@ -31,27 +33,27 @@ tags: [primecal, faq, help, support, troubleshooting]
 <div class="pc-guide-grid">
   <article class="pc-guide-card pc-guide-card--accent">
     <p class="pc-guide-card__eyebrow">Täglicher Gebrauch</p>
-    <h3><a href="/FAQ/general-faq">FAQ zur Alltagsplanung</a></h3>
+    <h3><Link to="/FAQ/general-faq">FAQ zur Alltagsplanung</Link></h3>
     <p>Registrierung, Kalender, Gruppen, Farben, versteckte Kalender, Fokusverhalten und wo die Hauptfunktionen leben.</p>
   </article>
   <article class="pc-guide-card">
     <p class="pc-guide-card__eyebrow">Leistungsmerkmale</p>
-    <h3><a href="/FAQ/integration-faq">Automatisierungs-, Synchronisierungs- und KI-Agenten – FAQ</a></h3>
+    <h3><Link to="/FAQ/integration-faq">Automatisierungs-, Synchronisierungs- und KI-Agenten – FAQ</Link></h3>
     <p>Wählen Sie die richtige erweiterte Funktion, verbinden Sie Anbieter sicher und verstehen Sie, wie Automatisierungen und MCP Agenten zusammenpassen.</p>
   </article>
   <article class="pc-guide-card">
     <p class="pc-guide-card__eyebrow">Datenschutz</p>
-    <h3><a href="/FAQ/security-faq">Sicherheits- und Datenschutz-FAQ</a></h3>
+    <h3><Link to="/FAQ/security-faq">Sicherheits- und Datenschutz-FAQ</Link></h3>
 <p>Passwörter, MFA, persönliche Protokolle, Exporte, Löschanfragen und was Datenschutzkontrollen tatsächlich bewirken.</p>
   </article>
   <article class="pc-guide-card">
     <p class="pc-guide-card__eyebrow">Fehlerbehebung</p>
-    <h3><a href="/FAQ/technical-faq">FAQ zur Fehlerbehebung</a></h3>
+    <h3><Link to="/FAQ/technical-faq">FAQ zur Fehlerbehebung</Link></h3>
     <p>Fehlende Ereignisse, veraltete Synchronisierung, stille Fokusansicht, Automatisierungsfehler und Probleme mit Agentenberechtigungen.</p>
   </article>
   <article class="pc-guide-card">
     <p class="pc-guide-card__eyebrow">Zugriff</p>
-    <h3><a href="/FAQ/billing-faq">Pläne und Zugang FAQ</a></h3>
+    <h3><Link to="/FAQ/billing-faq">Pläne und Zugang FAQ</Link></h3>
     <p>Funktionsverfügbarkeit, Fragen zum Nutzungsplan und was zu tun ist, wenn ein anderes Konto mehr sehen kann als Ihres.</p>
   </article>
 </div>

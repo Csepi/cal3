@@ -14,6 +14,8 @@ related:
 tags: [primecal, documentation, onboarding, automation, mcp]
 ---
 
+import Link from '@docusaurus/Link';
+
 <div class="pc-guide-hero">
   <p class="pc-guide-hero__eyebrow">Documents PrimeCal</p>
   <h1 class="pc-guide-hero__title">Un chemin clair depuis la première connexion vers les flux de travail avancés</h1>
@@ -31,22 +33,22 @@ tags: [primecal, documentation, onboarding, automation, mcp]
 <div class="pc-guide-grid">
   <article class="pc-guide-card pc-guide-card--accent">
     <p class="pc-guide-card__eyebrow">Commencer maintenant</p>
-    <h3><a href="/GETTING-STARTED">Démarrage</a></h3>
+    <h3><Link to="/GETTING-STARTED">Démarrage</Link></h3>
     <p>Inscrivez-vous, terminez l'intégration, créez votre premier vrai calendrier, organisez des groupes et ajoutez votre premier événement.</p>
   </article>
   <article class="pc-guide-card">
     <p class="pc-guide-card__eyebrow">Travail quotidien</p>
-    <h3><a href="/USER-GUIDE">Documentation utilisateur</a></h3>
+    <h3><Link to="/USER-GUIDE">Documentation utilisateur</Link></h3>
     <p>Paramètres de profil, vues du calendrier, tâches, automatisation, synchronisation, agents IA et journaux personnels.</p>
   </article>
   <article class="pc-guide-card pc-guide-card--indigo">
     <p class="pc-guide-card__eyebrow">Intégrer</p>
-    <h3><a href="/DEVELOPER-GUIDE">Documentation du développeur</a></h3>
+    <h3><Link to="/DEVELOPER-GUIDE">Documentation du développeur</Link></h3>
     <p>Documentation de style Swagger pour chaque zone backend non-administrateur, regroupée selon les mêmes fonctionnalités de produit que les utilisateurs voient.</p>
   </article>
   <article class="pc-guide-card">
     <p class="pc-guide-card__eyebrow">Besoin de réponses rapides</p>
-    <h3><a href="/FAQ">FAQ</a></h3>
+    <h3><Link to="/FAQ">FAQ</Link></h3>
 <p>Réponses courtes et concrètes sur la configuration, les vues, la synchronisation, l'automatisation, les agents IA, la confidentialité et le dépannage.</p>
   </article>
 </div>
@@ -56,32 +58,32 @@ tags: [primecal, documentation, onboarding, automation, mcp]
 <div class="pc-guide-grid">
   <article class="pc-guide-card">
     <p class="pc-guide-card__eyebrow">Planification</p>
-    <h3><a href="/USER-GUIDE/calendars/calendar-workspace">Calendrier</a></h3>
+    <h3><Link to="/USER-GUIDE/calendars/calendar-workspace">Calendrier</Link></h3>
     <p>Créez des calendriers, regroupez-les, contrôlez les couleurs et la visibilité, puis basculez entre les vues Focus, Mois et Semaine.</p>
   </article>
   <article class="pc-guide-card">
     <p class="pc-guide-card__eyebrow">Exécution</p>
-    <h3><a href="/USER-GUIDE/tasks/tasks-workspace">Tâches</a></h3>
+    <h3><Link to="/USER-GUIDE/tasks/tasks-workspace">Tâches</Link></h3>
     <p>Capturez des tâches rapides, gérez les étiquettes et parcourez une liste en direct qui reste proche de votre routine de calendrier.</p>
   </article>
   <article class="pc-guide-card pc-guide-card--signal">
     <p class="pc-guide-card__eyebrow">Surligné</p>
-    <h3><a href="/USER-GUIDE/automation/introduction-to-automation">Automation</a></h3>
+    <h3><Link to="/USER-GUIDE/automation/introduction-to-automation">Automation</Link></h3>
     <p>Créez des règles avec des déclencheurs, des conditions et des actions pour que les tâches répétitives du calendrier s'exécutent automatiquement.</p>
   </article>
   <article class="pc-guide-card">
     <p class="pc-guide-card__eyebrow">Connexions</p>
-    <h3><a href="/USER-GUIDE/integrations/external-sync">Synchronisation externe</a></h3>
+    <h3><Link to="/USER-GUIDE/integrations/external-sync">Synchronisation externe</Link></h3>
     <p>Connectez les calendriers Google ou Microsoft, choisissez ce qui reste lié et récupérez proprement en cas de rupture de connexion.</p>
   </article>
   <article class="pc-guide-card pc-guide-card--indigo">
     <p class="pc-guide-card__eyebrow">Surligné</p>
-    <h3><a href="/USER-GUIDE/agents/agent-configuration">Agents IA (MCP)</a></h3>
+    <h3><Link to="/USER-GUIDE/agents/agent-configuration">Agents IA (MCP)</Link></h3>
     <p>Créez un agent PrimeCal, définissez ses autorisations, émettez une clé et copiez la configuration MCP générée dans votre client.</p>
   </article>
   <article class="pc-guide-card">
     <p class="pc-guide-card__eyebrow">Confidentialité</p>
-    <h3><a href="/USER-GUIDE/privacy/personal-logs">Journaux personnels</a></h3>
+    <h3><Link to="/USER-GUIDE/privacy/personal-logs">Journaux personnels</Link></h3>
     <p>Consultez l'activité privée, les actions de confidentialité et l'historique du compte à partir d'un écran de journal appartenant à l'utilisateur.</p>
   </article>
 </div>
@@ -92,7 +94,7 @@ tags: [primecal, documentation, onboarding, automation, mcp]
   <article class="pc-guide-flow__item">
     <div class="pc-guide-flow__index">1</div>
 <h3>S'inscrire</h3>
-<p>Commencez avec <a href="/GETTING-STARTED/quick-start-guide">Guide de démarrage rapide</a> et la procédure d'inscription détaillée.</p>
+<p>Commencez avec <Link to="/GETTING-STARTED/quick-start-guide">Guide de démarrage rapide</Link> et la procédure d'inscription détaillée.</p>
   </article>
   <article class="pc-guide-flow__item">
     <div class="pc-guide-flow__index">2</div>

@@ -13,6 +13,8 @@ related:
 tags: [primecal, user-guide, calendars, tasks, automation, mcp]
 ---
 
+import Link from '@docusaurus/Link';
+
 <div class="pc-guide-hero">
   <p class="pc-guide-hero__eyebrow">Documents utilisateur PrimeCal</p>
   <h1 class="pc-guide-hero__title">Apprenez PrimeCal à partir des mêmes écrans que vos utilisateurs voient</h1>
@@ -30,47 +32,47 @@ tags: [primecal, user-guide, calendars, tasks, automation, mcp]
 <div class="pc-guide-grid">
   <article class="pc-guide-card pc-guide-card--accent">
     <p class="pc-guide-card__eyebrow">Profil</p>
-    <h3><a href="/USER-GUIDE/profile/profile-page">Page de profil</a></h3>
+    <h3><Link to="/USER-GUIDE/profile/profile-page">Page de profil</Link></h3>
     <p>Mettre à jour l'identité, la langue, le fuseau horaire, le thème, les étiquettes, les mots de passe et les préférences d'affichage Focus.</p>
   </article>
   <article class="pc-guide-card">
     <p class="pc-guide-card__eyebrow">Calendrier</p>
-    <h3><a href="/USER-GUIDE/calendars/calendar-workspace">Espace de travail du calendrier</a></h3>
+    <h3><Link to="/USER-GUIDE/calendars/calendar-workspace">Espace de travail du calendrier</Link></h3>
     <p>Créez et gérez des calendriers, des groupes, des couleurs et la visibilité dans les vues.</p>
   </article>
   <article class="pc-guide-card">
     <p class="pc-guide-card__eyebrow">Tâches</p>
-    <h3><a href="/USER-GUIDE/tasks/tasks-workspace">Espace de travail des tâches</a></h3>
+    <h3><Link to="/USER-GUIDE/tasks/tasks-workspace">Espace de travail des tâches</Link></h3>
     <p>Capturez des tâches rapides, modifiez les détails des tâches et organisez les étiquettes sans quitter PrimeCal.</p>
   </article>
   <article class="pc-guide-card pc-guide-card--signal">
     <p class="pc-guide-card__eyebrow">Surligné</p>
-    <h3><a href="/USER-GUIDE/automation/introduction-to-automation">Automation</a></h3>
+    <h3><Link to="/USER-GUIDE/automation/introduction-to-automation">Automation</Link></h3>
     <p>Créez des règles avec des déclencheurs, des conditions, des actions, des filtres et un historique d'exécution.</p>
   </article>
   <article class="pc-guide-card">
     <p class="pc-guide-card__eyebrow">Connexions</p>
-    <h3><a href="/USER-GUIDE/integrations/external-sync">Synchronisation externe</a></h3>
+    <h3><Link to="/USER-GUIDE/integrations/external-sync">Synchronisation externe</Link></h3>
     <p>Connectez les calendriers Google ou Microsoft et décidez exactement quels calendriers restent liés.</p>
   </article>
   <article class="pc-guide-card pc-guide-card--indigo">
     <p class="pc-guide-card__eyebrow">Surligné</p>
-    <h3><a href="/USER-GUIDE/agents/agent-configuration">Agents IA (MCP)</a></h3>
+    <h3><Link to="/USER-GUIDE/agents/agent-configuration">Agents IA (MCP)</Link></h3>
     <p>Créez des agents, étendez les autorisations, émettez des clés et copiez la configuration générée pour votre client MCP.</p>
   </article>
   <article class="pc-guide-card">
     <p class="pc-guide-card__eyebrow">Confidentialité</p>
-    <h3><a href="/USER-GUIDE/privacy/personal-logs">Journaux personnels</a></h3>
+    <h3><Link to="/USER-GUIDE/privacy/personal-logs">Journaux personnels</Link></h3>
 <p>Consultez l'activité du compte privé, les choix de confidentialité et votre propre historique de journaux récent.</p>
   </article>
   <article class="pc-guide-card">
     <p class="pc-guide-card__eyebrow">Vues</p>
-    <h3><a href="/USER-GUIDE/basics/calendar-views">Focus, mois et semaine</a></h3>
+    <h3><Link to="/USER-GUIDE/basics/calendar-views">Focus, mois et semaine</Link></h3>
     <p>Comprenez comment les mêmes données de calendrier apparaissent différemment dans chaque vue.</p>
   </article>
   <article class="pc-guide-card">
     <p class="pc-guide-card__eyebrow">Réponses rapides</p>
-    <h3><a href="/FAQ">FAQ</a></h3>
+    <h3><Link to="/FAQ">FAQ</Link></h3>
     <p> Accédez aux réponses courtes lorsque vous avez besoin d'une décision rapide au lieu de la procédure complète. </p>
   </article>
 </div>

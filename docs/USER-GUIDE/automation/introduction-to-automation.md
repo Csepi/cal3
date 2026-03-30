@@ -15,6 +15,9 @@ related:
 tags: [primecal, automation, rules, history, filters]
 ---
 
+import Link from '@docusaurus/Link';
+
+
 # Introduction To Automation
 
 PrimeCal automation is built around one idea: if the same calendar work repeats, turn it into a rule.
@@ -24,7 +27,7 @@ PrimeCal automation is built around one idea: if the same calendar work repeats,
 <div class="pc-guide-grid">
   <article class="pc-guide-card pc-guide-card--signal">
     <p class="pc-guide-card__eyebrow">1. Create</p>
-    <h3><a href="./creating-automation-rules">Build the rule</a></h3>
+    <h3><Link to="/USER-GUIDE/automation/creating-automation-rules">Build the rule</Link></h3>
     <p>Name the rule, choose the trigger, add conditions if needed, and define one or more actions.</p>
   </article>
   <article class="pc-guide-card">

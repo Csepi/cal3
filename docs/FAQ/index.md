@@ -14,6 +14,8 @@ related:
 tags: [primecal, faq, help, support, troubleshooting]
 ---
 
+import Link from '@docusaurus/Link';
+
 <div class="pc-guide-hero">
   <p class="pc-guide-hero__eyebrow">PrimeCal FAQ</p>
   <h1 class="pc-guide-hero__title">Fast Answers For Real PrimeCal Questions</h1>
@@ -31,27 +33,27 @@ tags: [primecal, faq, help, support, troubleshooting]
 <div class="pc-guide-grid">
   <article class="pc-guide-card pc-guide-card--accent">
     <p class="pc-guide-card__eyebrow">Daily use</p>
-    <h3><a href="/FAQ/general-faq">Everyday Planning FAQ</a></h3>
+    <h3><Link to="/FAQ/general-faq">Everyday Planning FAQ</Link></h3>
     <p>Registration, calendars, groups, colors, hidden calendars, Focus behavior, and where the main features live.</p>
   </article>
   <article class="pc-guide-card">
     <p class="pc-guide-card__eyebrow">Power features</p>
-    <h3><a href="/FAQ/integration-faq">Automation, Sync, and AI Agents FAQ</a></h3>
+    <h3><Link to="/FAQ/integration-faq">Automation, Sync, and AI Agents FAQ</Link></h3>
     <p>Choose the right advanced feature, connect providers safely, and understand how automations and MCP agents fit together.</p>
   </article>
   <article class="pc-guide-card">
     <p class="pc-guide-card__eyebrow">Privacy</p>
-    <h3><a href="/FAQ/security-faq">Security and Privacy FAQ</a></h3>
+    <h3><Link to="/FAQ/security-faq">Security and Privacy FAQ</Link></h3>
     <p>Passwords, MFA, Personal Logs, exports, deletion requests, and what privacy controls actually do.</p>
   </article>
   <article class="pc-guide-card">
     <p class="pc-guide-card__eyebrow">Troubleshooting</p>
-    <h3><a href="/FAQ/technical-faq">Troubleshooting FAQ</a></h3>
+    <h3><Link to="/FAQ/technical-faq">Troubleshooting FAQ</Link></h3>
     <p>Missing events, stale sync, quiet Focus view, automation misses, and agent-permission problems.</p>
   </article>
   <article class="pc-guide-card">
     <p class="pc-guide-card__eyebrow">Access</p>
-    <h3><a href="/FAQ/billing-faq">Plans and Access FAQ</a></h3>
+    <h3><Link to="/FAQ/billing-faq">Plans and Access FAQ</Link></h3>
     <p>Feature availability, usage-plan questions, and what to do when another account can see more than yours.</p>
   </article>
 </div>

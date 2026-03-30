@@ -13,6 +13,12 @@ related:
 tags: [primecal, getting-started, onboarding, calendars, events]
 ---
 
+import Link from '@docusaurus/Link';
+import registerFormImage from '../assets/getting-started/register-form.png';
+import onboardingPersonalizationImage from '../assets/getting-started/onboarding-step-2-personalization.png';
+import createCalendarModalImage from '../assets/user-guide/calendars/create-calendar-modal.png';
+import createEventModalImage from '../assets/user-guide/calendars/create-event-modal.png';
+
 <div class="pc-guide-hero">
   <p class="pc-guide-hero__eyebrow">PrimeCal első futtatása</p>
   <h1 class="pc-guide-hero__title">Beállítás találgatások nélkül</h1>
@@ -30,22 +36,22 @@ tags: [primecal, getting-started, onboarding, calendars, events]
 <div class="pc-guide-grid">
   <article class="pc-guide-card pc-guide-card--accent">
     <p class="pc-guide-card__eyebrow">Áttekintés</p>
-    <h3><a href="/GETTING-STARTED/quick-start-guide">Gyors útmutató</a></h3>
+    <h3><Link to="/GETTING-STARTED/quick-start-guide">Gyors útmutató</Link></h3>
     <p>Egy lépésben olvassa el a teljes beállítási útvonalat, mielőtt belevágna a részletes oldalakra.</p>
   </article>
   <article class="pc-guide-card">
     <p class="pc-guide-card__eyebrow">Fiók</p>
-    <h3><a href="/GETTING-STARTED/first-steps/creating-your-account">Fiók létrehozása</a></h3>
+    <h3><Link to="/GETTING-STARTED/first-steps/creating-your-account">Fiók létrehozása</Link></h3>
     <p>Regisztráljon, menjen át az élő érvényesítésre, és hajtsa végre az öt belépési lépést a jelenlegi terepi viselkedéssel.</p>
   </article>
   <article class="pc-guide-card">
     <p class="pc-guide-card__eyebrow">Beállítás</p>
-    <h3><a href="/GETTING-STARTED/first-steps/initial-setup">Kezdeti beállítás</a></h3>
+    <h3><Link to="/GETTING-STARTED/first-steps/initial-setup">Kezdeti beállítás</Link></h3>
     <p>Hozzon létre egy normál naptárt, hozzon létre csoportokat, nevezze át őket, rendeljen hozzá naptárakat, és tartsa rendben a munkaterületet az első naptól kezdve.</p>
   </article>
   <article class="pc-guide-card">
     <p class="pc-guide-card__eyebrow">Események</p>
-    <h3><a href="/GETTING-STARTED/first-steps/creating-your-first-event">Az első esemény létrehozása</a></h3>
+    <h3><Link to="/GETTING-STARTED/first-steps/creating-your-first-event">Az első esemény létrehozása</Link></h3>
     <p>Használja helyesen a megosztott eseménymódot, értse meg a látható mezőket, és magabiztosan mentse el az első eseményt.</p>
   </article>
 </div>
@@ -81,22 +87,22 @@ tags: [primecal, getting-started, onboarding, calendars, events]
   <article class="pc-guide-shot">
     <p class="pc-guide-shot__eyebrow">Regisztráció</p>
     <h3 class="pc-guide-shot__title">Regisztrációs űrlap</h3>
-    <img src="../assets/getting-started/register-form.png" alt="PrimeCal registration form" />
+    <img src={registerFormImage} alt="PrimeCal registration form" />
   </article>
   <article class="pc-guide-shot">
     <p class="pc-guide-shot__eyebrow">Bevezetés</p>
     <h3 class="pc-guide-shot__title">Személyre szabási lépés</h3>
-    <img src="../assets/getting-started/onboarding-step-2-personalization.png" alt="PrimeCal onboarding personalization step" />
+    <img src={onboardingPersonalizationImage} alt="PrimeCal onboarding personalization step" />
   </article>
   <article class="pc-guide-shot">
     <p class="pc-guide-shot__eyebrow">Naptár beállítása</p>
     <h3 class="pc-guide-shot__title">Naptár létrehozása párbeszédpanel</h3>
-    <img src="../assets/user-guide/calendars/create-calendar-modal.png" alt="PrimeCal create calendar dialog" />
+    <img src={createCalendarModalImage} alt="PrimeCal create calendar dialog" />
   </article>
   <article class="pc-guide-shot">
     <p class="pc-guide-shot__eyebrow">Első esemény</p>
     <h3 class="pc-guide-shot__title">Esemény modális</h3>
-    <img src="../assets/user-guide/calendars/create-event-modal.png" alt="PrimeCal create event modal" />
+    <img src={createEventModalImage} alt="PrimeCal create event modal" />
   </article>
 </div>
 

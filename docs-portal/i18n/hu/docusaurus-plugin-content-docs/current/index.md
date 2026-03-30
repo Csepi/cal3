@@ -14,6 +14,8 @@ related:
 tags: [primecal, documentation, onboarding, automation, mcp]
 ---
 
+import Link from '@docusaurus/Link';
+
 <div class="pc-guide-hero">
   <p class="pc-guide-hero__eyebrow">PrimeCal Docs</p>
   <h1 class="pc-guide-hero__title">Tiszta útvonal az első bejelentkezéstől a speciális munkafolyamatokig</h1>
@@ -31,22 +33,22 @@ tags: [primecal, documentation, onboarding, automation, mcp]
 <div class="pc-guide-grid">
   <article class="pc-guide-card pc-guide-card--accent">
     <p class="pc-guide-card__eyebrow">Kezdje el most</p>
-    <h3><a href="/GETTING-STARTED">Kezdő lépések</a></h3>
+    <h3><Link to="/GETTING-STARTED">Kezdő lépések</Link></h3>
     <p>Regisztráljon, fejezze be a regisztrációt, hozza létre az első valódi naptárat, szervezzen csoportokat, és adja hozzá az első eseményt.</p>
   </article>
   <article class="pc-guide-card">
     <p class="pc-guide-card__eyebrow">Napi munka</p>
-    <h3><a href="/USER-GUIDE">Felhasználói dokumentáció</a></h3>
+    <h3><Link to="/USER-GUIDE">Felhasználói dokumentáció</Link></h3>
     <p>Profilbeállítások, naptárnézetek, feladatok, automatizálás, szinkronizálás, AI-ügynökök és személyes naplók.</p>
   </article>
   <article class="pc-guide-card pc-guide-card--indigo">
     <p class="pc-guide-card__eyebrow">Integrálás</p>
-    <h3><a href="/DEVELOPER-GUIDE">Fejlesztői dokumentáció</a></h3>
+    <h3><Link to="/DEVELOPER-GUIDE">Fejlesztői dokumentáció</Link></h3>
     <p>Swagger-stílusú dokumentáció minden nem rendszergazdai háttérterülethez, ugyanazon termékfunkciók szerint csoportosítva, amelyeket a felhasználók látnak.</p>
   </article>
   <article class="pc-guide-card">
     <p class="pc-guide-card__eyebrow">Gyors válaszra van szüksége</p>
-    <h3><a href="/FAQ">FAQ</a></h3>
+    <h3><Link to="/FAQ">FAQ</Link></h3>
 <p>Rövid, valós válaszok a beállításhoz, nézetekhez, szinkronizáláshoz, automatizáláshoz, mesterséges intelligencia-ügynökökhöz, adatvédelemhez és hibaelhárításhoz.</p>
   </article>
 </div>
@@ -56,32 +58,32 @@ tags: [primecal, documentation, onboarding, automation, mcp]
 <div class="pc-guide-grid">
   <article class="pc-guide-card">
     <p class="pc-guide-card__eyebrow">Tervezés</p>
-    <h3><a href="/USER-GUIDE/calendars/calendar-workspace">Calendar</a></h3>
+    <h3><Link to="/USER-GUIDE/calendars/calendar-workspace">Calendar</Link></h3>
     <p>Hozzon létre naptárakat, csoportosítsa őket, szabályozza a színeket és a láthatóságot, majd váltson a Fókusz, a Havi és a Heti nézet között.</p>
   </article>
   <article class="pc-guide-card">
     <p class="pc-guide-card__eyebrow">Végrehajtás</p>
-    <h3><a href="/USER-GUIDE/tasks/tasks-workspace">Tasks</a></h3>
+    <h3><Link to="/USER-GUIDE/tasks/tasks-workspace">Tasks</Link></h3>
     <p>Rögzítsen gyors feladatokat, kezelje a címkéket, és dolgozzon át egy élő listát, amely közel marad a naptári rutinjához.</p>
   </article>
   <article class="pc-guide-card pc-guide-card--signal">
     <p class="pc-guide-card__eyebrow">Kiemelt</p>
-    <h3><a href="/USER-GUIDE/automation/introduction-to-automation">Automatizálás</a></h3>
+    <h3><Link to="/USER-GUIDE/automation/introduction-to-automation">Automatizálás</Link></h3>
     <p>Készítsen szabályokat triggerekkel, feltételekkel és műveletekkel, hogy az ismétlődő naptári munka automatikusan lefusson.</p>
   </article>
   <article class="pc-guide-card">
     <p class="pc-guide-card__eyebrow">Kapcsolatok</p>
-    <h3><a href="/USER-GUIDE/integrations/external-sync">Külső szinkronizálás</a></h3>
+    <h3><Link to="/USER-GUIDE/integrations/external-sync">Külső szinkronizálás</Link></h3>
     <p>Csatlakoztassa a Google vagy a Microsoft naptárait, válassza ki, hogy mi maradjon összekapcsolva, és tisztán helyreálljon, ha a kapcsolat megszakad.</p>
   </article>
   <article class="pc-guide-card pc-guide-card--indigo">
     <p class="pc-guide-card__eyebrow">Kiemelt</p>
-    <h3><a href="/USER-GUIDE/agents/agent-configuration">AI-ügynökök (MCP)</a></h3>
+    <h3><Link to="/USER-GUIDE/agents/agent-configuration">AI-ügynökök (MCP)</Link></h3>
     <p>Hozzon létre egy PrimeCal ügynököt, határozza meg az engedélyeit, adjon ki egy kulcsot, és másolja be a generált MCP konfigurációt az ügyfélbe.</p>
   </article>
   <article class="pc-guide-card">
     <p class="pc-guide-card__eyebrow">Adatvédelem</p>
-    <h3><a href="/USER-GUIDE/privacy/personal-logs">Személyes naplók</a></h3>
+    <h3><Link to="/USER-GUIDE/privacy/personal-logs">Személyes naplók</Link></h3>
     <p>Tekintse át a privát tevékenységeket, az adatvédelmi műveleteket és a fiókelőzményeket a felhasználó tulajdonában lévő naplóképernyőn.</p>
   </article>
 </div>
@@ -92,7 +94,7 @@ tags: [primecal, documentation, onboarding, automation, mcp]
   <article class="pc-guide-flow__item">
     <div class="pc-guide-flow__index">1</div>
 <h3>Regisztráció</h3>
-<p>Kezdje a <a href="/GETTING-STARTED/quick-start-guide">Gyors üzembe helyezési útmutatóval</a> és a részletes regisztrációs útmutatóval.</p>
+<p>Kezdje a <Link to="/GETTING-STARTED/quick-start-guide">Gyors üzembe helyezési útmutatóval</Link> és a részletes regisztrációs útmutatóval.</p>
   </article>
   <article class="pc-guide-flow__item">
     <div class="pc-guide-flow__index">2</div>

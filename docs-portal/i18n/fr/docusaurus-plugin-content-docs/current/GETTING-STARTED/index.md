@@ -13,6 +13,12 @@ related:
 tags: [primecal, getting-started, onboarding, calendars, events]
 ---
 
+import Link from '@docusaurus/Link';
+import registerFormImage from '../assets/getting-started/register-form.png';
+import onboardingPersonalizationImage from '../assets/getting-started/onboarding-step-2-personalization.png';
+import createCalendarModalImage from '../assets/user-guide/calendars/create-calendar-modal.png';
+import createEventModalImage from '../assets/user-guide/calendars/create-event-modal.png';
+
 <div class="pc-guide-hero">
   <p class="pc-guide-hero__eyebrow">Première exécution de PrimeCal</p>
   <h1 class="pc-guide-hero__title">Installez-vous sans deviner</h1>
@@ -30,22 +36,22 @@ tags: [primecal, getting-started, onboarding, calendars, events]
 <div class="pc-guide-grid">
   <article class="pc-guide-card pc-guide-card--accent">
     <p class="pc-guide-card__eyebrow">Présentation</p>
-    <h3><a href="/GETTING-STARTED/quick-start-guide">Guide de démarrage rapide</a></h3>
+    <h3><Link to="/GETTING-STARTED/quick-start-guide">Guide de démarrage rapide</Link></h3>
     <p>Lisez le chemin d'installation complet en un seul passage avant de plonger dans les pages détaillées.</p>
   </article>
   <article class="pc-guide-card">
     <p class="pc-guide-card__eyebrow">Compte</p>
-    <h3><a href="/GETTING-STARTED/first-steps/creating-your-account">Création de votre compte</a></h3>
+    <h3><Link to="/GETTING-STARTED/first-steps/creating-your-account">Création de votre compte</Link></h3>
     <p>Inscrivez-vous, réussissez la validation en direct et effectuez les cinq étapes d'intégration avec le comportement de terrain actuel.</p>
   </article>
   <article class="pc-guide-card">
     <p class="pc-guide-card__eyebrow">Configuration</p>
-    <h3><a href="/GETTING-STARTED/first-steps/initial-setup">Configuration initiale</a></h3>
+    <h3><Link to="/GETTING-STARTED/first-steps/initial-setup">Configuration initiale</Link></h3>
     <p>Créez un calendrier normal, créez des groupes, renommez-les, attribuez des calendriers et gardez l'espace de travail bien rangé dès le premier jour.</p>
   </article>
   <article class="pc-guide-card">
     <p class="pc-guide-card__eyebrow">Événements</p>
-    <h3><a href="/GETTING-STARTED/first-steps/creating-your-first-event">Création de votre premier événement</a></h3>
+    <h3><Link to="/GETTING-STARTED/first-steps/creating-your-first-event">Création de votre premier événement</Link></h3>
     <p>Utilisez correctement le modal d'événement partagé, comprenez les champs visibles et enregistrez le premier événement en toute confiance.</p>
   </article>
 </div>
@@ -81,22 +87,22 @@ tags: [primecal, getting-started, onboarding, calendars, events]
   <article class="pc-guide-shot">
     <p class="pc-guide-shot__eyebrow">Inscription</p>
     <h3 class="pc-guide-shot__title">Formulaire d'inscription</h3>
-    <img src="../assets/getting-started/register-form.png" alt="PrimeCal registration form" />
+    <img src={registerFormImage} alt="PrimeCal registration form" />
   </article>
   <article class="pc-guide-shot">
     <p class="pc-guide-shot__eyebrow">Intégration</p>
     <h3 class="pc-guide-shot__title">Étape de personnalisation</h3>
-    <img src="../assets/getting-started/onboarding-step-2-personalization.png" alt="PrimeCal onboarding personalization step" />
+    <img src={onboardingPersonalizationImage} alt="PrimeCal onboarding personalization step" />
   </article>
   <article class="pc-guide-shot">
     <p class="pc-guide-shot__eyebrow">Configuration du calendrier</p>
     <h3 class="pc-guide-shot__title">Créer une boîte de dialogue de calendrier</h3>
-    <img src="../assets/user-guide/calendars/create-calendar-modal.png" alt="PrimeCal create calendar dialog" />
+    <img src={createCalendarModalImage} alt="PrimeCal create calendar dialog" />
   </article>
   <article class="pc-guide-shot">
     <p class="pc-guide-shot__eyebrow">Premier événement</p>
     <h3 class="pc-guide-shot__title">Modal d'événement</h3>
-    <img src="../assets/user-guide/calendars/create-event-modal.png" alt="PrimeCal create event modal" />
+    <img src={createEventModalImage} alt="PrimeCal create event modal" />
   </article>
 </div>
 

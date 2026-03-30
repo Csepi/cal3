@@ -13,6 +13,8 @@ related:
 tags: [primecal, user-guide, calendars, tasks, automation, mcp]
 ---
 
+import Link from '@docusaurus/Link';
+
 <div class="pc-guide-hero">
   <p class="pc-guide-hero__eyebrow">PrimeCal felhasználói dokumentumok</p>
   <h1 class="pc-guide-hero__title">Tanuljon PrimeCal ugyanazokról a képernyőkről, amelyeket a felhasználók látnak</h1>
@@ -30,47 +32,47 @@ tags: [primecal, user-guide, calendars, tasks, automation, mcp]
 <div class="pc-guide-grid">
   <article class="pc-guide-card pc-guide-card--accent">
     <p class="pc-guide-card__eyebrow">Profil</p>
-    <h3><a href="/USER-GUIDE/profile/profile-page">Profiloldal</a></h3>
+    <h3><Link to="/USER-GUIDE/profile/profile-page">Profiloldal</Link></h3>
     <p>Frissítse az identitást, a nyelvet, az időzónát, a témát, a címkéket, a jelszavakat és a Fókusz-nézet beállításait.</p>
   </article>
   <article class="pc-guide-card">
     <p class="pc-guide-card__eyebrow">Naptár</p>
-    <h3><a href="/USER-GUIDE/calendars/calendar-workspace">Naptár munkaterület</a></h3>
+    <h3><Link to="/USER-GUIDE/calendars/calendar-workspace">Naptár munkaterület</Link></h3>
     <p>Naptárak, csoportok, színek és láthatóság létrehozása és kezelése a nézetekben.</p>
   </article>
   <article class="pc-guide-card">
     <p class="pc-guide-card__eyebrow">Feladatok</p>
-    <h3><a href="/USER-GUIDE/tasks/tasks-workspace">Tasks munkaterület</a></h3>
+    <h3><Link to="/USER-GUIDE/tasks/tasks-workspace">Tasks munkaterület</Link></h3>
     <p>Rögzítsen gyors feladatokat, szerkessze a részletes feladatok részleteit, és rendszerezze a címkéket anélkül, hogy elhagyná a PrimeCal.</p>
   </article>
   <article class="pc-guide-card pc-guide-card--signal">
     <p class="pc-guide-card__eyebrow">Kiemelt</p>
-    <h3><a href="/USER-GUIDE/automation/introduction-to-automation">Automatizálás</a></h3>
+    <h3><Link to="/USER-GUIDE/automation/introduction-to-automation">Automatizálás</Link></h3>
     <p>Szabályok létrehozása triggerekkel, feltételekkel, műveletekkel, szűrőkkel és végrehajtási előzményekkel.</p>
   </article>
   <article class="pc-guide-card">
     <p class="pc-guide-card__eyebrow">Kapcsolatok</p>
-    <h3><a href="/USER-GUIDE/integrations/external-sync">Külső szinkronizálás</a></h3>
+    <h3><Link to="/USER-GUIDE/integrations/external-sync">Külső szinkronizálás</Link></h3>
     <p>Csatlakoztassa Google vagy Microsoft naptárait, és döntse el, hogy pontosan mely naptárak maradjanak összekapcsolva.</p>
   </article>
   <article class="pc-guide-card pc-guide-card--indigo">
     <p class="pc-guide-card__eyebrow">Kiemelt</p>
-    <h3><a href="/USER-GUIDE/agents/agent-configuration">AI-ügynökök (MCP)</a></h3>
+    <h3><Link to="/USER-GUIDE/agents/agent-configuration">AI-ügynökök (MCP)</Link></h3>
     <p>Hozzon létre ügynököket, hatókör-engedélyeket, adja ki a kulcsokat, és másolja a generált konfigurációt a MCP ügyfélhez.</p>
   </article>
   <article class="pc-guide-card">
     <p class="pc-guide-card__eyebrow">Adatvédelem</p>
-    <h3><a href="/USER-GUIDE/privacy/personal-logs">Személyes naplók</a></h3>
+    <h3><Link to="/USER-GUIDE/privacy/personal-logs">Személyes naplók</Link></h3>
 <p>Tekintse át a privát fióktevékenységeket, az adatvédelmi választásokat és a legutóbbi naplózási előzményeit.</p>
   </article>
   <article class="pc-guide-card">
     <p class="pc-guide-card__eyebrow">Megtekintések</p>
-    <h3><a href="/USER-GUIDE/basics/calendar-views">Fókusz, hónap és hét</a></h3>
+    <h3><Link to="/USER-GUIDE/basics/calendar-views">Fókusz, hónap és hét</Link></h3>
     <p>Megértheti, hogyan jelennek meg ugyanazok a naptáradatok az egyes nézetekben.</p>
   </article>
   <article class="pc-guide-card">
     <p class="pc-guide-card__eyebrow">Gyors válaszok</p>
-    <h3><a href="/FAQ">FAQ</a></h3>
+    <h3><Link to="/FAQ">FAQ</Link></h3>
     <p>Ugorjon a rövid válaszokhoz, ha gyors döntésre van szüksége a teljes áttekintés helyett.</p>
   </article>
 </div>

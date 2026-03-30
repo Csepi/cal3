@@ -14,6 +14,8 @@ related:
 tags: [primecal, faq, help, support, troubleshooting]
 ---
 
+import Link from '@docusaurus/Link';
+
 <div class="pc-guide-hero">
   <p class="pc-guide-hero__eyebrow">FAQ PrimeCal</p>
   <h1 class="pc-guide-hero__title">Réponses rapides pour de vraies questions PrimeCal</h1>
@@ -31,27 +33,27 @@ tags: [primecal, faq, help, support, troubleshooting]
 <div class="pc-guide-grid">
   <article class="pc-guide-card pc-guide-card--accent">
     <p class="pc-guide-card__eyebrow">Utilisation quotidienne</p>
-    <h3><a href="/FAQ/general-faq">FAQ sur la planification quotidienne</a></h3>
+    <h3><Link to="/FAQ/general-faq">FAQ sur la planification quotidienne</Link></h3>
     <p>Inscription, calendriers, groupes, couleurs, calendriers masqués, comportement Focus et emplacement des principales fonctionnalités.</p>
   </article>
   <article class="pc-guide-card">
     <p class="pc-guide-card__eyebrow">Caractéristiques puissantes</p>
-    <h3><a href="/FAQ/integration-faq">FAQ sur les agents d'automatisation, de synchronisation et d'IA</a></h3>
+    <h3><Link to="/FAQ/integration-faq">FAQ sur les agents d'automatisation, de synchronisation et d'IA</Link></h3>
     <p>Choisissez la fonctionnalité avancée appropriée, connectez les fournisseurs en toute sécurité et comprenez comment les automatisations et les MCP agents s'articulent.</p>
   </article>
   <article class="pc-guide-card">
     <p class="pc-guide-card__eyebrow">Confidentialité</p>
-    <h3><a href="/FAQ/security-faq">FAQ sur la sécurité et la confidentialité</a></h3>
+    <h3><Link to="/FAQ/security-faq">FAQ sur la sécurité et la confidentialité</Link></h3>
 <p>Mots de passe, MFA, journaux personnels, exportations, demandes de suppression et ce que font réellement les contrôles de confidentialité.</p>
   </article>
   <article class="pc-guide-card">
     <p class="pc-guide-card__eyebrow">Dépannage</p>
-    <h3><a href="/FAQ/technical-faq">FAQ de dépannage</a></h3>
+    <h3><Link to="/FAQ/technical-faq">FAQ de dépannage</Link></h3>
     <p>Événements manquants, synchronisation obsolète, vue Focus silencieuse, échecs d'automatisation et problèmes d'autorisation d'agent.</p>
   </article>
   <article class="pc-guide-card">
     <p class="pc-guide-card__eyebrow">Accès</p>
-    <h3><a href="/FAQ/billing-faq">FAQ sur les forfaits et l'accès</a></h3>
+    <h3><Link to="/FAQ/billing-faq">FAQ sur les forfaits et l'accès</Link></h3>
     <p>Disponibilité des fonctionnalités, questions sur le plan d'utilisation et que faire lorsqu'un autre compte peut voir plus que le vôtre.</p>
   </article>
 </div>
