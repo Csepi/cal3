@@ -1480,6 +1480,8 @@
     "primaryMobileAria": "Elsődleges mobilnavigáció",
     "breadcrumbAria": "Zsemlemorzsa",
     "profileSettings": "Profilbeállítások",
+    "documentation": "Dokumentáció",
+    "openDocumentation": "Dokumentáció megnyitása új lapon",
     "openProfileMenu": "Nyissa meg a profil menüt",
     "openNotifications": "Nyissa meg az értesítési központot"
   },

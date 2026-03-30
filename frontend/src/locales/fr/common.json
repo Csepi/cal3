@@ -1480,6 +1480,8 @@
     "primaryMobileAria": "Navigation mobile principale",
     "breadcrumbAria": "Fil d'Ariane",
     "profileSettings": "Paramètres du profil",
+    "documentation": "Documentation",
+    "openDocumentation": "Ouvrir la documentation dans un nouvel onglet",
     "openProfileMenu": "Ouvrir le menu du profil",
     "openNotifications": "Ouvrir le centre de notifications"
   },

@@ -108,6 +108,19 @@ export const UserMenu: React.FC<UserMenuProps> = ({
               {t('common:navigation.profileSettings', { defaultValue: 'Profile settings' })}
             </button>
 
+            <a
+              href="https://docs.primecal.eu/"
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={closeMenu}
+              className="inline-flex min-h-11 w-full items-center rounded-lg border border-slate-200 px-3 py-2 text-left text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"
+              aria-label={t('common:navigation.openDocumentation', {
+                defaultValue: 'Open documentation in a new tab',
+              })}
+            >
+              {t('common:navigation.documentation', { defaultValue: 'Documentation' })}
+            </a>
+
             <div className="rounded-lg border border-slate-200 px-3 py-2">
               <LanguageSwitcher className="w-full" />
             </div>

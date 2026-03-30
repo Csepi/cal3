@@ -136,26 +136,6 @@ export const MobileLayout: React.FC<MobileLayoutProps> = ({
               </p>
             </div>
             <div className="flex items-center gap-3">
-              <a
-                href="https://docs.primecal.eu/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-600 shadow-sm transition hover:border-gray-300 hover:text-gray-800"
-                aria-label={t('navigation.openDocumentation', {
-                  ns: 'common',
-                  defaultValue: 'Open documentation in a new tab',
-                })}
-                title={t('navigation.documentation', {
-                  ns: 'common',
-                  defaultValue: 'Documentation',
-                })}
-              >
-                <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8">
-                  <path d="M14 5h5v5" />
-                  <path d="M10 14 19 5" />
-                  <path d="M19 13v6h-14v-14h6" />
-                </svg>
-              </a>
               {initials && (
                 <div
                   className="hidden h-9 w-9 rounded-full bg-white shadow-sm md:flex items-center justify-center text-sm font-semibold"
