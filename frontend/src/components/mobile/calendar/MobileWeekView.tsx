@@ -160,8 +160,8 @@ export const MobileWeekView: React.FC<MobileWeekViewProps> = ({
       {/* Time Slots - Vertical Scroll */}
       <div
         ref={scrollRef}
-        className="flex-1 overflow-y-auto relative"
-        style={{ height: 'calc(100vh - 180px)' }}
+        className="relative flex-1 overflow-y-auto"
+        style={{ maxHeight: 'calc(var(--app-viewport-height) - 180px)' }}
       >
         {/* Current Time Indicator */}
         {isToday(weekDays[new Date().getDay() === 0 ? 6 : new Date().getDay() - 1]) && (

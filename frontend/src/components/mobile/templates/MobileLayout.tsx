@@ -78,6 +78,17 @@ export const MobileLayout: React.FC<MobileLayoutProps> = ({
     month: 'short',
     day: 'numeric',
   }).format(new Date());
+  const mobileShellStyle = isMobile
+    ? { minHeight: 'var(--app-viewport-height)' }
+    : undefined;
+  const mobileContentStyle = isMobile
+    ? {
+        minHeight: 0,
+        paddingBottom: showBottomNav
+          ? 'calc(5.25rem + var(--safe-area-bottom))'
+          : 'max(1rem, var(--safe-area-bottom))',
+      }
+    : undefined;
 
   // Pull-to-refresh logic (mobile only)
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -113,13 +124,17 @@ export const MobileLayout: React.FC<MobileLayoutProps> = ({
   return (
     <div
       className={`
-        ${isMobile ? 'min-h-screen' : 'relative'}
+        ${isMobile ? 'relative flex flex-col overflow-hidden bg-white' : 'relative'}
         ${className}
       `}
+      style={mobileShellStyle}
     >
       {isMobile && !hideHeader && (
-        <div className="sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b border-gray-100">
-          <div className="flex items-center justify-between px-4 py-2.5">
+        <div
+          className="relative z-30 shrink-0 border-b border-gray-100 bg-white/90 backdrop-blur-md"
+          style={{ paddingTop: 'max(0.75rem, var(--safe-area-top))' }}
+        >
+          <div className="flex items-center justify-between px-4 pb-2.5 pt-1.5">
             <div>
               <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-500">
                 {todayLabel}
@@ -192,16 +207,10 @@ export const MobileLayout: React.FC<MobileLayoutProps> = ({
         onTouchEnd={handleTouchEnd}
         onTouchCancel={handleTouchEnd}
         className={`
-          ${isMobile && showBottomNav ? 'pb-16' : ''}
-          ${isMobile ? 'overflow-y-auto' : ''}
+          ${isMobile ? 'flex-1 min-h-0 overflow-y-auto' : ''}
           ${noPadding ? '' : 'px-4 md:px-0'}
-          ${isMobile ? 'min-h-screen' : ''}
         `}
-        style={{
-          paddingBottom: isMobile && showBottomNav
-            ? 'calc(5.25rem + env(safe-area-inset-bottom))'
-            : undefined,
-        }}
+        style={mobileContentStyle}
       >
         {children}
       </div>

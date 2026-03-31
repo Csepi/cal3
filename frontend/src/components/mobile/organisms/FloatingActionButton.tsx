@@ -41,6 +41,10 @@ export const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({
     return null;
   }
 
+  const mobileOffsetStyle = {
+    bottom: 'calc(5.5rem + var(--safe-area-bottom))',
+  };
+
   const handlePrimaryClick = () => {
     if (hasSecondaryActions) {
       setIsExpanded((current) => !current);
@@ -60,7 +64,10 @@ export const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({
         <div className="fixed inset-0 z-40 bg-black/20" onClick={() => setIsExpanded(false)} />
       )}
 
-      <div className={`fixed bottom-20 right-4 z-50 flex flex-col items-end space-y-3 ${className}`}>
+      <div
+        className={`fixed right-4 z-50 flex flex-col items-end space-y-3 ${className}`}
+        style={mobileOffsetStyle}
+      >
         {isExpanded &&
           secondaryActions.map((action, index) => (
             <div

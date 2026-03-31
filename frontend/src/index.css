@@ -11,12 +11,19 @@
   --spacing-sm: 1.25rem;
 }
 
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
 body {
   font-family: var(--font-sans);
   font-size: 16px;
   line-height: 1.6;
   color: var(--pc-text);
   min-height: 100vh;
+  min-height: var(--app-viewport-height, 100vh);
   background: linear-gradient(
     to bottom right,
     rgba(239, 246, 255, 1) 0%,
