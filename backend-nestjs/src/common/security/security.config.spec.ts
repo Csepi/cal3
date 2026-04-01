@@ -2,6 +2,8 @@ import {
   applyCertificateTransparencyPolicy,
   applyPermissionsPolicy,
   buildHelmetOptions,
+  createOriginMatcher,
+  resolveAllowedOrigins,
 } from './security.config';
 
 describe('security.config', () => {
@@ -65,3 +67,75 @@ describe('security.config', () => {
   });
 });
 
+const ENV_KEYS = [
+  'SECURITY_ALLOWED_ORIGINS',
+  'FRONTEND_URL',
+  'PUBLIC_APP_URL',
+  'BASE_URL',
+  'DASHBOARD_URL',
+  'WEB_URL',
+  'FRONTEND_HOST_PORT',
+  'FRONTEND_PORT',
+] as const;
+
+describe('security.config origin resolution', () => {
+  const originalEnv = new Map<string, string | undefined>();
+
+  beforeAll(() => {
+    for (const key of ENV_KEYS) {
+      originalEnv.set(key, process.env[key]);
+    }
+  });
+
+  afterEach(() => {
+    for (const key of ENV_KEYS) {
+      const value = originalEnv.get(key);
+      if (value === undefined) {
+        delete process.env[key];
+      } else {
+        process.env[key] = value;
+      }
+    }
+  });
+
+  it('adds the www counterpart for an apex frontend URL', () => {
+    process.env.FRONTEND_URL = 'https://primecal.eu';
+    delete process.env.SECURITY_ALLOWED_ORIGINS;
+
+    const origins = resolveAllowedOrigins();
+
+    expect(origins).toEqual(
+      expect.arrayContaining(['https://primecal.eu', 'https://www.primecal.eu']),
+    );
+  });
+
+  it('adds the apex counterpart for a www frontend URL', () => {
+    process.env.FRONTEND_URL = 'https://www.primecal.eu';
+    delete process.env.SECURITY_ALLOWED_ORIGINS;
+
+    const origins = resolveAllowedOrigins();
+
+    expect(origins).toEqual(
+      expect.arrayContaining(['https://www.primecal.eu', 'https://primecal.eu']),
+    );
+  });
+
+  it('does not invent www aliases for application subdomains', () => {
+    process.env.SECURITY_ALLOWED_ORIGINS = 'https://app.primecal.eu';
+    delete process.env.FRONTEND_URL;
+
+    const origins = resolveAllowedOrigins();
+
+    expect(origins).toContain('https://app.primecal.eu');
+    expect(origins).not.toContain('https://www.app.primecal.eu');
+  });
+
+  it('allows the www origin when only the apex site is configured', () => {
+    process.env.FRONTEND_URL = 'https://primecal.eu';
+    delete process.env.SECURITY_ALLOWED_ORIGINS;
+
+    const matcher = createOriginMatcher(resolveAllowedOrigins());
+
+    expect(matcher('https://www.primecal.eu')).toBe(true);
+  });
+});

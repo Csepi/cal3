@@ -101,7 +101,7 @@ jobs:
           FRONTEND_PORT: "443"
           FRONTEND_HOST_PORT: "443"
           BACKEND_HOST_PORT: "443"
-          SECURITY_ALLOWED_ORIGINS: ${{ vars.CAL3_FRONTEND_URL }}
+          SECURITY_ALLOWED_ORIGINS: https://www.primecal.eu,https://primecal.eu,https://app.primecal.eu,${{ vars.CAL3_FRONTEND_URL }}
           DB_HOST: ${{ vars.CAL3_DB_HOST }}
           DB_PORT: ${{ vars.CAL3_DB_PORT }}
           DB_USERNAME: ${{ vars.CAL3_DB_USERNAME }}

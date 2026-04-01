@@ -60,7 +60,9 @@ export function resolveAllowedOrigins(): string[] {
   const unique = new Set<string>();
   [...envOrigins, ...derived, ...localDefaults].forEach((origin) => {
     if (origin) {
-      unique.add(normalizeOrigin(origin));
+      for (const candidate of expandOriginAliases(origin)) {
+        unique.add(candidate);
+      }
     }
   });
 
@@ -229,6 +231,34 @@ function normalizeOrigin(origin: string): string {
     return url.origin;
   } catch {
     return origin.replace(/\/+$/, '');
+  }
+}
+
+function expandOriginAliases(origin: string): string[] {
+  const normalizedOrigin = normalizeOrigin(origin);
+
+  try {
+    const url = new URL(normalizedOrigin);
+    const aliases = new Set<string>([url.origin]);
+    const hostname = url.hostname.toLowerCase();
+
+    if (hostname.startsWith('www.')) {
+      const bareHostname = hostname.slice(4);
+      if (bareHostname.includes('.')) {
+        url.hostname = bareHostname;
+        aliases.add(url.origin);
+      }
+      return Array.from(aliases);
+    }
+
+    if (hostname.split('.').length === 2) {
+      url.hostname = `www.${hostname}`;
+      aliases.add(url.origin);
+    }
+
+    return Array.from(aliases);
+  } catch {
+    return [normalizedOrigin];
   }
 }
 
