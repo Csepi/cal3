@@ -35,14 +35,8 @@ jobs:
       - name: Install backend dependencies
         run: npm --prefix backend-nestjs ci
 
-      - name: Run backend unit tests
-        run: npm --prefix backend-nestjs run test:unit
-
-      - name: Run backend security tests
-        run: npm --prefix backend-nestjs run test:security
-
-      - name: Audit SQL query interpolation safety
-        run: npm --prefix backend-nestjs run db:audit:queries
+      - name: Run backend core test phase
+        run: npm run ci:backend-core
 
       - name: Upload backend coverage
         if: always()
@@ -74,7 +68,7 @@ jobs:
           ENABLE_TESTCONTAINERS: "true"
           TESTCONTAINERS_RYUK_DISABLED: "false"
           TESTCONTAINERS_START_TIMEOUT_MS: "180000"
-        run: npm --prefix backend-nestjs run test:integration
+        run: npm run ci:backend-integration
 
   frontend_unit:
     name: Frontend unit tests
@@ -92,7 +86,7 @@ jobs:
         run: npm --prefix frontend ci
 
       - name: Run frontend unit tests
-        run: npm --prefix frontend run test:unit
+        run: npm run ci:frontend-unit
 
       - name: Upload frontend coverage
         if: always()
@@ -128,7 +122,7 @@ jobs:
       - name: Run web E2E
         env:
           E2E_USE_LOCAL_SERVER: "true"
-        run: npm run test:e2e:web
+        run: npm run ci:web-e2e
 
       - name: Upload Playwright report
         if: always()
@@ -208,7 +202,7 @@ jobs:
       - name: Run Newman collection
         run: |
           SUFFIX="$(date +%s)"
-          npm run test:api -- \
+          npm run ci:api -- \
             --env-var "username=newman_${SUFFIX}" \
             --env-var "registerEmail=newman_${SUFFIX}@example.com" \
             --env-var "password=AdminPass#123"
@@ -304,7 +298,7 @@ jobs:
       - name: Run Artillery smoke
         env:
           LOAD_BASE_URL: http://127.0.0.1:8081
-        run: npm run test:load
+        run: npm run ci:load
 
       - name: Stop backend load server
         if: always()
@@ -390,7 +384,7 @@ jobs:
         env:
           ZAP_TARGET_URL: http://127.0.0.1:8081
           ZAP_FAIL_ON_RISK: high
-        run: npm run test:security:web
+        run: npm run ci:zap
 
       - name: Stop backend ZAP server
         if: always()
