@@ -42,4 +42,15 @@ describe('onboardingGuardService', () => {
     const redirect = resolve('require-incomplete', false, false);
     expect(redirect).toBe('/app');
   });
+
+  it('does not redirect unauthenticated users when the app needs completion state', () => {
+    const redirect = resolve('require-complete', false, false);
+    expect(redirect).toBeNull();
+  });
+
+  it('treats an explicit false onboarding flag as incomplete', () => {
+    expect(onboardingGuardService.isOnboardingComplete({ onboardingCompleted: false })).toBe(
+      false,
+    );
+  });
 });
