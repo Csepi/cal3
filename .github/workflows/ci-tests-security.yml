@@ -36,7 +36,7 @@ jobs:
         run: npm --prefix backend-nestjs ci
 
       - name: Run backend unit tests
-        run: npm --prefix backend-nestjs run test
+        run: npm --prefix backend-nestjs run test:unit
 
       - name: Run backend security tests
         run: npm --prefix backend-nestjs run test:security
