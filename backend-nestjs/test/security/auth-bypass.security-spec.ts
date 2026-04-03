@@ -21,7 +21,7 @@ describeDockerBacked('Authentication bypass security', ({
     if (!harness) {
       return;
     }
-    await harness.userRepository.delete({});
+    await harness.userRepository.clear();
   });
 
   it('rejects privileged endpoints without token', async () => {

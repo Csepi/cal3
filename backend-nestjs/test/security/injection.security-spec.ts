@@ -21,7 +21,7 @@ describeDockerBacked('Injection resistance security', ({
     if (!harness) {
       return;
     }
-    await harness.userRepository.delete({});
+    await harness.userRepository.clear();
   });
 
   it('rejects script payloads during registration and login', async () => {
