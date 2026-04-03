@@ -1,5 +1,6 @@
 import request from 'supertest';
 import { SyncProvider } from '../../src/entities/calendar-sync.entity';
+import { CalendarSyncService } from '../../src/modules/calendar-sync/calendar-sync.service';
 import { describeDockerBacked } from '../support/postgres-nest.harness';
 import {
   OnboardedUserSession,
@@ -95,6 +96,10 @@ describeDockerBacked(
       }
 
       const server = getServer();
+      const calendarSyncService = getHarnessOrThrow().app.get(CalendarSyncService);
+      const handleOAuthCallbackSpy = jest
+        .spyOn(calendarSyncService, 'handleOAuthCallback')
+        .mockResolvedValue(undefined as never);
       const session = await createSession('sync-errors');
 
       await request(server)
@@ -131,7 +136,13 @@ describeDockerBacked(
       await request(server)
         .get(`/calendar-sync/callback/${SyncProvider.GOOGLE}`)
         .query({ state: 'calendar-sync-123' })
-        .expect(400);
+        .expect(302)
+        .expect((response) => {
+          const location = String(response.headers.location || '');
+          expect(location).toContain('error=authorization_denied');
+        });
+
+      expect(handleOAuthCallbackSpy).not.toHaveBeenCalled();
     });
   },
 );

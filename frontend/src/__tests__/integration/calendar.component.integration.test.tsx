@@ -1,4 +1,3 @@
-import React from 'react';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { CalendarHeader } from '../../components/calendar-v2/components/CalendarHeader';
 import { CALENDAR_THEMES } from '../../components/calendar-v2/types';

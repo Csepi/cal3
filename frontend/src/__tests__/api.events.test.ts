@@ -36,7 +36,7 @@ describe('apiService event endpoints', () => {
       json: async () => body,
       text: async () => (typeof body === 'string' ? body : JSON.stringify(body)),
       headers: { get: () => null },
-    }) as Response;
+    } as unknown as Response);
 
   beforeEach(() => {
     jest.clearAllMocks();

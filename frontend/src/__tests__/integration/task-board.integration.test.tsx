@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { TaskBoard } from '../../components/tasks/TaskBoard';
-import type { Task } from '../../types/Task';
+import { TaskPriority, TaskStatus, type Task } from '../../types/Task';
 
 jest.mock('../../i18n', () => ({
   tStatic: (key: string, options?: { defaultValue?: string }) =>
@@ -22,26 +22,33 @@ describe('TaskBoard integration', () => {
     body: null,
     bodyFormat: 'plain',
     color: '#0ea5e9',
-    priority: 'medium',
-    status: 'todo',
+    priority: TaskPriority.MEDIUM,
+    status: TaskStatus.TODO,
     ownerId: 1,
     dueDate: '2031-01-15T09:00:00.000Z',
     dueEnd: null,
     dueTimezone: 'UTC',
     assigneeId: null,
-    assignee: null,
     calendarEventId: null,
-    taskSyncChecksum: null,
     createdAt: '2031-01-01T09:00:00.000Z',
     updatedAt: '2031-01-01T09:00:00.000Z',
-    labels: [{ id: 7, name: 'Release', color: '#2563eb' }],
+    labels: [
+      {
+        id: 7,
+        name: 'Release',
+        color: '#2563eb',
+        userId: 1,
+        createdAt: '2031-01-01T09:00:00.000Z',
+        updatedAt: '2031-01-01T09:00:00.000Z',
+      },
+    ],
   };
 
   const doneTask: Task = {
     ...todoTask,
     id: 202,
     title: 'Publish release notes',
-    status: 'done',
+    status: TaskStatus.DONE,
   };
 
   it('renders task cards and forwards selection + drag-drop transitions', () => {
