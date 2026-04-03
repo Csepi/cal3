@@ -20,6 +20,47 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  quality:
+    name: Quality checks (lint + typecheck + build)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: |
+            backend-nestjs/package-lock.json
+            frontend/package-lock.json
+
+      - name: Install backend dependencies
+        run: npm --prefix backend-nestjs ci
+
+      - name: Install frontend dependencies
+        run: npm --prefix frontend ci
+
+      - name: Run quality gate
+        run: npm run ci:quality
+
+  i18n_validation:
+    name: i18n validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install root dependencies
+        run: npm ci
+
+      - name: Run i18n validation gate
+        run: npm run ci:i18n
+
   backend_unit_security:
     name: Backend unit + security tests
     runs-on: ubuntu-latest
@@ -85,8 +126,8 @@ jobs:
       - name: Install frontend dependencies
         run: npm --prefix frontend ci
 
-      - name: Run frontend unit tests
-        run: npm run ci:frontend-unit
+      - name: Run frontend unit coverage
+        run: npm run coverage:frontend
 
       - name: Upload frontend coverage
         if: always()

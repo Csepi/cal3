@@ -5,14 +5,22 @@ import path from 'node:path';
 
 const target = process.env.ZAP_TARGET_URL ?? 'http://localhost:8081/api/health';
 const failOn = (process.env.ZAP_FAIL_ON_RISK ?? 'high').toLowerCase();
+const isCi = process.env.CI === 'true';
 const reportsDir = path.resolve('reports/security');
 const reportJson = path.join(reportsDir, 'zap-report.json');
 
 mkdirSync(reportsDir, { recursive: true });
 
 const dockerCheck = spawnSync('docker', ['--version'], { stdio: 'pipe' });
-if (dockerCheck.status !== 0) {
-  console.warn('[security] Docker is unavailable; skipping OWASP ZAP baseline scan.');
+if (dockerCheck.status !== 0 || dockerCheck.error) {
+  const message = isCi
+    ? '[security] Docker is unavailable; cannot run OWASP ZAP baseline scan in CI.'
+    : '[security] Docker is unavailable; skipping OWASP ZAP baseline scan.';
+  if (isCi) {
+    console.error(message);
+    process.exit(1);
+  }
+  console.warn(message);
   process.exit(0);
 }
 
@@ -45,7 +53,14 @@ if (![0, 1, 2].includes(zapRun.status ?? 1)) {
 }
 
 if (!existsSync(reportJson)) {
-  console.warn('[security] ZAP report JSON was not generated; skipping risk gate.');
+  const message = isCi
+    ? '[security] ZAP report JSON was not generated; failing CI risk gate.'
+    : '[security] ZAP report JSON was not generated; skipping risk gate.';
+  if (isCi) {
+    console.error(message);
+    process.exit(1);
+  }
+  console.warn(message);
   process.exit(0);
 }
 

@@ -5,9 +5,14 @@ import {
 } from './helpers/mockApi';
 
 const skipVisualInCi = Boolean(process.env.CI);
+const runVisualBaselines = process.env.E2E_VISUAL === 'true';
 
 test.describe('Visual regression', () => {
   test('login screen visual baseline', async ({ page }, testInfo) => {
+    test.skip(
+      !runVisualBaselines,
+      'Visual baselines run only when E2E_VISUAL=true is set explicitly.',
+    );
     test.skip(
       skipVisualInCi,
       'Visual baseline checks are intentionally local-only for CI stability.',
@@ -29,6 +34,10 @@ test.describe('Visual regression', () => {
   });
 
   test('calendar dashboard visual baseline', async ({ page }, testInfo) => {
+    test.skip(
+      !runVisualBaselines,
+      'Visual baselines run only when E2E_VISUAL=true is set explicitly.',
+    );
     test.skip(
       skipVisualInCi,
       'Visual baseline checks are intentionally local-only for CI stability.',

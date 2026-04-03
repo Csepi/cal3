@@ -37,6 +37,15 @@ const pathOf = (route: Route): string => {
   return url.pathname;
 };
 
+const failUnhandledApiCall = (route: Route): never => {
+  const request = route.request();
+  const url = new URL(request.url());
+  throw new Error(
+    `Unhandled mock API call: ${request.method().toUpperCase()} ${url.pathname}${url.search}. ` +
+      'Add an explicit mock in e2e/web/helpers/mockApi.ts.',
+  );
+};
+
 export async function seedAuthenticatedSession(
   page: Page,
   user: E2eUser = defaultUser,
@@ -189,6 +198,40 @@ export async function installDefaultApiMocks(
       return;
     }
 
+    if (path.endsWith('/api/users/me/language') && method === 'PATCH') {
+      if (!isAuthenticated) {
+        await route.fulfill({
+          status: 401,
+          contentType: 'application/json',
+          body: JSON.stringify({ message: 'Not authenticated' }),
+        });
+        return;
+      }
+
+      const requestBody = request.postData();
+      let preferredLanguage = 'en';
+
+      if (requestBody) {
+        try {
+          const parsed = JSON.parse(requestBody) as { preferredLanguage?: string };
+          if (typeof parsed.preferredLanguage === 'string' && parsed.preferredLanguage) {
+            preferredLanguage = parsed.preferredLanguage;
+          }
+        } catch {
+          preferredLanguage = 'en';
+        }
+      }
+
+      await route.fulfill(
+        asJson({
+          ...user,
+          language: preferredLanguage,
+          preferredLanguage,
+        }),
+      );
+      return;
+    }
+
     if (path.endsWith('/api/user-permissions/accessible-organizations')) {
       await route.fulfill(
         asJson([
@@ -223,6 +266,32 @@ export async function installDefaultApiMocks(
 
     if (path.includes('/api/resource-types')) {
       await route.fulfill(asJson([]));
+      return;
+    }
+
+    if (path.endsWith('/api/organisations') && method === 'GET') {
+      await route.fulfill(
+        asJson([
+          {
+            id: 1,
+            name: 'E2E Org',
+            description: 'Test organisation',
+            color: '#0ea5e9',
+          },
+        ]),
+      );
+      return;
+    }
+
+    if (path.match(/^\/api\/organisations\/\d+\/users(\/list)?$/) && method === 'GET') {
+      await route.fulfill(
+        asJson([
+          {
+            userId: user.id,
+            role: 'admin',
+          },
+        ]),
+      );
       return;
     }
 
@@ -356,6 +425,6 @@ export async function installDefaultApiMocks(
       return;
     }
 
-    await route.fulfill(asJson({}));
+    failUnhandledApiCall(route);
   });
 }

@@ -30,6 +30,7 @@ const MANAGED_ENV_KEYS = [
 type ManagedEnvKey = (typeof MANAGED_ENV_KEYS)[number];
 
 type EnvSnapshot = Record<ManagedEnvKey, string | undefined>;
+const failOnUnavailableDocker = process.env.CI === 'true';
 
 export class DockerUnavailableError extends Error {
   constructor(message: string) {
@@ -230,6 +231,9 @@ export function describeDockerBacked(
         harness = await startPostgresNestHarness();
       } catch (error) {
         if (error instanceof DockerUnavailableError) {
+          if (failOnUnavailableDocker) {
+            throw error;
+          }
           unavailableReason = error.message;
           return;
         }
