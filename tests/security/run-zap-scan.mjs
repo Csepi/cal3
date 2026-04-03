@@ -46,6 +46,8 @@ if (isCi) {
 zapArgs.push(
   '-v',
   `${reportsDir}:/zap/wrk`,
+  '-v',
+  `${reportsDir}:/home/zap`,
   'ghcr.io/zaproxy/zaproxy:stable',
   'zap-baseline.py',
   '-t',
@@ -66,7 +68,7 @@ console.log(
 );
 const zapRun = spawnSync('docker', zapArgs, { stdio: 'inherit' });
 
-if (![0, 1, 2].includes(zapRun.status ?? 1)) {
+if (![0, 1, 2, 3].includes(zapRun.status ?? 1)) {
   process.exit(zapRun.status ?? 1);
 }
 

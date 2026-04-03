@@ -1,6 +1,14 @@
 # Testing Strategy
 
-Use the cheapest layer that can answer the question you are asking. The current root default, `npm test`, is `npm run test:all`, which runs unit, integration, and web E2E only. Security, load, mobile E2E, and i18n are separate lanes.
+Use the cheapest layer that can answer the question you are asking.
+
+`npm test` (`npm run test:all`) is a broader local regression command that runs unit, integration, and web E2E. It is not the fast pre-commit loop.
+
+## Local Gates
+
+- `npm run test:precommit`: lint + typecheck + backend/frontend unit tests.
+- `npm run test:prepush`: `test:precommit` + backend integration tests.
+- Use targeted heavy lanes (`test:e2e`, `test:security`, `test:load`) when touching trust boundaries, UI journeys, or performance-sensitive paths.
 
 ## Layers
 
@@ -27,7 +35,7 @@ Current CI lanes map to these commands:
 - `npm run ci:load`
 - `npm run ci:zap`
 
-That means CI currently covers quality checks, i18n validation, backend unit, backend security, backend integration, frontend unit coverage, web E2E, API collection tests, load smoke, and ZAP smoke. It does not currently run mobile E2E.
+That means CI currently covers quality checks, i18n validation, backend unit, backend security, backend integration, frontend unit tests, web E2E, API collection tests, load smoke, and ZAP smoke. It does not currently run mobile E2E.
 
 ## Current Gaps
 

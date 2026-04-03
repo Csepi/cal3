@@ -743,16 +743,20 @@ class ApiService {
     const primary = await tryFetch('/api/calendar-groups');
     if (primary.ok) return primary.data;
 
+    let errorResponse = primary.response;
     if (primary.response && primary.response.status === 404) {
       const fallback = await tryFetch('/api/calendars/groups');
       if (fallback.ok) return fallback.data;
+      if (!fallback.ok) {
+        errorResponse = fallback.response;
+      }
     }
 
-    if (primary.response?.status === 401) {
+    if (errorResponse?.status === 401) {
       throw new Error('Authentication required. Please log in to view calendar groups.');
     }
 
-    const errorData = await primary.response?.json().catch(() => ({}));
+    const errorData = await errorResponse?.json().catch(() => ({}));
     throw new Error(errorData?.message || 'Failed to fetch calendar groups');
   }
 
@@ -776,16 +780,20 @@ class ApiService {
     const primary = await tryPost('/api/calendar-groups');
     if (primary.ok) return primary.data;
 
+    let errorResponse = primary.response;
     if (primary.response?.status === 404) {
       const fallback = await tryPost('/api/calendars/groups');
       if (fallback.ok) return fallback.data;
+      if (!fallback.ok) {
+        errorResponse = fallback.response;
+      }
     }
 
-    if (primary.response?.status === 401) {
+    if (errorResponse?.status === 401) {
       throw new Error('Authentication required. Please log in to create calendar groups.');
     }
 
-    const errorData = await primary.response?.json().catch(() => ({}));
+    const errorData = await errorResponse?.json().catch(() => ({}));
     throw new Error(errorData?.message || 'Failed to create calendar group');
   }
 

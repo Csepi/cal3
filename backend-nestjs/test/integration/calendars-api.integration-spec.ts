@@ -73,6 +73,15 @@ describeDockerBacked(
           expect(groups.map((group) => group.id)).toContain(groupId);
         });
 
+      await request(server)
+        .get('/calendars/groups')
+        .set(owner.authHeaders)
+        .expect(200)
+        .expect((response) => {
+          const groups = response.body as Array<{ id: number }>;
+          expect(groups.map((group) => group.id)).toContain(groupId);
+        });
+
       const createCalendarResponse = await request(server)
         .post('/calendars')
         .set(owner.authHeaders)

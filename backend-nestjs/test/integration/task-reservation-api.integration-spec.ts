@@ -363,6 +363,62 @@ describeDockerBacked(
         });
     });
 
+    it('supports tasks/labels alias and inline label creation flow', async () => {
+      if (isUnavailable()) {
+        expect(unavailabilityReason()).toBeTruthy();
+        return;
+      }
+
+      const server = getServer();
+      const ownerSession = await createSession('task-inline');
+
+      const taskResponse = await request(server)
+        .post('/tasks')
+        .set(ownerSession.authHeaders)
+        .send({
+          title: 'Inline label task',
+          body: 'Task created for inline labels',
+          status: 'todo',
+          priority: 'medium',
+        })
+        .expect(201);
+
+      const taskId = taskResponse.body.id as number;
+      expect(taskId).toEqual(expect.any(Number));
+
+      const inlineLabelResponse = await request(server)
+        .post(`/tasks/${taskId}/labels`)
+        .set(ownerSession.authHeaders)
+        .send({
+          inlineLabels: [
+            {
+              name: 'Inline A',
+              color: '#334155',
+            },
+          ],
+        })
+        .expect(201);
+
+      expect(inlineLabelResponse.body.id).toBe(taskId);
+      expect(inlineLabelResponse.body.labels).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            name: 'Inline A',
+            color: '#334155',
+          }),
+        ]),
+      );
+
+      await request(server)
+        .get('/tasks/labels')
+        .set(ownerSession.authHeaders)
+        .expect(200)
+        .expect((response) => {
+          const labels = response.body as Array<{ name: string }>;
+          expect(labels.map((label) => label.name)).toContain('Inline A');
+        });
+    });
+
     it('enforces reservation plan restrictions and exercises the successful reservation path', async () => {
       if (isUnavailable()) {
         expect(unavailabilityReason()).toBeTruthy();
@@ -428,6 +484,17 @@ describeDockerBacked(
       expect(listReservationsResponse.body).toHaveLength(1);
       expect(listReservationsResponse.body[0].id).toBe(reservationId);
       expect(listReservationsResponse.body[0].resource?.id).toBe(resource.id);
+
+      await request(server)
+        .get('/reservations')
+        .set(enterpriseSession.authHeaders)
+        .expect(200)
+        .expect((response) => {
+          const reservations = response.body as Array<{ id: number }>;
+          expect(reservations.map((reservation) => reservation.id)).toContain(
+            reservationId,
+          );
+        });
 
       await request(server)
         .get(`/reservations/${reservationId}`)

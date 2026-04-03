@@ -15,6 +15,8 @@ This folder is the index for the repo's layered test strategy. Start with [`../T
 
 ## Quick Commands
 
+- Fastest gate before committing: `npm run test:precommit`
+- Pre-push gate: `npm run test:prepush`
 - Fast loop: `npm run test:unit`
 - DB-backed checks: `npm run test:integration`
 - Browser/device flows: `npm run test:e2e:web`, `npm run test:e2e:mobile`, `npm run test:e2e`

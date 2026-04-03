@@ -319,5 +319,142 @@ describeDockerBacked(
           expectForbiddenOrNotFound(response.status);
         });
     });
+
+    it('lets group owners update, unshare, and delete calendar groups', async () => {
+      if (isUnavailable()) {
+        expect(unavailabilityReason()).toBeTruthy();
+        return;
+      }
+
+      const harness = getHarness();
+      expect(harness).not.toBeNull();
+      if (!harness) {
+        return;
+      }
+
+      const server = harness.app.getHttpServer() as Parameters<
+        typeof request
+      >[0];
+      const suffix = uniqueSuffix();
+
+      const owner = await registerAndCompleteOnboarding(server, {
+        username: `lifecycle_owner_${suffix}`,
+        email: `lifecycle_owner_${suffix}@example.com`,
+        password: 'ValidPass#123',
+        onboardingUsername: `lifecycle_owner_onboarded_${suffix}`,
+        fingerprint: `lifecycle-owner-${suffix}`,
+      });
+
+      const member = await registerAndCompleteOnboarding(server, {
+        username: `lifecycle_member_${suffix}`,
+        email: `lifecycle_member_${suffix}@example.com`,
+        password: 'ValidPass#123',
+        onboardingUsername: `lifecycle_member_onboarded_${suffix}`,
+        fingerprint: `lifecycle-member-${suffix}`,
+      });
+
+      const groupResponse = await request(server)
+        .post('/calendar-groups')
+        .set(owner.authHeaders)
+        .send({
+          name: `Lifecycle Group ${suffix}`,
+          isVisible: true,
+        })
+        .expect((response) => {
+          expectSuccessStatus(response.status);
+        });
+
+      const groupId = groupResponse.body.id as number;
+      expect(groupId).toBeTruthy();
+
+      const calendarResponse = await request(server)
+        .post('/calendars')
+        .set(owner.authHeaders)
+        .send({
+          name: `Lifecycle Calendar ${suffix}`,
+          description: 'Calendar for owner lifecycle test',
+          visibility: 'private',
+          color: '#f59e0b',
+          groupId,
+        })
+        .expect((response) => {
+          expectSuccessStatus(response.status);
+        });
+
+      const calendarId = calendarResponse.body.id as number;
+      expect(calendarId).toBeTruthy();
+
+      await request(server)
+        .post(`/calendar-groups/${groupId}/share`)
+        .set(owner.authHeaders)
+        .send({
+          userIds: [member.userId],
+          permission: SharePermission.READ,
+        })
+        .expect((response) => {
+          expectSuccessStatus(response.status);
+        });
+
+      await request(server)
+        .get(`/calendars/${calendarId}`)
+        .set(member.authHeaders)
+        .expect(200);
+
+      await request(server)
+        .patch(`/calendar-groups/${groupId}`)
+        .set(owner.authHeaders)
+        .send({
+          name: `Lifecycle Group Updated ${suffix}`,
+          isVisible: false,
+        })
+        .expect((response) => {
+          expectSuccessStatus(response.status);
+        })
+        .expect((response) => {
+          expect(response.body).toEqual(
+            expect.objectContaining({
+              id: groupId,
+              name: `Lifecycle Group Updated ${suffix}`,
+              isVisible: false,
+            }),
+          );
+        });
+
+      await request(server)
+        .delete(`/calendar-groups/${groupId}/share`)
+        .set(owner.authHeaders)
+        .send({
+          userIds: [member.userId],
+        })
+        .expect((response) => {
+          expectSuccessStatus(response.status);
+        })
+        .expect((response) => {
+          expect(response.body).toEqual({ unsharedCalendarIds: [calendarId] });
+        });
+
+      await request(server)
+        .get(`/calendars/${calendarId}`)
+        .set(member.authHeaders)
+        .expect((response) => {
+          expectForbiddenOrNotFound(response.status);
+        });
+
+      await request(server)
+        .delete(`/calendar-groups/${groupId}`)
+        .set(owner.authHeaders)
+        .expect((response) => {
+          expectSuccessStatus(response.status);
+        });
+
+      await request(server)
+        .get('/calendar-groups')
+        .set(owner.authHeaders)
+        .expect(200)
+        .expect((response) => {
+          const groups = response.body as Array<{ id: number }>;
+          expect(groups.map((group) => group.id)).not.toContain(groupId);
+        });
+    });
   },
 );
