@@ -436,6 +436,7 @@ export const CalendarEventModal: React.FC<CalendarEventModalProps> = ({
                   <span className="ml-1 text-red-500">*</span>
                 </label>
                 <select
+                  data-testid="event-modal-calendar"
                   value={eventForm.calendarId || ''}
                   onChange={(event) =>
                     handleFormChange(
@@ -513,6 +514,8 @@ export const CalendarEventModal: React.FC<CalendarEventModalProps> = ({
                 <div className="md:col-span-2">
                   <Input
                     label={t('events.eventTitle')}
+                    id="event-modal-title"
+                    data-testid="event-modal-title"
                     value={eventForm.title || ''}
                     onChange={(event) => handleFormChange('title', event.target.value)}
                     error={formErrors.title}
@@ -523,6 +526,8 @@ export const CalendarEventModal: React.FC<CalendarEventModalProps> = ({
                 </div>
                 <Input
                   label={t('events.location')}
+                  id="event-modal-location"
+                  data-testid="event-modal-location"
                   value={eventForm.location || ''}
                   onChange={(event) => handleFormChange('location', event.target.value)}
                   themeColor={themeColor}
@@ -642,6 +647,8 @@ export const CalendarEventModal: React.FC<CalendarEventModalProps> = ({
                 <Input
                   label={t('events.startDate')}
                   type="date"
+                  id="event-modal-start-date"
+                  data-testid="event-modal-start-date"
                   value={eventForm.startDate || ''}
                   onChange={(event) => handleFormChange('startDate', event.target.value)}
                   error={formErrors.startDate}
@@ -652,6 +659,8 @@ export const CalendarEventModal: React.FC<CalendarEventModalProps> = ({
                   <Input
                     label={t('events.startTime')}
                     type="time"
+                    id="event-modal-start-time"
+                    data-testid="event-modal-start-time"
                     value={eventForm.startTime || ''}
                     onChange={(event) => handleFormChange('startTime', event.target.value)}
                     error={formErrors.startTime}
@@ -663,6 +672,8 @@ export const CalendarEventModal: React.FC<CalendarEventModalProps> = ({
                 <Input
                   label={t('events.endDate')}
                   type="date"
+                  id="event-modal-end-date"
+                  data-testid="event-modal-end-date"
                   value={eventForm.endDate || ''}
                   onChange={(event) => handleFormChange('endDate', event.target.value)}
                   error={formErrors.endDate}
@@ -673,6 +684,8 @@ export const CalendarEventModal: React.FC<CalendarEventModalProps> = ({
                   <Input
                     label={t('events.endTime')}
                     type="time"
+                    id="event-modal-end-time"
+                    data-testid="event-modal-end-time"
                     value={eventForm.endTime || ''}
                     onChange={(event) => handleFormChange('endTime', event.target.value)}
                     error={formErrors.endTime}
@@ -758,6 +771,7 @@ export const CalendarEventModal: React.FC<CalendarEventModalProps> = ({
                 variant="outline"
                 onClick={handleDelete}
                 disabled={loading}
+                data-testid="event-modal-delete"
                 className="border-red-300 text-red-600 hover:bg-red-50"
               >
                 {t('events.deleteEvent')}
@@ -772,6 +786,7 @@ export const CalendarEventModal: React.FC<CalendarEventModalProps> = ({
               variant="primary"
               onClick={handleSubmit}
               loading={loading}
+              data-testid="event-modal-save"
               themeColor={themeColor}
               disabled={detailsLocked}
             >

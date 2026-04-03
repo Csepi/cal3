@@ -129,6 +129,7 @@ export const MobileNav: React.FC<MobileNavProps> = ({
                   }}
                   type="button"
                   onClick={() => onSelect(item)}
+                  data-testid={`mobile-nav-${item.key}`}
                   className={`flex min-h-[46px] min-w-[78px] flex-col items-center justify-center gap-1 rounded-xl border px-2 py-1.5 text-[11px] font-semibold transition ${
                     active
                       ? 'border-blue-300 bg-blue-50 text-blue-700'
@@ -156,6 +157,7 @@ export const MobileNav: React.FC<MobileNavProps> = ({
                 ref={moreButtonRef}
                 type="button"
                 onClick={() => setIsMoreOpen((value) => !value)}
+                data-testid="mobile-nav-more"
                 className={`flex min-h-[46px] min-w-[92px] flex-col items-center justify-center gap-1 rounded-xl border px-2 py-1.5 text-[11px] font-semibold transition ${
                   isMoreOpen || activeInMore
                     ? 'border-blue-300 bg-blue-50 text-blue-700'
@@ -186,6 +188,7 @@ export const MobileNav: React.FC<MobileNavProps> = ({
                 }}
                 type="button"
                 onClick={() => onSelect(notificationItem)}
+                data-testid={`mobile-nav-${notificationItem.key}`}
                 className={`flex min-h-[46px] min-w-[92px] flex-col items-center justify-center gap-1 rounded-xl border px-2 py-1.5 text-[11px] font-semibold transition ${
                   isItemActive(notificationItem)
                     ? 'border-blue-300 bg-blue-50 text-blue-700'
@@ -224,6 +227,7 @@ export const MobileNav: React.FC<MobileNavProps> = ({
                 setIsMoreOpen(false);
                 onSelect(item);
               }}
+              data-testid={`mobile-nav-more-${item.key}`}
               className={`mb-1 inline-flex min-h-11 w-full items-center gap-2 rounded-lg border px-3 py-2 text-left text-sm font-medium transition last:mb-0 ${
                 isItemActive(item)
                   ? 'border-blue-300 bg-blue-50 text-blue-700'

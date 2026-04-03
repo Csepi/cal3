@@ -333,6 +333,7 @@ export const TasksWorkspace = forwardRef<TasksWorkspaceHandle, TasksWorkspacePro
             <button
               type="button"
               onClick={clearFilters}
+              data-testid="tasks-clear-filters"
               className="rounded-full border border-gray-200 px-3 py-1 text-xs font-semibold text-gray-700 hover:border-gray-300"
             >
               {tStatic('common:auto.frontend.k56553100b028')}</button>
@@ -344,6 +345,7 @@ export const TasksWorkspace = forwardRef<TasksWorkspaceHandle, TasksWorkspacePro
                   composer.reset(null);
                   setComposerMode('new');
                 }}
+                data-testid="tasks-new-desktop"
                 className="rounded-full px-4 py-2 text-sm font-semibold text-white shadow"
                 style={{ backgroundColor: themeColor }}
               >
@@ -381,6 +383,7 @@ export const TasksWorkspace = forwardRef<TasksWorkspaceHandle, TasksWorkspacePro
                     <button
                       key={option.label}
                       type="button"
+                      data-testid={`tasks-status-filter-${option.value ?? 'all'}`}
                       onClick={() =>
                         setFilters((prev) => ({
                           ...prev,
@@ -581,6 +584,7 @@ export const TasksWorkspace = forwardRef<TasksWorkspaceHandle, TasksWorkspacePro
               </div>
               <input
                 type="search"
+                data-testid="tasks-search-input"
                 value={searchTerm}
                 onChange={(event) => {
                   const value = event.target.value;

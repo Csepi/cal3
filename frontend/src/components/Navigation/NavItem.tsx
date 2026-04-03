@@ -12,6 +12,7 @@ export const NavItem: React.FC<NavItemProps> = ({ item, active, onSelect }) => (
   <button
     type="button"
     onClick={() => onSelect(item)}
+    data-testid={`nav-${item.key}`}
     className={`
       relative inline-flex min-h-11 items-center gap-2 rounded-xl border px-3 py-2 text-sm font-medium transition whitespace-nowrap
       ${active

@@ -1091,6 +1091,7 @@ const ReservationsPanel: React.FC<ReservationsPanelProps> = ({ themeColor = '#3b
                     {canEdit() && (
                       <button
                         onClick={handleAddReservationClick}
+                        data-testid="reservation-open-create"
                         className={`${themeColors.primary} text-white px-4 py-2 rounded-xl font-medium hover:opacity-90 transition-opacity`}
                       >
                         {tStatic('common:auto.frontend.k0204b5c93ca5')}</button>
@@ -1117,7 +1118,11 @@ const ReservationsPanel: React.FC<ReservationsPanelProps> = ({ themeColor = '#3b
                         </thead>
                         <tbody className="divide-y divide-gray-200">
                           {reservations.map((reservation) => (
-                            <tr key={reservation.id} className="hover:bg-gray-50">
+                            <tr
+                              key={reservation.id}
+                              data-testid={`reservation-row-${reservation.id}`}
+                              className="hover:bg-gray-50"
+                            >
                               <td className="px-4 py-3 text-sm text-gray-800">{reservation.resource?.name || 'N/A'}</td>
                               <td className="px-4 py-3 text-sm text-gray-800">
                                 {reservation.customerName || 'N/A'}
@@ -1381,6 +1386,7 @@ const ReservationsPanel: React.FC<ReservationsPanelProps> = ({ themeColor = '#3b
                   {tStatic('common:auto.frontend.k021493f340d3')}<span className="text-red-500">*</span>
                 </label>
                 <select
+                  data-testid="reservation-resource-select"
                   value={reservationModal.resourceId}
                   onChange={(e) => setReservationModal(prev => ({ ...prev, resourceId: e.target.value }))}
                   className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -1402,6 +1408,7 @@ const ReservationsPanel: React.FC<ReservationsPanelProps> = ({ themeColor = '#3b
                 </label>
                 <input
                   type="date"
+                  data-testid="reservation-date-input"
                   value={reservationModal.startDate}
                   onChange={(e) => setReservationModal(prev => ({ ...prev, startDate: e.target.value }))}
                   className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -1417,6 +1424,7 @@ const ReservationsPanel: React.FC<ReservationsPanelProps> = ({ themeColor = '#3b
                   </label>
                   <input
                     type="time"
+                    data-testid="reservation-start-time-input"
                     value={reservationModal.startTime}
                     onChange={(e) => setReservationModal(prev => ({ ...prev, startTime: e.target.value }))}
                     className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -1429,6 +1437,7 @@ const ReservationsPanel: React.FC<ReservationsPanelProps> = ({ themeColor = '#3b
                   </label>
                   <input
                     type="time"
+                    data-testid="reservation-end-time-input"
                     value={reservationModal.endTime}
                     onChange={(e) => setReservationModal(prev => ({ ...prev, endTime: e.target.value }))}
                     className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -1445,6 +1454,7 @@ const ReservationsPanel: React.FC<ReservationsPanelProps> = ({ themeColor = '#3b
                 <input
                   type="number"
                   min="1"
+                  data-testid="reservation-quantity-input"
                   value={reservationModal.quantity}
                   onChange={(e) => setReservationModal(prev => ({ ...prev, quantity: e.target.value }))}
                   className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -1463,6 +1473,7 @@ const ReservationsPanel: React.FC<ReservationsPanelProps> = ({ themeColor = '#3b
                     </label>
                     <input
                       type="text"
+                      data-testid="reservation-customer-name-input"
                       value={reservationModal.customerName}
                       onChange={(e) => setReservationModal(prev => ({ ...prev, customerName: e.target.value }))}
                       className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -1476,6 +1487,7 @@ const ReservationsPanel: React.FC<ReservationsPanelProps> = ({ themeColor = '#3b
                     </label>
                     <input
                       type="email"
+                      data-testid="reservation-customer-email-input"
                       value={reservationModal.customerEmail}
                       onChange={(e) => setReservationModal(prev => ({ ...prev, customerEmail: e.target.value }))}
                       className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -1489,6 +1501,7 @@ const ReservationsPanel: React.FC<ReservationsPanelProps> = ({ themeColor = '#3b
                     </label>
                     <input
                       type="tel"
+                      data-testid="reservation-customer-phone-input"
                       value={reservationModal.customerPhone}
                       onChange={(e) => setReservationModal(prev => ({ ...prev, customerPhone: e.target.value }))}
                       className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -1515,6 +1528,7 @@ const ReservationsPanel: React.FC<ReservationsPanelProps> = ({ themeColor = '#3b
               <button
                 onClick={handleSaveReservation}
                 disabled={reservationModal.loading}
+                data-testid="reservation-create-submit"
                 className="flex-1 bg-blue-600 text-white px-6 py-3 rounded-xl font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {reservationModal.loading ? 'Creating...' : 'Create Reservation'}

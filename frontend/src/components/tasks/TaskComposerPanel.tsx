@@ -72,6 +72,7 @@ export const TaskComposerPanel: React.FC<TaskComposerPanelProps> = ({
       <div className="flex flex-col gap-3">
         <input
           type="text"
+          data-testid="task-composer-title"
           value={draft.title}
           onChange={(event) => onChange('title', event.target.value)}
           className="w-full rounded-lg border border-gray-200 px-3 py-2 text-lg font-semibold text-gray-900 focus:border-blue-500 focus:outline-none"
@@ -83,6 +84,7 @@ export const TaskComposerPanel: React.FC<TaskComposerPanelProps> = ({
             <label className="text-xs font-semibold uppercase text-gray-500">
               {tStatic('common:auto.frontend.kbae7d5be7082')}</label>
             <select
+              data-testid="task-composer-status"
               value={draft.status}
               onChange={(event) =>
                 onChange('status', event.target.value as TaskStatus)
@@ -98,6 +100,7 @@ export const TaskComposerPanel: React.FC<TaskComposerPanelProps> = ({
             <label className="text-xs font-semibold uppercase text-gray-500">
               {tStatic('common:auto.frontend.k886cbff9d9df')}</label>
             <select
+              data-testid="task-composer-priority"
               value={draft.priority}
               onChange={(event) =>
                 onChange('priority', event.target.value as TaskPriority)
@@ -117,6 +120,7 @@ export const TaskComposerPanel: React.FC<TaskComposerPanelProps> = ({
               {tStatic('common:auto.frontend.ka1b308ec704a')}</label>
             <input
               type="datetime-local"
+              data-testid="task-composer-due-date"
               value={draft.dueDate ?? ''}
               onChange={(event) => onChange('dueDate', event.target.value)}
               className="rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
@@ -127,6 +131,7 @@ export const TaskComposerPanel: React.FC<TaskComposerPanelProps> = ({
               {tStatic('common:auto.frontend.kd219c68101f5')}</label>
             <input
               type="text"
+              data-testid="task-composer-place"
               value={draft.place ?? ''}
               onChange={(event) => onChange('place', event.target.value)}
               className="rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
@@ -154,6 +159,7 @@ export const TaskComposerPanel: React.FC<TaskComposerPanelProps> = ({
           <button
             type="button"
             onClick={onDelete}
+            data-testid="task-composer-delete"
             className="rounded-lg border border-red-200 px-4 py-2 text-sm font-semibold text-red-600 hover:bg-red-50"
           >
             {tStatic('common:auto.frontend.kf6fdbe48dc54')}</button>
@@ -162,6 +168,7 @@ export const TaskComposerPanel: React.FC<TaskComposerPanelProps> = ({
           type="button"
           onClick={onSave}
           disabled={saving || !draft.title.trim()}
+          data-testid="task-composer-save"
           className="rounded-lg px-6 py-2 text-sm font-semibold text-white shadow-lg transition disabled:opacity-50"
           style={{ backgroundColor: themeColor }}
         >

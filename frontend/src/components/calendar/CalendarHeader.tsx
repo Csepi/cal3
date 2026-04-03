@@ -209,6 +209,7 @@ export const CalendarHeader: React.FC<CalendarHeaderProps> = ({
             <button
               onClick={() => onViewChange('month')}
               disabled={loading}
+              data-testid="calendar-view-month"
               className={`
                 px-3 py-2 text-sm font-medium rounded-md transition-all duration-200
                 ${currentView === 'month'
@@ -229,6 +230,7 @@ export const CalendarHeader: React.FC<CalendarHeaderProps> = ({
             <button
               onClick={() => onViewChange('week')}
               disabled={loading}
+              data-testid="calendar-view-week"
               className={`
                 px-3 py-2 text-sm font-medium rounded-md transition-all duration-200
                 ${currentView === 'week'
@@ -254,6 +256,7 @@ export const CalendarHeader: React.FC<CalendarHeaderProps> = ({
               size="md"
               onClick={onCreateCalendar}
               disabled={loading}
+              data-testid="calendar-open-create-calendar"
               themeColor={themeColor}
               icon={
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -270,6 +273,7 @@ export const CalendarHeader: React.FC<CalendarHeaderProps> = ({
               size="md"
               onClick={onCreateEvent}
               disabled={loading}
+              data-testid="calendar-open-create-event"
               themeColor={themeColor}
               icon={
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -7,7 +7,20 @@ on:
   push:
     branches:
       - main
+  schedule:
+    - cron: "30 2 * * 1"
   workflow_dispatch:
+    inputs:
+      run_mobile_e2e:
+        description: Run mobile Playwright e2e lane
+        required: false
+        type: boolean
+        default: false
+      run_deeper_security_load:
+        description: Run deeper load (k6) and stricter ZAP jobs
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -25,6 +38,7 @@ env:
 jobs:
   quality:
     name: Quality checks (typecheck + build)
+    if: ${{ github.event_name != 'schedule' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -48,6 +62,7 @@ jobs:
 
   i18n_validation:
     name: i18n validation
+    if: ${{ github.event_name != 'schedule' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -66,6 +81,7 @@ jobs:
 
   backend_unit_security:
     name: Backend unit + security tests
+    if: ${{ github.event_name != 'schedule' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -95,6 +111,7 @@ jobs:
 
   backend_integration:
     name: Backend integration tests (testcontainers)
+    if: ${{ github.event_name != 'schedule' }}
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
@@ -119,6 +136,7 @@ jobs:
 
   backend_e2e:
     name: Backend e2e tests
+    if: ${{ github.event_name != 'schedule' }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -152,6 +170,7 @@ jobs:
 
   frontend_unit:
     name: Frontend unit tests
+    if: ${{ github.event_name != 'schedule' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -168,8 +187,28 @@ jobs:
       - name: Run frontend unit tests
         run: npm run ci:frontend-unit
 
+  frontend_integration:
+    name: Frontend component integration tests
+    if: ${{ github.event_name != 'schedule' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        run: npm --prefix frontend ci
+
+      - name: Run frontend component integration tests
+        run: npm run ci:frontend-integration
+
   web_e2e:
     name: Web E2E (Playwright)
+    if: ${{ github.event_name != 'schedule' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -204,8 +243,49 @@ jobs:
           path: reports/playwright
           if-no-files-found: warn
 
+  mobile_e2e:
+    name: Mobile E2E (Playwright + i18n)
+    if: ${{ github.event_name == 'pull_request' || github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.run_mobile_e2e == 'true') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            frontend/package-lock.json
+
+      - name: Install root dependencies
+        run: npm ci
+
+      - name: Install frontend dependencies
+        run: npm --prefix frontend ci
+
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps chromium
+
+      - name: Run mobile e2e lane
+        env:
+          E2E_USE_LOCAL_SERVER: "true"
+        run: npm run ci:mobile-e2e
+
+      - name: Upload mobile Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-mobile-report
+          path: |
+            reports/playwright
+            test-results
+          if-no-files-found: warn
+
   api_newman:
     name: API collection tests (Newman)
+    if: ${{ github.event_name != 'schedule' }}
     runs-on: ubuntu-latest
     needs: [backend_unit_security]
     timeout-minutes: 15
@@ -302,6 +382,7 @@ jobs:
 
   load_smoke:
     name: Load smoke tests (Artillery)
+    if: ${{ github.event_name != 'schedule' }}
     runs-on: ubuntu-latest
     needs: [backend_unit_security]
     timeout-minutes: 15
@@ -387,6 +468,7 @@ jobs:
 
   security_zap:
     name: OWASP ZAP baseline scan
+    if: ${{ github.event_name != 'schedule' }}
     runs-on: ubuntu-latest
     needs: [backend_unit_security]
     timeout-minutes: 20
@@ -476,6 +558,186 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: zap-report
+          path: reports/security
+          if-no-files-found: warn
+
+  load_deep:
+    name: Deep load tests (k6)
+    if: ${{ github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && github.event.inputs.run_deeper_security_load == 'true') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: cal3_ci
+          POSTGRES_PASSWORD: cal3_ci
+          POSTGRES_DB: cal3_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U cal3_ci -d cal3_ci"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            backend-nestjs/package-lock.json
+
+      - name: Install root dependencies
+        run: npm ci
+
+      - name: Install backend dependencies
+        run: npm --prefix backend-nestjs ci
+
+      - name: Start backend for deep load
+        working-directory: backend-nestjs
+        env:
+          DB_TYPE: postgres
+          DB_HOST: 127.0.0.1
+          DB_PORT: "5432"
+          DB_USERNAME: cal3_ci
+          DB_PASSWORD: cal3_ci
+          DB_NAME: cal3_ci
+          DB_SSL: "false"
+          DB_SYNCHRONIZE: "true"
+          NODE_ENV: test
+          JWT_SECRET: test-jwt-secret
+          SECURITY_ALLOWED_ORIGINS: http://localhost:3000
+          BACKEND_PORT: "8081"
+          PORT: "8081"
+          BIND_ADDRESS: "127.0.0.1"
+          HOST: "127.0.0.1"
+        run: |
+          npm run start > ../backend-load-deep.log 2>&1 &
+          echo $! > ../backend-load-deep.pid
+
+      - name: Wait for backend
+        run: |
+          npx wait-on --timeout 120000 --interval 1000 --httpTimeout 5000 http-get://127.0.0.1:8081/api/health || {
+            echo "Backend did not become healthy in time";
+            test -f backend-load-deep.log && tail -n 200 backend-load-deep.log;
+            test -f backend-load-deep.pid && kill "$(cat backend-load-deep.pid)" || true;
+            exit 1;
+          }
+
+      - name: Run k6 deep load profile
+        env:
+          LOAD_BASE_URL: http://127.0.0.1:8081
+        run: npm run ci:load:deep
+
+      - name: Stop backend deep load server
+        if: always()
+        run: |
+          test -f backend-load-deep.pid && kill "$(cat backend-load-deep.pid)" || true
+
+      - name: Upload deep load log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-load-deep-log
+          path: backend-load-deep.log
+          if-no-files-found: warn
+
+  security_zap_deep:
+    name: OWASP ZAP deeper scan (medium+ fail gate)
+    if: ${{ github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && github.event.inputs.run_deeper_security_load == 'true') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: cal3_ci
+          POSTGRES_PASSWORD: cal3_ci
+          POSTGRES_DB: cal3_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U cal3_ci -d cal3_ci"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            backend-nestjs/package-lock.json
+
+      - name: Install root dependencies
+        run: npm ci
+
+      - name: Install backend dependencies
+        run: npm --prefix backend-nestjs ci
+
+      - name: Start backend for deeper ZAP
+        working-directory: backend-nestjs
+        env:
+          DB_TYPE: postgres
+          DB_HOST: 127.0.0.1
+          DB_PORT: "5432"
+          DB_USERNAME: cal3_ci
+          DB_PASSWORD: cal3_ci
+          DB_NAME: cal3_ci
+          DB_SSL: "false"
+          DB_SYNCHRONIZE: "true"
+          NODE_ENV: test
+          JWT_SECRET: test-jwt-secret
+          SECURITY_ALLOWED_ORIGINS: http://localhost:3000
+          BACKEND_PORT: "8081"
+          PORT: "8081"
+          BIND_ADDRESS: "0.0.0.0"
+          HOST: "0.0.0.0"
+        run: |
+          npm run start > ../backend-zap-deep.log 2>&1 &
+          echo $! > ../backend-zap-deep.pid
+
+      - name: Wait for backend
+        run: |
+          npx wait-on --timeout 120000 --interval 1000 --httpTimeout 5000 http-get://127.0.0.1:8081/api/health || {
+            echo "Backend did not become healthy in time";
+            test -f backend-zap-deep.log && tail -n 200 backend-zap-deep.log;
+            test -f backend-zap-deep.pid && kill "$(cat backend-zap-deep.pid)" || true;
+            exit 1;
+          }
+
+      - name: Run deeper ZAP scan
+        env:
+          ZAP_TARGET_URL: http://127.0.0.1:8081
+          ZAP_FAIL_ON_RISK: medium
+          ZAP_SPIDER_MINUTES: "5"
+        run: npm run ci:zap:deep
+
+      - name: Stop backend deeper ZAP server
+        if: always()
+        run: |
+          test -f backend-zap-deep.pid && kill "$(cat backend-zap-deep.pid)" || true
+
+      - name: Upload deeper ZAP backend log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-zap-deep-log
+          path: backend-zap-deep.log
+          if-no-files-found: warn
+
+      - name: Upload deeper ZAP reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: zap-report-deep
           path: reports/security
           if-no-files-found: warn
 

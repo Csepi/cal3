@@ -10,6 +10,14 @@ const ANDROID_DEVICE_NAME = process.env.ANDROID_DEVICE_NAME ?? 'Android Emulator
 const ANDROID_PLATFORM_VERSION = process.env.ANDROID_PLATFORM_VERSION;
 const ADB_PATH = process.env.ADB_PATH ?? 'adb';
 const ANDROID_DEVICE_ID = process.env.ANDROID_DEVICE_ID;
+const MOBILE_I18N_SCENARIO = process.env.MOBILE_I18N_SCENARIO === 'true';
+const MOBILE_I18N_SETTINGS_SELECTOR = process.env.MOBILE_I18N_SETTINGS_SELECTOR;
+const MOBILE_I18N_ASSERTION_SELECTOR =
+  process.env.MOBILE_I18N_ASSERTION_SELECTOR;
+const MOBILE_I18N_CONFIRM_SELECTOR = process.env.MOBILE_I18N_CONFIRM_SELECTOR;
+const MOBILE_I18N_CASES = process.env.MOBILE_I18N_CASES;
+const MOBILE_I18N_OPTION_SELECTOR = process.env.MOBILE_I18N_OPTION_SELECTOR;
+const MOBILE_I18N_EXPECTED_TEXT = process.env.MOBILE_I18N_EXPECTED_TEXT;
 
 const log = (message) => console.log(`[mobile-e2e] ${message}`);
 
@@ -76,6 +84,94 @@ const runSensorScenario = async () => {
   log('Sensor scenario placeholder executed; configure project-specific selectors and flows as needed.');
 };
 
+const parseI18nCases = () => {
+  if (MOBILE_I18N_CASES) {
+    try {
+      const parsed = JSON.parse(MOBILE_I18N_CASES);
+      if (!Array.isArray(parsed)) {
+        throw new Error('MOBILE_I18N_CASES must be a JSON array.');
+      }
+      return parsed.map((entry, index) => {
+        const optionSelector = String(entry?.optionSelector ?? '').trim();
+        const expectedText = String(entry?.expectedText ?? '').trim();
+        if (!optionSelector || !expectedText) {
+          throw new Error(
+            `MOBILE_I18N_CASES entry #${index + 1} must include optionSelector and expectedText.`,
+          );
+        }
+        return { optionSelector, expectedText };
+      });
+    } catch (error) {
+      throw new Error(
+        `[mobile-e2e] Invalid MOBILE_I18N_CASES JSON: ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
+  }
+
+  if (MOBILE_I18N_OPTION_SELECTOR && MOBILE_I18N_EXPECTED_TEXT) {
+    return [
+      {
+        optionSelector: MOBILE_I18N_OPTION_SELECTOR,
+        expectedText: MOBILE_I18N_EXPECTED_TEXT,
+      },
+    ];
+  }
+
+  return [];
+};
+
+const runI18nScenario = async (driver) => {
+  if (!MOBILE_I18N_SCENARIO) {
+    log('Mobile i18n scenario skipped (MOBILE_I18N_SCENARIO not true).');
+    return;
+  }
+
+  const cases = parseI18nCases();
+  if (!MOBILE_I18N_SETTINGS_SELECTOR || !MOBILE_I18N_ASSERTION_SELECTOR) {
+    throw new Error(
+      'MOBILE_I18N_SCENARIO requires MOBILE_I18N_SETTINGS_SELECTOR and MOBILE_I18N_ASSERTION_SELECTOR.',
+    );
+  }
+  if (cases.length === 0) {
+    throw new Error(
+      'MOBILE_I18N_SCENARIO is enabled but no language cases were provided. Set MOBILE_I18N_CASES or MOBILE_I18N_OPTION_SELECTOR + MOBILE_I18N_EXPECTED_TEXT.',
+    );
+  }
+
+  log(`Running mobile i18n scenario with ${cases.length} language assertion(s).`);
+
+  for (const scenario of cases) {
+    const settingsControl = await driver.$(MOBILE_I18N_SETTINGS_SELECTOR);
+    await settingsControl.waitForDisplayed({ timeout: 15000 });
+    await settingsControl.click();
+
+    const languageOption = await driver.$(scenario.optionSelector);
+    await languageOption.waitForDisplayed({ timeout: 15000 });
+    await languageOption.click();
+
+    if (MOBILE_I18N_CONFIRM_SELECTOR) {
+      const confirmControl = await driver.$(MOBILE_I18N_CONFIRM_SELECTOR);
+      await confirmControl.waitForDisplayed({ timeout: 10000 });
+      await confirmControl.click();
+    }
+
+    await driver.pause(1200);
+
+    const assertionElement = await driver.$(MOBILE_I18N_ASSERTION_SELECTOR);
+    await assertionElement.waitForDisplayed({ timeout: 15000 });
+    const visibleText = (await assertionElement.getText()).trim().toLowerCase();
+    const expectedText = scenario.expectedText.trim().toLowerCase();
+
+    if (!visibleText.includes(expectedText)) {
+      throw new Error(
+        `Expected "${scenario.expectedText}" after language switch, got "${visibleText}".`,
+      );
+    }
+
+    log(`Verified language content contains "${scenario.expectedText}".`);
+  }
+};
+
 const toCapabilities = () => {
   const capabilities = {
     platformName: 'Android',
@@ -134,6 +230,7 @@ async function run() {
 
     await runLifecycleScenario(driver);
     await runOfflineScenario(driver);
+    await runI18nScenario(driver);
     await runPushScenario();
     await runSensorScenario();
 

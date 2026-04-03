@@ -122,6 +122,7 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
         return (
           <section
             key={status}
+            data-testid={`task-column-${status}`}
             className={`rounded-2xl border ${config.border} bg-white/90 p-4 shadow-sm`}
             onDragOver={allowDrop}
             onDrop={(event) => handleDrop(event, status)}
@@ -139,6 +140,7 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
               {column.map((task) => (
                 <article
                   key={task.id}
+                  data-testid={`task-card-${task.id}`}
                   className="cursor-pointer rounded-xl border border-gray-100 bg-white/90 p-3 transition hover:border-gray-200 hover:shadow"
                   onClick={() => onSelect(task)}
                   draggable
