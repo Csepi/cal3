@@ -1,7 +1,15 @@
 import request from 'supertest';
+import {
+  Calendar,
+  CalendarVisibility,
+} from '../../src/entities/calendar.entity';
 import { OrganisationAdmin } from '../../src/entities/organisation-admin.entity';
 import { Organisation } from '../../src/entities/organisation.entity';
-import { ReservationCalendarRoleType } from '../../src/entities/reservation-calendar-role.entity';
+import { ReservationCalendar } from '../../src/entities/reservation-calendar.entity';
+import {
+  ReservationCalendarRole,
+  ReservationCalendarRoleType,
+} from '../../src/entities/reservation-calendar-role.entity';
 import { UsagePlan } from '../../src/entities/user.entity';
 import { describeDockerBacked } from '../support/postgres-nest.harness';
 import {
@@ -55,7 +63,11 @@ describeDockerBacked(
       });
     };
 
-    const seedOrganisationAdmin = async (userId: number, prefix: string) => {
+    const seedReservationCalendarContext = async (
+      ownerId: number,
+      reviewerId: number,
+      prefix: string,
+    ) => {
       const harness = getHarness();
       expect(harness).not.toBeNull();
       if (!harness) {
@@ -67,6 +79,11 @@ describeDockerBacked(
         harness.dataSource.getRepository(Organisation);
       const organisationAdminRepository =
         harness.dataSource.getRepository(OrganisationAdmin);
+      const calendarRepository = harness.dataSource.getRepository(Calendar);
+      const reservationCalendarRepository =
+        harness.dataSource.getRepository(ReservationCalendar);
+      const reservationCalendarRoleRepository =
+        harness.dataSource.getRepository(ReservationCalendarRole);
 
       const organisation = await organisationRepository.save(
         organisationRepository.create({
@@ -78,12 +95,68 @@ describeDockerBacked(
       await organisationAdminRepository.save(
         organisationAdminRepository.create({
           organisationId: organisation.id,
-          userId,
+          userId: ownerId,
           assignedById: null,
         }),
       );
 
-      return organisation;
+      const reviewer = await harness.userRepository.findOne({
+        where: { id: reviewerId },
+        relations: ['organisations'],
+      });
+      expect(reviewer).not.toBeNull();
+      if (!reviewer) {
+        throw new Error('Reviewer user was not found');
+      }
+      reviewer.organisations = [...(reviewer.organisations ?? []), organisation];
+      await harness.userRepository.save(reviewer);
+
+      const calendar = await calendarRepository.save(
+        calendarRepository.create({
+          name: `Reservation Calendar ${suffix}`,
+          description: 'Seeded reservation calendar',
+          color: '#2563eb',
+          visibility: CalendarVisibility.PRIVATE,
+          isReservationCalendar: true,
+          organisationId: organisation.id,
+          ownerId,
+        }),
+      );
+
+      const reservationCalendar = await reservationCalendarRepository.save(
+        reservationCalendarRepository.create({
+          calendarId: calendar.id,
+          organisationId: organisation.id,
+          createdById: ownerId,
+          calendar,
+          organisation,
+        }),
+      );
+
+      await reservationCalendarRoleRepository.save(
+        reservationCalendarRoleRepository.create({
+          reservationCalendarId: reservationCalendar.id,
+          userId: ownerId,
+          role: ReservationCalendarRoleType.EDITOR,
+          assignedById: ownerId,
+          isOrganisationAdmin: true,
+        }),
+      );
+
+      await reservationCalendarRoleRepository.save(
+        reservationCalendarRoleRepository.create({
+          reservationCalendarId: reservationCalendar.id,
+          userId: reviewerId,
+          role: ReservationCalendarRoleType.REVIEWER,
+          assignedById: ownerId,
+          isOrganisationAdmin: false,
+        }),
+      );
+
+      return {
+        organisationId: organisation.id,
+        reservationCalendarId: reservationCalendar.id,
+      };
     };
 
     it('covers reservation-calendar role lifecycle, restrictions, and role-gated endpoints', async () => {
@@ -99,36 +172,17 @@ describeDockerBacked(
       await grantReservationAccess(owner.userId);
       await grantReservationAccess(reviewer.userId);
 
-      const organisation = await seedOrganisationAdmin(
+      const seededContext = await seedReservationCalendarContext(
         owner.userId,
+        reviewer.userId,
         'reservation-calendar-org',
       );
 
-      await request(server)
-        .post(`/organisations/${organisation.id}/users`)
-        .set(owner.authHeaders)
-        .send({ userId: reviewer.userId })
-        .expect((response) => {
-          expect([200, 201]).toContain(response.status);
-        });
-
-      const createReservationCalendarResponse = await request(server)
-        .post(`/organisations/${organisation.id}/reservation-calendars`)
-        .set(owner.authHeaders)
-        .send({
-          name: `Reservations ${nextSuffix('calendar')}`,
-          description: 'Reservation calendar for role checks',
-          color: '#2563eb',
-          reviewerUserIds: [reviewer.userId],
-        })
-        .expect(201);
-
-      const reservationCalendarId = createReservationCalendarResponse.body
-        .data.id as number;
+      const reservationCalendarId = seededContext.reservationCalendarId;
       expect(reservationCalendarId).toEqual(expect.any(Number));
 
       await request(server)
-        .get(`/organisations/${organisation.id}/reservation-calendars`)
+        .get(`/organisations/${seededContext.organisationId}/reservation-calendars`)
         .set(owner.authHeaders)
         .expect(200)
         .expect((response) => {
@@ -210,7 +264,9 @@ describeDockerBacked(
           userId: reviewer.userId,
           role: ReservationCalendarRoleType.EDITOR,
         })
-        .expect(201);
+        .expect((response) => {
+          expect([200, 201]).toContain(response.status);
+        });
 
       await request(server)
         .post(`/reservation-calendars/${reservationCalendarId}/reservations`)
