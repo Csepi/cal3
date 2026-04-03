@@ -115,6 +115,62 @@ describe('apiService calendar, group, task, label, and reservation endpoints', (
     );
   });
 
+  it('lists, updates, and deletes calendars on success', async () => {
+    const calendars = [
+      {
+        id: 5,
+        name: 'Planning',
+        color: '#0ea5e9',
+        groupId: 9,
+      },
+    ];
+    const updatedCalendar = {
+      id: 5,
+      name: 'Planning Updated',
+      color: '#2563eb',
+      groupId: null,
+    };
+
+    mockedSecureFetch
+      .mockResolvedValueOnce(response(calendars))
+      .mockResolvedValueOnce(response(updatedCalendar))
+      .mockResolvedValueOnce(response({ success: true }));
+
+    await expect(apiService.getAllCalendars()).resolves.toEqual(calendars);
+    await expect(
+      apiService.updateCalendar(5, {
+        name: 'Planning Updated',
+        color: '#2563eb',
+        groupId: null,
+      }),
+    ).resolves.toEqual(updatedCalendar);
+    await expect(apiService.deleteCalendar(5)).resolves.toBeUndefined();
+
+    expect(mockedSecureFetch.mock.calls[0]?.[0]).toBe(
+      'https://api.test/api/calendars',
+    );
+    expect(mockedSecureFetch.mock.calls[1]?.[0]).toBe(
+      'https://api.test/api/calendars/5',
+    );
+    expect(mockedSecureFetch.mock.calls[1]?.[1]).toEqual(
+      expect.objectContaining({
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: 'Planning Updated',
+          color: '#2563eb',
+          groupId: null,
+        }),
+      }),
+    );
+    expect(mockedSecureFetch.mock.calls[2]?.[0]).toBe(
+      'https://api.test/api/calendars/5',
+    );
+    expect(mockedSecureFetch.mock.calls[2]?.[1]).toEqual(
+      expect.objectContaining({ method: 'DELETE' }),
+    );
+  });
+
   it('surfaces calendar update auth errors', async () => {
     mockedSecureFetch.mockResolvedValueOnce(
       response({ message: 'unauthorized' }, { ok: false, status: 401 }),
@@ -202,6 +258,55 @@ describe('apiService calendar, group, task, label, and reservation endpoints', (
     ).resolves.toEqual(createdGroup);
   });
 
+  it('uses the primary calendar group routes when they succeed', async () => {
+    const groups = [
+      {
+        id: 21,
+        name: 'Primary Route Group',
+        ownerId: 1,
+        isVisible: true,
+        calendars: [{ id: 5, name: 'Planning', groupId: 21 }],
+      },
+    ];
+    const createdGroup = {
+      id: 22,
+      name: 'Direct Group',
+      ownerId: 1,
+      isVisible: false,
+    };
+
+    mockedSecureFetch
+      .mockResolvedValueOnce(response(groups))
+      .mockResolvedValueOnce(response(createdGroup));
+
+    await expect(apiService.getCalendarGroups()).resolves.toEqual(groups);
+    await expect(
+      apiService.createCalendarGroup({
+        name: 'Direct Group',
+        isVisible: false,
+      }),
+    ).resolves.toEqual(createdGroup);
+
+    expect(mockedSecureFetch).toHaveBeenNthCalledWith(
+      1,
+      'https://api.test/api/calendar-groups',
+      {},
+    );
+    expect(mockedSecureFetch).toHaveBeenNthCalledWith(
+      2,
+      'https://api.test/api/calendar-groups',
+      expect.objectContaining({
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: 'Direct Group',
+          isVisible: false,
+        }),
+      }),
+    );
+    expect(mockedSecureFetch).toHaveBeenCalledTimes(2);
+  });
+
   it('uses the fallback message when calendar group creation fails without JSON', async () => {
     mockedSecureFetch.mockResolvedValueOnce(
       response('plain text failure', {
@@ -270,22 +375,140 @@ describe('apiService calendar, group, task, label, and reservation endpoints', (
       'https://api.test/api/calendar-groups/20',
     );
     expect(mockedSecureFetch.mock.calls[0]?.[1]).toEqual(
-      expect.objectContaining({ method: 'PATCH' }),
+      expect.objectContaining({
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: 'Updated Group',
+          isVisible: false,
+        }),
+      }),
     );
     expect(mockedSecureFetch.mock.calls[1]?.[0]).toBe(
       'https://api.test/api/calendar-groups/20/calendars',
     );
+    expect(mockedSecureFetch.mock.calls[1]?.[1]).toEqual(
+      expect.objectContaining({
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ calendarIds: [7] }),
+      }),
+    );
     expect(mockedSecureFetch.mock.calls[2]?.[0]).toBe(
       'https://api.test/api/calendar-groups/20/calendars/unassign',
+    );
+    expect(mockedSecureFetch.mock.calls[2]?.[1]).toEqual(
+      expect.objectContaining({
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ calendarIds: [7] }),
+      }),
     );
     expect(mockedSecureFetch.mock.calls[3]?.[0]).toBe(
       'https://api.test/api/calendar-groups/20/share',
     );
+    expect(mockedSecureFetch.mock.calls[3]?.[1]).toEqual(
+      expect.objectContaining({
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userIds: [9],
+          permission: SharePermission.READ,
+        }),
+      }),
+    );
     expect(mockedSecureFetch.mock.calls[4]?.[1]).toEqual(
-      expect.objectContaining({ method: 'DELETE' }),
+      expect.objectContaining({
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userIds: [9] }),
+      }),
     );
     expect(mockedSecureFetch.mock.calls[5]?.[1]).toEqual(
       expect.objectContaining({ method: 'DELETE' }),
+    );
+  });
+
+  it('returns calendar sync success payloads and forwards sync request options', async () => {
+    const syncStatus = {
+      providers: [
+        {
+          provider: 'google',
+          isConnected: true,
+          calendars: [{ id: 'g-1' }],
+          syncedCalendars: ['g-1'],
+        },
+      ],
+    };
+    const syncPayload = {
+      provider: 'google',
+      calendars: [
+        {
+          externalId: 'g-1',
+          localName: 'Google Primary',
+          triggerAutomationRules: true,
+          selectedRuleIds: [7, 8],
+        },
+      ],
+    };
+    const syncResult = { imported: 1, updated: 0 };
+    const forceResult = { queued: true };
+
+    mockedSecureFetch
+      .mockResolvedValueOnce(response(syncStatus))
+      .mockResolvedValueOnce(response({ authUrl: 'https://accounts.example.test/auth' }))
+      .mockResolvedValueOnce(response(syncResult))
+      .mockResolvedValueOnce(response({ success: true }))
+      .mockResolvedValueOnce(response({ success: true }))
+      .mockResolvedValueOnce(response(forceResult));
+
+    await expect(apiService.getCalendarSyncStatus()).resolves.toEqual(syncStatus);
+    await expect(apiService.getCalendarAuthUrl('google')).resolves.toBe(
+      'https://accounts.example.test/auth',
+    );
+    await expect(apiService.syncCalendars(syncPayload)).resolves.toEqual(
+      syncResult,
+    );
+    await expect(
+      apiService.disconnectCalendarProvider('google'),
+    ).resolves.toBeUndefined();
+    await expect(apiService.disconnectCalendarProvider()).resolves.toBeUndefined();
+    await expect(apiService.forceCalendarSync()).resolves.toEqual(forceResult);
+
+    expect(mockedSecureFetch.mock.calls[0]?.[0]).toBe(
+      'https://api.test/api/calendar-sync/status',
+    );
+    expect(mockedSecureFetch.mock.calls[1]?.[0]).toBe(
+      'https://api.test/api/calendar-sync/auth/google',
+    );
+    expect(mockedSecureFetch.mock.calls[2]?.[0]).toBe(
+      'https://api.test/api/calendar-sync/sync',
+    );
+    expect(mockedSecureFetch.mock.calls[2]?.[1]).toEqual(
+      expect.objectContaining({
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(syncPayload),
+        timeoutMs: 120000,
+      }),
+    );
+    expect(mockedSecureFetch.mock.calls[3]?.[0]).toBe(
+      'https://api.test/api/calendar-sync/disconnect/google',
+    );
+    expect(mockedSecureFetch.mock.calls[3]?.[1]).toEqual(
+      expect.objectContaining({ method: 'POST' }),
+    );
+    expect(mockedSecureFetch.mock.calls[4]?.[0]).toBe(
+      'https://api.test/api/calendar-sync/disconnect',
+    );
+    expect(mockedSecureFetch.mock.calls[4]?.[1]).toEqual(
+      expect.objectContaining({ method: 'POST' }),
+    );
+    expect(mockedSecureFetch.mock.calls[5]?.[0]).toBe(
+      'https://api.test/api/calendar-sync/force',
+    );
+    expect(mockedSecureFetch.mock.calls[5]?.[1]).toEqual(
+      expect.objectContaining({ method: 'POST', timeoutMs: 60000 }),
     );
   });
 
