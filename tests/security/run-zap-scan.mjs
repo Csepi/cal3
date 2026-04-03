@@ -28,6 +28,8 @@ const zapArgs = [
   'run',
   '--rm',
   '-t',
+  '--user',
+  'root',
   '-v',
   `${reportsDir}:/zap/wrk`,
   'ghcr.io/zaproxy/zaproxy:stable',
