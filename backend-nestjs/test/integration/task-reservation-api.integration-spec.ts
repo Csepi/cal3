@@ -225,9 +225,9 @@ describeDockerBacked(
         .query({ page: 1, limit: 10 })
         .expect(200);
 
-      expect(listResponse.body.total).toBe(2);
-      expect(listResponse.body.page).toBe(1);
-      expect(listResponse.body.limit).toBe(10);
+      expect(Number(listResponse.body.total)).toBe(2);
+      expect(Number(listResponse.body.page)).toBe(1);
+      expect(Number(listResponse.body.limit)).toBe(10);
       expect(listResponse.body.data).toHaveLength(2);
       expect(
         listResponse.body.data.map((task: { id: number }) => task.id),
