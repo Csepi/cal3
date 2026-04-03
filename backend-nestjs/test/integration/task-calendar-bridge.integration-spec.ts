@@ -1,4 +1,5 @@
 import request from 'supertest';
+import { Event } from '../../src/entities/event.entity';
 import { describeDockerBacked } from '../support/postgres-nest.harness';
 import {
   OnboardedUserSession,
@@ -147,6 +148,17 @@ describeDockerBacked(
       const taskId = createdTaskResponse.body.id as number;
       const eventId = createdTaskResponse.body.calendarEventId as number;
       expect(eventId).toEqual(expect.any(Number));
+
+      const harness = getHarness();
+      expect(harness).not.toBeNull();
+      if (!harness) {
+        throw new Error('Harness was not initialized');
+      }
+
+      // Force a stale checksum so the bridge treats this as a user-originated event mutation.
+      await harness.dataSource.getRepository(Event).update(eventId, {
+        taskSyncChecksum: 'stale-checksum',
+      });
 
       await request(server)
         .patch(`/events/${eventId}`)
