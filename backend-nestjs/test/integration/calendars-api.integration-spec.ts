@@ -65,7 +65,7 @@ describeDockerBacked(
       expect(groupId).toBeTruthy();
 
       await request(server)
-        .get('/calendars/groups')
+        .get('/calendar-groups')
         .set(owner.authHeaders)
         .expect(200)
         .expect((response) => {

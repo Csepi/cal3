@@ -34,6 +34,7 @@ describe('automationService error messaging', () => {
         actionConfig: { newTitle: 'Updated title' },
       },
     ],
+    conditions: [],
   };
 
   beforeEach(() => {
@@ -80,4 +81,3 @@ describe('automationService error messaging', () => {
     );
   });
 });
-

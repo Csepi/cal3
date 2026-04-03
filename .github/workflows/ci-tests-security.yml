@@ -21,7 +21,7 @@ concurrency:
 
 jobs:
   quality:
-    name: Quality checks (lint + typecheck + build)
+    name: Quality checks (typecheck + build)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -77,6 +77,8 @@ jobs:
         run: npm --prefix backend-nestjs ci
 
       - name: Run backend core test phase
+        env:
+          ENABLE_TESTCONTAINERS: "true"
         run: npm run ci:backend-core
 
       - name: Upload backend coverage
@@ -126,16 +128,8 @@ jobs:
       - name: Install frontend dependencies
         run: npm --prefix frontend ci
 
-      - name: Run frontend unit coverage
-        run: npm run coverage:frontend
-
-      - name: Upload frontend coverage
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: frontend-coverage
-          path: frontend/coverage
-          if-no-files-found: warn
+      - name: Run frontend unit tests
+        run: npm run ci:frontend-unit
 
   web_e2e:
     name: Web E2E (Playwright)

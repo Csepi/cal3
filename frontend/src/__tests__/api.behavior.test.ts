@@ -75,7 +75,7 @@ describe('apiService behavior', () => {
     );
 
     await apiService.getTasks({
-      labelIds: [1, '2', '3:4', '2', 0, 'abc', 1],
+      labelIds: [1, '2', '3:4', '2', 0, 'abc', 1] as unknown as number[],
     });
 
     const requestedUrl = new URL(

@@ -1,6 +1,8 @@
 import { apiService } from '../services/api';
 import { secureFetch } from '../services/authErrorHandler';
 import { sessionManager } from '../services/sessionManager';
+import { CalendarVisibility, SharePermission } from '../types/Calendar';
+import { TaskPriority, TaskStatus } from '../types/Task';
 
 jest.mock('../config/apiConfig', () => ({
   BASE_URL: 'https://api.test',
@@ -90,7 +92,7 @@ describe('apiService calendar, group, task, label, and reservation endpoints', (
         name: 'Planning',
         description: 'Team planning calendar',
         color: '#0ea5e9',
-        visibility: 'shared',
+        visibility: CalendarVisibility.SHARED,
         groupId: 2,
         rank: 4,
       }),
@@ -105,7 +107,7 @@ describe('apiService calendar, group, task, label, and reservation endpoints', (
           name: 'Planning',
           description: 'Team planning calendar',
           color: '#0ea5e9',
-          visibility: 'shared',
+          visibility: CalendarVisibility.SHARED,
           groupId: 2,
           rank: 4,
         }),
@@ -252,7 +254,10 @@ describe('apiService calendar, group, task, label, and reservation endpoints', (
     ).resolves.toEqual(groupWithCalendars);
 
     await expect(
-      apiService.shareCalendarGroup(20, { userIds: [9], permission: 'read' }),
+      apiService.shareCalendarGroup(20, {
+        userIds: [9],
+        permission: SharePermission.READ,
+      }),
     ).resolves.toEqual(sharedPayload);
 
     await expect(apiService.unshareCalendarGroup(20, [9])).resolves.toEqual(
@@ -309,12 +314,12 @@ describe('apiService calendar, group, task, label, and reservation endpoints', (
 
     await expect(
       apiService.getTasks({
-        status: 'todo',
-        priority: 'high',
+        status: TaskStatus.TODO,
+        priority: TaskPriority.HIGH,
         search: 'release notes',
         dueFrom: '2026-04-01',
         dueTo: '2026-04-30',
-        labelIds: [1, '2', '3:4', '2', 0, 'abc', 1],
+        labelIds: [1, '2', '3:4', '2', 0, 'abc', 1] as unknown as number[],
         sortBy: 'updatedAt',
         sortDirection: 'desc',
         page: 2,
@@ -357,8 +362,8 @@ describe('apiService calendar, group, task, label, and reservation endpoints', (
       apiService.createTask({
         title: 'Write docs',
         body: 'Document the release process',
-        priority: 'medium',
-        status: 'todo',
+        priority: TaskPriority.MEDIUM,
+        status: TaskStatus.TODO,
         labelIds: [3],
       }),
     ).rejects.toThrow('Failed to create task');

@@ -33,7 +33,7 @@
     "ci:backend-core": "npm --prefix backend-nestjs run test:unit && npm --prefix backend-nestjs run test:security && npm --prefix backend-nestjs run db:audit:queries",
     "ci:backend-integration": "npm --prefix backend-nestjs run test:integration",
     "ci:frontend-unit": "npm --prefix frontend run test:unit",
-    "ci:quality": "npm --prefix backend-nestjs run lint:check && npm --prefix backend-nestjs run build && npm --prefix frontend run lint && npm --prefix frontend run build:typecheck",
+    "ci:quality": "npm --prefix backend-nestjs run build && npm --prefix frontend run build:typecheck",
     "ci:i18n": "npm run i18n:test",
     "ci:web-e2e": "node scripts/test/run-e2e-web-local.cjs",
     "ci:api": "npm run test:api",

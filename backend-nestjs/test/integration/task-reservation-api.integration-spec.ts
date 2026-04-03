@@ -159,7 +159,7 @@ describeDockerBacked(
       const foreignLabelId = foreignLabelResponse.body.id as number;
 
       await request(server)
-        .get('/tasks/labels')
+        .get('/task-labels')
         .set(ownerSession.authHeaders)
         .expect(200)
         .expect((response) => {
@@ -170,7 +170,7 @@ describeDockerBacked(
         });
 
       await request(server)
-        .patch(`/tasks/labels/${workflowLabelId}`)
+        .patch(`/task-labels/${workflowLabelId}`)
         .set(ownerSession.authHeaders)
         .send({
           name: 'Workflow Updated',
