@@ -9,6 +9,19 @@ const isCi = process.env.CI === 'true';
 const reportsDir = path.resolve('reports/security');
 const reportJson = path.join(reportsDir, 'zap-report.json');
 
+const targetForContainer = (() => {
+  try {
+    const parsed = new URL(target);
+    if (['localhost', '127.0.0.1', '0.0.0.0'].includes(parsed.hostname)) {
+      parsed.hostname = 'host.docker.internal';
+      return parsed.toString();
+    }
+  } catch {
+    // Keep original target when URL parsing fails.
+  }
+  return target;
+})();
+
 mkdirSync(reportsDir, { recursive: true });
 
 const dockerCheck = spawnSync('docker', ['--version'], { stdio: 'pipe' });
@@ -24,18 +37,19 @@ if (dockerCheck.status !== 0 || dockerCheck.error) {
   process.exit(0);
 }
 
-const zapArgs = [
-  'run',
-  '--rm',
-  '-t',
-  '--user',
-  'root',
+const zapArgs = ['run', '--rm', '-t', '--user', 'root'];
+
+if (isCi) {
+  zapArgs.push('--add-host', 'host.docker.internal:host-gateway');
+}
+
+zapArgs.push(
   '-v',
   `${reportsDir}:/zap/wrk`,
   'ghcr.io/zaproxy/zaproxy:stable',
   'zap-baseline.py',
   '-t',
-  target,
+  targetForContainer,
   '-J',
   'zap-report.json',
   '-w',
@@ -45,9 +59,11 @@ const zapArgs = [
   '-m',
   process.env.ZAP_SPIDER_MINUTES ?? '2',
   '-d',
-];
+);
 
-console.log(`[security] Running OWASP ZAP baseline scan against ${target}`);
+console.log(
+  `[security] Running OWASP ZAP baseline scan against ${targetForContainer}`,
+);
 const zapRun = spawnSync('docker', zapArgs, { stdio: 'inherit' });
 
 if (![0, 1, 2].includes(zapRun.status ?? 1)) {
