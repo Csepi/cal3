@@ -78,6 +78,7 @@ jobs:
 
       - name: Run backend core test phase
         env:
+          DB_TYPE: postgres
           ENABLE_TESTCONTAINERS: "true"
         run: npm run ci:backend-core
 
