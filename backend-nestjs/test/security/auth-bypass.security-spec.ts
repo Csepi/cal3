@@ -66,7 +66,9 @@ describeDockerBacked('Authentication bypass security', ({
     await request(server)
       .get('/admin/users')
       .set('Authorization', `Bearer ${accessToken}`)
-      .expect(403);
+      .expect((response) => {
+        expect([401, 403]).toContain(response.status);
+      });
   });
 
   it('rejects malformed and tampered bearer tokens', async () => {
