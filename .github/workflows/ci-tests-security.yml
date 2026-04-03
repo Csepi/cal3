@@ -19,6 +19,9 @@ concurrency:
   group: ci-tests-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
 jobs:
   quality:
     name: Quality checks (typecheck + build)
@@ -401,8 +404,8 @@ jobs:
           SECURITY_ALLOWED_ORIGINS: http://localhost:3000
           BACKEND_PORT: "8081"
           PORT: "8081"
-          BIND_ADDRESS: "127.0.0.1"
-          HOST: "127.0.0.1"
+          BIND_ADDRESS: "0.0.0.0"
+          HOST: "0.0.0.0"
         run: |
           npm run start > ../backend-zap.log 2>&1 &
           echo $! > ../backend-zap.pid
@@ -426,6 +429,14 @@ jobs:
         if: always()
         run: |
           test -f backend-zap.pid && kill "$(cat backend-zap.pid)" || true
+
+      - name: Upload backend ZAP log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-zap-log
+          path: backend-zap.log
+          if-no-files-found: warn
 
       - name: Upload ZAP reports
         if: always()

@@ -23,7 +23,7 @@ import { UserBootstrapService } from './user-bootstrap.service';
       User,
     ]),
   ],
-  controllers: [TasksController, TaskLabelsController],
+  controllers: [TaskLabelsController, TasksController],
   providers: [
     TasksService,
     TaskLabelsService,

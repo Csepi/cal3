@@ -8,6 +8,20 @@ const failOn = (process.env.ZAP_FAIL_ON_RISK ?? 'high').toLowerCase();
 const isCi = process.env.CI === 'true';
 const reportsDir = path.resolve('reports/security');
 const reportJson = path.join(reportsDir, 'zap-report.json');
+const failThresholdByRisk = {
+  critical: 4,
+  high: 3,
+  medium: 2,
+};
+
+if (!Object.hasOwn(failThresholdByRisk, failOn)) {
+  console.error(
+    `[security] Invalid ZAP_FAIL_ON_RISK value "${failOn}". Expected one of: ${Object.keys(
+      failThresholdByRisk,
+    ).join(', ')}.`,
+  );
+  process.exit(1);
+}
 
 const targetForContainer = (() => {
   try {
@@ -107,13 +121,17 @@ console.log(
   `[security] ZAP findings: critical=${critical}, high=${high}, medium=${medium}`,
 );
 
+const highestRisk =
+  critical > 0 ? 'critical' : high > 0 ? 'high' : medium > 0 ? 'medium' : null;
+
 const shouldFail =
-  (failOn === 'critical' && critical > 0) ||
-  (failOn === 'high' && high > 0) ||
-  (failOn === 'medium' && (high > 0 || medium > 0));
+  highestRisk !== null &&
+  failThresholdByRisk[highestRisk] >= failThresholdByRisk[failOn];
 
 if (shouldFail) {
-  console.error(`[security] Failing due to ZAP ${failOn}+ findings.`);
+  console.error(
+    `[security] Failing due to ZAP ${failOn}+ findings (highest risk detected: ${highestRisk}).`,
+  );
   process.exit(1);
 }
 

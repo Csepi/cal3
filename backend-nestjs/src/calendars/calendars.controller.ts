@@ -70,6 +70,32 @@ export class CalendarsController {
     return this.calendarsService.findAll(req.user.id);
   }
 
+  // Calendar Groups (alias under calendars prefix for clients expecting /calendars/...)
+  @Get('groups')
+  @ApiOperation({
+    summary: 'List calendar groups for the user with calendars they can access',
+  })
+  findAllGroups(@Request() req: RequestWithUser) {
+    return this.calendarGroupsService.findAll(req.user.id);
+  }
+
+  @Post('groups')
+  @ApiOperation({ summary: 'Create a new calendar group' })
+  @ApiResponse({
+    status: 201,
+    description: 'Calendar group created',
+    type: CalendarGroupResponseDto,
+  })
+  createGroup(
+    @Body() createCalendarGroupDto: CreateCalendarGroupDto,
+    @Request() req: RequestWithUser,
+  ) {
+    return this.calendarGroupsService.create(
+      createCalendarGroupDto,
+      req.user.id,
+    );
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Get calendar by ID' })
   @ApiParam({ name: 'id', description: 'Calendar ID', type: 'number' })
@@ -163,31 +189,5 @@ export class CalendarsController {
   @ApiResponse({ status: 404, description: 'Calendar not found' })
   getSharedUsers(@Param('id', ParseIntPipe) id: number, @Request() req: RequestWithUser) {
     return this.calendarsService.getSharedUsers(id, req.user.id);
-  }
-
-  // Calendar Groups (alias under calendars prefix for clients expecting /calendars/...)
-  @Get('groups')
-  @ApiOperation({
-    summary: 'List calendar groups for the user with calendars they can access',
-  })
-  findAllGroups(@Request() req: RequestWithUser) {
-    return this.calendarGroupsService.findAll(req.user.id);
-  }
-
-  @Post('groups')
-  @ApiOperation({ summary: 'Create a new calendar group' })
-  @ApiResponse({
-    status: 201,
-    description: 'Calendar group created',
-    type: CalendarGroupResponseDto,
-  })
-  createGroup(
-    @Body() createCalendarGroupDto: CreateCalendarGroupDto,
-    @Request() req: RequestWithUser,
-  ) {
-    return this.calendarGroupsService.create(
-      createCalendarGroupDto,
-      req.user.id,
-    );
   }
 }
