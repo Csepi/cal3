@@ -13,17 +13,6 @@ describeDockerBacked('Authentication bypass security', ({
   isUnavailable,
   unavailabilityReason,
 }) => {
-  beforeEach(async () => {
-    if (isUnavailable()) {
-      return;
-    }
-    const harness = getHarness();
-    if (!harness) {
-      return;
-    }
-    await harness.userRepository.clear();
-  });
-
   it('rejects privileged endpoints without token', async () => {
     if (isUnavailable()) {
       expect(unavailabilityReason()).toBeTruthy();

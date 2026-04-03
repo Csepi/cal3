@@ -13,17 +13,6 @@ describeDockerBacked('Injection resistance security', ({
   isUnavailable,
   unavailabilityReason,
 }) => {
-  beforeEach(async () => {
-    if (isUnavailable()) {
-      return;
-    }
-    const harness = getHarness();
-    if (!harness) {
-      return;
-    }
-    await harness.userRepository.clear();
-  });
-
   it('rejects script payloads during registration and login', async () => {
     if (isUnavailable()) {
       expect(unavailabilityReason()).toBeTruthy();
