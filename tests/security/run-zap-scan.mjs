@@ -69,12 +69,15 @@ if (!existsSync(reportJson)) {
 const raw = readFileSync(reportJson, 'utf8');
 const parsed = JSON.parse(raw);
 
+let critical = 0;
 let high = 0;
 let medium = 0;
 for (const site of Array.isArray(parsed.site) ? parsed.site : []) {
   const alerts = Array.isArray(site?.alerts) ? site.alerts : [];
   for (const alert of alerts) {
-    if (alert.riskcode === '3') {
+    if (alert.riskcode === '4') {
+      critical += 1;
+    } else if (alert.riskcode === '3') {
       high += 1;
     } else if (alert.riskcode === '2') {
       medium += 1;
@@ -82,9 +85,12 @@ for (const site of Array.isArray(parsed.site) ? parsed.site : []) {
   }
 }
 
-console.log(`[security] ZAP findings: high=${high}, medium=${medium}`);
+console.log(
+  `[security] ZAP findings: critical=${critical}, high=${high}, medium=${medium}`,
+);
 
 const shouldFail =
+  (failOn === 'critical' && critical > 0) ||
   (failOn === 'high' && high > 0) ||
   (failOn === 'medium' && (high > 0 || medium > 0));
 

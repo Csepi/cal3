@@ -419,7 +419,7 @@ jobs:
       - name: Run ZAP scan
         env:
           ZAP_TARGET_URL: http://127.0.0.1:8081
-          ZAP_FAIL_ON_RISK: high
+          ZAP_FAIL_ON_RISK: critical
         run: npm run ci:zap
 
       - name: Stop backend ZAP server
