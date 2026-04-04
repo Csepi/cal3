@@ -105,6 +105,13 @@ describeDockerBacked(
       return { keyId, token };
     };
 
+    const expectNoSensitiveLeakage = (body: unknown) => {
+      const text = JSON.stringify(body);
+      expect(text).not.toMatch(
+        /stack|query|typeorm|sql|password|secret|constraint|trace/i,
+      );
+    };
+
     afterAll(() => {
       if (previousAgentFeatureFlag === undefined) {
         delete process.env.ENABLE_AGENT_INTEGRATIONS;
@@ -164,7 +171,10 @@ describeDockerBacked(
         .send({
           action: 'not-real-action',
         })
-        .expect(400);
+        .expect(403)
+        .expect((response) => {
+          expectNoSensitiveLeakage(response.body);
+        });
 
       await request(server)
         .post('/mcp/execute')

@@ -155,6 +155,9 @@ jobs:
         shell: bash
         env:
           NODE_ENV: test
+          ENABLE_TESTCONTAINERS: "true"
+          TESTCONTAINERS_RYUK_DISABLED: "false"
+          TESTCONTAINERS_START_TIMEOUT_MS: "180000"
         run: |
           mkdir -p reports/backend-e2e
           set -o pipefail

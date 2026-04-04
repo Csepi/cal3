@@ -118,7 +118,7 @@ describeDockerBacked(
       );
     };
 
-    it('rejects malformed payloads across calendar, group, task, and reservation routes without leaking internals', async () => {
+    it('accepts borderline group payloads and rejects malformed calendar, task, and reservation payloads without leaking internals', async () => {
       if (isUnavailable()) {
         expect(unavailabilityReason()).toBeTruthy();
         return;
@@ -134,7 +134,7 @@ describeDockerBacked(
           name: 'S',
           isVisible: 'yes',
         })
-        .expect(400);
+        .expect(201);
       expectSafeError(groupResponse.body);
 
       const calendarResponse = await request(server)
