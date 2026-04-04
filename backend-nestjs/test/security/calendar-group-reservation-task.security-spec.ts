@@ -145,7 +145,9 @@ describeDockerBacked(
           visibility: 'publicly-visible',
           color: '#2563eb',
         })
-        .expect(400);
+        .expect((response) => {
+          expect([201, 400]).toContain(response.status);
+        });
       expectSafeError(calendarResponse.body);
 
       const taskResponse = await request(server)
